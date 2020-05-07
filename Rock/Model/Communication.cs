@@ -226,6 +226,21 @@ namespace Rock.Model
         [DataMember]
         public string EnabledLavaCommands { get; set; }
 
+        /// <summary>
+        /// Gets the send date key.
+        /// </summary>
+        /// <value>
+        /// The send date key.
+        /// </value>
+        [DataMember]
+        public int? SendDateKey
+        {
+            get => ( SendDateTime == null || SendDateTime.Value == default ) ?
+                        ( int? ) null :
+                        SendDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #region Email Fields
 
         /// <summary>
@@ -495,6 +510,14 @@ namespace Rock.Model
         [DataMember]
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the send source date.
+        /// </summary>
+        /// <value>
+        /// The send source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate SendSourceDate { get; set; }
         #endregion
 
         #region ISecured
@@ -708,17 +731,20 @@ namespace Rock.Model
                 return;
             }
 
-
             var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
             var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
             var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
 
-            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
+            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
+            // However, don't exclude if the date added can't be determined or they will never be sent a scheduled communication.
             if ( this.FutureSendDateTime.HasValue )
             {
                 var memberAddedCutoffDate = this.FutureSendDateTime;
-                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate ) || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate ) );
+
+                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate )
+                                                                                        || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate )
+                                                                                        || ( !a.DateTimeAdded.HasValue && !a.CreatedDateTime.HasValue ) );
             }
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
@@ -952,6 +978,10 @@ namespace Rock.Model
 
             // the Migration will manually add a ON DELETE SET NULL for CommunicationTemplateId
             this.HasOptional( c => c.CommunicationTemplate ).WithMany().HasForeignKey( c => c.CommunicationTemplateId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.SendSourceDate ).WithMany().HasForeignKey( r => r.SendDateKey ).WillCascadeOnDelete( false );
         }
     }
 

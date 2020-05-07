@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Versio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.SignNow", "Rock.SignNow\Rock.SignNow.csproj", "{1F5956F2-2B0F-49B8-AAF1-2CC28F01426A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests", "Rock.Tests\Rock.Tests.csproj", "{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.UnitTests", "Rock.Tests.UnitTests\Rock.Tests.UnitTests.csproj", "{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignNowSDK", "SignNowSDK\SignNowSDK.csproj", "{69AC175C-3997-4514-8C9E-5D24811928C2}"
 EndProject
@@ -78,6 +78,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DownhillCss", "Rock.DownhillCss\Rock.DownhillCss.csproj", "{CADD9206-2C6B-42E4-B20B-2DFC3EB4D6D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.MyWell", "Rock.MyWell\Rock.MyWell.csproj", "{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Shared", "Rock.Tests.Shared\Rock.Tests.Shared.csproj", "{D8DE32C9-25DA-4897-A750-7DD8755B3D45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apollosProject.OneSignal", "..\apollos-onesignal\apollosProject.OneSignal.csproj", "{237D789F-52EF-48EF-A213-8D2284A6DE6F}"
 EndProject
@@ -187,6 +189,10 @@ Global
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8DE32C9-25DA-4897-A750-7DD8755B3D45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8DE32C9-25DA-4897-A750-7DD8755B3D45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8DE32C9-25DA-4897-A750-7DD8755B3D45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8DE32C9-25DA-4897-A750-7DD8755B3D45}.Release|Any CPU.Build.0 = Release|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU

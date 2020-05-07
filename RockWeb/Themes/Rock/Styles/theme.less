@@ -24,7 +24,7 @@
   5. Components
 */
 
-/*#region
+/* #region
 // 1. HTML Overrides         */
 // -------------------------
 
@@ -90,10 +90,10 @@ textarea,
   background: @text-selection-bg;
 }
 
-/*#endregion */
+/* #endregion */
 
 
-/*#region
+/* #region
 // 2. Bootstrap Overrides    */
 // -------------------------
 
@@ -335,6 +335,10 @@ textarea,
       padding: 0 6px;
       vertical-align: middle;
     }
+
+    &.grid-bool-field {
+      vertical-align: middle;
+    }
   }
 
   > tfoot {
@@ -352,6 +356,23 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .btn-danger {
+    &:active,
+    &:hover {
+      color: @btn-danger-bg;
+    }
+
+    &:focus,
+    &:active &:active:hover,
+    &:active:focus {
+      color: @btn-danger-color;
+      background: @btn-danger-bg;
+      border-color: @btn-danger-border;
+    }
   }
 }
 
@@ -371,9 +392,9 @@ textarea,
   border-radius: 50%;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 3. Rock Overrides         */
 // -------------------------
 
@@ -564,9 +585,9 @@ td.grid-actions {
   }
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 4. Theme Styling          */
 // -------------------------
 
@@ -672,10 +693,14 @@ body.nav-open {
     height: @navbar-top-height;
     padding: 6px;
     color: #fff;
-    background-color: @navbarside-background-color;
-    background-color: var(--navbarside-background-color);
+    background-color: @brand-color;
+    background-color: var(--brand-color);
     background-size: 45px;
-    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+
+    .nav-open & {
+      background-color: @navbarside-background-color;
+      background-color: var(--navbarside-background-color);
+    }
 
     &.no-logo::after {
       position: absolute;
@@ -1097,7 +1122,7 @@ body.nav-open {
         z-index: 2000;
         display: none;
         width: 280px;
-        padding: 0 @padding-base-horizontal;
+        padding: 0 10px 0 12px;
         overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
@@ -1116,7 +1141,7 @@ body.nav-open {
         li {
 
           a {
-            padding: 0 0 0 4px;
+            padding: 0;
             line-height: 2.5;
             color: @navbarside-color;
 
@@ -1124,12 +1149,10 @@ body.nav-open {
               display: inline-block;
               width: 0;
               height: 8px;
-              margin-right: 0;
+              margin-right: 14px;
               margin-bottom: 1px;
               content: " ";
               background: @brand-color;
-              -webkit-transition: all 100ms ease-in-out;
-              transition: all 100ms ease-in-out;
             }
 
             &:focus {
@@ -1144,7 +1167,7 @@ body.nav-open {
               &::before {
                 width: 8px;
                 padding-left: 8px;
-                margin-right: 12px;
+                margin-right: 6px;
               }
             }
           }
@@ -1156,7 +1179,7 @@ body.nav-open {
               &::before {
                 width: 8px;
                 padding-left: 8px;
-                margin-right: 12px;
+                margin-right: 6px;
               }
             }
           }
@@ -1406,9 +1429,9 @@ body.navbar-side-open {
   box-shadow: @shadow-sticky-nav;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 5. Specific Page Styling        */
 // -------------------------
 .personprofilebar-bio {
@@ -1431,9 +1454,9 @@ body.navbar-side-open {
   width: 270px;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 6. Components          */
 // -------------------------
 
@@ -1513,6 +1536,6 @@ body.navbar-side-open {
 
 }
 
-/*#endregion */
+/* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";

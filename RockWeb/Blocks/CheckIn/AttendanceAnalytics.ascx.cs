@@ -2112,12 +2112,18 @@ function(item) {
                     lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
                 }
 
-                Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
-                Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
-                Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
-                Literal lPhoneNumbers = e.Row.FindControl( "lPhoneNumbers" ) as Literal;
-                Literal lAttendanceCount = e.Row.FindControl( "lAttendanceCount" ) as Literal;
-                Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
+                var lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
+                var lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
+                var lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
+                var lHomeAddressStreet = e.Row.FindControl( "lHomeAddressStreet" ) as Literal;
+                var lHomeAddressCity = e.Row.FindControl( "lHomeAddressCity" ) as Literal;
+                var lHomeAddressState = e.Row.FindControl( "lHomeAddressState" ) as Literal;
+                var lHomeAddressPostalCode = e.Row.FindControl( "lHomeAddressPostalCode" ) as Literal;
+                var lHomeAddressCountry = e.Row.FindControl( "lHomeAddressCountry" ) as Literal;
+
+                var lPhoneNumbers = e.Row.FindControl( "lPhoneNumbers" ) as Literal;
+                var lAttendanceCount = e.Row.FindControl( "lAttendanceCount" ) as Literal;
+                var lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
 
                 if ( personDates.FirstVisits != null )
                 {

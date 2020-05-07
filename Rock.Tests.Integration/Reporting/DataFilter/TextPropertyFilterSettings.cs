@@ -69,7 +69,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var filter = new DataViewFilter();
 
             filter.ExpressionType = FilterExpressionType.Filter;
-            filter.EntityTypeId = EntityTypeCache.GetId( typeof( global::Rock.Reporting.DataFilter.PropertyFilter ) );
+            filter.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Reporting.DataFilter.PropertyFilter ) );
 
             var settings = new List<string> { $"Property_{PropertyName}", Comparison.ConvertToInt().ToString(), Value };
 

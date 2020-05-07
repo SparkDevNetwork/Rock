@@ -30,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -119,7 +120,7 @@ namespace RockWeb.Blocks.Groups
 
         private bool AllowMultipleLocations { get; set; }
 
-        private List<GroupSync> GroupSyncState { get; set; }
+        private List<GroupSyncViewModel> GroupSyncState { get; set; }
 
         private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
 
@@ -211,11 +212,11 @@ namespace RockWeb.Blocks.Groups
             json = ViewState["GroupSyncState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                GroupSyncState = new List<GroupSync>();
+                GroupSyncState = new List<GroupSyncViewModel>();
             }
             else
             {
-                GroupSyncState = JsonConvert.DeserializeObject<List<GroupSync>>( json );
+                GroupSyncState = JsonConvert.DeserializeObject<List<GroupSyncViewModel>>( json );
             }
 
             json = ViewState["MemberWorkflowTriggersState"] as string;
@@ -1283,7 +1284,7 @@ namespace RockWeb.Blocks.Groups
             int? parentGroupGroupTypeId = null;
             if ( parentGroupId.HasValue )
             {
-                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => s.ParentGroupId );
+                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => ( int? ) s.ParentGroup.GroupTypeId );
             }
 
             var groupTypeQry = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 ), rockContext );
@@ -1618,17 +1619,17 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
-            GroupSyncState = new List<GroupSync>();
+            GroupSyncState = new List<GroupSyncViewModel>();
             foreach ( var sync in group.GroupSyncs )
             {
-                // Clone it first so that we don't end up with a giant JSON object in viewstate (that includes the Group and GroupMembers)
-                var syncClone = sync.Clone( false );
+                var syncViewModel = new GroupSyncViewModel();
+                syncViewModel.CopyPropertiesFrom( sync );
 
                 // add the stuff that the grid needs
-                syncClone.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( syncClone.GroupTypeRoleId );
-                syncClone.SyncDataView = new DataViewService( rockContext ).Get( syncClone.SyncDataViewId );
+                syncViewModel.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( syncViewModel.GroupTypeRoleId );
+                syncViewModel.SyncDataView = new DataViewService( rockContext ).Get( syncViewModel.SyncDataViewId );
 
-                GroupSyncState.Add( syncClone );
+                GroupSyncState.Add( syncViewModel );
             }
 
             BindGroupSyncGrid();
@@ -2016,7 +2017,7 @@ namespace RockWeb.Blocks.Groups
                 if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     var groupTypeDetailPage = new PageReference( Rock.SystemGuid.Page.GROUP_TYPE_DETAIL ).BuildUrl();
-                    hlType.Text = string.Format( "<a href='{0}?groupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
+                    hlType.Text = string.Format( "<a href='{0}?GroupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
                 }
                 else
                 {
@@ -2296,7 +2297,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var rsvpReminder in rsvpReminderCommunications )
             {
-                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem(rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
 
             ddlAttendanceRecordRequiredForCheckIn.BindToEnum<AttendanceRecordRequiredForCheckIn>();
@@ -3329,6 +3330,7 @@ namespace RockWeb.Blocks.Groups
             ddlExitCommunication.SetValue( groupSync.ExitSystemCommunicationId );
 
             cbCreateLoginDuringSync.Checked = groupSync.AddUserAccountsDuringSync;
+            ipScheduleIntervalMinutes.IntervalInMinutes = groupSync.ScheduleIntervalMinutes.HasValue ? groupSync.ScheduleIntervalMinutes.Value : 12 * 60;
 
             ShowDialog( "GROUPSYNCSETTINGS", true );
         }
@@ -3375,7 +3377,7 @@ namespace RockWeb.Blocks.Groups
             var groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
             if ( groupSync == null )
             {
-                groupSync = new GroupSync();
+                groupSync = new GroupSyncViewModel();
                 groupSync.Guid = Guid.NewGuid();
                 GroupSyncState.Add( groupSync );
             }
@@ -3388,6 +3390,7 @@ namespace RockWeb.Blocks.Groups
             groupSync.ExitSystemCommunicationId = ddlExitCommunication.SelectedValue.AsIntegerOrNull();
             groupSync.WelcomeSystemCommunicationId = ddlWelcomeCommunication.SelectedValue.AsIntegerOrNull();
             groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
+            groupSync.ScheduleIntervalMinutes = ipScheduleIntervalMinutes.IntervalInMinutes;
 
             hfGroupSyncGuid.Value = string.Empty;
 
@@ -3444,16 +3447,16 @@ namespace RockWeb.Blocks.Groups
             int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
             int groupId = hfGroupId.ValueAsInt();
 
-            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
-            if ( groupId > 0 )
-            {
-                currentSyncdRoles = GroupSyncState
+            currentSyncdRoles = GroupSyncState
                     .Where( s => s.GroupId == groupId )
                     .Select( s => s.GroupTypeRoleId )
                     .ToList();
 
-                currentSyncdRoles.Remove( roleId );
+            currentSyncdRoles.Remove( roleId );
 
+            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
+            if ( groupId > 0 )
+            { 
                 groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 
@@ -3480,6 +3483,7 @@ namespace RockWeb.Blocks.Groups
             ddlWelcomeCommunication.Items.Clear();
             ddlExitCommunication.Items.Clear();
             cbCreateLoginDuringSync.Checked = false;
+            ipScheduleIntervalMinutes.IntervalInMinutes = 12 * 60;
         }
 
         #endregion
@@ -4118,4 +4122,14 @@ namespace RockWeb.Blocks.Groups
 
     }
 
+    class GroupSyncViewModel : GroupSync
+    {
+        public TimeIntervalSetting ScheduleTimeInterval
+        {
+            get
+            {
+                return new TimeIntervalSetting( ScheduleIntervalMinutes, null );
+            }
+        }
+    }
 }

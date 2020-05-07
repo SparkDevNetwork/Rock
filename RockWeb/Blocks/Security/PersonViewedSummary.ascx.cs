@@ -113,9 +113,9 @@ namespace RockWeb.Blocks.Security
         protected void gViewed_RowSelected( object sender, RowEventArgs e )
         {
             Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            queryParams.Add( "targetId", e.RowKeyValue.ToString() );
-            queryParams.Add( "viewerId", personId.ToString() );
-            queryParams.Add( "viewedBy", "false" );
+            queryParams.Add( "TargetId", e.RowKeyValue.ToString() );
+            queryParams.Add( "ViewerId", personId.ToString() );
+            queryParams.Add( "ViewedBy", "false" );
             NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
@@ -127,9 +127,9 @@ namespace RockWeb.Blocks.Security
         protected void gViewedBy_RowSelected( object sender, RowEventArgs e )
         {
             Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            queryParams.Add( "viewerId", e.RowKeyValue.ToString() );
-            queryParams.Add( "targetId", personId.ToString() );
-            queryParams.Add( "viewedBy", "true" );
+            queryParams.Add( "ViewerId", e.RowKeyValue.ToString() );
+            queryParams.Add( "TargetId", personId.ToString() );
+            queryParams.Add( "ViewedBy", "true" );
             NavigateToLinkedPage( "DetailPage", queryParams );
         }
 

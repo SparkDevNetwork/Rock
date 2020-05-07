@@ -328,7 +328,7 @@ namespace Rock.NMI
                     return null;
                 }
 
-                if ( threeStepResponse.Result != "1" )
+                if ( threeStepResponse.IsError() )
                 {
                     errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
@@ -379,7 +379,7 @@ namespace Rock.NMI
                     return null;
                 }
 
-                if ( threeStepChangeStep3Response.Result != "1" )
+                if ( threeStepChangeStep3Response.IsError() )
                 {
                     errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepChangeStep3Response.ResultText );
 
@@ -487,7 +487,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 return null;
             }
 
-            if ( refundResponse.ResponseCode != "1" )
+            if ( refundResponse.IsError() )
             {
                 errorMessage = FriendlyMessageHelper.GetFriendlyMessage( refundResponse.ResponseText );
                 return null;
@@ -563,7 +563,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     return null;
                 }
 
-                if ( threeStepResponse.Result != "1" )
+                if ( threeStepResponse.IsError() )
                 {
                     errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
@@ -609,7 +609,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     return null;
                 }
 
-                if ( threeStepSubscriptionStep3Response.Result != "1" )
+                if ( threeStepSubscriptionStep3Response.IsError() )
                 {
                     errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepSubscriptionStep3Response.ResultText );
                     return null;
@@ -1337,7 +1337,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var chargeResponse = PostToGatewayDirectPostAPI<ChargeResponse>( financialGateway, queryParameters );
 
             // NOTE: When debugging, you might get a Duplicate Transaction error if using the same CustomerVaultId and Amount within a short window ( maybe around 20 minutes? ) 
-            if ( chargeResponse.Response != "1" )
+            if ( chargeResponse.IsError() )
             {
                 errorMessage = FriendlyMessageHelper.GetFriendlyMessage( chargeResponse.ResponseText );
 
@@ -1489,7 +1489,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                 var addSubscriptionResponse = PostToGatewayDirectPostAPI<SubscriptionResponse>( financialGateway, queryParameters );
 
-                if ( addSubscriptionResponse.Response != "1" )
+                if ( addSubscriptionResponse.IsError() )
                 {
                     errorMessage = FriendlyMessageHelper.GetFriendlyMessage( addSubscriptionResponse.ResponseText );
 
@@ -1878,7 +1878,8 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         /// <summary>
-        /// Gets the paymentInfoToken that the hostedPaymentInfoControl returned (see also <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" />)
+        /// Populates the properties of the referencePaymentInfo from this gateway's <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" >hostedPaymentInfoControl</seealso>
+        /// This includes the ReferenceNumber, plus any other fields that the gateway wants to set
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
@@ -1977,7 +1978,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
             var createCustomerResponse = PostToGatewayDirectPostAPI<CreateCustomerResponse>( financialGateway, queryParameters );
 
-            if ( createCustomerResponse.Response != "1" )
+            if ( createCustomerResponse.IsError() )
             {
                 errorMessage = FriendlyMessageHelper.GetFriendlyMessage( createCustomerResponse.ResponseText );
 

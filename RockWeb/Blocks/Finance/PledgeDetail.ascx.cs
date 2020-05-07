@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Finance
 
             nbInvalid.Visible = false;
 
-            var pledgeId = PageParameter( "pledgeId" ).AsInteger();
+            var pledgeId = PageParameter( "PledgeId" ).AsInteger();
             if ( !IsPostBack )
             {
                 ShowDetail( pledgeId );

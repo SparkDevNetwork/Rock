@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
@@ -33,6 +34,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Determines if any events have occurred for the enitities that a person follows, and if so notifies them
     /// </summary>
+    [DisplayName( "Send Following Event Notification" )]
+    [Description( "Calculates and sends any following event notices to those that are following the entities that have an event that occurred." )]
+
     [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
     [DisallowConcurrentExecution]

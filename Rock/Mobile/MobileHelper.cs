@@ -291,6 +291,13 @@ namespace Rock.Mobile
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
+            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
+            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
+            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
+            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
@@ -425,6 +432,7 @@ namespace Rock.Mobile
                     IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
+                    CssClasses = page.BodyCssClass,
                     CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
                 };
@@ -609,9 +617,10 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="fieldXaml">The field.</param>
         /// <param name="wrapped">if set to <c>true</c> the SingleField wraps the field in a border.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0060:Remove unused parameter", Justification = "Public API, and it may come back to be used later. -dsh" )]
         public static string GetSingleFieldXaml( string fieldXaml, bool wrapped = true )
         {
-            return $"<Rock:SingleField Wrapped=\"{wrapped}\">{fieldXaml}</Rock:SingleField>";
+            return $"<Rock:FieldContainer>{fieldXaml}</Rock:FieldContainer>";
         }
 
         /// <summary>
@@ -623,7 +632,7 @@ namespace Rock.Mobile
         {
             text = text ?? string.Empty;
 
-            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
+            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />" );
         }
 
         /// <summary>

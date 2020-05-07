@@ -63,6 +63,18 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string TemplateId = "TemplateId";
+        }
+
+        #endregion
+
         #region fields
 
         private HashSet<int> _templatesWithCommunications;
@@ -254,7 +266,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Actions_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "TemplateId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.TemplateId, 0 );
         }
 
         /// <summary>
@@ -264,7 +276,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunicationTemplates_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "TemplateId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.TemplateId, e.RowKeyId );
         }
 
         /// <summary>
@@ -403,12 +415,6 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
-
-            var privateCol = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "SenderPersonAlias.Person.FullName" );
-            if ( privateCol != null )
-            {
-                privateCol.Visible = GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean();
-            }
 
             if ( _canFilterCreatedBy )
             {

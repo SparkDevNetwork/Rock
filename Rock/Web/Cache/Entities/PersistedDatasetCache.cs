@@ -133,15 +133,16 @@ namespace Rock.Web.Cache
                     // Append entity type id and entity id if appropriate
                     itemFactoryResultObject = AppendEntityInformation( itemFactoryResultObject );
 
-                    return new PersistedDatasetValueCache( itemFactoryResultObject );
+                    return new PersistedDatasetValueCache( itemFactoryResultObject, MemoryCacheDurationMS.HasValue ?
+                        TimeSpan.FromMilliseconds( MemoryCacheDurationMS.Value ) :
+                        (TimeSpan?) null );
                 };
 
                 if ( this.MemoryCacheDurationMS.HasValue )
                 {
                     PersistedDatasetValueCache persistedDatasetValueCache = ItemCache<PersistedDatasetValueCache>.GetOrAddExisting(
                         this.Id,
-                        itemFactory,
-                        TimeSpan.FromMilliseconds( MemoryCacheDurationMS.Value ) );
+                        itemFactory );
 
                     resultDataObject = persistedDatasetValueCache?.ResultDataObjectValue;
                 }

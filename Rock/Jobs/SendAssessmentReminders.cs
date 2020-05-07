@@ -31,15 +31,19 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace Rock.Jobs
 {
     #region Job Attributes
 
     /// <summary>
-    /// 
+    /// Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Send Assessment Reminders" )]
+    [Description( "Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date." )]
+
     [IntegerField( "Reminder Every",
             Key = AttributeKeys.ReminderEveryDays,
             Description = "The number of days between reminder emails.",
@@ -111,9 +115,7 @@ namespace Rock.Jobs
             var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();
 
             DateTime currentDate = DateTime.Now.Date;
-            int assessmentRemindersSent = 0;
-            int errorCount = 0;
-            var errorMessages = new List<string>();
+            var result = new SendMessageResult();
 
             using ( var rockContext = new RockContext() )
             {
@@ -135,27 +137,33 @@ namespace Rock.Jobs
                 // Go through the list, send a reminder, and update the LastReminderDate for all pending assessments for the person alias
                 foreach ( var personAliasId in personAliasIds )
                 {
-                    var errors = SendReminderEmail( assessmentSystemEmailGuid, personAliasId );
+                    var sendResult = SendReminderEmail( assessmentSystemEmailGuid, personAliasId );
 
-                    if ( errors.Any() )
-                    {
-                        errorMessages.AddRange( errors );
-                    }
-                    else
-                    {
-                        assessmentRemindersSent++;
-                    }
+                    result.MessagesSent += sendResult.MessagesSent;
+                    result.Warnings.AddRange( sendResult.Warnings );
+                    result.Errors.AddRange( sendResult.Errors );
 
                     assessmentService.UpdateLastReminderDateForPersonAlias( personAliasId );
                 }
 
-                context.Result = string.Format( "{0} assessment reminders sent", assessmentRemindersSent );
-                if ( errorMessages.Any() )
+                var results = new StringBuilder();
+                results.AppendLine( $"{result.MessagesSent}  assessment reminders sent." );
+                if ( result.Warnings.Count > 0 )
                 {
+                    var warning = "Warning".PluralizeIf( result.Warnings.Count > 1 );
+                    results.AppendLine( $"{result.Warnings.Count} {warning}:" );
+                    result.Warnings.ForEach( e => { results.AppendLine( e ); } );
+                }
+                context.Result = results.ToString();
+
+                if ( result.Errors.Any() )
+                {
+                    var error = "Error".PluralizeIf( result.Errors.Count > 1 );
+
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine();
-                    sb.Append( string.Format( "{0} Errors: ", errorCount ) );
-                    errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    sb.AppendLine( $"{result.Errors.Count()} {error}: " );
+                    result.Errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
                     context.Result += errors;
                     var exception = new Exception( errors );
@@ -166,9 +174,15 @@ namespace Rock.Jobs
             }
         }
 
-        private List<string> SendReminderEmail( Guid assessmentSystemEmailGuid, int PersonAliasId )
+        private SendMessageResult SendReminderEmail( Guid assessmentSystemEmailGuid, int PersonAliasId )
         {
             var person = new PersonAliasService( new RockContext() ).GetPerson( PersonAliasId );
+            var result = new SendMessageResult();
+            if ( !person.IsEmailActive )
+            {
+                result.Warnings.Add( $"{person.FullName.ToPossessive()} email address is inactive." );
+                return result;
+            }
 
             var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             mergeObjects.Add( "Person", person );
@@ -176,12 +190,18 @@ namespace Rock.Jobs
             var recipients = new List<RockEmailMessageRecipient>();
             recipients.Add( new RockEmailMessageRecipient( person, mergeObjects ) );
 
-            var errors = new List<string>();
             var emailMessage = new RockEmailMessage( assessmentSystemEmailGuid );
             emailMessage.SetRecipients( recipients );
-            emailMessage.Send( out errors );
 
-            return errors;
+            if ( emailMessage.Send( out var errors ) )
+            {
+                result.MessagesSent = 1;
+            }
+            else
+            {
+                result.Errors.AddRange( errors );
+            }
+            return result;
         }
     }
 }

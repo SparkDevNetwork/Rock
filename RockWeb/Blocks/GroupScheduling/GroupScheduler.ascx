@@ -39,7 +39,7 @@
                         This block is not supported on mobile.
                     </div>
                 </div>
-                <div class="row row-eq-height hidden-xs">
+                <div class="row row-eq-height w-100 hidden-xs">
                     <%-- Filter Options --%>
                     <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />

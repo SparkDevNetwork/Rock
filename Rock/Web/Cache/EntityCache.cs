@@ -101,7 +101,7 @@ namespace Rock.Web.Cache
                 var result = QueryDb( id, rockContext );
                 if ( result != null )
                 {
-                    IdFromGuidCache.UpdateCacheItem( result.Guid.ToString(), new IdFromGuidCache( id ), TimeSpan.MaxValue );
+                    IdFromGuidCache.UpdateCacheItem( result.Guid.ToString(), new IdFromGuidCache( id ) );
                 }
 
                 return result;
@@ -160,8 +160,8 @@ namespace Rock.Web.Cache
             cachedEntity = QueryDb( guid, rockContext );
             if ( cachedEntity != null )
             {
-                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( cachedEntity.Id ), TimeSpan.MaxValue );
-                UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity, TimeSpan.MaxValue );
+                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( cachedEntity.Id ) );
+                UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity );
             }
 
             return cachedEntity;
@@ -180,8 +180,8 @@ namespace Rock.Web.Cache
             var value = new T();
             value.SetFromEntity( entity );
 
-            IdFromGuidCache.UpdateCacheItem( entity.Guid.ToString(), new IdFromGuidCache( entity.Id ), TimeSpan.MaxValue );
-            UpdateCacheItem( entity.Id.ToString(), value, TimeSpan.MaxValue );
+            IdFromGuidCache.UpdateCacheItem( entity.Guid.ToString(), new IdFromGuidCache( entity.Id ) );
+            UpdateCacheItem( entity.Id.ToString(), value );
 
             return value;
         }

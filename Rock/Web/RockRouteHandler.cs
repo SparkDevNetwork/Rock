@@ -84,7 +84,7 @@ namespace Rock.Web
                     // Does the page ID exist on the requesting site
                     isSiteMatch = IsSiteMatch( site, pageId.AsIntegerOrNull() );
 
-                    if( site.EnableExclusiveRoutes && !isSiteMatch )
+                    if ( site.EnableExclusiveRoutes && !isSiteMatch )
                     {
                         // If the site has to match and does not then don't use the page ID. Set it to empty so the 404 can be returned.
                         pageId = string.Empty;
@@ -92,7 +92,7 @@ namespace Rock.Web
                     else if ( !isSiteMatch )
                     {
                         // This page belongs to another site, make sure it is allowed to be loaded.
-                        if ( IsPageExclusiveToAnotherSite( site, pageId.AsIntegerOrNull() ) )
+                        if ( IsPageExclusiveToAnotherSite( site, pageId.AsIntegerOrNull(), null ) )
                         {
                             // If the page has to match the site and does not then don't use the page ID. Set it to empty so the 404 can be returned.
                             pageId = string.Empty;
@@ -353,17 +353,35 @@ namespace Rock.Web
         /// </summary>
         /// <param name="requestingSite">The requesting site.</param>
         /// <param name="pageId">The page identifier.</param>
+        /// <param name="routeId">The route identifier. Provide this to check the route's IsGlobal property.</param>
         /// <returns>
         ///   <c>true</c> if [is page exclusive to another site] [the specified requesting site]; otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId )
+        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId, int? routeId )
         {
             if ( pageId != null )
             {
-                var pageSite = PageCache.Get( pageId.Value )?.Layout.Site;
-                return pageSite == null ? false : pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
+                var pageCache = PageCache.Get( pageId.Value );
+                var pageSite = pageCache?.Layout.Site;
+
+                if ( pageSite == null )
+                {
+                    return false;
+                }
+
+                bool isGlobalRoute = routeId != null ? pageCache.PageRoutes.Where( r => r.Id == routeId ).Select( r => r.IsGlobal ).FirstOrDefault() : false;
+
+                // If pageRoute.IsGlobal then return false, this page is usable by all sites.
+                if ( isGlobalRoute )
+                {
+                    return false;
+                }
+
+                // See if the requesting site is exclusive and if the requesting site is different from the page's site
+                return pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
             }
 
+            // The default value is not to be exclusive
             return false;
         }
 
@@ -526,7 +544,7 @@ namespace Rock.Web
             // Default to first site/page that is not Exclusive
             foreach ( var pageAndRouteId in pageAndRouteIds )
             {
-                if ( !IsPageExclusiveToAnotherSite( site, pageAndRouteId.PageId ) )
+                if ( !IsPageExclusiveToAnotherSite( site, pageAndRouteId.PageId, pageAndRouteId.RouteId ) )
                 {
                     // These are safe to assign as defaults
                     pageId = pageAndRouteId.PageId.ToStringSafe();

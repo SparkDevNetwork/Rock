@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -29,6 +30,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
+    [DisplayName( "Job Pulse" )]
+    [Description( "System job that allows Rock to monitor the jobs engine." )]
+
     [DisallowConcurrentExecution]
     public class JobPulse : IJob
     {

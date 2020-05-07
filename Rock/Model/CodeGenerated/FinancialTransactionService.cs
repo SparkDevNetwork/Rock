@@ -113,6 +113,7 @@ namespace Rock.Model
             target.ScheduledTransactionId = source.ScheduledTransactionId;
             target.SettledDate = source.SettledDate;
             target.SettledGroupId = source.SettledGroupId;
+            target.SettledSourceDate = source.SettledSourceDate;
             target.ShowAsAnonymous = source.ShowAsAnonymous;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.Status = source.Status;
@@ -121,6 +122,7 @@ namespace Rock.Model
             target.SundayDate = source.SundayDate;
             target.TransactionCode = source.TransactionCode;
             target.TransactionDateTime = source.TransactionDateTime;
+            target.TransactionSourceDate = source.TransactionSourceDate;
             target.TransactionTypeValueId = source.TransactionTypeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

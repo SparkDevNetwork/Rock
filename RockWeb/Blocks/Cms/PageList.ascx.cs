@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string SiteId = "siteId";
+            public const string SiteId = "SiteId";
         }
 
         #endregion

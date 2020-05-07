@@ -1,6 +1,8 @@
 @import "_rock-variables";
+@import "_rock-mixins";
 
 @import "rock-components/picker-date.less";
+@import "rock-components/checkbox.less";
 
 /*
   Used to style the check-in screens
@@ -497,6 +499,11 @@ input.namesearch {
     font-size: 22px;
     color: @text-color;
   }
+}
+
+.checkin-error {
+  padding: 0;
+  list-style-type: none;
 }
 
 // closed page

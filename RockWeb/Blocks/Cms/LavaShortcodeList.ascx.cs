@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddShortcut_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "lavaShortcodeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LavaShortcodeId", 0 );
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Cms
             RepeaterItem item = ( RepeaterItem ) btn.NamingContainer;
             HiddenField hfShortcodeId = ( HiddenField ) item.FindControl( "hfShortcodeId" );
 
-            NavigateToLinkedPage( AttributeKey.DetailPage, "lavaShortcodeId", hfShortcodeId.ValueAsInt() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LavaShortcodeId", hfShortcodeId.ValueAsInt() );
         }
 
         /// <summary>

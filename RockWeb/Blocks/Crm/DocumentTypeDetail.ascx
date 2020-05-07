@@ -11,6 +11,7 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="valDocumentTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />

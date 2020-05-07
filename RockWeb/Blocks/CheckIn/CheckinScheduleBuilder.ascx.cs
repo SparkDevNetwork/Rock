@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            _groupTypeId = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
+            _groupTypeId = this.PageParameter( "GroupTypeId" ).AsIntegerOrNull();
             btnCancel.Visible = _groupTypeId.HasValue;
 
             gGroupLocationSchedule.DataKeyNames = new string[] { "GroupLocationId" };

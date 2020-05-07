@@ -542,7 +542,6 @@ namespace Rock.DownhillCss
         private static string baseStylesMobile = @"
 /* Resets */
 ^label {
-    line-height: 1.15;
     font-size: default;
     color: ?color-text;
 }
@@ -574,6 +573,13 @@ namespace Rock.DownhillCss
     font-style: bold;
     font-size: default;
     line-height: 1.1;
+}
+
+.heading5, .heading6 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: small;
+    line-height: 1.25;
 }
 
 .link{
@@ -941,6 +947,57 @@ namespace Rock.DownhillCss
 
 .rounded-full {
     border-radius: 1000;
+}
+
+/* Toggle Button CSS */
+.toggle-button {
+    border-radius: 0;
+    border-color: ?color-primary;
+    background-color: initial;
+    padding: 9 12 12 12;
+}
+
+.toggle-button .title {
+    color: ?color-primary;
+    font-size: large;
+}
+
+.toggle-button .icon {
+    margin: 3 0 0 0;
+    color: ?color-primary;
+    font-size: large;
+}
+
+.toggle-button.checked {
+    background-color: ?color-primary;
+}
+
+.toggle-button.checked .title {
+    color: white;
+}
+
+.toggle-button.checked .icon {
+    color: white;
+
+/* Hero Block */
+.hero .hero-title {
+    font-size: 24;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.hero .hero-subtitle {
+    font-size: 18;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.tablet .hero .hero-title {
+    font-size: 36;
+}
+
+.tablet .hero .hero-subtitle {
+    font-size: 28;
 }
 
 ";

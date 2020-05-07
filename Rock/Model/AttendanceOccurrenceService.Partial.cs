@@ -674,6 +674,52 @@ namespace Rock.Model
             return attendanceOccurrences
                     .Where( a => a.Attendees.Any() || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) );
         }
+
+        /// <summary>
+        /// Where the attendance occurred at an active location (or the location is null).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> WhereHasActiveLocation( this IQueryable<AttendanceOccurrence> query )
+        {
+            // Null is allowed since the location relationship is not required
+            return query.Where( ao => ao.Location == null || ao.Location.IsActive );
+        }
+
+        /// <summary>
+        /// Where the attendance occurred with an active schedule (or the schedule is null).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> WhereHasActiveSchedule( this IQueryable<AttendanceOccurrence> query )
+        {
+            // Null is allowed since the schedule relationship is not required
+            return query.Where( ao => ao.Schedule == null || ao.Schedule.IsActive );
+        }
+
+        /// <summary>
+        /// Where the attendance occurred with an active group (or the group is null).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> WhereHasActiveGroup( this IQueryable<AttendanceOccurrence> query )
+        {
+            // Null is allowed since the group relationship is not required
+            return query.Where( ao => ao.Group == null || ao.Group.IsActive );
+        }
+
+        /// <summary>
+        /// Where the entities are active (deduced from the group, schedule, and location all being active or null).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> WhereDeducedIsActive( this IQueryable<AttendanceOccurrence> query )
+        {
+            return query
+                .WhereHasActiveGroup()
+                .WhereHasActiveLocation()
+                .WhereHasActiveSchedule();
+        }
     }
     #endregion
 }

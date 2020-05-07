@@ -169,6 +169,9 @@ namespace Rock.Client
     public partial class ContentChannel : ContentChannelEntity
     {
         /// <summary />
+        public ICollection<Category> Categories { get; set; }
+
+        /// <summary />
         public ICollection<ContentChannel> ChildContentChannels { get; set; }
 
         /// <summary />

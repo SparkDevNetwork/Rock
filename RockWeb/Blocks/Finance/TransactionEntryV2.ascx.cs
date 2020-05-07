@@ -540,7 +540,7 @@ mission. We are so grateful for your commitment.</p>
                     {% for scheduledTransactionDetail in scheduledTransaction.ScheduledTransactionDetails %}
                         <div class='account-details'>
                             <span class='scheduled-transaction-account control-label'>
-                                {{ scheduledTransactionDetail.Account.Name }}
+                                {{ scheduledTransactionDetail.Account.PublicName }}
                             </span>
                             <br />
                             <span class='scheduled-transaction-amount'>

@@ -64,9 +64,9 @@
         {% if content != null and content != '' %}
             {% if trimcopy != null and trimcopy != '' %}
                 {% assign length = content | Size %}
-                {{ content | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
+                {{ content | HtmlDecode | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
             {% else %}
-                {{ content }}
+                {{ content | HtmlDecode }}
             {% endif %}
         {% endif %}
 

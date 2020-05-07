@@ -35,6 +35,8 @@ namespace Rock.CheckIn
     {
         private static ConcurrentDictionary<int, object> _locks = new ConcurrentDictionary<int,object>();
 
+        #region Constructors
+
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskDevice" /> class from being created.
         /// </summary>
@@ -54,6 +56,27 @@ namespace Rock.CheckIn
             Device.LoadAttributes();
             KioskGroupTypes = new List<KioskGroupType>();
         }
+
+        #endregion Constructors
+
+        #region Lifespan
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. This is set to the time from now
+        /// until midnight for each cache item instance.
+        /// </summary>
+        public override TimeSpan? Lifespan
+        {
+            get
+            {
+                // Expire cache items at midnight
+                var now = RockDateTime.Now;
+                var timespan = now.Date.AddDays( 1 ).Subtract( now );
+                return timespan;
+            }
+        }
+
+        #endregion Lifespan
 
         /// <summary>
         /// Gets or sets the device.
@@ -240,9 +263,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskDevice Get( int id, List<int> configuredGroupTypes )
         {
-            var now = RockDateTime.Now;
-            var timespan = now.Date.AddDays( 1 ).Subtract( now );
-            return GetOrAddExisting( id, () => Create( id ), timespan );
+            return GetOrAddExisting( id, () => Create( id ) );
         }
 
         /// <summary>

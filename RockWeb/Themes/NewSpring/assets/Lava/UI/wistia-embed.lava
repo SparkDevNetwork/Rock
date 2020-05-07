@@ -1,34 +1,31 @@
-{% if id and id != empty %}
+{% if id and id != '' %}
 
-<div class="wistia_responsive_wrapper push-bottom xs-push-half-bottom" style="height:100%;left:0;width:100%;">
-    <div id="wistia_{{ id }}" class="wistia_embed rounded shadowed overflow-hidden">
-        <div class="wistia_swatch hidden" style="height:100%;left:0;opacity:0;overflow:hidden;position:absolute;top:0;transition:opacity 200ms;width:100%;">
-            <img src="https://fast.wistia.com/embed/medias/{{ id }}/swatch" style="filter:blur(5px);height:100%;object-fit:contain;width:100%;" alt="" onload="this.parentNode.style.opacity=1;" />
-        </div>
+<div class="position-relative">
+    <div class="rounded shadowed overflow-hidden" style="width:{{ width }};">
+        <div id="wistia_{{ id }}" class="wistia_embed">&nbsp;</div>
     </div>
 </div>
+
 {% assign personAliasId = CurrentPerson.PrimaryAliasId -%}
 {% if personAliasId == null -%}{% assign personAliasId = 0 -%}{% endif -%}
-{% if contentchannelitemid == null || contentchannelitemid == '' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
-{% if entitytypeid == null || entitytypeid == '' -%}{% assign entitytypeid = 0 -%}{% endif -%}
-{% if entityid == null || entityid == '' -%}{% assign entityid = 0 -%}{% endif -%}
+{% if contentchannelitemid == null || contentchannelitemid == ' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
+{% if entitytypeid == null || entitytypeid == ' -%}{% assign entitytypeid = 0 -%}{% endif -%}
+{% if entityid == null || entityid == ' -%}{% assign entityid = 0 -%}{% endif -%}
+
+{% assign currenthost = 'Global' | Page:'Url' | Url:'Host' %}
+{% if currenthost != 'newspring.cc' and currenthost != 'newspringnetwork.com' and currenthost != 'rock.newspring.cc' %}
+    {% assign donottrack = 'true' %}
+{% endif %}
+
 {% javascript id:'wistiaapi' url:'//fast.wistia.com/assets/external/E-v1.js' %}{% endjavascript %}
 <script charset="ISO-8859-1" src=""></script>
-<script> wistiaEmbed = Wistia.embed(
-    '{{ id }}',
-    {
-        trackEmail: {
-            'Version': 1,
-            'PersonAliasId': {{ personAliasId }},
-            'ContentChannelItemId': {{ contentchannelitemid }},
-            'EntityTypeId': {{ entitytypeid }},
-            'EntityId': {{ entityid }},
-            'Name': '{{ CurrentPerson.FullName | Replace: " ", "" }}'
-        },
-        playerPreference: 'html5',
+<script>
+    wistiaEmbed = Wistia.embed("{{ id }}", {
+        trackEmail: '{ "Version": 1, "PersonAliasId": {{ personAliasId }}, "ContentChannelItemId": {{ contentchannelitemid }}, "EntityTypeId": {{ entitytypeid }}, "EntityId": {{ entityid }}, "Name": "{{ CurrentPerson.FullName | Replace: ' ', '' }}" }',
+        playerPreference: "html5",
         videoFoam: true,
         autoPlay: {{ autoplay }},
-        {% if playercolor != '' -%} playerColor: '{{ color | Replace:"#","" }}', {% endif -%}
+        {% if color and color != '' -%}playerColor: '{{ color | Replace:'#','' }}',{% endif -%}
         playButton: {{ showplaybutton }},
         playbar: {{ showplaybar }},
         fullscreenButton: {{ showfullscreenbutton }},

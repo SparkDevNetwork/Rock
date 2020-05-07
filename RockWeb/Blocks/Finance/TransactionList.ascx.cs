@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Finance
 
             this._batchPageRoute = LinkedPageRoute( "BatchPage" );
 
-            int currentBatchId = PageParameter( "batchId" ).AsInteger();
+            int currentBatchId = PageParameter( "BatchId" ).AsInteger();
 
             if ( _canEdit )
             {
@@ -1010,7 +1010,7 @@ namespace RockWeb.Blocks.Finance
 
                             var pageRef = new Rock.Web.PageReference( RockPage.PageId );
                             pageRef.Parameters = new Dictionary<string, string>();
-                            pageRef.Parameters.Add( "batchid", newBatch.Id.ToString() );
+                            pageRef.Parameters.Add( "BatchId", newBatch.Id.ToString() );
                             string newBatchLink = string.Format( "<a href='{0}'>{1}</a>",
                                 pageRef.BuildUrl(), newBatch.Name );
 
@@ -1417,7 +1417,7 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( contextEntity is FinancialBatch )
                 {
-                    var batchId = PageParameter( "batchId" );
+                    var batchId = PageParameter( "BatchId" );
                     var batch = new FinancialBatchService( new RockContext() ).Get( int.Parse( batchId ) );
                     _batch = batch;
                     BindGrid();
@@ -2054,20 +2054,20 @@ namespace RockWeb.Blocks.Finance
             if ( _batch != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "batchId", _batch.Id.ToString() );
-                qryParams.Add( "transactionId", id.ToString() );
+                qryParams.Add( "BatchId", _batch.Id.ToString() );
+                qryParams.Add( "TransactionId", id.ToString() );
                 NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
             }
             else if ( _person != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "personId", _person.Id.ToString() );
-                qryParams.Add( "transactionId", id.ToString() );
+                qryParams.Add( "PersonId", _person.Id.ToString() );
+                qryParams.Add( "TransactionId", id.ToString() );
                 NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
             }
             else
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "transactionId", id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "TransactionId", id );
             }
         }
 

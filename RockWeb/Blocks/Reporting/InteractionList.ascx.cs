@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Reporting
                     pageNumber = PageParameter( "Page" ).AsInteger();
                 }
 
-                ShowList( PageParameter( "componentId" ).AsInteger() );
+                ShowList( PageParameter( "ComponentId" ).AsInteger() );
             }
         }
 
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Reporting
         {
             _personId = GetPersonId();
             ppPerson.Visible = !_personId.HasValue;
-            ShowList( PageParameter( "componentId" ).AsInteger() );
+            ShowList( PageParameter( "ComponentId" ).AsInteger() );
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Reporting
 
             pageNumber = 0;
 
-            ShowList( PageParameter( "componentId" ).AsInteger() );
+            ShowList( PageParameter( "ComponentId" ).AsInteger() );
         }
 
         #endregion
@@ -244,12 +244,12 @@ namespace RockWeb.Blocks.Reporting
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
-                    mergeFields.Add( "InteractionChannel", component.Channel );
+                    mergeFields.Add( "InteractionChannel", component.InteractionChannel );
                     mergeFields.Add( "InteractionComponent", component );
                     mergeFields.Add( "Interactions", interactions.ToList().Take( pageSize ) );
 
-                    lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhiteSpace() ?
-                        component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
+                    lContent.Text = component.InteractionChannel.InteractionListTemplate.IsNotNullOrWhiteSpace() ?
+                        component.InteractionChannel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
 
                     // set next button

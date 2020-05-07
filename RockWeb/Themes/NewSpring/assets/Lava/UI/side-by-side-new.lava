@@ -77,12 +77,10 @@
 
             {% if linkurl and linkurl != empty %}
                 <p>
-                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'primary xs-btn-block' buttonsize:'' ]}
 
                     {% if video != null and video != '' %}
-                        <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-                        <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-                        <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><a href="#" class="btn btn-primary">Play Video</a></span>
+                        {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'xs-btn-block xs-push-half-top' contentchannelitemid:'' entitytypeid:'' entityid:'' ]}
                     {% endif %}
                 </p>
             {% endif %}

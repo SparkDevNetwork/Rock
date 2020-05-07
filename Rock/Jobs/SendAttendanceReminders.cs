@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,9 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -35,6 +38,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process communications
     /// </summary>
+    [DisplayName( "Send Attendance Reminders" )]
+    [Description( "Sends a reminder to group leaders about entering attendance for their group meeting." )]
+
     [GroupTypeField( "Group Type", "The Group type to send attendance reminders for.", true, Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP, "", 0, AttributeKey.GroupType )]
 
     #region Job Attributes
@@ -134,6 +140,15 @@ namespace Rock.Jobs
                 HandleErrorMessages( context, errorMessages );
             }
 
+            var results = new StringBuilder();
+            if ( jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+            {
+                var warning = $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.";
+                results.AppendLine( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                jobPreferredCommunicationType = CommunicationType.Email;
+            }
+
             var occurrences = GetOccurenceDates( groupType, dataMap, rockContext );
 
             // Get the groups that have occurrences
@@ -142,14 +157,18 @@ namespace Rock.Jobs
             // Get the leaders of those groups
             var leaders = GetGroupLeaders( groupIds, rockContext );
 
-            var attendanceRemindersSent = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled, out var errors );
+            var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled );
 
-            context.Result = $"{attendanceRemindersSent} attendance reminders sent";
-            HandleErrorMessages( context, errors );
+            results.AppendLine( $"{attendanceRemindersResults.MessagesSent} attendance reminders sent." );
+
+            results.Append( FormatWarningMessages( attendanceRemindersResults.Warnings ) );
+
+            context.Result = results.ToString();
+            HandleErrorMessages( context, attendanceRemindersResults.Errors );
         }
 
         /// <summary>
-        /// Gets the occurence dates.
+        /// Gets the occurrence dates.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="dataMap">The data map.</param>
@@ -357,17 +376,14 @@ namespace Rock.Jobs
         /// <param name="systemCommunication">The system communication.</param>
         /// <param name="jobPreferredCommunicationType">Type of the job preferred communication.</param>
         /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
-        /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        private int SendAttendanceReminders( List<GroupMember> leaders,
+        private SendMessageResult SendAttendanceReminders( List<GroupMember> leaders,
                         Dictionary<int, List<DateTime>> occurrences,
                         SystemCommunication systemCommunication,
                         CommunicationType jobPreferredCommunicationType,
-                        bool isSmsEnabled,
-                        out List<string> errors )
+                        bool isSmsEnabled )
         {
-            errors = new List<string>();
-            var attendanceRemindersSent = 0;
+            var result = new SendMessageResult();
 
             // Loop through the leaders
             foreach ( var leader in leaders )
@@ -382,18 +398,14 @@ namespace Rock.Jobs
                 var leaderOccurrences = occurrences.Where( o => o.Key == leader.GroupId );
                 foreach ( var leaderOccurrence in leaderOccurrences )
                 {
-                    var errorResult = SendMessage( leader, leaderOccurrence.Value.Max(), mediumType, systemCommunication, isSmsEnabled );
-                    if ( errorResult.Count == 0 )
-                    {
-                        attendanceRemindersSent++;
-                    }
-                    else
-                    {
-                        errors.AddRange( errorResult );
-                    }
+                    var sendResult = SendMessage( leader, leaderOccurrence.Value.Max(), mediumType, systemCommunication, isSmsEnabled );
+
+                    result.MessagesSent += sendResult.MessagesSent;
+                    result.Errors.AddRange( sendResult.Errors );
+                    result.Warnings.AddRange( sendResult.Warnings );
                 }
             }
-            return attendanceRemindersSent;
+            return result;
         }
 
         /// <summary>
@@ -405,7 +417,7 @@ namespace Rock.Jobs
         /// <param name="systemCommunication">The system communication.</param>
         /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
         /// <returns></returns>
-        private List<string> SendMessage( GroupMember leader, DateTime groupOccurrence, int mediumType, SystemCommunication systemCommunication, bool isSmsEnabled )
+        private SendMessageResult SendMessage( GroupMember leader, DateTime groupOccurrence, int mediumType, SystemCommunication systemCommunication, bool isSmsEnabled )
         {
             var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, leader.Person );
             mergeObjects.Add( "Person", leader.Person );
@@ -413,32 +425,37 @@ namespace Rock.Jobs
             mergeObjects.Add( "Occurrence", groupOccurrence );
 
             RockMessage message = null;
+            var results = new SendMessageResult();
             switch ( mediumType )
             {
                 case ( int ) CommunicationType.SMS:
-                    message = CreateSmsMessage( leader, mergeObjects, systemCommunication, isSmsEnabled, out var smsErrors );
+                    message = CreateSmsMessage( leader, mergeObjects, systemCommunication, isSmsEnabled, out var smsWarnings );
                     if ( message == null )
                     {
-                        return smsErrors;
+                        results.Warnings.AddRange( smsWarnings );
+                        return results;
                     }
                     break;
                 default:
-                    message = CreateEmailMessage( leader, mergeObjects, systemCommunication, out var emailErrors );
+                    message = CreateEmailMessage( leader, mergeObjects, systemCommunication, out var emailWarnings );
                     if ( message == null )
                     {
-                        return emailErrors;
+                        results.Warnings.AddRange( emailWarnings );
+                        return results;
                     }
                     break;
             }
 
             if ( message.Send( out var errors ) )
             {
-                return new List<string>();
+                results.MessagesSent = 1;
             }
             else
             {
-                return errors;
+                results.Errors.AddRange( errors );
             }
+
+            return results;
         }
 
         /// <summary>
@@ -448,18 +465,18 @@ namespace Rock.Jobs
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="systemCommunication">The system communication.</param>
         /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
-        /// <param name="errorMessages">The error messages.</param>
+        /// <param name="warningMessages">The error messages.</param>
         /// <returns></returns>
-        private RockSMSMessage CreateSmsMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, bool isSmsEnabled, out List<string> errorMessages )
+        private RockSMSMessage CreateSmsMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, bool isSmsEnabled, out List<string> warningMessages )
         {
-            errorMessages = new List<string>();
+            warningMessages = new List<string>();
             var smsNumber = leader.Person.PhoneNumbers.GetFirstSmsNumber();
             var recipients = new List<RockMessageRecipient>();
 
             if ( string.IsNullOrWhiteSpace( smsNumber ) || !isSmsEnabled )
             {
-                string smsErrorMessage = GenerateSmsErrorMessage( isSmsEnabled, leader.Person );
-                errorMessages.Add( smsErrorMessage );
+                string smsErrorMessage = GenerateSmsWarningMessage( isSmsEnabled, leader.Person );
+                warningMessages.Add( smsErrorMessage );
                 return null;
             }
 
@@ -476,15 +493,17 @@ namespace Rock.Jobs
         /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        private string GenerateSmsErrorMessage( bool isSmsEnabled, Person person )
+        private string GenerateSmsWarningMessage( bool isSmsEnabled, Person person )
         {
-            var smsErrorMessage = $"No SMS number could be found for {person.FullName}.";
+            var smsWarningMessage = $"No SMS number could be found for {person.FullName}.";
             if ( !isSmsEnabled )
             {
-                smsErrorMessage = $"SMS is not enabled. {person.FullName} did not receive a notification.";
+                smsWarningMessage = $"SMS is not enabled. {person.FullName} did not receive a notification.";
             }
 
-            return smsErrorMessage;
+            RockLogger.Log.Warning( RockLogDomains.Jobs, smsWarningMessage );
+
+            return smsWarningMessage;
         }
 
         /// <summary>
@@ -493,15 +512,25 @@ namespace Rock.Jobs
         /// <param name="leader">The leader.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="systemCommunication">The system communication.</param>
-        /// <param name="errorMessages">The error messages.</param>
+        /// <param name="warningMessages">The error messages.</param>
         /// <returns></returns>
-        private RockEmailMessage CreateEmailMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, out List<string> errorMessages )
+        private RockEmailMessage CreateEmailMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, out List<string> warningMessages )
         {
-            errorMessages = new List<string>();
+            warningMessages = new List<string>();
 
             if ( string.IsNullOrWhiteSpace( leader.Person.Email ) )
             {
-                errorMessages.Add( $"{leader.Person.FullName} does not have an email address entered." );
+                var warning = $"{leader.Person.FullName} does not have an email address entered.";
+                warningMessages.Add( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                return null;
+            }
+
+            if ( !leader.Person.IsEmailActive )
+            {
+                var warning = $"{leader.Person.FullName.ToPossessive()} email address is inactive.";
+                warningMessages.Add( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
                 return null;
             }
 
@@ -515,6 +544,11 @@ namespace Rock.Jobs
             return message;
         }
 
+        private StringBuilder FormatWarningMessages( List<string> warnings )
+        {
+            return FormatMessages( warnings, "Warning" );
+        }
+
         /// <summary>
         /// Handles the error messages.
         /// </summary>
@@ -526,9 +560,7 @@ namespace Rock.Jobs
             {
                 StringBuilder sb = new StringBuilder( context.Result.ToString() );
 
-                sb.AppendLine( $"{errorMessages.Count} Errors: " );
-
-                errorMessages.ForEach( e => { sb.AppendLine( e ); } );
+                sb.Append( FormatMessages( errorMessages, "Error" ) );
 
                 var resultMessage = sb.ToString();
 
@@ -540,6 +572,20 @@ namespace Rock.Jobs
                 ExceptionLogService.LogException( exception, context2 );
                 throw exception;
             }
+        }
+
+        private StringBuilder FormatMessages( List<string> messages, string label )
+        {
+            StringBuilder sb = new StringBuilder();
+            if ( messages.Any() )
+            {
+                var pluralizedLabel = label.PluralizeIf( messages.Count > 1 );
+
+                sb.AppendLine( $"{messages.Count} {pluralizedLabel}:" );
+
+                messages.ForEach( w => { sb.AppendLine( w ); } );
+            }
+            return sb;
         }
     }
 }

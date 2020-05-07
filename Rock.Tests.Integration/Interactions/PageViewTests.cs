@@ -32,7 +32,7 @@ namespace Rock.Tests.Integration.Interactions
             }
 
             _allPages = PageCache.All();
-            DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+            DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
         }
 
         static Random rnd = new Random();
@@ -241,7 +241,7 @@ namespace Rock.Tests.Integration.Interactions
                     var testSite = SiteCache.Get( testPage.SiteId );
                     Stopwatch stopwatchCreate = Stopwatch.StartNew();
                     var pageViewTransaction = new InteractionTransaction(
-                        DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
+                        DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                         testSite,
                         testPage,
                         interactionTransactionOptions );

@@ -102,12 +102,9 @@ namespace Rockweb.Blocks.Crm
     natural. Since there are no right or wrong answers, just go with your instinct.
 </p>";
 
-        private const string ResultsMessageDefaultValue = @"
-<div class='row'>
-    <div class='col-md-12'>
-    <h2 class='h2'> Dominant Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+        private const string ResultsMessageDefaultValue = @"{% if DominantGifts != empty %}
+    <div>
+        <h2 class='h2'>Dominant Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
@@ -121,112 +118,106 @@ namespace Rockweb.Blocks.Crm
                     </tr>
                 </thead>
                 <tbody>
-                    {% if DominantGifts != empty %}
-                        {% for dominantGift in DominantGifts %}
-                            <tr>
-                                <td>
-                                    {{ dominantGift.Value }}
-                                </td>
-                                <td>
-                                    {{ dominantGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+                    {% for dominantGift in DominantGifts %}
                         <tr>
-                            <td colspan='2'>
-                                You did not have any Dominant Gifts
+                            <td>
+                                {{ dominantGift.Value }}
+                            </td>
+                            <td>
+                                {{ dominantGift.Description }}
                             </td>
                         </tr>
-                    {% endif %}
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div>
-
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Supportive Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+{% endif %}
+{% if SupportiveGifts != empty %}
+    <div>
+        <h2 class='h2'>Supportive Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
                     <tr>
-                    <th>
-                        Spiritual Gift
+                        <th>
+                            Spiritual Gift
                         </th>
                         <th>
-                        You are uniquely wired to:
+                            You are uniquely wired to:
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if SupportiveGifts != empty %}
-                        {% for supportiveGift in SupportiveGifts %}
-                            <tr>
-                                <td>
-                                    {{ supportiveGift.Value }}
-                                </td>
-                                <td>
-                                    {{ supportiveGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+                    {% for supportiveGift in SupportiveGifts %}
                         <tr>
-                            <td colspan='2'>
-                                You did not have any Supportive Gifts
+                            <td>
+                                {{ supportiveGift.Value }}
+                            </td>
+                            <td>
+                                {{ supportiveGift.Description }}
                             </td>
                         </tr>
-                    {% endif %}
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div?
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Other Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+{% endif %}
+{% if OtherGifts != empty %}
+    <div>
+        <h2 class='h2'>Other Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
                     <tr>
-                    <th>
-                        Spiritual Gift
+                        <th>
+                            Spiritual Gift
                         </th>
                         <th>
-                        You are uniquely wired to:
+                            You are uniquely wired to:
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if OtherGifts != empty %}
-                        {% for otherGift in OtherGifts %}
-                            <tr>
-                                <td>
-                                    {{ otherGift.Value }}
-                                </td>
-                                <td>
-                                    {{ otherGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+                    {% for otherGift in OtherGifts %}
                         <tr>
-                            <td colspan='2'>
-                                You did not have any Other Gifts
+                            <td>
+                                {{ otherGift.Value }}
+                            </td>
+                            <td>
+                                {{ otherGift.Description }}
                             </td>
                         </tr>
-                    {% endif %}
-            </tbody>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
-</div>";
+{% endif %}
+{% if GiftScores != null and GiftScores != empty %}
+    <!-- The following empty h2 element is to mantain vertical spacing between sections. -->
+    <h2 class='h2'></h2>
+    <div>
+        <p>
+            The following graph shows your spiritual gifts ranked from top to bottom.
+        </p>
+        <div class='panel panel-default'>
+            <div class='panel-heading'>
+                <h2 class='panel-title'><b>Ranked Gifts</b></h2>
+            </div>
+            <div class='panel-body'>
+                {[ chart type:'horizontalBar' xaxistype:'linearhorizontal0to100' ]}
+                    {% assign sortedScores = GiftScores | OrderBy:'Percentage desc,SpiritualGiftName' %}
+                    {% for score in sortedScores %}
+                        [[ dataitem label:'{{ score.SpiritualGiftName }}' value:'{{ score.Percentage }}' fillcolor:'#709AC7' ]]
+                        [[ enddataitem ]]
+                    {% endfor %}
+                {[ endchart ]}
+            </div>
+        </div>
+    </div>
+{% endif %}";
 
         #endregion AttributeDefaultValues
 
@@ -453,9 +444,9 @@ namespace Rockweb.Blocks.Crm
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
-                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
                 var resultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value );
+                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( resultData );
+                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -479,10 +470,29 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = new { Result = resultData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
+                assessment.AssessmentResultData = new SpiritualGiftsService.AssessmentResultData
+                {
+                    Result = resultData,
+                    ResultScores = result.SpiritualGiftScores,
+                    TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds
+                }.ToJson();
+
                 rockContext.SaveChanges();
 
-                ShowResult( result, assessment );
+                // Since we are rendering chart.js we have to register the script or reload the page.
+                if ( _assessmentId == 0 )
+                {
+                    var removeParams = new List<string>
+                    {
+                        PageParameterKey.AssessmentId
+                    };
+
+                    NavigateToCurrentPageReferenceWithRemove( removeParams );
+                }
+                else
+                {
+                    this.NavigateToCurrentPageReference();
+                }
             }
         }
 
@@ -618,7 +628,7 @@ namespace Rockweb.Blocks.Crm
             // If assessment is completed show the results
             if ( assessment.Status == AssessmentRequestStatus.Complete )
             {
-                SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson, assessment );
                 ShowResult( savedScores, assessment );
                 return;
             }
@@ -630,7 +640,7 @@ namespace Rockweb.Blocks.Crm
                     // If assessment is pending and the current person is not the one assigned the show previouslyCompletedAssessment results
                     if ( previouslyCompletedAssessment != null )
                     {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson, previouslyCompletedAssessment );
                         ShowResult( savedScores, previouslyCompletedAssessment, true );
                         return;
                     }
@@ -746,6 +756,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "DominantGifts", spiritualGifts.DefinedValues.Where( a => result.DominantGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
+                mergeFields.Add( "GiftScores", result.SpiritualGiftScores );
             }
 
             lResult.Text = GetAttributeValue( AttributeKey.ResultsMessage ).ResolveMergeFields( mergeFields );

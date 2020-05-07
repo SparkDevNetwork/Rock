@@ -88,8 +88,8 @@
 
         {[ modalShare ]}
 
-	</div><div class="col-md-8 col-sm-12 col-xs-12">
-        {[ wistiaEmbed id:'{{ Item.Video }}' color:'{{ backgroundColor }}' ]}
+	</div><div class="col-md-8 col-sm-12 col-xs-12 xs-push-half-bottom">
+        {[ wistiaEmbed id:'{{ Item.Video }}' color:'{{ backgroundColor }}' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
 	</div>
 </div>
 
