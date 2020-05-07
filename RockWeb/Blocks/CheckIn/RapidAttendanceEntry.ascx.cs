@@ -1534,6 +1534,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( GetAttributeValue( AttributeKey.ParentGroup ).AsGuid() != default( Guid ) )
                 {
+                    ddlGroup.Items.Clear();
                     var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuid();
                     var groups = new GroupService( rockContext )
                                 .Queryable()
