@@ -50,6 +50,7 @@ namespace Rock.Communication.Transport
     [TextField( "Domain", "The email domain (e.g. rocksolidchurchdemo.com).", true, "", "", 2, "Domain" )]
     [TextField( "API Key", "The Private API Key provided by Mailgun.", true, "", "", 3, "APIKey" )]
     [BooleanField( "Track Opens", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 4, "TrackOpens" )]
+    [BooleanField( "Replace Unsafe Sender", "Defaults to \"Yes\".  If set to \"No\" Mailgun will allow relaying email \"on behalf of\" regardless of the sender's domain.  The safe sender list will still be used for adding a \"Sender\" header.", true, "", 5 )]
     public class MailgunHttp : TransportComponent
     {
         /// <summary>
@@ -534,52 +535,58 @@ namespace Rock.Communication.Transport
             var safeDomainValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
             var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
-            // Check to make sure the From email domain is a safe sender, if so then we are done.
+            // Check to make sure the From email domain is a safe sender, if so then add the sender header.
             var fromParts = fromEmail.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
             if ( fromParts.Length == 2 && safeDomains.Contains( fromParts[1], StringComparer.OrdinalIgnoreCase ) )
             {
+                Parameter fromParam = restRequest.Parameters.Where( p => p.Name == "from" ).FirstOrDefault();
+                restRequest.AddParameter( "h:Sender", fromParam.Value );
                 return;
             }
 
-            // The sender domain is not considered safe so check all the recipients to see if they have a domain that does not requrie a safe sender
-            bool unsafeToDomain = false;
-
-            foreach ( var toEmailAddress in toEmailAddresses )
+            if ( GetAttributeValue( "ReplaceUnsafeSender" ).AsBoolean( true ) )
             {
-                bool safe = false;
-                var toParts = toEmailAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
-                if ( toParts.Length == 2 && safeDomains.Contains( toParts[1], StringComparer.OrdinalIgnoreCase ) )
-                {
-                    var domain = safeDomainValues.FirstOrDefault( dv => dv.Value.Equals( toParts[1], StringComparison.OrdinalIgnoreCase ) );
-                    safe = domain != null && domain.GetAttributeValue( "SafeToSendTo" ).AsBoolean();
-                }
 
-                if ( !safe )
-                {
-                    unsafeToDomain = true;
-                    break;
-                }
-            }
+                // The sender domain is not considered safe so check all the recipients to see if they have a domain that does not requrie a safe sender
+                bool unsafeToDomain = false;
 
-            if ( unsafeToDomain )
-            {
-                if ( !string.IsNullOrWhiteSpace( organizationEmail ) && !organizationEmail.Equals( fromEmail, StringComparison.OrdinalIgnoreCase ) )
+                foreach ( var toEmailAddress in toEmailAddresses )
                 {
-                    // update the from param to the organizationemail
-                    Parameter fromParam = restRequest.Parameters.Where( p => p.Name == "from" ).FirstOrDefault();
-                    if ( fromParam != null )
+                    bool safe = false;
+                    var toParts = toEmailAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( toParts.Length == 2 && safeDomains.Contains( toParts[1], StringComparer.OrdinalIgnoreCase ) )
                     {
-                        restRequest.Parameters.Remove( fromParam );
+                        var domain = safeDomainValues.FirstOrDefault( dv => dv.Value.Equals( toParts[1], StringComparison.OrdinalIgnoreCase ) );
+                        safe = domain != null && domain.GetAttributeValue( "SafeToSendTo" ).AsBoolean();
                     }
 
-                    restRequest.AddParameter( "from", organizationEmail );
-
-                    Parameter replyParam = restRequest.Parameters.Where( p => p.Name == "h:Reply-To" && p.Value.ToString() == organizationEmail ).FirstOrDefault();
-
-                    // Check the list of reply to address and add the org one if needed
-                    if ( replyParam == null )
+                    if ( !safe )
                     {
-                        restRequest.AddParameter( "h:Reply-To", organizationEmail );
+                        unsafeToDomain = true;
+                        break;
+                    }
+                }
+
+                if ( unsafeToDomain )
+                {
+                    if ( !string.IsNullOrWhiteSpace( organizationEmail ) && !organizationEmail.Equals( fromEmail, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        // update the from param to the organizationemail
+                        Parameter fromParam = restRequest.Parameters.Where( p => p.Name == "from" ).FirstOrDefault();
+                        if ( fromParam != null )
+                        {
+                            restRequest.Parameters.Remove( fromParam );
+                        }
+
+                        restRequest.AddParameter( "from", organizationEmail );
+
+                        Parameter replyParam = restRequest.Parameters.Where( p => p.Name == "h:Reply-To" && p.Value.ToString() == organizationEmail ).FirstOrDefault();
+
+                        // Check the list of reply to address and add the org one if needed
+                        if ( replyParam == null )
+                        {
+                            restRequest.AddParameter( "h:Reply-To", organizationEmail );
+                        }
                     }
                 }
             }

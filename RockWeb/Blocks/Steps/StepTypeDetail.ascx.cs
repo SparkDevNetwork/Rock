@@ -177,6 +177,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             InitializeChartScripts();
+            InitializeChartFilter();
 
             dvpAutocomplete.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpAutocomplete.CategoryGuids = GetAttributeValue( AttributeKey.DataViewCategories ).SplitDelimitedValues().AsGuidList();
@@ -562,6 +563,8 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            InitializeChartFilter();
+
             var currentstepType = GetStepType();
 
             if ( currentstepType != null )

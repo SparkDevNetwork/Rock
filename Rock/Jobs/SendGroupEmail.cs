@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -33,6 +34,9 @@ namespace Rock.Jobs
     /// <summary>
     /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group.
     /// </summary>
+    [DisplayName( "Send Group Email" )]
+    [Description( "This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group." )]
+
     [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
     [GroupField( "Group", "The group the email will be sent to." )]
     [BooleanField( "Send To Descendant Groups", "Determines if the email will be sent to descendant groups." )]

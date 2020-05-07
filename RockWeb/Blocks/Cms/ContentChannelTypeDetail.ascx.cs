@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "typeId" ).AsInteger() );
+                ShowDetail( PageParameter( "TypeId" ).AsInteger() );
             }
             else
             {
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? contentTypeId = PageParameter( pageReference, "typeId" ).AsIntegerOrNull();
+            int? contentTypeId = PageParameter( pageReference, "TypeId" ).AsIntegerOrNull();
             if ( contentTypeId != null )
             {
                 ContentChannelType contentType = new ContentChannelTypeService( new RockContext() ).Get( contentTypeId.Value );

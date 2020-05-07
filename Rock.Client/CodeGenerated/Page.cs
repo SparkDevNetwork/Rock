@@ -92,6 +92,9 @@ namespace Rock.Client
         public int LayoutId { get; set; }
 
         /// <summary />
+        public double? MedianPageLoadTime { get; set; }
+
+        /// <summary />
         public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary />
@@ -184,6 +187,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.KeyWords = source.KeyWords;
             this.LayoutId = source.LayoutId;
+            this.MedianPageLoadTime = source.MedianPageLoadTime;
             this.MenuDisplayChildPages = source.MenuDisplayChildPages;
             this.MenuDisplayDescription = source.MenuDisplayDescription;
             this.MenuDisplayIcon = source.MenuDisplayIcon;

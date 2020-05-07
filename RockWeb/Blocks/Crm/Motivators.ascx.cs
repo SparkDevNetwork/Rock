@@ -156,36 +156,36 @@ namespace Rockweb.Blocks.Crm
 </p>";
 
         private const string ResultMessageDefaultValue = @"<p>
-   {{ Person.NickName }}, here are your motivators results. We’ve listed your Top 5 Motivators, your
-   growth propensity score, along with a complete listing of all 22 motivators and your results
-   for each.
+    {{ Person.NickName }}, here are your motivators results. We’ve listed your Top 5 Motivators, your
+    growth propensity score, along with a complete listing of all 22 motivators and your results
+    for each.
 </p>
 <h2>Growth Propensity</h2>
 <p>
     Growth Propensity measures your perceived mindset on a continuum between a growth mindset and
     fixed mindset. These are two ends of a spectrum about how we view our own capacity and potential.
 </p>
-<div style=""margin: 0;max-width:280px"">
-{[ chart type:'gauge' backgroundcolor:'#f13c1f,#f0e3ba,#0e9445,#3f56a1' gaugelimits:'0,2,17,85,100' chartheight:'150px']}
-    [[ dataitem value:'{{ GrowthScore }}' fillcolor:'#484848' ]] [[ enddataitem ]]
-{[ endchart ]}
+<div style='margin: 0;max-width:280px'>
+    {[ chart type:'gauge' backgroundcolor:'#f13c1f,#f0e3ba,#0e9445,#3f56a1' gaugelimits:'0,2,17,85,100' chartheight:'150px']}
+        [[ dataitem value:'{{ GrowthScore }}' fillcolor:'#484848' ]] [[ enddataitem ]]
+    {[ endchart ]}
 </div>
 <h2>Individual Motivators</h2>
 <p>
     There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
 </p>
-<!--  Theme Chart -->
-<div class=""panel panel-default"">
-    <div class=""panel-heading"">
-    <h2 class=""panel-title""><b>Composite Score</b></h2>
+<!-- Theme Chart -->
+<div class='panel panel-default'>
+    <div class='panel-heading'>
+        <h2 class='panel-title'><b>Composite Score</b></h2>
     </div>
-    <div class=""panel-body"">
-    {[chart type:'horizontalBar' chartheight:'200px' ]}
-    {% for motivatorThemeScore in MotivatorThemeScores %}
-        [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
-        [[enddataitem]]
-    {% endfor %}
-    {[endchart]}
+    <div class='panel-body'>
+        {[chart type:'horizontalBar' chartheight:'200px' xaxistype:'linearhorizontal0to100' ]}
+            {% for motivatorThemeScore in MotivatorThemeScores %}
+                [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
+                [[enddataitem]]
+            {% endfor %}
+        {[endchart]}
     </div>
 </div>
 <p>
@@ -201,25 +201,24 @@ namespace Rockweb.Blocks.Crm
     </p>
 {% endfor %}
 <p>
-   The following graph shows your motivators ranked from top to bottom.
+    The following graph shows your motivators ranked from top to bottom.
 </p>
-  <div class=""panel panel-default"">
-    <div class=""panel-heading"">
-      <h2 class=""panel-title""><b>Ranked Motivators</b></h2>
+<div class='panel panel-default'>
+    <div class='panel-heading'>
+        <h2 class='panel-title'><b>Ranked Motivators</b></h2>
     </div>
-    <div class=""panel-body"">
-      {[ chart type:'horizontalBar' ]}
-        {% for motivatorScore in MotivatorScores %}
-        {% assign theme = motivatorScore.DefinedValue | Attribute:'Theme' %}
-            {% if theme and theme != empty %}
-                [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]]
-                [[enddataitem]]
-            {% endif %}
-        {% endfor %}
+    <div class='panel-body'>
+        {[ chart type:'horizontalBar' xaxistype:'linearhorizontal0to100' ]}
+            {% for motivatorScore in MotivatorScores %}
+                {% assign theme = motivatorScore.DefinedValue | Attribute:'Theme' %}
+                {% if theme and theme != empty %}
+                    [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]]
+                    [[enddataitem]]
+                {% endif %}
+            {% endfor %}
         {[endchart]}
     </div>
-  </div>
-";
+</div>";
 
         #endregion Attribute Default values
 

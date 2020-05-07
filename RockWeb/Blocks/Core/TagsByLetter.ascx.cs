@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Core
                     foreach (TagSummary tag in letterItem.Value)
                     {
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
-                        queryString.Add("tagId", tag.Id.ToString());
+                        queryString.Add("TagId", tag.Id.ToString());
                         var detailPageUrl = LinkedPageUrl("DetailPage", queryString);
 
                         tagOutput.Append(string.Format("<a href='{0}'><span class='tag'>{1} <small>({2})</small></span></a>", detailPageUrl, tag.Name, tag.Count));

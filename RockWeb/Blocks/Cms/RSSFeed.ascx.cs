@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string ArticlePage = "articlepage";
+            public const string ArticlePage = "ArticlePage";
         }
 
         #endregion Page Parameter Keys

@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "scheduleId", 0 );
+            NavigateToLinkedPage( "DetailPage", "ScheduleId", 0 );
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "scheduleId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "ScheduleId", e.RowKeyId );
         }
 
         /// <summary>

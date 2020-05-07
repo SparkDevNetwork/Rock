@@ -55,6 +55,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool HideWhenNoneRemaining { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
             this.FeeType = source.FeeType;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HideWhenNoneRemaining = source.HideWhenNoneRemaining;
             this.IsActive = source.IsActive;
             this.IsRequired = source.IsRequired;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

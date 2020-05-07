@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -27,10 +28,12 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job is used to convert a history record's Summary to the actual fields that were added in v8. Once all the values have been 
-    /// converted, this job will delete itself.
+    /// This job is used to convert a history record's Summary to the actual fields that were added in v8. Once all the values have been converted, this job will delete itself.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Migrate History Summary Data" )]
+    [Description( "This job is used to convert a history record's Summary to the actual fields that were added in v8. Once all the values have been converted, this job will delete itself." )]
+
     [DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of history records to process on each run of this job.", false, 500000, "", 0, "HowMany" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]

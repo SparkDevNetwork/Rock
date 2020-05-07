@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string FeedItemId = "feedItemId";
+            public const string FeedItemId = "FeedItemId";
         }
 
         #endregion Page Parameter Keys

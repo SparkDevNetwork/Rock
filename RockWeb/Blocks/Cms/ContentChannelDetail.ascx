@@ -20,6 +20,7 @@
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
                 <div class="panel-labels">
+                    <asp:Literal ID="lCategories" runat="server" />
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
                 </div>
             </div>
@@ -51,6 +52,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlChannelType" runat="server" Label="Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlChannelType_SelectedIndexChanged" />
+                            <Rock:CategoryPicker ID="cpCategories" runat="server" Label="Categories" AllowMultiSelect="true" EntityTypeName="Rock.Model.ContentChannel"/>
                             <Rock:RockControlWrapper ID="rcContentChannels" runat="server" Label="Child Content Channels"
                                 Help="The types of content channel items that can be added as children to items of this type. This is used to define the item hierarchy. To allow an unlimited hierarchy add this type as an allowed child content channel type.">
                                 <div class="grid">

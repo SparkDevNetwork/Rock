@@ -118,7 +118,9 @@ namespace Rock.Utility
                 Person fromPerson;
                 using ( var rockContext = new RockContext() )
                 {
-                    fromPerson = GetPerson( fromPhone, rockContext );
+                    var personService = new PersonService( rockContext );
+                    fromPerson = personService.GetPersonFromMobilePhoneNumber( fromPhone, false );
+
                     LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
                 }
                 // once we find one match stop processing
@@ -221,72 +223,6 @@ namespace Rock.Utility
                 var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
                 response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : string.Empty;
             }
-        }
-
-        /// <summary>
-        /// Gets first person associated with a specific phone number. If there is more 
-        /// than one person, the oldest adult will be returned first. If no adults, the
-        /// oldest child.
-        /// </summary>
-        /// <param name="fromPhone">From phone.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private static Person GetPerson( string fromPhone, RockContext rockContext )
-        {
-            Person fromPerson = null;
-
-            var personService = new PersonService( rockContext );
-            var phoneNumberService = new PhoneNumberService( rockContext );
-
-            var phoneNumber = fromPhone.Replace( "+", "" );
-
-            // Get the person ids for people who's Mobile number matches the received From number
-            var mobilePhoneType = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-            var peopleWithMobileNumber = phoneNumberService
-                .Queryable().AsNoTracking()
-                .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )
-                .Select( n => new
-                {
-                    n.PersonId,
-                    n.NumberTypeValueId
-                } )
-                // Query the database using only the number, to ensure index is used and only returns minimal data
-                .ToList()
-                // then filter by type in memory
-                .Where( v => v.NumberTypeValueId == mobilePhoneType.Id )
-                .Select( v => v.PersonId )
-                .ToList();
-
-            // If there were any people found, find the first person (adults before children, and then by age)
-            if ( peopleWithMobileNumber.Any() )
-            {
-                fromPerson = personService.Queryable()
-                    .Where( p => peopleWithMobileNumber.Contains( p.Id ) )
-                    .OrderBy( p => p.AgeClassification )
-                    .ThenBy( p => p.BirthDate ?? DateTime.MinValue )
-                    .FirstOrDefault();
-            }
-
-            // If we have a person, return it
-            if ( fromPerson != null ) return fromPerson;
-
-            // Otherwise, See if a person matches by any other type of phone (other than mobile)
-            var peopleWithAnyNumber = phoneNumberService
-                .Queryable().AsNoTracking()
-                .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )
-                .Select( n => n.PersonId )
-                .ToList();
-
-            if ( peopleWithAnyNumber.Any() )
-            {
-                fromPerson = personService.Queryable()
-                    .Where( p => peopleWithAnyNumber.Contains( p.Id ) )
-                    .OrderBy( p => p.AgeClassification )
-                    .ThenBy( p => p.BirthDate ?? DateTime.MinValue )
-                    .FirstOrDefault();
-            }
-
-            return fromPerson;
         }
     }
 }

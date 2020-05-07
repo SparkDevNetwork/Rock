@@ -283,7 +283,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             if ( group.Schedule == null )
             {
-                return new List<DateTime>();
+                return null;
             }
 
             if ( group.Schedule.ScheduleType == ScheduleType.Weekly )
@@ -404,9 +404,23 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !date.HasValue || ( !AllowAnyDateSelection && !dates.Contains( date.Value ) ) )
+
+                if ( !AllowAnyDateSelection && dates != null )
                 {
-                    date = dates.Where( a => a <= DateTime.Now.Date ).LastOrDefault();
+                    if ( !date.HasValue || !dates.Contains( date.Value ) )
+                    {
+                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                    }
+                }
+
+                if ( !date.HasValue )
+                {
+                    if ( dates != null )
+                    {
+                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                    }
+
+                    date = date ?? RockDateTime.Now.Date;
                 }
 
                 var occurrence = GetOccurrence( rockContext, group, date ?? DateTime.MinValue, false );
@@ -504,7 +518,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 SaveAttendanceData( rockContext, group, date, new List<Attendee>(), didNotMeet );
 
-                return ActionOk( GetGroupData( groupId, date ) );
+                return GetGroupData( groupId, date );
             }
         }
 

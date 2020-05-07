@@ -55,9 +55,14 @@ namespace RockWeb.Blocks.Reporting
           <dl><dt>Engagement Strength</dt><dd>{{ InteractionChannel.EngagementStrength }}<dd/></dl>
        </div>
     {% endif %}
-    {% if InteractionChannel.RetentionDuration != '' %}
+    {% if InteractionChannel.RetentionDuration != null %}
         <div class='col-md-6'>
             <dl><dt>Retention Duration</dt><dd>{{ InteractionChannel.RetentionDuration }}<dd/></dl>
+        </div>
+    {% endif %}
+    {% if InteractionChannel.ComponentCacheDuration != null %}
+        <div class='col-md-6'>
+            <dl><dt>Component Cache Duration</dt><dd>{{ InteractionChannel.ComponentCacheDuration }}<dd/></dl>
         </div>
     {% endif %}
 </div>
@@ -190,6 +195,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 _channel.Name = tbName.Text;
                 _channel.RetentionDuration = nbRetentionDuration.Text.AsIntegerOrNull();
+                _channel.ComponentCacheDuration = nbComponentCacheDuration.Text.AsIntegerOrNull();
                 _channel.EngagementStrength = nbEngagementStrength.Text.AsIntegerOrNull();
                 _channel.ChannelListTemplate = ceChannelList.Text;
                 _channel.ChannelDetailTemplate = ceChannelDetail.Text;
@@ -243,6 +249,7 @@ namespace RockWeb.Blocks.Reporting
                 tbName.Text = _channel.Name;
                 cbIsActive.Checked = _channel.IsActive;
                 nbRetentionDuration.Text = _channel.RetentionDuration.ToString();
+                nbComponentCacheDuration.Text = _channel.ComponentCacheDuration.ToString();
                 nbEngagementStrength.Text = _channel.EngagementStrength.ToStringSafe();
                 ceChannelList.Text = _channel.ChannelListTemplate;
                 ceChannelDetail.Text = _channel.ChannelDetailTemplate;

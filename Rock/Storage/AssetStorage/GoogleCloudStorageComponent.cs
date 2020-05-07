@@ -44,7 +44,7 @@ namespace Rock.Storage.AssetStorage
         Key = AttributeKey.BucketName )]
 
     [EncryptedTextField( "Service Account JSON Key",
-        Description = "The Service Account key JSON file contents that is used to access Google Cloud Storage. See https://console.cloud.google.com/iam-admin/serviceaccounts",
+        Description = "The Service Account key JSON file contents that is used to access Google Cloud Storage. See https://console.cloud.google.com/iam-admin/serviceaccounts to create a service account and its key. Paste the entire contents of the file here.",
         IsRequired = true,
         Order = 2,
         Key = AttributeKey.ServiceAccountKey )]

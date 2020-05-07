@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Cms
 
             nbErrorMessage.Visible = false;
 
-            var pageRouteId = PageParameter( "pageRouteId" ).AsInteger();
+            var pageRouteId = PageParameter( "PageRouteId" ).AsInteger();
 
             if ( !Page.IsPostBack )
             {
@@ -112,6 +112,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             pageRoute.Route = tbRoute.Text.Trim();
+            pageRoute.IsGlobal = cbIsGlobal.Checked;
+
             int selectedPageId = int.Parse( ppPage.SelectedValue );
             pageRoute.PageId = selectedPageId;
 
@@ -162,7 +164,9 @@ namespace RockWeb.Blocks.Cms
                         pageRoute.SaveAttributeValues( rockContext );
                     }
                 } );
-                
+
+                PageCache.FlushPage( pageCache.Id );
+
                 Rock.Web.RockRouteHandler.ReregisterRoutes();
                 NavigateToParentPage();
             }
@@ -223,32 +227,33 @@ namespace RockWeb.Blocks.Cms
             ShowSite();
 
             tbRoute.Text = pageRoute.Route;
+            cbIsGlobal.Checked = pageRoute.IsGlobal;
 
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
+            // render UI based on Authorized and IsSystem. Do IsSystem check first so the IsUserAuthorized check can overwrite the settings.
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PageRoute.FriendlyTypeName );
-            }
 
             if ( pageRoute.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( PageRoute.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( PageRoute.FriendlyTypeName );
+
+                ppPage.Enabled = false;
+                tbRoute.ReadOnly = true;
+                cbIsGlobal.Enabled = true;
+                btnSave.Visible = true;
             }
 
-            if ( readOnly )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PageRoute.FriendlyTypeName );
+
                 lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
-            }
 
-            ppPage.Enabled = !readOnly;
-            tbRoute.ReadOnly = readOnly;
-            btnSave.Visible = !readOnly;
+                ppPage.Enabled = false;
+                tbRoute.ReadOnly = true;
+                cbIsGlobal.Enabled = false;
+                btnSave.Visible = false;
+            }
         }
 
         private void ShowSite()

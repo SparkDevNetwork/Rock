@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPayments_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.TransactionDetailPage, "transactionId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.TransactionDetailPage, "TransactionId", e.RowKeyId );
         }
 
         /// <summary>

@@ -224,5 +224,14 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION = "4648196E-CEB8-4D76-8F27-273EBBC35A08";
 
         #endregion
+
+        #region Metric Categories
+
+        /// <summary>
+        /// Hosting Metrics Metric Category Guid
+        /// </summary>
+        public const string METRIC_HOSTING_METRICS = "370FBBD8-7766-4B3F-81A9-F13EE819A832";
+
+        #endregion
     }
 }

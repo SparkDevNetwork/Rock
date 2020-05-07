@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -31,6 +32,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the signature documents
     /// </summary>
+    [DisplayName( "Process Signature Documents" )]
+    [Description( "Sends any digital signature invites that need to be sent for groups that require a signed document." )]
+
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
     [IntegerField( "Check For Signature Days", "Number of days after document was last sent to check for signature", false, 30, "", 2 )]

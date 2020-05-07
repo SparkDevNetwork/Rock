@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
-using Rock.Tests.Integration.Crm.Steps;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter
 {
@@ -45,13 +45,13 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var settingsSource = new StepDataViewFilter.FilterSettings();
 
-            settingsSource.DataViewGuid = StepsTests.Constants.ProgramSacramentsGuid;
+            settingsSource.DataViewGuid = TestGuids.Steps.ProgramSacramentsGuid;
 
             var settingsString = settingsSource.ToSelectionString();
 
             var settingsTarget = new StepDataViewFilter.FilterSettings( settingsString );
 
-            Assert.AreEqual( StepsTests.Constants.ProgramSacramentsGuid, settingsTarget.DataViewGuid );
+            Assert.That.AreEqual( TestGuids.Steps.ProgramSacramentsGuid, settingsTarget.DataViewGuid );
         }
 
         /// <summary>
@@ -65,14 +65,14 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepDataViewFilter.FilterSettings();
 
             // Filter for DataView="Steps Completed in 2001";
-            settings.DataViewGuid = StepsTests.Constants.DataViewStepsCompleted2001Guid;
+            settings.DataViewGuid = TestGuids.Steps.DataViewStepsCompleted2001Guid;
 
             var personQuery = GetPersonQueryWithStepDataViewFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Baptised in 2001.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>
@@ -86,14 +86,14 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepDataViewFilter.FilterSettings();
 
             // Filter for DataView="Steps Completed in 2001";
-            settings.DataViewGuid = StepsTests.Constants.DataViewStepsCompleted2001Guid;
+            settings.DataViewGuid = TestGuids.Steps.DataViewStepsCompleted2001Guid;
 
             var personQuery = GetPersonQueryWithStepDataViewFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Ben Jones not found - Alpha Attendee in 2015.
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.BenJonesPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
         }
 
         /// <summary>

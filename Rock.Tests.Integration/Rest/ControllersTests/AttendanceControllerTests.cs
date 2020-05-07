@@ -1,13 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Rock.Model;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Rest.Controllers;
-using System.Net;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests
 {
@@ -29,14 +23,14 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             int groupId = 111;
             int locationId = 14;
             int scheduleId = 19;
-            DateTime occurrenceDate = new DateTime(2019, 8, 12);
+            DateTime occurrenceDate = new DateTime( 2019, 8, 12 );
             int? personId = 4;
             int? personAliasId = null;
 
             var attendancesController = new AttendancesController();
 
             var attendance = attendancesController.AddAttendance( groupId, locationId, scheduleId, occurrenceDate, personId, personAliasId );
-            Assert.IsNotNull( attendance );
+            Assert.That.IsNotNull( attendance );
         }
 
         [TestMethod]
@@ -45,7 +39,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             int groupId = 111;
             int locationId = 14;
             int scheduleId = 19;
-            DateTime occurrenceDate = new DateTime(2019, 8, 5);
+            DateTime occurrenceDate = new DateTime( 2019, 8, 5 );
             int? personId = null;
             int? personAliasId = null;
 
@@ -63,7 +57,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
             finally
             {
-                Assert.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
+                Assert.That.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
             }
         }
 

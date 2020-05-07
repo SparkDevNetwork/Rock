@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -32,6 +33,9 @@ namespace Rock.Jobs
     /// Job to calculate metric values for metrics that are based on a schedule and have a database or sql datasource type
     /// Only Metrics that need to be populated (based on their Schedule) will be processed
     /// </summary>
+    [DisplayName( "Calculate Metrics" )]
+    [Description( "A job that processes any metrics with schedules." )]
+
     [DisallowConcurrentExecution]
     public class CalculateMetrics : IJob
     {

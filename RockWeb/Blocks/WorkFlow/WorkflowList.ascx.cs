@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Manage( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "WorkflowId", e.RowKeyId );
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+                    NavigateToLinkedPage( "DetailPage", "WorkflowId", e.RowKeyId );
                 }
             }
         }

@@ -107,13 +107,13 @@
             {% if label and label != empty %}
                 <p><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
             {% endif %}
-            
+
             <h1 class="h2 xs-h3 push-half-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
 
             {% if parentItem and parentItem != empty %}
                 <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if parentPermalink != empty %}<a href="{{ parentPermalink }}">{% endif %}{{ parentItem.Title }}{% if parentPermalink != empty %}</a>{% endif %}</small>
             {% endif %}
-            
+
             {% if subtitle != empty %}
                 <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
             {% endif %}
@@ -123,13 +123,15 @@
             {% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}
                 <p class="stronger">{{ communicatorNames | Trim }}</p>
             {% endif %}
-            
+
             {% if imageUrl and imageUrl != empty %}
                 <div class="ratio-landscape background-cover push-bottom rounded" style="background-image:url('{{ imageUrl }}');"></div>
             {% endif %}
 
-            {% assign scripturesguid = Item | Attribute:'Scriptures','RawValue' %}
-            {% capture scripturereferences %}{[ scriptureReferences guid:'{{ scripturesguid }}' ]}{% endcapture %}
+            {% capture scripturesString %}{{ item | Attribute:'Scriptures' }}{% endcapture %}
+            {% assign scripturesObject = scripturesString | FromJSON %}
+
+            {% capture scripturereferences %}{% for scripture in scripturesObject.Attributes %}{{ scripture.Book }} {{ scripture.Reference }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
             {% assign scripturereferences = scripturereferences | Trim %}
 
             {%  if scripturereferences and scripturereferences != empty %}
@@ -138,7 +140,7 @@
                     <p class="lead">{{ scripturereferences }}</p>
                 </div>
             {% endif %}
-            
+
             {% if video != empty %}
                 <p id="video" class="text-center">
                     {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
@@ -147,7 +149,7 @@
             {% endif %}
 
             {{ Item.Content }}
-            
+
             <div class="push-bottom">
                 <div class="row row-condensed">
                     <div class="col-md-12 col-sm-12 col-xs-12">
@@ -181,7 +183,7 @@
 
 
 
-            
+
             {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
             {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
 
@@ -197,9 +199,9 @@
             {%- endcapture -%}
             {% assign sharehashtag = '' %}
 
-            
+
             {[ modalShare ]}
-            
+
             {% if isDateVisible == 'True' %}
                 {% if tags and tags != empty %}
                     <div class="row">

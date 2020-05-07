@@ -252,15 +252,7 @@ namespace Rock.Model
                 case PersistedDatasetScriptType.Lava:
                     {
                         var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
-                        var output = string.Empty;
-                        if ( this.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
-                        {
-                            output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
-                        }
-                        else
-                        {
-                            output = this.BuildScript.ResolveMergeFields( mergeFields );
-                        }
+                        var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
                         
                         // Ensure resulting output is valid for its defined format,
                         // otherwise log the problem and throw an exception.
