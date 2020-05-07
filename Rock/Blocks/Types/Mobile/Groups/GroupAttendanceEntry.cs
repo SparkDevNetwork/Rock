@@ -236,7 +236,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             return $@"<StackLayout Orientation=""Horizontal"" Spacing=""20"">
     <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"">
-        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""heading1"" />
+        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""h2"" />
         <Label Text=""{ group.Members.Count } members"" />
     </StackLayout>
     <Rock:Icon IconClass=""user-check"" FontSize=""24"" />

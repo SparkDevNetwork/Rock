@@ -1519,6 +1519,7 @@ namespace RockWeb.Blocks.CheckIn
             ddlGroup.Visible = false;
             gpGroups.Visible = false;
 
+            var isDefaultSelected = false;
             if ( GetAttributeValue( AttributeKey.AttendanceGroup ).AsGuid() != default( Guid ) )
             {
                 ddlGroup.Items.Clear();
@@ -1527,13 +1528,13 @@ namespace RockWeb.Blocks.CheckIn
                 ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                 ddlGroup.Visible = true;
                 ddlGroup.SelectedIndex = 0;
+                isDefaultSelected = true;
             }
             else
             {
-
                 if ( GetAttributeValue( AttributeKey.ParentGroup ).AsGuid() != default( Guid ) )
                 {
-
+                    ddlGroup.Items.Clear();
                     var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuid();
                     var groups = new GroupService( rockContext )
                                 .Queryable()
@@ -1551,12 +1552,12 @@ namespace RockWeb.Blocks.CheckIn
                         ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                     }
 
+                    ddlGroup.Visible = true;
                     if ( groups.Count == 1 )
                     {
+                        isDefaultSelected = true;
                         ddlGroup.SelectedIndex = 0;
                     }
-
-                    ddlGroup.Visible = true;
                 }
                 else
                 {
@@ -1582,6 +1583,11 @@ namespace RockWeb.Blocks.CheckIn
 
                 UpdateLocations( attendanceSetting.LocationId );
                 UpdateSchedules( attendanceSetting.ScheduleId );
+            }
+            else if ( isDefaultSelected )
+            {
+                UpdateLocations();
+                UpdateSchedules();
             }
         }
 

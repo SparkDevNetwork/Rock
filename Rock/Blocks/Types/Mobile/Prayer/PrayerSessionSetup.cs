@@ -38,24 +38,38 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #region Block Attributes
 
+    [TextField( "Title Text",
+        Description = "The title to display at the top of the block. Leave blank to hide.",
+        DefaultValue = "Let's Pray",
+        IsRequired = false,
+        Key = AttributeKeys.TitleText,
+        Order = 0 )]
+
+    [MemoField( "Instruction Text",
+        Description = "Instructions to help the individual know how to use the block.",
+        DefaultValue = "Praying for others is part of what transforms a community into a family. Please select the categories of prayer you would like to pray for.",
+        IsRequired = false,
+        Key = AttributeKeys.InstructionText,
+        Order = 1 )]
+
     [LinkedPage( "Prayer Page",
         Description = "The page to push onto the navigation stack to begin the prayer session.",
         IsRequired = true,
         Key = AttributeKeys.PrayerPage,
-        Order = 0 )]
+        Order = 2 )]
 
     [CategoryField( "Parent Category",
         Description = "The parent category to use as the root category available for the user to pick from.",
         IsRequired = true,
         EntityType = typeof( Rock.Model.PrayerRequest ),
         Key = AttributeKeys.ParentCategory,
-        Order = 1)]
+        Order = 3)]
 
     [BooleanField( "Show Campus Filter",
         Description = "If enabled and the user has a primary campus, then the user will be offered to limit prayer requests to just their campus.",
         IsRequired = true,
         Key = AttributeKeys.ShowCampusFilter,
-        Order = 2 )]
+        Order = 4 )]
 
     #endregion
 
@@ -82,6 +96,16 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The show campus filter key.
             /// </summary>
             public const string ShowCampusFilter = "ShowCampusFilter";
+
+            /// <summary>
+            /// The title text
+            /// </summary>
+            public const string TitleText = "TitleText";
+
+            /// <summary>
+            /// The instruction text
+            /// </summary>
+            public const string InstructionText = "InstructionText";
         }
 
         /// <summary>
@@ -107,6 +131,22 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// The event template.
         /// </value>
         protected bool ShowCampusFilter => GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean();
+
+        /// <summary>
+        /// Gets the title text.
+        /// </summary>
+        /// <value>
+        /// The title text.
+        /// </value>
+        protected string TitleText => GetAttributeValue( AttributeKeys.TitleText );
+
+        /// <summary>
+        /// Gets the instruction text.
+        /// </summary>
+        /// <value>
+        /// The instruction text.
+        /// </value>
+        protected string InstructionText => GetAttributeValue( AttributeKeys.InstructionText );
 
         #endregion
 
@@ -162,8 +202,22 @@ namespace Rock.Blocks.Types.Mobile.Events
                 .Select( a => $"<Rock:PickerItem Value=\"{a.Guid}\" Text=\"{a.Name.EncodeXml( true )}\" />" )
                 .JoinStrings( string.Empty );
 
-            string campusPicker = string.Empty;
-            string campusValue = "False";
+            var campusPicker = string.Empty;
+            var campusValue = "False";
+            var title = string.Empty;
+            var instructions = string.Empty;
+
+            // Create control
+            if ( this.TitleText.IsNotNullOrWhiteSpace() )
+            {
+                title = $@"<Label StyleClass=""h2"" Text=""{this.TitleText}"" />";
+            }
+
+            // Create instructions
+            if ( this.InstructionText.IsNotNullOrWhiteSpace() )
+            {
+                instructions = $@"<Rock:ParagraphText>{this.InstructionText}</Rock:ParagraphText>";
+            }
 
             if ( ShowCampusFilter && ( RequestContext.CurrentPerson?.PrimaryCampusId.HasValue ?? false ) )
             {
@@ -175,7 +229,8 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
 
             sb.Append( $@"<StackLayout>
-    <Label StyleClass=""heading1"" Text=""Pray For"" />
+    {title}
+    {instructions}
     <Rock:FieldContainer>
         <Rock:Picker x:Name=""pCategory"" IsRequired=""True"" SelectedValue="""">
             <Rock:PickerItem Value=""{ParentCategory}"" Text=""All Requests"" />

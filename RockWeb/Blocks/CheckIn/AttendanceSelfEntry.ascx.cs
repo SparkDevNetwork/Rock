@@ -478,43 +478,35 @@ ORDER BY [Text]",
             if ( person != null )
             {
                 GetData( person, rockContext );
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogins = userLoginService.GetByPersonId( person.Id )
-                    .Where( l => l.IsLockedOut != true )
-                    .ToList();
                 OtherWatchers.ForEach( a => a.Selected = true );
-                if ( userLogins.Any() )
-                {
-                    SetUnsecuredPersonIdentifier( person.PrimaryAlias.Guid );
-                }
             }
             else
             {
                 PrimaryWatcher = new Watcher();
                 PrimaryWatcher.Guid = Guid.NewGuid();
-                PrimaryWatcher.NickName = tbFirstName.Text;
-                PrimaryWatcher.LastName = tbLastName.Text;
-                PrimaryWatcher.EmailAddress = tbEmail.Text;
-                PrimaryWatcher.Selected = true;
-                if ( bpBirthDay.Visible )
-                {
-                    PrimaryWatcher.BirthDate = bpBirthDay.SelectedDate;
-                }
-
-                if ( pnlPhone.Visible )
-                {
-                    PrimaryWatcher.MobilePhoneNumber = pnbPhone.Number;
-                    PrimaryWatcher.MobileCountryCode = pnbPhone.CountryCode;
-                    PrimaryWatcher.IsMessagingEnabled = cbIsMessagingEnabled.Checked;
-                }
-
-                if ( acAddress.Visible )
-                {
-                    Location = Location ?? new Location();
-                    acAddress.GetValues( Location );
-                }
-
                 OtherWatchers = new List<Watcher>();
+            }
+
+            PrimaryWatcher.NickName = tbFirstName.Text;
+            PrimaryWatcher.LastName = tbLastName.Text;
+            PrimaryWatcher.EmailAddress = tbEmail.Text;
+            PrimaryWatcher.Selected = true;
+            if ( bpBirthDay.Visible )
+            {
+                PrimaryWatcher.BirthDate = bpBirthDay.SelectedDate;
+            }
+
+            if ( pnlPhone.Visible )
+            {
+                PrimaryWatcher.MobilePhoneNumber = pnbPhone.Number;
+                PrimaryWatcher.MobileCountryCode = pnbPhone.CountryCode;
+                PrimaryWatcher.IsMessagingEnabled = cbIsMessagingEnabled.Checked;
+            }
+
+            if ( acAddress.Visible )
+            {
+                Location = Location ?? new Location();
+                acAddress.GetValues( Location );
             }
 
             ShowOtherWatcher();
@@ -620,6 +612,31 @@ ORDER BY [Text]",
                 var rockContext = new RockContext();
                 primaryPerson = GetLoggedInPerson( rockContext );
                 var family = primaryPerson.GetFamily( rockContext );
+
+                primaryPerson.NickName = PrimaryWatcher.NickName.FixCase();
+                primaryPerson.LastName = PrimaryWatcher.LastName.FixCase();
+
+                if ( PrimaryWatcher.BirthDate.HasValue )
+                {
+                    primaryPerson.SetBirthDate( PrimaryWatcher.BirthDate );
+                }
+
+                // Save the email address
+                if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
+                {
+                    primaryPerson.Email = PrimaryWatcher.EmailAddress;
+                }
+
+                rockContext.SaveChanges();
+
+                // Save the mobile phone number
+                if ( PrimaryWatcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
+                {
+                    SavePhoneNumber( primaryPerson.Id, PrimaryWatcher, rockContext );
+                }
+
+                SaveHomeAddress( rockContext, family );
+
                 AddOrUpdateOtherWatchers( rockContext, primaryPerson, family );
             }
 
@@ -685,8 +702,8 @@ ORDER BY [Text]",
                 }
             }
             Person person = null;
-            var personService = new PersonService( rockContext );
             Group family = null;
+            var personService = new PersonService( rockContext );
             if ( PrimaryWatcher.Id != default( int ) )
             {
                 person = personService.Get( PrimaryWatcher.Id );
@@ -710,11 +727,14 @@ ORDER BY [Text]",
             else
             {
                 family = person.GetFamily( rockContext );
-                person.NickName = PrimaryWatcher.NickName;
-                person.LastName = PrimaryWatcher.LastName;
+                person.NickName = PrimaryWatcher.NickName.FixCase();
+                person.LastName = PrimaryWatcher.LastName.FixCase();
             }
 
-            person.SetBirthDate( PrimaryWatcher.BirthDate );
+            if ( PrimaryWatcher.BirthDate.HasValue )
+            {
+                person.SetBirthDate( PrimaryWatcher.BirthDate );
+            } 
 
             // Save the email address
             if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
@@ -722,22 +742,12 @@ ORDER BY [Text]",
                 person.Email = PrimaryWatcher.EmailAddress;
             }
 
-
-            if ( family != null )
-            {
-                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-
-                var adultRole = familyGroupType
-                                .Roles
-                                .Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
-                                .FirstOrDefault();
-                PersonService.AddPersonToFamily( person, false, family.Id, adultRole.Id, rockContext );
-            }
-            else
+            if ( family == null )
             {
                 family = PersonService.SaveNewPerson( person, rockContext );
             }
 
+            rockContext.SaveChanges();
             PrimaryWatcher.Id = person.Id;
 
             // Save the mobile phone number
@@ -746,37 +756,7 @@ ORDER BY [Text]",
                 SavePhoneNumber( person.Id, PrimaryWatcher, rockContext );
             }
 
-            // Save the family address
-            var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-            if ( homeLocationType != null && Location != null && GetAttributeValue( AttributeKey.PrimaryPersonAddressShown ).AsBoolean() )
-            {
-                if ( Location.Street1.IsNotNullOrWhiteSpace() && Location.City.IsNotNullOrWhiteSpace() )
-                {
-                    Location = new LocationService( rockContext ).Get(
-                        Location.Street1, Location.Street2, Location.City, Location.State, Location.PostalCode, Location.Country, family, true );
-                }
-                else
-                {
-                    Location = null;
-                }
-
-                // Check to see if family has an existing home address
-                var groupLocation = family.GroupLocations
-                    .FirstOrDefault( l =>
-                        l.GroupLocationTypeValueId.HasValue &&
-                        l.GroupLocationTypeValueId.Value == homeLocationType.Id );
-
-                if ( Location != null )
-                {
-                    if ( groupLocation == null || groupLocation.LocationId != Location.Id )
-                    {
-                        // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
-                        GroupService.AddNewGroupAddress( rockContext, family, homeLocationType.Guid.ToString(), Location, true, string.Empty, true, true );
-                    }
-                }
-
-                rockContext.SaveChanges();
-            }
+            SaveHomeAddress( rockContext, family );
 
             if ( isAccountRequired )
             {
@@ -989,7 +969,6 @@ ORDER BY [Text]",
             if ( IsLoggedIn() )
             {
                 Person person = GetLoggedInPerson();
-                SetUnsecuredPersonIdentifier( person.PrimaryAlias.Guid );
                 GetData( person );
                 ShowKnownIndividual();
             }
@@ -1294,7 +1273,10 @@ ORDER BY [Text]",
                     person.LastName = watcher.LastName;
                 }
 
-                person.SetBirthDate( watcher.BirthDate );
+                if ( watcher.BirthDate.HasValue )
+                {
+                    person.SetBirthDate( watcher.BirthDate );
+                }
 
                 // Save the email address
                 if ( watcher.EmailAddress.IsNotNullOrWhiteSpace() )
@@ -1316,7 +1298,15 @@ ORDER BY [Text]",
                             primaryPerson.MaritalStatusValueId = marriedMartialStatusValueId;
                         }
                     }
-                    PersonService.AddPersonToFamily( person, notInPrimaryFamily, family.Id, roleId, rockContext );
+
+                    if ( notInPrimaryFamily )
+                    {
+                        PersonService.AddPersonToFamily( person, true, family.Id, roleId, rockContext );
+                    }
+                    else
+                    {
+                        rockContext.SaveChanges();
+                    }
                 }
                 else
                 {
@@ -1344,10 +1334,10 @@ ORDER BY [Text]",
                         var roleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
                         PersonService.AddPersonToFamily( person, isNew, newFamilyId.Value, roleId, rockContext );
-
-                        var relationshipTypeId = configuredKnownRelationships.FirstOrDefault( a => a.Guid == watcher.RelationshipTypeGuid ).Id;
-                        groupMemberService.CreateKnownRelationship( primaryPerson.Id, person.Id, relationshipTypeId );
                     }
+
+                    var relationshipTypeId = configuredKnownRelationships.FirstOrDefault( a => a.Guid == watcher.RelationshipTypeGuid ).Id;
+                    groupMemberService.CreateKnownRelationship( primaryPerson.Id, person.Id, relationshipTypeId );
                 }
 
                 watcher.Id = person.Id;
@@ -1481,6 +1471,44 @@ ORDER BY [Text]",
         }
 
         /// <summary>
+        /// Save the home address.
+        /// </summary>
+        private void SaveHomeAddress( RockContext rockContext, Group family )
+        {
+            // Save the family address
+            var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            if ( homeLocationType != null && Location != null && GetAttributeValue( AttributeKey.PrimaryPersonAddressShown ).AsBoolean() )
+            {
+                if ( Location.Street1.IsNotNullOrWhiteSpace() && Location.City.IsNotNullOrWhiteSpace() )
+                {
+                    Location = new LocationService( rockContext ).Get(
+                        Location.Street1, Location.Street2, Location.City, Location.State, Location.PostalCode, Location.Country, family, true );
+                }
+                else
+                {
+                    Location = null;
+                }
+
+                // Check to see if family has an existing home address
+                var groupLocation = family.GroupLocations
+                    .FirstOrDefault( l =>
+                        l.GroupLocationTypeValueId.HasValue &&
+                        l.GroupLocationTypeValueId.Value == homeLocationType.Id );
+
+                if ( Location != null )
+                {
+                    if ( groupLocation == null || groupLocation.LocationId != Location.Id )
+                    {
+                        // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
+                        GroupService.AddNewGroupAddress( rockContext, family, homeLocationType.Guid.ToString(), Location, true, string.Empty, true, true );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// Creates a new family group.
         /// </summary>
         /// <param name="familyGroupTypeId">The family group type identifier.</param>
@@ -1506,6 +1534,8 @@ ORDER BY [Text]",
 
             PrimaryWatcher = new Watcher( person, Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid(), string.Empty );
             PrimaryWatcher.Selected = true;
+
+            SetUnsecuredPersonIdentifier( person.PrimaryAlias.Guid );
 
             var familyMembers = personService
                 .GetFamilyMembers( family, person.Id )

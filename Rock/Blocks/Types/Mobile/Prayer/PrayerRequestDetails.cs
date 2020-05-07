@@ -525,7 +525,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 content = $@"
 <StackLayout>
-    <Label Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" StyleClass=""heading1"" />
+    <Label Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" StyleClass=""h2"" />
     <BoxView Color=""#888"" HeightRequest=""1"" Margin=""0 0 12 0"" />
 
     ##FIELDS##

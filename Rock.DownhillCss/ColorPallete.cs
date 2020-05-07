@@ -47,15 +47,15 @@ namespace Rock.DownhillCss
                     Color = "Gray",
                     ColorSaturations = new List<ColorSaturation>()
                     {
-                        new ColorSaturation(){ Intensity = 100, ColorValue = "#F7FAFC"},
-                        new ColorSaturation(){ Intensity = 200, ColorValue = "#EDF2F7"},
-                        new ColorSaturation(){ Intensity = 300, ColorValue = "#E2E8F0"},
-                        new ColorSaturation(){ Intensity = 400, ColorValue = "#CBD5E0"},
-                        new ColorSaturation(){ Intensity = 500, ColorValue = "#A0AEC0"},
-                        new ColorSaturation(){ Intensity = 600, ColorValue = "#718096"},
-                        new ColorSaturation(){ Intensity = 700, ColorValue = "#4A5568"},
-                        new ColorSaturation(){ Intensity = 800, ColorValue = "#2D3748"},
-                        new ColorSaturation(){ Intensity = 900, ColorValue = "#1A202C"}
+                        new ColorSaturation(){ Intensity = 100, ColorValue = "#F8F9FA"},
+                        new ColorSaturation(){ Intensity = 200, ColorValue = "#E9ECEF"},
+                        new ColorSaturation(){ Intensity = 300, ColorValue = "#DEE2E6"},
+                        new ColorSaturation(){ Intensity = 400, ColorValue = "#CED4DA"},
+                        new ColorSaturation(){ Intensity = 500, ColorValue = "#ADB5BD"},
+                        new ColorSaturation(){ Intensity = 600, ColorValue = "#6C757D"},
+                        new ColorSaturation(){ Intensity = 700, ColorValue = "#495057"},
+                        new ColorSaturation(){ Intensity = 800, ColorValue = "#343A40"},
+                        new ColorSaturation(){ Intensity = 900, ColorValue = "#212529"}
                     }
 
                 });
