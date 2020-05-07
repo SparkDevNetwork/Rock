@@ -1,0 +1,2384 @@
+<!--
+padding|margin - v|h|t|b|r|l|all - none|sm|md|lg|xl
+padding-all-xl margin-all-lg
+card-body card-img card-dropdown
+text-uppercase
+ <a class="btn btn-default btn-copy-code" ><i class="fa fa-copy"></i> Copy Code</a>
+-->
+<style>
+    .container-padding-lg {
+        padding-top: 120px;
+        padding-bottom: 120px;
+    }
+
+    .container-padding {
+        padding-top: 120px;
+        padding-bottom: 120px;
+    }
+</style>
+
+<div id="exampleCode0">
+    <section class="simple-Layout bg-gray anchor-links" id="exampleCode0">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode0-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <a href='' class="text-uppercase btn  btn-text">Action Link 1 </a>
+                    <a href='' class="text-uppercase btn  btn-text">Action Link 2 </a>
+                    <a href='' class="text-uppercase btn  btn-text">Action Link No Icon </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode1">
+    <section class="simple-Layout" id="Section-Page-Intro">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode1-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="">
+            <div class="container container-padding-lg">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 1 Page Intro</h1>
+                    </div>
+                    <div class="col-md-offset-2 col-md-8 text-center">
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary margin-r-md" href="/locations"><strong><i class="fa fa-ghost"></i>Action Item 1</strong></a> 
+                        <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode2">
+    <section class="simple-Layout hidden" id="Section-Page-Intro">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode2-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="">
+            <div class="container-fullwidth padding-all-none">
+                <div class="row row-eq-height">
+                    <div class="col-md-6 text-center margin-all-none"  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+                    </div>               
+                    <div class="col-md-6 margin-all-none font-white bg-theme1">
+                        <div class="container-padding-hero">
+                            <h1 class="">Section 2 Image Left</h1>
+                            <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                            <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode3">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode3-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 3 Three Column</h1>
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="= col-md-4 ">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+
+                    <div class="= col-md-4">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+
+                    <div class="= col-md-4 ">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode4">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode4-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 4 Two Column</h1>
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="= col-md-6">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                    <div class="= col-md-6">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode5">
+    <section class="simple-Layout background-img" style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode5-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="black-overlay-40 font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="margin-b-lg">Section 5 Image Background With Content</h1>
+                    </div>
+                    <div class="col-md-offset-2 col-md-8 text-center">
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary margin-r-md" href="/locations"><strong>Action Item 1</strong></a> 
+                        <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                        <a class="uppercase btn btn-danger" href="/locations"><strong>Action Item 3</strong></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode6">
+    <section class="simple-Layout background-img" style="background:url(/Themes/MountainTemplate/Assets/fellowship/img2.jpg) center center;">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode6-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="black-overlay-40 font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 6 Call Out Text With Image</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode7">
+    <section class="simple-Layout bg-theme1">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode7-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 7 Call Out Text With Color</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode8"> 
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode8-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 8 Simple Cards</h1>
+                    </div>
+                </div>
+                <div class="row margin-b-md">
+                    <div class="col-md-4">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>                            
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white">
+                                <i class="fa fa-map margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white">
+                                <i class="fa fa-church margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                </div>
+                <div class=" row">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-users margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-heart margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-building margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>                      
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode8a"> 
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode8a-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 8a Simple Cards</h1>
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                    </div>
+                </div>
+                <div class=" row row-eq-height margin-b-md">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>   
+                </div>
+                <div class="row row-eq-height">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change</p>
+                                <a class='btn btn-text btn-sm margin-t-mdpadding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode9">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode9-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 9 With Video</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 padding-l-none">
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe title="vimeo-player" src="https://player.vimeo.com/video/336812660" width="100%" height="360" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <div class="col-md-6">                   
+                        <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a>                        
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode9b">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode9b-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 9b With Image</h1>
+                    </div>
+                </div>
+                <div class="row">                   
+                    <div class="col-md-6 ">
+                        <img class="img-responsive img-shadow" src="/Content/ExternalSite/Fellowship Rogers/Images/WorshipTogether_Rogers2@2x.png" alt="WorshipTogether_Rogers2@2x.png">
+                    </div>
+                    <div class="col-md-6">                    
+                        <h1 class="">Worship Together</h1>
+                        <p>Join us this Saturday&nbsp;at 5:00 or 6:45pm at the Rogers Campus as we celebrate 3 core truths: <i>All are broken. All matter. Only One gets the glory.</i> Families love our laid-back and comfortable atmosphere, often grabbing coffee or pizza between services. The foyer is a great place to meet new people or share a meal with family and friends.&nbsp;</p>
+                        <h4 class="">NEW TO FELLOWSHIP? </h4>
+                        <p>Navigating a new church can be intimidating, but we’re here to help you feel at home! It’s as simple as walking through the door, and we’re here to help you with the rest.&nbsp;</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>I'm New!</strong></a>                         
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode10">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode10-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 10 With Accordion</h1>
+                    </div>
+                </div>
+                <div class="row">           
+                    <div class="col-md-6 bs-accordion">
+                        {[ accordion firstopen:'false' ]}
+
+                            [[ item title:'Where do I go when I get there?' ]]
+                                <p>You’ll see signs that ask you to turn on your hazard lights. Go ahead and fire them up! It’s our way of helping you find parking close to the main entrance. Our parking team will direct you to the closest available spot. Just follow the smiling faces in the bright orange vests. </p>
+                                <p>As you're walking to the building, look for the First Time Guest tent outside the main entrance (during inclement weather, we may move it just inside the door). We have a free gift there for you, but more importantly, we have a team that will act as your personal guide, helping you find your way to the auditorium, restrooms, and kids environments. If you need anything throughout your visit—just stop by the tent or ask anyone with a Summit lanyard or name tag. We’re here to serve you.</p>                       
+                            [[ enditem ]] 
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                        {[ endaccordion ]}
+                    </div>
+                    <div class="col-md-6 bs-accordion">                        
+                        {[ accordion firstopen:'false' ]}
+                            [[ item title:'Where do I go when I get there?' ]]
+                                <p>You’ll see signs that ask you to turn on your hazard lights. Go ahead and fire them up! It’s our way of helping you find parking close to the main entrance. Our parking team will direct you to the closest available spot. Just follow the smiling faces in the bright orange vests. </p>
+                                <p>As you're walking to the building, look for the First Time Guest tent outside the main entrance (during inclement weather, we may move it just inside the door). We have a free gift there for you, but more importantly, we have a team that will act as your personal guide, helping you find your way to the auditorium, restrooms, and kids environments. If you need anything throughout your visit—just stop by the tent or ask anyone with a Summit lanyard or name tag. We’re here to serve you.</p>                           
+                            [[ enditem ]]
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                        {[ endaccordion ]}                           
+                    </div>   
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode11">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode11-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-theme1">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg font-white">
+                        <h1 class="">Section 11 With Slick Items</h1>
+                    </div>
+                </div>
+                <div class="row font-white">
+                    <div class="col-md-12">                   
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true'  ]}           
+            
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+                    
+                        {[ endslickcarousel ]}                                            
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode12"> 
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode12-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 12 With Slick Card Items</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">                  
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}            
+            
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                        {[ endslickcarousel ]}                                          
+                    </div>
+                </div> 
+            </div>   
+        </div> 
+    </section>
+</div>
+
+<div id="exampleCode12a">
+    <section class="simple-Layout">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode12a-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 12a With Slick Card Items</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">                    
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}          
+            
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a>
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+    
+                        {[ endslickcarousel ]}                                           
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode13">
+    <section class="simple-Layout" id="Section img Slider">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode13-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-gray">
+            <div class="container container-padding clear">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg ">
+                        <h1 class="">Section 13 Slick Series IMG Slider</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        {[ slickcarousel infinite:'false' slidestoshow:'4' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}
+                    
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity/Album_James_X2.jpg' />                
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity//Album_GenericCommunityWorship_X2.jpg' />                    
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/FayettevilleWorship//Album_StandAlone_X2.jpg' />                    
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity/Album_James_X2.jpg' />
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity//Album_GenericCommunityWorship_X2.jpg' />                   
+                            [[ enditem ]]
+            
+                        {[ endslickcarousel ]}                                  
+                    </div>
+                </div>            
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg ">
+                        <a class="uppercase btn btn-primary" href="/locations"><strong>View All</strong></a>    
+                    </div>
+                </div>                  
+            </div>
+        </div>
+    </section>
+</div>
+ 
+<div id="exampleCode14">
+    <section class="simple-Layout" id="Section-Cards">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode14-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-white">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 14 Cards</h1>                
+                    </div>
+                </div>
+                <div class=" row">    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card1"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card1" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                </ul>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card2"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card2" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card3"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card3" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode15">
+    <section class="simple-Layout" id="Section-Slick-Cards">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode15-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-theme1 ">       
+            <div class="container container-padding">
+                <div class=" row font-white">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 15 Slick Cards</h1>                        
+                    </div>
+                </div>
+
+                <div class=" row">
+                    {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}
+                    
+                        [[ item ]]               
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none ">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card10"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card10" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                        [[ enditem ]]
+
+                        [[ item ]]              
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card11"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card11" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>        
+                        [[ enditem ]]
+
+                        [[ item ]]              
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card12"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card12" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>            
+                        [[ enditem ]]
+
+                        [[ item ]]                
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card13"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card13" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                        [[ enditem ]]
+
+                    {[ endslickcarousel ]}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode15a"> 
+    <section class="simple-Layout" id="Section-Cards">
+        <a class="btn btn-default btn-copy-code" data-target="exampleCode15a-copyversion" ><i class="fa fa-copy"></i>Copy</a><!-- REMOVE -->
+        <div class="bg-white">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 15 Locations</h1>                       
+                    </div>
+                </div>
+                <div class=" row text-center">                
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org/Admin/Files/ManageITID/1/GlobalFiles/fellowship-nwa/NWA_Building.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1a"  >
+                                <h4 class="text-uppercase margin-b-none">Rogers Campus</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                </ul>
+                                View Services <br/> <i class="fa fa-chevron-down"></i></a>                        
+                            </div>
+                            <div id="card1a" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >                            
+                                    <ul class="list-unstyled location-times">
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Fellowship Rogers <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Mosaic <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Celebrate Recovery <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                    </ul>                    
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1b"  >
+                                <h4 class="text-uppercase margin-b-none">Fayetteville Campus</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                </ul>
+                                View Services <br/> <i class="fa fa-chevron-down"></i></a>                        
+                            </div>
+                            <div id="card1b" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >                            
+                                    <ul class="list-unstyled location-times">
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Fellowship Rogers <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Mosaic <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Celebrate Recovery <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                    </ul>                    
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org/Admin/Files/ManageITID/1/GlobalFiles/fellowship-bentonville/BentonvilleLanding_v5.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1c"  >
+                                    <h4 class="text-uppercase margin-b-none">Bentonville Campus</h1>
+                                    <ul class="list-unstyled font-gray">
+                                        <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                    </ul>
+                                    Learn More <br/> <i class="fa fa-chevron-down"></i>
+                                </a>  
+                            </div>
+                            <div id="card1c" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >
+                                    <p class="margin-all-none"><strong>New Campus</strong><br/>Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode16">
+    <section class="simple-Layout" id="Section-Cards">
+     <a class="btn btn-default btn-copy-code" data-target="exampleCode16-copyversion" ><i class="fa fa-copy"></i>Copy</a>
+        <div class="bg-gray-light">
+            <div class="container-fluid container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 16 Cards v2</h1>                
+                    </div>
+                </div>
+
+                <div class="row col-extra-padding">    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>               
+              
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+                     <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+                     <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode17">
+    <section class="simple-Layout " id="Section-Page-Intro">
+         <a class="btn btn-default btn-copy-code" data-target="exampleCode17-copyversion" ><i class="fa fa-copy"></i>Copy</a>
+        <div class="">
+            <div class="container container-padding">
+               <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 17 Split Image and Card</h1>                
+                    </div>
+                </div> 
+            
+
+                <div  class="split-img "  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+
+                    <div class="container-fluid padding-all-none clearfix" style="position:relative;">  
+
+                        <div class="text-overlay-img-left">
+                            <h1 class="font-white">Services</h1>
+                        </div>  
+
+                        <div class="pull-right bg-white split-img-content img-container-padding">
+                            <div class="">
+                                <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                            </div>
+                        </div>  
+                    </div>
+
+                </div>
+                <div  class="split-img "  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+
+                    <div class="container-fluid padding-all-none clearfix" style="position:relative;">  
+
+                        <div class="text-overlay-img-right">
+                            <h1 class="font-white">Cell Groups</h1>
+                        </div>                                    
+
+                        <div class="pull-left bg-white split-img-content img-container-padding">
+                            <div class="">
+                                <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world! </p>
+                                <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                            </div>
+                        </div>  
+         
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode18">
+    <section class="simple-Layout " id="Section-Page-Intro">
+         <a class="btn btn-default btn-copy-code" data-target="exampleCode18-copyversion" ><i class="fa fa-copy"></i>Copy</a>
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+               <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 18 Group Contact</h1>                
+                    </div>
+                </div> 
+        
+           {% group where:'Id == 688' %} <!-- Set Group Id -->
+
+                {% for group in groupItems %}
+
+                    <div class="row row-eq-height">
+                    
+                    {% groupmember where:'GroupId == {{ group.Id }}' sort'LastName, FirstName, desc' %}
+                    
+                        {% for groupmember in groupmemberItems %}
+                        
+                        {% assign thisPerson = groupmember.Person %}
+
+                            <div class="col-xs-12 col-md-3 text-center">
+                                <div class="align-top p-3">
+                                    <img class="img-circle staff-image" src="{{ thisPerson.PhotoUrl }}&maxwidth=150&maxheight=150" style="width: 150px; height=150px" alt="{{ thisPerson.FullName }}">
+                                </div>
+
+                                
+                                    <div class="staff-name">{{ thisPerson.FullName }}</div>
+                                    
+                                    {% assign title = thisPerson | Attribute:'JobTitle' %}
+                                            
+                                            {% if title and title != '' %}
+                                                <div class="staff-job-title">{{ thisPerson | Attribute:'JobTitle'  }}</div>
+                                            {% endif %}
+                                    
+                        
+                                <div class="staff-social text-center">
+                                        
+                                            {% assign phoneNumber = thisPerson | PhoneNumber:'Work' %}
+                
+                                            {% if phoneNumber != '' and phoneNumber != empty %}
+                                                <a href="tel:{{ phoneNumber }}"><i class="fa fa-phone-alt"></i></a>&nbsp;
+                                            {% endif %}
+                                            
+                                            <a href="/Contact/{{ thisPerson.PrimaryAlias.Guid }}/"><i class="fa fa-envelope"></i></a>
+                                            
+                                </div>
+                            </div>
+                            
+                        {% endfor %}
+                        
+                    {% endgroupmember %}
+                    
+                    </div>
+                    
+                {% endfor %}
+                
+{% endgroup %}
+
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+{% raw %}
+<div id="exampleCode0-copyversion" style="display:none;">  
+    <section class="simple-Layout bg-gray anchor-links" id="exampleCode0">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <a href='' class="text-uppercase btn  btn-text">Action Link 1 </a>
+                    <a href='' class="text-uppercase btn  btn-text">Action Link 2 </a>
+                    <a href='' class="text-uppercase btn  btn-text">Action Link No Icon </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode1-copyversion" style="display:none;"> 
+    <section class="simple-Layout" id="Section-Page-Intro">
+        <div class="">
+            <div class="container container-padding-lg">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 1 Page Intro</h1>
+                    </div>
+                    <div class="col-md-offset-2 col-md-8 text-center">
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary margin-r-md" href="/locations"><strong><i class="fa fa-ghost"></i>Action Item 1</strong></a> 
+                        <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode2-copyversion" style="display:none;"> 
+    <section class="simple-Layout hidden" id="Section-Page-Intro">
+        <div class="">
+            <div class="container-fullwidth padding-all-none">
+                <div class="row row-eq-height">
+                    <div class="col-md-6 text-center margin-all-none"  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+                    </div>               
+                    <div class="col-md-6 margin-all-none font-white bg-theme1">
+                        <div class="container-padding-hero">
+                            <h1 class="">Section 2 Image Left</h1>
+                            <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                            <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode3-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 3 Three Column</h1>
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="= col-md-4 ">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+
+                    <div class="= col-md-4">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+
+                    <div class="= col-md-4 ">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode4-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 4 Two Column</h1>
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="= col-md-6">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                    <div class="= col-md-6">
+                        <h4 class="">Intro Title Text Important</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode5-copyversion" style="display:none;"> 
+    <section class="simple-Layout background-img" style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">
+        <div class="black-overlay-40 font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="margin-b-lg">Section 5 Image Background With Content</h1>
+                    </div>
+                    <div class="col-md-offset-2 col-md-8 text-center">
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary margin-r-md" href="/locations"><strong>Action Item 1</strong></a> 
+                        <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                        <a class="uppercase btn btn-danger" href="/locations"><strong>Action Item 3</strong></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode6-copyversion" style="display:none;"> 
+    <section class="simple-Layout background-img" style="background:url(/Themes/MountainTemplate/Assets/fellowship/img2.jpg) center center;">
+        <div class="black-overlay-40 font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 6 Call Out Text With Image</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode7-copyversion" style="display:none;"> 
+    <section class="simple-Layout bg-theme1">
+        <div class="font-white">
+            <div class="container container-padding-lg">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center">
+                        <h1 class="">Section 7 Call Out Text With Color</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode8-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 8 Simple Cards</h1>
+                    </div>
+                </div>
+                <div class="row margin-b-md">
+                    <div class="col-md-4">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>                            
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white">
+                                <i class="fa fa-map margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white">
+                                <i class="fa fa-church margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                </div>
+                <div class=" row">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-users margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-heart margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-body bg-white ">
+                                <i class="fa fa-building margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>                      
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode8a-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 8a Simple Cards</h1>
+                        <p class="margin-t-none">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                    </div>
+                </div>
+                <div class=" row row-eq-height margin-b-md">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>   
+                </div>
+                <div class="row row-eq-height">
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm margin-t-md padding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding card-border-top-none card-border-bottom-none card-no-shadow">
+                            <div class="card-body bg-white  card-border-top-none card-border-bottom-none">
+                                <i class="fa fa-cross margin-b-md card-icon"></i>
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change Fellowship Bible Church exists to foster life-change</p>
+                                <a class='btn btn-text btn-sm margin-t-mdpadding-l-none'  >View More <i class="fa fa-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode9-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 9 With Video</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 padding-l-none">
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe title="vimeo-player" src="https://player.vimeo.com/video/336812660" width="100%" height="360" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <div class="col-md-6">                   
+                        <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>Action Item 1</strong></a>                        
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode9b-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 9b With Image</h1>
+                    </div>
+                </div>
+                <div class="row">                   
+                    <div class="col-md-6 ">
+                        <img class="img-responsive img-shadow" src="/Content/ExternalSite/Fellowship Rogers/Images/WorshipTogether_Rogers2@2x.png" alt="WorshipTogether_Rogers2@2x.png">
+                    </div>
+                    <div class="col-md-6">                    
+                        <h1 class="">Worship Together</h1>
+                        <p>Join us this Saturday&nbsp;at 5:00 or 6:45pm at the Rogers Campus as we celebrate 3 core truths: <i>All are broken. All matter. Only One gets the glory.</i> Families love our laid-back and comfortable atmosphere, often grabbing coffee or pizza between services. The foyer is a great place to meet new people or share a meal with family and friends.&nbsp;</p>
+                        <h4 class="">NEW TO FELLOWSHIP? </h4>
+                        <p>Navigating a new church can be intimidating, but we’re here to help you feel at home! It’s as simple as walking through the door, and we’re here to help you with the rest.&nbsp;</p>
+                        <a class="uppercase btn btn-primary " href="/locations"><strong>I'm New!</strong></a>                         
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode10-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 10 With Accordion</h1>
+                    </div>
+                </div>
+                <div class="row">           
+                    <div class="col-md-6 bs-accordion">
+                        {[ accordion firstopen:'false' ]}
+
+                            [[ item title:'Where do I go when I get there?' ]]
+                                <p>You’ll see signs that ask you to turn on your hazard lights. Go ahead and fire them up! It’s our way of helping you find parking close to the main entrance. Our parking team will direct you to the closest available spot. Just follow the smiling faces in the bright orange vests. </p>
+                                <p>As you're walking to the building, look for the First Time Guest tent outside the main entrance (during inclement weather, we may move it just inside the door). We have a free gift there for you, but more importantly, we have a team that will act as your personal guide, helping you find your way to the auditorium, restrooms, and kids environments. If you need anything throughout your visit—just stop by the tent or ask anyone with a Summit lanyard or name tag. We’re here to serve you.</p>                       
+                            [[ enditem ]] 
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                        {[ endaccordion ]}
+                    </div>
+                    <div class="col-md-6 bs-accordion">                        
+                        {[ accordion firstopen:'false' ]}
+                            [[ item title:'Where do I go when I get there?' ]]
+                                <p>You’ll see signs that ask you to turn on your hazard lights. Go ahead and fire them up! It’s our way of helping you find parking close to the main entrance. Our parking team will direct you to the closest available spot. Just follow the smiling faces in the bright orange vests. </p>
+                                <p>As you're walking to the building, look for the First Time Guest tent outside the main entrance (during inclement weather, we may move it just inside the door). We have a free gift there for you, but more importantly, we have a team that will act as your personal guide, helping you find your way to the auditorium, restrooms, and kids environments. If you need anything throughout your visit—just stop by the tent or ask anyone with a Summit lanyard or name tag. We’re here to serve you.</p>                           
+                            [[ enditem ]]
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                            [[ item title:'How long is the service?' ]]
+                                <p>Gatherings last about 70 minutes. We start by singing three to four songs. Then, the speaker preaches. If you want to see our preaching style before you arrive, check out <a href="/messages">our current series</a>.</p>
+                                <p>If you’re visiting for the first time, we suggest that you arrive 20 minutes ahead of the service time so we can help you park, meet you at the tent, and help you find a seat.</p>                        
+                            [[ enditem ]]
+
+                        {[ endaccordion ]}                           
+                    </div>   
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode11-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-theme1">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg font-white">
+                        <h1 class="">Section 11 With Slick Items</h1>
+                    </div>
+                </div>
+                <div class="row font-white">
+                    <div class="col-md-12">                   
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true'  ]}           
+            
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="">                        
+                                <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default " href="/locations"><strong>Action Item 1</strong></a> 
+                            </div>
+                            [[ enditem ]]
+                    
+                        {[ endslickcarousel ]}                                            
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode12-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 12 With Slick Card Items</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">                  
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}            
+            
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card">
+                                <div class="bg-white card-body">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                        {[ endslickcarousel ]}                                          
+                    </div>
+                </div> 
+            </div>   
+        </div> 
+    </section>
+</div>
+
+<div id="exampleCode12a-copyversion" style="display:none;"> 
+    <section class="simple-Layout">
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 12a With Slick Card Items</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">                    
+                        {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}          
+            
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                           
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a>
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <div class="card card-no-shadow card-border-none">
+                                <div class="bg-white card-body  card-border-none">                            
+                                    <h4 class="text-uppercase margin-b-md">Intro Title</h1>
+                                    <p>Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                    <a class="uppercase btn btn-primary btn-sm" href="/locations"><strong>Action Item 1</strong></a> 
+                                </div>
+                            </div>
+                            [[ enditem ]]
+    
+                        {[ endslickcarousel ]}                                           
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode13-copyversion" style="display:none;"> 
+    <section class="simple-Layout" id="Section img Slider">
+        <div class="bg-gray">
+            <div class="container container-padding clear">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg ">
+                        <h1 class="">Section 13 Slick Series IMG Slider</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        {[ slickcarousel infinite:'false' slidestoshow:'4' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}
+                    
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity/Album_James_X2.jpg' />                
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity//Album_GenericCommunityWorship_X2.jpg' />                    
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/FayettevilleWorship//Album_StandAlone_X2.jpg' />                    
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity/Album_James_X2.jpg' />
+                            [[ enditem ]]
+
+                            [[ item ]]
+                            <img class='img-responsive' src='https://www.fellowshipnwa.org/GraceBaseOnline/Files/MediaResources/GraceBaseID/1/NWACommunity//Album_GenericCommunityWorship_X2.jpg' />                   
+                            [[ enditem ]]
+            
+                        {[ endslickcarousel ]}                                  
+                    </div>
+                </div>            
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg ">
+                        <a class="uppercase btn btn-primary" href="/locations"><strong>View All</strong></a>    
+                    </div>
+                </div>                  
+            </div>
+        </div>
+    </section>
+</div>
+ 
+<div id="exampleCode14-copyversion" style="display:none;"> 
+    <section class="simple-Layout" id="Section-Cards">
+        <div class="bg-white">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 14 Cards</h1>                
+                    </div>
+                </div>
+                <div class=" row">    
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card1"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card1" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                </ul>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card2"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card2" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card3"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card3" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode15-copyversion" style="display:none;"> 
+    <section class="simple-Layout" id="Section-Slick-Cards">
+        <div class="bg-theme1 ">       
+            <div class="container container-padding">
+                <div class=" row font-white">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 15 Slick Cards</h1>                        
+                    </div>
+                </div>
+
+                <div class=" row">
+                    {[ slickcarousel infinite:'false' slidestoshow:'3' slidestoscroll:'1' autoplay:'false' autoplayspeed:'5000' dots:'true' adaptiveheight:'true' ]}
+                    
+                        [[ item ]]               
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none ">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card10"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card10" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                        [[ enditem ]]
+
+                        [[ item ]]              
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card11"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card11" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>        
+                        [[ enditem ]]
+
+                        [[ item ]]              
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card12"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card12" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>            
+                        [[ enditem ]]
+
+                        [[ item ]]                
+                        <div class="card short-padding card-dark-dropshadow">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h4 class="text-uppercase margin-b-none">Intro Title</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                </ul>
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-text btn-sm padding-l-none' data-toggle="collapse" data-target="#card13"  >View More <i class="fa fa-chevron-down"></i></a>
+                                <a href="" class='btn btn-primary btn-sm pull-right'>Register</a>
+                            </div>
+                            <div id="card13" class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none collapse"   aria-expanded="false" >
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <ul class="list-unstyled font-gray">
+                                    <li><i class="fa fa-calendar"></i> Date & Time</li>
+                                    <li><i class="fa fa-map-marker-alt"></i> Campus Location Text</li>
+                                    <li><i class="fa fa-ghost"></i> Other Info</li>
+                                </ul>
+                                <p class="margin-all-none">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                            </div>
+                        </div>
+                        [[ enditem ]]
+
+                    {[ endslickcarousel ]}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="exampleCode15a-copyversion" style="display:none;">  
+    <section class="simple-Layout" id="Section-Cards">
+        <div class="bg-white">
+            <div class="container container-padding">
+                <div class=" row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 15 Locations</h1>                       
+                    </div>
+                </div>
+                <div class=" row text-center">                
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org/Admin/Files/ManageITID/1/GlobalFiles/fellowship-nwa/NWA_Building.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1a"  >
+                                <h4 class="text-uppercase margin-b-none">Rogers Campus</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                </ul>
+                                View Services <br/> <i class="fa fa-chevron-down"></i></a>                        
+                            </div>
+                            <div id="card1a" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >                            
+                                    <ul class="list-unstyled location-times">
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Fellowship Rogers <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Mosaic <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Celebrate Recovery <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                    </ul>                    
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1b"  >
+                                <h4 class="text-uppercase margin-b-none">Fayetteville Campus</h1>
+                                <ul class="list-unstyled font-gray">
+                                    <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                </ul>
+                                View Services <br/> <i class="fa fa-chevron-down"></i></a>                        
+                            </div>
+                            <div id="card1b" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >                            
+                                    <ul class="list-unstyled location-times">
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Fellowship Rogers <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Mosaic <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='big-text-link'>
+                                                <h4 class="text-uppercase margin-b-none">Celebrate Recovery <i class="fas fa-arrow-right"></i></h1>
+                                                <span class="font-gray">Sundays</span>
+                                                <span class="font-gray">8:00, 9:30, 11:00am</span>
+                                            </a>
+                                        </li>
+                                    </ul>                    
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="col-md-4 ">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org/Admin/Files/ManageITID/1/GlobalFiles/fellowship-bentonville/BentonvilleLanding_v5.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <a class='big-text-link ' data-toggle="collapse" data-target="#card1c"  >
+                                    <h4 class="text-uppercase margin-b-none">Bentonville Campus</h1>
+                                    <ul class="list-unstyled font-gray">
+                                        <li>1051 W Pleasant Grove Rd Rogers, AR 72758-8052</li>
+                                    </ul>
+                                    Learn More <br/> <i class="fa fa-chevron-down"></i>
+                                </a>  
+                            </div>
+                            <div id="card1c" class="collapse"  aria-expanded="false" >
+                                <div class="card-dropdown bg-gray-light card-border-top-none card-border-bottom-none" >
+                                    <p class="margin-all-none"><strong>New Campus</strong><br/>Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<div id="exampleCode16-copyversion" style="display:none;">
+    <section class="simple-Layout" id="Section-Cards">
+        <div class="bg-gray-light">
+            <div class="container-fluid container-padding">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 16 Cards v2</h1>                
+                    </div>
+                </div>
+
+                <div class="row col-extra-padding">    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>               
+              
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+                     <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+                     <div class="col-md-3 col-sm-6">
+                        <div class="card short-padding">
+                            <div class="card-img">
+                                <img class='img-responsive' src='https://www.fellowshipnwa.org//Admin/Files/ManageITID/1/GlobalFiles/Fay_Banner.jpg' />
+                            </div>
+                            <div class="card-body bg-white card-border-top-none card-border-bottom-none">                           
+                                <h1 class="text-uppercase margin-b-none">Intro Title</h1>
+                               
+                                <p class="">Fellowship Bible Church exists to foster life-change. Fellowship Bible Church exists to foster life-change.</p>
+                                    <a class='btn btn-default btn-sm'  >Learn More </i></a>
+                         
+                            </div>
+                        </div>
+                    </div>  
+
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+<div id="exampleCode17-copyversion" style="display:none;">
+    <section class="simple-Layout " id="Section-Page-Intro">
+        <div class="">
+            <div class="container container-padding">
+               <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 17 Split Image and Card</h1>                
+                    </div>
+                </div> 
+            
+
+                <div  class="split-img "  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+
+                    <div class="container-fluid padding-all-none clearfix" style="position:relative;">  
+
+                        <div class="text-overlay-img-left">
+                            <h1 class="font-white">Services</h1>
+                        </div>  
+
+                        <div class="pull-right bg-white split-img-content img-container-padding">
+                            <div class="">
+                                <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world!</p>
+                                <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                            </div>
+                        </div>  
+                    </div>
+
+                </div>
+                <div  class="split-img "  style="background:url(/Themes/MountainTemplate/Assets/fellowship/img1.jpg) center center;">             
+
+                    <div class="container-fluid padding-all-none clearfix" style="position:relative;">  
+
+                        <div class="text-overlay-img-right">
+                            <h1 class="font-white">Cell Groups</h1>
+                        </div> 
+
+                        <div class="pull-left bg-white split-img-content img-container-padding">
+                            <div class="">
+                                <p class="">Fellowship Bible Church exists to foster life-change. Every congregation and small group, every ministry, camp, retreat, class, and trip has this vision in mind. Check out stories of how Jesus is changing the heart and soul of His people in Northwest Arkansas and the world! </p>
+                                <a class="uppercase btn btn-default margin-r-md" href="/locations"><strong>Action Item 2</strong></a>
+                            </div>
+                        </div>  
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </section>
+</div>
+<div id="exampleCode18-copyversion" style="display:none;">
+    <section class="simple-Layout " id="Section-Page-Intro">
+ 
+        <div class="bg-gray-light">
+            <div class="container container-padding">
+               <div class="row">
+                    <div class="col-md-offset-1 col-md-10 text-center margin-b-lg">
+                        <h1 class="">Section 18 Group Contact</h1>                
+                    </div>
+                </div> 
+        
+           {% group where:'Id == 688' %} <!-- Set Group Id -->
+
+                {% for group in groupItems %}
+
+                    <div class="row row-eq-height">
+                    
+                    {% groupmember where:'GroupId == {{ group.Id }}' sort'LastName, FirstName, desc' %}
+                    
+                        {% for groupmember in groupmemberItems %}
+                        
+                        {% assign thisPerson = groupmember.Person %}
+
+                            <div class="col-xs-12 col-md-3 text-center">
+                                <div class="align-top p-3">
+                                    <img class="img-circle staff-image" src="{{ thisPerson.PhotoUrl }}&maxwidth=150&maxheight=150" style="width: 150px; height=150px" alt="{{ thisPerson.FullName }}">
+                                </div>
+
+                                
+                                    <div class="staff-name">{{ thisPerson.FullName }}</div>
+                                    
+                                    {% assign title = thisPerson | Attribute:'JobTitle' %}
+                                            
+                                            {% if title and title != '' %}
+                                                <div class="staff-job-title">{{ thisPerson | Attribute:'JobTitle'  }}</div>
+                                            {% endif %}
+                                    
+                        
+                                <div class="staff-social text-center">
+                                        
+                                            {% assign phoneNumber = thisPerson | PhoneNumber:'Work' %}
+                
+                                            {% if phoneNumber != '' and phoneNumber != empty %}
+                                                <a href="tel:{{ phoneNumber }}"><i class="fa fa-phone-alt"></i></a>&nbsp;
+                                            {% endif %}
+                                            
+                                            <a href="/Contact/{{ thisPerson.PrimaryAlias.Guid }}/"><i class="fa fa-envelope"></i></a>
+                                            
+                                </div>
+                            </div>
+                            
+                        {% endfor %}
+                        
+                    {% endgroupmember %}
+                    
+                    </div>
+                    
+                {% endfor %}
+                
+{% endgroup %}
+
+
+            </div>
+        </div>
+    </section>
+</div>
+{% endraw %}
+
+<script>
+    $(document).ready(function(){
+        $('.btn-copy-code').click(function() {
+           var selector = $(this).data('target');
+           CopyToClipboard(selector);
+        });
+    });
+    function CopyToClipboard (containerid) {
+      // Create a new textarea element and give it id='temp_element'
+      var textarea = document.createElement('textarea')
+      textarea.id = 'temp_element'
+      // Optional step to make less noise on the page, if any!
+      textarea.style.height = 0
+      // Now append it to your page somewhere, I chose <body>
+      document.body.appendChild(textarea)
+      // Give our textarea a value of whatever inside the div of id=containerid
+      textarea.value = document.getElementById(containerid).innerHTML
+      // Now copy whatever inside the textarea to clipboard
+      var selector = document.querySelector('#temp_element')
+      selector.select()
+      document.execCommand('copy')
+      // Remove the textarea
+      document.body.removeChild(textarea)
+    }
+</script>

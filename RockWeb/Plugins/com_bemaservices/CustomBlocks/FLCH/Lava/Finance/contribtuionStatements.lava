@@ -1,0 +1,102 @@
+<style>
+    body {
+        font-size: 12px;
+    }
+</style>
+<div class="container">
+    {% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
+    {{ pageTitle | SetPageTitle }}
+
+    <div class="row margin-b-xl">
+        <div class="col-md-6">
+            <div class="pull-left margin-t-sm">
+                <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
+                {{ 'Global' | Attribute:'OrganizationAddress' }}<br />
+                {{ 'Global' | Attribute:'OrganizationWebsite' }}<br />
+                {{ 'Global' | Attribute:'OrganizationPhone' }}
+            </div>
+        </div>
+        <div class="col-md-6 text-right margin-t-sm">
+            <strong>{{ StatementStartDate | Date:'yyyy' }} Tax Statement</strong>
+        </div>
+    </div>
+
+  
+    {{ Salutation }} <br />
+    {{ StreetAddress1 }} <br />
+    {% if StreetAddress2 != '' %}
+        {{ StreetAddress2 }} <br />
+    {% endif %}
+    {{ City }}, {{ State }} {{ PostalCode }}
+   
+
+    <div class="clearfix">
+        <div class="pull-right">
+            <a href="#" class="btn btn-primary hidden-print" onClick="window.print();"><i class="fa fa-print"></i> Print Statement</a> 
+        </div>
+    </div>
+
+    <hr style="opacity: .5;" />
+    <p class="text-center">
+       Your generous contributions are gratefully appreciated and acknowledged. This is an official receipt for income tax purposes of donations received for the dates listedbelow. No goods or services were exchanged for these donations except intangible religious benefits
+    </p>
+
+
+
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <th>Date</th>
+                <th>Giving Area</th>
+                <th align="right">Amount</th>
+            </tr>
+        
+
+            {% for transaction in TransactionDetails %}
+                <tr>
+                    <td>{{ transaction.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
+                    <td>{{ transaction.Account.Name }}</td>
+                    <td align="right">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ transaction.Amount }}</td>
+                </tr>
+            {% endfor %}
+        
+        </table>
+
+
+
+
+    <div class="row margin-t-md">
+        <div class="col-xs-8 col-xs-offset-4">
+         
+            <div class="row">
+                <div class="col-xs-8">
+                    <strong>Giving Area</strong>
+                </div>
+                <div class="col-xs-4 text-right">
+                    <strong>Total Amount</strong>
+                </div>
+            </div>
+            
+            {% for accountsummary in AccountSummary %}
+                <div class="row">
+                    <div class="col-xs-8">{{ accountsummary.AccountName }}</div>
+                    <div class="col-xs-4 text-right">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ accountsummary.Total }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+   
+  
+
+    <hr style="opacity: .5;" />
+    <p class="text-left col-xs-10">
+        Should you have any questions or concerns, please contact Glenda McSpadden at 479-659-3695 or glmcspadden@fellowshipnwa.org immediately . Thank you foryour generosity <br/> <br/>
+        Greg Seay, CFOFEIN 71-0605274
+    </p>
+
+     <p class="text-right col-xs-2">
+        {{Id}}
+    </p>
+
+ 
+</div>

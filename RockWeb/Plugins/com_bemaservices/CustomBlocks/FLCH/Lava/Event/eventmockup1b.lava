@@ -1,0 +1,113 @@
+{% assign reservation = Workflow | Attribute:'ReservationObject','Object' %}
+
+<style>
+    .check-list i {
+        margin-right:8px;
+        color:#555;
+        margin-left:20px;
+    }
+    .check-list .fa-check-square {
+        color:#16c98d !important;
+    }
+    
+    h1 {
+        font-size:32px;
+    }
+     h1 small {
+        font-size:14px;
+        color:#ccc;
+    }
+</style>
+<h1 class="text-center"> {{ Workflow | Attribute:'EventName' }} <br/>
+<small>Created By <a href="/person/{{ Workflow.CreatedByPersonId }}" class="alert-link" style="text-decoration:underline;">{{ Workflow.CreatedByPersonName }}</a> on {{ Workflow.CreatedDateTime | Date:'M/d/yyyy' }}</small>
+</h1>
+<hr/>
+
+    <div class="panel panel-block ">
+
+                <div class="panel-heading clearfix">
+                    <h1 class="panel-title pull-left">Room Reservation: {{ reservation.Name }}</h1>
+                    
+                    {% assign labelStatus = 'primary' %}
+                    
+                    {% if reservation.ApprovalState == 'Unapproved'  %}
+                        {% assign labelStatus = 'warning' %}
+                    {% elseif reservation.ApprovalState == 'Denied' %}
+                        {% assign labelStatus = 'danger' %}
+                    {% elseif reservation.ApprovalState == 'Approved' %}
+                        {% assign labelStatus = 'success' %}
+                    {% endif %}
+                  
+                    <div class="panel-labels">
+                        <span class="label label-{{labelStatus}}">Status: {{ reservation.ApprovalState }}</span>
+                    </div>
+				</div>
+				
+                <div class="panel-body"> <!-- collapse if no content -->
+
+                <p class="description">
+                
+                <p>{{ reservation.Note }}</p>
+       
+                <strong>Task List</strong>
+                <ul class="list-unstyled check-list">
+                    {% if reservation.ScheduleId %}<li class="strike-though"><i class="fa fa-check-square"></i>Setup Schedule</li>{% else %}<li><i class="fa fa-square"></i>Setup Schedule</li>{% endif %}
+                    {% if reservation.TestId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Rooms</li>{% else %}<li><i class="fa fa-square"></i>Set Rooms</li>{% endif %}
+                    {% if reservation.RoomId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Campus</li>{% else %}<li><i class="fa fa-square"></i>Set Campus</li>{% endif %}
+                    {% if reservation.LocationId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Cleanup Time</li>{% else %}<li><i class="fa fa-square"></i>Set Cleanup Time</li>{% endif %}
+                </ul>
+                </br>
+                </p>
+                
+                <div class="actions">
+                    <a title="Reservation" class="btn btn-primary" href="/ReservationDetail?ReservationId={{reservation.Id}}">View Reservation</a>
+                </div>
+
+                  
+                </div>
+            </div>
+            
+ <div class="panel  panel-primary">
+
+                <div class="panel-heading clearfix">
+                    <h1 class="panel-title pull-left">Event Registration</h1>
+                    
+                    {% assign labelStatus = 'primary' %}
+                    
+                    {% if reservation.ApprovalState == 'Unapproved'  %}
+                        {% assign labelStatus = 'warning' %}
+                    {% elseif reservation.ApprovalState == 'Denied' %}
+                        {% assign labelStatus = 'danger' %}
+                    {% elseif reservation.ApprovalState == 'Approved' %}
+                        {% assign labelStatus = 'success' %}
+                    {% endif %}
+                  
+                    <div class="panel-labels">
+             
+                        <span class="label label-danger">Room Must Be Approved First</span>
+                    </div>
+				</div>
+				
+                <div class="panel-body collapse"> <!-- collapse if no content -->
+
+                <p class="description">
+                
+                <p>{{ reservation.Note }}</p>
+       
+                <strong>Task List</strong>
+                <ul class="list-unstyled check-list">
+                    {% if reservation.ScheduleId %}<li class="strike-though"><i class="fa fa-check-square"></i>Setup Schedule</li>{% else %}<li><i class="fa fa-square"></i>Setup Schedule</li>{% endif %}
+                    {% if reservation.TestId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Rooms</li>{% else %}<li><i class="fa fa-square"></i>Set Rooms</li>{% endif %}
+                    {% if reservation.RoomId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Campus</li>{% else %}<li><i class="fa fa-square"></i>Set Campus</li>{% endif %}
+                    {% if reservation.LocationId %}<li class="strike-though"><i class="fa fa-check-square"></i>Set Cleanup Time</li>{% else %}<li><i class="fa fa-square"></i>Set Cleanup Time</li>{% endif %}
+                </ul>
+                </br>
+                </p>
+                
+                <div class="actions">
+                    <a title="Reservation" class="btn btn-primary" href="/ReservationDetail?ReservationId={{reservation.Id}}">View Reservation</a>
+                </div>
+
+                  
+                </div>
+            </div>

@@ -14,14 +14,16 @@
             <!-- BEMA.FE3.Start -->
             <asp:Panel ID="pnlBemaFilters" runat="server" Visible="false">
                 <div class="row margin-b-md">
-                    <div id="divAudience" runat="server" class="col-md-6">
-                        <Rock:DefinedValuePicker runat="server" ID="ddlCatPicker" AutoPostBack="true" Visible="false" OnSelectedIndexChanged="ddlCatPicker_SelectedIndexChanged" />
-                    </div>
                     <div id="divCampus" runat="server" class="col-md-6">
-                        <Rock:CampusPicker runat="server" ID="cpCampus" AutoPostBack="true" Label="" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                        <Rock:CampusPicker runat="server" ID="cpCampus" AutoPostBack="true" Label="Congregation" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                     </div>
+
+                    <div id="divAudience" runat="server" class="col-md-6">
+                        <Rock:DefinedValuePicker runat="server" ID="ddlCatPicker" AutoPostBack="true" Label="Ministries" Visible="false" OnSelectedIndexChanged="ddlCatPicker_SelectedIndexChanged" />
+                    </div>
+             
                     <div id="divDefinedValue" runat="server" class="col-md-4" visible="false">
-                        <Rock:DefinedValuePicker runat="server" ID="ddlTopicPicker" AutoPostBack="true" OnSelectedIndexChanged="ddlTopicPicker_SelectedIndexChanged" />
+                        <Rock:DefinedValuePicker runat="server" ID="ddlTopicPicker" AutoPostBack="true" Label="Topic" OnSelectedIndexChanged="ddlTopicPicker_SelectedIndexChanged" />
                     </div>
                 </div>
             </asp:Panel>
@@ -96,7 +98,8 @@
                     </div>
                 <% } %>
 
-                <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" /><asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
+                <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
+                <asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
 
             </asp:Panel>
 
