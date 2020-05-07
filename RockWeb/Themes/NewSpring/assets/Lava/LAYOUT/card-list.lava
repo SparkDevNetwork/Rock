@@ -6,32 +6,32 @@
 <section>
     <div class="row">
     	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+
 				{% assign dataset = item.Dataset %}
 				{% assign showDate = item.IsDateVisible %}
 				{% assign id = item.Id %}
 				{% assign cciid = item.Id %}
 				{% assign guid = item.Guid %}
-				{% assign channelNameParts = item.ChannelName | Split:' - ' %}
-				{% assign type = channelNameParts[1] | Singularize %}
+				{% assign type = item.ChannelName | Split:' - ' | Index:1 | Singularize %}
 				{% assign title = item.Title | Replace:"'","’" %}
 				{% assign titlesize = "h4" %}
 
 				{% capture startDateTime -%}
 					{% if item.ActualDate != empty %}
-						{[ formatDate date:'{{ item.ActualDate }}' ]}
+						{{ item.ActualDate }}
 					{%- elseif item.StartDateTime != empty -%}
-						{[ formatDate date:'{{ item.StartDateTime }}' ]}
+						{{ item.StartDateTime }}
 					{%- else -%}
-						{[ formatDate date:'{{ item.PublishDateTime }}' ]}
+						{{ item.PublishDateTime }}
 					{%- endif -%}
 				{%- endcapture %}
 				{% assign startDateTime = startDateTime | Trim %}
 
 				{% capture endDateTime -%}
 					{%- if item.EndDateTime != empty -%}
-						{[ formatDate date:'{{ item.EndDateTime }}' ]}
+						{{ item.EndDateTime }}
 					{%- else -%}
-						{[ formatDate date:'{{ item.ExpireDateTime }}' ]}
+						{{ item.ExpireDateTime }}
 					{%- endif -%}
 				{%- endcapture %}
 				{% assign endDateTime = endDateTime | Trim %}
@@ -44,7 +44,7 @@
 						{%- comment -%}
 							If the end date differs from the start date, display the range, otherwise just show the startdate.
 						{%- endcomment -%}
-						{{ startDateTime }}{% if endDateTime != empty and endDateTime != startDateTime %} - {{ endDateTime }}{% endif %}
+						{[ formatDate date:'{{ startDateTime }}' ]}{% if endDateTime != empty and endDateTime != startDateTime %} - {[ formatDate date:'{{ endDateTime }}' ]}{% endif %}
 					{% endif %}
 				{%- endcapture %}
 
@@ -78,19 +78,15 @@
 				{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
 				{% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endif %}{% endcapture %}
 
-				{%- comment -%}Get number of parent items{%- endcomment -%}
-				{% assign parentsCount = item.Parents | Split:',' | Size %}
-
-				{%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
-				{% if parentsCount > 0 and parentids and parentids != '' and parentccid and parentccid != '' %}
-					{% contentchannelitem ids:'{{ item.Parents }}' where:'ContentChannelId == "{{ channel.ParentChannelId }}"' iterator:'parents' %}
-						{% for parentItem in parents %}
-							{% assign collectiontext = parentItem.Title %}
-							{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
-							{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
-							{% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
-						{% endfor %}
-					{% endcontentchannelitem %}
+				{% assign parentChannelId = item.ParentChannelId | AsInteger %}
+				{% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}
+				{% if parent and parent != empty %}
+					{% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+					{% if parentItem and parentItem != empty %}
+						{% assign collectiontext = parentItem.Title %}
+						{% assign collectionurl = parentItem.Permalink %}
+						{% assign imageurl = parentItem.ImageLandscape %}
+					{% endif %}
 				{% else %}
 					{% assign collectiontext = '' %}
 					{% assign collectionurl = '' %}

@@ -58,8 +58,8 @@
                 <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
             {% endif %}
 
-            {% if Item.Tags != empty %}
-                {[ tags ]}
+            {% if dataset and dataset != empty and cciid and cciid != empty %}
+                {[ tags dataset:'{{ dataset }}' cciid:'{{ cciid }}' ]}
             {% endif %}
 
             {% if content != null and content != '' %}

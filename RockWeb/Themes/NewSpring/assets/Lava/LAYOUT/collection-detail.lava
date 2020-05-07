@@ -38,7 +38,7 @@
     {% assign dataset = Item.Dataset %}
     {% assign guid = Item.Guid %}
     {% assign title = Item.Title | Replace:"'","’" %}
-    {% assign content = Item.Summary | HtmlDecode | StripHtml | Replace:"'","’" %}
+    {% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
 
     {% assign isDateVisible = Item.IsDateVisible %}
     {% if isDateVisible == 'Yes' %}

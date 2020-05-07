@@ -36,6 +36,7 @@ t.Name,
 FROM Tag t
 WHERE t.CategoryId = 979
 AND t.Name NOT LIKE '%#%'
+AND t.OwnerPersonAliasId IS NULL
 ORDER BY t.Name
 {% endsql %}
 [

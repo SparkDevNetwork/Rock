@@ -3,16 +3,11 @@
 {% endcomment %}
 {% assign pageId = 'Global' | Page:'Id' %}
 {% assign cciid = Item.Id | AsInteger %}
-{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
 {% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
 
 {% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
-    {% if CurrentPersonCanEdit %}
-        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
-    {% else %}
-        {{ '/page-not-found' | PageRedirect }}
-    {% endif %}
+    {{ '/page-not-found' | PageRedirect }}
 {% endif %}
 
 
@@ -32,7 +27,7 @@
 {% endcomment %}
 {% if Item.Parents != null %}
     {% assign parentChannelId = Item.ParentChannelId | AsInteger %}
-    {% assign parentItem = Item.Parents | Where:'ContentChannelId', parentChannelId | First %}
+    {% assign parentItem = Item.Parents | Where:'ChannelId', parentChannelId | First %}
     {% assign parentItem = parentItem.Dataset | PersistedDataset | Where:'Id',parentItem.Id | First %}
     {% assign itemsManuallyOrdered = parentItem.ChildItemsOrderedManually %}
     {% assign parentImage = parentItem.ImageLandscape %}
