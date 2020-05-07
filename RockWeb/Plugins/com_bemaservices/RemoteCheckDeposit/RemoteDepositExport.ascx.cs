@@ -17,18 +17,16 @@ using Rock.Web.Cache;
 using System.Text;
 using System.IO;
 using Rock.Attribute;
+using System.Linq.Dynamic;
 
 namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 {
     [DisplayName( "Remote Deposit Export" )]
     [Category( "BEMA Services > Remote Check Deposit" )]
     [Description( "Exports batch data for use remote deposit with a bank." )]
-    [BooleanField( "Show Transaction Details On Grid", Order = 1 )]
+    [BooleanField( "Show Transaction Details On Grid" , defaultValue: true, Order = 1 )]
     public partial class RemoteDepositExport : RockBlock
     {
-        // Dictionaries to cache values for performance
-        //private static Dictionary<int, FinancialAccount> _financialAccountLookup;
-        private static Dictionary<int?, bool?> _isDepositedLookup;
         enum IsDeposited { Yes, No }
 
         #region Base Method Overrides
@@ -46,14 +44,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             gBatches.ShowHeaderWhenEmpty = true;
             gBatches.ShowActionsInHeader = true;
 
-            //var lbSelectBatches = new LinkButton
-            //{
-            //    ID = "lbSelectBatches",
-            //    CssClass = "btn btn-default btn-sm",
-            //    Text = "<i class='fa fa-download'></i>"
-            //};
-            //lbSelectBatches.Click += lbSelectBatches_Click;
-            //gBatches.Actions.AddCustomActionControl( lbSelectBatches );
+
             gBatches.DataKeyNames = new string[] { "Id" };
         }
 
@@ -97,17 +88,14 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             {
                 var rockContext = new RockContext();
 
-                _isDepositedLookup = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                    .Where( av => av.Attribute.Key == "com.bemaservices.Deposited" )
-                    .Select( av => new KeyValuePair<int?, bool?>( av.EntityId, av.ValueAsBoolean ) )
-                    .ToDictionary( av => av.Key, av => av.Value );
+                var attributeQry = new AttributeValueService( rockContext ).Queryable().AsNoTracking().Where( av => av.Attribute.Key == "com.bemaservices.Deposited" );
 
                 //_financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
-                if ( GetAttributeValue( "Show Transaction Details On Grid" ).AsBoolean() )
+                if ( GetAttributeValue( "ShowTransactionDetailsOnGrid" ).AsBoolean() )
                 {
                     var financialBatchQry = GetQuery( rockContext )
                     .AsNoTracking()
-                    .Include( b => b.Transactions.SelectMany( t => t.TransactionDetails ).Select( t => t.Account ) ) // Load Transactions and TransactionDetails
+                    .Include( b => b.Transactions.Select( t => t.TransactionDetails.Select( d => d.Account ) ) ) // Load Transactions and TransactionDetails
                     .Include( b => b.Campus );
 
                     var batchRowQry = financialBatchQry.Select( b => new BatchRow
@@ -133,8 +121,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                                 AccountName = s.Select( d => d.Account.Name ).FirstOrDefault()
                             } )
                             .ToList()
-                        ,
-                        Deposited = _isDepositedLookup.ContainsKey( b.Id ) && ( _isDepositedLookup[b.Id] ?? false )
+                        ,Deposited = attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean.HasValue && av.ValueAsBoolean.Value )
                     } );
 
                     gBatches.SetLinqDataSource( batchRowQry );
@@ -145,30 +132,21 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                     .AsNoTracking()
                     .Include( b => b.Campus );
 
+                    gBatches.Columns[4].Visible = false;
+                    gBatches.Columns[6].Visible = false;
+
                     var batchRowQry = financialBatchQry.Select( b => new BatchRow
                     {
                         Id = b.Id,
                         BatchStartDateTime = b.BatchStartDateTime.Value,
                         Name = b.Name,
                         AccountingSystemCode = b.AccountingSystemCode,
-                        //TransactionCount = b.Transactions.Count(),
                         ControlAmount = b.ControlAmount,
                         CampusName = b.Campus != null ? b.Campus.Name : "",
                         Status = b.Status,
-                        //UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
-                        BatchNote = b.Note,
-                        //AccountSummaryList = b.Transactions
-                        //    .SelectMany( t => t.TransactionDetails )
-                        //    .GroupBy( d => d.AccountId )
-                        //    .Select( s => new BatchAccountSummary
-                        //    {
-                        //        AccountId = s.Key,
-                        //        Amount = s.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M,
-                        //        AccountOrder = s.Select( d => d.Account.Order ).FirstOrDefault(),
-                        //        AccountName = s.Select( d => d.Account.Name ).FirstOrDefault()
-                        //    } )
-                        //    .ToList()
-                        Deposited = _isDepositedLookup.ContainsKey( b.Id ) && ( _isDepositedLookup[b.Id] ?? false )
+                        BatchNote = b.Note
+                        , AccountSummaryList = new List<BatchAccountSummary> { new BatchAccountSummary { Amount = b.ControlAmount } }
+                        , Deposited = attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean.HasValue && av.ValueAsBoolean.Value )
                     } );
 
                     gBatches.SetLinqDataSource( batchRowQry );
@@ -273,15 +251,15 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 
             if ( deposited.HasValue )
             {
-                //var attributeQry = new AttributeValueService(rockContext).Queryable().AsNoTracking().Where(av => av.Attribute.Key == "com.bemaservices.Deposited");
+                var attributeQry = new AttributeValueService(rockContext).Queryable().AsNoTracking().Where(av => av.Attribute.Key == "com.bemaservices.Deposited");
                 // how to I query an attribute on linq???
                 if ( deposited == IsDeposited.Yes )
                 {
-                    qry = qry.Where( b => _isDepositedLookup.Any( av => av.Key == b.Id && av.Value == true ) );
+                    qry = qry.Where( b => attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
                 }
                 else if ( deposited == IsDeposited.No )
                 {
-                    qry = qry.Where( b => !_isDepositedLookup.Any( av => av.Key == b.Id && av.Value == true ) );
+                    qry = qry.Where( b => !attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
                 }
             }
 
@@ -816,7 +794,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                 }
             }
 
-            private List<BatchAccountSummary> _accountSummaryList;
+            private List<BatchAccountSummary> _accountSummaryList = new List<BatchAccountSummary>();
             public string CampusName { get; set; }
             public BatchStatus Status { get; set; }
             public bool UnMatchedTxns { get; set; }
@@ -925,5 +903,6 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
         }
 
         #endregion
+
     }
 }

@@ -28,7 +28,7 @@
                             <Rock:RockDropDownList ID="ddlDeposited" runat="server" Label="Deposited" />
                         </Rock:GridFilter>
 
-                        <Rock:Grid ID="gBatches" runat="server" OnGridRebind="gBatches_GridRebind" OnRowCreated="gBatches_RowCreated">
+                        <Rock:Grid ID="gBatches" runat="server" OnGridRebind="gBatches_GridRebind" >
                             <Columns>
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
