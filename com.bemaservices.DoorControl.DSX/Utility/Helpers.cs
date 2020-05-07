@@ -761,7 +761,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             RockContext rockContext = new RockContext();
             DoorLockService doorLockService = new DoorLockService( rockContext );
 
-            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == false && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date && x.StartDateTime > now ).ToList();
+            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == false && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date ).ToList();
             // Updating counter
             totalRecords += items.Count;
 
@@ -821,7 +821,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             RockContext rockContext = new RockContext();
             DoorLockService doorLockService = new DoorLockService( rockContext );
 
-            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == true && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date && x.StartDateTime > now ).ToList();
+            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == true && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date ).ToList();
             // Updating counter
             totalRecords += items.Count;
 
@@ -833,8 +833,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             {
                 // Starting with clean paramerters
                 sql.Parameters.Clear();
-                
-                sql.Parameters.AddWithValue( "@LocationName", item.RoomName );                
+
+                sql.Parameters.AddWithValue( "@LocationName", item.RoomName );
                 sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
                 sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
                 // Validating record was added
