@@ -30,6 +30,7 @@ using Rock.Storage.AssetStorage;
 using Rock.Model;
 using Rock.Data;
 using Rock.Tests.Integration.Utility;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.StorageTests
 {
@@ -48,6 +49,7 @@ namespace Rock.Tests.Integration.StorageTests
     public class FileSystemComponentTests
     {
         private static string webContentFolder = string.Empty;
+        private static string appDataTempFolder = string.Empty;
 
         [TestInitialize]
         public void Initialize()
@@ -55,12 +57,30 @@ namespace Rock.Tests.Integration.StorageTests
             // Set up a fake webContentFolder that we will use with the Asset Storage component
             webContentFolder = Path.Combine( TestContext.DeploymentDirectory, "TestData", "Content" );
             EnsureFolder( webContentFolder );
+
+            appDataTempFolder = Path.Combine( TestContext.DeploymentDirectory, "App_Data", $"{System.Guid.NewGuid()}" );
+            EnsureFolder( appDataTempFolder );
+        }
+
+        [ClassCleanup]
+        public static void CleanupFolder()
+        {
+            // WARNING: Only delete if this is the TestFolder/Content folder we setup.
+            if ( webContentFolder.EndsWith( "\\TestData\\Content" ) )
+            {
+                Directory.Delete( webContentFolder, recursive: true );
+            }
+
+            if ( !string.IsNullOrEmpty( appDataTempFolder ) )
+            {
+                Directory.Delete( appDataTempFolder, recursive: true );
+            }
         }
 
         private AssetStorageProvider GetAssetStorageProvider()
         {
             var assetStorageService = new AssetStorageProviderService( new RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageService.Get( 3 );// need mock
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( 1 ); // this is the stock, local file system provider
             assetStorageProvider.LoadAttributes();
             assetStorageProvider.SetAttributeValue( "RootFolder", "TestFolder" );
 
@@ -80,7 +100,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Name = "TestFolder";
                 asset.Type = AssetType.Folder;
 
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, asset ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, asset ) );
             }
         }
 
@@ -93,14 +113,14 @@ namespace Rock.Tests.Integration.StorageTests
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderA", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA/A1", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderB", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderC", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderD", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E1/E1a", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E2/E2a", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E3/E3a", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderA", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA/A1", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderB", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderC", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderD", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E1/E1a", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E2/E2a", Type = AssetType.Folder } ) );
+                Assert.That.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E3/E3a", Type = AssetType.Folder } ) );
             }
         }
 
@@ -120,7 +140,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Key = ( "TestFolder/TestFolderA/TestUploadObjectByKey.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
+                Assert.That.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
             }
         }
 
@@ -140,7 +160,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Name = ( "TestFolderA/TestUploadObjectByName.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
+                Assert.That.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
             }
         }
 
@@ -157,14 +177,14 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assets = fileSystemComponent.ListFoldersInFolder( assetStorageProvider, new Asset { Key = "~/TestFolder", Type = AssetType.Folder } );
 
-                Assert.IsTrue( assets.Any( a => a.Key == "~/TestFolder/TestFolderA/" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderB" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderC" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderD" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderE" ) );
-                Assert.IsFalse( assets.Any( a => a.Name == "A1" ) );
-                Assert.IsFalse( assets.Any( a => a.Name == "E1" ) );
-                Assert.IsFalse( assets.Any( a => a.Name == "E1a" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Key == "~/TestFolder/TestFolderA/" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderB" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderC" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderD" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderE" ) );
+                Assert.That.IsFalse( assets.Any( a => a.Name == "A1" ) );
+                Assert.That.IsFalse( assets.Any( a => a.Name == "E1" ) );
+                Assert.That.IsFalse( assets.Any( a => a.Name == "E1a" ) );
             }
         }
 
@@ -183,9 +203,9 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assets = fileSystemComponent.ListFilesInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsFalse( assets.Any( a => a.Name == "A1" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsFalse( assets.Any( a => a.Name == "A1" ) );
             }
         }
 
@@ -204,20 +224,20 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assets = fileSystemComponent.ListObjects( assetStorageProvider );
 
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderA" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderB" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderC" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderD" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestFolderE" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "A1" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E1" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E2" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E3" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E1a" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E2a" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "E3a" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderA" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderB" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderC" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderD" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestFolderE" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "A1" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E1" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E2" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E3" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E1a" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E2a" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "E3a" ) );
             }
         }
 
@@ -236,9 +256,9 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assets = fileSystemComponent.ListObjectsInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assets.Any( a => a.Name == "A1" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( assets.Any( a => a.Name == "A1" ) );
             }
         }
 
@@ -258,7 +278,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKey.jpg";
 
-                Assert.IsTrue( fileSystemComponent.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( fileSystemComponent.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
             }
         }
 
@@ -279,7 +299,7 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var downloadedAsset = fileSystemComponent.GetObject( assetStorageProvider, asset, false );
 
-                using ( FileStream fs = new FileStream( @"C:\temp\TestGetObjectDownloaded.jpg", FileMode.Create ) )
+                using ( FileStream fs = new FileStream( Path.Combine( appDataTempFolder, @"TestGetObjectDownloaded.jpg" ), FileMode.Create ) )
                 using ( downloadedAsset.AssetStream )
                 {
                     downloadedAsset.AssetStream.CopyTo( fs );
@@ -304,8 +324,8 @@ namespace Rock.Tests.Integration.StorageTests
 
                 Uri uri = null;
 
-                Assert.IsTrue( Uri.TryCreate( link, UriKind.Absolute, out uri ) );
-                Assert.IsNotNull( uri );
+                Assert.That.IsTrue( Uri.TryCreate( link, UriKind.Absolute, out uri ) );
+                Assert.That.IsNotNull( uri );
             }
         }
 
@@ -324,7 +344,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/DELETEFILE.jpg";
 
-                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
+                Assert.That.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
             }
         }
 
@@ -343,17 +363,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.Folder;
                 asset.Key = "TestFolder/TestFolderDELETEME";
 
-                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
-            }
-        }
-
-        [ClassCleanup]
-        public static void CleanupFolder()
-        {
-            // WARNING: Only delete if this is the TestFolder/Content folder we setup.
-            if ( webContentFolder.EndsWith( "\\TestData\\Content" ) )
-            {
-                Directory.Delete( webContentFolder, recursive: true );
+                Assert.That.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
             }
         }
 

@@ -22,10 +22,14 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
+// This is to get the enums without the prefix
+using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -90,14 +94,18 @@ namespace Rock.Reporting.DataFilter.Person
         public override string GetClientFormatSelection( Type entityType )
         {
             return @" 
-function() {
-  var noteTypeName = $('.js-notetype', $content).find(':selected').text()
-  var containsText = $('.js-notecontains', $content).val();
-  var result = ""Has a "" + noteTypeName + "" note containing '"" + containsText + ""'"";
+                function() {
+                    var noteTypeName = $('.js-notetype', $content).find(':selected').text()
+                    var containsText = $('.js-notecontains', $content).val();
+                    var result = ""Has a "" + noteTypeName + "" note containing '"" + containsText + ""'"";
 
-  return result;
-}
-";
+                    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val();
+                    if(dateRageText){
+                        result +=  "" Date Range: "" + dateRangeText
+                    }
+                    return result;
+                }
+            ";
         }
 
         /// <summary>
@@ -109,11 +117,16 @@ function() {
         public override string FormatSelection( Type entityType, string selection )
         {
             string result = "Person Note";
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 2 )
+
+            var selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( selectionConfig != null )
             {
-                int noteTypeId = selectionValues[0].AsInteger();
-                var selectedNoteType = NoteTypeCache.Get( noteTypeId );
+                NoteTypeCache selectedNoteType = null;
+                if ( selectionConfig.NoteTypeId.HasValue )
+                {
+                    selectedNoteType = NoteTypeCache.Get( selectionConfig.NoteTypeId.Value );
+                }
                 if ( selectedNoteType != null )
                 {
                     result = $"Has a {selectedNoteType.Name} note";
@@ -123,10 +136,19 @@ function() {
                     result = "Has a note";
                 }
 
-                var containingText = selectionValues[1];
+                var containingText = selectionConfig.NoteContains;
                 if ( containingText.IsNotNullOrWhiteSpace() )
                 {
                     result += $" containing '{containingText}'";
+                }
+
+                if ( selectionConfig.DateRangeMode != null )
+                {
+                    var dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.DelimitedValues );
+                    if ( dateRangeString.IsNotNullOrWhiteSpace() )
+                    {
+                        result += $" Date Range: {dateRangeString}";
+                    }
                 }
             }
 
@@ -166,7 +188,15 @@ function() {
             tbContains.CssClass = "js-notecontains";
             filterControl.Controls.Add( tbContains );
 
-            return new System.Web.UI.Control[2] { ddlNoteType, tbContains };
+            var slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
+            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            slidingDateRangePicker.Label = "Date Range";
+            slidingDateRangePicker.Help = "The date range of the note's creation date";
+            slidingDateRangePicker.Required = false;
+            filterControl.Controls.Add( slidingDateRangePicker );
+
+            return new System.Web.UI.Control[3] { ddlNoteType, tbContains, slidingDateRangePicker };
         }
 
         /// <summary>
@@ -189,14 +219,24 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            if ( controls.Count() >= 2 )
+            SelectionConfig selectionConfig = new SelectionConfig();
+
+            if ( controls.Count() >= 3 )
             {
                 RockDropDownList ddlNoteType = controls[0] as RockDropDownList;
                 RockTextBox tbContains = controls[1] as RockTextBox;
-                return $"{ddlNoteType.SelectedValue}|{tbContains.Text}";
+                SlidingDateRangePicker slidingDateRange = controls[2] as SlidingDateRangePicker;
+
+                selectionConfig.NoteTypeId = ddlNoteType.SelectedValue.AsIntegerOrNull();
+                selectionConfig.NoteContains = tbContains.Text;
+                selectionConfig.StartDate = slidingDateRange.DateRangeModeStart;
+                selectionConfig.EndDate = slidingDateRange.DateRangeModeEnd;
+                selectionConfig.DateRangeMode = slidingDateRange.SlidingDateRangeMode;
+                selectionConfig.TimeUnit = slidingDateRange.TimeUnit;
+                selectionConfig.NumberOfTimeUnits = slidingDateRange.NumberOfTimeUnits;
             }
 
-            return string.Empty;
+            return selectionConfig.ToJson();
         }
 
         /// <summary>
@@ -207,17 +247,16 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            if ( controls.Count() >= 2 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            if ( selectionConfig != null )
             {
                 RockDropDownList ddlNoteType = controls[0] as RockDropDownList;
                 RockTextBox tbContains = controls[1] as RockTextBox;
+                SlidingDateRangePicker slidingDateRange = controls[2] as SlidingDateRangePicker;
 
-                string[] selectionValues = selection.Split( '|' );
-                if ( selectionValues.Length >= 2 )
-                {
-                    ddlNoteType.SelectedValue = selectionValues[0];
-                    tbContains.Text = selectionValues[1];
-                }
+                ddlNoteType.SelectedValue = selectionConfig.NoteTypeId.HasValue ? selectionConfig.NoteTypeId.ToString() : "";
+                tbContains.Text = selectionConfig.NoteContains;
+                slidingDateRange.DelimitedValues = selectionConfig.DelimitedValues;
             }
         }
 
@@ -231,23 +270,35 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 2 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            if ( selectionConfig != null )
             {
                 var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
-                var containsText = selectionValues[1];
                 var noteQry = new NoteService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( x => x.NoteType.EntityTypeId == entityTypeIdPerson );
 
-                int? noteTypeId = selectionValues[0].AsIntegerOrNull();
-                if ( noteTypeId.HasValue )
+                if ( selectionConfig.NoteTypeId.HasValue )
                 {
-                    noteQry = noteQry.Where( x => x.NoteTypeId == noteTypeId );
+                    noteQry = noteQry.Where( x => x.NoteTypeId == selectionConfig.NoteTypeId.Value );
                 }
 
-                if ( containsText.IsNotNullOrWhiteSpace() )
+                if ( selectionConfig.NoteContains.IsNotNullOrWhiteSpace() )
                 {
-                    noteQry = noteQry.Where( a => a.Text.Contains( containsText ) );
+                    noteQry = noteQry.Where( a => a.Text.Contains( selectionConfig.NoteContains ) );
+                }
+
+                if ( selectionConfig.DateRangeMode != null )
+                {
+                    DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.DelimitedValues );
+                    if ( dateRange.Start.HasValue )
+                    {
+                        noteQry = noteQry.Where( n => n.CreatedDateTime >= dateRange.Start.Value );
+                    }
+
+                    if ( dateRange.End.HasValue )
+                    {
+                        noteQry = noteQry.Where( n => n.CreatedDateTime <= dateRange.End.Value );
+                    }
                 }
 
                 var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
@@ -260,5 +311,173 @@ function() {
         }
 
         #endregion
+
+        /// <summary>
+        /// Get and set the filter settings from DataViewFilter.Selection
+        /// </summary>
+        protected class SelectionConfig
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SelectionConfig"/> class.
+            /// </summary>
+            public SelectionConfig()
+            {
+            }
+
+            /// <summary>
+            /// Gets or sets the note type identifier.
+            /// </summary>
+            /// <value>
+            /// The note type identifier.
+            /// </value>
+            public int? NoteTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note contains text.
+            /// </summary>
+            /// <value>
+            /// The note contains.
+            /// </value>
+            public string NoteContains { get; set; }
+
+            /// <summary>
+            /// Gets a pipe delimited string of the property values. This is to use the SlidingDateRangePicker's existing logic.
+            /// </summary>
+            /// <value>
+            /// The delimited values.
+            /// </value>
+            public string DelimitedValues
+            {
+                get
+                {
+                    return CreateSlidingDateRangePickerDelimitedValues();
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the date range mode.
+            /// </summary>
+            /// <value>
+            /// The date range mode.
+            /// </value>
+            public SlidingDateRangeType? DateRangeMode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of time units.
+            /// </summary>
+            /// <value>
+            /// The number of time units.
+            /// </value>
+            public int? NumberOfTimeUnits { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time unit.
+            /// </summary>
+            /// <value>
+            /// The time unit.
+            /// </value>
+            public TimeUnitType? TimeUnit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date.
+            /// </summary>
+            /// <value>
+            /// The start date.
+            /// </value>
+            public DateTime? StartDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date.
+            /// </summary>
+            /// <value>
+            /// The end date.
+            /// </value>
+            public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Parses the specified selection from a JSON or delimited string.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
+            {
+                SelectionConfig selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
+
+                if ( selectionConfig == null )
+                {
+                    selectionConfig = new SelectionConfig();
+                    string[] selectionValues = selection.Split( '|' );
+
+                    if ( selectionValues.Count() >= 2 )
+                    {
+                        selectionConfig.NoteTypeId = selectionValues[0].AsIntegerOrNull();
+                        selectionConfig.NoteContains = selectionValues[1];
+
+                        if ( selectionValues.Count() >= 3 )
+                        {
+                            string[] dateRangeValues = selectionValues[3].Split( ',' );
+                            if ( dateRangeValues.Count() > 3 )
+                            {
+                                // DateRange index 0 is the mode
+                                selectionConfig.DateRangeMode = dateRangeValues[0].ConvertToEnum<SlidingDateRangeType>();
+
+                                // DateRange index 1 is the number of time units
+                                selectionConfig.NumberOfTimeUnits = dateRangeValues[1].AsIntegerOrNull();
+
+                                // DateRange index 2 is the time unit
+                                selectionConfig.TimeUnit = dateRangeValues[2].ConvertToEnum<TimeUnitType>();
+
+                                // DateRange index 3 is the start date
+                                selectionConfig.StartDate = dateRangeValues[3].AsDateTime();
+
+                                // DateRange index 4 is the end date if it exists
+                                if ( dateRangeValues.Count() > 4 )
+                                {
+                                    selectionConfig.EndDate = dateRangeValues[4].AsDateTime();
+                                }
+                            }
+                            else if ( dateRangeValues.Any() )
+                            {
+                                // Try to get a DateRange from what we have
+                                selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
+                                selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
+
+                                if ( dateRangeValues.Count() > 1 )
+                                {
+                                    selectionConfig.EndDate = dateRangeValues[1].AsDateTime();
+                                    if ( selectionConfig.EndDate.HasValue )
+                                    {
+                                        // This value would have been from the DatePicker which does not automatically add a day.
+                                        selectionConfig.EndDate.Value.AddDays( 1 );
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                return selectionConfig;
+            }
+
+            /// <summary>
+            /// Creates the sliding date range picker delimited values.
+            /// </summary>
+            /// <returns></returns>
+            private string CreateSlidingDateRangePickerDelimitedValues()
+            {
+                return string.Format(
+                    "{0}|{1}|{2}|{3}|{4}",
+                    this.DateRangeMode,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode ) ? this.NumberOfTimeUnits : ( int? ) null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.DateRangeMode ) ? this.TimeUnit : ( TimeUnitType? ) null,
+                    this.DateRangeMode == SlidingDateRangeType.DateRange ? this.StartDate : null,
+                    this.DateRangeMode == SlidingDateRangeType.DateRange ? this.EndDate : null );
+            }
+        }
     }
 }

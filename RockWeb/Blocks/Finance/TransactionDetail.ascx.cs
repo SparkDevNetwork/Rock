@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Finance
             gAccountsView.ShowActionRow = false;
 
             var qryParam = new Dictionary<string, string>();
-            qryParam.Add( "transactionId", "PLACEHOLDER" );
+            qryParam.Add( "TransactionId", "PLACEHOLDER" );
 
             gRefunds.DataKeyNames = new string[] { "Id" };
             gRefunds.ShowActionRow = false;
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "transactionId" ).AsInteger(), PageParameter( "batchId" ).AsIntegerOrNull() );
+                ShowDetail( PageParameter( "TransactionId" ).AsInteger(), PageParameter( "BatchId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -609,7 +609,7 @@ namespace RockWeb.Blocks.Finance
             if ( isValid )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "batchId", hfBatchId.Value );
+                qryParams.Add( "BatchId", hfBatchId.Value );
                 NavigateToLinkedPage( "BatchDetailPage", qryParams );
             }
         }
@@ -636,9 +636,9 @@ namespace RockWeb.Blocks.Finance
             {
                 Dictionary<string, string> pageParams = new Dictionary<string, string>();
 
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "BatchId" ) ) )
                 {
-                    pageParams.Add( "BatchId", PageParameter( "batchId" ) );
+                    pageParams.Add( "BatchId", PageParameter( "BatchId" ) );
                 }
 
                 NavigateToParentPage( pageParams );
@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.Finance
         {
             Dictionary<string, string> pageParams = new Dictionary<string, string>();
 
-            pageParams.Add( "BatchId", PageParameter( "batchId" ) );
+            pageParams.Add( "BatchId", PageParameter( "BatchId" ) );
             pageParams.Add( "TransactionId", "0" );
             NavigateToPage( RockPage.Guid, pageParams );
 
@@ -1048,8 +1048,8 @@ namespace RockWeb.Blocks.Finance
             if ( nextFinancialTransaction != default( int ) )
             {
                 var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "batchId", hfBatchId.Value );
-                qryParam.Add( "transactionId", nextFinancialTransaction.ToStringSafe() );
+                qryParam.Add( "BatchId", hfBatchId.Value );
+                qryParam.Add( "TransactionId", nextFinancialTransaction.ToStringSafe() );
                 lbNext.NavigateUrl = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
             }
             else
@@ -1060,8 +1060,8 @@ namespace RockWeb.Blocks.Finance
             if ( backFinancialTransaction != default( int ) )
             {
                 var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "batchId", hfBatchId.Value );
-                qryParam.Add( "transactionId", backFinancialTransaction.ToStringSafe() );
+                qryParam.Add( "BatchId", hfBatchId.Value );
+                qryParam.Add( "TransactionId", backFinancialTransaction.ToStringSafe() );
                 lbBack.NavigateUrl = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
             }
             else
@@ -1372,7 +1372,7 @@ namespace RockWeb.Blocks.Finance
                     if ( txn.RefundDetails.OriginalTransaction != null )
                     {
                         var qryParam = new Dictionary<string, string>();
-                        qryParam.Add( "transactionId", txn.RefundDetails.OriginalTransaction.Id.ToStringSafe() );
+                        qryParam.Add( "TransactionId", txn.RefundDetails.OriginalTransaction.Id.ToStringSafe() );
                         string url = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
                         refundTxt = string.Format( "Yes (<a href='{0}'>Original Transaction</a>)", url );
                     }
@@ -1728,7 +1728,7 @@ namespace RockWeb.Blocks.Finance
             if ( txn.Batch != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "batchId", txn.BatchId.ToString() );
+                qryParams.Add( "BatchId", txn.BatchId.ToString() );
                 lBatchId.Text = string.Format( "<div class='label label-info'><a href='{1}'>Batch #{0}</a></div>", txn.BatchId, LinkedPageUrl( "BatchDetailPage", qryParams ) );
                 lBatchId.Visible = true;
             }

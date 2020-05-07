@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Administration
         protected void gControllers_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "controller", e.RowKeyValue.ToString() );
+            queryParams.Add( "Controller", e.RowKeyValue.ToString() );
             NavigateToLinkedPage( "DetailPage", queryParams );
         }
 

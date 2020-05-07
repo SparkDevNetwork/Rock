@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPledges_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pledgeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "PledgeId", 0 );
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pledgeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "PledgeId", e.RowKeyId );
         }
 
         /// <summary>

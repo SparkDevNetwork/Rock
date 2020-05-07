@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Security
         private void gRestKeyList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "restUserId", "0" );
+            parms.Add( "RestUserId", "0" );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Security
         {
             var parms = new Dictionary<string, string>();
             var restUserId = e.RowKeyId;
-            parms.Add( "restUserId", restUserId.ToString() );
+            parms.Add( "RestUserId", restUserId.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

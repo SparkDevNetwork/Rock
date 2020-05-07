@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Event
             gPayments.GridRebind += gPayments_GridRebind;
 
             var qryParam = new Dictionary<string, string>();
-            qryParam.Add( "transactionId", "PLACEHOLDER" );
+            qryParam.Add( "TransactionId", "PLACEHOLDER" );
             var hlCol = gPayments.Columns[0] as HyperLinkField;
             if ( hlCol != null )
             {
@@ -611,7 +611,7 @@ namespace RockWeb.Blocks.Event
                 string registrationId = PageParameter( "RegistrationId" );
                 if ( !string.IsNullOrWhiteSpace( registrationId ) )
                 {
-                    ShowDetail( registrationId.AsInteger(), PageParameter( "registrationInstanceId" ).AsIntegerOrNull() );
+                    ShowDetail( registrationId.AsInteger(), PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull() );
                 }
                 else
                 {

@@ -128,6 +128,15 @@ namespace Rock.Model
         [DataMember]
         public bool IsRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide when none remaining].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide when none remaining]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool HideWhenNoneRemaining { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
@@ -200,16 +209,25 @@ namespace Rock.Model
             {
                 if ( usageCountRemaining <= 0 )
                 {
+                    cb.Label += " (none remaining)";
+
                     // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
                     if ( currentValue == 0 )
                     {
-                        cb.Enabled = false;
+                        // Unless this should be hidden, then set to null so it isn't added.
+                        if ( HideWhenNoneRemaining == true )
+                        {
+                            cb = null;
+                        }
+                        else
+                        {
+                            cb.Enabled = false;
+                            cb.FormGroupCssClass = "none-remaining text-muted disabled";
+                        }
                     }
-
-                    cb.Label += " (none remaining)";
                 }
 
-                if ( setValues )
+                if ( cb != null && setValues )
                 {
                     cb.Checked = currentValue > 0;
                 }
@@ -241,15 +259,22 @@ namespace Rock.Model
             {
                 if ( usageCountRemaining <= 0 )
                 {
+                    numUpDown.Label += " (none remaining)";
+                    numUpDown.Maximum = currentValue;
+
                     // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
                     if ( currentValue == 0 )
                     {
-                        numUpDown.Enabled = false;
+                        // Unless this should be hidden, then set to null so it isn't added.
+                        if ( HideWhenNoneRemaining == true )
+                        {
+                            numUpDown = null;
+                        }
+                        else
+                        {
+                            numUpDown.Enabled = false;
+                        }
                     }
-
-                    numUpDown.Label += " (none remaining)";
-
-                    numUpDown.Maximum = currentValue;
                 }
                 else
                 {
@@ -258,7 +283,7 @@ namespace Rock.Model
                 }
             }
 
-            if ( setValues && feeValues != null && feeValues.Any() )
+            if ( numUpDown != null && setValues && feeValues != null && feeValues.Any() )
             {
                 numUpDown.Value = feeValues.First().Quantity;
             }
@@ -292,19 +317,30 @@ namespace Rock.Model
                 var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
                 int currentValue = feeInfo?.Quantity ?? 0;
 
+                string listItemText = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
+                var listItem = new ListItem( listItemText, feeItem.Id.ToString() );
+
                 int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
-                var listItem = new ListItem( string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ), feeItem.Id.ToString() );
                 if ( usageCountRemaining.HasValue )
                 {
                     if ( usageCountRemaining <= 0 )
                     {
+                        listItem.Text += " (none remaining)";
+
                         // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
                         if ( currentValue == 0 )
                         {
-                            listItem.Enabled = false;
-                        }
+                            // Unless this should be hidden, then set to null so it isn't added.
+                            if ( HideWhenNoneRemaining == true )
+                            {
+                                listItem = null;
+                            }
+                            else
+                            {
+                                listItem.Enabled = false;
 
-                        listItem.Text += " (none remaining)";
+                            }
+                        }
                     }
                     else
                     {
@@ -312,7 +348,16 @@ namespace Rock.Model
                     }
                 }
 
-                ddl.Items.Add( listItem );
+                if ( listItem != null )
+                {
+                    ddl.Items.Add( listItem );
+                }
+            }
+
+            // The first item is blank. If there are no other items then return null, this will prevent the control from showing and won't count as a control when deciding to show the fee div.
+            if ( ddl.Items.Count == 1 )
+            {
+                return null;
             }
 
             if ( setValues && feeValues != null && feeValues.Any() )
@@ -348,10 +393,12 @@ namespace Rock.Model
                 var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
                 int currentValue = feeInfo?.Quantity ?? 0;
 
+                string controlLabel = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
+
                 var numUpDown = new NumberUpDown
                 {
                     ID = $"feeItem_{feeItem.Guid.ToString( "N" )}",
-                    Label = string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ),
+                    Label = controlLabel,
                     Minimum = 0
                 };
 
@@ -361,14 +408,22 @@ namespace Rock.Model
                 {
                     if ( usageCountRemaining <= 0 )
                     {
+                        numUpDown.Label += " (none remaining)";
+                        numUpDown.Maximum = currentValue;
+
                         // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
                         if ( currentValue == 0 )
                         {
-                            numUpDown.Enabled = false;
+                            // Unless this should be hidden, then set to null so it isn't added.
+                            if ( HideWhenNoneRemaining == true )
+                            {
+                                numUpDown = null;
+                            }
+                            else
+                            {
+                                numUpDown.Enabled = false;
+                            }
                         }
-
-                        numUpDown.Label += " (none remaining)";
-                        numUpDown.Maximum = currentValue;
                     }
                     else
                     {
@@ -377,15 +432,24 @@ namespace Rock.Model
                     }
                 }
 
-                numberUpDownGroup.NumberUpDownControls.Add( numUpDown );
-
-                if ( setValues && feeValues != null && feeValues.Any() )
+                if ( numUpDown != null )
                 {
-                    numUpDown.Value = feeValues
-                        .Where( f => f.RegistrationTemplateFeeItemId == feeItem.Id )
-                        .Select( f => f.Quantity )
-                        .FirstOrDefault();
+                    numberUpDownGroup.NumberUpDownControls.Add( numUpDown );
+
+                    if ( setValues && feeValues != null && feeValues.Any() )
+                    {
+                        numUpDown.Value = feeValues
+                            .Where( f => f.RegistrationTemplateFeeItemId == feeItem.Id )
+                            .Select( f => f.Quantity )
+                            .FirstOrDefault();
+                    }
                 }
+            }
+
+            // If there are no items then return null, this will prevent the control from showing and won't count as a control when deciding to show the fee div.
+            if ( !numberUpDownGroup.NumberUpDownControls.Any() )
+            {
+                return null;
             }
 
             return numberUpDownGroup;
@@ -417,6 +481,7 @@ namespace Rock.Model
         {
             RegistrationTemplateFee fee = this;
             Control feeControl = null;
+
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
                 var feeItem = fee.FeeItems.FirstOrDefault();
@@ -424,16 +489,7 @@ namespace Rock.Model
                 {
                     int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
 
-                    string controlLabel;
-
-                    if ( feeItem.Cost != 0.0M )
-                    {
-                        controlLabel = $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
-                    }
-                    else
-                    {
-                        controlLabel = feeItem.Name;
-                    }
+                    string controlLabel = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
 
                     if ( fee.AllowMultiple )
                     {
@@ -447,6 +503,7 @@ namespace Rock.Model
             }
             else
             {
+                
                 if ( fee.AllowMultiple )
                 {
                     feeControl = GetFeeMultipleOptionMultipleQuantityControl( setValues, feeValues, registrationInstance, otherRegistrants );

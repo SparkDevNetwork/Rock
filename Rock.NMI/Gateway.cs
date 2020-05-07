@@ -1878,7 +1878,8 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         /// <summary>
-        /// Gets the paymentInfoToken that the hostedPaymentInfoControl returned (see also <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" />)
+        /// Populates the properties of the referencePaymentInfo from this gateway's <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" >hostedPaymentInfoControl</seealso>
+        /// This includes the ReferenceNumber, plus any other fields that the gateway wants to set
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>

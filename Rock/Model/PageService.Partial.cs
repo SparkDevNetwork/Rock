@@ -325,6 +325,10 @@ namespace Rock.Model
 
             foreach ( var attributeValue in attributeValues )
             {
+                var attribute = AttributeCache.Get( attributeValue.AttributeId );
+                var fieldType = attribute?.FieldType.Field as Field.FieldType;
+                var currentValue = attributeValue;
+
                 var newAttributeValue = attributeValue.Clone( false );
                 newAttributeValue.CreatedByPersonAlias = null;
                 newAttributeValue.CreatedByPersonAliasId = currentPersonAliasId;
@@ -335,6 +339,11 @@ namespace Rock.Model
                 newAttributeValue.Id = 0;
                 newAttributeValue.Guid = Guid.NewGuid();
                 newAttributeValue.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == attributeValue.EntityId.Value ).FirstOrDefault().Key]];
+
+                if ( fieldType != null && currentValue != null && currentValue.Value != null )
+                {
+                    newAttributeValue.Value = fieldType.GetCopyValue( currentValue.Value, rockContext );
+                }
 
                 if ( attributeValue.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.PAGE_REFERENCE.AsGuid() )
                 {

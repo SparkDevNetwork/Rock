@@ -216,6 +216,15 @@
                             <asp:Literal ID="lblMainDetailsCol1" runat="server" />
                         </div>
                         <div class="col-md-6">
+                            <dl class="margin-b-md">
+                                <dt>Median Time To Serve</dt>
+                                <dd>
+                                    <asp:Literal runat="server" ID="lMedianTime" />
+                                    <asp:LinkButton runat="server" ID="lbMedianTimeDetails" CssClass="small" OnClick="lbMedianTimeDetails_Click">
+                                        Details
+                                    </asp:LinkButton>
+                                </dd>
+                            </dl>
                             <asp:Literal ID="lblMainDetailsCol2" runat="server" />
                         </div>
                     </div>

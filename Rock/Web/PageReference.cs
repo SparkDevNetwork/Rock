@@ -50,9 +50,9 @@ namespace Rock.Web
         /// Gets the route parameters.
         /// </summary>
         /// <value>
-        /// The route parameters.
+        /// The route parameters as a case-insensitive dictionary of key/value pairs.
         /// </value>
-        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
         /// <summary>
         /// Gets the query string.

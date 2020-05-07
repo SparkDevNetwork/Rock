@@ -41,6 +41,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IsGlobal { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsGlobal = source.IsGlobal;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PageId = source.PageId;

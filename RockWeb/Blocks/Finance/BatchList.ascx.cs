@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "batchId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "BatchId", e.RowKeyId );
         }
 
         /// <summary>
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "batchId", 0 );
+            NavigateToLinkedPage( "DetailPage", "BatchId", 0 );
         }
 
         /// <summary>

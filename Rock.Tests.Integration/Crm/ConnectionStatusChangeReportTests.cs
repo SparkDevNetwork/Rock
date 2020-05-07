@@ -19,11 +19,10 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.Utility;
+using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Crm
@@ -32,234 +31,54 @@ namespace Rock.Tests.Integration.Crm
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class ConnectionStatusChangeReportTests
+    public class ConnectionStatusChangeReportTests : DatabaseIntegrationTestClassBase
     {
-        #region Test Data
+        #region Initialization
 
-        private const string _TestDataSourceOfChange = "ConnectionStatusChangeReportTest";
-        private const int _BulkHistoryMaxPeople = 5000;
-        private const int _BulkHistoryMinChangesPerPerson = 1000;
-        private const int _BulkHistoryMaxChangesPerPerson = 1000;
-        private readonly DateTime _BulkHistoryEndDate = RockDateTime.Now;
-        private const int _BulkHistoryMaxPeriodInDays = 365;
-
+        private const string _TestDataSourceTag = "ConnectionStatusChangeReportTest";
         private readonly int _InvalidCampusId = 99;
         private readonly int _MainCampusId = 1;
 
         /// <summary>
-        /// Removes the test data from the current database.
+        /// Override this method to perform custom validation to ensure that the required test data exists in the database.
         /// </summary>
-        [TestMethod]
-        [TestCategory( TestCategories.RemoveData )]
-        [TestProperty( "Feature", TestFeatures.DataMaintenance )]
-        public void RemoveConnectionStatusChangeHistoryTestData()
+        /// <param name="isValid"></param>
+        /// <param name="stateMessage">A message describing the reasons for a failure state.</param>
+        protected override void OnValidateTestData( out bool isValid, out string stateMessage )
         {
-            var dataContext = new RockContext();
-
-            // History table has no dependencies, so use SQL delete for efficiency.
-            var recordsDeleted = dataContext.Database.ExecuteSqlCommand( "delete from [History] where [SourceOfChange] = @p0 ", _TestDataSourceOfChange );
-
-            Debug.Print( $"Delete History: {recordsDeleted} records deleted." );
-        }
-
-        /// <summary>
-        /// Adds a predictable set of Connection Status changes to the test database that are used for integration testing.
-        /// </summary>
-        [TestMethod]
-        [TestCategory( TestCategories.AddData )]
-        [TestProperty( "Feature", TestFeatures.DataSetup )]
-        public void AddConnectionStatusChangeHistoryTestData()
-        {
-            this.RemoveConnectionStatusChangeHistoryTestData();
-
-            var dataContext = new RockContext();
-
-            this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
-
-            var memberConnectionStatusId = GetStatusValueIdOrThrow( "Member" );
-            var attenderConnectionStatusId = GetStatusValueIdOrThrow( "Attendee" );
-            var visitorConnectionStatusId = GetStatusValueIdOrThrow( "Visitor" );
-            var prospectConnectionStatusId = GetStatusValueIdOrThrow( "Web Prospect" );
-
-            var personService = new PersonService( dataContext );
-
-            var personList = personService.Queryable()
-                .AsNoTracking()
-                .Where( x => !x.IsSystem )
-                .Take( _BulkHistoryMaxPeople )
-                .ToList();
-
-            var currentDate = _BulkHistoryEndDate;
-
-            var rng = new Random();
-
-            var adminPerson = this.GetAdminPersonOrThrow( personService );
-
-            // Create new change history entries for each person.
-            int entriesAdded = 0;
-            History.HistoryChange historyEntry;
-
-            foreach ( var person in personList )
+            try
             {
-                var historyChanges = new History.HistoryChangeList();
+                // Verify that the necessary test data exists by retrieving a well-known test record.
+                var dataContext = GetNewDataContext();
 
-                var dateOfChange = currentDate;
+                var historyService = new HistoryService( dataContext );
 
-                if ( person.ConnectionStatusValueId == memberConnectionStatusId )
+                var testEntryExists = historyService.Queryable().AsNoTracking().Any( x => x.SourceOfChange == _TestDataSourceTag );
+
+                if ( !testEntryExists )
                 {
-                    // For each Person who has a Connection Status of Member, add prior change events for Visitor --> Attendee --> Member.
-
-                    // Add a change for Attendee --> Member.
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
-
-                    historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
-                        .SetOldValue( "Attendee" )
-                        .SetNewValue( "Member" )
-                        .SetRawValues( attenderConnectionStatusId.ToString(), memberConnectionStatusId.ToString() )
-                        .SetDateOfChange( dateOfChange )
-                        .SetSourceOfChange( _TestDataSourceOfChange );
-
-                    // Add a change for Visitor --> Attendee.
-                    // This change record has only the OldValue and NewValue, compatible with records created prior to Rock v1.8
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
-
-                    historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
-                        .SetOldValue( "Visitor" )
-                        .SetNewValue( "Attendee" )
-                        .SetDateOfChange( dateOfChange )
-                        .SetSourceOfChange( _TestDataSourceOfChange );
-
-                    entriesAdded += 2;
-                }
-                else if ( person.ConnectionStatusValueId == visitorConnectionStatusId )
-                {
-                    // For each Person who has a Connection Status of Visitor, add prior change events for Web Prospect --> Visitor.
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
-
-                    historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
-                        .SetOldValue( "Web Prospect" )
-                        .SetNewValue( "Visitor" )
-                        .SetRawValues( prospectConnectionStatusId.ToString(), visitorConnectionStatusId.ToString() )
-                        .SetDateOfChange( dateOfChange )
-                        .SetSourceOfChange( _TestDataSourceOfChange );
-
-                    entriesAdded += 1;
+                    throw new Exception( $"History Test Data does not exist in this database. [SourceTag={ _TestDataSourceTag }]" );
                 }
 
-                Debug.Print( $"Processed History Entries... [PersonId={person.Id}, Date={dateOfChange}]" );
+                isValid = true;
+                stateMessage = null;
 
-                HistoryService.SaveChanges( dataContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
+                // Create a baseline report to be used as a reference point for all of the tests.
+                CreateBaselineReport( dataContext );
+
+                // Verify that the baseline report does not contain PrimaryCampusId=null for any record.
+                int hasCampusCount = _BaselineReport.ChangeEvents.Count( x => x.CampusId != null );
+
+                if ( hasCampusCount > 0 )
+                {
+                    throw new Exception( "Person.CampusId field is not populated. To calculate this value, run the \"Rock Cleanup\" Job for the current database." );
+                }
             }
-
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
-
-            Assert.IsTrue( entriesAdded > 0, "No history entries created." );
-        }
-
-        /// <summary>
-        /// Adds a randomized set of Connection Status changes to the test database.
-        /// This is only required for performance testing.
-        /// </summary>
-        [TestMethod]
-        [TestCategory( TestCategories.AddData )]
-        [TestProperty( "Feature", TestFeatures.DataSetupBulk )]
-        public void AddConnectionStatusChangeHistoryBulkTestData()
-        {
-            var dataContext = new RockContext();
-
-            //this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
-
-            // Add Connection Status Change History Entries.
-            var personService = new PersonService( dataContext );
-
-            var personQuery = personService.Queryable()
-                .AsNoTracking()
-                .Where( x => !x.IsSystem )
-                .Take( _BulkHistoryMaxPeople ).ToList();
-
-            var statusType = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS );
-
-            var statusValues = statusType.DefinedValues.Select( x => x.Id ).ToList();
-
-            int? toStatusId;
-            int? fromStatusId;
-
-            var rng = new Random();
-
-            var adminPerson = this.GetAdminPersonOrThrow( personService );
-
-            // For each person, add a random number of status changes over a random period of time prior to today.
-            int entriesAdded = 0;
-
-            foreach ( var person in personQuery )
+            catch ( Exception ex )
             {
-                var historyChanges = new History.HistoryChangeList();
-
-                var numberOfChanges = rng.Next( _BulkHistoryMinChangesPerPerson, _BulkHistoryMaxChangesPerPerson + 1 );
-
-                // Distribute the changes evenly throughout a random period of days.
-                var changePeriodInDays = rng.Next( 1, _BulkHistoryMaxPeriodInDays + 1 );
-
-                //var firstDate = lastDate.AddDays( changePeriodInDays  * -1 );
-
-                decimal dayIncrement = Decimal.Divide( changePeriodInDays, numberOfChanges );
-                decimal dayOffset = 0;
-
-                DateTime dateOfChange; // = _HistoryTestEndDate;
-
-                // Set the initial value to the current status.
-                fromStatusId = person.ConnectionStatusValueId;
-
-                for ( int i = 1; i <= numberOfChanges; i++ )
-                {
-                    dateOfChange = _BulkHistoryEndDate.AddDays( ( int ) dayOffset * -1 );
-
-                    dayOffset = dayOffset + dayIncrement;
-
-                    // Set the target status for this change to be the status prior to the most recent status change.
-                    // This is to ensure that the status changes form a logical sequence.
-                    toStatusId = fromStatusId;
-
-                    do
-                    {
-                        fromStatusId = statusValues.GetRandomElement();
-                    }
-                    while ( toStatusId == fromStatusId );
-
-                    var historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
-                        .SetNewValue( toStatusId.ToStringSafe() )
-                        .SetOldValue( fromStatusId.ToStringSafe() )
-                        .SetRawValues( fromStatusId.ToStringSafe(), toStatusId.ToStringSafe() )
-                        .SetDateOfChange( dateOfChange )
-                        .SetSourceOfChange( _TestDataSourceOfChange );
-
-                    entriesAdded++;
-
-                    Debug.Print( $"Added History Entry [Entry#={entriesAdded}, PersonId={person.Id}, Date={dateOfChange}, OldValue={fromStatusId}, NewValue={toStatusId}" );
-                }
-
-                dataContext = new RockContext();
-
-                HistoryService.SaveChanges( dataContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
+                isValid = false;
+                stateMessage = ex.Message;
             }
-
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
-
-            Assert.IsTrue( entriesAdded > 0, "No history entries created." );
-        }
-
-        /// <summary>
-        /// Check if test records already exist in the current database.
-        /// </summary>
-        /// <param name="dataContext"></param>
-        /// <param name="sourceOfChangeIdentifier"></param>
-        private void ThrowIfTestHistoryDataExists( RockContext dataContext, string sourceOfChangeIdentifier )
-        {
-            var historyService = new HistoryService( dataContext );
-
-            var testEntryExists = historyService.Queryable().AsNoTracking().Any( x => x.SourceOfChange == sourceOfChangeIdentifier );
-
-            Assert.IsFalse( testEntryExists, $"History Test Data already exists in this database. [SourceOfChange={sourceOfChangeIdentifier}]" );
         }
 
         #endregion
@@ -267,36 +86,19 @@ namespace Rock.Tests.Integration.Crm
         #region Tests
 
         /// <summary>
-        /// Verify that the test data in the target database is valid.
-        /// </summary>
-        [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void TestDataIsValid()
-        {
-            var dataContext = new RockContext();
-
-            // Get an unfiltered report and verify that it does not contain PrimaryCampusId=null for any record.
-            var reportBase = this.GetBaselineReport();
-
-            int hasCampusCount = reportBase.ChangeEvents.Count( x => x.CampusId != null );
-
-            Assert.IsTrue( ( hasCampusCount > 0 ), "Person.CampusId field is not populated. To calculate this value, run the \"Rock Cleanup\" Job for the current database." );
-        }
-
-        /// <summary>
         /// Verify the report can be correctly filtered by Campus.
         /// </summary>
         [TestMethod]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void FilterByCampusShouldReturnPeopleInMatchedCampusOnly()
+        public void FilterByCampus_MatchesExist_ShouldReturnPeopleInMatchedCampusOnly()
         {
-            var dataContext = new RockContext();
+            VerifyTestPreconditionsOrThrow();
+
+            var dataContext = GetDataContext();
 
             // Get an unfiltered report and verify that it contains records for Campus "Main".
             // This establishes the baseline for the test.
-            var reportBase = this.GetBaselineReport();
-
-            Assert.IsTrue( reportBase.ChangeEvents.Any( x => x.CampusId == _MainCampusId ), "History events expected but not found. [Campus=(unfiltered)" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.CampusId == _MainCampusId ), "History events expected but not found. [Campus=(unfiltered)" );
 
             // The standard test data set does not currently have data for people in multiple campuses.
             // As an alternative, create a filtered report for a non-existent Campus and verify that no records are returned.
@@ -308,7 +110,7 @@ namespace Rock.Tests.Integration.Crm
 
             var reportFiltered = reportService.CreateReport();
 
-            Assert.IsFalse( reportFiltered.ChangeEvents.Any( x => x.CampusId == _MainCampusId ), "History events found but not expected. [CampusId=999]" );
+            Assert.That.IsFalse( reportFiltered.ChangeEvents.Any( x => x.CampusId == _MainCampusId ), "History events found but not expected. [CampusId=999]" );
         }
 
         /// <summary>
@@ -320,18 +122,18 @@ namespace Rock.Tests.Integration.Crm
         /// </remarks>
         [TestMethod]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void FilterByCurrentYearShouldReturnChangesInCurrentYearOnly()
+        public void FilterByCurrentYear_MatchesExist_ShouldReturnChangesInCurrentYearOnly()
         {
-            var dataContext = new RockContext();
+            VerifyTestPreconditionsOrThrow();
+
+            var dataContext = GetDataContext();
 
             // Get an unfiltered report and verify that it contains records for this year and previous years.
             // This establishes the baseline for the test.
-            var reportBase = this.GetBaselineReport();
-
             int currentYear = RockDateTime.Now.Year;
 
-            Assert.IsTrue( reportBase.ChangeEvents.Any( x => x.EventDate.Year == currentYear ), "History events expected but not found. [EventDate=(current year)" );
-            Assert.IsTrue( reportBase.ChangeEvents.Any( x => x.EventDate.Year == ( currentYear - 1 ) ), "History events expected but not found. [EventDate=(previous year)" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.EventDate.Year == currentYear ), "History events expected but not found. [EventDate=(current year)" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.EventDate.Year == ( currentYear - 1 ) ), "History events expected but not found. [EventDate=(previous year)" );
 
             // Create a filtered report for current year only.
             var settings = new ConnectionStatusChangeReportSettings();
@@ -342,7 +144,7 @@ namespace Rock.Tests.Integration.Crm
 
             var reportFiltered = reportService.CreateReport();
 
-            Assert.IsFalse( reportFiltered.ChangeEvents.Any( x => x.EventDate.Year != currentYear ), "History events found but not expected. [EventDate != (current year)]" );
+            Assert.That.IsFalse( reportFiltered.ChangeEvents.Any( x => x.EventDate.Year != currentYear ), "History events found but not expected. [EventDate != (current year)]" );
         }
 
         /// <summary>
@@ -350,9 +152,11 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         [TestMethod]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void FilterByOriginalAndUpdatedStatusesShouldReturnMatchingStatusesOnly()
+        public void FilterByStatus_OriginalAndUpdatedStatusSpecified_ShouldReturnMatchingStatusesOnly()
         {
-            var dataContext = new RockContext();
+            VerifyTestPreconditionsOrThrow();
+
+            var dataContext = this.GetDataContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -366,21 +170,20 @@ namespace Rock.Tests.Integration.Crm
 
             // Get an unfiltered report.
             // The unfiltered data should contain Original Status=[Attendee|Web Prospect].
-            reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
 
-            report = reportBuilder.CreateReport();
-
-            Assert.IsTrue( report.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeConnectionStatusId ), "Status expected but not found. [Status=Attendee]" );
-            Assert.IsTrue( report.ChangeEvents.Any( x => x.OldConnectionStatusId == prospectConnectionStatusId ), "Status expected but not found. [Status=Web Prospect]" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeConnectionStatusId ), "Status expected but not found. [Status=Attendee]" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == prospectConnectionStatusId ), "Status expected but not found. [Status=Web Prospect]" );
 
             // Get a filtered report: Original Status=Attendee, UpdatedStatus=Member.
             // The filtered data should only contain Original Status=Attendee.
             settings.FromConnectionStatusId = attendeeConnectionStatusId;
             settings.ToConnectionStatusId = memberConnectionStatusId;
 
+            reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
+
             report = reportBuilder.CreateReport();
 
-            Assert.IsTrue( !report.ChangeEvents.Any( x => x.OldConnectionStatusId != attendeeConnectionStatusId ), "Status found but not expected." );
+            Assert.That.IsTrue( !report.ChangeEvents.Any( x => x.OldConnectionStatusId != attendeeConnectionStatusId ), "Status found but not expected." );
         }
 
         /// <summary>
@@ -388,9 +191,11 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         [TestMethod]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void FilterByUnspecifiedOriginalStatusShouldReturnAllStatuses()
+        public void FilterByStatus_OriginalStatusIsUnspecified_ShouldReturnAllStatuses()
         {
-            var dataContext = new RockContext();
+            VerifyTestPreconditionsOrThrow();
+
+            var dataContext = GetDataContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -402,19 +207,17 @@ namespace Rock.Tests.Integration.Crm
 
             // Get an unfiltered report.
             // The unfiltered data should contain at least one record that is a transition from Visitor.
-            reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
-
-            report = reportBuilder.CreateReport();
-
-            Assert.IsTrue( report.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeStatusId ), "Status expected but not found. [Status=Attendee]" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeStatusId ), "Status expected but not found. [Status=Attendee]" );
 
             // Get a filtered report: Original Status=Attendee, UpdatedStatus=Member.
+            reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
+
             settings.ToConnectionStatusId = GetStatusValueIdOrThrow( "Member" );
 
             report = reportBuilder.CreateReport();
 
             // The report should include events for new people, represented by a change from (null) --> (some status).
-            Assert.IsTrue( report.ChangeEvents.Any( x => string.IsNullOrEmpty( x.OldConnectionStatusName ) ), "Status expected but not found. [OldStatus=(empty)]" );
+            Assert.That.IsTrue( report.ChangeEvents.Any( x => string.IsNullOrEmpty( x.OldConnectionStatusName ) ), "Status expected but not found. [OldStatus=(empty)]" );
         }
 
         /// <summary>
@@ -422,9 +225,11 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         [TestMethod]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void FilterByUnspecifiedUpdatedStatusShouldReturnAllStatuses()
+        public void FilterByStatus_UpdatedStatusUnspecified_ShouldReturnAllStatuses()
         {
-            var dataContext = new RockContext();
+            VerifyTestPreconditionsOrThrow();
+
+            var dataContext = GetDataContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -438,9 +243,7 @@ namespace Rock.Tests.Integration.Crm
             // The unfiltered data should contain at least one record that is a transition from Visitor.
             reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
 
-            report = reportBuilder.CreateReport();
-
-            Assert.IsTrue( report.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeStatusId ), "Status expected but not found. [Status=Attendee]" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeStatusId ), "Status expected but not found. [Status=Attendee]" );
 
             // Get a filtered report: Original Status=Attendee, UpdatedStatus=Member.
             settings.ToConnectionStatusId = GetStatusValueIdOrThrow( "Member" );
@@ -448,7 +251,7 @@ namespace Rock.Tests.Integration.Crm
             report = reportBuilder.CreateReport();
 
             // The report should include events for new people, represented by a change from (null) --> (some status).
-            Assert.IsTrue( report.ChangeEvents.Any( x => string.IsNullOrEmpty( x.OldConnectionStatusName ) ), "Status expected but not found. [OldStatus=(empty)]" );
+            Assert.That.IsTrue( report.ChangeEvents.Any( x => string.IsNullOrEmpty( x.OldConnectionStatusName ) ), "Status expected but not found. [OldStatus=(empty)]" );
         }
 
         /// <summary>
@@ -457,15 +260,18 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         [TestProperty( "Purpose", TestPurposes.Performance )]
         [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
-        public void ReportFromLargeHistoryDatasetShouldNotTimeout()
+        public void Performance_LargeHistoryDataSet_ShouldNotTimeout()
         {
+            VerifyTestPreconditionsOrThrow();
+
             int monthsToInclude = 2;
 
             var periodStart = new DateTime( RockDateTime.Now.Year, RockDateTime.Now.Month, 1 );
 
+            // Run a series of monthly reports throughout the year to test performance for various time periods.
             for ( int i = 1; i <= 12; i++ )
             {
-                var dataContext = new RockContext();
+                var dataContext = GetDataContext();
 
                 periodStart = periodStart.AddMonths( monthsToInclude * -1 );
 
@@ -498,46 +304,22 @@ namespace Rock.Tests.Integration.Crm
 
         #region Support Methods
 
-        private ConnectionStatusChangeReportData _BaselineReport;
+        private static ConnectionStatusChangeReportData _BaselineReport;
 
         /// <summary>
         /// Returns a report that contains all of the available test data for comparison results.
         /// </summary>
         /// <returns></returns>
-        private ConnectionStatusChangeReportData GetBaselineReport()
+        private static void CreateBaselineReport( RockContext dataContext )
         {
-            if ( _BaselineReport == null )
-            {
-                var dataContext = new RockContext();
+            var settings = new ConnectionStatusChangeReportSettings();
 
-                var settings = new ConnectionStatusChangeReportSettings();
+            ConnectionStatusChangeReportBuilder reportBuilder;
 
-                ConnectionStatusChangeReportBuilder reportBuilder;
+            // Get an unfiltered report.
+            reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
 
-                // Get an unfiltered report.
-                reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
-
-                _BaselineReport = reportBuilder.CreateReport();
-            }
-
-            return _BaselineReport;
-        }
-
-        /// <summary>
-        /// Get a known Person who has been assigned a security role of Administrator.
-        /// </summary>
-        /// <param name="personService"></param>
-        /// <returns></returns>
-        private Person GetAdminPersonOrThrow( PersonService personService )
-        {
-            var adminPerson = personService.Queryable().FirstOrDefault( x => x.FirstName == "Alisha" && x.LastName == "Marble" );
-
-            if ( adminPerson == null )
-            {
-                throw new Exception( "Admin Person not found in test data set." );
-            }
-
-            return adminPerson;
+            _BaselineReport = reportBuilder.CreateReport();
         }
 
         /// <summary>
@@ -551,7 +333,7 @@ namespace Rock.Tests.Integration.Crm
 
             var connectionStatusType = statusType.DefinedValues.FirstOrDefault( x => x.Value == statusName );
 
-            Assert.IsNotNull( connectionStatusType, $"Connection Status Type not found. [TypeName={statusName}]" );
+            Assert.That.IsNotNull( connectionStatusType, $"Connection Status Type not found. [TypeName={statusName}]" );
 
             return connectionStatusType.Id;
         }

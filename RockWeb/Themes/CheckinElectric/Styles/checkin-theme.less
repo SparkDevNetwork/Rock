@@ -266,6 +266,27 @@ html {
 
 // Family Select Page
 
+.checkin-person {
+  min-height: 48px;
+
+  @media (min-width: @screen-xs-min) {
+    min-height: 86px;
+  }
+
+  > .btn,
+  > .btn > .row {
+    height: 100%;
+  }
+}
+
+.checkin-timelist.btn-group > .btn {
+  min-height: 48px;
+
+  @media (min-width: @screen-xs-min) {
+    min-height: 86px;
+  }
+}
+
 .photo-round.photo-round-md {
   width: 30px;
   height: 30px;
@@ -295,7 +316,6 @@ html {
   text-align: left;
 
   @media (min-width: @screen-xs-min) {
-    position: absolute;
     right: 0;
     left: 0;
     width: 100%;

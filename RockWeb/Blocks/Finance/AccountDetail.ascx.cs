@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var accountId = PageParameter( "accountId" ).AsInteger();
+            var accountId = PageParameter( "AccountId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( accountId );

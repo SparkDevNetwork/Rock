@@ -84,9 +84,9 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         public void BindGrid()
         {
-            int targetId = int.Parse( PageParameter( "targetId" ) );
-            int viewerId = int.Parse( PageParameter( "viewerId" ) );
-            bool viewedBy = Convert.ToBoolean( PageParameter( "viewedBy" ) );
+            int targetId = int.Parse( PageParameter( "TargetId" ) );
+            int viewerId = int.Parse( PageParameter( "ViewerId" ) );
+            bool viewedBy = Convert.ToBoolean( PageParameter( "ViewedBy" ) );
             var personViewedService = new PersonViewedService( new RockContext() );
             var personViewedList = personViewedService.Queryable()
                 .Where( p =>

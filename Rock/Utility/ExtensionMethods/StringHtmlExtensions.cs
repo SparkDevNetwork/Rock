@@ -182,6 +182,12 @@ namespace Rock
         /// <returns></returns>
         public static string SanitizeLava( this string lava )
         {
+            // Don't choke on nulls
+            if ( string.IsNullOrWhiteSpace( lava ) )
+            {
+                return string.Empty;
+            }
+
             var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
             lava = doubleBracesRegex.Replace( lava, string.Empty );
 

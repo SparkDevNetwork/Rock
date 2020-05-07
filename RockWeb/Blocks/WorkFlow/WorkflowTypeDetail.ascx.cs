@@ -854,7 +854,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["workflowTypeId"] = workflowType.Id.ToString();
+            qryParams["WorkflowTypeId"] = workflowType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -1238,7 +1238,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// </summary>
         private void ShowDetail()
         {
-            int? workflowTypeId = PageParameter( "workflowTypeId" ).AsIntegerOrNull();
+            int? workflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
             int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
 
             if ( !workflowTypeId.HasValue )

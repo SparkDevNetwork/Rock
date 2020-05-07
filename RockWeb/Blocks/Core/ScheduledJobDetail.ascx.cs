@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "serviceJobId" ).AsInteger() );
+                ShowDetail( PageParameter( "ServiceJobId" ).AsInteger() );
             }
         }
 
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Administration
         protected void ddlJobTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
             ServiceJob job;
-            var itemId = PageParameter( "serviceJobId" ).AsInteger();
+            var itemId = PageParameter( "ServiceJobId" ).AsInteger();
             if ( itemId == 0 )
             {
                 job = new ServiceJob { Id = 0, IsActive = true };

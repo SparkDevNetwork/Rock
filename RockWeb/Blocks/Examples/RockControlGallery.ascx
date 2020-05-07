@@ -544,6 +544,16 @@
                         <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
                     </div>
 
+                    <h2 runat="server">Interval</h2>
+                    <a id="IntervalPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:IntervalPicker ID="ipExample1" runat="server" Label="Rock:IntervalPicker" />
+                    </div>
+
+                    <div runat="server" class="r-example">
+                        <Rock:IntervalPicker ID="ipExample2" DefaultValue="2" DefaultInterval="Day" runat="server" Label="Rock:IntervalPicker (Default Value, Default Interval)" />
+                    </div>
+
                     <h2 runat="server">Locations</h2>
 
                     <a id="LocationPicker"></a>

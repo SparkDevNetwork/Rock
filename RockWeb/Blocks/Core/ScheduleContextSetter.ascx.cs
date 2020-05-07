@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Core
             var scheduleEntityType = EntityTypeCache.Get( typeof( Schedule ) );
             var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
-            var scheduleIdString = Request.QueryString["scheduleId"];
+            var scheduleIdString = Request.QueryString["ScheduleId"];
             if ( scheduleIdString != null )
             {
                 var scheduleId = scheduleIdString.AsInteger();
@@ -177,10 +177,10 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "scheduleId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "ScheduleId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "scheduleId", scheduleId.ToString() );
+                    queryString.Set( "ScheduleId", scheduleId.ToString() );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

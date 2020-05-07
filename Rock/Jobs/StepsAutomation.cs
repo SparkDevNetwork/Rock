@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Automate Steps From Dataviews
     /// </summary>
+    [DisplayName( "Steps Automation" )]
+    [Description( "Creates steps for people within a dataview." )]
+
     [IntegerField(
         "Duplicate Prevention Day Range",
         description: "If duplicates are enabled above, this setting will keep steps from being added if a previous step was within the number of days provided.",

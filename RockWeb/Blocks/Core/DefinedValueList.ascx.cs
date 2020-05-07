@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                definedTypeId = PageParameter( "definedTypeId" ).AsInteger();
+                definedTypeId = PageParameter( "DefinedTypeId" ).AsInteger();
             }
 
             return definedTypeId;

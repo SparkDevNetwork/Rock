@@ -365,7 +365,7 @@ namespace RockWeb.Blocks.Crm
                     case ( "name" ):
                         {
                             bool allowFirstNameOnly = false;
-                            if ( !bool.TryParse( PageParameter( "allowFirstNameOnly" ), out allowFirstNameOnly ) )
+                            if ( !bool.TryParse( PageParameter( "AllowFirstNameOnly" ), out allowFirstNameOnly ) )
                             {
                                 allowFirstNameOnly = false;
                             }

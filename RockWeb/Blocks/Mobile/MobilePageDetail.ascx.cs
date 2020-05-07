@@ -876,6 +876,7 @@ namespace RockWeb.Blocks.Mobile
 
                     AddAdminControls( block, phAdminButtons );
                     AddSettingsControls( block, phSettings );
+
                 }
             }
         }

@@ -255,8 +255,8 @@
 
             registerRecipients: function () {
                 var restUrl = Rock.settings.get('baseUrl') + 'api/Attendances/RegisterRSVPRecipients'
-                    + '?occurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0]
-                    + '&personIds=' + encodeURIComponent($('.js-rsvp-person-ids input').val());
+                    + '?OccurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0]
+                    + '&PersonIds=' + encodeURIComponent($('.js-rsvp-person-ids input').val());
 
                 $('#component-rsvp-registerbutton').addClass('disabled').text('Registering ...');
                 $.ajax({

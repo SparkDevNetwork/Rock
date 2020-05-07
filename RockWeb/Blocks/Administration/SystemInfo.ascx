@@ -16,35 +16,38 @@
             });
         });
 
-        $('a.show-pill').off('click').on('click', function () {
-    	    $('ul.nav-pills > li').attr('class', '');
-    	    $(this).parent().attr('class', 'active');
-    	    $('div.tabContent > div').hide();
-    	    $('#' + $(this).attr('pill')).show(0, function () {
-    	        Rock.controls.modal.updateSize();
-    	    });
-        });
-
         if ($('div.alert.alert-success').length > 0) {
     	        window.setTimeout("fadeAndClear()", 5000);
         }
+
+        $(".js-restart").off('click').on("click", function () {
+            Rock.dialogs.confirm('Are you sure you want to restart Rock?', function (result) {
+                if (result) {
+                    bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
+                    __doPostBack('<%= btnRestart.UniqueID %>', '');
+                }
+            });
+        });
+
     }
 
     function fadeAndClear() {
     	$('div.alert.alert-success').animate({ opacity: 0 }, 2000 );
     }
 
-
 </script>
 
 <ul class="nav nav-pills margin-b-md" >
-    <li class='active'><a pill="version-info" class="show-pill" href="#">Version Info</a></li>
-    <li><a pill="diagnostics-tab" class="show-pill" href="#">Diagnostics</a></li>
+    <li id="tabVersion" runat="server" class="active">
+        <asp:LinkButton ID="lnkVersionInfo" runat="server" Text="Version Info" OnClick="lbTab_Click" class="show-pill" pill="version-info" />
+    </li>
+    <li id="tabDiagnostics" runat="server">
+        <asp:LinkButton ID="lnkDiagnostics" runat="server" Text="Diagnostics" OnClick="lbTab_Click" class="show-pill" pill="diagnostics-tab" />
+    </li>
 </ul>
 
 <div class="tabContent" >
-
-    <div id="version-info">
+    <asp:Panel ID="pnlVersionTab" runat="server" CssClass="tab-panel">
 
         <p><strong>Rock Version: </strong>
             <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
@@ -59,9 +62,9 @@
             <a href="#" Class="btn btn-link js-restart" title="Restarts the Application.">Restart Rock</a>
             <asp:Button runat="server" ID="btnRestart" OnClick="btnRestart_Click" CssClass="hidden" />
         </div>
-    </div>
+    </asp:Panel>
 
-    <div id="diagnostics-tab" style="display:none">
+    <asp:Panel ID="pnlDiagnosticsTab" runat="server" CssClass="tab-panel">
 
         <h4>Details</h4>
         <p>
@@ -109,23 +112,6 @@
             </div>
         </div>
 
-
-        <%--<div class="row">
-            <div class="col-md-6">
-                <h4>Transaction Queue</h4>
-                <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
-            </div>
-            <div class="col-md-6">
-                <h4>Routes</h4>
-                <p><a id="show-routes" href="#">Show Routes</a></p>
-                <div id="routes" style="display:none">
-                    <p>
-                    <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
-                    </p>
-                </div>
-            </div>
-        </div>--%>
-
         <h4>Cache</h4>
         <div id="cache-details">
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
@@ -145,18 +131,5 @@
             <i class="fa fa-download"></i> Download Diagnostics File
         </asp:LinkButton>
 
-    </div>
-
-    <script>
-        $(".js-restart").on("click", function () {
-            Rock.dialogs.confirm('Are you sure you want to restart Rock?', function (result) {
-                if (result) {
-                    bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
-                    __doPostBack('<%= btnRestart.UniqueID %>', '');
-                }
-            });
-        });
-    </script>
-
+    </asp:Panel>
 </div>
-

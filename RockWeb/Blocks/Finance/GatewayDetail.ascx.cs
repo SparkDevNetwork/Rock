@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Finance
                 ddlBatchSchedule.DataSource = new[] { BatchDaily, BatchWeekly };
                 ddlBatchSchedule.DataBind();
 
-                ShowDetail( PageParameter( "gatewayId" ).AsInteger() );
+                ShowDetail( PageParameter( "GatewayId" ).AsInteger() );
             }
         }
 
