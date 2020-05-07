@@ -931,9 +931,10 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Workflow Triggers: Remove deleted triggers.
+            // Note that we need to be careful not to remove triggers related to a specific Step Type here, because they are managed separately in the Step Type Detail block.
             var uiWorkflows = WorkflowsState.Select( l => l.Guid );
 
-            var deletedTriggers = stepProgram.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
+            var deletedTriggers = stepProgram.StepWorkflowTriggers.Where( l => l.StepTypeId == null && !uiWorkflows.Contains( l.Guid ) ).ToList();
 
             foreach ( var trigger in deletedTriggers )
             {
@@ -1143,7 +1144,10 @@ namespace RockWeb.Blocks.Steps
             // Workflow Triggers
             WorkflowsState = new List<StepWorkflowTriggerViewModel>();
 
-            foreach ( var trigger in stepProgram.StepWorkflowTriggers )
+            // Only show triggers that are not related to a specific Step Type.
+            var stepTypeTriggers = stepProgram.StepWorkflowTriggers.Where( x => x.StepTypeId == null );
+
+            foreach ( var trigger in stepTypeTriggers )
             {
                 var newItem = new StepWorkflowTriggerViewModel( trigger );
 
