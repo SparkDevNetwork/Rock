@@ -1,0 +1,540 @@
+{% if PageParameter.Print %}
+{% comment %}
+<html>
+<head>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+{% endcomment %}
+<style>
+
+	@media print {
+  
+  .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
+    float: left;
+  }
+  .col-xs-12 {
+    width: 100%;
+  }
+  .col-xs-11 {
+    width: 91.66666667%;
+  }
+  .col-xs-10 {
+    width: 83.33333333%;
+  }
+  .col-xs-9 {
+    width: 75%;
+  }
+  .col-xs-8 {
+    width: 66.66666667%;
+  }
+  .col-xs-7 {
+    width: 58.33333333%;
+  }
+  .col-xs-6 {
+    width: 50%;
+  }
+  .col-xs-5 {
+    width: 41.66666667%;
+  }
+  .col-xs-4 {
+    width: 33.33333333%;
+  }
+  .col-xs-3 {
+    width: 25%;
+  }
+  .col-xs-2 {
+    width: 16.66666667%;
+  }
+  .col-xs-1 {
+    width: 8.33333333%;
+  }
+  .col-xs-pull-12 {
+    right: 100%;
+  }
+  .col-xs-pull-11 {
+    right: 91.66666667%;
+  }
+  .col-xs-pull-10 {
+    right: 83.33333333%;
+  }
+  .col-xs-pull-9 {
+    right: 75%;
+  }
+  .col-xs-pull-8 {
+    right: 66.66666667%;
+  }
+  .col-xs-pull-7 {
+    right: 58.33333333%;
+  }
+  .col-xs-pull-6 {
+    right: 50%;
+  }
+  .col-xs-pull-5 {
+    right: 41.66666667%;
+  }
+  .col-xs-pull-4 {
+    right: 33.33333333%;
+  }
+  .col-xs-pull-3 {
+    right: 25%;
+  }
+  .col-xs-pull-2 {
+    right: 16.66666667%;
+  }
+  .col-xs-pull-1 {
+    right: 8.33333333%;
+  }
+  .col-xs-pull-0 {
+    right: auto;
+  }
+  .col-xs-push-12 {
+    left: 100%;
+  }
+  .col-xs-push-11 {
+    left: 91.66666667%;
+  }
+  .col-xs-push-10 {
+    left: 83.33333333%;
+  }
+  .col-xs-push-9 {
+    left: 75%;
+  }
+  .col-xs-push-8 {
+    left: 66.66666667%;
+  }
+  .col-xs-push-7 {
+    left: 58.33333333%;
+  }
+  .col-xs-push-6 {
+    left: 50%;
+  }
+  .col-xs-push-5 {
+    left: 41.66666667%;
+  }
+  .col-xs-push-4 {
+    left: 33.33333333%;
+  }
+  .col-xs-push-3 {
+    left: 25%;
+  }
+  .col-xs-push-2 {
+    left: 16.66666667%;
+  }
+  .col-xs-push-1 {
+    left: 8.33333333%;
+  }
+  .col-xs-push-0 {
+    left: auto;
+  }
+  .col-xs-offset-12 {
+    margin-left: 100%;
+  }
+  .col-xs-offset-11 {
+    margin-left: 91.66666667%;
+  }
+  .col-xs-offset-10 {
+    margin-left: 83.33333333%;
+  }
+  .col-xs-offset-9 {
+    margin-left: 75%;
+  }
+  .col-xs-offset-8 {
+    margin-left: 66.66666667%;
+  }
+  .col-xs-offset-7 {
+    margin-left: 58.33333333%;
+  }
+  .col-xs-offset-6 {
+    margin-left: 50%;
+  }
+  .col-xs-offset-5 {
+    margin-left: 41.66666667%;
+  }
+  .col-xs-offset-4 {
+    margin-left: 33.33333333%;
+  }
+  .col-xs-offset-3 {
+    margin-left: 25%;
+  }
+  .col-xs-offset-2 {
+    margin-left: 16.66666667%;
+  }
+  .col-xs-offset-1 {
+    margin-left: 8.33333333%;
+  }
+  .col-xs-offset-0 {
+    margin-left: 0%;
+  }
+  .visible-xs {
+    display: none !important;
+  }
+  .hidden-xs {
+    display: block !important;
+  }
+  table.hidden-xs {
+    display: table;
+  }
+  tr.hidden-xs {
+    display: table-row !important;
+  }
+  th.hidden-xs,
+  td.hidden-xs {
+    display: table-cell !important;
+  }
+  .hidden-xs.hidden-print {
+    display: none !important;
+  }
+  .hidden-xs {
+    display: none !important;
+  }
+  .visible-xs {
+    display: block !important;
+  }
+  table.visible-xs {
+    display: table;
+  }
+  tr.visible-xs {
+    display: table-row !important;
+  }
+  th.visible-xs,
+  td.visible-xs {
+    display: table-cell !important;
+  }
+}
+
+</style>
+
+{% comment %}
+</head>
+
+<body style="padding:20px 40px">
+{% endcomment %}
+{% endif %}
+
+{% assign budgetyearstart = 'Now' | DateAdd:-6,'M' | Date:'7/1/yyyy' %}
+
+{% assign accounts = '18:25:23,30:49:50' | Split:':' %}
+
+
+{% assign today = 'Now' | Date:'M/d/yyyy' %}
+{% capture lastDayOfMonth %}{{ today | Date:'M' }}/{{today | DaysInMonth}}/{{ today | Date:'yyyy' }}{% endcapture %}
+
+{% assign startOfWeekTYR = today | SundayDate | DateAdd:-6 | Date:'M/d/yyyy' %}
+{% assign endOfWeekTYR = startOfWeekTYR | DateAdd:+6 | Date:'M/d/yyyy'  %}
+{% assign startOfMonthTYR = today | Date:'M/1/yyyy'  %}
+{% assign endOfMonthTYR = today | Date:lastDayOfMonth  %}
+{% assign startOfYearTYR = budgetyearstart %}
+{% assign endOfYearTYR = endOfWeekTYR %}
+
+{% assign todayLYR = today | DateAdd:-1, 'y' | Date:'M/d/yyyy' %}
+{% capture lastDayOfMonthLYR %}{{ todayLYR | Date:'M'}}/{{todayLYR | DaysInMonth}}/{{ todayLYR | Date:'yyyy'}}{% endcapture %}
+
+{% assign startOfWeekLYR = todayLYR | SundayDate | DateAdd:-6 | Date:'M/d/yyyy' %}
+{% assign endOfWeekLYR = startOfWeekLYR | DateAdd:+6 | Date:'M/d/yyyy'  %}
+{% assign startOfMonthLYR = todayLYR | Date:'M/1/yyyy'  %}
+{% assign endOfMonthLYR = todayLYR | Date:lastDayOfMonthLYR | Date:'M/d/yyyy'   %}
+{% assign startOfYearLYR = budgetyearstart | DateAdd:-1, 'y' | Date:'M/d/yyyy'  %}
+{% assign endOfYearLYR = endOfWeekLYR %}
+
+{% comment %}
+{{ today }} <br/>
+{{ startOfWeekTYR }} <br/>
+{{ endOfWeekTYR }} <br/>
+{{ startOfMonthTYR }}  <br/> 
+{{ endOfMonthTYR }}  <br/> 
+{{ startOfYearTYR }} <br/>
+{{ endOfYearTYR }} <br/><br/>
+-- last year --<br/><br/>
+{{ todayLYR }} <br/>
+{{ startOfWeekLYR }} <br/>
+{{ endOfWeekLYR }} <br/>
+{{ startOfMonthLYR }}  <br/> 
+{{ endOfMonthLYR }}  <br/> 
+{{ startOfYearLYR }} <br/>
+{{ endOfYearLYR }} <br/>
+{% endcomment%}
+
+<div class="well" >
+
+{% for accountIds in accounts %}
+
+	{% if accountIds == '18'  %}
+			{% assign accountName = 'Sunday GF' %}
+	{% elseif accountIds == '25' %}
+			{% assign accountName = 'Mosaic GF' %}
+	{% elseif accountIds == '23,30' %}
+			{% assign accountName = 'Fayetteville GF' %}
+	{% elseif accountIds == '49' %}
+			{% assign accountName = 'Celebrate Recovery GF' %}
+	{% elseif accountIds == '50' %}
+			{% assign accountName = 'Celebrate Recovery Fay GF' %}
+	{% endif %}
+
+
+{% sql return:'totals' %}
+
+SELECT	(select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfWeekTYR }}' AND '{{ endOfWeekTYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [ThisWeek] 
+		
+		, (select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfMonthTYR }}' AND '{{ endOfMonthTYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [ThisMonth] 
+		
+		, (select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfYearTYR }}' AND '{{ endOfYearTYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [ThisYear]
+		
+		, (select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfWeekLYR }}' AND '{{ endOfWeekLYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [WeekLastYear]
+
+		, (select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfMonthLYR }}' AND '{{ endOfMonthLYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [MonthLastYear]
+
+		, (select SUM(ftd.amount) 
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail ftd on ftd.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfYearLYR }}' AND '{{ endOfYearLYR }}'
+		AND ftd.AccountId in ({{accountIds}})) 
+			as [YearLastYear]
+
+
+{% endsql %}
+
+{% for item in totals %}
+
+<div class="well"  style="background:#fff; page-break-inside: avoid;">
+
+	<div class="row">
+
+			<div class="col-xs-3">
+			<strong>{{accountName}}</strong> <br/>
+			Current Week ({{ startOfWeekTYR }} - {{ endOfWeekTYR }}) <br/>
+			Month to Date ({{ startOfMonthTYR }} - {{ endOfMonthTYR }}) <br/>
+			Year to Date ({{startOfYearTYR }} - {{ endOfYearTYR }}) <br/>
+			</div>
+
+			<div class="col-xs-3 text-right">
+			<strong style="text-align:center;">This Year</strong> <br/>
+			{{ item.ThisWeek | FormatAsCurrency }} <br/>
+			{{ item.ThisMonth | FormatAsCurrency }} <br/>
+			{{ item.ThisYear | FormatAsCurrency }} <br/>
+			</div>
+
+			<div class="col-xs-3 text-right">
+			<strong style="text-align:center;">Last Year </strong>  <br/>
+			{{ item.WeekLastYear | FormatAsCurrency }} <br/>
+			{{ item.MonthLastYear | FormatAsCurrency }} <br/>
+			{{ item.YearLastYear | FormatAsCurrency }} <br/>
+			</div>
+
+			<div class="col-xs-3 text-right">
+			<strong style="margin-right:100px;">Difference</strong>  <br/>
+				<div class="row">
+					<div class="col-xs-8 text-right">
+						{{ item.ThisWeek | Minus:item.WeekLastYear | FormatAsCurrency }}
+					</div>
+					<div class="col-xs-4 text-left">
+						({{ item.ThisWeek | Minus:item.WeekLastYear | DividedBy:item.ThisWeek | Times:100 | Floor  }}%)
+					</div>
+					<div class="col-xs-8 text-right">
+						{{ item.ThisMonth | Minus:item.MonthLastYear | FormatAsCurrency }}
+					</div>
+					<div class="col-xs-4 text-left">
+						({{ item.ThisMonth | Minus:item.MonthLastYear | DividedBy:item.ThisMonth | Times:100 | Floor  }}%)
+					</div>
+					<div class="col-xs-8 text-right">
+						{{ item.ThisYear | Minus:item.YearLastYear | FormatAsCurrency }} 
+					</div>
+					<div class="col-xs-4 text-left">	
+						({{ item.ThisYear | Minus:item.YearLastYear | DividedBy:item.ThisYear | Times:100 | Floor  }}%)
+					</div>
+				</div>
+			</div>
+
+	</div>
+
+</div>
+
+<hr/>
+
+																						
+{% endfor %}
+
+{% endfor %}
+
+{% for accountIds in accounts %}
+
+	{% if accountIds == '18'  %}
+			{% assign accountName = 'Sunday GF' %}
+	{% elseif accountIds == '25' %}
+			{% assign accountName = 'Mosaic GF' %}
+	{% elseif accountIds == '23,30' %}
+			{% assign accountName = 'Fayetteville GF' %}
+	{% elseif accountIds == '49' %}
+			{% assign accountName = 'Celebrate Recovery GF' %}
+	{% elseif accountIds == '50' %}
+			{% assign accountName = 'Celebrate Recovery Fay GF' %}
+	{% endif %}
+
+{% sql return:'totalstypeTYR' %}
+
+
+
+		SELECT 
+		sum(case when pd.CurrencyTypeValueId = 9
+    		then d.Amount else 0 end) as [CheckTYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 6
+    		then d.Amount else 0 end) as [CashTYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 156
+    		then d.Amount else 0 end) as [CCTYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 157
+    		then d.Amount else 0 end) as [ACHTYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 677
+    		then d.Amount else 0 end) as [UnknownTYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 704
+    		then d.Amount else 0 end) as [OtherTYR]
+		,  sum(case when pd.CurrencyTypeValueId = 810
+    		then d.Amount else 0 end) as [PayrollTYR]
+    	,  sum(d.Amount) as [TotalTYR]
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail d on d.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfYearTYR }}' and '{{ endOfYearTYR }}'
+		AND d.AccountId in ({{accountIds}})
+
+
+{% endsql %}
+
+{% sql return:'totalstypeLYR' %}
+
+
+
+		SELECT 
+		sum(case when pd.CurrencyTypeValueId = 9
+    		then d.Amount else 0 end) as [CheckLYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 6
+    		then d.Amount else 0 end) as [CashLYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 156
+    		then d.Amount else 0 end) as [CCLYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 157
+    		then d.Amount else 0 end) as [ACHLYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 677
+    		then d.Amount else 0 end) as [UnknownLYR]
+    	,  sum(case when pd.CurrencyTypeValueId = 704
+    		then d.Amount else 0 end) as [OtherLYR]
+		,  sum(case when pd.CurrencyTypeValueId = 810
+    		then d.Amount else 0 end) as [PayrollLYR]
+    	,  sum(d.Amount) as [TotalLYR]
+	FROM FinancialTransaction ft 
+		JOIN FinancialTransactionDetail d on d.TransactionId = ft.id
+		JOIN FinancialPaymentDetail pd on pd.id = ft.FinancialPaymentDetailId
+	WHERE CAST(ft.TransactionDateTime AS DATE) BETWEEN '{{ startOfYearLYR }}' and '{{ endOfYearLYR }}'
+		AND d.AccountId in ({{accountIds}})
+
+
+{% endsql %}
+
+{% for item in totalstypeTYR %}
+
+<div class="well" style="background:#fff; page-break-inside: avoid;">
+
+<div class="row">
+
+		<div class="col-xs-4">
+		<strong>{{accountName}}</strong> <br/>
+		ACH <br/>
+		Cach/Check <br/>
+		Credit Card <br/>
+		Payroll <br/>
+		Stock <i> *No Currency Type for Stock</i> <br/>
+		Other <br/>
+		</div>
+
+		<div class="col-xs-3 text-right">
+		<strong>This Year</strong> <br/>
+		{{ item.ACHTYR | FormatAsCurrency }} <br/>
+		{{ item.CheckTYR | Plus:item.CashTYR | FormatAsCurrency }} <br/>
+		{{ item.CCTYR | FormatAsCurrency }} <br/>
+		{{ item.PayrollTYR | FormatAsCurrency }} <br/>
+		{{ 0 | FormatAsCurrency }} <br/>
+		{{ 0 | Plus:item.OtherTYR | Plus:item.UnknownTYR | FormatAsCurrency }} <br/>
+		</div>
+
+		<div class="col-xs-1">
+		<strong>% of Total </strong>  <br/>
+		{{ 0 | Plus:item.ACHTYR | DividedBy:item.TotalTYR | Times:100 | Floor }}%  <br/>
+		{{ 0 | Plus:item.CheckTYR | Plus:item.CashTYR | DividedBy:item.TotalTYR | Times:100 | Floor }}% <br/>
+		{{ 0 | Plus:item.CCTYR | DividedBy:item.TotalTYR | Times:100 | Floor }}% <br/>
+		{{ 0 | Plus:item.PayrollTYR | DividedBy:item.TotalTYR | Times:100 | Floor }}% <br/>
+		0% <br/>
+		{{ 0 | Plus:item.OtherTYR | Plus:item.UnknownTYR | DividedBy:item.TotalTYR | Times:100 | Floor }}% <br/>
+		</div>
+
+{% endfor %}
+
+{% for item in totalstypeLYR %}
+
+		<div class="col-xs-3 text-right">
+		<strong>Last Year</strong> <br/>
+		{{ 0 | Plus:item.ACHLYR | FormatAsCurrency }} <br/>
+		{{ 0 | Plus:item.CheckLYR | Plus:item.CashLYR | FormatAsCurrency }} <br/>
+		{{ 0 | Plus:item.CCLYR | FormatAsCurrency }} <br/>
+		{{ 0 | Plus:item.PayrollLYR | FormatAsCurrency }} <br/>
+		{{ 0 | FormatAsCurrency }} <br/>
+		{{ 0 | Plus:item.OtherLYR | Plus:item.UnknownLYR | FormatAsCurrency }} <br/>
+		</div>
+
+		<div class="col-xs-1">
+		<strong>% of Total </strong>  <br/>
+		{{ 0 | Plus:item.ACHLYR | DividedBy:item.TotalLYR | Times:100 | Floor }}%  <br/>
+		{{ 0 | Plus:item.CheckLYR | Plus:item.CashLYR | DividedBy:item.TotalLYR | Times:100 | Floor }}% <br/>
+		{{ 0 | Plus:item.CCLYR | DividedBy:item.TotalLYR | Times:100 | Floor }}% <br/>
+		{{ 0 | Plus:item.PayrollLYR | DividedBy:item.TotalLYR | Times:100 | Floor }}% <br/>
+		0% <br/>
+		{{ 0 | Plus:item.OtherLYR | Plus:item.UnknownLYR | DividedBy:item.TotalLYR | Times:100 | Floor }}% <br/>
+		</div>
+
+</div>
+
+</div>
+
+<hr/>
+
+
+
+{% endfor %}
+
+
+{% endfor %}
+{% comment %}
+{% if PageParameter.Print %}
+
+</body>
+</html>
+
+{% endif %}
+{% endcomment %}

@@ -1,0 +1,236 @@
+{% assign publicApplicationRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
+{% assign organizationName = 'Global' | Attribute:'OrganizationName' %}
+{% assign organizationAddress = 'Global' | Attribute:'OrganizationAddress' %}
+{% assign organizationWebsite = 'Global' | Attribute:'OrganizationWebsite' %}
+{% assign organizationEmail = 'Global' | Attribute:'OrganizationEmail' %}
+{% assign organizationPhone = 'Global' | Attribute:'OrganizationPhone' %}
+{% assign currencySymbol = 'Global' | Attribute:'CurrencySymbol' %}
+
+{% comment %}
+    // for block
+    {% assign type = 'Internal' %}
+    {% assign type = 'StatementGenerator' %}
+    {% include '\Plugins\BEMADEV\Lava\Finance\contribtuionStatements2.lava' %}
+{% endcomment %}
+
+{% if ChildCare == "True" %}
+    {% assign type = 'ChildCare' %}
+{% endif %}
+
+{% if type == 'StatementGenerator' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+    	{{ organizationName }} | Contribution Statement
+    </title>
+
+    <!-- Included CSS Files -->
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    {% endif %}
+
+   <style>
+        html, body {
+            height: auto;
+            width: 100%;
+            min-width: 100%;
+            margin: 0 0 0 0;
+            padding: 0 0 0 0;
+            vertical-align: top;
+			background-color: #FFFFFF;
+            font-size: 12px;
+        }
+        
+         /* helper classes not included in stock bs3 */
+        
+        .margin-t-md {
+            margin-top: 15px; !important
+        }
+		.margin-r-md {
+            margin-right: 15px; !important
+        }
+        .margin-b-md {
+            margin-bottom: 15px; !important
+        }
+		.margin-l-md {
+            margin-left: 15px; !important
+        }
+        .padding-t-md {
+            padding-top: 15px; !important
+        }
+		.padding-r-md {
+            padding-right: 15px; !important
+        }
+        .padding-b-md {
+            padding-bottom: 15px; !important
+        }
+		.padding-l-md {
+            padding-left: 15px; !important
+		}
+    </style>
+
+<body>
+
+    {% unless type == 'StatementGenerator' %}
+        <div class='container'>
+    {% endunless %}
+    <!-- set top padding to help align logo and return address with envelope window -->
+    <div style='padding-top:50px'>
+
+    <!-- set fixed height to help align recipient address with envelope window -->
+    <div class="row" style='height:230px'>
+        <div class="col-md-6 pull-left"> 
+            <div>
+                <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
+                {{ 'Global' | Attribute:'OrganizationAddress' | Replace:'Rogers','</br>Rogers' }}<br />
+                {{ 'Global' | Attribute:'OrganizationWebsite' }}<br />
+                {{ 'Global' | Attribute:'OrganizationPhone' }}
+            </div>
+        </div>
+        <div class="col-md-6 text-right ">
+            <strong>{{ StatementStartDate | Date:'yyyy' }} Tax Statement</strong>
+        </div>
+    </div>
+    
+
+        {{ Salutation }} <br />
+        {{ StreetAddress1 }} <br />
+        {% if StreetAddress2 != '' %}
+            {{ StreetAddress2 }} <br />
+        {% endif %}
+        {{ City }}, {{ State }} {{ PostalCode }}
+  
+</div>
+
+{% if type == 'StatementGenerator' %}
+    <div style="page-break-after:always;"></div>
+
+        <br />
+        {{ Salutation }} <br />
+        {{ StreetAddress1 }} <br />
+        {% if StreetAddress2 != '' %}
+            {{ StreetAddress2 }} <br />
+        {% endif %}
+        {{ City }}, {{ State }} {{ PostalCode }}
+
+{% endif %}
+
+ <p class="text-left margin-t-md">
+    {% if type == 'ChildCare' %}
+    Statement of Payments for Child and Dependant Care
+    {% else %} 
+    Your generous contributions are gratefully appreciated and acknowledged. This is an official receipt for income tax purposes of donations received for the dates listedbelow. No goods or services were exchanged for these donations except intangible religious benefits
+    {% endif %}
+ </p>
+
+ <hr style="opacity: .5;" />
+
+<table class="table table-bordered table-striped table-condensed">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th style="text-align:right">Amount</th>
+        </tr>
+    </thead>    
+ 
+    <tbody>
+    {% for transactionDetail in TransactionDetails %}
+         
+            {% assign dateFirst = transactionDetail.Transaction.TransactionDateTime | Date:'M/d/yyyy' %}
+            
+            {% if forloop.first %}
+                {% assign dateSecond = transactionDetail.Transaction.TransactionDateTime | Date:'M/d/yyyy' %}
+                 {% assign transactionDetailTotal = transactionDetail.Amount %} 
+                {% assign loop = 1 %}
+            {% endif %}
+            
+            {% if dateSecond == dateFirst %}
+
+                    {% assign transactionDetailTotal = transactionDetailTotal | Plus:transactionDetail.Amount %}
+                    {% assign loop = loop | Plus:1 %}
+        
+            {% else %}
+
+            <tr>
+                <td>{{ dateSecond }}</td>
+                <td style="text-align:right">{{ currencySymbol }}{{ transactionDetailTotal }}</td>
+            </tr>
+
+            {% assign loop = 2 %} 
+            {% assign transactionDetailTotal =  0 %} 
+            {% assign transactionDetailTotal = transactionDetail.Amount %} 
+
+            {% endif %}
+
+            {% assign dateSecond = transactionDetail.Transaction.TransactionDateTime | Date:'M/d/yyyy' %}
+      
+    {% endfor %}
+
+
+    </tbody>
+</table>
+
+    <div class="row margin-t-md">
+        <div class="col-xs-8 col-xs-offset-4">
+         
+            <div class="row">
+                <div class="col-xs-8">
+                    <strong>Giving Area</strong>
+                </div>
+                <div class="col-xs-4 text-right">
+                    <strong>Total Amount</strong>
+                </div>
+            </div>
+            
+            {% for accountsummary in AccountSummary %}
+
+                   {% if forloop.first %}
+                        {% assign accountsummaryTotal = accountsummary.Total %}
+                {% else %}
+                    {% assign accountsummaryTotal = accountsummaryTotal | Plus:accountsummary.Total %}
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-xs-8">{{ accountsummary.AccountName }}</div>
+                    <div class="col-xs-4 text-right">{{ accountsummary.Total | FormatAsCurrency  }}</div>
+                </div>
+            {% endfor %}
+
+            <div class="row" >
+           
+                <div class="col-xs-8">
+ 
+                </div>
+
+                <div class="col-xs-4 text-right" ><strong>Total: {{ accountsummaryTotal | FormatAsCurrency }}</strong></div>
+
+                </div>
+                   
+            </div>     
+        </div>
+   
+
+
+
+    <hr style="opacity: .5;" />
+    <p class="text-left col-xs-10">
+        Should you have any questions or concerns, please contact Glenda McSpadden at 479-659-3695 or glmcspadden@fellowshipnwa.org immediately. Thank you for your generosity. <br/> <br/>
+        Greg Seay,<br/> CFOFEIN 71-0605274
+    </p>
+
+    <p class="text-right col-xs-2">
+        {{Person.Id}}
+    </p>
+
+   
+
+    {% unless type == 'StatementGenerator' %}
+        </div>
+    {% endunless %}
+
+</body>
+
+{% if type == 'StatementGenerator' %}
+</html>
+{% endif %}

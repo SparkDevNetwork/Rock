@@ -1,0 +1,98 @@
+{% if PageParameter.Print %}
+<html>
+<head>
+
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+</head>
+
+<body>
+{% endif %}
+
+{% if PageParameter.DateRange %}
+
+<div class="container" style="background:#fff;  margin: 0 auto; width: 100%; padding:20px 20px">
+
+{% assign dateRange = PageParameter.DateRange | Split:',' %}
+{% assign dateStart = dateRange[0] | Date:'M/d/yyyy'  %}
+{% assign dateEnd = dateRange[1] | Date:'M/d/yyyy' %}
+
+{% sql return:'transactions' %}
+    select  t.TransactionCode
+        ,sum(d.Amount) as [Amount]
+    from FinancialTransaction t
+    	join FinancialTransactionDetail d on d.TransactionId = t.id
+    	join FinancialPaymentDetail pd on pd.id = t.FinancialPaymentDetailId
+    where  pd.CurrencyTypeValueId = 9
+    and cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+    group by t.TransactionCode, t.AuthorizedPersonAliasId
+{% endsql %}
+
+{% assign totalAmount = 0 %}
+
+{% for item in transactions %}
+    {% assign totalAmount = totalAmount | Plus:item.Amount %}
+{% endfor %}
+
+<div class='text-center' style="margin-bottom:30px">
+    <h3>
+    Check Contribution Verification<br/>
+    <small>
+    {% if dateStart == dateEnd %}
+        {{ dateStart }}
+    {% else %}
+        {{ dateStart }} - {{ dateEnd }}
+    {% endif %}
+    ( Printed by <i>{{ CurrentPerson.FullName }}</i> )
+    </small>
+    </h3>
+    <strong>Total Number of Checks:</strong> {{ transactions | Size  }}<br/>
+    <strong>Total Check Amount:</strong> {{ totalAmount | FormatAsCurrency }}
+</div>
+
+<hr/>
+
+{% assign rowsCount = 0 %}
+{% assign rowsTest = transactions | Size | DividedBy:4,0 %}
+
+<div class="row">
+<div class="col-sm-3">
+{% for item in transactions %}
+
+    {% assign rowsCount = rowsCount | Plus:1 %}
+
+      {% assign rowTest = forloop.index | Modulo:2 %}
+
+                        {% if rowTest == 1 %}
+                            <div style="background:#f9f9f9; padding:4px 10px">
+                        {% else %}
+                            <div style="padding:4px 10px">
+                        {% endif %}
+
+
+    <small>{{ item.TransactionCode }}</small>
+    <span class='pull-right'>{{ item.Amount | FormatAsCurrency }}<span>
+    </div>
+
+    {% if rowsCount == rowsTest %}
+    {% assign rowsCount = 0 %}
+    </div>
+    <div class="col-sm-3">
+    {% endif %}
+
+{% endfor %}
+</div>
+</div>
+</div>
+{% else %}
+<div class="alert alert-warning">Please Select a Date Range</div>
+{% endif %}
+
+{% if PageParameter.Print %}
+
+</body>
+</html>
+
+{% endif %}
