@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -47,18 +48,20 @@ namespace Rock.Utility
             var errorMessages = new List<string>();
 
             var connectionOpportunity = connectionOpportunityService.Get( campaignConfiguration.OpportunityGuid );
-            //list of person on the basis of Dataview result and optout group.
+
+            // list of person on the basis of Dataview result and optout group.
             var filteredPersonIds = GetFilteredPersonIds( campaignConfiguration, rockContext, out errorMessages );
 
-            //  get the last connection datetime.
+            // get the last connection datetime.
             var lastConnectionDateTime = RockDateTime.Now.AddDays( -campaignConfiguration.DaysBetweenConnection );
-            //  if DaysBetweenConnection is 0 then check for connection request for any time period.
+
+            // if DaysBetweenConnection is 0 then check for connection request for any time period.
             if ( campaignConfiguration.DaysBetweenConnection == default( int ) )
             {
                 lastConnectionDateTime = DateTime.MinValue;
             }
 
-            //list of person that has active connection request OR has connection closed in the past number of days between connection.  
+            // list of person that has active connection request OR has connection closed in the past number of days between connection.  
             var excludedPersonIds = connectionRequestService
                 .Queryable()
                 .Where( a =>
@@ -69,15 +72,18 @@ namespace Rock.Utility
                 .Select( a => a.PersonAlias.PersonId )
                 .ToList();
 
-
             // filtered list of person removing all the personIds found in excludedPersonIds List
             filteredPersonIds = filteredPersonIds.Where( a => !excludedPersonIds.Contains( a ) ).ToList();
 
             // get the ordered list of personIds based on the oldest previous connection request and connection opportunity
+            /* 2020-05-06 MDP
+             * If there are many filteredPersonIds, we'll get a SQL Exception, so let's get *all* the Connected connection Requests first,
+             * and then use C# to filter.
+             */
+
             var orderedLastCompletedRequestForPerson = connectionRequestService
                 .Queryable()
                 .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id
-                            && filteredPersonIds.Contains( a.PersonAlias.PersonId )
                             && a.ConnectionState == ConnectionState.Connected )
                 .GroupBy( a => a.PersonAlias.PersonId )
                 .Select( a => new
@@ -88,12 +94,13 @@ namespace Rock.Utility
                 .OrderBy( a => a.LastConnectionDateTime )
                 .Select( a => a.PersonId ).ToList();
 
+            // Use C# to filter persons so we can avoid a SQL Exception 
+            orderedLastCompletedRequestForPerson = orderedLastCompletedRequestForPerson.Where( a => filteredPersonIds.Contains( a ) ).ToList();
+
             var random = new Random();
 
-
-            // get the final ordered list of personIds based on the oldest previous connection request and
-            // connection opportunity otherwise order randomly for the person who don't have any previous connection request.
-
+            //// get the final ordered list of personIds based on the oldest previous connection request and
+            //// connection opportunity otherwise order randomly for the person who don't have any previous connection request.
             var orderedPersonIds = filteredPersonIds
                 .OrderBy( a =>
                 {
@@ -156,7 +163,6 @@ namespace Rock.Utility
             } );
 
             rockContext.BulkInsert( entitySetItems );
-
 
             return entitySet.Id;
         }
@@ -255,7 +261,7 @@ namespace Rock.Utility
             var personService = new PersonService( rockContext );
 
             var filteredPersonIds = new List<int>();
-            var personList = dataView.GetQuery( null, null, out errorMessages ).OfType<Rock.Model.Person>().ToList();
+            var personList = dataView.GetQuery( null, null, out errorMessages ).OfType<Rock.Model.Person>().AsNoTracking().ToList();
             if ( !personList.Any() )
             {
                 return filteredPersonIds;
@@ -264,13 +270,16 @@ namespace Rock.Utility
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
                 var familyWithMembers = new Dictionary<int, List<GroupMember>>();
-                //Get all family group Id and all it's family member in dictionary.
+
+                //// Get all family group Id and all it's family member in dictionary.
+                //// We will all the family members to both figure out if might be opted out
+                //// and to figure out the head of household
                 foreach ( var person in personList )
                 {
                     var family = person.GetFamily( rockContext );
                     if ( family != null && !familyWithMembers.ContainsKey( family.Id ) )
                     {
-                        var familyMembers = personService.GetFamilyMembers( family, person.Id, true ).ToList();
+                        var familyMembers = personService.GetFamilyMembers( family, person.Id, true ).AsNoTracking().ToList();
                         familyWithMembers.Add( family.Id, familyMembers );
                     }
                 }
@@ -281,6 +290,7 @@ namespace Rock.Utility
                     if ( optOutGroup != null )
                     {
                         var personIds = optOutGroup.ActiveMembers().Select( a => a.PersonId ).ToList();
+
                         // exclude families in which any member is part of optOut Group.
                         familyWithMembers = familyWithMembers.Where( a => !a.Value.Any( b => personIds.Contains( b.PersonId ) ) ).ToDictionary( a => a.Key, b => b.Value );
                     }
@@ -288,13 +298,22 @@ namespace Rock.Utility
 
                 foreach ( var familyId in familyWithMembers.Keys )
                 {
-                    //Get all the head of house personIds of leftout family.
+                    /* 2020-05-07 MDP
+                     * It is possible that a person is the Head Of Household in more than one family. For example: 
+                     * -- Alex is in Ted Decker family. Ted Decker is Head of Household
+                     * -- Ted Decker is in Grandpa Decker family, and also the head of household for that one too
+
+                     * We'll deal with that by putting a Distinct on the filteredPersonIds
+                     */
+
+                    // Get all the head of house personIds of leftout family.
                     var headOfHouse = familyWithMembers[familyId]
                           .Where( m => !m.Person.IsDeceased )
                           .OrderBy( m => m.GroupRole.Order )
                           .ThenBy( m => m.Person.Gender )
                           .Select( a => a.PersonId )
                           .FirstOrDefault();
+
                     if ( headOfHouse != default( int ) )
                     {
                         filteredPersonIds.Add( headOfHouse );
@@ -316,10 +335,8 @@ namespace Rock.Utility
                 filteredPersonIds = personList.Select( a => a.Id ).ToList();
             }
 
-            if ( !filteredPersonIds.Any() )
-            {
-                return filteredPersonIds;
-            }
+            // just in case the same person is in multiple times (for example, head of household in multiple families), get just the distinct person ids
+            filteredPersonIds = filteredPersonIds.Distinct().ToList();
 
             return filteredPersonIds;
         }
@@ -327,7 +344,7 @@ namespace Rock.Utility
         /// <summary>
         /// A lock object that should be used when assigning Connection Requests from the entity set, to help prevent duplicates.
         /// </summary>
-        public static object AddConnectionRequestsLockObject = new object();
+        private static object addConnectionRequestsLockObject = new object();
 
         /// <summary>
         /// Adds connection request(s) for the specified connectorPerson
@@ -404,9 +421,9 @@ namespace Rock.Utility
                 return;
             }
 
-            lock ( AddConnectionRequestsLockObject )
+            lock ( addConnectionRequestsLockObject )
             {
-                AssignConnectionRequestsFromEntitySet( rockContext,  selectedCampaignItem, ref numberOfRequestsRemaining, connectorPerson );
+                AssignConnectionRequestsFromEntitySet( rockContext, selectedCampaignItem, ref numberOfRequestsRemaining, connectorPerson );
                 rockContext.SaveChanges();
             }
         }
@@ -468,13 +485,13 @@ namespace Rock.Utility
             connectorCampusIds = opportunityConnecterGroupQuery.Where( a => a.ConnectorGroup.Members.Any( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == connectorPersonId ) ).Select( a => a.CampusId ).Distinct().ToList();
 
             // NOTE: if connectorPerson isn't in a ConnectionOpportunityConnectorGroup, there will be no campus ids. The AddCampaignRequests block shouldn't of let them request connections for this campaign
-
             return connectorCampusIds;
         }
 
         /// <summary>
         /// Assigns the connection requests from the SelectedCampaign's entity set.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="selectedCampaignItem">The selected campaign item.</param>
         /// <param name="numberOfRequestsRemaining">The number of requests remaining.</param>
         /// <param name="connectorPerson">The connector person.</param>
@@ -532,6 +549,15 @@ namespace Rock.Utility
 
             var personService = new PersonService( rockContext );
 
+            // get the last connection datetime.
+            var lastConnectionDateTime = RockDateTime.Now.AddDays( -selectedCampaignItem.DaysBetweenConnection );
+
+            // if DaysBetweenConnection is 0 then check for connection request for any time period.
+            if ( selectedCampaignItem.DaysBetweenConnection == default( int ) )
+            {
+                lastConnectionDateTime = DateTime.MinValue;
+            }
+
             foreach ( var entitySetItem in entitySetItemList )
             {
                 var entitySetPerson = personService.Get( entitySetItem.PersonId );
@@ -542,63 +568,92 @@ namespace Rock.Utility
 
                 var entitySetPersonPrimaryCampusId = entitySetPerson.GetCampus()?.Id;
 
-
                 bool validCampus = IsValidCampus( connectorCampusIds, entitySetPersonPrimaryCampusId );
-                if ( validCampus )
+                if ( !validCampus )
                 {
-                    var connectionRequest = new ConnectionRequest();
-                    connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                    continue;
+                }
 
-                    /*
-                        3/30/2020 - NA 
+                // double check that they haven't already been added
+                bool personAlreadyHasConnectionRequest = PersonAlreadyHasConnectionRequest( opportunity.Id, rockContext, lastConnectionDateTime, entitySetPerson.Id );
 
-                        When setting the connection request's Requester, we have to use the PrimaryAlias
-                        to set the connectionRequest.PersonAlias property because the ConnectionRequestChangeTransaction
-                        https://github.com/SparkabilityGroup/Rock/blob/a556a9285b7fdfe5594441286242f4feaa5847f2/Rock/Transactions/ConnectionRequestChangeTransaction.cs#L123
-                        (which handles triggered workflows) expects it.  Also, it needs to be tracked by
-                        the current rockContext... hence the change from GetAsNoTracking() to just Get() above:
-                        var entitySetPerson = personService.Get( entitySetItem.PersonId );
+                if ( personAlreadyHasConnectionRequest )
+                {
+                    continue;
+                }
 
-                        In other words, this will not work correctly:
-                        connectionRequest.PersonAliasId = entitySetPerson.PrimaryAliasId.Value;
+                var connectionRequest = new ConnectionRequest();
+                connectionRequest.ConnectionOpportunityId = opportunity.Id;
 
-                        Reason: This plug-in cannot change Rock core assembly code.
-                    */
-                    connectionRequest.PersonAlias = entitySetPerson.PrimaryAlias;
-                    connectionRequest.ConnectionState = ConnectionState.Active;
-                    connectionRequest.ConnectorPersonAliasId = connectorPerson.PrimaryAliasId;
-                    connectionRequest.CampusId = entitySetPersonPrimaryCampusId;
-                    connectionRequest.ConnectionStatusId = defaultStatusId.Value;
+                /*
+                    3/30/2020 - NA 
 
-                    if ( selectedCampaignItem.RequestCommentsLavaTemplate.IsNotNullOrWhiteSpace() )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Person", entitySetPerson );
-                        mergeFields.Add( "Family", entitySetPerson.GetFamily() );
-                        connectionRequest.Comments = selectedCampaignItem.RequestCommentsLavaTemplate.ResolveMergeFields( mergeFields );
-                    }
+                    When setting the connection request's Requester, we have to use the PrimaryAlias
+                    to set the connectionRequest.PersonAlias property because the ConnectionRequestChangeTransaction
+                    https://github.com/SparkabilityGroup/Rock/blob/a556a9285b7fdfe5594441286242f4feaa5847f2/Rock/Transactions/ConnectionRequestChangeTransaction.cs#L123
+                    (which handles triggered workflows) expects it.  Also, it needs to be tracked by
+                    the current rockContext... hence the change from GetAsNoTracking() to just Get() above:
+                    var entitySetPerson = personService.Get( entitySetItem.PersonId );
 
-                    connectionRequestService.Add( connectionRequest );
+                    In other words, this will not work correctly:
+                    connectionRequest.PersonAliasId = entitySetPerson.PrimaryAliasId.Value;
 
-                    var connectionActivityTypeAssignedGuid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
-                    int? assignedActivityId = new ConnectionActivityTypeService( rockContext ).GetId( connectionActivityTypeAssignedGuid );
-                    if ( assignedActivityId.HasValue )
-                    {
-                        var connectionRequestActivity = new ConnectionRequestActivity();
-                        connectionRequestActivity.ConnectionRequest = connectionRequest;
-                        connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                        connectionRequestActivity.ConnectionActivityTypeId = assignedActivityId.Value;
-                        connectionRequestActivity.ConnectorPersonAliasId = connectorPerson.PrimaryAliasId;
-                        connectionRequestActivityService.Add( connectionRequestActivity );
-                    }
+                    Reason: This plug-in cannot change Rock core assembly code.
+                */
 
-                    numberOfRequestsRemaining--;
-                    if ( numberOfRequestsRemaining <= 0 )
-                    {
-                        break;
-                    }
+                connectionRequest.PersonAlias = entitySetPerson.PrimaryAlias;
+                connectionRequest.ConnectionState = ConnectionState.Active;
+                connectionRequest.ConnectorPersonAliasId = connectorPerson.PrimaryAliasId;
+                connectionRequest.CampusId = entitySetPersonPrimaryCampusId;
+                connectionRequest.ConnectionStatusId = defaultStatusId.Value;
+
+                if ( selectedCampaignItem.RequestCommentsLavaTemplate.IsNotNullOrWhiteSpace() )
+                {
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "Person", entitySetPerson );
+                    mergeFields.Add( "Family", entitySetPerson.GetFamily() );
+                    connectionRequest.Comments = selectedCampaignItem.RequestCommentsLavaTemplate.ResolveMergeFields( mergeFields );
+                }
+
+                connectionRequestService.Add( connectionRequest );
+
+                var connectionActivityTypeAssignedGuid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
+                int? assignedActivityId = new ConnectionActivityTypeService( rockContext ).GetId( connectionActivityTypeAssignedGuid );
+                if ( assignedActivityId.HasValue )
+                {
+                    var connectionRequestActivity = new ConnectionRequestActivity();
+                    connectionRequestActivity.ConnectionRequest = connectionRequest;
+                    connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                    connectionRequestActivity.ConnectionActivityTypeId = assignedActivityId.Value;
+                    connectionRequestActivity.ConnectorPersonAliasId = connectorPerson.PrimaryAliasId;
+                    connectionRequestActivityService.Add( connectionRequestActivity );
+                }
+
+                numberOfRequestsRemaining--;
+                if ( numberOfRequestsRemaining <= 0 )
+                {
+                    break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if the person already has connection request.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="lastConnectionDateTime">The last connection date time.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        internal static bool PersonAlreadyHasConnectionRequest( int connectionOpportunityId, RockContext rockContext, DateTime lastConnectionDateTime, int personId )
+        {
+            return new ConnectionRequestService( rockContext )
+                                .Queryable()
+                                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
+                                    && ( a.ConnectionState == ConnectionState.Active
+                                         || a.ConnectionState == ConnectionState.FutureFollowUp
+                                         || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                                .Any();
         }
 
         /// <summary>
