@@ -1621,19 +1621,25 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // If the Step Type does not have any activity, hide the Activity Summary.
-            var dataContext = GetDataContext();
+            // Set the visibility of the Activity Summary chart.
+            bool showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
 
-            var stepService = new StepService( dataContext );
+            if ( showActivitySummary )
+            {
+                // If the Step Type does not have any activity, hide the Activity Summary.
+                var dataContext = GetDataContext();
 
-            var stepsQuery = stepService.Queryable().AsNoTracking()
-                                .Where( x => x.StepTypeId == _stepTypeId );
+                var stepService = new StepService( dataContext );
 
-            var hasStepData = stepsQuery.Any();
+                var stepsQuery = stepService.Queryable().AsNoTracking()
+                                    .Where( x => x.StepTypeId == _stepTypeId );
 
-            pnlActivitySummary.Visible = hasStepData;
+                showActivitySummary = stepsQuery.Any();
+            }
 
-            if ( !hasStepData )
+            pnlActivitySummary.Visible = showActivitySummary;
+
+            if ( !showActivitySummary )
             {
                 return;
             }
