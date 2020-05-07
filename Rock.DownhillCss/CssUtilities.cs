@@ -18,52 +18,32 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {
+    /*
+     * FUTURE IDEAS
+     * 1. Add settings the DownhillSettings to control whether to include pallete colors in:
+     *    + Backgrounds
+     *    + Borders
+     *    + Tex
+     *    + etc.
+    */
+
     /// <summary>
     /// A set of utility methods for building and using Downhill
     /// </summary>
     public static class CssUtilities
     {
-
-        // The spacer values are used to adjust the differences in the padding and margin amounts. They
-        // will be multipled by a default spacing value (mobile = 10) to determine the actual value for
-        // each. The values below are roughly mapped from the Bootstrap 4 values.
-        private static decimal[] spacingValues = { 0, .25m, .5m, 1, 2, 3 };
-
-        // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16}
-        // https://tailwindcss.com/docs/customizing-spacing#default-spacing-scale
-
-
-        // The sizes of borders that should be generated
-        private static int[] borderWidths = { 0, 1, 2, 4 };
-
-        /// <summary>
-        /// Dictionary of font sizes
-        /// </summary>
-        private static Dictionary<string, decimal> fontSizes = new Dictionary<string, decimal>()
-        {
-            { "xs", .75m },
-            { "sm", .875m },
-            { "base", 1 },
-            { "lg", 1.125m },
-            { "xl", 1.25m },
-            { "2xl", 1.5m },
-            { "3xl", 1.875m },
-            { "4xl", 2.25m },
-            { "5xl", 3m },
-            { "6xl", 4m },
-        };
-
         /// <summary>
         /// Builds the base framework.
         /// </summary>
         /// <returns></returns>
         public static string BuildFramework( DownhillSettings settings )
         {
-            // Get application color properties
+            // Get application color properties by reading the property names from the ApplicationColors class
             PropertyInfo[] applicationColorProperties = typeof( ApplicationColors ).GetProperties();
 
             StringBuilder frameworkCss = new StringBuilder();
@@ -171,7 +151,6 @@ namespace Rock.DownhillCss
             {
                 cssStyles = cssStyles.Replace( "?radius-base", settings.RadiusBase.ToString() );
             }
-            cssStyles = cssStyles.Replace( "?spacing-base", settings.SpacingBase.ToString() );
             cssStyles = cssStyles.Replace( "?font-size-default", settings.FontSizeDefault.ToString() );
 
             // Text and heading colors
@@ -179,33 +158,11 @@ namespace Rock.DownhillCss
             cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
             cssStyles = cssStyles.Replace( "?color-background", settings.BackgroundColor );
 
+            // Note for future... Xamarin Forms doesn't like minified CSS (at least that that's created with the minified method below)
             return cssStyles;
         }
 
-        /// <summary>
-        /// Mixes the color of the theme.
-        /// </summary>
-        /// <param name="color">The color.</param>
-        /// <param name="level">The level.</param>
-        /// <returns></returns>
-        private static string MixThemeColor( string color, decimal level )
-        {
-            var mixcolor = "#ffffff";
-            if ( level > 0 )
-            {
-                mixcolor = "#000000";
-            }
-
-            var originalColor = RockColor.FromHex( color );
-            var mixColor = RockColor.FromHex( mixcolor );
-
-            var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
-
-            originalColor.Mix( mixColor, mixPercent );
-
-            return originalColor.ToHex();
-        }
-
+        #region Alerts
         private static void AlertStyles( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
         {
             frameworkCss.AppendLine( "" );
@@ -245,14 +202,16 @@ namespace Rock.DownhillCss
             frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
             frameworkCss.AppendLine( "}" );
         }
+        #endregion
 
+        #region Text
         private static void TextSizes( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
         {
             frameworkCss.AppendLine( "/*" );
             frameworkCss.AppendLine( "// Text Size Utilities" );
             frameworkCss.AppendLine( "*/" );
 
-            foreach ( var size in fontSizes )
+            foreach ( var size in settings.FontSizes )
             {
                 frameworkCss.AppendLine( $".text-{size.Key.ToLower()} {{" );
                 frameworkCss.AppendLine( $"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};" );
@@ -294,7 +253,9 @@ namespace Rock.DownhillCss
                 }
             }
         }
+        #endregion
 
+        #region Backgrounds
         private static void BackgroundColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
         {
             // Build background color utilities
@@ -325,6 +286,184 @@ namespace Rock.DownhillCss
                 {
                     frameworkCss.AppendLine( $".bg-{color.Color.ToLower()}-{colorSaturation.Intensity} {{" );
                     frameworkCss.AppendLine( $"    background-color: {colorSaturation.ColorValue.ToLower()};" );
+                    frameworkCss.AppendLine( "}" );
+                }
+            }
+        }
+        #endregion
+
+        #region Spacing - Margins and Padding
+        private static void Margins( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
+        {
+            var spacingValues = settings.SpacingValues;
+
+            frameworkCss.AppendLine( "" );
+            frameworkCss.AppendLine( "/*" );
+            frameworkCss.AppendLine( "// Margin Utilities" );
+            frameworkCss.AppendLine( "*/" );
+
+            // m- (all)
+            foreach( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".m-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // mt- (top)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".mt-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-top: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // mb- (bottom)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".mb-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-bottom: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // ml- (left)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".ml-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-left: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // mr- (right)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".mr-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-right: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // mx- (left and right)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".mx-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-right: {value.Value};" );
+                frameworkCss.AppendLine( $"    margin-left: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // my- (top and bottom)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".my-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    margin-top: {value.Value};" );
+                frameworkCss.AppendLine( $"    margin-bottom: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+        }
+
+        private static void Paddings( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
+        {
+            var spacingValues = settings.SpacingValues;
+
+            frameworkCss.AppendLine( "" );
+            frameworkCss.AppendLine( "/*" );
+            frameworkCss.AppendLine( "// Padding Utilities" );
+            frameworkCss.AppendLine( "*/" );
+
+            // p- (all)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".p-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // pt- (top)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".pt-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-top: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // pb- (bottom)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".pb-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-bottom: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // pl- (left)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".pl-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-left: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // pr- (right)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".pr-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-right: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // px- (left and right)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".px-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-left: {value.Value};" );
+                frameworkCss.AppendLine( $"    padding-right: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            // py- (top and bottom)
+            foreach ( var value in spacingValues )
+            {
+                frameworkCss.AppendLine( $".py-{value.Key} {{" );
+                frameworkCss.AppendLine( $"    padding-top: {value.Value};" );
+                frameworkCss.AppendLine( $"    padding-bottom: {value.Value};" );
+                frameworkCss.AppendLine( "}" );
+            }
+        }
+        #endregion
+
+        #region Borders
+        private static void BorderWidths( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
+        {
+            var borderWidths = settings.BorderWidths;
+
+            int borderWidthCount = borderWidths.Count;
+
+            frameworkCss.AppendLine( "" );
+            frameworkCss.AppendLine( "/*" );
+            frameworkCss.AppendLine( "// Border Widths" );
+            frameworkCss.AppendLine( "*/" );
+
+            for ( int i = 0; i < borderWidthCount; i++ )
+            {
+                if ( borderWidths[i] == 1 )
+                {
+                    // When the unit is 1 then we drop the unit from the class name .border (not .border-1)
+                    // This is the pattern of both Bootstrap and Tailwind
+                    // Tailwind and Bootstrap deviate here from t vs top. Bootstrap uses the full 'top' but since
+                    // Tailwind uses t AND Bootstrap used t for margins and padding, decided to use just t.
+
+                    // Xamarin Forms 4.0 does not allow for separate widths on borders
+                    // https://github.com/xamarin/Xamarin.Forms/blob/4.3.0/Xamarin.Forms.Core/Properties/AssemblyInfo.cs
+
+                    // border (all)
+                    frameworkCss.AppendLine( $".border {{" );
+                    frameworkCss.AppendLine( $"    border-width: {borderWidths[i]}{settings.BorderUnits};" );
+                    frameworkCss.AppendLine( "}" );
+                }
+                else
+                {
+                    // border- (all)
+                    frameworkCss.AppendLine( $".border-{i} {{" );
+                    frameworkCss.AppendLine( $"    border-width: {borderWidths[i]}{settings.BorderUnits};" );
                     frameworkCss.AppendLine( "}" );
                 }
             }
@@ -363,180 +502,57 @@ namespace Rock.DownhillCss
                 }
             }
         }
+        #endregion
 
-        private static void Margins( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
+        #region Private Helpers
+
+        /// <summary>
+        /// Mixes the color of the theme.
+        /// </summary>
+        /// <param name="color">The color.</param>
+        /// <param name="level">The level.</param>
+        /// <returns></returns>
+        private static string MixThemeColor( string color, decimal level )
         {
-            int spacingValueCount = spacingValues.Length;
-
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Margin Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // m- (all)
-            for ( int i = 0; i < spacingValueCount; i++ )
+            var mixcolor = "#ffffff";
+            if ( level > 0 )
             {
-                frameworkCss.AppendLine( $".m-{i} {{" );
-                frameworkCss.AppendLine( $"    margin: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
+                mixcolor = "#000000";
             }
 
-            // mt- (top)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".mt-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
+            var originalColor = RockColor.FromHex( color );
+            var mixColor = RockColor.FromHex( mixcolor );
 
-            // mb- (bottom)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".mb-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
+            var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
 
-            // ml- (left)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".ml-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-left: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
+            originalColor.Mix( mixColor, mixPercent );
 
-            // mr- (right)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".mr-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-right: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // mx- (left and right)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".mx-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-left: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    margin-right: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // my- (top and bottom)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".my-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    margin-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
+            return originalColor.ToHex();
         }
 
-        private static void Paddings( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
+        /// <summary>
+        /// Minifies the CSS.
+        /// </summary>
+        /// <param name="css">The CSS.</param>
+        /// <returns></returns>
+        private static string MinifyCss( string css )
         {
-            int spacingValueCount = spacingValues.Length;
+            css = Regex.Replace( css, @"[a-zA-Z]+#", "#" );
+            css = Regex.Replace( css, @"[\n\r]+\s*", string.Empty );
+            css = Regex.Replace( css, @"\s+", " " );
+            css = Regex.Replace( css, @"\s?([:,;{}])\s?", "$1" );
+            css = css.Replace( ";}", "}" );
+            css = Regex.Replace( css, @"([\s:]0)(px|pt|%|em)", "$1" );
 
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Padding Utilities" );
-            frameworkCss.AppendLine( "*/" );
+            // Remove comments from CSS
+            css = Regex.Replace( css, @"/\*[\d\D]*?\*/", string.Empty );
 
-            // p- (all)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".p-{i} {{" );
-                frameworkCss.AppendLine( $"    padding: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pt- (top)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".pt-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pb- (bottom)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".pb-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pl- (left)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".pl-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-left: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pr- (right)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".pr-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-right: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // px- (left and right)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".px-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-left: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    padding-right: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // py- (top and bottom)
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                frameworkCss.AppendLine( $".py-{i} {{" );
-                frameworkCss.AppendLine( $"    padding-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    padding-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( "}" );
-            }
+            return css;
+         
         }
+        #endregion
 
-        private static void BorderWidths( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            int spacingValueCount = spacingValues.Length;
-            int borderWidthCount = borderWidths.Length;
-
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Border Widths" );
-            frameworkCss.AppendLine( "*/" );
-
-            for ( int i = 0; i < spacingValueCount; i++ )
-            {
-                if ( spacingValues[i] == 1 )
-                {
-                    // When the unit is 1 then we drop the unit from the class name .border (not .border-1)
-                    // This is the pattern of both Bootstrap and Tailwind
-                    // Tailwind and Bootstrap deviate here from t vs top. Bootstrap uses the full 'top' but since
-                    // Tailwind uses t AND Bootstrap used t for margins and padding, decided to use just t.
-
-                    // Xamarin Forms 4.0 does not allow for separate widths on borders
-                    // https://github.com/xamarin/Xamarin.Forms/blob/4.3.0/Xamarin.Forms.Core/Properties/AssemblyInfo.cs
-
-                    // border (all)
-                    frameworkCss.AppendLine( $".border {{" );
-                    frameworkCss.AppendLine( $"    border-width: {spacingValues[i]}{settings.BorderUnits};" );
-                    frameworkCss.AppendLine( "}" );
-                }
-                else
-                {
-                    // border- (all)
-                    frameworkCss.AppendLine( $".border-{i} {{" );
-                    frameworkCss.AppendLine( $"    border-width: {spacingValues[i]}{settings.BorderUnits};" );
-                    frameworkCss.AppendLine( "}" );
-                }
-            }
-        }
-
+        #region Platform Base Styles
         private static string baseStylesWeb = @"";
 
         private static string baseStylesMobile = @"
@@ -546,7 +562,7 @@ namespace Rock.DownhillCss
     color: ?color-text;
 }
 
-.heading1 {
+.h1 {
     color: ?color-heading;
     font-style: bold;
     font-size: 34;
@@ -554,28 +570,28 @@ namespace Rock.DownhillCss
     line-height: 1;
 }
 
-.heading2 {
+.h2 {
     color: ?color-heading;
     font-style: bold;
     font-size: title;
     line-height: 1;
 }
 
-.heading3 {
+.h3 {
     color: ?color-heading;
     font-style: bold;
     font-size: subtitle;
     line-height: 1.05;
 }
 
-.heading4 {
+.h4 {
     color: ?color-heading;
     font-style: bold;
     font-size: default;
     line-height: 1.1;
 }
 
-.heading5, .heading6 {
+.h5, .h6 {
     color: ?color-heading;
     font-style: bold;
     font-size: small;
@@ -728,11 +744,11 @@ namespace Rock.DownhillCss
 }
 
 /* Text Weights */
-.text-bold {
+.font-weight-bold {
     font-style: bold;
 }
 
-.text-italic {
+.font-italic {
     font-style: italic;
 }
 
@@ -750,27 +766,27 @@ namespace Rock.DownhillCss
 }
 
 /* Text Named Sizes */
-.text-default {
+.text {
     font-size: default;
     color: ?color-text;
 }
 
-.text-micro {
+.text-xs {
     font-size: micro;
     color: ?color-text;
 }
 
-.text-small {
+.text-sm {
     font-size: small;
     color: ?color-text;
 }
 
-.text-medium {
+.text-md {
     font-size: medium;
     color: ?color-text;
 }
 
-.text-large {
+.text-lg {
     font-size: large;
     color: ?color-text;
 }
@@ -785,11 +801,6 @@ namespace Rock.DownhillCss
     color: ?color-text;
 }
 
-.text-header {
-    font-size: header;
-    color: ?color-text;
-}
-
 .text-caption {
     font-size: caption;
     color: ?color-text;
@@ -801,28 +812,28 @@ namespace Rock.DownhillCss
 }
 
 /* Body Styles */
-.body {
+.paragraph {
     font-size: default;
     color: ?color-text;
     line-height: 1.15;
     margin-bottom: 12;
 }
 
-.body-small {
+.paragraph-sm {
     font-size: small;
     color: ?color-text;
     line-height: 1.25;
     margin-bottom: 12;
 }
 
-.body-micro {
+.paragraph-xs {
     font-size: micro;
     color: ?color-text;
     line-height: 1.25;
     margin-bottom: 8;
 }
 
-.body-large {
+.paragraph-lg {
     font-size: large;
     color: ?color-text;
     line-height: 1;
@@ -1125,6 +1136,12 @@ formfield .required-indicator {
     margin-right: 4;
 }
 
+/* Divider */
+.divider {
+    background-color: ?color-gray-400;
+}
+
 ";
+        #endregion
     }
 }
