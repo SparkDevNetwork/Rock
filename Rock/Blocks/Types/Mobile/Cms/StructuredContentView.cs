@@ -14,11 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {
@@ -33,15 +38,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [IconCssClass( "fa fa-list-alt" )]
 
     #region Block Attributes
-
-    // TODO: We probably need an attribute for content channel(s) we are allowed
-    // to load data from otherwise it _could_ be a security concern in the future
-    // to allow the user to access any content channel item structured content just
-    // by changing the Id number. -dsh
-
-    // TODO: We probably need an attribute for note type to specify what note type
-    // is used to save the user's fill-in-the-blank reveals. Unless that is going
-    // to be a hard coded note type somewhere. -dsh
 
     #endregion
 
@@ -102,24 +98,93 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <summary>
         /// Gets the structured content for the given item.
         /// </summary>
-        /// <param name="itemId">The content channel item identifier.</param>
+        /// <param name="itemGuid">The content channel item unique identifier.</param>
         /// <returns>
         /// The structured content for the item.
         /// </returns>
         [BlockAction]
-        public object GetStructuredContent( int itemId )
+        public object GetStructuredContent( Guid itemGuid )
         {
             using ( var rockContext = new RockContext() )
             {
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
+                var noteTypeId = NoteTypeCache.Get( SystemGuid.NoteType.CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE ).Id;
 
-                var item = contentChannelItemService.Get( itemId );
+                var item = contentChannelItemService.Get( itemGuid );
+                Dictionary<string, string> userValues = null;
+
+                if ( item != null && RequestContext.CurrentPerson != null )
+                {
+                    var noteService = new NoteService( rockContext );
+                    var note = noteService.Queryable()
+                        .AsNoTracking()
+                        .Where( a => a.NoteTypeId == noteTypeId && a.EntityId == item.Id )
+                        .Where( a => a.CreatedByPersonAliasId.HasValue && a.CreatedByPersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                        .FirstOrDefault();
+
+                    if ( note != null )
+                    {
+                        userValues = note.Text.FromJsonOrNull<Dictionary<string, string>>();
+                    }
+                }
 
                 return new
                 {
-                    DocumentJson = item.StructuredContent
+                    DocumentJson = item?.StructuredContent,
+                    UserValues = userValues
                 };
             }
+        }
+
+        /// <summary>
+        /// Saves the user values.
+        /// </summary>
+        /// <param name="itemGuid">The item unique identifier.</param>
+        /// <param name="userValues">The user values.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public object SaveUserValues( Guid itemGuid, Dictionary<string, string> userValues )
+        {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+                var noteService = new NoteService( rockContext );
+                var noteTypeId = NoteTypeCache.Get( SystemGuid.NoteType.CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE ).Id;
+
+                var item = contentChannelItemService.Get( itemGuid );
+
+                if ( item == null )
+                {
+                    return ActionNotFound();
+                }
+
+                var note = noteService.Queryable()
+                    .Where( a => a.NoteTypeId == noteTypeId && a.EntityId == item.Id )
+                    .Where( a => a.CreatedByPersonAliasId.HasValue && a.CreatedByPersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                    .FirstOrDefault();
+
+                if ( note == null )
+                {
+                    note = new Note
+                    {
+                        NoteTypeId = noteTypeId,
+                        EntityId = item.Id
+                    };
+
+                    noteService.Add( note );
+                }
+
+                note.Text = userValues.ToJson();
+
+                rockContext.SaveChanges();
+            }
+
+            return ActionOk();
         }
 
         #endregion
