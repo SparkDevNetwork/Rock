@@ -18,13 +18,13 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data.SqlClient;
 
-namespace RockWeb.Plugins.com_bemaservices.Testing
+namespace RockWeb.Plugins.com_bemaservices.Reporting
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Test SQL Connectivity" )]
-    [Category( "BEMA Services > Testing" )]
+    [Category( "BEMA Services > Reporting" )]
     [Description( "Used to Test SQL" )]
     [TextField("SQL Server", "Database Server")]
     [TextField( "SQL Database", "Database" )]

@@ -1,4 +1,4 @@
-<%@ Control AutoEventWireup="true" CodeFile="TestSQLConnectivity.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Testing.TestSQLConnectivity" Language="C#" %>
+<%@ Control AutoEventWireup="true" CodeFile="TestSQLConnectivity.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Reporting.TestSQLConnectivity" Language="C#" %>
 
 <asp:UpdatePanel ID="upnlMain" runat="server" Visible="true">
     <ContentTemplate>
