@@ -313,24 +313,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentstepProgram = GetStepProgram();
-
-            if ( currentstepProgram != null )
-            {
-                ShowReadonlyDetails( currentstepProgram );
-            }
-            else
-            {
-                string stepProgramId = PageParameter( PageParameterKey.StepProgramId );
-                if ( !string.IsNullOrWhiteSpace( stepProgramId ) )
-                {
-                    ShowDetail( stepProgramId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
