@@ -35,7 +35,7 @@
                                 <Rock:DateField DataField="BatchStartDateTime" HeaderText="Date" SortExpression="BatchStartDateTime" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                                 <Rock:RockBoundField DataField="TransactionCount" HeaderText="Transaction Count" SortExpression="TransactionCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                                <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Batch Total" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockTemplateField HeaderText="Variance" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right">
                                     <ItemTemplate>
                                         <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# this.FormatValueAsCurrency((decimal)Eval("Variance")) %></span>
