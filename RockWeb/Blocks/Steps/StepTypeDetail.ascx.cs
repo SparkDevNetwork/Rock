@@ -563,28 +563,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            InitializeChartFilter();
-
-            var currentstepType = GetStepType();
-
-            if ( currentstepType != null )
-            {
-                ShowReadonlyDetails( currentstepType );
-            }
-            else
-            {
-                string stepTypeId = PageParameter( PageParameterKey.StepTypeId );
-                if ( !string.IsNullOrWhiteSpace( stepTypeId ) )
-                {
-                    ShowDetail( stepTypeId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
-
-            btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
