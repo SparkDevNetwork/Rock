@@ -80,30 +80,48 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-            _entity = this.ContextEntity();
-            if ( _entity != null )
+            try
             {
-                if ( !Page.IsPostBack )
+                nbMessage.Visible = false;
+
+                base.OnLoad( e );
+                _entity = this.ContextEntity();
+                if ( _entity != null )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.Add( "Entity", _entity );
-                    lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
-
-                    BindFilter();
-                    BindGrid();
-
-                    IModel model = _entity as IModel;
-                    if ( model != null && model.CreatedDateTime.HasValue )
+                    if ( !Page.IsPostBack )
                     {
-                        hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
-                    }
-                    else
-                    {
-                        hlDateAdded.Visible = false;
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Entity", _entity );
+                        lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
+
+                        BindFilter();
+                        BindGrid();
+
+                        IModel model = _entity as IModel;
+                        if ( model != null && model.CreatedDateTime.HasValue )
+                        {
+                            hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        else
+                        {
+                            hlDateAdded.Visible = false;
+                        }
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                Exception sqlException = ex;
+                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
+                {
+                    sqlException = sqlException.InnerException;
+                }
+
+                nbMessage.Visible = true;
+                nbMessage.Text = string.Format( "<p>An error occurred trying to retrieve the history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",
+                    sqlException != null ? sqlException.Message : ex.Message );
             }
         }
 
