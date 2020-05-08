@@ -1,0 +1,14 @@
+
+
+{% for transactiondetails in ScheduledTransaction.TransactionDetails %}
+
+  <div class="gift-text mb-10" style="padding-left:0px !important;"><span class="float-left"><b>{{ transactiondetails.AccountName }}</b> </span><br/>
+	  <span class="float-right"><b>{{ transactiondetails.Amount | FormatAsCurrency }}</b></span>
+		  {{ ScheduledTransaction.CurrencyType }}<br/>
+		  {{ ScheduledTransaction.FrequencyDescription | downcase }}.
+  </div>
+
+{% endfor %}
+
+
+

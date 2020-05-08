@@ -1,0 +1,21 @@
+select 
+	t.Name
+	, t.Category
+	, noteCount.Count
+	, lastNote.Text
+	, lastNote.Date
+from BlockType t 
+	outer apply (select count(*) as [Count] from Note n 
+		where n.EntityId = t.id 
+		and n.NoteTypeId = 50
+		) noteCount
+	outer apply (select top(1) n.Text, n.CreatedDateTime as [Date] from Note n 
+		where n.EntityId = t.id 
+		and n.NoteTypeId = 50
+		order by n.ModifiedDateTime desc
+		) lastNote
+where path like '%plugin%'
+and t.Category not like '%Blue Box Moon%'
+and t.Category not like '%Bricks and Mortar Studio%'
+and t.id != 66
+order by t.Category desc

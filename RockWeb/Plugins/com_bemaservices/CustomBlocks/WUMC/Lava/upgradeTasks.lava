@@ -1,0 +1,42 @@
+  {% if NotesSize > 0 %}
+    <div class="row">
+        <div class="col-md-12">
+            <h4>Recent Notes</h4>
+            {% for note in Notes %}
+                <p>by {{ note.CreatedByPersonName }} on {{ note.CreatedDateTime | Date:'M/d/yyyy' }} <br/>{{ note.Text }} </p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if MatrixItemsSize > 0 %}
+        <div class="well col-md-12">
+            <h4> Additional Testing Tasks </h4>
+        {% for task in Matrix.AttributeMatrixItems %}
+            {% assign taskName = task | Attribute:'FeatureorItemtoTest' %} 
+            {% assign taskVersion = task | Attribute:'LatestVersionTested' %} 
+            {% assign taskTestingNotes = task | Attribute:'TestingNotes' %}
+            
+            {% if taskVersion >= targetVersion %}
+            <div class='BEMA-task'>
+                <div class="checkboxSquare checked"></div> {{ taskName }}
+            </div>
+            {% else %}
+            <div class='BEMA-task'>
+                <div class="checkboxSquare"></div> {{ taskName }} Current Version: {{ taskVersion }} Testing Notes: {{ taskTestingNotes }}
+            </div>
+            {% endif %}
+            
+        {% endfor %}
+        </div>
+    {% else %}
+    
+    <div class="row">
+        <div class="col-md-12">
+             <div class='BEMA-task'>
+                <div class="checkboxSquare"></div> Basic Testing. Load page, and confirm no errors.
+            </div>
+        </div>
+     </div>   
+     
+    {% endif %}
