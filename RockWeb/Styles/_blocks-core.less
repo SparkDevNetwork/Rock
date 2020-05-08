@@ -712,7 +712,7 @@
 
   .btn-checkbox {
     width: ~"calc(50% - 16px)";
-    margin: 0 8px 8px;
+    margin: 0 8px 16px;
 
     @media (min-width: @screen-sm-min) {
       width: ~"calc(33.333% - 16px)";
@@ -730,13 +730,19 @@
   -ms-flex-direction: column;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  white-space: normal;
 
   i {
+    margin-bottom: .25em;
     font-size: 2em;
   }
 
   .small {
     font-size: 80%;
+    line-height: 1;
   }
 
   &.active {
