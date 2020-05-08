@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Finance
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Contribution Statement from Statement Template" )]
-    [Category( "Finance" )]
+    [Category( "BEMA Services > Finance" )]
     [Description( "Block for displaying a Lava based contribution statement." )]
     [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
     [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]

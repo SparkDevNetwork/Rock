@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Reporting
     /// Block for easily adding/editing metric values for any metric that has partitions of campus and service time.
     /// </summary>
     [DisplayName( "Service Metrics Entry" )]
-    [Category( "com_visitgracechurch > Reporting" )]
+    [Category( "BEMA Services > Reporting" )]
     [Description( "Block for easily adding/editing metric values for any metric that has partitions of campus and service time." )]
 
     [CategoryField( "Schedule Category", "The schedule category to use for list of service times.", false, "Rock.Model.Schedule", "", "", true, "", "", 0 )]

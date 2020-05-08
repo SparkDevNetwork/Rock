@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
     /// Renders a particular calendar using Lava.
     /// </summary>
     [DisplayName("Connection Card")]
-    [Category("Grace Church > Connection")]
+    [Category("BEMA Services > Connection")]
     [Description("Runs user through connection card entry")]
 
     [CampusField( "Online Campus", "The campus should be used for online option", true, "", "", 0 )]
