@@ -34,6 +34,7 @@ using Rock.Web.UI.Controls;
  * 
  * Additional Features:
  * - FE1) Added Ability to launch a workflow when a benevolence request is saved
+ * - FE2) Added Ability to set how many files can be attached to the request
  * - UI1) Added Ability to customize the label on Case Worker controls
  * - UI2) Added Ability to customize the  label on Government Id controls
  * - UI3) Added Ability to show all statuses as labels
@@ -55,7 +56,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [WorkflowTypeField(
             "Workflow",
-            key: AttributeKey.Workflow,
+            key: BemaAttributeKey.Workflow,
             description: "Workflow to be triggered when the page is saved",
             allowMultiple: true,
             required: false,
@@ -63,10 +64,21 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             Category = "BEMA Additional Features" )]
     /* BEMA.FE1.End */
 
+    /* BEMA.FE2.Start */
+    [IntegerField(
+        "Maximum Number of Attachments",
+        Key = BemaAttributeKey.MaximumAttachmentNumber,
+        Description = "The maximum number of attachments allowed.",
+        IsRequired = true,
+        DefaultValue = "6",
+        Category = "BEMA Additional Features" )]
+    // UMC Value = "8"
+    /* BEMA.FE2.End */
+
     /* BEMA.UI1.Start */
     [TextField(
         "Case Worker Label",
-        Key = AttributeKey.CaseWorkerLabel,
+        Key = BemaAttributeKey.CaseWorkerLabel,
         Description = "The Label on the Case Worker controls.",
         IsRequired = true,
         DefaultValue = "Case Worker",
@@ -77,7 +89,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI2.Start */
     [TextField(
         "Government Id Label",
-        Key = AttributeKey.GovernmentIdLabel,
+        Key = BemaAttributeKey.GovernmentIdLabel,
         Description = "The Label on the Government Id controls.",
         IsRequired = true,
         DefaultValue = "Government ID",
@@ -88,7 +100,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI3.Start */
     [BooleanField(
         "Are all statuses shown as labels?",
-        Key = AttributeKey.AreAllStatusesShownAsLabels,
+        Key = BemaAttributeKey.AreAllStatusesShownAsLabels,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -100,7 +112,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         description: "What Label Type should be used for the Initiated Label?",
         enumSourceType: typeof( LabelType ),
         DefaultValue = "3", //Info
-        Key = AttributeKey.AssignedLabelType,
+        Key = BemaAttributeKey.AssignedLabelType,
         Category = "BEMA Additional Features"
         )]
     /* BEMA.UI4.End */
@@ -111,7 +123,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         description: "What Label Type should be used for the Initiated Label?",
         enumSourceType: typeof( LabelType ),
         DefaultValue = "4", //Warning
-        Key = AttributeKey.InitiatedLabelType,
+        Key = BemaAttributeKey.InitiatedLabelType,
         Category = "BEMA Additional Features"
         )]
     /* BEMA.UI5.End */
@@ -119,8 +131,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
-        #region Attribute Keys
-        private static class AttributeKey
+        #region BEMA Attribute Keys
+        private static class BemaAttributeKey
         {
             public const string Workflow = "Workflow";
             public const string CaseWorkerLabel = "CaseWorkerLabel";
@@ -128,6 +140,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             public const string AreAllStatusesShownAsLabels = "AreAllStatusesShownAsLabels";
             public const string AssignedLabelType = "AssignedLabelType";
             public const string InitiatedLabelType = "InitiatedLabelType";
+            public const string MaximumAttachmentNumber = "MaximumAttachmentNumber";
         }
 
         #endregion
@@ -238,12 +251,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             base.OnLoad( e );
 
             /* BEMA.UI1.Start */
-            ppCaseWorker.Label = GetAttributeValue( AttributeKey.CaseWorkerLabel );
-            ddlCaseWorker.Label = GetAttributeValue( AttributeKey.CaseWorkerLabel );
+            ppCaseWorker.Label = GetAttributeValue( BemaAttributeKey.CaseWorkerLabel );
+            ddlCaseWorker.Label = GetAttributeValue( BemaAttributeKey.CaseWorkerLabel );
             /* BEMA.UI1.End */
 
             /* BEMA.UI2.Start */
-            dtbGovernmentId.Label = GetAttributeValue( AttributeKey.GovernmentIdLabel );
+            dtbGovernmentId.Label = GetAttributeValue( BemaAttributeKey.GovernmentIdLabel );
             /* BEMA.UI2.End */
 
             if ( !Page.IsPostBack )
@@ -254,8 +267,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             else
             {
                 var rockContext = new RockContext();
-                BenevolenceRequest item = new BenevolenceRequestService(rockContext).Get( hfBenevolenceRequestId.ValueAsInt());
-                if (item == null )
+                BenevolenceRequest item = new BenevolenceRequestService( rockContext ).Get( hfBenevolenceRequestId.ValueAsInt() );
+                if ( item == null )
                 {
                     item = new BenevolenceRequest();
                 }
@@ -584,7 +597,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                     if ( statusChange != "" )
                     {
-                        Guid? workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
+                        Guid? workflowTypeGuid = GetAttributeValue( BemaAttributeKey.Workflow ).AsGuidOrNull();
                         if ( workflowTypeGuid.HasValue )
                         {
                             var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
@@ -646,13 +659,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbPrint_Click(object sender, EventArgs e)
+        protected void lbPrint_Click( object sender, EventArgs e )
         {
-            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
-            if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
+            var benevolenceRequestId = this.PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
+            if ( benevolenceRequestId.HasValue && !benevolenceRequestId.Equals( 0 ) && !string.IsNullOrEmpty( GetAttributeValue( "BenevolenceRequestStatementPage" ) ) )
             {
-                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } });
-            }               
+                NavigateToLinkedPage( "BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } } );
+            }
         }
 
         /// <summary>
@@ -668,7 +681,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 if ( person != null )
                 {
                     // Make sure that the FirstName box gets either FirstName or NickName of person. 
-                    if (!string.IsNullOrWhiteSpace(person.FirstName))
+                    if ( !string.IsNullOrWhiteSpace( person.FirstName ) )
                     {
                         dtbFirstName.Text = person.FirstName;
                     }
@@ -678,11 +691,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
 
                     //If both FirstName and NickName are blank, let them edit it manually
-                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace(dtbFirstName.Text);
+                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace( dtbFirstName.Text );
 
                     dtbLastName.Text = person.LastName;
                     //If both LastName is blank, let them edit it manually
-                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text ); ;
+                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text );
+                    ;
 
                     dvpConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpConnectionStatus.Enabled = false;
@@ -728,11 +742,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
-                    
-                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
+
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || ( requestId.HasValue && requestId == 0 ) ) )
                     {
                         var personCampus = person.GetCampus();
-                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : ( int? ) null;
                     }
                 }
             }
@@ -751,7 +765,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
         {
-            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
 
             if ( fileUpDoc.BinaryFileId.HasValue )
             {
@@ -767,7 +781,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
         {
-            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
             if ( e.BinaryFileId.HasValue )
             {
                 DocumentsState.Remove( e.BinaryFileId.Value );
@@ -803,7 +817,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         {
             var ds = DocumentsState.ToList();
 
-            if ( ds.Count() < 6 )
+            /* BEMA.FE2.Start */
+            if ( ds.Count() < GetAttributeValue( BemaAttributeKey.MaximumAttachmentNumber ).AsInteger() )
+            /* BEMA.FE2.End */
             {
                 ds.Add( 0 );
             }
@@ -908,7 +924,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 }
 
                 /* BEMA.UI3.Start */
-                var showAllStatuses = GetAttributeValue( AttributeKey.AreAllStatusesShownAsLabels ).AsBoolean();
+                var showAllStatuses = GetAttributeValue( BemaAttributeKey.AreAllStatusesShownAsLabels ).AsBoolean();
                 if ( showAllStatuses )
                 {
                     hlStatus.Text = benevolenceRequest.RequestStatusValue.Value;
@@ -918,14 +934,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 /* BEMA.UI4.Start */
                 if ( benevolenceRequest.RequestStatusValue.Value == "Assigned" )
                 {
-                    hlStatus.LabelType = GetAttributeValue( AttributeKey.AssignedLabelType ).ConvertToEnum<LabelType>();
+                    hlStatus.LabelType = GetAttributeValue( BemaAttributeKey.AssignedLabelType ).ConvertToEnum<LabelType>();
                 }
                 /* BEMA.UI4.End */
 
                 /* BEMA.UI5.Start */
                 if ( benevolenceRequest.RequestStatusValue.Value == "Initiated" )
                 {
-                    hlStatus.LabelType = GetAttributeValue( AttributeKey.InitiatedLabelType ).ConvertToEnum<LabelType>();
+                    hlStatus.LabelType = GetAttributeValue( BemaAttributeKey.InitiatedLabelType ).ConvertToEnum<LabelType>();
                 }
                 /* BEMA.UI5.End */
             }
@@ -940,7 +956,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
             }
             else
-            { 
+            {
                 if ( benevolenceRequest.CaseWorkerPersonAlias != null )
                 {
                     ppCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAlias.Person );
@@ -1046,6 +1062,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         #endregion
 
-        
+
     }
 }
