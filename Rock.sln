@@ -116,6 +116,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.citizenschurch.Autobuil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.fellowshipnwa.Autobuild", "org.fellowshipnwa.Autobuild\org.fellowshipnwa.Autobuild.csproj", "{2DE4F362-788D-4312-94DD-4676D4F0D07A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.thewoodlandsumc.Autobuild", "org.thewoodlandsumc.Autobuild\org.thewoodlandsumc.Autobuild.csproj", "{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -298,6 +300,10 @@ Global
 		{2DE4F362-788D-4312-94DD-4676D4F0D07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DE4F362-788D-4312-94DD-4676D4F0D07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DE4F362-788D-4312-94DD-4676D4F0D07A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
