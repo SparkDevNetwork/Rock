@@ -1,14 +1,6 @@
-{% if ccid and ccid != empty %}
-
-{% contentchannel id:'{{ ccid }}' iterator:'channels' %}
-{% for channel in channels %}
-    {% assign channelNameParts = channel.Name | Split:' - ' %}
-    {% assign channelItemsName = channelNameParts[1] %}
-    {% assign channelUrl = channel.ChannelUrl %}
-{% endfor %}
-{% endcontentchannel %}
-
-{% contentchannelitem dataview:'{{ dvid }}' where:'ContentChannelId == {{ ccid }}' limit:'3' sort:'StartDateTime desc' iterator:'items' %}
+{% if Items and Items != empty %}
+{% assign channelItemsName = Items | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
+{% assign channelUrl = Items | First | Property:'ChannelUrl' %}
 <section class="bg-white soft xs-soft-half soft-half-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
 <div class="row soft-half-top soft-bottom xs-text-center">
     <div class="col-xs-12 col-sm-6 col-md-6">
@@ -18,57 +10,39 @@
     </div>
 </div>
 <div class="row">
-    {% for item in items %}<div class="col-xs-12 col-sm-6 col-md-4">
-        {% assign parentCount = item.ParentItems | Size %}
-        {% capture guid %}{{ item.Guid }}{% endcapture %}
-        {% capture id %}{{ item.Id }}{% endcapture %}
-        {% capture cciid %}{{ item.Id }}{% endcapture %}
-        {% capture title %}{{ item.Title | Replace:"'","’" }}{% endcapture %}
-        {% capture titlesize %}h4{% endcapture %}
-        {% assign summary = item | Attribute:'Summary' %}
-        {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Truncate:150,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
-        {% capture textalignment %}{{ item | Attribute:'TextAlignment' }}{% endcapture %}
-        {% capture label %}{{ item | Attribute:'Label' }}{% endcapture %}
-        {% capture communicators %}{[ communicatorNames guid:'{{ item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
-        {% assign communicators = communicators | Trim %}
-        {% assign actualdate = child | Attribute:'ActualDate' %}
-        {% capture subtitle %}{% if actualdate and actualdate != empty %}{{ actualdate | Date:'MMM d, yyyy' }}{% else %}{{ item.StartDateTime | Date:'MMM d, yyyy' }}{% endif %}{% if communicators and communicators != empty %} &middot; {{ communicators }}{% endif %}{% endcapture %}
-        {% assign video = item | Attribute:'Video','RawValue' %}
-        {% assign itemImage = item | Attribute:'ImageLandscape','Url' %}
-        {% capture imageurl %}
-            {% if channelItemsName == 'Sermons' and video and video != empty %}
-                {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
-            {% elseif itemImage and itemImage != empty %}
-                {{ itemImage }}
-            {% else %}
-                {% for parent in item.ParentItems %}
-                    {[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ]}
-                {% endfor %}
-            {% endif %}
-        {% endcapture %}
-        {% assign imageurl = imageurl | Trim %}
-
-        {% capture imageoverlayurl %}{{ item | Attribute:'OverlayImage','Url' }}{% endcapture %}
-        {% capture imagealignment %}{{ item | Attribute:'ImageAlignment' }}{% endcapture %}
-        {% capture imageopacity %}{{ item | Attribute:'ImageOpacity' | DividedBy: 100 }}{% endcapture %}
-        {% capture imageflip %}{{ item | Attribute:'ImageFlip' }}{% endcapture %}
-        {% capture imageblur %}{{ item | Attribute:'ImageBlur' }}{% endcapture %}
-        {% capture grayscale %}{{ item | Attribute:'Grayscale' }}{% endcapture %}
-        {% capture backgroundvideourl %}{{ item | Attribute:'BackgroundVideo' }}{% endcapture %}
-        {% capture lava %}{{ item | Attribute:'Lava' }}{% endcapture %}
-        {% capture video %}{{ item | Attribute:'Video','RawValue' }}{% endcapture %}
-        {% capture ratio %}{{ item | Attribute:'Ratio','RawValue' }}{% endcapture %}
-        {% capture trimcopy %}{{ item | Attribute:'TrimCopy' }}{% endcapture %}
-        {% capture linkcolor %}{{ item | Attribute:'ForegroundColor' }}{% endcapture %}
-        {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
-        {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
+    {% for item in Items limit:3 %}<div class="col-xs-12 col-sm-6 col-md-4">
+        {% assign guid = item.Guid %}
+        {% assign id = item.Id %}
+        {% assign dataset = item.Dataset %}
+        {% assign title = item.Title | Replace:"'","’" %}
+        {% assign titlesize = 'h4' %}
+        {% assign summary = item.Summary %}
+        {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | HtmlDecode | StripHtml | Replace:"'","’" }}{% else %}{{ item.Content | HtmlDecode | StripHtml | Truncate:140,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
+        {% assign label = channelItemsName | Singularize %}
+        {%- capture communicators -%}{[ communicators dataset:'{{ item.Dataset }}' cciid:'{{ item.Id }}'  ]}{%- endcapture -%}
+        {% assign actualdate = item.ActualDate %}
+        {% capture subtitle %}{% if actualdate and actualdate != empty %}{[ formatDate date:'{{ actualdate }}']}{% else %}{[ formatDate date:'{{ item.PublishDateTime }}' ]}{% endif %}{% if communicators and communicators != empty %} &middot; {{ communicators }}{% endif %}{% endcapture %}
+        {% assign video = item.Video %}
+        {% assign imageurl = item.ImageLandscape %}
+        {% capture linkurl %}{{ item.Permalink }}{% endcapture %}
         {% capture linktext %}{% if channelItemsName == 'Sermons' %}Watch{% else %}Read{% endif %} {{ channelItemsName | Singularize }}{% endcapture %}
-        {% capture hideforegroundelements %}{{ item | Attribute:'HideForegroundElements' }}{% endcapture %}
 
-        {[ card guid:'{{ guid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+        {% assign parentChannelId = item.ParentChannelId | AsInteger %}
+        {% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}
+        {% if parent and parent != empty %}
+            {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+            {% if parentItem and parentItem != empty %}
+                {% assign collectiontext = parentItem.Title %}
+                {% assign collectionurl = parentItem.Permalink %}
+            {% endif %}
+        {% else %}
+            {% assign collectiontext = '' %}
+            {% assign collectionurl = '' %}
+        {% endif %}
+
+        {[ card guid:'{{ guid }}' id:'{{ id }}' cciid:'{{ id }}' dataset:'{{ dataset }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
 
     </div>{% endfor %}
 </div></section>
-{% endcontentchannelitem %}
 
 {% endif %}

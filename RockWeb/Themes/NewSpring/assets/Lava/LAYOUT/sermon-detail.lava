@@ -54,7 +54,7 @@
         {% assign title = Item.Title | Replace:"'","’" %}
         {% assign titlesize = 'h3' %}
         {% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
-        {% capture subtitle %}{[ formatDate date:'{{ Item.ActualDate }}' ]} &middot; {[ communicators ]}{% endcapture %}
+        {% capture subtitle %}{[ formatDate date:'{{ Item.ActualDate }}' ]} &middot; {[ communicators dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
         {% capture imageurl %}{{ parentImage }}{% endcapture %}
         {% capture lava %}
             <div class="row row-condensed push-bottom xs-push-half-bottom">

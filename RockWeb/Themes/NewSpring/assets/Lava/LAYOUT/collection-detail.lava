@@ -68,7 +68,7 @@
 {% assign metaDescription = Item.MetaDescription %}
 {% assign summary = Item.Summary | HtmlDecode | StripHtml | StripNewlines %}
 {% assign content = Item.Content | HtmlDecode | StripHtml | StripNewlines | Truncate:240,'...' %}
-{% capture article_author %}{[ communicators ]}{% endcapture %}
+{% capture article_author %}{[ communicators dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
 
 {%- comment -%}If meta title is present, use it, otherwise use this item's title{%- endcomment -%}
 {% capture title %}{% if metaTitle and metaTitle != empty %}{{ metaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}

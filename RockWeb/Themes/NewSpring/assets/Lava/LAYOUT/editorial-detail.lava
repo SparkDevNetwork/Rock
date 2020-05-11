@@ -17,7 +17,7 @@
 {% capture date %}{[ formatDate date:'{{ Item.PublishDateTime }}' ]}{% endcapture %}
 {% capture tags %}{[ tags dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
 {% assign tags = tags | Trim %}
-{% capture communicators %}{[ communicators ]}{% endcapture %}
+{% capture communicators %}{[ communicators dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
 {% capture scripturereferences %}{% for scripture in Item.Scriptures %}{{ scripture.Book }} {{ scripture.Reference }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
 {% assign scripturereferences = scripturereferences | Trim %}
 {% assign itemsManuallyOrdered = Item.ItemsOrderedManually %}

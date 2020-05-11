@@ -5,8 +5,6 @@
         {%- assign itemsManuallyOrdered = item.ContentChannel.ItemsManuallyOrdered -%}
         {%- assign childItemsManuallyOrdered = item.ContentChannel.ChildItemsManuallyOrdered -%}
         {%- capture permalink -%}{{ 'Global' | Attribute:'PublicApplicationRoot' | ReplaceLast:'/', '' }}{[ getPermalink cciid:'{{ item.Id }}' ]}{%- endcapture -%}
-        {%- capture communicatorsString %}{{ item | Attribute:'Communicators' }}{% endcapture -%}
-        {%- assign communicatorsObject = communicatorsString | FromJSON -%}
         {%- capture scripturesString %}{{ item | Attribute:'Scriptures' }}{% endcapture -%}
         {%- assign scripturesObject = scripturesString | FromJSON -%}
         {%- capture videosString %}{{ item | Attribute:'Videos' }}{% endcapture -%}{%- assign videosObject = videosString | FromJSON -%}
@@ -167,6 +165,7 @@
         "Slug": {{ item.PrimarySlug | ToJSON }},
         "ChannelId": {{ item.ContentChannel.Id }},
         "ChannelName": {{ item.ContentChannel.Name | ToJSON }},
+        "ChannelUrl": {{ item.ContentChannel.ChannelUrl | ToJSON }},
         "ItemsOrderedManually": {{ itemsManuallyOrdered | ToJSON }},
         "ChildItemsOrderedManually": {{ childItemsManuallyOrdered | ToJSON }},
         "ParentChannelId": {{ parentchannelid | ToJSON }},
