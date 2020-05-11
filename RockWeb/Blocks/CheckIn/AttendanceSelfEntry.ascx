@@ -117,7 +117,7 @@
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
                                             <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
-                                            <span><%# Eval("FullName") %></span>
+                                            <span class="name"><%# Eval("FullName") %></span>
                                         </button>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -129,7 +129,7 @@
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
                                             <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
-                                            <span><%# Eval("FullName") %></span>
+                                            <span class="name"><%# Eval("FullName") %></span>
                                             <span class="small"><%# Eval("RelationshipType") %></span>
                                         </button>
                                     </ItemTemplate>
