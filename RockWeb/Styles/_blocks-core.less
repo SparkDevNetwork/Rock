@@ -706,6 +706,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 10em;
   padding-top: 24px;
   padding-bottom: 24px;
   white-space: normal;
@@ -713,6 +714,16 @@
   i {
     margin-bottom: .25em;
     font-size: 2em;
+  }
+
+  .name {
+    line-height: 1.3333333;
+    max-height: 2.6666666em;
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .small {
