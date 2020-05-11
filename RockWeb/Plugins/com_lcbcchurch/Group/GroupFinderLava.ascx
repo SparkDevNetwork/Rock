@@ -8,11 +8,15 @@
         <Rock:HiddenFieldWithClass ID="hfFilterTwoValues" runat="server" CssClass="js-FilterTwoValue" />
         <Rock:HiddenFieldWithClass ID="hfPageNo" runat="server" CssClass="js-Page" />
 
+        
 
-        <asp:Literal ID="lFilter" runat="server"></asp:Literal>
+        <p style="margin-bottom: -26px">Looking for a specific study? Use the Group Search feature to find your Group</p>
         <div class="searchbox">
         <asp:TextBox ID="tbKeywords" runat="server" placeholder="Search Groups..." CssClass="form-control form-control-minimal js-search" />
         </div>
+
+        <asp:Literal ID="lFilter" runat="server"></asp:Literal>
+
         <asp:Literal ID="lResults" runat="server"></asp:Literal>
     </ContentTemplate>
 </asp:UpdatePanel>
