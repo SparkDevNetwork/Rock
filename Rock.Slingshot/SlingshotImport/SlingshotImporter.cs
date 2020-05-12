@@ -111,6 +111,9 @@ namespace Rock.Slingshot
             BulkImporter = new BulkImporter();
             BulkImporter.ImportUpdateOption = importUpdateType;
             BulkImporter.OnProgress = BulkImporter_OnProgress;
+
+            this.SlingshotLogFile = Path.Combine( Path.GetDirectoryName( this.SlingshotFileName ), "slingshot-errors.log" );
+            BulkImporter.SlingshotLogFile = this.SlingshotLogFile;
         }
 
         /// <summary>
@@ -258,7 +261,10 @@ namespace Rock.Slingshot
 
         public List<SlingshotCore.Model.BusinessAttribute> SlingshotBusinessAttributes { get; private set; }
 
+        // Class Functionality Properties
         private string SlingshotFileName { get; set; }
+
+        public string SlingshotLogFile { get; private set; }
 
         /// <summary>
         /// Gets or sets the foreign system key.
@@ -352,7 +358,6 @@ namespace Rock.Slingshot
         /// <summary>
         /// Does the import.
         /// </summary>
-        /// <param name="foreignSystemKey">The foreign system key.</param>
         public void DoImport()
         {
             this.Results.Clear();
@@ -824,55 +829,59 @@ namespace Rock.Slingshot
             var financialPledgeImportList = new List<Model.FinancialPledgeImport>();
             foreach ( var slingshotFinancialPledge in this.SlingshotFinancialPledgeList )
             {
-                var financialPledgeImport = new Model.FinancialPledgeImport()
-                {
-                    FinancialPledgeForeignId = slingshotFinancialPledge.Id,
-                    PersonForeignId = slingshotFinancialPledge.PersonId,
-                    FinancialAccountForeignId = slingshotFinancialPledge.AccountId,
-                    GroupForeignId = null,
-                    TotalAmount = slingshotFinancialPledge.TotalAmount,
-                    StartDate = slingshotFinancialPledge.StartDate ?? DateTime.MinValue,
-                    EndDate = slingshotFinancialPledge.EndDate ?? DateTime.MaxValue,
-                    CreatedDateTime = slingshotFinancialPledge.CreatedDateTime,
-                    ModifiedDateTime = slingshotFinancialPledge.ModifiedDateTime
-                };
+                var newFinancialPledge = BulkImporter.ConvertModelWithLogging( slingshotFinancialPledge, () => {
+                    var financialPledgeImport = new Model.FinancialPledgeImport()
+                    {
+                        FinancialPledgeForeignId = slingshotFinancialPledge.Id,
+                        PersonForeignId = slingshotFinancialPledge.PersonId,
+                        FinancialAccountForeignId = slingshotFinancialPledge.AccountId,
+                        GroupForeignId = null,
+                        TotalAmount = slingshotFinancialPledge.TotalAmount,
+                        StartDate = slingshotFinancialPledge.StartDate ?? DateTime.MinValue,
+                        EndDate = slingshotFinancialPledge.EndDate ?? DateTime.MaxValue,
+                        CreatedDateTime = slingshotFinancialPledge.CreatedDateTime,
+                        ModifiedDateTime = slingshotFinancialPledge.ModifiedDateTime
+                    };
 
-                switch ( slingshotFinancialPledge.PledgeFrequency )
-                {
-                    case SlingshotCore.Model.PledgeFrequency.OneTime:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
-                        break;
+                    switch ( slingshotFinancialPledge.PledgeFrequency )
+                    {
+                        case SlingshotCore.Model.PledgeFrequency.OneTime:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.Weekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.Weekly:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.BiWeekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.BiWeekly:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.Monthly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.Monthly:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.Quarterly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.Quarterly:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
-                        break;
+                        case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
+                            break;
 
-                    case SlingshotCore.Model.PledgeFrequency.Yearly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
-                        break;
-                }
+                        case SlingshotCore.Model.PledgeFrequency.Yearly:
+                            financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
+                            break;
+                    }
 
-                financialPledgeImportList.Add( financialPledgeImport );
+                    return financialPledgeImport;
+                } );
+
+                financialPledgeImportList.Add( newFinancialPledge );
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialPledges..." );
@@ -895,25 +904,29 @@ namespace Rock.Slingshot
             {
                 int? parentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? null : slingshotFinancialAccount.ParentAccountId;
 
-                var financialAccountImport = new Model.FinancialAccountImport()
-                {
-                    FinancialAccountForeignId = slingshotFinancialAccount.Id,
-                    Name = slingshotFinancialAccount.Name,
-                    IsTaxDeductible = slingshotFinancialAccount.IsTaxDeductible,
-                    ParentFinancialAccountForeignId = parentFinancialAccountForeignId
-                };
+                var newFinancialAccount = BulkImporter.ConvertModelWithLogging<Model.FinancialAccountImport>( slingshotFinancialAccount, () => {
+                    var financialAccountImport = new Model.FinancialAccountImport()
+                    {
+                        FinancialAccountForeignId = slingshotFinancialAccount.Id,
+                        Name = slingshotFinancialAccount.Name,
+                        IsTaxDeductible = slingshotFinancialAccount.IsTaxDeductible,
+                        ParentFinancialAccountForeignId = parentFinancialAccountForeignId
+                    };
 
-                if ( string.IsNullOrWhiteSpace( slingshotFinancialAccount.Name ) )
-                {
-                    financialAccountImport.Name = "Unnamed Financial Account";
-                }
+                    if ( string.IsNullOrWhiteSpace( slingshotFinancialAccount.Name ) )
+                    {
+                        financialAccountImport.Name = "Unnamed Financial Account";
+                    }
 
-                if ( slingshotFinancialAccount.CampusId.HasValue )
-                {
-                    financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
-                }
+                    if ( slingshotFinancialAccount.CampusId.HasValue )
+                    {
+                        financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
+                    }
 
-                financialAccountImportList.Add( financialAccountImport );
+                    return financialAccountImport;
+                } );
+
+                financialAccountImportList.Add( newFinancialAccount );
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialAccounts..." );
@@ -982,103 +995,123 @@ namespace Rock.Slingshot
             var financialTransactionImportList = new List<Model.FinancialTransactionImport>();
             foreach ( var slingshotFinancialTransaction in this.SlingshotFinancialTransactionList )
             {
-                var financialTransactionImport = new Model.FinancialTransactionImport()
-                {
-                    FinancialTransactionForeignId = slingshotFinancialTransaction.Id,
-                    AuthorizedPersonForeignId = slingshotFinancialTransaction.AuthorizedPersonId,
-                    BatchForeignId = slingshotFinancialTransaction.BatchId,
-                    Summary = slingshotFinancialTransaction.Summary,
-                    TransactionCode = slingshotFinancialTransaction.TransactionCode,
-                    TransactionDate = slingshotFinancialTransaction.TransactionDate,
-                    CreatedByPersonForeignId = slingshotFinancialTransaction.CreatedByPersonId,
-                    CreatedDateTime = slingshotFinancialTransaction.CreatedDateTime,
-                    ModifiedByPersonForeignId = slingshotFinancialTransaction.ModifiedByPersonId,
-                    ModifiedDateTime = slingshotFinancialTransaction.ModifiedDateTime,
-                    FinancialTransactionDetailImports = new List<Model.FinancialTransactionDetailImport>()
-                };
-
-                switch ( slingshotFinancialTransaction.CurrencyType )
-                {
-                    case SlingshotCore.Model.CurrencyType.ACH:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.Cash:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.Check:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.CreditCard:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.NonCash:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.Unknown:
-                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.CurrencyType.Other:
-                        // TODO: Do we need to support this?
-                        break;
-                }
-
-                switch ( slingshotFinancialTransaction.TransactionSource )
-                {
-                    case SlingshotCore.Model.TransactionSource.BankChecks:
-                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.TransactionSource.Kiosk:
-                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.TransactionSource.MobileApplication:
-                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.TransactionSource.OnsiteCollection:
-                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.TransactionSource.Website:
-                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE.AsGuid()].Id;
-                        break;
-                }
-
-                switch ( slingshotFinancialTransaction.TransactionType )
-                {
-                    case SlingshotCore.Model.TransactionType.Contribution:
-                        financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.TransactionType.EventRegistration:
-                        financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid()].Id;
-                        break;
-                }
-
-                foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransaction.FinancialTransactionDetails )
-                {
-                    var financialTransactionDetailImport = new Model.FinancialTransactionDetailImport()
+                bool skipImport = false;
+                var newFinancialTransaction = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionImport>( slingshotFinancialTransaction, () => {
+                    var financialTransactionImport = new Model.FinancialTransactionImport()
                     {
-                        FinancialAccountForeignId = slingshotFinancialTransactionDetail.AccountId,
-                        Amount = slingshotFinancialTransactionDetail.Amount,
-                        CreatedByPersonForeignId = slingshotFinancialTransactionDetail.CreatedByPersonId,
-                        CreatedDateTime = slingshotFinancialTransactionDetail.CreatedDateTime,
-                        FinancialTransactionDetailForeignId = slingshotFinancialTransactionDetail.Id,
-                        ModifiedByPersonForeignId = slingshotFinancialTransactionDetail.ModifiedByPersonId,
-                        ModifiedDateTime = slingshotFinancialTransactionDetail.ModifiedDateTime,
-                        Summary = slingshotFinancialTransactionDetail.Summary
+                        FinancialTransactionForeignId = slingshotFinancialTransaction.Id,
+                        AuthorizedPersonForeignId = slingshotFinancialTransaction.AuthorizedPersonId,
+                        BatchForeignId = slingshotFinancialTransaction.BatchId,
+                        Summary = slingshotFinancialTransaction.Summary,
+                        TransactionCode = slingshotFinancialTransaction.TransactionCode,
+                        TransactionDate = slingshotFinancialTransaction.TransactionDate,
+                        CreatedByPersonForeignId = slingshotFinancialTransaction.CreatedByPersonId,
+                        CreatedDateTime = slingshotFinancialTransaction.CreatedDateTime,
+                        ModifiedByPersonForeignId = slingshotFinancialTransaction.ModifiedByPersonId,
+                        ModifiedDateTime = slingshotFinancialTransaction.ModifiedDateTime,
+                        FinancialTransactionDetailImports = new List<Model.FinancialTransactionDetailImport>()
                     };
-                    financialTransactionImport.FinancialTransactionDetailImports.Add( financialTransactionDetailImport );
-                }
 
-                financialTransactionImportList.Add( financialTransactionImport );
+                    switch ( slingshotFinancialTransaction.CurrencyType )
+                    {
+                        case SlingshotCore.Model.CurrencyType.ACH:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.Cash:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.Check:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.CreditCard:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.NonCash:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.Unknown:
+                            financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.CurrencyType.Other:
+                            // TODO: Do we need to support this?
+                            break;
+                    }
+
+                    switch ( slingshotFinancialTransaction.TransactionSource )
+                    {
+                        case SlingshotCore.Model.TransactionSource.BankChecks:
+                            financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.TransactionSource.Kiosk:
+                            financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.TransactionSource.MobileApplication:
+                            financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.TransactionSource.OnsiteCollection:
+                            financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.TransactionSource.Website:
+                            financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE.AsGuid()].Id;
+                            break;
+                    }
+
+                    switch ( slingshotFinancialTransaction.TransactionType )
+                    {
+                        case SlingshotCore.Model.TransactionType.Contribution:
+                            financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.TransactionType.EventRegistration:
+                            financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid()].Id;
+                            break;
+
+                        default:
+                            skipImport = true;
+                            break;
+                    }
+
+                    foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransaction.FinancialTransactionDetails )
+                    {
+                        var newFinancialTransactionDetail = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionDetailImport>( slingshotFinancialTransactionDetail, () => {
+                            var financialTransactionDetailImport = new Model.FinancialTransactionDetailImport()
+                            {
+                                FinancialAccountForeignId = slingshotFinancialTransactionDetail.AccountId,
+                                Amount = slingshotFinancialTransactionDetail.Amount,
+                                CreatedByPersonForeignId = slingshotFinancialTransactionDetail.CreatedByPersonId,
+                                CreatedDateTime = slingshotFinancialTransactionDetail.CreatedDateTime,
+                                FinancialTransactionDetailForeignId = slingshotFinancialTransactionDetail.Id,
+                                ModifiedByPersonForeignId = slingshotFinancialTransactionDetail.ModifiedByPersonId,
+                                ModifiedDateTime = slingshotFinancialTransactionDetail.ModifiedDateTime,
+                                Summary = slingshotFinancialTransactionDetail.Summary
+                            };
+
+                            return financialTransactionDetailImport;
+                        } );
+                        financialTransactionImport.FinancialTransactionDetailImports.Add( newFinancialTransactionDetail );
+                    }
+
+                    return financialTransactionImport;
+                } );
+
+                if ( skipImport )
+                {
+                    var exceptionMessage = $"Failed to import Financial Transaction {slingshotFinancialTransaction.Id} because the TransactionType is invalid (must be Contribution or EventRegistration).";
+                    var importException = new ArgumentOutOfRangeException( "TransactionType", exceptionMessage );
+                    BulkImporter.LogError( importException );
+                    continue;
+                }
+                financialTransactionImportList.Add( newFinancialTransaction );
             }
 
             int postChunkSize = this.FinancialTransactionChunkSize ?? int.MaxValue;
@@ -1088,9 +1121,9 @@ namespace Rock.Slingshot
             while ( financialTransactionImportList.Any() )
             {
                 int recordsAlreadyProcessed = 0;
-                if ( this.PersonChunkSize.HasValue )
+                if ( this.FinancialTransactionChunkSize.HasValue )
                 {
-                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                    recordsAlreadyProcessed = chunkCounter * FinancialTransactionChunkSize.Value;
                 }
                 chunkCounter++;
 
@@ -1139,46 +1172,49 @@ namespace Rock.Slingshot
             HashSet<int> attendanceIds = new HashSet<int>();
             foreach ( var slingshotAttendance in this.SlingshotAttendanceList )
             {
-                var attendanceImport = new Model.AttendanceImport()
-                {
-                    PersonForeignId = slingshotAttendance.PersonId,
-                    GroupForeignId = slingshotAttendance.GroupId,
-                    LocationForeignId = slingshotAttendance.LocationId,
-                    ScheduleForeignId = slingshotAttendance.ScheduleId,
-                    StartDateTime = slingshotAttendance.StartDateTime,
-                    EndDateTime = slingshotAttendance.EndDateTime,
-                    Note = slingshotAttendance.Note
-                };
+                var newAttendance = BulkImporter.ConvertModelWithLogging<Model.AttendanceImport>( slingshotAttendance, () => {
+                    var attendanceImport = new Model.AttendanceImport()
+                    {
+                        PersonForeignId = slingshotAttendance.PersonId,
+                        GroupForeignId = slingshotAttendance.GroupId,
+                        LocationForeignId = slingshotAttendance.LocationId,
+                        ScheduleForeignId = slingshotAttendance.ScheduleId,
+                        StartDateTime = slingshotAttendance.StartDateTime,
+                        EndDateTime = slingshotAttendance.EndDateTime,
+                        Note = slingshotAttendance.Note
+                    };
 
-                if ( slingshotAttendance.AttendanceId > 0 )
-                {
-                    attendanceImport.AttendanceForeignId = slingshotAttendance.AttendanceId;
-                }
-                else
-                {
-                    MD5 md5Hasher = MD5.Create();
-                    var hashed = md5Hasher.ComputeHash( Encoding.UTF8.GetBytes( $@"
- {slingshotAttendance.PersonId}
- {slingshotAttendance.StartDateTime}
- {slingshotAttendance.LocationId}
- {slingshotAttendance.ScheduleId}
- {slingshotAttendance.GroupId}
-" ) );
-                    attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number */
-                }
+                    if ( slingshotAttendance.AttendanceId > 0 )
+                    {
+                        attendanceImport.AttendanceForeignId = slingshotAttendance.AttendanceId;
+                    }
+                    else
+                    {
+                        MD5 md5Hasher = MD5.Create();
+                        var hashed = md5Hasher.ComputeHash( Encoding.UTF8.GetBytes( $@"
+     {slingshotAttendance.PersonId}
+     {slingshotAttendance.StartDateTime}
+     {slingshotAttendance.LocationId}
+     {slingshotAttendance.ScheduleId}
+     {slingshotAttendance.GroupId}
+    " ) );
+                        attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number */
+                    }
 
-                if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value ) )
-                {
-                    // shouldn't happen (but if it does, it'll be treated as a duplicate and not imported)
-                    System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
-                }
+                    if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value ) )
+                    {
+                        // shouldn't happen (but if it does, it'll be treated as a duplicate and not imported)
+                        System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
+                    }
 
-                if ( slingshotAttendance.CampusId.HasValue )
-                {
-                    attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
-                }
+                    if ( slingshotAttendance.CampusId.HasValue )
+                    {
+                        attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
+                    }
 
-                attendanceImportList.Add( attendanceImport );
+                    return attendanceImport;
+                    } );
+                attendanceImportList.Add( newAttendance );
             }
 
             this.ReportProgress( 0, "Bulk Importing Attendance..." );
@@ -1196,12 +1232,14 @@ namespace Rock.Slingshot
             var scheduleImportList = new List<Model.ScheduleImport>();
             foreach ( var slingshotSchedule in this.SlingshotScheduleList )
             {
-                var scheduleImport = new Model.ScheduleImport()
-                {
-                    ScheduleForeignId = slingshotSchedule.Id,
-                    Name = slingshotSchedule.Name
-                };
-                scheduleImportList.Add( scheduleImport );
+                var newSchedule = BulkImporter.ConvertModelWithLogging<Model.ScheduleImport>( slingshotSchedule, () => {
+                    return new Model.ScheduleImport()
+                    {
+                        ScheduleForeignId = slingshotSchedule.Id,
+                        Name = slingshotSchedule.Name
+                    };
+                } );
+                scheduleImportList.Add( newSchedule );
             }
 
             this.ReportProgress( 0, "Bulk Importing Schedules..." );
@@ -1218,23 +1256,25 @@ namespace Rock.Slingshot
             var locationImportList = new List<Model.LocationImport>();
             foreach ( var slingshotLocation in this.SlingshotLocationList )
             {
-                var locationImport = new Model.LocationImport()
-                {
-                    LocationForeignId = slingshotLocation.Id,
-                    ParentLocationForeignId = slingshotLocation.ParentLocationId,
-                    Name = slingshotLocation.Name,
-                    IsActive = slingshotLocation.IsActive,
-                    Street1 = slingshotLocation.Street1,
-                    Street2 = slingshotLocation.Street2,
-                    City = slingshotLocation.City,
-                    County = slingshotLocation.County,
-                    State = slingshotLocation.State,
-                    Country = slingshotLocation.Country,
-                    PostalCode = slingshotLocation.PostalCode,
-                    LocationTypeValueId = null // Set LocationType to null since Rock usually leaves it null except for Campus, Building, and Room.
-                };
+                var newLocation = BulkImporter.ConvertModelWithLogging<Model.LocationImport>( slingshotLocation, () => {
+                    return new Model.LocationImport()
+                    {
+                        LocationForeignId = slingshotLocation.Id,
+                        ParentLocationForeignId = slingshotLocation.ParentLocationId,
+                        Name = slingshotLocation.Name,
+                        IsActive = slingshotLocation.IsActive,
+                        Street1 = slingshotLocation.Street1,
+                        Street2 = slingshotLocation.Street2,
+                        City = slingshotLocation.City,
+                        County = slingshotLocation.County,
+                        State = slingshotLocation.State,
+                        Country = slingshotLocation.Country,
+                        PostalCode = slingshotLocation.PostalCode,
+                        LocationTypeValueId = null // Set LocationType to null since Rock usually leaves it null except for Campus, Building, and Room.
+                    };
+                } );
 
-                locationImportList.Add( locationImport );
+                locationImportList.Add( newLocation );
             }
 
             this.ReportProgress( 0, "Bulk Importing Locations..." );
@@ -1249,114 +1289,124 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing GroupImport..." );
             var groupImportList = new List<Model.GroupImport>();
+
             foreach ( var slingshotGroup in this.SlingshotGroupList )
             {
-                var parentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
-                var groupImport = new Model.GroupImport()
-                {
-                    GroupForeignId = slingshotGroup.Id,
-                    GroupTypeId = this.GroupTypeLookupByForeignId[slingshotGroup.GroupTypeId].Id,
-                    Name = slingshotGroup.Name,
-                    Description = slingshotGroup.Description,
-                    IsActive = slingshotGroup.IsActive,
-                    IsPublic = slingshotGroup.IsPublic,
-                    Capacity = slingshotGroup.Capacity,
-                    MeetingDay = slingshotGroup.MeetingDay,
-                    MeetingTime = slingshotGroup.MeetingTime,
-                    Order = slingshotGroup.Order,
-                    ParentGroupForeignId = parentGroupForeignId,
-                    GroupMemberImports = new List<Model.GroupMemberImport>(),
-                    Addresses = new List<Model.GroupAddressImport>(),
-                    AttributeValues = new List<Model.AttributeValueImport>()
-                };
+                var newGroup = BulkImporter.ConvertModelWithLogging<Model.GroupImport>( slingshotGroup, () => {
+                    var parentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
 
-                if ( string.IsNullOrWhiteSpace( slingshotGroup.Name ) )
-                {
-                    groupImport.Name = "Unnamed Group";
-                }
-
-                if ( slingshotGroup.CampusId.HasValue )
-                {
-                    groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
-                }
-
-                // Group Members
-                foreach ( var groupMember in slingshotGroup.GroupMembers )
-                {
-                    if ( !groupImport.GroupMemberImports.Any( gm => gm.PersonForeignId == groupMember.PersonId && gm.RoleName == groupMember.Role ) )
+                    var groupImport = new Model.GroupImport()
                     {
-                        var groupMemberImport = new Model.GroupMemberImport()
+                        GroupForeignId = slingshotGroup.Id,
+                        GroupTypeId = this.GroupTypeLookupByForeignId[slingshotGroup.GroupTypeId].Id,
+                        Name = slingshotGroup.Name,
+                        Description = slingshotGroup.Description,
+                        IsActive = slingshotGroup.IsActive,
+                        IsPublic = slingshotGroup.IsPublic,
+                        Capacity = slingshotGroup.Capacity,
+                        MeetingDay = slingshotGroup.MeetingDay,
+                        MeetingTime = slingshotGroup.MeetingTime,
+                        Order = slingshotGroup.Order,
+                        ParentGroupForeignId = parentGroupForeignId,
+                        GroupMemberImports = new List<Model.GroupMemberImport>(),
+                        Addresses = new List<Model.GroupAddressImport>(),
+                        AttributeValues = new List<Model.AttributeValueImport>()
+                    };
+
+                    if ( string.IsNullOrWhiteSpace( slingshotGroup.Name ) )
+                    {
+                        groupImport.Name = "Unnamed Group";
+                    }
+
+                    if ( slingshotGroup.CampusId.HasValue )
+                    {
+                        groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
+                    }
+
+                    // Group Members
+                    foreach ( var groupMember in slingshotGroup.GroupMembers )
+                    {
+                        if ( !groupImport.GroupMemberImports.Any( gm => gm.PersonForeignId == groupMember.PersonId && gm.RoleName == groupMember.Role ) )
                         {
-                            PersonForeignId = groupMember.PersonId,
-                            RoleName = groupMember.Role
-                        };
-                        groupImport.GroupMemberImports.Add( groupMemberImport );
-                    }
-                }
-
-                // Addresses
-                foreach ( var slingshotGroupAddress in slingshotGroup.Addresses )
-                {
-                    if ( string.IsNullOrEmpty( slingshotGroupAddress.Street1 ) )
-                    {
-                        continue;
+                            var newGroupMember = BulkImporter.ConvertModelWithLogging<Model.GroupMemberImport>( groupMember, () => {
+                                return new Model.GroupMemberImport()
+                                {
+                                    PersonForeignId = groupMember.PersonId,
+                                    RoleName = groupMember.Role
+                                };
+                            } );
+                            groupImport.GroupMemberImports.Add( newGroupMember );
+                        }
                     }
 
-                    int? groupLocationTypeValueId = null;
-                    switch ( slingshotGroupAddress.AddressType )
+                    // Addresses
+                    foreach ( var slingshotGroupAddress in slingshotGroup.Addresses )
                     {
-                        case SlingshotCore.Model.AddressType.Home:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Previous:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Work:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Other:
-                            var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
-                            groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
-                                this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
-                            break;
-                    }
-
-                    if ( groupLocationTypeValueId.HasValue )
-                    {
-                        var addressImport = new Model.GroupAddressImport()
+                        if ( string.IsNullOrEmpty( slingshotGroupAddress.Street1 ) )
                         {
-                            GroupLocationTypeValueId = groupLocationTypeValueId.Value,
-                            IsMailingLocation = slingshotGroupAddress.IsMailing,
-                            IsMappedLocation = slingshotGroupAddress.AddressType == SlingshotCore.Model.AddressType.Home,
-                            Street1 = slingshotGroupAddress.Street1.Left( 100 ),
-                            Street2 = slingshotGroupAddress.Street2.Left( 100 ),
-                            City = slingshotGroupAddress.City.Left( 50 ),
-                            State = slingshotGroupAddress.State.Left( 50 ),
-                            Country = slingshotGroupAddress.Country.Left( 50 ),
-                            PostalCode = slingshotGroupAddress.PostalCode.Left( 50 ),
-                            Latitude = slingshotGroupAddress.Latitude.AsDoubleOrNull(),
-                            Longitude = slingshotGroupAddress.Longitude.AsDoubleOrNull()
-                        };
+                            continue;
+                        }
 
-                        groupImport.Addresses.Add( addressImport );
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotGroupAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var newGroupAddress = BulkImporter.ConvertModelWithLogging<Model.GroupAddressImport>(slingshotGroupAddress, () => {
+                                return new Model.GroupAddressImport()
+                                {
+                                    GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                    IsMailingLocation = slingshotGroupAddress.IsMailing,
+                                    IsMappedLocation = slingshotGroupAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                    Street1 = slingshotGroupAddress.Street1.Left( 100 ),
+                                    Street2 = slingshotGroupAddress.Street2.Left( 100 ),
+                                    City = slingshotGroupAddress.City.Left( 50 ),
+                                    State = slingshotGroupAddress.State.Left( 50 ),
+                                    Country = slingshotGroupAddress.Country.Left( 50 ),
+                                    PostalCode = slingshotGroupAddress.PostalCode.Left( 50 ),
+                                    Latitude = slingshotGroupAddress.Latitude.AsDoubleOrNull(),
+                                    Longitude = slingshotGroupAddress.Longitude.AsDoubleOrNull()
+                                };
+                            } );
+
+                            groupImport.Addresses.Add( newGroupAddress );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotGroupAddress.AddressType}" );
+                        }
                     }
-                    else
+
+                    // Attribute Values
+                    foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
                     {
-                        throw new Exception( $"Unexpected Address Type: {slingshotGroupAddress.AddressType}" );
+                        int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                        groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
                     }
-                }
 
-                // Attribute Values
-                foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
-                {
-                    int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
-                    groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
-                }
+                    return groupImport;
+                } );
 
-                groupImportList.Add( groupImport );
+                groupImportList.Add( newGroup );
             }
 
             this.ReportProgress( 0, "Bulk Importing Groups..." );
@@ -1375,13 +1425,48 @@ namespace Rock.Slingshot
         private void SubmitBusinessImport()
         {
             this.ReportProgress( 0, "Preparing BusinessImport..." );
-            List<Model.PersonImport> businessImportList = GetBusinessImportList();
+            var businessImportList = GetBusinessImportList();
 
-            this.ReportProgress( 0, "Bulk Importing Person..." );
+            this.ReportProgress( 0, "Bulk Importing Business..." );
 
-            var result = BulkImporter.BulkBusinessImport( businessImportList, this.ForeignSystemKey );
+            int postChunkSize = this.PersonChunkSize ?? int.MaxValue;
+            int chunkCounter = 0;
+            int totalRecords = businessImportList.Count();
 
-            Results.Add( "Business Import", result );
+            var importResult = new BulkImporter.PersonImportResult();
+            while ( businessImportList.Any() )
+            {
+                int recordsAlreadyProcessed = 0;
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                }
+                chunkCounter++;
+
+                var postChunk = businessImportList.Take( postChunkSize ).ToList();
+                int currentMax = ( recordsAlreadyProcessed + postChunk.Count() );
+                this.ReportProgress( 0, string.Format("Bulk Importing Business {0} through {1}...", recordsAlreadyProcessed, currentMax ) );
+                importResult = BulkImporter.BulkBusinessImport( postChunk, this.ForeignSystemKey, recordsAlreadyProcessed, totalRecords, importResult );
+
+                if ( this.PersonChunkSize.HasValue )
+                {
+
+                    if ( businessImportList.Count < postChunkSize )
+                    {
+                        businessImportList.Clear();
+                    }
+                    else
+                    {
+                        businessImportList.RemoveRange( 0, postChunkSize );
+                    }
+                }
+                else
+                {
+                    businessImportList.Clear();
+                }
+            }
+
+            Results.Add( "Business Import", BulkImporter.ParsePersonImportResult( importResult, "Business" ) );
         }
 
         /// <summary>
@@ -1394,155 +1479,173 @@ namespace Rock.Slingshot
         /// or</exception>
         private List<Model.PersonImport> GetBusinessImportList()
         {
-            List<Model.PersonImport> businessImportList = new List<Model.PersonImport>();
+            var businessImportList = new List<Model.PersonImport>();
 
             var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
 
+            int importCounter = 0;
             foreach ( var slingshotBusiness in this.SlingshotBusinessList )
             {
-                var businessImport = new Model.PersonImport()
-                {
-                    RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()].Id,
-                    PersonForeignId = slingshotBusiness.Id,
-                    FamilyForeignId = slingshotBusiness.Id,
-                    FamilyName = slingshotBusiness.Name,
-                    GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id,
-                    InactiveReasonNote = slingshotBusiness.InactiveReason,
-                    IsDeceased = false,
-                    RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotBusiness.InactiveReason ) )?.Id,
-                    LastName = slingshotBusiness.Name,
-                    Gender = Gender.Unknown.ConvertToInt(),
-                    Email = slingshotBusiness.Email,
-                    IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
-                    CreatedDateTime = slingshotBusiness.CreatedDateTime,
-                    ModifiedDateTime = slingshotBusiness.ModifiedDateTime,
-                    Note = slingshotBusiness.Note,
-                    GivingIndividually = false,
-                    PhoneNumbers = new List<Model.PhoneNumberImport>(),
-                    Addresses = new List<Model.PersonAddressImport>(),
-                    AttributeValues = new List<Model.AttributeValueImport>()
-                };
-
-                if ( businessImport.PersonForeignId <= 0 )
-                {
-                    throw new Exception( "personImport.PersonForeignId must be greater than 0" );
-                }
-
-                if ( businessImport.FamilyForeignId <= 0 )
-                {
-                    throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
-                }
-
-                if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
-                {
-                    businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
-                }
-
-                switch ( slingshotBusiness.RecordStatus )
-                {
-                    case SlingshotCore.Model.RecordStatus.Active:
-                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
-                        break;
-
-                    case SlingshotCore.Model.RecordStatus.Inactive:
-                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
-                        break;
-
-                    case SlingshotCore.Model.RecordStatus.Pending:
-                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
-                        break;
-                }
-
-                switch ( slingshotBusiness.EmailPreference )
-                {
-                    case SlingshotCore.Model.EmailPreference.EmailAllowed:
-                        businessImport.EmailPreference = EmailPreference.EmailAllowed.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.EmailPreference.DoNotEmail:
-                        businessImport.EmailPreference = EmailPreference.DoNotEmail.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.EmailPreference.NoMassEmails:
-                        businessImport.EmailPreference = EmailPreference.NoMassEmails.ConvertToInt();
-                        break;
-                }
-
-                // Phone Numbers
-                foreach ( var slingshotBusinessPhone in slingshotBusiness.PhoneNumbers )
-                {
-                    var phoneNumberImport = new Model.PhoneNumberImport()
+                importCounter++;
+                var newBusiness = BulkImporter.ConvertModelWithLogging<Model.PersonImport>( slingshotBusiness, () => {
+                    var businessImport = new Model.PersonImport()
                     {
-                        NumberTypeValueId = this.PhoneNumberTypeValues[slingshotBusinessPhone.PhoneType].Id,
-                        Number = slingshotBusinessPhone.PhoneNumber,
-                        IsMessagingEnabled = slingshotBusinessPhone.IsMessagingEnabled ?? false,
-                        IsUnlisted = slingshotBusinessPhone.IsUnlisted ?? false
+                        RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()].Id,
+                        PersonForeignId = slingshotBusiness.Id,
+                        FamilyForeignId = slingshotBusiness.Id,
+                        FamilyName = slingshotBusiness.Name,
+                        GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id,
+                        InactiveReasonNote = slingshotBusiness.InactiveReason,
+                        IsDeceased = false,
+                        RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotBusiness.InactiveReason ) )?.Id,
+                        LastName = slingshotBusiness.Name,
+                        Gender = Gender.Unknown.ConvertToInt(),
+                        Email = slingshotBusiness.Email,
+                        IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
+                        CreatedDateTime = slingshotBusiness.CreatedDateTime,
+                        ModifiedDateTime = slingshotBusiness.ModifiedDateTime,
+                        Note = slingshotBusiness.Note,
+                        GivingIndividually = false,
+                        PhoneNumbers = new List<Model.PhoneNumberImport>(),
+                        Addresses = new List<Model.PersonAddressImport>(),
+                        AttributeValues = new List<Model.AttributeValueImport>()
                     };
-                    businessImport.PhoneNumbers.Add( phoneNumberImport );
-                }
 
-                // Addresses
-                foreach ( var slingshotPersonAddress in slingshotBusiness.Addresses )
-                {
-                    if ( string.IsNullOrEmpty( slingshotPersonAddress.Street1 ) )
+                    if ( businessImport.PersonForeignId <= 0 )
                     {
-                        continue;
-                    }
-                    int? groupLocationTypeValueId = null;
-                    switch ( slingshotPersonAddress.AddressType )
-                    {
-                        case SlingshotCore.Model.AddressType.Home:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Previous:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Work:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Other:
-                            var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
-                            groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
-                                this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
-                            break;
+                        throw new Exception( "personImport.PersonForeignId must be greater than 0" );
                     }
 
-                    if ( groupLocationTypeValueId.HasValue )
+                    if ( businessImport.FamilyForeignId <= 0 )
                     {
-                        var addressImport = new Model.PersonAddressImport()
+                        throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
+                    }
+
+                    if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
+                    {
+                        businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
+                    }
+
+                    switch ( slingshotBusiness.RecordStatus )
+                    {
+                        case SlingshotCore.Model.RecordStatus.Active:
+                            businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
+                            break;
+
+                        case SlingshotCore.Model.RecordStatus.Inactive:
+                            businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
+                            break;
+
+                        case SlingshotCore.Model.RecordStatus.Pending:
+                            businessImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
+                            break;
+                    }
+
+                    switch ( slingshotBusiness.EmailPreference )
+                    {
+                        case SlingshotCore.Model.EmailPreference.EmailAllowed:
+                            businessImport.EmailPreference = EmailPreference.EmailAllowed.ConvertToInt();
+                            break;
+
+                        case SlingshotCore.Model.EmailPreference.DoNotEmail:
+                            businessImport.EmailPreference = EmailPreference.DoNotEmail.ConvertToInt();
+                            break;
+
+                        case SlingshotCore.Model.EmailPreference.NoMassEmails:
+                            businessImport.EmailPreference = EmailPreference.NoMassEmails.ConvertToInt();
+                            break;
+                    }
+
+                    // Phone Numbers
+                    foreach ( var slingshotBusinessPhone in slingshotBusiness.PhoneNumbers )
+                    {
+                        if ( !this.PhoneNumberTypeValues.ContainsKey( slingshotBusinessPhone.PhoneType ) )
                         {
-                            GroupLocationTypeValueId = groupLocationTypeValueId.Value,
-                            IsMailingLocation = slingshotPersonAddress.IsMailing,
-                            IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
-                            Street1 = slingshotPersonAddress.Street1.Left( 100 ),
-                            Street2 = slingshotPersonAddress.Street2.Left( 100 ),
-                            City = slingshotPersonAddress.City.Left( 50 ),
-                            State = slingshotPersonAddress.State.Left( 50 ),
-                            Country = slingshotPersonAddress.Country.Left( 50 ),
-                            PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
-                            Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
-                            Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
-                        };
+                            // This is a fallback to prevent an error from breaking the process.  This should not occur, as the phone types should have been loaded into the DefinedType previous to this step.
+                            var phoneException = new ArgumentOutOfRangeException( "PhoneType", $"Unable to import phone number {slingshotBusinessPhone.PhoneNumber} for business {slingshotBusiness.Id} because phone type {slingshotBusinessPhone.PhoneType} is not in the Defined Types." );
+                            BulkImporter.LogError( phoneException );
+                            continue;
+                        }
 
-                        businessImport.Addresses.Add( addressImport );
+                        var newBusinessPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotBusinessPhone, () => {
+                            return new Model.PhoneNumberImport()
+                            {
+                                NumberTypeValueId = this.PhoneNumberTypeValues[slingshotBusinessPhone.PhoneType].Id,
+                                Number = slingshotBusinessPhone.PhoneNumber,
+                                IsMessagingEnabled = slingshotBusinessPhone.IsMessagingEnabled ?? false,
+                                IsUnlisted = slingshotBusinessPhone.IsUnlisted ?? false
+                            };
+                        } );
+                        businessImport.PhoneNumbers.Add( newBusinessPhone );
                     }
-                    else
+
+                    // Addresses
+                    foreach ( var slingshotBusinessAddress in slingshotBusiness.Addresses )
                     {
-                        throw new Exception( $"Unexpected Address Type: {slingshotPersonAddress.AddressType}" );
+                        if ( string.IsNullOrEmpty( slingshotBusinessAddress.Street1 ) )
+                        {
+                            continue;
+                        }
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotBusinessAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var newBusinessAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotBusinessAddress, () => {
+                                return new Model.PersonAddressImport()
+                                {
+                                    GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                    IsMailingLocation = slingshotBusinessAddress.IsMailing,
+                                    IsMappedLocation = slingshotBusinessAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                    Street1 = slingshotBusinessAddress.Street1.Left( 100 ),
+                                    Street2 = slingshotBusinessAddress.Street2.Left( 100 ),
+                                    City = slingshotBusinessAddress.City.Left( 50 ),
+                                    State = slingshotBusinessAddress.State.Left( 50 ),
+                                    Country = slingshotBusinessAddress.Country.Left( 50 ),
+                                    PostalCode = slingshotBusinessAddress.PostalCode.Left( 50 ),
+                                    Latitude = slingshotBusinessAddress.Latitude.AsDoubleOrNull(),
+                                    Longitude = slingshotBusinessAddress.Longitude.AsDoubleOrNull()
+                                };
+                            } );
+
+                            businessImport.Addresses.Add( newBusinessAddress );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotBusinessAddress.AddressType}" );
+                        }
                     }
-                }
 
-                // Attribute Values
-                foreach ( var slingshotBusinessAttributeValue in slingshotBusiness.Attributes )
-                {
-                    int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
-                    businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
-                }
+                    // Attribute Values
+                    foreach ( var slingshotBusinessAttributeValue in slingshotBusiness.Attributes )
+                    {
+                        int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
+                        businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
+                    }
 
-                businessImportList.Add( businessImport );
+                    return businessImport;
+                } );
+
+                businessImportList.Add( newBusiness );
             }
 
             return businessImportList;
@@ -1559,7 +1662,7 @@ namespace Rock.Slingshot
         private void SubmitPersonImport()
         {
             this.ReportProgress( 0, "Preparing PersonImport..." );
-            List<Model.PersonImport> personImportList = GetPersonImportList();
+            var personImportList = GetPersonImportList();
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
 
@@ -1578,7 +1681,8 @@ namespace Rock.Slingshot
                 chunkCounter++;
 
                 var postChunk = personImportList.Take( postChunkSize ).ToList();
-                this.ReportProgress( 0, "Bulk Importing Person..." );
+                int currentMax = ( recordsAlreadyProcessed + postChunk.Count() );
+                this.ReportProgress( 0, string.Format( "Bulk Importing Person {0} through {1}...", recordsAlreadyProcessed, currentMax ) );
                 importResult = BulkImporter.BulkPersonImport( postChunk, this.ForeignSystemKey, recordsAlreadyProcessed, totalRecords, importResult );
 
                 if ( this.PersonChunkSize.HasValue )
@@ -1621,7 +1725,7 @@ namespace Rock.Slingshot
         /// or</exception>
         private List<Model.PersonImport> GetPersonImportList()
         {
-            List<Model.PersonImport> personImportList = new List<Model.PersonImport>();
+            var personImportList = new List<Model.PersonImport>();
 
             var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
 
@@ -1635,236 +1739,252 @@ namespace Rock.Slingshot
 
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
-                var personImport = new Model.PersonImport()
-                {
-                    RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()].Id,
-                    PersonForeignId = slingshotPerson.Id,
-                    FamilyForeignId = slingshotPerson.FamilyId,
-                    FamilyName = slingshotPerson.FamilyName,
-                    InactiveReasonNote = slingshotPerson.InactiveReason,
-                    //IsDeceased = slingshotPerson.InactiveReason.Equals( "Deceased" ),
-                    RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotPerson.InactiveReason ) )?.Id,
-                    IsDeceased = slingshotPerson.IsDeceased,
-                    FirstName = slingshotPerson.FirstName,
-                    NickName = slingshotPerson.NickName,
-                    MiddleName = slingshotPerson.MiddleName,
-                    LastName = slingshotPerson.LastName,
-                    AnniversaryDate = slingshotPerson.AnniversaryDate,
-                    Grade = slingshotPerson.Grade,
-                    Email = slingshotPerson.Email,
-                    IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
-                    CreatedDateTime = slingshotPerson.CreatedDateTime,
-                    ModifiedDateTime = slingshotPerson.ModifiedDateTime,
-                    Note = slingshotPerson.Note,
-                    GivingIndividually = slingshotPerson.GiveIndividually,
-                    PhoneNumbers = new List<Model.PhoneNumberImport>(),
-                    Addresses = new List<Model.PersonAddressImport>(),
-                    AttributeValues = new List<Model.AttributeValueImport>()
-                };
+                var newPerson = BulkImporter.ConvertModelWithLogging<Model.PersonImport>(slingshotPerson, () => {
 
-                if ( personImport.PersonForeignId <= 0 )
-                {
-                    throw new Exception( "personImport.PersonForeignId must be greater than 0" );
-                }
-
-                if ( personImport.FamilyForeignId <= 0 )
-                {
-                    throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
-                }
-
-                switch ( slingshotPerson.FamilyRole )
-                {
-                    case SlingshotCore.Model.FamilyRole.Adult:
-                        personImport.GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.FamilyRole.Child:
-                        personImport.GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()].Id;
-                        break;
-                }
-
-                if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 )
-                {
-                    personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId]?.Id;
-                }
-
-                switch ( slingshotPerson.RecordStatus )
-                {
-                    case SlingshotCore.Model.RecordStatus.Active:
-                        personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
-                        break;
-
-                    case SlingshotCore.Model.RecordStatus.Inactive:
-                        personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
-                        break;
-
-                    case SlingshotCore.Model.RecordStatus.Pending:
-                        personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
-                        break;
-                }
-
-                if ( !string.IsNullOrEmpty( slingshotPerson.ConnectionStatus ) )
-                {
-                    personImport.ConnectionStatusValueId = this.PersonConnectionStatusValues[slingshotPerson.ConnectionStatus]?.Id;
-                }
-
-                if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
-                {
-                    personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation.ToLower()]?.Id;
-                }
-
-                if ( !string.IsNullOrEmpty( slingshotPerson.Suffix ) )
-                {
-                    personImport.SuffixValueId = this.PersonSuffixValues[slingshotPerson.Suffix.ToLower()]?.Id;
-                }
-
-                if ( slingshotPerson.Birthdate.HasValue )
-                {
-                    personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
-                    personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
-                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
-                }
-
-                switch ( slingshotPerson.Gender )
-                {
-                    case SlingshotCore.Model.Gender.Male:
-                        personImport.Gender = Gender.Male.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.Gender.Female:
-                        personImport.Gender = Gender.Female.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.Gender.Unknown:
-                        personImport.Gender = Gender.Unknown.ConvertToInt();
-                        break;
-                }
-
-                switch ( slingshotPerson.MaritalStatus )
-                {
-                    case SlingshotCore.Model.MaritalStatus.Married:
-                        personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.MaritalStatus.Single:
-                        personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.MaritalStatus.Divorced:
-                        personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
-                        break;
-
-                    case SlingshotCore.Model.MaritalStatus.Unknown:
-                        personImport.MaritalStatusValueId = null;
-                        break;
-                }
-
-                // do a case-insensitive lookup GradeOffset from either the Description ("Kindergarten", "1st Grade", etc) or Abbreviation ("K", "1st", etc)
-                int? gradeOffset = null;
-                if ( !string.IsNullOrWhiteSpace( personImport.Grade ) )
-                {
-                    gradeOffset = gradeOffsetLookupFromDescription.GetValueOrNull( personImport.Grade );
-                    if ( gradeOffset == null )
+                    var personImport = new Model.PersonImport()
                     {
-                        gradeOffset = gradeOffsetLookupFromAbbreviation.GetValueOrNull( personImport.Grade );
-                    }
-                }
-
-                if ( gradeOffset.HasValue )
-                {
-                    personImport.GraduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
-                }
-
-                switch ( slingshotPerson.EmailPreference )
-                {
-                    case SlingshotCore.Model.EmailPreference.EmailAllowed:
-                        personImport.EmailPreference = EmailPreference.EmailAllowed.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.EmailPreference.DoNotEmail:
-                        personImport.EmailPreference = EmailPreference.DoNotEmail.ConvertToInt();
-                        break;
-
-                    case SlingshotCore.Model.EmailPreference.NoMassEmails:
-                        personImport.EmailPreference = EmailPreference.NoMassEmails.ConvertToInt();
-                        break;
-                }
-
-                // Phone Numbers
-                foreach ( var slingshotPersonPhone in slingshotPerson.PhoneNumbers )
-                {
-                    var phoneNumberImport = new Model.PhoneNumberImport()
-                    {
-                        NumberTypeValueId = this.PhoneNumberTypeValues[slingshotPersonPhone.PhoneType].Id,
-                        Number = slingshotPersonPhone.PhoneNumber,
-                        IsMessagingEnabled = slingshotPersonPhone.IsMessagingEnabled ?? false,
-                        IsUnlisted = slingshotPersonPhone.IsUnlisted ?? false
+                        RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()].Id,
+                        PersonForeignId = slingshotPerson.Id,
+                        FamilyForeignId = slingshotPerson.FamilyId,
+                        FamilyName = slingshotPerson.FamilyName,
+                        InactiveReasonNote = slingshotPerson.InactiveReason,
+                        //IsDeceased = slingshotPerson.InactiveReason.Equals( "Deceased" ),
+                        RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotPerson.InactiveReason ) )?.Id,
+                        IsDeceased = slingshotPerson.IsDeceased,
+                        FirstName = slingshotPerson.FirstName,
+                        NickName = slingshotPerson.NickName,
+                        MiddleName = slingshotPerson.MiddleName,
+                        LastName = slingshotPerson.LastName,
+                        AnniversaryDate = slingshotPerson.AnniversaryDate,
+                        Grade = slingshotPerson.Grade,
+                        Email = slingshotPerson.Email,
+                        IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
+                        CreatedDateTime = slingshotPerson.CreatedDateTime,
+                        ModifiedDateTime = slingshotPerson.ModifiedDateTime,
+                        Note = slingshotPerson.Note,
+                        GivingIndividually = slingshotPerson.GiveIndividually,
+                        PhoneNumbers = new List<Model.PhoneNumberImport>(),
+                        Addresses = new List<Model.PersonAddressImport>(),
+                        AttributeValues = new List<Model.AttributeValueImport>()
                     };
-                    personImport.PhoneNumbers.Add( phoneNumberImport );
-                }
 
-                // Addresses
-                foreach ( var slingshotPersonAddress in slingshotPerson.Addresses )
-                {
-                    if ( string.IsNullOrEmpty( slingshotPersonAddress.Street1 ) )
+                    if ( personImport.PersonForeignId <= 0 )
                     {
-                        continue;
+                        throw new Exception( "personImport.PersonForeignId must be greater than 0" );
                     }
-                    int? groupLocationTypeValueId = null;
-                    switch ( slingshotPersonAddress.AddressType )
+
+                    if ( personImport.FamilyForeignId <= 0 )
                     {
-                        case SlingshotCore.Model.AddressType.Home:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                        throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
+                    }
+
+                    switch ( slingshotPerson.FamilyRole )
+                    {
+                        case SlingshotCore.Model.FamilyRole.Adult:
+                            personImport.GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id;
                             break;
 
-                        case SlingshotCore.Model.AddressType.Previous:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Work:
-                            groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
-                            break;
-
-                        case SlingshotCore.Model.AddressType.Other:
-                            var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
-                            groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
-                                this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                        case SlingshotCore.Model.FamilyRole.Child:
+                            personImport.GroupRoleId = familyRolesLookup[SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()].Id;
                             break;
                     }
 
-                    if ( groupLocationTypeValueId.HasValue )
+                    if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 )
                     {
-                        var addressImport = new Model.PersonAddressImport()
+                        personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId]?.Id;
+                    }
+
+                    switch ( slingshotPerson.RecordStatus )
+                    {
+                        case SlingshotCore.Model.RecordStatus.Active:
+                            personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
+                            break;
+
+                        case SlingshotCore.Model.RecordStatus.Inactive:
+                            personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
+                            break;
+
+                        case SlingshotCore.Model.RecordStatus.Pending:
+                            personImport.RecordStatusValueId = this.PersonRecordStatusValues[SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
+                            break;
+                    }
+
+                    if ( !string.IsNullOrEmpty( slingshotPerson.ConnectionStatus ) )
+                    {
+                        personImport.ConnectionStatusValueId = this.PersonConnectionStatusValues[slingshotPerson.ConnectionStatus]?.Id;
+                    }
+
+                    if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
+                    {
+                        personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation.ToLower()]?.Id;
+                    }
+
+                    if ( !string.IsNullOrEmpty( slingshotPerson.Suffix ) )
+                    {
+                        personImport.SuffixValueId = this.PersonSuffixValues[slingshotPerson.Suffix.ToLower()]?.Id;
+                    }
+
+                    if ( slingshotPerson.Birthdate.HasValue )
+                    {
+                        personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
+                        personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
+                        personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
+                    }
+
+                    switch ( slingshotPerson.Gender )
+                    {
+                        case SlingshotCore.Model.Gender.Male:
+                            personImport.Gender = Gender.Male.ConvertToInt();
+                            break;
+
+                        case SlingshotCore.Model.Gender.Female:
+                            personImport.Gender = Gender.Female.ConvertToInt();
+                            break;
+
+                        case SlingshotCore.Model.Gender.Unknown:
+                            personImport.Gender = Gender.Unknown.ConvertToInt();
+                            break;
+                    }
+
+                    switch ( slingshotPerson.MaritalStatus )
+                    {
+                        case SlingshotCore.Model.MaritalStatus.Married:
+                            personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.MaritalStatus.Single:
+                            personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.MaritalStatus.Divorced:
+                            personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
+                            break;
+
+                        case SlingshotCore.Model.MaritalStatus.Unknown:
+                            personImport.MaritalStatusValueId = null;
+                            break;
+                    }
+
+                    // do a case-insensitive lookup GradeOffset from either the Description ("Kindergarten", "1st Grade", etc) or Abbreviation ("K", "1st", etc)
+                    int? gradeOffset = null;
+                    if ( !string.IsNullOrWhiteSpace( personImport.Grade ) )
+                    {
+                        gradeOffset = gradeOffsetLookupFromDescription.GetValueOrNull( personImport.Grade );
+                        if ( gradeOffset == null )
                         {
-                            GroupLocationTypeValueId = groupLocationTypeValueId.Value,
-                            IsMailingLocation = slingshotPersonAddress.IsMailing,
-                            IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
-                            Street1 = slingshotPersonAddress.Street1.Left( 100 ),
-                            Street2 = slingshotPersonAddress.Street2.Left( 100 ),
-                            City = slingshotPersonAddress.City.Left( 50 ),
-                            State = slingshotPersonAddress.State.Left( 50 ),
-                            Country = slingshotPersonAddress.Country.Left( 50 ),
-                            PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
-                            Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
-                            Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
-                        };
-
-                        personImport.Addresses.Add( addressImport );
+                            gradeOffset = gradeOffsetLookupFromAbbreviation.GetValueOrNull( personImport.Grade );
+                        }
                     }
-                    else
+
+                    if ( gradeOffset.HasValue )
                     {
-                        throw new Exception( $"Unexpected Address Type: {slingshotPersonAddress.AddressType}" );
+                        personImport.GraduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
                     }
-                }
 
-                // Attribute Values
-                foreach ( var slingshotPersonAttributeValue in slingshotPerson.Attributes )
-                {
-                    int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
-                    personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
-                }
+                    switch ( slingshotPerson.EmailPreference )
+                    {
+                        case SlingshotCore.Model.EmailPreference.EmailAllowed:
+                            personImport.EmailPreference = EmailPreference.EmailAllowed.ConvertToInt();
+                            break;
 
-                personImportList.Add( personImport );
+                        case SlingshotCore.Model.EmailPreference.DoNotEmail:
+                            personImport.EmailPreference = EmailPreference.DoNotEmail.ConvertToInt();
+                            break;
+
+                        case SlingshotCore.Model.EmailPreference.NoMassEmails:
+                            personImport.EmailPreference = EmailPreference.NoMassEmails.ConvertToInt();
+                            break;
+                    }
+
+                    // Phone Numbers
+                    foreach ( var slingshotPersonPhone in slingshotPerson.PhoneNumbers )
+                    {
+                        if ( !this.PhoneNumberTypeValues.ContainsKey( slingshotPersonPhone.PhoneType ) )
+                        {
+                            // This is a fallback to prevent an error from breaking the process.  This should not occur, as the phone types should have been loaded into the DefinedType previous to this step.
+                            var phoneException = new ArgumentOutOfRangeException( "PhoneType", $"Unable to import phone number {slingshotPersonPhone.PhoneNumber} for person {slingshotPerson.Id} because phone type {slingshotPersonPhone.PhoneType} is not in the Defined Types." );
+                            BulkImporter.LogError( phoneException );
+                            continue;
+                        }
+
+                        var newPersonPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotPersonPhone, () => {
+                            return new Model.PhoneNumberImport()
+                            {
+                                NumberTypeValueId = this.PhoneNumberTypeValues[slingshotPersonPhone.PhoneType].Id,
+                                Number = slingshotPersonPhone.PhoneNumber,
+                                IsMessagingEnabled = slingshotPersonPhone.IsMessagingEnabled ?? false,
+                                IsUnlisted = slingshotPersonPhone.IsUnlisted ?? false
+                            };
+                        } );
+                        personImport.PhoneNumbers.Add( newPersonPhone );
+                    }
+
+                    // Addresses
+                    foreach ( var slingshotPersonAddress in slingshotPerson.Addresses )
+                    {
+                        if ( string.IsNullOrEmpty( slingshotPersonAddress.Street1 ) )
+                        {
+                            continue;
+                        }
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotPersonAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var newPersonAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotPersonAddress, () => {
+                                return new Model.PersonAddressImport()
+                                {
+                                    GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                    IsMailingLocation = slingshotPersonAddress.IsMailing,
+                                    IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                    Street1 = slingshotPersonAddress.Street1.Left( 100 ),
+                                    Street2 = slingshotPersonAddress.Street2.Left( 100 ),
+                                    City = slingshotPersonAddress.City.Left( 50 ),
+                                    State = slingshotPersonAddress.State.Left( 50 ),
+                                    Country = slingshotPersonAddress.Country.Left( 50 ),
+                                    PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
+                                    Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
+                                    Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
+                                };
+                            } );
+
+                            personImport.Addresses.Add( newPersonAddress );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotPersonAddress.AddressType}" );
+                        }
+                    }
+
+                    // Attribute Values
+                    foreach ( var slingshotPersonAttributeValue in slingshotPerson.Attributes )
+                    {
+                        int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
+                        personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
+                    }
+
+                    return personImport;
+                } );
+                personImportList.Add( newPerson );
             }
 
             return personImportList;
@@ -2225,9 +2345,20 @@ namespace Rock.Slingshot
         /// </summary>
         private void AddPhoneTypes()
         {
-            var importedPhoneTypes = this.SlingshotPersonList
+            var importedPhoneTypes_Person = this.SlingshotPersonList
                 .SelectMany( a => a.PhoneNumbers )
                 .Select( a => a.PhoneType )
+                .Distinct()
+                .ToList();
+
+            var importedPhoneTypes_Business = this.SlingshotBusinessList
+                .SelectMany( a => a.PhoneNumbers )
+                .Select( a => a.PhoneType )
+                .Distinct()
+                .ToList();
+
+            var importedPhoneTypes = importedPhoneTypes_Person
+                .Concat( importedPhoneTypes_Business )
                 .Distinct()
                 .ToList();
 
@@ -2271,13 +2402,7 @@ namespace Rock.Slingshot
 
                 foreach ( var importDefinedValue in newValues )
                 {
-                    definedValueService.Add(
-                        new DefinedValue()
-                        {
-                            DefinedTypeId = definedTypeId,
-                            Value = importDefinedValue,
-                            Guid = Guid.NewGuid()
-                        } );
+                    definedValueService.Add( CreateDefinedValue( definedTypeId, Guid.NewGuid(), importDefinedValue ) );
                 }
 
                 rockContext.SaveChanges();
@@ -2392,7 +2517,8 @@ namespace Rock.Slingshot
                 {
                     var exceptions = AnalyzeImportFileExceptions<T>( willThrowOnMissingField, fileName );
                     var exception = new AggregateException( $"File '{Path.GetFileName( fileName )}' cannot be properly read during Slingshot import. See InnerExceptions for line number(s).", exceptions );
-                    ExceptionLogService.LogException( exception );
+                    BulkImporter.LogError( exception );
+                    //ExceptionLogService.LogException( exception );
                     throw exception;
                 }
             }
@@ -2416,6 +2542,7 @@ namespace Rock.Slingshot
             using ( var slingshotFileStream = File.OpenText( fileName ) )
             {
                 // Pre process file to see if there are errors.
+                var fiFile = new FileInfo( fileName );
                 CsvReader csvReader = new CsvReader( slingshotFileStream );
                 csvReader.Configuration.HasHeaderRecord = true;
                 if ( willThrowOnMissingField.HasValue )
@@ -2435,7 +2562,13 @@ namespace Rock.Slingshot
                     }
                     catch ( Exception ex )
                     {
-                        exceptions.Add( new CsvBadDataException( $"Line {i} cannot be properly read during Slingshot import.", ex ) );
+                        exceptions.Add( new CsvBadDataException( $"Error converting line {i} of {fiFile.Name} to model type {typeof( T ).FullName} during Slingshot import.", ex ) );
+                    }
+
+                    if ( i >= 1000 )
+                    {
+                        exceptions.Add( new Exception( $"Import analysis of {fileName} aborted because more than 1,000 errors were detected." ) );
+                        break;
                     }
                 }
             }
@@ -2517,74 +2650,32 @@ namespace Rock.Slingshot
             // The following DefinedValues are not IsSystem, but are potentionally needed to do an import, so make sure they exist on the server
             if ( !this.CurrencyTypeValues.ContainsKey( SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdCurrencyType,
-                        Guid = SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid(),
-                        Value = "Non-Cash",
-                        Description = "Used to track non-cash transactions."
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdCurrencyType, SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid(), "Non-Cash", "Used to track non-cash transactions." ) );
             }
 
             if ( !this.CurrencyTypeValues.ContainsKey( SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdCurrencyType,
-                        Guid = SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid(),
-                        Value = "Unknown",
-                        Description = "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type."
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdCurrencyType, SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid(), "Unknown", "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type." ) );
             }
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdTransactionSourceType,
-                        Guid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid(),
-                        Value = "Bank Checks",
-                        Description = "Transactions that originated from a bank's bill pay system"
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid(), "Bank Checks", "Transactions that originated from a bank's bill pay system" ) );
             }
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdTransactionSourceType,
-                        Guid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid(),
-                        Value = "Kiosk",
-                        Description = "Transactions that originated from a kiosk"
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid(), "Kiosk", "Transactions that originated from a kiosk" ) );
             }
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdTransactionSourceType,
-                        Guid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid(),
-                        Value = "Mobile Application",
-                        Description = "Transactions that originated from a mobile application"
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid(), "Mobile Application", "Transactions that originated from a mobile application" ) );
             }
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid() ) )
             {
-                definedValuesToAdd.Add(
-                    new DefinedValue()
-                    {
-                        DefinedTypeId = definedTypeIdTransactionSourceType,
-                        Guid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid(),
-                        Value = "On-Site Collection",
-                        Description = "Transactions that were collected on-site"
-                    } );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid(), "On-Site Collection", "Transactions that were collected on-site" ) );
             }
 
             var rockContext = new RockContext();
@@ -2664,6 +2755,25 @@ namespace Rock.Slingshot
             {
                 AttributeId = attributeId,
                 Value = attributeValue
+            };
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefinedValue"/>.
+        /// </summary>
+        /// <param name="definedTypeId">The Id of the <see cref="DefinedType"/>.</param>
+        /// <param name="guid">The <see cref="Guid"/> of the <see cref="DefinedValue"/>.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        /// <returns>A new <see cref="DefinedValue"/>.</returns>
+        private DefinedValue CreateDefinedValue( int definedTypeId, Guid guid, string value, string description = "" )
+        {
+            return new DefinedValue()
+            {
+                DefinedTypeId = definedTypeId,
+                Guid = guid,
+                Value = value,
+                Description = description
             };
         }
 

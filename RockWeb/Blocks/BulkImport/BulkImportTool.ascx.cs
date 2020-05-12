@@ -416,8 +416,36 @@ namespace RockWeb.Blocks.BulkImport
             _hubContext.Clients.All.receiveNotification( this.SignalRNotificationKey, message, results.ConvertCrLfToHtmlBr() );
         }
 
-        #endregion
+        /// <summary>
+        /// Handles the Click event of the btnDownloadLog control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDownloadLog_Click(object sender, EventArgs e)
+        {
+            System.Web.HttpResponse response = System.Web.HttpContext.Current.Response;
+            response.ClearHeaders();
+            response.ClearContent();
+            response.Clear();
+            response.ContentType = "text/plain";
+            response.AddHeader( "content-disposition", "attachment; filename=slingshot-errors.log");
+            response.Charset = "";
 
+            string filePath = Server.MapPath("~/App_Data/SlingshotFiles/slingshot-errors.log");
+            if ( File.Exists( filePath ) )
+            {
+                //var logData = File.ReadAllBytes( filePath );
+                //response.BinaryWrite( logData );
+                response.TransmitFile( filePath );
+            }
+
+            response.Flush();
+            response.End();
+            response.SuppressContent = true;
+            System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
+        }
+
+        #endregion
 
     }
 }
