@@ -52,6 +52,7 @@
                                 <Rock:Grid ID="gStepList" runat="server" RowItemText="Step" AllowSorting="true" OnRowSelected="gStepList_RowSelected">
                                     <Columns>
                                         <Rock:RockLiteralField ID="lStepType" SortExpression="StepTypeName" OnDataBound="lStepType_DataBound" />
+                                        <Rock:CampusField DataField="CampusId" HeaderText="Campus" SortExpression="CampusName" />
                                         <Rock:DateField DataField="CompletedDateTime" HeaderText="Completion Date" SortExpression="CompletedDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                                         <Rock:RockLiteralField HeaderText="Summary" ID="lSummary" SortExpression="Summary" OnDataBound="lSummary_DataBound" />
                                         <Rock:RockLiteralField HeaderText="Status" ID="lStepStatus" SortExpression="StepStatusName" OnDataBound="lStepStatus_DataBound" />

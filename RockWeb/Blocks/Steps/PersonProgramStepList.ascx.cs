@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -68,6 +69,12 @@ namespace RockWeb.Blocks.Steps
         key: AttributeKey.StepsPerRowMobile,
         defaultValue: AttributeDefault.StepsPerRowMobile )]
 
+    [BooleanField(
+        "Show Campus Column",
+        Description = "Should the campus should be shown on the grid and card display?",
+        DefaultBooleanValue = true,
+        Order = 5,
+        Key = AttributeKey.ShowCampusColumn )]
     #endregion Attributes
 
     public partial class PersonProgramStepList : RockBlock
@@ -98,6 +105,11 @@ namespace RockWeb.Blocks.Steps
             /// The steps per row on mobile attribute key
             /// </summary>
             public const string StepsPerRowMobile = "StepsPerRowMobile";
+
+            /// <summary>
+            /// The show campus column attribute key
+            /// </summary>
+            public const string ShowCampusColumn = "ShowCampusColumn";
         }
 
         /// <summary>
@@ -174,6 +186,15 @@ namespace RockWeb.Blocks.Steps
 
             gStepList.DataKeyNames = new[] { "id" };
             gStepList.GridRebind += gStepList_GridRebind;
+
+            var campusField = gStepList.ColumnsOfType<CampusField>().First();
+            if ( campusField != null )
+            {
+                var campusCount = CampusCache.All()
+                    .Where( c =>
+                        !c.IsActive.HasValue || c.IsActive.Value ).Count();
+                campusField.Visible = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && campusCount > 1;
+            }
 
             if ( !IsPostBack )
             {
@@ -1003,6 +1024,10 @@ namespace RockWeb.Blocks.Steps
             var person = GetPerson();
             var orderedStepTypes = OrderStepTypes( GetStepTypes() );
             var cardsData = new List<CardViewModel>();
+            var campusCount = CampusCache.All()
+                    .Where( c =>
+                        !c.IsActive.HasValue || c.IsActive.Value ).Count();
+            var showCampus = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && campusCount > 1;
 
             foreach ( var stepType in orderedStepTypes )
             {
@@ -1026,6 +1051,7 @@ namespace RockWeb.Blocks.Steps
                     { "CanAddStep", canAddStep },
                     { "LatestStep", latestStep },
                     { "LatestStepStatus", latestStepStatus },
+                    { "ShowCampus", showCampus },
                 } );
 
                 if ( isComplete )
@@ -1134,6 +1160,8 @@ namespace RockWeb.Blocks.Steps
                 CompletedDateTime = s.CompletedDateTime,
                 StepStatusColor = s.StepStatus == null ? string.Empty : s.StepStatus.StatusColor,
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
+                CampusId = s.CampusId,
+                CampusName = s.Campus != null ? s.Campus.Name : string.Empty,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
                 StepTypeOrder = s.StepType.Order,
                 Summary = string.Empty,
@@ -1307,6 +1335,23 @@ namespace RockWeb.Blocks.Steps
             /// </value>
             public string Summary { get; set; }
 
+
+            /// <summary>
+            /// Gets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
+            public int? CampusId { get; set; }
+
+            /// <summary>
+            /// Gets the campus name.
+            /// </summary>
+            /// <value>
+            /// The campus name.
+            /// </value>
+            public string CampusName { get; set; }
+
             /// <summary>
             /// Gets the step type order.
             /// </summary>
@@ -1314,6 +1359,7 @@ namespace RockWeb.Blocks.Steps
             /// The step type order.
             /// </value>
             public int StepTypeOrder { get; internal set; }
+
             public Step Step { get; set; }
         }
 

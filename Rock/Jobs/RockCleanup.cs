@@ -1005,7 +1005,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Does a <see cref="T:RockContext.BulkDelete"></see> on the records listed in the query, but does it in chunks to help prevent timeouts
+        /// Does a <see cref="M:RockContext.BulkDelete"></see> on the records listed in the query, but does it in chunks to help prevent timeouts
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="recordsToDeleteQuery">The records to delete query.</param>
