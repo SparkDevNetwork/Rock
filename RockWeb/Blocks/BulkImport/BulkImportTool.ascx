@@ -177,3 +177,4 @@ order by Gt.Id, Gt.Name, g.Name
 
     </ContentTemplate>
 </asp:UpdatePanel>
+                    <asp:LinkButton ID="btnDownloadLog" runat="server" CssClass="btn btn-primary" Text="Download Log" OnClick="btnDownloadLog_Click" CausesValidation="false" />
