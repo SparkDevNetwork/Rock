@@ -205,9 +205,9 @@ namespace RockWeb.Blocks.Reporting
                 _channel.InteractionListTemplate = ceInteractionList.Text;
                 _channel.InteractionDetailTemplate = ceInteractionDetail.Text;
                 _channel.IsActive = cbIsActive.Checked;
-                _channel.ChannelCustom1Label = tbChannelCustom1Label.Text;
-                _channel.ChannelCustom2Label = tbChannelCustom2Label.Text;
-                _channel.ChannelCustomIndexed1Label = tbChannelCustomIndexed1Label.Text;
+                _channel.InteractionCustom1Label = tbChannelCustom1Label.Text;
+                _channel.InteractionCustom2Label = tbChannelCustom2Label.Text;
+                _channel.InteractionCustomIndexed1Label = tbChannelCustomIndexed1Label.Text;
                 _channel.ModifiedDateTime = RockDateTime.Now;
                 _channel.ModifiedByPersonAliasId = CurrentPersonAliasId;
 
@@ -258,9 +258,9 @@ namespace RockWeb.Blocks.Reporting
                 ceComponentDetail.Text = _channel.ComponentDetailTemplate;
                 ceInteractionList.Text = _channel.InteractionListTemplate;
                 ceInteractionDetail.Text = _channel.InteractionDetailTemplate;
-                tbChannelCustom1Label.Text = _channel.ChannelCustom1Label;
-                tbChannelCustom2Label.Text = _channel.ChannelCustom2Label;
-                tbChannelCustomIndexed1Label.Text = _channel.ChannelCustomIndexed1Label;
+                tbChannelCustom1Label.Text = _channel.InteractionCustom1Label;
+                tbChannelCustom2Label.Text = _channel.InteractionCustom2Label;
+                tbChannelCustomIndexed1Label.Text = _channel.InteractionCustomIndexed1Label;
             }
         }
 

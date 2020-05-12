@@ -91,6 +91,36 @@ namespace Rock.Model
         [Required]
         public int InteractionChannelId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel custom 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 2.
+        /// </summary>
+        /// <value>
+        /// The channel custom 2.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom indexed 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom indexed 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustomIndexed1 { get; set; }
+
         #endregion
 
         #region Virtual Properties
