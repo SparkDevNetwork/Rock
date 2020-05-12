@@ -93,8 +93,6 @@ namespace com.bemaservices.MailChimp.Utility
 
                             rockContext.SaveChanges();
 
-                            mailChimpListValues.Add( mailChimpListValue );
-
                         }
                         UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, rockContext );
                     }
@@ -107,15 +105,15 @@ namespace com.bemaservices.MailChimp.Utility
 
                     var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
 
-                    foreach ( var definedValue in mailChimpListValuesToRemove )
-                    {
-                        mailChimpListValues.Remove( definedValue );
-                    }
-
                     attributeValueService.DeleteRange( attributeValuesToRemove );
                     definedValueService.DeleteRange( mailChimpListValuesToRemove );
 
                     rockContext.SaveChanges();
+
+                    return definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() )
+                                                .Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) )
+                                                .ToList();
+
                 }
                 catch ( Exception ex )
                 {
@@ -123,7 +121,7 @@ namespace com.bemaservices.MailChimp.Utility
                 }
             }
 
-            return mailChimpListValues;
+           return null;
         }
 
         public void SyncMembers( DefinedValueCache mailChimpList )
