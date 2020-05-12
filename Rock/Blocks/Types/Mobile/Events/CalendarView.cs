@@ -261,6 +261,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             var properties = new Dictionary<string, string>
             {
                 { "Id", "Id" },
+                { "Guid", "Guid" },
                 { "Name", "Name" },
                 { "StartDateTime", "DateTime" },
                 { "EndDateTime", "EndDateTime" },
@@ -321,7 +322,8 @@ namespace Rock.Blocks.Types.Mobile.Events
                     .Select( a => new
                     {
                         a.EventItemOccurrence,
-                        a.EventItemOccurrence.EventItem.Id,
+                        a.EventItemOccurrence.Guid,
+                        a.EventItemOccurrence.Id,
                         a.EventItemOccurrence.EventItem.Name,
                         DateTime = a.Date,
                         EndDateTime = a.Duration > 0 ? ( DateTime? ) a.Date.AddMinutes( a.Duration ) : null,

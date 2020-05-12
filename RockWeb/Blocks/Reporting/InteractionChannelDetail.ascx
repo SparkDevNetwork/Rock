@@ -55,15 +55,15 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbChannelCustom1Label" runat="server"
-                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustom1Label" />
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustom1Label" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbChannelCustom2Label" runat="server"
-                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustom2Label" />
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustom2Label" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbChannelCustomIndexed1Label" runat="server"
-                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustomIndexed1Label" />
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustomIndexed1Label" />
                         </div>
                     </div>
 
