@@ -385,10 +385,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.ConnectionStatus:
-                                var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl(FILTER_CONNECTION_STATUS_ID) as DefinedValuePicker;
-                                if (dvpConnectionStatusFilter != null)
+                                var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                if ( dvpConnectionStatusFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference(UserPreferenceKeyBase.GridFilter_ConnectionStatus, dvpConnectionStatusFilter.SelectedValue);
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus, dvpConnectionStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -535,10 +535,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.ConnectionStatus:
-                                var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl(FILTER_CONNECTION_STATUS_ID) as DefinedValuePicker;
-                                if (dvpConnectionStatusFilter != null)
+                                var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                if ( dvpConnectionStatusFilter != null )
                                 {
-                                    dvpConnectionStatusFilter.SetValue((Guid?)null);
+                                    dvpConnectionStatusFilter.SetValue( ( Guid? ) null );
                                 }
 
                                 break;
@@ -662,9 +662,9 @@ namespace RockWeb.Blocks.Event
 
                 case "Connection Status":
                     int? connStatId = e.Value.AsIntegerOrNull();
-                    if (connStatId.HasValue)
+                    if ( connStatId.HasValue )
                     {
-                        var connectionStatus = DefinedValueCache.Get(connStatId.Value);
+                        var connectionStatus = DefinedValueCache.Get( connStatId.Value );
                         e.Value = connectionStatus != null ? connectionStatus.Value : string.Empty;
                     }
                     else
@@ -1070,15 +1070,15 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.ConnectionStatus:
-                                    var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl(FILTER_CONNECTION_STATUS_ID) as DefinedValuePicker;
-                                    if (dvpConnectionStatusFilter != null)
+                                    var dvpConnectionStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                    if ( dvpConnectionStatusFilter != null )
                                     {
                                         var connectionStatusId = dvpConnectionStatusFilter.SelectedValue.AsIntegerOrNull();
-                                        if (connectionStatusId.HasValue)
+                                        if ( connectionStatusId.HasValue )
                                         {
-                                            qry = qry.Where(r =>
+                                            qry = qry.Where( r =>
                                                r.PersonAlias.Person.ConnectionStatusValueId.HasValue &&
-                                               r.PersonAlias.Person.ConnectionStatusValueId.Value == connectionStatusId.Value);
+                                               r.PersonAlias.Person.ConnectionStatusValueId.Value == connectionStatusId.Value );
                                         }
                                     }
 
