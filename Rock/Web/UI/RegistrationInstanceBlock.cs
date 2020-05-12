@@ -699,15 +699,15 @@ namespace Rock.Web.UI
                                 {
                                     var dvpConnectionStatusFilter = new DefinedValuePicker();
                                     dvpConnectionStatusFilter.ID = FILTER_CONNECTION_STATUS_ID;
-                                    dvpConnectionStatusFilter.DefinedTypeId = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid()).Id;
+                                    dvpConnectionStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
                                     dvpConnectionStatusFilter.Label = "Connection Status";
 
-                                    if (setValues)
+                                    if ( setValues )
                                     {
-                                        dvpConnectionStatusFilter.SetValue(gridFilter.GetUserPreference(UserPreferenceKeyBase.GridFilter_ConnectionStatus));
+                                        dvpConnectionStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus ) );
                                     }
 
-                                    filterFieldsContainer.Controls.Add(dvpConnectionStatusFilter);
+                                    filterFieldsContainer.Controls.Add( dvpConnectionStatusFilter );
 
                                     dataFieldExpression = "PersonAlias.Person.ConnectionStatusValue.Value";
 
@@ -715,7 +715,7 @@ namespace Rock.Web.UI
                                     connectionStatusField.DataField = dataFieldExpression;
                                     connectionStatusField.HeaderText = "ConnectionStatus";
                                     connectionStatusField.SortExpression = dataFieldExpression;
-                                    grid.Columns.Add(connectionStatusField);
+                                    grid.Columns.Add( connectionStatusField );
                                 }
 
                                 break;
