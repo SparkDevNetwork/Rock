@@ -6,7 +6,7 @@
 {% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
 
-{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+{% if Item == null or expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
     {{ '/page-not-found' | PageRedirect }}
 {% endif %}
 

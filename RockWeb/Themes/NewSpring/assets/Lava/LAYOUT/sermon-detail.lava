@@ -5,7 +5,7 @@
 {% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
 {% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
-{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+{% if Item == null or expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
     {% if CurrentPersonCanEdit %}
         <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
     {% else %}
