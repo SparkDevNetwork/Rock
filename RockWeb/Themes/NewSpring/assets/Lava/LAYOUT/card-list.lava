@@ -12,7 +12,11 @@
 				{% assign id = item.Id %}
 				{% assign cciid = item.Id %}
 				{% assign guid = item.Guid %}
-				{% assign type = item.ChannelName | Split:' - ' | Index:1 | Singularize %}
+
+				{%- capture type -%}
+					{% if item.ChannelId == '25' or item.ChannelId == '26' %}{{ item.Category }}{% endif %} {{ item.ChannelName | Split:' - ' | Index:1 | Singularize }}
+				{%- endcapture -%}
+
 				{% assign title = item.Title | Replace:"'","’" %}
 				{% assign titlesize = "h4" %}
 
