@@ -471,6 +471,7 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\StructuredContentView.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
@@ -516,6 +517,7 @@
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\121_MigrationRollupsFor10_3_5.cs" />
     <Compile Include="Plugin\HotFixes\120_StructuredContentTools.cs" />
     <Compile Include="Plugin\HotFixes\119_AddMobileGroupMemberListBlockTemplate.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
