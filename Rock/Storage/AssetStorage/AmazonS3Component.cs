@@ -172,6 +172,7 @@ namespace Rock.Storage.AssetStorage
         /// </summary>
         /// <param name="assetStorageProvider"></param>
         /// <param name="asset"></param>
+        /// <param name="isRecursive">if set to <c>true</c> [is recursive].</param>
         /// <returns></returns>
         private List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset, bool isRecursive )
         {
