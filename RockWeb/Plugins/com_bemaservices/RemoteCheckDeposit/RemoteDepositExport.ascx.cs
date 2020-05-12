@@ -16,16 +16,17 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Text;
 using System.IO;
+using Rock.Attribute;
+using System.Linq.Dynamic;
 
 namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 {
     [DisplayName( "Remote Deposit Export" )]
     [Category( "BEMA Services > Remote Check Deposit" )]
     [Description( "Exports batch data for use remote deposit with a bank." )]
+    [BooleanField( "Show Transaction Details On Grid" , defaultValue: false, Order = 1 )]
     public partial class RemoteDepositExport : RockBlock
     {
-        // Dictionaries to cache values for performance
-        //private static Dictionary<int, FinancialAccount> _financialAccountLookup;
         enum IsDeposited { Yes, No }
 
         #region Base Method Overrides
@@ -38,20 +39,21 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
         {
             base.OnInit( e );
 
-            //gBatches.Actions.ShowExcelExport = false;
             gBatches.Actions.ShowMergeTemplate = false;
             gBatches.ShowHeaderWhenEmpty = true;
             gBatches.ShowActionsInHeader = true;
 
-            //var lbSelectBatches = new LinkButton
-            //{
-            //    ID = "lbSelectBatches",
-            //    CssClass = "btn btn-default btn-sm",
-            //    Text = "<i class='fa fa-download'></i>"
-            //};
-            //lbSelectBatches.Click += lbSelectBatches_Click;
-            //gBatches.Actions.AddCustomActionControl( lbSelectBatches );
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
             gBatches.DataKeyNames = new string[] { "Id" };
+        }
+
+        private void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindBatchesFilter();
+            BindBatchesGrid();
         }
 
         /// <summary>
@@ -92,15 +94,62 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             {
                 var rockContext = new RockContext();
 
-                //_financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
+                var attributeQry = new AttributeValueService( rockContext ).Queryable().AsNoTracking().Where( av => av.Attribute.Key == "com.bemaservices.Deposited" );
 
-                var financialBatchQry = GetQuery( rockContext )
+
+                if ( GetAttributeValue( "ShowTransactionDetailsOnGrid" ).AsBoolean() )
+                {
+                    var financialBatchQry = GetQuery( rockContext )
+                    .AsNoTracking()
+                    .Include( b => b.Transactions.Select( t => t.TransactionDetails ) ) // Load Transactions and TransactionDetails
+                    .Include( b => b.Campus );
+
+                    gBatches.Columns[4].Visible = true;
+                    gBatches.Columns[6].Visible = true;
+
+                    var batchRowQry = financialBatchQry.Select( b => new BatchRow
+                    {
+                        Id = b.Id,
+                        BatchStartDateTime = b.BatchStartDateTime.Value,
+                        Name = b.Name,
+                        AccountingSystemCode = b.AccountingSystemCode,
+                        TransactionCount = b.Transactions.Count(),
+                        TransactionAmount = b.Transactions.SelectMany( t => t.TransactionDetails ).Sum( d => ( decimal? ) d.Amount ) ?? 0.0M,
+                        ControlAmount = b.ControlAmount,
+                        CampusName = b.Campus != null ? b.Campus.Name : "",
+                        Status = b.Status,
+                        UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
+                        BatchNote = b.Note,
+                        Deposited = attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean.HasValue && av.ValueAsBoolean.Value )
+                    } );
+
+                    gBatches.SetLinqDataSource( batchRowQry );
+                }
+                else
+                {
+                    var financialBatchQry = GetQuery( rockContext )
                     .AsNoTracking()
                     .Include( b => b.Campus );
 
-                gBatches.SetLinqDataSource( financialBatchQry );
-                //gBatches.ObjectList = ( ( List<FinancialBatch> ) gBatches.DataSource ).ToDictionary( k => k.Id.ToString(), v => v as object );
-                //gBatches.EntityTypeId = EntityTypeCache.Get<FinancialBatch>().Id;
+                    gBatches.Columns[4].Visible = false;
+                    gBatches.Columns[6].Visible = false;
+
+                    var batchRowQry = financialBatchQry.Select( b => new BatchRow
+                    {
+                        Id = b.Id,
+                        BatchStartDateTime = b.BatchStartDateTime.Value,
+                        Name = b.Name,
+                        AccountingSystemCode = b.AccountingSystemCode,
+                        ControlAmount = b.ControlAmount,
+                        TransactionAmount = b.ControlAmount,  // just assume transactions are balanced on batch for now
+                        CampusName = b.Campus != null ? b.Campus.Name : "",
+                        Status = b.Status,
+                        BatchNote = b.Note,
+                        Deposited = attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean.HasValue && av.ValueAsBoolean.Value )
+                    } );
+
+                    gBatches.SetLinqDataSource( batchRowQry );
+                }
 
                 gBatches.DataBind();
             }
@@ -135,8 +184,8 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             drpBatchDate.DelimitedValues = gfBatches.GetUserPreference( "Date Range" );
 
             ddlDeposited.BindToEnum<IsDeposited>();
-            ddlDeposited.Items.Insert(0, Rock.Constants.All.ListItem);
-            string depositedFilter = gfBatches.GetUserPreference("Deposited");
+            ddlDeposited.Items.Insert( 0, Rock.Constants.All.ListItem );
+            string depositedFilter = gfBatches.GetUserPreference( "Deposited" );
             if ( string.IsNullOrWhiteSpace( depositedFilter ) )
             {
                 depositedFilter = IsDeposited.No.ConvertToInt().ToString();
@@ -202,14 +251,14 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             if ( deposited.HasValue )
             {
                 var attributeQry = new AttributeValueService(rockContext).Queryable().AsNoTracking().Where(av => av.Attribute.Key == "com.bemaservices.Deposited");
-                // how to I query an attribute on linq???
+                
                 if ( deposited == IsDeposited.Yes )
                 {
-                    qry = qry.Where(b => attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
+                    qry = qry.Where( b => attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
                 }
                 else if ( deposited == IsDeposited.No )
                 {
-                    qry = qry.Where(b => !attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
+                    qry = qry.Where( b => !attributeQry.Any( av => av.EntityId == b.Id && av.ValueAsBoolean == true ) );
                 }
             }
 
@@ -264,12 +313,12 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 
             return sortedQry;
         }
-        
+
         /// <summary>
-                 /// Formats the value as currency.
-                 /// </summary>
-                 /// <param name="value">The value.</param>
-                 /// <returns></returns>
+        /// Formats the value as currency.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         protected string FormatValueAsCurrency( decimal value )
         {
             return value.FormatAsCurrency();
@@ -320,12 +369,12 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                     catch { /* Intentionally left blank */ }
 
                     List<string> errors = new List<string>();
-                    bool isValid = Micr.IsValid(Rock.Security.Encryption.DecryptString(transaction.CheckMicrEncrypted), out errors );
-                    bool hasImages = transaction.Images.Count == 2;
+                    bool isValid = Micr.IsValid( Rock.Security.Encryption.DecryptString( transaction.CheckMicrEncrypted ), out errors );
+                    bool hasImages = transaction.Images.Count >= 2;
 
                     if ( !hasImages )
                     {
-                        errors.Add("Transaction does not contain two images (front and back of check) ");
+                        errors.Add( "Transaction does not contain two images (front and back of check) " );
                     }
 
                     MicrRow micrRow = new MicrRow()
@@ -337,7 +386,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                         Amount = transaction.TotalAmount,
                         ImageUrl = transaction.Images.FirstOrDefault().IsNotNull() ? transaction.Images.First().BinaryFile.Url : "",
                         IsValid = ( isValid && hasImages ),
-                        IsValidMessage = errors.AsDelimited("<br/>")
+                        IsValidMessage = errors.AsDelimited( "<br/>" )
                     };
 
                     micrRowList.Add( micrRow );
@@ -353,7 +402,6 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             }
             else
             {
-                //ShowOptions();
                 return true;
             }
         }
@@ -394,11 +442,11 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 
                 // Create a counter for each day's exports
                 string counterKey = "com.bemaservices.RemoteCheckDeposit.CounterKey";
-                string valueFromKey = Rock.Web.SystemSettings.GetValue(counterKey);
+                string valueFromKey = Rock.Web.SystemSettings.GetValue( counterKey );
                 int counter = 1;
-                if ( valueFromKey.IsNotNullOrWhiteSpace() && valueFromKey.Split('|').Count() == 2 )
+                if ( valueFromKey.IsNotNullOrWhiteSpace() && valueFromKey.Split( '|' ).Count() == 2 )
                 {
-                    var keyArray = valueFromKey.Split('|');
+                    var keyArray = valueFromKey.Split( '|' );
                     if ( keyArray[0].AsDateTime() >= RockDateTime.Today )
                     {
                         counter = keyArray[1].AsInteger() + 1;
@@ -406,7 +454,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                 }
                 //Set key to DateTime of Today with a counter of 1
                 string keyString = RockDateTime.Today.ToString() + "|" + counter.ToString();
-                Rock.Web.SystemSettings.SetValue(counterKey, keyString);
+                Rock.Web.SystemSettings.SetValue( counterKey, keyString );
 
                 //
                 // Get the final filename for the export.
@@ -499,16 +547,8 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             var rockContext = new RockContext();
             var batchIds = gBatches.SelectedKeys.Cast<int>().ToList();
 
-            //if ( !batchIds.Any() )
-            //{
-            //    batchIds = GetQuery( rockContext ).Select( b => b.Id ).ToList();
-            //}
             hfBatchIds.Value = string.Join( ",", batchIds.Select( i => i.ToString() ) );
 
-            //if ( ValidateSelection() )
-            //{
-            //    ShowOptions();
-            //}
 
             ValidateSelection( true );
         }
@@ -588,53 +628,6 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             BindBatchesGrid();
         }
 
-        /// <summary>
-        /// Handles the RowCreated event of the gBatches control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gBatches_RowCreated( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow && e.Row.DataItem != null )
-            {
-                var batch = e.Row.DataItem as FinancialBatch;
-                if ( batch != null )
-                {
-                    if ( batch.Attributes == null )
-                    {
-                        batch.LoadAttributes();
-                    }
-
-                    var batchRow = new BatchRow
-                    {
-                        Id = batch.Id,
-                        BatchStartDateTime = batch.BatchStartDateTime.Value,
-                        Name = batch.Name,
-                        AccountingSystemCode = batch.AccountingSystemCode,
-                        TransactionCount = batch.Transactions.Count(),
-                        ControlAmount = batch.ControlAmount,
-                        CampusName = batch.Campus != null ? batch.Campus.Name : "",
-                        Status = batch.Status,
-                        UnMatchedTxns = batch.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
-                        BatchNote = batch.Note,
-                        AccountSummaryList = batch.Transactions
-                        .SelectMany( t => t.TransactionDetails )
-                        .GroupBy( d => d.AccountId )
-                        .Select( s => new BatchAccountSummary
-                        {
-                            AccountId = s.Key,
-                            Amount = s.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M,
-                            AccountOrder = s.Select( d => d.Account.Order ).FirstOrDefault(),
-                            AccountName = s.Select( d => d.Account.Name ).FirstOrDefault()
-                        } )
-                        .ToList(),
-                        Deposited = batch.GetAttributeValue( "com.bemaservices.Deposited" ).AsBoolean()
-                    };
-
-                    e.Row.DataItem = batchRow;
-                }
-            }
-        }
 
         /// <summary>
         /// Handles the Click event of the lbCancel control.
@@ -693,27 +686,13 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                     ShowOptions();
                 }
             }
-            
+
         }
 
         #endregion
 
         #region Support Classes
 
-        public class BatchAccountSummary
-        {
-            public int AccountId { get; set; }
-            public int AccountOrder { get; set; }
-
-            public string AccountName { get; set; }
-
-            public decimal Amount { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format( "{0}: {1}", AccountName, Amount.FormatAsCurrency() );
-            }
-        }
 
         public class BatchRow
         {
@@ -722,29 +701,8 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
             public string Name { get; set; }
             public string AccountingSystemCode { get; set; }
             public int TransactionCount { get; set; }
-
-            public decimal TransactionAmount
-            {
-                get
-                {
-                    return AccountSummaryList.Select( a => a.Amount ).Sum();
-                }
-            }
-
+            public decimal TransactionAmount { get; set; }
             public decimal ControlAmount { get; set; }
-            public List<BatchAccountSummary> AccountSummaryList
-            {
-                get
-                {
-                    return _accountSummaryList.OrderBy( a => a.AccountOrder ).ToList();
-                }
-                set
-                {
-                    _accountSummaryList = value;
-                }
-            }
-
-            private List<BatchAccountSummary> _accountSummaryList;
             public string CampusName { get; set; }
             public BatchStatus Status { get; set; }
             public bool UnMatchedTxns { get; set; }
@@ -755,26 +713,6 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                 get
                 {
                     return TransactionAmount - ControlAmount;
-                }
-            }
-
-            public string AccountSummaryText
-            {
-                get
-                {
-                    var summary = new List<string>();
-                    AccountSummaryList.ForEach( a => summary.Add( a.ToString() ) );
-                    return summary.AsDelimited( Environment.NewLine );
-                }
-            }
-
-            public string AccountSummaryHtml
-            {
-                get
-                {
-                    var summary = new List<string>();
-                    AccountSummaryList.ForEach( a => summary.Add( a.ToString() ) );
-                    return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
                 }
             }
 
@@ -853,5 +791,6 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
         }
 
         #endregion
+
     }
 }
