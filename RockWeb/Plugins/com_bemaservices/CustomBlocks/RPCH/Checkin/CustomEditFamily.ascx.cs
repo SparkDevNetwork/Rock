@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
     ///
     /// </summary>
     [DisplayName( "Custom Edit Family" )]
-    [Category( "Check-in" )]
+    [Category( "BEMA Services > Check-in" )]
     [Description( "Block to Add or Edit a Family during the Check-in Process." )]
 
     [AttributeField(Rock.SystemGuid.EntityType.PERSON, "Check-In Group Attribute", "A person attribute specifying the check-in group to pass to the new person workflow.", false, false, "", "", 1)]
