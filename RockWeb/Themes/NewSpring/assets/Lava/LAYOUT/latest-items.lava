@@ -18,7 +18,7 @@
         {% assign titlesize = 'h4' %}
         {% assign summary = item.Summary %}
         {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | HtmlDecode | StripHtml | Replace:"'","’" }}{% else %}{{ item.Content | HtmlDecode | StripHtml | Truncate:140,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
-        {% assign label = channelItemsName | Singularize %}
+        {% assign type = channelItemsName | Singularize %}
         {%- capture communicators -%}{[ communicators dataset:'{{ item.Dataset }}' cciid:'{{ item.Id }}'  ]}{%- endcapture -%}
         {% assign actualdate = item.ActualDate %}
         {% capture subtitle %}{% if actualdate and actualdate != empty %}{[ formatDate date:'{{ actualdate }}']}{% else %}{[ formatDate date:'{{ item.PublishDateTime }}' ]}{% endif %}{% if communicators and communicators != empty %} &middot; {{ communicators }}{% endif %}{% endcapture %}
