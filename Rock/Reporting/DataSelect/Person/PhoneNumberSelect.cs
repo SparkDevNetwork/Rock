@@ -39,10 +39,6 @@ namespace Rock.Reporting.DataSelect.Person
     [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
     public class PhoneNumberSelect : DataSelectComponent
     {
-        #region
-        Rock.Model.Person _currentPerson = null;
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -141,7 +137,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             string[] selectionValues = selection.Split( '|' );
             Guid? phoneNumberTypeValueGuid = null;
-            if ( selectionValues.Length >= 1)
+            if ( selectionValues.Length >= 1 )
             {
                 phoneNumberTypeValueGuid = selectionValues[0].AsGuidOrNull();
             }
@@ -171,7 +167,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach (var value in DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 phoneNumberTypeList.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }
@@ -253,18 +249,17 @@ namespace Rock.Reporting.DataSelect.Person
             Guid? phoneType = null;
             bool enableOrigination = false;
 
-            if ( _currentPerson == null )
+            Rock.Model.Person _currentPerson = null;
+
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
-                }
+                _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
             }
 
             var selectionParts = selection.Split( '|' );
             if ( selectionParts.Length > 0 )
             {
-                phoneType =  selectionParts[0].AsGuidOrNull();
+                phoneType = selectionParts[0].AsGuidOrNull();
             }
 
             if ( selectionParts.Length > 1 )

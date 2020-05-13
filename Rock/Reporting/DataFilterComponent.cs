@@ -83,7 +83,17 @@ namespace Rock.Reporting
         /// <value>
         /// A set of key-value pairs representing the option names and values.
         /// </value>
-        public virtual Dictionary<string, object> Options { get; set; }
+        public virtual Dictionary<string, object> Options
+        {
+            get => _options;
+            set => _options = value;
+        }
+
+        /// <summary>
+        /// Thread-safe field for Options
+        /// </summary>
+        [ThreadStatic]
+        private static Dictionary<string, object> _options;
 
         #endregion
 

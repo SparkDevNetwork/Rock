@@ -121,14 +121,6 @@ namespace Rock.CodeGeneration
                 var rootFolder = RootFolder();
                 if ( rootFolder != null )
                 {
-                    var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
-                    var entityTypes = cblModels.Items.Cast<Type>().ToList();
-                    var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-                    if ( missingDbSets.Any() )
-                    {
-                        tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
-                    }
-
                     if ( cbClient.Checked )
                     {
                         var codeGenFolder = Path.Combine( rockClientFolder, "CodeGenerated" );
@@ -187,37 +179,45 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            ReportRockObsolete();
+            ReportRockCodeWarnings();
 
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
             MessageBox.Show( "Files have been generated" );
         }
 
-        /// <summary>
-        /// Reports the rock obsolete.
-        /// </summary>
-        public void ReportRockObsolete()
+        public void ReportRockCodeWarnings()
         {
-            StringBuilder sbWarnings = new StringBuilder();
+            StringBuilder missingDbSetWarnings = new StringBuilder();
+            StringBuilder rockObsoleteWarnings = new StringBuilder();
+            StringBuilder singletonClassVariablesWarnings = new StringBuilder();
             List<string> obsoleteList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
 
+            /* List any EntityTypes that don't have an associated DbSet<T> in RockContext */
+            var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
+            var entityTypes = cblModels.Items.Cast<Type>().ToList();
+            var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
+            if ( missingDbSets.Any() )
+            {
+                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n" );
+            }
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
                 var allTypes = rockAssembly.GetTypes();
-                foreach ( var type in allTypes )
+                foreach ( var type in allTypes.OrderBy( a => a.FullName ) )
                 {
+                    /* See if the class is Obsolete/RockObsolete */
                     ObsoleteAttribute typeObsoleteAttribute = type.GetCustomAttribute<ObsoleteAttribute>();
                     if ( typeObsoleteAttribute != null )
                     {
                         var rockObsolete = type.GetCustomAttribute<RockObsolete>();
                         if ( rockObsolete == null )
                         {
-                            sbWarnings.AppendLine( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                            rockObsoleteWarnings.AppendLine( $" - {type}" );
                         }
                         else
                         {
@@ -225,42 +225,135 @@ namespace Rock.CodeGeneration
                         }
                     }
 
-                    foreach ( var member in type.GetMembers() )
+                    // get all members so we can see if there are warnings that we want to show
+                    var memberList = type
+                        .GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static )
+                        .OrderBy( a => a.Name )
+                        .ToList();
+
+                    foreach ( MemberInfo member in memberList )
                     {
+                        /* See if member is Obsolete/RockObsolete */
                         ObsoleteAttribute memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
                         if ( memberObsoleteAttribute != null && rockAssembly == member.Module.Assembly && member.DeclaringType == type )
                         {
                             var rockObsolete = member.GetCustomAttribute<RockObsolete>();
                             if ( rockObsolete == null )
                             {
-                                sbWarnings.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
+                                rockObsoleteWarnings.AppendLine( $" - {type}" );
                             }
                             else
                             {
                                 string messagePrefix = null;
-                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8.") || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8." ) || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
                                 {
                                     if ( !memberObsoleteAttribute.IsError || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
                                     {
                                         messagePrefix = "###WARNING###:";
                                     }
                                 }
+
                                 obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
+
+                        /* See if a singleton has class variables that are not thread-safe
+                           NOTE: This won't catch all of them, but hopefully most
+                         */
+
+                        // fields that OK based on how we use them
+                        var ignoredClassVariables = new string[]
+                        {
+                            "Rock.Extension.Component.Attributes",
+                            "Rock.Extension.Component.AttributeValues",
+                            "Rock.Web.HttpModules.ResponseHeaders.Headers",
+                            "Rock.Field.FieldType.QualifierUpdated"
+                        };
+
+                        if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
+                            || typeof( Rock.Extension.Component ).IsAssignableFrom( type )
+                            )
+                        {
+                            if ( member is FieldInfo fieldInfo )
+                            {
+                                /* 2020-05-11 MDP - To detect non-thread safe fields and properties
+                                    - All properties have a field behind them, even ones with a simple get/set (those will be named *k__BackingField)
+                                    - So this will also end up finding non-threadsafe properties as well
+
+                                    - A class level variable on a singleton is not thread safe, except for the following situations
+                                       -- It is a constant (IsLiteral)
+                                       -- It is a readonly field (IsInitOnly)
+                                       -- Is a static field with a [ThreadStatic] attribute.
+                                           -- Note: If has to both [ThreadStatic] AND a static field to be threadsafe.
+                                 */
+
+                                // Also, don't worry about values that are only set in the Constructor (IsInitOnly), since Singletons only get constructed once
+                                if ( !( fieldInfo.IsLiteral || fieldInfo.IsInitOnly ) )
+                                {
+                                    var isThreadStatic = ( fieldInfo.IsStatic && fieldInfo.GetCustomAttribute<System.ThreadStaticAttribute>() != null );
+                                    if ( !isThreadStatic )
+                                    {
+
+                                        string fieldOrPropertyName = fieldInfo.Name;
+                                        Regex regexBackingField = new Regex( @"\<(.*)\>k__BackingField" );
+                                        var match = regexBackingField.Match( fieldInfo.Name );
+
+                                        // if the field appears to be a backing field, we can take a guess at what the associated property is
+                                        // then report that as not-threadsafe
+                                        if ( match.Groups.Count == 2 )
+                                        {
+                                            var propertyName = match.Groups[1].Value;
+                                            if ( memberList.Any( a => a.Name == propertyName ) )
+                                            {
+                                                fieldOrPropertyName = propertyName;
+                                            }
+                                        }
+
+                                        string fullyQualifiedFieldName = $"{type.FullName}.{fieldOrPropertyName}";
+                                        if ( !ignoredClassVariables.Contains( fullyQualifiedFieldName ) )
+                                        {
+                                            singletonClassVariablesWarnings.AppendLine( $" - {fullyQualifiedFieldName}" );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
                     }
                 }
             }
 
-            tbResults.Text += sbWarnings.ToString();
+            StringBuilder warnings = new StringBuilder();
+            if ( singletonClassVariablesWarnings.Length > 0 )
+            {
+                warnings.AppendLine( "Singleton non-threadsafe class variables." );
+                warnings.Append( singletonClassVariablesWarnings );
+            }
+
+            if ( missingDbSetWarnings.Length > 0 )
+            {
+                warnings.AppendLine();
+                warnings.AppendLine( "RockContext missing DbSet<T>s" );
+                warnings.Append( missingDbSetWarnings );
+            }
+
+            if ( rockObsoleteWarnings.Length > 0 )
+            {
+                warnings.AppendLine();
+                warnings.AppendLine( "[Obsolete] that does't have [RockObsolete]" );
+                warnings.Append( rockObsoleteWarnings );
+            }
 
             if ( cbGenerateObsoleteExport.Checked )
             {
-                tbResults.Text += Environment.NewLine;
+                warnings.AppendLine();
 
                 obsoleteList = obsoleteList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
-                tbResults.Text += $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine );
+                warnings.Append( $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine ) );
             }
+
+            tbResults.Text = warnings.ToString();
         }
 
         /// <summary>

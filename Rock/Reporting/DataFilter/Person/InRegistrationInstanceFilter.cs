@@ -31,6 +31,16 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter" />
+    [Obsolete( "Use the InRegistrationInstanceFilter from the Rock.Reporting.DataFilter.Person namespace instead" )]
+    public class InRegistrationInstanceFilter : Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter { };
+}
+
+namespace Rock.Reporting.DataFilter.Person
+{
+    /// <summary>
     /// Filter people on whether they registered (registrar) or were registered (registrant) in the designated registration instance.
     /// </summary>
     [Description( "Filter people on whether they registered (registrar) or were registered (registrant) in the designated registration instance." )]
@@ -78,21 +88,6 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return "In Registration Instance";
         }
-
-        /// <summary>
-        /// The Registration Template picker (drop down list)
-        /// </summary>
-        private RockDropDownList _ddlRegistrationTemplate = null;
-
-        /// <summary>
-        /// The Registration Instance picker (drop down list)
-        /// </summary>
-        private RockDropDownList _ddlRegistrationInstance = null;
-
-        /// <summary>
-        /// The registration type (registrar or registrant) radio button list
-        /// </summary>
-        private RockRadioButtonList _rblRegistrationType = null;
 
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
@@ -166,15 +161,8 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
-            
-            // Add the registration template picker
-            int? selectedTemplateId = null;
-            if ( _ddlRegistrationTemplate != null )
-            {
-                selectedTemplateId = _ddlRegistrationTemplate.SelectedValueAsId();
-            }
 
-            _ddlRegistrationTemplate = new RockDropDownList();
+            var _ddlRegistrationTemplate = new RockDropDownList();
             _ddlRegistrationTemplate.CssClass = "js-registration-template";
             _ddlRegistrationTemplate.ID = filterControl.ID + "_ddlRegistrationTemplate";
             _ddlRegistrationTemplate.Label = "Registration Template";
@@ -191,19 +179,18 @@ function() {
             _ddlRegistrationTemplate.DataBind();
             _ddlRegistrationTemplate.SelectedIndexChanged += ddlRegistrationTemplate_SelectedIndexChanged;
             _ddlRegistrationTemplate.AutoPostBack = true;
-            _ddlRegistrationTemplate.SelectedValue = selectedTemplateId.ToStringSafe();
             filterControl.Controls.Add( _ddlRegistrationTemplate );
 
             // Now add the registration instance picker
-            _ddlRegistrationInstance = new RockDropDownList();
+            var _ddlRegistrationInstance = new RockDropDownList();
             _ddlRegistrationInstance.CssClass = "js-registration-instance";
             _ddlRegistrationInstance.Label = "Registration Instance";
             _ddlRegistrationInstance.ID = filterControl.ID + "_ddlRegistrationInstance";
             filterControl.Controls.Add( _ddlRegistrationInstance );
 
-            PopulateRegistrationInstanceList( _ddlRegistrationTemplate.SelectedValueAsId () ?? 0  );
+            PopulateRegistrationInstanceList( filterControl  );
 
-            _rblRegistrationType = new RockRadioButtonList();
+            var _rblRegistrationType = new RockRadioButtonList();
             _rblRegistrationType.CssClass = "js-registration-type";
             _rblRegistrationType.ID = filterControl.ID + "_registrationType";
             _rblRegistrationType.RepeatDirection = RepeatDirection.Horizontal;
@@ -224,17 +211,22 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRegistrationTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int registrationTemplateId = _ddlRegistrationTemplate.SelectedValueAsId() ?? 0;
-            PopulateRegistrationInstanceList( registrationTemplateId );
+            var filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            PopulateRegistrationInstanceList( filterField );
         }
 
         /// <summary>
         /// Populates the registration instance list.
         /// </summary>
-        /// <param name="registrationTemplateId">The registration template identifier.</param>
-        private void PopulateRegistrationInstanceList( int registrationTemplateId )
+        /// <param name="filterField">The filter field.</param>
+        private void PopulateRegistrationInstanceList( FilterField filterField )
         {
-            if ( registrationTemplateId != 0  )
+
+            var _ddlRegistrationTemplate = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-registration-template" ) );
+            var _ddlRegistrationInstance = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-registration-instance" ) );
+
+            var registrationTemplateId = _ddlRegistrationTemplate.SelectedValue.AsInteger();
+            if ( registrationTemplateId != 0 )
             {
                 _ddlRegistrationInstance.Items.Clear();
                 _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", "" ) );
@@ -291,12 +283,13 @@ function() {
             {
                 int registrationTemplateId = selectionValues[0].AsInteger();
                 var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( registrationTemplateId );
+                var ddlRegistrationTemplate = ( controls[0] as RockDropDownList );
                 if ( registrationTemplate  != null )
                 {
-                    ( controls[0] as RockDropDownList ).SetValue( registrationTemplateId );
+                    ddlRegistrationTemplate.SetValue( registrationTemplateId );
                 }
 
-                ddlRegistrationTemplate_SelectedIndexChanged( this, new EventArgs() );
+                ddlRegistrationTemplate_SelectedIndexChanged( ddlRegistrationTemplate, new EventArgs() );
 
                 var ddlRegistrationInstance = controls[1] as RockDropDownList;
                 if ( selectionValues.Length >= 2 )
