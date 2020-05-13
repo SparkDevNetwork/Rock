@@ -13,10 +13,7 @@
 				{% assign cciid = item.Id %}
 				{% assign guid = item.Guid %}
 
-				{%- capture type -%}
-					{% if item.ChannelId == '25' or item.ChannelId == '26' %}{{ item.Category }}{% endif %} {{ item.ChannelName | Split:' - ' | Index:1 | Singularize }}
-				{%- endcapture -%}
-
+				{% assign type = item.ContentType %}
 				{% assign title = item.Title | Replace:"'","’" %}
 				{% assign titlesize = "h4" %}
 
@@ -80,7 +77,7 @@
 				{%- endcapture %}
 
 				{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
-				{% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endif %}{% endcapture %}
+				{% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{{ type | Prepend:' ' | Prepend:item.ChannelVerb }}{% endif %}{% endcapture %}
 
 				{% assign parentChannelId = item.ParentChannelId | AsInteger %}
 				{% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}

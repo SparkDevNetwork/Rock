@@ -25,7 +25,7 @@
         {% assign video = item.Video %}
         {% assign imageurl = item.ImageLandscape %}
         {% capture linkurl %}{{ item.Permalink }}{% endcapture %}
-        {% capture linktext %}{% if channelItemsName == 'Sermons' %}Watch{% else %}Read{% endif %} {{ channelItemsName | Singularize }}{% endcapture %}
+        {% assign linktext = channelItemsName | Singularize | Prepend:' ' | Prepend:item.ChannelVerb %}
 
         {% assign parentChannelId = item.ParentChannelId | AsInteger %}
         {% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}

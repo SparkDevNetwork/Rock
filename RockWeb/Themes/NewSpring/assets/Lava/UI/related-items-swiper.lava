@@ -20,7 +20,7 @@
                     {% assign video = relatedItem.Video %}
                     {% assign trimcopy = 'y' %}
                     {% assign linkurl = relatedItem.Permalink %}
-                    {% capture linktext %}{% if type == 'Sermon' or type == 'Sermon Series' %}Watch {% else %}Read {% endif %}{{ type }}{% endcapture %}
+                    {% assign linktext = type | Prepend:' ' | Prepend:relatedItem.ChannelVerb %}
                     {% assign startDateTime = relatedItem.StartDateTime %}
                     {% assign endDateTime = relatedItem.EndDateTime %}
 

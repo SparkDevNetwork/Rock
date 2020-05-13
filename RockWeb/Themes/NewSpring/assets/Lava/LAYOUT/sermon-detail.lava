@@ -18,7 +18,7 @@
 {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
 
 {% if parentItem and parentItem != empty %}
-    {% assign parentType = parentItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
+    {% assign parentType = parentItem.ContentType %}
     {% assign parentTitle = parentItem.Title | Replace:"'","’" %}
     {% assign parentSummary = parentItem.Summary | Replace:"'","’" %}
     {% assign parentImage = parentItem.ImageLandscape %}

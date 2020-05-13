@@ -13,12 +13,12 @@
 
 {% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
-{% assign channelNameParts = Item.ChannelName | Split:' - ' %}
-{% assign channelName = channelNameParts[1] %}
+{% assign channelName = Item.ContentType | Pluralize %}
+{% assign pageTitle = Item.ContentType %}
 {% capture browserTitle %}{{ Item.Title }} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
 
 {{ browserTitle | SetPageTitle:'BrowserTitle' }}
-{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+{{ pageTitle | SetPageTitle:'PageTitle' }}
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
@@ -54,10 +54,9 @@
     {% capture trimcopy %}Yes{% endcapture %}
 
     {% assign childType = Item.Children | First | Property:'Dataset' | PersistedDataset | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
-
     {% if childType and childType != empty %}
         {% capture linkurl %}#entries{% endcapture %}
-        {% capture linktext %}{% if childType contains "Sermon" %}Watch{% else %}Read{% endif %} {{ childType }}{% endcapture %}
+        {% capture linktext %}{{ childType | Prepend:' ' | Prepend:Item.ChannelVerb }}{% endcapture %}
     {% endif %}
 
     {[ sideBySide id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava | Escape }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
