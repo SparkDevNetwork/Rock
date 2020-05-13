@@ -275,7 +275,7 @@
         </span>
 
         <%-- Panel for no schedules --%>
-        <asp:Panel ID="pnlNotActive" runat="server">
+        <asp:Panel ID="pnlNotActive" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
                 <h1><asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
             </div>
@@ -284,7 +284,7 @@
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p><h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1></p>
+                        <h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1>
                     </div>
                 </div>
 
@@ -292,7 +292,7 @@
         </asp:Panel>
 
         <%-- Panel for schedule not active yet --%>
-        <asp:Panel ID="pnlNotActiveYet" runat="server">
+        <asp:Panel ID="pnlNotActiveYet" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
                 <h1><asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
             </div>
@@ -313,7 +313,7 @@
         </asp:Panel>
 
         <%-- Panel for location closed --%>
-        <asp:Panel ID="pnlClosed" runat="server">
+        <asp:Panel ID="pnlClosed" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header checkin-closed-header">
                 <h1><asp:Literal ID="lClosedTitle" runat="server" /></h1>
             </div>
@@ -343,7 +343,7 @@
 
         </asp:Panel>
 
-        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
+        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i><span class="sr-only">Kiosk Manager</span></asp:LinkButton>
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">

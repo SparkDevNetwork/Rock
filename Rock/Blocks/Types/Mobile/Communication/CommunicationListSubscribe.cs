@@ -145,17 +145,17 @@ namespace Rock.Blocks.Types.Mobile.Events
 
             if ( ShowDescription )
             {
-                descriptionLabel = $"<Label StyleClass=\"list-description\"><![CDATA[{subscription.CommunicationList.Description.EncodeXml()}]]></Label>";
+                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description.EncodeXml()}]]></Label>";
             }
 
             return $@"
 <StackLayout Orientation=""Horizontal""
              Spacing=""20""
-             StyleClass=""communication-list"">
+             StyleClass=""communicationlist-item"">
     <StackLayout Spacing=""0""
                  HorizontalOptions=""FillAndExpand"">
         <Label Text=""{subscription.DisplayName.EncodeXml( true )}""
-               StyleClass=""list-name"" />
+               StyleClass=""h3, communicationlist-item-name"" />
         {descriptionLabel}
     </StackLayout>
     <Rock:CheckBox x:Name=""cbSubscribed_{subscription.CommunicationList.Id}""
@@ -182,7 +182,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <returns></returns>
         protected virtual string GetSubscriptionSeparator()
         {
-            return "<BoxView Color=\"#ccc\" HeightRequest=\"1\" />";
+            return "<Rock:Divider StyleClass=\"my-12\" />";
         }
 
         /// <summary>

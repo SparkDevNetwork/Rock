@@ -32,7 +32,7 @@
                         // iframe returns the result in the format "imageSrcUrl|imageAltText"
                         var resultParts = fileResult.split('|');
                         var imageElement = document.createElement('img');
-                        var url = Rock.settings.get('baseUrl') + resultParts[0];
+                        var url = encodeURI(Rock.settings.get('baseUrl') + resultParts[0]);
                         var altText = resultParts[1];
                         
                         var imgTarget = context.invoke('editor.restoreTarget');

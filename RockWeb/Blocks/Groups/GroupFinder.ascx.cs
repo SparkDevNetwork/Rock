@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Groups
 
             var rockContext = new RockContext();
             var groupTypes = new GroupTypeService( rockContext )
-                .Queryable().AsNoTracking().ToList();
+                .Queryable().AsNoTracking().OrderBy( t => t.Order ).ToList();
 
             BindGroupType( gtpGroupType, groupTypes, "GroupType" );
             BindGroupType( gtpGeofenceGroupType, groupTypes, "GeofencedGroupType" );

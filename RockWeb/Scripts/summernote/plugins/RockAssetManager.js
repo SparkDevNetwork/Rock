@@ -25,7 +25,7 @@
                     $assetManagerFileTable.find('tr').each(function () {
                         var row = $(this);
                         if (row.find('input[type="checkbox"]').is(':checked')) {
-                            uri = row.find('.js-assetManager-uri').text();
+                            uri = encodeURI(row.find('.js-assetManager-uri').text());
                             fileName = row.find('.js-assetManager-name').text();
                         }
                     });

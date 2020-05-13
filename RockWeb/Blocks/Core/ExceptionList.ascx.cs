@@ -1542,17 +1542,7 @@ function(item) {
                 var lDescription = e.Row.FindControl( "lDescription" ) as Literal;
                 if ( lDescription != null )
                 {
-                    var descriptionAsHtml = exceptionLogViewModel.Description.ConvertCrLfToHtmlBr();
-                    if ( descriptionAsHtml.Length > 255 )
-                    {
-                        // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
-                        // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
-                        lDescription.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", descriptionAsHtml );
-                    }
-                    else
-                    {
-                        lDescription.Text = descriptionAsHtml;
-                    }
+                    lDescription.Text = exceptionLogViewModel.Description.ConvertCrLfToHtmlBr().Truncate( 255, true );
                 }
             }
         }

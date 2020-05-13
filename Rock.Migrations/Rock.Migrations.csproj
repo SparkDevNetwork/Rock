@@ -213,6 +213,26 @@
     <Compile Include="Migrations\202004282116183_Rollup_0428.Designer.cs">
       <DependentUpon>202004282116183_Rollup_0428.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202004301632222_UpdateGoogleCloudStorageComponentEntityToHaveWellKnownGuid.cs" />
+    <Compile Include="Migrations\202004301632222_UpdateGoogleCloudStorageComponentEntityToHaveWellKnownGuid.Designer.cs">
+      <DependentUpon>202004301632222_UpdateGoogleCloudStorageComponentEntityToHaveWellKnownGuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005012050219_FixFailedPaymentCommunicationTemplate.cs" />
+    <Compile Include="Migrations\202005012050219_FixFailedPaymentCommunicationTemplate.Designer.cs">
+      <DependentUpon>202005012050219_FixFailedPaymentCommunicationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005042132358_CommunicationRecipientResponseCodeIndex.cs" />
+    <Compile Include="Migrations\202005042132358_CommunicationRecipientResponseCodeIndex.Designer.cs">
+      <DependentUpon>202005042132358_CommunicationRecipientResponseCodeIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005121112306_UpdateInteractionRelatedProperties.cs" />
+    <Compile Include="Migrations\202005121112306_UpdateInteractionRelatedProperties.Designer.cs">
+      <DependentUpon>202005121112306_UpdateInteractionRelatedProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005122244155_Rollup_0512.cs" />
+    <Compile Include="Migrations\202005122244155_Rollup_0512.Designer.cs">
+      <DependentUpon>202005122244155_Rollup_0512.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1308,6 +1328,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202004282116183_Rollup_0428.resx">
       <DependentUpon>202004282116183_Rollup_0428.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004301632222_UpdateGoogleCloudStorageComponentEntityToHaveWellKnownGuid.resx">
+      <DependentUpon>202004301632222_UpdateGoogleCloudStorageComponentEntityToHaveWellKnownGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005012050219_FixFailedPaymentCommunicationTemplate.resx">
+      <DependentUpon>202005012050219_FixFailedPaymentCommunicationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005042132358_CommunicationRecipientResponseCodeIndex.resx">
+      <DependentUpon>202005042132358_CommunicationRecipientResponseCodeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005121112306_UpdateInteractionRelatedProperties.resx">
+      <DependentUpon>202005121112306_UpdateInteractionRelatedProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005122244155_Rollup_0512.resx">
+      <DependentUpon>202005122244155_Rollup_0512.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

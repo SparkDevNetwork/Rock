@@ -34,9 +34,16 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Asset Storage Provider List" )]
     [Category( "Core" )]
     [Description( "Block for viewing list of asset storage providers." )]
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class AssetStorageProviderList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -75,7 +82,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridAssetStorageProvider_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageProviderId", e.RowKeyValue.ToString() } } );
+            NavigateToLinkedPage( AttributeKey.DetailPage, new Dictionary<string, string> { { "assetStorageProviderId", e.RowKeyValue.ToString() } } );
         }
 
         /// <summary>
@@ -105,7 +112,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridAssetStorageProvider_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageProviderId", "0" } } );
+            NavigateToLinkedPage( AttributeKey.DetailPage, new Dictionary<string, string> { { "assetStorageProviderId", "0" } } );
         }
 
         /// <summary>

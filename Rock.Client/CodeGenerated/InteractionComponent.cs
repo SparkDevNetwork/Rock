@@ -35,6 +35,15 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary />
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary />
+        public string ChannelCustomIndexed1 { get; set; }
+
+        /// <summary />
         // Made Obsolete in Rock "1.11"
         [Obsolete( "Use InteractionChannelId instead", false )]
         public int ChannelId { get; set; }
@@ -98,6 +107,9 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionComponent source )
         {
             this.Id = source.Id;
+            this.ChannelCustom1 = source.ChannelCustom1;
+            this.ChannelCustom2 = source.ChannelCustom2;
+            this.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
             #pragma warning disable 612, 618
             this.ChannelId = source.ChannelId;
             #pragma warning restore 612, 618

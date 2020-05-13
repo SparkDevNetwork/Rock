@@ -35,15 +35,65 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Group Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default group context for the site or page." )]
-    [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group", order: 0 )]
-    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 1 )]
-    [TextField( "No Group Text", "The text to show when there is no group in the context.", true, "Select Group", order: 2 )]
-    [TextField( "Clear Selection Text", "The text displayed when a group can be unselected. This will not display when the text is empty.", false, "", order: 3 )]
-    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 4 )]
-    [BooleanField( "Include GroupType Children", "Include all children of the grouptype selected", false, "", order: 5 )]
-    [BooleanField( "Respect Campus Context", "Filter groups by the Campus Context block if it exists", false, "", order: 6 )]
+
+    [GroupTypeGroupField( "Group Filter",
+        Description = "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.",
+        GroupPickerLabel = "Root Group",
+        Order = 0,
+        Key = AttributeKey.GroupFilter )]
+
+    [CustomRadioListField( "Context Scope",
+        Description = "The scope of context to set",
+        ListSource = "Site,Page",
+        IsRequired = true,
+        DefaultValue = "Site",
+        Order = 1,
+        Key = AttributeKey.ContextScope )]
+
+    [TextField( "No Group Text",
+        Description = "The text to show when there is no group in the context.",
+        IsRequired = true,
+        DefaultValue = "Select Group",
+        Order = 2,
+        Key = AttributeKey.NoGroupText )]
+
+    [TextField( "Clear Selection Text",
+        Description = "The text displayed when a group can be unselected. This will not display when the text is empty.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.ClearSelectionText )]
+
+    [BooleanField( "Display Query Strings",
+        Description = "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.",
+        DefaultValue = "false",
+        Order = 4,
+        Key = AttributeKey.DisplayQueryStrings )]
+
+    [BooleanField( "Include GroupType Children",
+        Description = "Include all children of the grouptype selected",
+        DefaultValue = "false",
+        Order = 5,
+        Key = AttributeKey.IncludeGroupTypeChildren )]
+
+    [BooleanField( "Respect Campus Context",
+        Description = "Filter groups by the Campus Context block if it exists",
+        DefaultValue = "false",
+        Order = 6,
+        Key = AttributeKey.RespectCampusContext )]
+
     public partial class GroupContextSetter : RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string GroupFilter = "GroupFilter";
+            public const string ContextScope = "ContextScope";
+            public const string NoGroupText = "NoGroupText";
+            public const string ClearSelectionText = "ClearSelectionText";
+            public const string DisplayQueryStrings = "DisplayQueryStrings";
+            public const string IncludeGroupTypeChildren = "IncludeGroupTypeChildren";
+            public const string RespectCampusContext = "RespectCampusContext";
+        }
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -98,7 +148,7 @@ namespace RockWeb.Blocks.Core
                 currentGroup = SetGroupContext( groupId, false );
             }
 
-            var parts = ( GetAttributeValue( "GroupFilter" ) ?? string.Empty ).Split( '|' );
+            var parts = ( GetAttributeValue( AttributeKey.GroupFilter ) ?? string.Empty ).Split( '|' );
             Guid? groupTypeGuid = null;
             Guid? rootGroupGuid = null;
 
@@ -129,7 +179,7 @@ namespace RockWeb.Blocks.Core
             {
                 SetGroupTypeContext( groupTypeGuid );
 
-                if ( GetAttributeValue( "IncludeGroupTypeChildren" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.IncludeGroupTypeChildren ).AsBoolean() )
                 {
                     var childGroupTypeGuids = groupTypeService.Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Guid ).Contains( groupTypeGuid.Value ) )
                         .Select( t => t.Guid ).ToList();
@@ -142,7 +192,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            if ( GetAttributeValue( "RespectCampusContext" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.RespectCampusContext ).AsBoolean() )
             {
                 var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
 
@@ -164,18 +214,18 @@ namespace RockWeb.Blocks.Core
                 nbSelectGroupTypeWarning.Visible = false;
                 rptGroups.Visible = true;
 
-                lCurrentSelection.Text = currentGroup != null ? currentGroup.ToString() : GetAttributeValue( "NoGroupText" );
+                lCurrentSelection.Text = currentGroup != null ? currentGroup.ToString() : GetAttributeValue( AttributeKey.NoGroupText );
 
                 var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
                     .Select( a => new GroupItem() { Name = a.Name, Id = a.Id } )
                     .ToList();
 
                 // check if the group can be unselected
-                if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+                if ( !string.IsNullOrEmpty( GetAttributeValue( AttributeKey.ClearSelectionText ) ) )
                 {
                     var blankGroup = new GroupItem
                     {
-                        Name = GetAttributeValue( "ClearSelectionText" ),
+                        Name = GetAttributeValue( AttributeKey.ClearSelectionText ),
                         Id = Rock.Constants.All.Id
                     };
 
@@ -195,14 +245,14 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected Group SetGroupContext( int groupId, bool refreshPage = false )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group == null )
             {
                 // clear the current group context
                 group = new Group()
                 {
-                    Name = GetAttributeValue( "NoGroupText" ),
+                    Name = GetAttributeValue( AttributeKey.NoGroupText ),
                     Guid = Guid.Empty
                 };
             }
@@ -213,7 +263,7 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "GroupId", groupId.ToString() );
@@ -237,17 +287,17 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected GroupType SetGroupTypeContext( Guid? groupTypeGuid )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
             var groupTypeService = new GroupTypeService( new RockContext() );
 
             // check if a grouptype parameter exists to set
-            var groupType = groupTypeService.Get( (Guid)groupTypeGuid );
+            var groupType = groupTypeService.Get( ( Guid ) groupTypeGuid );
 
             if ( groupType == null )
             {
                 groupType = new GroupType()
                 {
-                    Name = GetAttributeValue( "NoGroupText" ),
+                    Name = GetAttributeValue( AttributeKey.NoGroupText ),
                     Guid = Guid.Empty
                 };
             }
