@@ -128,6 +128,16 @@ namespace Rock.MergeTemplates
         /// <value>
         /// The exceptions.
         /// </value>
-        public override List<Exception> Exceptions { get; set; }
+        public override List<Exception> Exceptions
+        {
+            get => _exceptions;
+            set => _exceptions = value;
+        }
+
+        /// <summary>
+        /// Threadsafe storage of Exceptions
+        /// </summary>
+        [ThreadStatic]
+        private static List<Exception> _exceptions = null;
     }
 }

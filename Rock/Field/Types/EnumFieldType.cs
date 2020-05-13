@@ -45,7 +45,7 @@ namespace Rock.Field.Types
             return configKeys;
         }
 
-        private Dictionary<int, string> EnumValues { get; set; }
+        private readonly Dictionary<int, string> EnumValues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldType{T}"/> class.
