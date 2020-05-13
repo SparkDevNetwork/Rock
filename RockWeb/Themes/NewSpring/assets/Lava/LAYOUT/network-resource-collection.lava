@@ -77,17 +77,13 @@
 
                     {% assign id = childItem.Id %}
                     {% assign cciid = childItem.Id %}
+                    {% assign imageurl = childItem.ImageLandscape %}
 
 					{% if childItem.ChannelName contains 'Sermon' or childItem.ChannelName contains 'Lesson' %}
                         {% assign type = child.Index | Prepend:'Week '  %}
                     {% else %}
                         {% assign type = childItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
                     {% endif %}
-
-
-
-                    {% assign video = childItem.Video %}
-                    {% assign childimage = childItem.ImageLandscape %}
 
                     {% capture content %}
                         {% for video in childItem.Videos %}
