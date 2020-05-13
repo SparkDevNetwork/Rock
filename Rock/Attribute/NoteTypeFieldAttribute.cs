@@ -51,5 +51,74 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
             FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether allow multiple is true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get => this.FieldTypeClass == typeof( NoteTypesFieldType ).FullName;
+            set => this.FieldTypeClass = value ? typeof( NoteTypesFieldType ).FullName : typeof( NoteTypeFieldType ).FullName;
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
+        public string EntityTypeName
+        {
+            get
+            {
+                if(FieldConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                {
+                    return FieldConfigurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                }
+                return string.Empty;
+            }
+            set => FieldConfigurationValues[ENTITY_TYPE_NAME_KEY] = new Field.ConfigurationValue( value );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn
+        {
+            get
+            {
+                if ( FieldConfigurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                {
+                    return FieldConfigurationValues[QUALIFIER_COLUMN_KEY].Value;
+                }
+                return string.Empty;
+            }
+            set => FieldConfigurationValues[QUALIFIER_COLUMN_KEY] = new Field.ConfigurationValue( value );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue
+        {
+            get
+            {
+                if ( FieldConfigurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                {
+                    return FieldConfigurationValues[QUALIFIER_VALUE_KEY].Value;
+                }
+                return string.Empty;
+            }
+            set => FieldConfigurationValues[QUALIFIER_VALUE_KEY] = new Field.ConfigurationValue( value );
+        }
     }
 }

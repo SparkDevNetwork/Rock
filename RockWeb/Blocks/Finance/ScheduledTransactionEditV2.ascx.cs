@@ -781,6 +781,7 @@ mission. We are so grateful for your commitment.</p>
             var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
             try
             {
+                financialScheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
                 var successfullyUpdated = financialGatewayComponent.UpdateScheduledPayment( financialScheduledTransaction, referencePaymentInfo, out errorMessage );
 
                 if ( !successfullyUpdated )

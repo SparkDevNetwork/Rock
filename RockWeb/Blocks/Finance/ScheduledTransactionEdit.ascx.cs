@@ -1070,6 +1070,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
 
+                scheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
                     if ( hfPaymentTab.Value == "CreditCard" || hfPaymentTab.Value == "ACH" )

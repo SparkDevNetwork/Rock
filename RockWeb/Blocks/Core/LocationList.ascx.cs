@@ -37,9 +37,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing a list of locations." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class LocationList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Fields
 
 
@@ -91,7 +98,7 @@ namespace RockWeb.Blocks.Core
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "LocationId", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", parms );
+            NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
 
@@ -113,7 +120,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            
+
             if ( e.Key != "Street Address" && e.Key != "City" && e.Key != "Not Geocoded" )
             {
                 e.Value = string.Empty;
@@ -150,19 +157,19 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Street Address" ) ) )
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Street Address" ) ) )
             {
                 txtStreetAddress1.Text = rFilter.GetUserPreference( "Street Address" );
             }
 
-            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "City" ) ) )
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "City" ) ) )
             {
                 txtCity.Text = rFilter.GetUserPreference( "City" );
             }
 
-            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Not Geocoded" ) ) )
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Not Geocoded" ) ) )
             {
-                cbNotGeocoded.Checked = Convert.ToBoolean(rFilter.GetUserPreference( "Not Geocoded" ));
+                cbNotGeocoded.Checked = Convert.ToBoolean( rFilter.GetUserPreference( "Not Geocoded" ) );
             }
         }
 
@@ -174,7 +181,7 @@ namespace RockWeb.Blocks.Core
             //rGrid.Columns[0].Visible = true
 
             var locations = GetLocations();
-            if (locations != null)
+            if ( locations != null )
             {
                 rGrid.DataSource = locations.Select( t => new
                 {
@@ -207,7 +214,7 @@ namespace RockWeb.Blocks.Core
             var queryable = new Rock.Model.LocationService( new RockContext() ).Queryable()
                                 .Where( l => l.Street1 != null && l.Street1 != string.Empty );
 
-            if ( !string.IsNullOrWhiteSpace(rFilter.GetUserPreference( "Street Address" )) )
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Street Address" ) ) )
             {
                 string streetAddress1 = rFilter.GetUserPreference( "Street Address" );
                 queryable = queryable.Where( l => l.Street1.StartsWith( streetAddress1 ) );
@@ -223,7 +230,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Not Geocoded" ) ) )
             {
-                bool notGeocoded = Convert.ToBoolean(rFilter.GetUserPreference( "Not Geocoded" ));
+                bool notGeocoded = Convert.ToBoolean( rFilter.GetUserPreference( "Not Geocoded" ) );
                 if ( notGeocoded )
                 {
                     queryable = queryable.Where( l => l.GeoPoint == null );
@@ -243,5 +250,5 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-}
+    }
 }

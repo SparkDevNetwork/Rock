@@ -75,10 +75,27 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.RedirectToPage,
         Order = 4 )]
 
+    [CustomDropdownListField( "Scan Mode",
+        description: "",
+        listSource: "0^Off,1^Automatic",
+        IsRequired = false,
+        DefaultValue = "0",
+        Key = AttributeKeys.ScanMode,
+        Order = 5 )]
+
+    [TextField( "Scan Attribute",
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Key = AttributeKeys.ScanAttribute,
+        Order = 6 )]
+
     #endregion
 
     public class WorkflowEntry : RockMobileBlockType
     {
+        #region Block Attributes
+
         /// <summary>
         /// The block setting attribute keys for the MobileWorkflowEntry block.
         /// </summary>
@@ -105,10 +122,38 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string RedirectToPage = "RedirectToPage";
 
             /// <summary>
+            /// The scan mode key
+            /// </summary>
+            public const string ScanMode = "ScanMode";
+
+            /// <summary>
+            /// The scan attribute key
+            /// </summary>
+            public const string ScanAttribute = "ScanAttribute";
+
+            /// <summary>
             /// The workflow type key
             /// </summary>
             public const string WorkflowType = "WorkflowType";
         }
+
+        /// <summary>
+        /// Gets the scan mode.
+        /// </summary>
+        /// <value>
+        /// The scan mode.
+        /// </value>
+        protected int ScanMode => GetAttributeValue( AttributeKeys.ScanMode ).AsInteger();
+
+        /// <summary>
+        /// Gets the scan attribute.
+        /// </summary>
+        /// <value>
+        /// The scan attribute.
+        /// </value>
+        protected string ScanAttribute => GetAttributeValue( AttributeKeys.ScanAttribute );
+
+        #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -136,7 +181,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            return new { };
+            return new
+            {
+                ScanAttribute = ScanMode == 1 && ScanAttribute.IsNotNullOrWhiteSpace() ? ScanAttribute : null
+            };
         }
 
         #endregion
@@ -160,6 +208,33 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var workflowType = WorkflowTypeCache.Get( GetAttributeValue( AttributeKeys.WorkflowType ).AsGuid() );
 
                 return Model.Workflow.Activate( workflowType, $"New {workflowType.Name}" );
+            }
+        }
+
+        /// <summary>
+        /// Sets the initial workflow attributes.
+        /// </summary>
+        /// <param name="workflow">The workflow.</param>
+        /// <param name="fields">The fields.</param>
+        private void SetInitialWorkflowAttributes( Model.Workflow workflow, List<MobileField> fields )
+        {
+            //
+            // Set initial values from the page parameters.
+            //
+            foreach ( var pageParameter in RequestContext.PageParameters )
+            {
+                workflow.SetAttributeValue( pageParameter.Key, pageParameter.Value );
+            }
+
+            //
+            // Set/Update initial values from what the shell sent us.
+            //
+            if ( fields != null )
+            {
+                foreach ( var field in fields )
+                {
+                    workflow.SetAttributeValue( field.Key, field.Value );
+                }
             }
         }
 
@@ -442,6 +517,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var workflow = LoadWorkflow( workflowId, rockContext );
             var currentPerson = GetCurrentPerson();
+
+            //
+            // Set initial workflow attribute values.
+            //
+            if ( !workflowId.HasValue )
+            {
+                SetInitialWorkflowAttributes( workflow, formFields );
+            }
 
             var action = ProcessAndGetNextAction( workflow, currentPerson, rockContext, out var message );
             if ( action == null )

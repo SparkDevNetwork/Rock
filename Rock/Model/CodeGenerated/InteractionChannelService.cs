@@ -94,21 +94,24 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this InteractionChannel target, InteractionChannel source )
         {
             target.Id = source.Id;
-            target.ChannelCustom1Label = source.ChannelCustom1Label;
-            target.ChannelCustom2Label = source.ChannelCustom2Label;
-            target.ChannelCustomIndexed1Label = source.ChannelCustomIndexed1Label;
             target.ChannelData = source.ChannelData;
             target.ChannelDetailTemplate = source.ChannelDetailTemplate;
             target.ChannelEntityId = source.ChannelEntityId;
             target.ChannelListTemplate = source.ChannelListTemplate;
             target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             target.ComponentCacheDuration = source.ComponentCacheDuration;
+            target.ComponentCustom1Label = source.ComponentCustom1Label;
+            target.ComponentCustom2Label = source.ComponentCustom2Label;
+            target.ComponentCustomIndexed1Label = source.ComponentCustomIndexed1Label;
             target.ComponentDetailTemplate = source.ComponentDetailTemplate;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
             target.ComponentListTemplate = source.ComponentListTemplate;
             target.EngagementStrength = source.EngagementStrength;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionCustom1Label = source.InteractionCustom1Label;
+            target.InteractionCustom2Label = source.InteractionCustom2Label;
+            target.InteractionCustomIndexed1Label = source.InteractionCustomIndexed1Label;
             target.InteractionDetailTemplate = source.InteractionDetailTemplate;
             target.InteractionEntityTypeId = source.InteractionEntityTypeId;
             target.InteractionListTemplate = source.InteractionListTemplate;

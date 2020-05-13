@@ -406,7 +406,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             string content = @"
 <StackLayout>
-    <Label Text=""Group Details"" StyleClass=""heading1"" />
+    <Label Text=""Group Details"" StyleClass=""h2"" />
     <BoxView Color=""#888"" HeightRequest=""1"" Margin=""0 0 12 0"" />
 
     ##FIELDS##

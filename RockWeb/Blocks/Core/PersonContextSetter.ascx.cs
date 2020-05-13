@@ -35,13 +35,51 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Person Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default person context for the site." )]
-    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Page", order: 1 )]
-    [GroupField( "Group", "The Group to use as the source of people to select from", true, order: 2 )]
-    [TextField( "No Person Text", "The text to show when there is no person in the context.", true, "Select Person", order: 3 )]
-    [TextField( "Clear Selection Text", "The text displayed when a person can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
-    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
+
+    [CustomRadioListField( "Context Scope",
+        Description = "The scope of context to set",
+        ListSource = "Site,Page",
+        IsRequired = true,
+        DefaultValue = "Page",
+        Order = 1,
+        Key = AttributeKey.ContextScope )]
+
+    [GroupField( AttributeKey.Group,
+        Description = "The Group to use as the source of people to select from",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKey.Group )]
+
+    [TextField( "No Person Text",
+        Description = "The text to show when there is no person in the context.",
+        IsRequired = true,
+        DefaultValue = "Select Person",
+        Order = 3,
+        Key = AttributeKey.NoPersonText )]
+
+    [TextField( "Clear Selection Text",
+        Description = "The text displayed when a person can be unselected. This will not display when the text is empty.",
+        IsRequired = true,
+        Order = 4,
+        Key = AttributeKey.ClearSelectionText )]
+
+    [BooleanField( "Display Query Strings",
+        Description = "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.",
+        DefaultValue = "false",
+        Order = 5,
+        Key = AttributeKey.DisplayQueryStrings )]
+
     public partial class PersonContextSetter : RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string ContextScope = "ContextScope";
+            public const string Group = "Group";
+            public const string NoPersonText = "NoPersonText";
+            public const string ClearSelectionText = "ClearSelectionText";
+            public const string DisplayQueryStrings = "DisplayQueryStrings";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -102,7 +140,7 @@ namespace RockWeb.Blocks.Core
 
             RockContext rockContext = new RockContext();
             Group group = null;
-            var groupGuid = this.GetAttributeValue( "Group" ).AsGuidOrNull();
+            var groupGuid = this.GetAttributeValue( AttributeKey.Group ).AsGuidOrNull();
             if ( groupGuid.HasValue )
             {
                 group = new GroupService( rockContext ).Get( groupGuid.Value );
@@ -124,7 +162,7 @@ namespace RockWeb.Blocks.Core
                     currentPerson = personQry.Where( a => a.Id == currentPerson.Id ).FirstOrDefault();
                 }
 
-                lCurrentSelection.Text = currentPerson != null ? currentPerson.ToString() : GetAttributeValue( "NoPersonText" );
+                lCurrentSelection.Text = currentPerson != null ? currentPerson.ToString() : GetAttributeValue( AttributeKey.NoPersonText );
 
                 var personList = personQry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ).ToList().Select( a => new
                 {
@@ -133,9 +171,9 @@ namespace RockWeb.Blocks.Core
                 } ).ToList();
 
                 // check if the person can be unselected
-                if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+                if ( !string.IsNullOrEmpty( GetAttributeValue( AttributeKey.ClearSelectionText ) ) )
                 {
-                    personList.Insert( 0, new { Name = GetAttributeValue( "ClearSelectionText" ), Id = 0 } );
+                    personList.Insert( 0, new { Name = GetAttributeValue( AttributeKey.ClearSelectionText ), Id = 0 } );
                 }
 
                 rptPersons.DataSource = personList;
@@ -151,11 +189,11 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected Person SetPersonContext( int personId, bool refreshPage = false )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
             var person = new PersonService( new RockContext() ).Get( personId );
             if ( person == null )
             {
-                person = new Person { LastName = this.GetAttributeValue( "NoPersonText" ), Guid = Guid.Empty };
+                person = new Person { LastName = this.GetAttributeValue( AttributeKey.NoPersonText ), Guid = Guid.Empty };
             }
 
             // set context and refresh below with the correct query string if needed
@@ -164,7 +202,7 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "PersonId", personId.ToString() );

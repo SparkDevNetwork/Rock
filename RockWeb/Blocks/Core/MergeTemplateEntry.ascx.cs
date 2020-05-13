@@ -39,10 +39,21 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Merge Template Entry" )]
     [Category( "Core" )]
     [Description( "Used for merging data into output documents, such as Word, Html, using a pre-defined template." )]
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
+
+    [IntegerField( "Database Timeout",
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultValue = "180",
+        Order = 1,
+        Key = AttributeKey.DatabaseTimeout )]
 
     public partial class MergeTemplateEntry : RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string DatabaseTimeout = "DatabaseTimeout";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -59,7 +70,7 @@ namespace RockWeb.Blocks.Core
 
             //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// note: this only makes a difference on Postback, not on the initial page visit
-            int databaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
+            int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeout ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
@@ -153,7 +164,7 @@ namespace RockWeb.Blocks.Core
             // NOTE: This is a full postback (not a partial like most other blocks)
 
             var rockContext = new RockContext();
-            int? databaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
+            int? databaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeout ).AsIntegerOrNull();
             if ( databaseTimeoutSeconds != null && databaseTimeoutSeconds.Value > 0 )
             {
                 rockContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
@@ -461,7 +472,7 @@ namespace RockWeb.Blocks.Core
                         object mergeValueObject = additionalMergeValue.Value;
 
                         // if the mergeValueObject is a JArray (JSON Object), convert it into an ExpandoObject or List<ExpandoObject> so that Lava will work on it
-                        if ( mergeValueObject is JArray)
+                        if ( mergeValueObject is JArray )
                         {
                             var jsonOfObject = mergeValueObject.ToJson();
                             try
@@ -470,7 +481,7 @@ namespace RockWeb.Blocks.Core
                             }
                             catch ( Exception ex )
                             {
-                                LogException( new Exception("MergeTemplateEntry couldn't do a FromJSON", ex) );
+                                LogException( new Exception( "MergeTemplateEntry couldn't do a FromJSON", ex ) );
                             }
                         }
 

@@ -800,7 +800,7 @@ namespace Rock.Model
             // check group capacity
             if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
-                var currentActiveGroupMemberCount = group.ActiveMembers().Count();
+                var currentActiveGroupMemberCount = group.ActiveMembers().Count(gm => gm.Id != Id);
                 var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
 
                 // check if this would be adding an active group member (new active group member or changing existing group member status to active)

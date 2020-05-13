@@ -36,9 +36,16 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Lists all the schedules." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class ScheduleList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region properties
 
         private HashSet<int> _schedulesWithAttendance = null;
@@ -104,9 +111,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( scheduleRow != null )
                 {
-                    var scheduleId = (int)scheduleRow.GetPropertyValue( "Id" );
+                    var scheduleId = ( int ) scheduleRow.GetPropertyValue( "Id" );
 
-                    if ( _schedulesWithAttendance.Contains(scheduleId) )
+                    if ( _schedulesWithAttendance.Contains( scheduleId ) )
                     {
                         e.Row.AddCssClass( "js-has-attendance" );
                     }
@@ -139,7 +146,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ScheduleId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ScheduleId", 0 );
         }
 
         /// <summary>
@@ -149,7 +156,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ScheduleId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ScheduleId", e.RowKeyId );
         }
 
         /// <summary>

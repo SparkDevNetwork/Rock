@@ -35,9 +35,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the block types registered in Rock." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class BlockTypeList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
 
         #region Base Control Methods
 
@@ -110,7 +117,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BlockTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BlockTypeId", 0 );
         }
 
         /// <summary>
@@ -120,7 +127,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BlockTypeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BlockTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -170,7 +177,7 @@ namespace RockWeb.Blocks.Core
             if ( blockTypeInfoRow != null )
             {
                 if ( blockTypeInfoRow.Path.IsNotNullOrWhiteSpace() )
-                { 
+                {
                     string blockPath = Request.MapPath( blockTypeInfoRow.Path );
                     if ( !System.IO.File.Exists( blockPath ) )
                     {

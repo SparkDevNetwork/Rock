@@ -146,6 +146,11 @@ namespace Rock.Web.UI
             public const string GridFilter_MaritalStatus = "Marital Status";
 
             /// <summary>
+            /// The grid filter connection status
+            /// </summary>
+            public const string GridFilter_ConnectionStatus = "Connection Status";
+
+            /// <summary>
             /// The grid filter birthdate range
             /// </summary>
             public const string GridFilter_BirthdateRange = "Birthdate Range";
@@ -309,6 +314,11 @@ namespace Rock.Web.UI
         /// Filter martial status Identifier
         /// </summary>
         protected const string FILTER_MARTIAL_STATUS_ID = "dvpMaritalStatusFilter";
+
+        /// <summary>
+        /// Filter connection status Identifier
+        /// </summary>
+        protected const string FILTER_CONNECTION_STATUS_ID = "dvpConnectionStatusFilter";
 
         /// <summary>
         /// Filter mmobile phone Identifier
@@ -681,6 +691,31 @@ namespace Rock.Web.UI
                                     maritalStatusField.HeaderText = "MaritalStatus";
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( maritalStatusField );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.ConnectionStatus:
+                                {
+                                    var dvpConnectionStatusFilter = new DefinedValuePicker();
+                                    dvpConnectionStatusFilter.ID = FILTER_CONNECTION_STATUS_ID;
+                                    dvpConnectionStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+                                    dvpConnectionStatusFilter.Label = "Connection Status";
+
+                                    if ( setValues )
+                                    {
+                                        dvpConnectionStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus ) );
+                                    }
+
+                                    filterFieldsContainer.Controls.Add( dvpConnectionStatusFilter );
+
+                                    dataFieldExpression = "PersonAlias.Person.ConnectionStatusValue.Value";
+
+                                    var connectionStatusField = new RockBoundField();
+                                    connectionStatusField.DataField = dataFieldExpression;
+                                    connectionStatusField.HeaderText = "ConnectionStatus";
+                                    connectionStatusField.SortExpression = dataFieldExpression;
+                                    grid.Columns.Add( connectionStatusField );
                                 }
 
                                 break;
