@@ -14,6 +14,8 @@ using Rock.Model;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using System.Data.Entity;
+using MailChimp.Net.Core;
+using DotLiquid.Tags;
 
 namespace com.bemaservices.MailChimp.Utility
 {
@@ -138,7 +140,34 @@ namespace com.bemaservices.MailChimp.Utility
 
             try
             {
-                var mailChimpMembers = _mailChimpManager.Members.GetAllAsync( mailChimpListId ).Result;
+
+                int offset = 0;
+
+                bool moreRecordsToFetch = true;
+
+                var memberRequest = new MemberRequest();
+
+                var mailChimpMembers = new List<MCModels.Member>();
+ 
+                memberRequest.Limit = 1000;
+
+                while ( moreRecordsToFetch )
+                {
+                    memberRequest.Offset = offset;
+
+                    var result = _mailChimpManager.Members.GetAllAsync( mailChimpListId, memberRequest ).Result;
+
+                    if( result.Count() > 0 )
+                    {
+                        mailChimpMembers.AddRange( result );
+                        offset += 1000;
+                    }
+                    else
+                    {
+                        moreRecordsToFetch = false;
+                    }
+
+                }
 
                 //Match all the mailChimpMembers to people in Rock.
                 foreach ( var member in mailChimpMembers )
