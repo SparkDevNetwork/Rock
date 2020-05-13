@@ -13,7 +13,7 @@
 {% assign id = Item.Id %}
 {% assign cciid = Item.Id %}
 {% assign title = Item.Title | Replace:"'","’" %}
-{% assign content = Item.Summary | HtmlDecode | StripHtml | Replace:"'","’" %}
+{% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
 {% assign textalignment = '' %}
 {%- capture label -%}
 	{% if Item.ChannelId == '25' or Item.ChannelId == '26' %}{{ Item.Category }}{% endif %} {{ Item.ChannelName | Split:' - ' | Index:1 | Singularize }}
