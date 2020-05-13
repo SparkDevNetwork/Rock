@@ -29,6 +29,8 @@ namespace Rock.Slingshot.Rest.Controllers
     /// 
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RockObsolete("1.11")]
+    [Obsolete("Use the Slingshot BulkImport block instead")]
     public class BulkImportController : Rock.Rest.ApiControllerBase
     {
         /// <summary>
@@ -39,6 +41,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/AttendanceImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage AttendanceImport( [FromBody]List<Rock.Slingshot.Model.AttendanceImport> attendanceImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkAttendanceImport( attendanceImports, foreignSystemKey );
@@ -53,6 +57,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/GroupImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage GroupImport( [FromBody]List<Rock.Slingshot.Model.GroupImport> groupImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkGroupImport( groupImports, foreignSystemKey );
@@ -68,6 +74,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/FinancialAccountImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage FinancialAccountImport( [FromBody]List<Rock.Slingshot.Model.FinancialAccountImport> financialAccountImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkFinancialAccountImport( financialAccountImports, foreignSystemKey );
@@ -82,6 +90,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/FinancialBatchImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage FinancialBatchImport( [FromBody]List<Rock.Slingshot.Model.FinancialBatchImport> financialBatchImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkFinancialBatchImport( financialBatchImports, foreignSystemKey );
@@ -96,6 +106,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/FinancialTransactionImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage FinancialTransactionImport( [FromBody]List<Rock.Slingshot.Model.FinancialTransactionImport> financialTransactionImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkFinancialTransactionImport( financialTransactionImports, foreignSystemKey );
@@ -110,6 +122,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/LocationImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage LocationImport( [FromBody]List<Rock.Slingshot.Model.LocationImport> locationImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkLocationImport( locationImports, foreignSystemKey );
@@ -124,6 +138,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/BusinessImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage BusinessImport( [FromBody]List<Rock.Slingshot.Model.PersonImport> businessImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkBusinessImport( businessImports, foreignSystemKey );
@@ -139,12 +155,15 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/PersonImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage PersonImport( [FromBody]List<Rock.Slingshot.Model.PersonImport> personImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkPersonImport( personImports, foreignSystemKey );
             AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
+
         /// <summary>
         /// Bulk Import of Family or Person Photo records
         /// </summary>
@@ -153,6 +172,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/PhotoImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage PhotoImport( [FromBody]List<Rock.Slingshot.Model.PhotoImport> photoImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkPhotoImport( photoImports, foreignSystemKey );
@@ -167,6 +188,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/ScheduleImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage ScheduleImport( [FromBody]List<Rock.Slingshot.Model.ScheduleImport> scheduleImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkScheduleImport( scheduleImports, foreignSystemKey );
@@ -181,6 +204,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/FinancialPledgeImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage FinancialPledgeImport( [FromBody]List<Rock.Slingshot.Model.FinancialPledgeImport> financialPledgeImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkFinancialPledgeImport( financialPledgeImports, foreignSystemKey );
@@ -198,6 +223,8 @@ namespace Rock.Slingshot.Rest.Controllers
         [System.Web.Http.Route( "api/BulkImport/NoteImport" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Slingshot BulkImport block instead" )]
         public System.Net.Http.HttpResponseMessage NoteImport( [FromBody]List<Rock.Slingshot.Model.NoteImport> noteImports, int entityTypeId, string foreignSystemKey, bool groupEntityIsFamily )
         {
             var responseText = new Slingshot.BulkImporter().BulkNoteImport( noteImports, entityTypeId, foreignSystemKey, groupEntityIsFamily );
