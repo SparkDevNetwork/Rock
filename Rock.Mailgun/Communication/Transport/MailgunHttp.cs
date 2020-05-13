@@ -578,18 +578,19 @@ namespace Rock.Communication.Transport
                             restRequest.Parameters.Remove( fromParam );
                         }
 
-                    restRequest.AddParameter( "from", new MailAddress( organizationEmail, fromName ).ToString() );
+                        restRequest.AddParameter( "from", new MailAddress( organizationEmail, fromName ).ToString() );
 
-                    // Check the list of reply to addresses and add the from address if needed.
-                    Parameter replyParam = restRequest
-                        .Parameters
-                        .Where( p => p.Name == "h:Reply-To"
-                            && p.Value.ToString().IndexOf( fromEmail, StringComparison.CurrentCultureIgnoreCase ) >= 0 )
-                        .FirstOrDefault();
+                        // Check the list of reply to addresses and add the from address if needed.
+                        Parameter replyParam = restRequest
+                            .Parameters
+                            .Where( p => p.Name == "h:Reply-To"
+                                && p.Value.ToString().IndexOf( fromEmail, StringComparison.CurrentCultureIgnoreCase ) >= 0 )
+                            .FirstOrDefault();
 
-                    if ( replyParam == null )
-                    {
-                        restRequest.AddParameter( "h:Reply-To", new MailAddress( fromEmail, fromName ).ToString() );
+                        if ( replyParam == null )
+                        {
+                            restRequest.AddParameter( "h:Reply-To", new MailAddress( fromEmail, fromName ).ToString() );
+                        }
                     }
                 }
             }
