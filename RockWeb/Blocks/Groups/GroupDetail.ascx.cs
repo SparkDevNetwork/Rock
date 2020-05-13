@@ -1279,7 +1279,7 @@ namespace RockWeb.Blocks.Groups
             int? parentGroupGroupTypeId = null;
             if ( parentGroupId.HasValue )
             {
-                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => ( int? ) s.ParentGroup.GroupTypeId );
+                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => ( int? ) s.GroupTypeId );
             }
 
             var groupTypeQry = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 ), rockContext );
