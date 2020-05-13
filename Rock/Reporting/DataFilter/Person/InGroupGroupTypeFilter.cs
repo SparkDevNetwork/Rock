@@ -168,42 +168,27 @@ function() {
         }
 
         /// <summary>
-        /// The GroupTypePicker
-        /// </summary>
-        private GroupTypePicker groupTypePicker = null;
-
-        /// <summary>
-        /// The GroupTypeRole CheckBoxList
-        /// </summary>
-        private RockCheckBoxList cblRole = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int? selectedGroupTypeId = null;
-            if ( groupTypePicker != null )
-            {
-                selectedGroupTypeId = groupTypePicker.SelectedGroupTypeId;
-            }
-
-            groupTypePicker = new GroupTypePicker();
+            var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
-            groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
+            groupTypePicker.CssClass = "js-grouptype-picker";
             filterControl.Controls.Add( groupTypePicker );
 
-            cblRole = new RockCheckBoxList();
+            var cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
+            cblRole.CssClass = "js-group-roles";
             cblRole.ID = filterControl.ID + "_cblRole";
             filterControl.Controls.Add( cblRole );
 
-            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0 );
+            PopulateGroupRolesCheckList( filterControl );
 
             RockDropDownList ddlGroupMemberStatus = new RockDropDownList();
             ddlGroupMemberStatus.CssClass = "js-group-member-status";
@@ -234,21 +219,25 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
-            PopulateGroupRolesCheckList( groupTypeId );
+            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+
+            PopulateGroupRolesCheckList( filterField );
         }
 
         /// <summary>
         /// Populates the group roles.
         /// </summary>
-        /// <param name="groupTypeId">The group type identifier.</param>
-        private void PopulateGroupRolesCheckList( int groupTypeId )
+        /// <param name="filterField">The filter field.</param>
+        private void PopulateGroupRolesCheckList( FilterField filterField )
         {
-            var groupType = GroupTypeCache.Get( groupTypeId );
-            if ( groupType != null )
+            var groupTypePicker = filterField.ControlsOfTypeRecursive<GroupTypePicker>().FirstOrDefault( a => a.HasCssClass( "js-grouptype-picker" ) );
+            var cblRole = filterField.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( a => a.HasCssClass( "js-group-roles" ) );
+            int? groupTypeId = groupTypePicker.SelectedValueAsId();
+
+            if ( groupTypeId.HasValue )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id ) )
+                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -317,12 +306,13 @@ function() {
             {
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
                 var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+                var groupTypePicker = ( controls[0] as GroupTypePicker );
                 if ( groupType != null )
                 {
-                    ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
+                    groupTypePicker.SetValue( groupType.Id );
                 }
 
-                groupTypePicker_SelectedIndexChanged( this, new EventArgs() );
+                groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                 RockCheckBoxList cblRole = controls[1] as RockCheckBoxList;
@@ -367,7 +357,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
+                GroupMemberService groupMemberService = new GroupMemberService( ( RockContext ) serviceInstance.Context );
                 int groupTypeId = 0;
 
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
@@ -393,7 +383,7 @@ function() {
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )
                 {
-                    var groupRoleIds = new GroupTypeRoleService( (RockContext)serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                    var groupRoleIds = new GroupTypeRoleService( ( RockContext ) serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
@@ -408,7 +398,7 @@ function() {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupMemberStatus == groupMemberStatus.Value );
                 }
 
-                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

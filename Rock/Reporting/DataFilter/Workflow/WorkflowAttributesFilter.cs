@@ -231,7 +231,17 @@ namespace Rock.Reporting.DataFilter.Workflow
             }
         }
 
-        private List<EntityField> entityFields = null;
+        private List<EntityField> entityFields
+        {
+            get => _entityFields;
+            set => _entityFields = value;
+        }
+
+        /// <summary>
+        /// Threadsafe field for entityFields
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields = null;
 
         /// <summary>
         /// Renders the controls.
