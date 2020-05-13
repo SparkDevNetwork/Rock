@@ -448,7 +448,7 @@ namespace Rock.Communication.Transport
         /// The MIME types for SMS attachments that Rock and Twilio fully support (also see AcceptedMimeTypes )_
         /// Twilio's supported MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
         /// </summary>
-        public static List<string> SupportedMimeTypes = new List<string>
+        public static readonly List<string> SupportedMimeTypes = new List<string>
         {
             "image/jpeg",
             "image/gif",
@@ -460,7 +460,7 @@ namespace Rock.Communication.Transport
         /// Twilio's accepted MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
         /// Rock supports the following subset of those
         /// </summary>
-        public static List<string> AcceptedMimeTypes = new List<string>
+        public static readonly List<string> AcceptedMimeTypes = new List<string>
         {
             // These are fully supported by Twilio and will be formatted for delivery on destination devices
             "image/jpeg",
@@ -486,7 +486,7 @@ namespace Rock.Communication.Transport
         /// <summary>
         /// The media size limit in bytes (5MB)
         /// </summary>
-        public static int MediaSizeLimitBytes = 5 * 1024 * 1024;
+        public const int MediaSizeLimitBytes = 5 * 1024 * 1024;
 
         #endregion
     }
