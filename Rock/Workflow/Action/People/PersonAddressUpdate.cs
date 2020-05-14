@@ -71,7 +71,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         Guid personAliasGuid = attributePersonValue.AsGuid();
@@ -99,7 +99,7 @@ namespace Rock.Workflow.Action
 
             // determine the location type to edit
             DefinedValueCache locationType = null;
-            var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
+            var locationTypeAttributeValue = action.GetWorkflowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
             if ( locationTypeAttributeValue != null )
             {
                 locationType = DefinedValueCache.Get( locationTypeAttributeValue.AsGuid() );
@@ -124,7 +124,7 @@ namespace Rock.Workflow.Action
                 Guid? locationAttributeValueGuid = locationAttributeValue.AsGuidOrNull();
                 if ( locationAttributeValueGuid.HasValue )
                 {
-                    locationGuid = action.GetWorklowAttributeValue( locationAttributeValueGuid.Value ).AsGuidOrNull();
+                    locationGuid = action.GetWorkflowAttributeValue( locationAttributeValueGuid.Value ).AsGuidOrNull();
                 }
             }
 
@@ -144,7 +144,7 @@ namespace Rock.Workflow.Action
             Guid? mailingValueGuid = mailingValue.AsGuidOrNull();
             if ( mailingValueGuid.HasValue )
             {
-                mailingValue = action.GetWorklowAttributeValue( mailingValueGuid.Value );
+                mailingValue = action.GetWorkflowAttributeValue( mailingValueGuid.Value );
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Rock.Workflow.Action
             Guid? mappedValueGuid = mappedValue.AsGuidOrNull();
             if ( mappedValueGuid.HasValue )
             {
-                mappedValue = action.GetWorklowAttributeValue( mappedValueGuid.Value );
+                mappedValue = action.GetWorkflowAttributeValue( mappedValueGuid.Value );
             }
             else
             {

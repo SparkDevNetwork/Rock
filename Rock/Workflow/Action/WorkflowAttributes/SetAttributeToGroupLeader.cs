@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
 
             if ( !groupAttributeGuid.IsEmpty() )
             {
-                Guid? groupGuid = action.GetWorklowAttributeValue( groupAttributeGuid ).AsGuidOrNull();
+                Guid? groupGuid = action.GetWorkflowAttributeValue( groupAttributeGuid ).AsGuidOrNull();
 
                 if ( groupGuid.HasValue )
                 {
