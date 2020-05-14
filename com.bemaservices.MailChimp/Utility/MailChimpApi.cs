@@ -107,9 +107,15 @@ namespace com.bemaservices.MailChimp.Utility
 
                     var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
 
-                    attributeValueService.DeleteRange( attributeValuesToRemove );
-                    definedValueService.DeleteRange( mailChimpListValuesToRemove );
-
+                    if( attributeValuesToRemove.Any() )
+                    {
+                        attributeValueService.DeleteRange( attributeValuesToRemove );
+                    }
+                    if ( mailChimpListValuesToRemove.Any() )
+                    {
+                        definedValueService.DeleteRange( mailChimpListValuesToRemove );
+                    }
+                    
                     rockContext.SaveChanges();
 
                     return definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() )
