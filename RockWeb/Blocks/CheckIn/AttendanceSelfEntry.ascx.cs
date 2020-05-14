@@ -517,6 +517,28 @@ ORDER BY [Text]",
         #region Other Watchers Panel Events
 
         /// <summary>
+        /// Handles the ItemDataBound event of the rptListed control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptListed_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var watcher = e.Item.DataItem as Watcher;
+                if ( watcher != null )
+                {
+                    LinkButton lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
+                    if ( lbDelete != null )
+                    {
+                        lbDelete.Visible = watcher.Id == default( int ) || ( watcher.RelationshipTypeGuid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()
+                                            && watcher.RelationshipTypeGuid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rptListed control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1159,14 +1181,7 @@ ORDER BY [Text]",
         /// </summary>
         private void BindCurrentlyListed()
         {
-            rptListed.DataSource = OtherWatchers
-                                                .Select( a => new
-                                                {
-                                                    Guid = a.Guid,
-                                                    Name = a.FullName,
-                                                    Relationship = a.RelationshipType
-                                                } )
-                                                .ToList();
+            rptListed.DataSource = OtherWatchers.ToList();
             rptListed.DataBind();
         }
 
@@ -1287,7 +1302,6 @@ ORDER BY [Text]",
 
                 if ( shouldBeInPrimaryFamily )
                 {
-                    bool notInPrimaryFamily = family.Members.Any( m => m.PersonId == person.Id );
                     var roleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == watcher.RelationshipTypeGuid ).Id;
                     if ( watcher.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                     {
@@ -1299,7 +1313,7 @@ ORDER BY [Text]",
                         }
                     }
 
-                    if ( notInPrimaryFamily )
+                    if ( isNew )
                     {
                         PersonService.AddPersonToFamily( person, true, family.Id, roleId, rockContext );
                     }
