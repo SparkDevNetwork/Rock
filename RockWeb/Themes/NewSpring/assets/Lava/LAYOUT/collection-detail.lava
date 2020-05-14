@@ -1,16 +1,3 @@
-{% assign pageId = 'Global' | Page:'Id' %}
-{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
-{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
-{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
-
-{% if Item == null or expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
-    {% if CurrentPersonCanEdit %}
-        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
-    {% else %}
-        {{ '/page-not-found' | PageRedirect }}
-    {% endif %}
-{% endif %}
-
 {% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign channelName = Item.ContentType | Pluralize %}

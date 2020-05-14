@@ -1,7 +1,3 @@
-{% if Item == null %}
-    {{ '/page-not-found' | PageRedirect }}
-{% endif %}
-
 {% assign category = Item.Category %}
 {% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
 
