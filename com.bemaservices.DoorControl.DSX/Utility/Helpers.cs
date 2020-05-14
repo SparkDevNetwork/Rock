@@ -835,8 +835,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                 sql.Parameters.Clear();
 
                 sql.Parameters.AddWithValue( "@LocationName", item.RoomName );
-                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
-                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
                 // Validating record was added
                 if ( sql.ExecuteNonQuery() < 1 )
                 {
