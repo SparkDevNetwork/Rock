@@ -1,19 +1,21 @@
-{% assign category = Item | Attribute:'Category' %}
+{% assign category = Item.Category %}
 {% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
 
-{% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }}{% endcapture %}
-{% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
+{% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ChannelName | Replace:' - ',' ' | Singularize }}{% endcapture %}
+{% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category and category != empty %}{{ category }} {% endif %}{{ Item.ChannelName | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
 {{ pageTitle | SetPageTitle:'PageTitle' }}
 {{ browserTitle | SetPageTitle:'BrowserTitle' }}
 
 {% assign id = Item.Id %}
 {% assign cciid = Item.Id %}
 {% assign title = Item.Title | Replace:"'","’" %}
-{% assign content = Item | Attribute:'Summary' | Replace:"'","’" %}
+{% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
 {% assign textalignment = '' %}
-{% assign label = pageTitle %}
+{%- capture label -%}
+	{% if Item.ChannelId == '25' or Item.ChannelId == '26' %}{{ Item.Category }}{% endif %} {{ Item.ChannelName | Split:' - ' | Index:1 | Singularize }}
+{%- endcapture -%}
 {% assign subtitle = '' %}
-{% assign imageurl = Item | Attribute:'ImageLandscape','Url' %}
+{% assign imageurl = Item.ImageSquare | WithFallback:'', Item.ImageLandscape %}
 {% assign imageoverlayurl = '' %}
 {% assign imagealignment = '' %}
 {% assign imageopacity = '' %}
@@ -23,7 +25,6 @@
 {% assign backgroundvideourl = '' %}
 {% assign lava = '' %}
 {% assign video = '' %}
-{% assign ratio = ratio %}
 {% assign trimcopy = '' %}
 {% assign linkcolor = '' %}
 {% assign backgroundcolor = '#000' %}
@@ -31,31 +32,23 @@
 {% assign linktext = 'View Resources' %}
 {% assign hideforegroundelements = '' %}
 
-{% assign imageKey = ratio | Prepend:'Image ' | Capitalize | Replace:' ','' %}
-{% if imageKey == 'ImageSquare' OR imageKey == 'ImagePortrait' %}
-    {% assign imageurl = Item | Attribute:imageKey,'Url' %}
-{% endif %}
-
 {[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
 
 <div id="resources">
-
-{% assign downloadsJsonString = Item | Attribute:'Downloads' %}
-{% assign downloadsJsonObject = downloadsJsonString | FromJSON %}
-{% assign downloadCount = downloadsJsonObject.Attributes | Size %}
+{% assign downloadCount = Item.Downloads | Size %}
 {% if downloadCount > 0 %}
 <section class="bg-white soft-double xs-soft rounded shadowed push-bottom xs-push-half-bottom">
 
     <h2 class="text-center push-top push-double-bottom">Series Resources</h2>
 
     <div class="row">
-        {% for attribute in downloadsJsonObject.Attributes %}<div class="col-md-6 col-xs-12">
+        {% for download in Item.Downloads %}<div class="col-md-6 col-xs-12">
 
-                <h3 class="h4 push-half-bottom">{{ attribute.Title }}</h3>
-                <p class="push-half-bottom">{{ attribute.Summary }}</p>
+                <h3 class="h4 push-half-bottom">{{ download.Title }}</h3>
+                <p class="push-half-bottom">{{ download.Summary }}</p>
                 <p>
                 {% if CurrentPerson and CurrentPerson != empty %}
-                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ attribute.Title | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if attribute.Link != empty %}{{ attribute.Link }}{% else %}{{ attribute.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
+                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ download.Title | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if download.Link != empty %}{{ download.Link }}{% else %}{{ download.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
                 {% else %}
                     <a href="/sign-in?returnurl={{ currentUrl }}" class="btn btn-primary">Sign In to Download</a>
                 {% endif %}
@@ -67,71 +60,29 @@
 {% endif %}
 
 
-{% if showchildren == 'true' %}
+{% if showchildren == 'true' and Item.Children != empty %}
 
-    {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
-
-    {% sql %}
-        {% if sort == 'Order' %}
-
-            /* If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored. */
-            SELECT ROW_NUMBER() OVER (ORDER BY ccia.[Order]) - 1 'Index', cci.Id, ccis.Slug
-            FROM ContentChannelItemAssociation ccia
-            JOIN ContentChannelItem cci
-            ON ccia.ChildContentChannelItemId = cci.Id
-            JOIN ContentChannelItemSlug ccis
-            ON ccis.ContentChannelItemId = cci.Id
-            WHERE ccia.ContentChannelItemId = '{{ cciid }}'
-            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
-            ORDER BY ccia.[Order]
-
-        {% else %}
-
-            /* If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need. */
-            SELECT ROW_NUMBER() OVER (ORDER BY cci.StartDateTime) - 1 'Index', cci.Id, ccis.Slug
-            FROM ContentChannelItemAssociation ccia
-            JOIN ContentChannelItem cci
-            ON ccia.ChildContentChannelItemId = cci.Id
-            JOIN ContentChannelItemSlug ccis
-            ON ccis.ContentChannelItemId = cci.Id
-            WHERE ccia.ContentChannelItemId = '{{ cciid }}'
-            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
-            ORDER BY cci.StartDateTime
-
-        {% endif %}
-    {% endsql %}
-
-    {% assign parentType = Item.ContentChannel.Name | Split:' - ' | Last | Singularize %}
-    {% assign type = Item.ChildItems | First %}
-    {% assign childType = type.ChildContentChannelItem.ContentChannel.Name | Split:' - ' | Last | Singularize %}
+    {% assign parentType = Item.ChannelName | Split:' - ' | Last | Singularize %}
+    {% assign childChannelId = Item.ChildChannelId | AsInteger %}
+    {% assign childType = Item.Children | Where:'ChannelId', childChannelId | First | Property:'Dataset' | PersistedDataset | First | Property:'ChannelName' | Split:' - ' | Last | Singularize %}
 
     {[ swiper title:'{{ childType | Pluralize }} From This {{ parentType | Singularize }}' ]}
-        {% for result in results %}[[ item ]]
-            {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
-                {% for child in children %}
-                    {% assign id = child.Id %}
-                    {% assign cciid = child.Id %}
-                    {% assign type = result.Index | Plus:1 | Prepend:'Week ' %}
-                    {% assign video = child | Attribute:'Video','RawValue' %}
-                    {% assign parentimage = child.ParentItems | First | Property:'ContentChannelItem','Object' | Attribute:'ImageLandscape','Url' %}
-                    {% assign childimage = child | Attribute:'ImageLandscape','Url' %}
-                    {% capture imageurl %}
-                        {% if childimage and childimage != empty %}
-                            {{ childimage }}
-                        {% elseif video and video != empty %}
-                            {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
-                        {% elseif parentimage and parentimage != empty %}
-                            {{ parentimage }}
-                        {% endif %}
-                    {% endcapture %}
-                    {% assign imageurl = imageurl | Trim %}
-                    {% assign childVideosString = child | Attribute:'Videos' %}
-                    {% assign childVideosObject = childVideosString | FromJSON %}
-                    {% assign childDownloadsString = child | Attribute:'Downloads' %}
-                    {% assign childDownloadsObject = childDownloadsString | FromJSON %}
+        {% for child in Item.Children %}[[ item ]]
+            {% assign childId = child.Id | AsInteger %}
+            {% assign childItem = child.Dataset | PersistedDataset | Where:'Id', childId | First %}
+
+                    {% assign id = childItem.Id %}
+                    {% assign cciid = childItem.Id %}
+                    {% assign imageurl = childItem.ImageLandscape %}
+
+					{% if childItem.ChannelName contains 'Sermon' or childItem.ChannelName contains 'Lesson' %}
+                        {% assign type = child.Index | Prepend:'Week '  %}
+                    {% else %}
+                        {% assign type = childItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
+                    {% endif %}
 
                     {% capture content %}
-                        {% for video in childVideosObject.Attributes %}
+                        {% for video in childItem.Videos %}
                             {% assign videoId = video.Video %}
                             <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
 
@@ -145,11 +96,17 @@
 
                             </span>
                         {% endfor %}
-                        {% for resource in childDownloadsObject.Attributes %}
+                        {% for download in childItem.Downloads %}
 
-                            {% capture downloadlink %}/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ child.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ child.Title | EscapeDataString }}&ResourceSummary={{ resource.Title | EscapeDataString }}&ResourceUrl={% if resource.Link != empty %}{{ resource.Link }}{% else %}{{ resource.File }}{% endif %}{% endcapture %}
+                            {%- capture downloadlink -%}
+                                {%- if download.Link and download.Link != empty -%}
+                                    {{ download.Link }}
+                                {%- else -%}
+                                    /workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ childItem.Id }}&ResourceImage={{ Item.ImageSquare | WithFallback:'', Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ childItem.Title | EscapeDataString }}&ResourceSummary={{ download.Title | EscapeDataString }}&ResourceUrl={{ download.File }}
+                                {%- endif -%}
+                            {%- endcapture -%}
 
-                            <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ resource.Title }}
+                            <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ download.Title }}
 
                                 {% if CurrentPerson and CurrentPerson != empty %}
                                     <a href="{{ downloadlink }}" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
@@ -162,10 +119,8 @@
                         <br><br>
                     {% endcapture %}
 
-                    {[ card cciid:'{{ cciid }}' title:'{{ child.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
+                    {[ card cciid:'{{ cciid }}' title:'{{ childItem.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
 
-                {% endfor %}
-            {% endcontentchannelitem %}
         [[ enditem ]]{% endfor %}
 
     {[ endswiper ]}
