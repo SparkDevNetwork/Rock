@@ -36,8 +36,8 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
     [Category( "org_hfbc > Legacy 685" )]
     [Description( "Lists communications sent to any member of a family" )]
     [LinkedPage( "Detail Page" )]
-    [GroupField("Legacy 685 Email Senders", "Group that contains people who send Legacy 685 communications")]
-    [KeyValueListField("Legacy 685 Email Subject Filters", "Contains list of strings that determine if Communication should show in list")]
+    [GroupField( "Legacy 685 Email Senders", "Group that contains people who send Legacy 685 communications" )]
+    [KeyValueListField( "Legacy 685 Email Subject Filters", "Contains list of strings that determine if Communication should show in list" )]
     public partial class FamilyCommunicationRecipientList : RockBlock
     {
         #region Control Methods
@@ -326,10 +326,10 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
                     string content = tbContent.Text;
                     if ( !string.IsNullOrWhiteSpace( content ) )
                     {
-                    qryCommunications = qryCommunications.Where( c =>
-                                        c.Message.Contains( content ) ||
-                                        c.SMSMessage.Contains( content ) ||
-                                        c.PushMessage.Contains( content ) );
+                        qryCommunications = qryCommunications.Where( c =>
+                                            c.Message.Contains( content ) ||
+                                            c.SMSMessage.Contains( content ) ||
+                                            c.PushMessage.Contains( content ) );
                     }
 
                     var sortProperty = gCommunication.SortProperty;
@@ -343,17 +343,22 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
                     }
 
                     // Filtering out based on filters
-                    var emailSenderGroup = GetAttributeValue( "Legacy685EmailSenders" ).AsGuidOrNull();
+                    var emailSenderGroupGuid = GetAttributeValue( "Legacy685EmailSenders" ).AsGuidOrNull();
                     var emailKeywords = GetAttributeValues( "Legacy685EmailSubjectFilters" );
                     List<Communication> communicationList = new List<Communication>();
 
                     // Getting all people in Email Sender Group
-                    if ( emailSenderGroup != null )
+                    if ( emailSenderGroupGuid != null )
                     {
-                        var emailSenderPersonIds = new GroupService( rockContext ).Get( emailSenderGroup.Value ).Members.Select( x => x.PersonId ).ToList();
-                       qryCommunications =  qryCommunications.Where( c =>
-                            c.SenderPersonAlias != null &&
-                            emailSenderPersonIds.Contains(c.SenderPersonAlias.PersonId ));
+                        var emailSenderGroup = new GroupService( rockContext ).Get( emailSenderGroupGuid.Value );
+                        if ( emailSenderGroup != null )
+                        {
+                            var emailSenderPersonIds = emailSenderGroup.Members.Select( x => x.PersonId ).ToList();
+                            qryCommunications = qryCommunications.Where( c =>
+                                c.SenderPersonAlias != null &&
+                                emailSenderPersonIds.Contains( c.SenderPersonAlias.PersonId ) );
+                        }
+
                     }
                     else if ( emailKeywords != null )
                     {
@@ -364,7 +369,7 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
                             keywords.Add( item.Split( '^' )[1] );
                         }
 
-                       qryCommunications =  qryCommunications.Where( x => keywords.Contains( x.Subject ) );
+                        qryCommunications = qryCommunications.Where( x => keywords.Contains( x.Subject ) );
                     }
 
                     gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;

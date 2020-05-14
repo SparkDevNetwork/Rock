@@ -121,6 +121,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.fellowshipnwa.Autobuild
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.visitgracechurch.Autobuild", "com.visitgracechurch.Autobuild\com.visitgracechurch.Autobuild.csproj", "{0B7F7B78-0D96-4610-8D93-903C4D3BA54C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.thewoodlandsumc.Autobuild", "org.thewoodlandsumc.Autobuild\org.thewoodlandsumc.Autobuild.csproj", "{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.rockypeak.Autobuild", "org.RockyPeak.Autobuild\org.rockypeak.Autobuild.csproj", "{6552D3C9-53AF-4B0E-BA0D-10BEE9737CC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.northwaychurch.Autobuild", "com.northwaychurch.Autobuild\com.northwaychurch.Autobuild.csproj", "{CA69F06F-B61A-4009-96DE-6C710F6F2650}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -311,6 +317,18 @@ Global
 		{0B7F7B78-0D96-4610-8D93-903C4D3BA54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B7F7B78-0D96-4610-8D93-903C4D3BA54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B7F7B78-0D96-4610-8D93-903C4D3BA54C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DB8DA18-5BAC-499D-9E65-FDD693CE5B32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6552D3C9-53AF-4B0E-BA0D-10BEE9737CC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6552D3C9-53AF-4B0E-BA0D-10BEE9737CC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6552D3C9-53AF-4B0E-BA0D-10BEE9737CC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6552D3C9-53AF-4B0E-BA0D-10BEE9737CC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
