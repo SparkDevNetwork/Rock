@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
 
             // Get the connection request
             ConnectionRequest request = null;
-            Guid connectionRequestGuid = action.GetWorklowAttributeValue(GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid()).AsGuid();
+            Guid connectionRequestGuid = action.GetWorkflowAttributeValue(GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid()).AsGuid();
             request = new ConnectionRequestService( rockContext ).Get( connectionRequestGuid );
             if ( request == null )
             {
@@ -72,7 +72,7 @@ namespace Rock.Workflow.Action
 
             // Get the activity type
             ConnectionActivityType activityType = null;
-            Guid activityTypeGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionActivityTypeAttribute" ).AsGuid() ).AsGuid();
+            Guid activityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionActivityTypeAttribute" ).AsGuid() ).AsGuid();
             activityType = new ConnectionActivityTypeService( rockContext ).Get( activityTypeGuid );
             if ( activityType == null )
             {
@@ -89,7 +89,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( noteGuid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    note  = action.GetWorklowAttributeValue( noteGuid.Value );
+                    note  = action.GetWorkflowAttributeValue( noteGuid.Value );
                 }
             }
             else
@@ -102,7 +102,7 @@ namespace Rock.Workflow.Action
             Guid? personAttributeGuid = GetAttributeValue( action, "PersonAttribute" ).AsGuidOrNull();
             if ( personAttributeGuid.HasValue )
             {
-                Guid? personAliasGuid = action.GetWorklowAttributeValue( personAttributeGuid.Value ).AsGuidOrNull();
+                Guid? personAliasGuid = action.GetWorkflowAttributeValue( personAttributeGuid.Value ).AsGuidOrNull();
                 if ( personAliasGuid.HasValue )
                 {
                     var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );

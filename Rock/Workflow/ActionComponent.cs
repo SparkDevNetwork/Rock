@@ -173,7 +173,7 @@ namespace Rock.Workflow
                     var attribute = AttributeCache.Get( attributeGuid.Value );
                     if ( attribute != null )
                     {
-                        value = action.GetWorklowAttributeValue( attributeGuid.Value );
+                        value = action.GetWorkflowAttributeValue( attributeGuid.Value );
                         if ( !string.IsNullOrWhiteSpace( value ) )
                         {
                             if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )

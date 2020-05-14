@@ -57,7 +57,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                nameValue = action.GetWorklowAttributeValue( guid, true, true );
+                nameValue = action.GetWorkflowAttributeValue( guid, true, true );
                 
                 // HtmlDecode the name since we are storing it in the database and it might be formatted to be shown in HTML
                 nameValue = System.Web.HttpUtility.HtmlDecode( nameValue );

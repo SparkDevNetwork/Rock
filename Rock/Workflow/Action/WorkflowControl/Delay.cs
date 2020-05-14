@@ -78,7 +78,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( dateAttributeGuid, rockContext );
                 if ( attribute != null )
                 {
-                    DateTime? attributeDate = action.GetWorklowAttributeValue( dateAttributeGuid ).AsDateTime();
+                    DateTime? attributeDate = action.GetWorkflowAttributeValue( dateAttributeGuid ).AsDateTime();
                     if ( attributeDate.HasValue )
                     {
                         if ( attributeDate.Value.CompareTo( now ) <= 0 )

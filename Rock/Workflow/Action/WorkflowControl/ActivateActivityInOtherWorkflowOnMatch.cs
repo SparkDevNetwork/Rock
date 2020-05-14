@@ -54,7 +54,7 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var workflowActivityGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "Activity" ).AsGuid() ).AsGuid();
+            var workflowActivityGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "Activity" ).AsGuid() ).AsGuid();
             if ( workflowActivityGuid.IsEmpty() )
             {
                 action.AddLogEntry( "Invalid Activity Property", true );
