@@ -990,6 +990,7 @@ namespace Rock.DownhillCss
 
 .toggle-button.checked .icon {
     color: white;
+}
 
 /* Hero Block */
 .hero .hero-title {
