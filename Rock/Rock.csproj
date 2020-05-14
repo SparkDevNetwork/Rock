@@ -485,7 +485,6 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
-    <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
@@ -2931,7 +2930,7 @@ if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionD
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
