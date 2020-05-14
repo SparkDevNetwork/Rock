@@ -39,11 +39,45 @@ namespace Rock.Jobs
     [DisplayName( "Rock Cleanup" )]
     [Description( "General job to clean up various areas of Rock." )]
 
-    [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
-    [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
-    [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
-    [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 4, "BaseCacheDirectory" )]
-    [IntegerField( "Max Metaphone Names", "The maximum number of person names to process metaphone values for each time job is run (only names that have not yet been processed are checked).", false, 500, "General", 5 )]
+    [IntegerField( "Days to Keep Exceptions in Log",
+        Description = "The number of days to keep exceptions in the exception log (default is 14 days.)",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Category = "General",
+        Order = 1,
+        Key = AttributeKey.DaysKeepExceptions )]
+
+    [IntegerField( "Audit Log Expiration Days",
+        Description = "The number of days to keep items in the audit log (default is 14 days.)",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Category = "General",
+        Order = 2,
+        Key = AttributeKey.AuditLogExpirationDays )]
+
+    [IntegerField( "Days to Keep Cached Files",
+        Description = "The number of days to keep cached files in the cache folder (default is 14 days.)",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Category = "General",
+        Order = 3,
+        Key = AttributeKey.DaysKeepCachedFiles )]
+
+    [TextField( "Base Cache Folder",
+        Key = AttributeKey.BaseCacheDirectory,
+        Description = "The base/starting Directory for the file cache (default is ~/Cache.)",
+        IsRequired = false,
+        DefaultValue = "~/Cache",
+        Category = "General",
+        Order = 4 )]
+
+    [IntegerField( "Max Metaphone Names",
+        Key = AttributeKey.MaxMetaphoneNames,
+        Description = "The maximum number of person names to process metaphone values for each time job is run (only names that have not yet been processed are checked).",
+        IsRequired = false,
+        DefaultIntegerValue = 500,
+        Category = "General",
+        Order = 5 )]
 
     [IntegerField( "Batch Cleanup Amount",
         Key = AttributeKey.BatchCleanupAmount,
@@ -70,8 +104,13 @@ namespace Rock.Jobs
         /// </summary>
         private static class AttributeKey
         {
-            public const string CommandTimeout = "CommandTimeout";
+            public const string DaysKeepExceptions = "DaysKeepExceptions";
+            public const string AuditLogExpirationDays = "AuditLogExpirationDays";
+            public const string DaysKeepCachedFiles = "DaysKeepCachedFiles";
+            public const string BaseCacheDirectory = "BaseCacheDirectory";
+            public const string MaxMetaphoneNames = "MaxMetaphoneNames";
             public const string BatchCleanupAmount = "BatchCleanupAmount";
+            public const string CommandTimeout = "CommandTimeout";
         }
 
         /// <summary>
@@ -349,7 +388,7 @@ namespace Rock.Jobs
                 PersonService personService = new PersonService( personRockContext );
 
                 // Add any missing metaphones
-                int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
+                int namesToProcess = dataMap.GetString( AttributeKey.MaxMetaphoneNames ).AsIntegerOrNull() ?? 500;
                 if ( namesToProcess > 0 )
                 {
                     var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
@@ -758,8 +797,8 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanCachedFileDirectory( IJobExecutionContext context, JobDataMap dataMap )
         {
-            string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
-            int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsIntegerOrNull();
+            string cacheDirectoryPath = dataMap.GetString( AttributeKey.BaseCacheDirectory );
+            int? cacheExpirationDays = dataMap.GetString( AttributeKey.DaysKeepCachedFiles ).AsIntegerOrNull();
 
             int resultCount = 0;
             if ( cacheExpirationDays.HasValue )
@@ -792,7 +831,7 @@ namespace Rock.Jobs
         {
             // purge audit log
             int totalRowsDeleted = 0;
-            int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
+            int? auditExpireDays = dataMap.GetString( AttributeKey.AuditLogExpirationDays ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
                 var auditLogRockContext = new Rock.Data.RockContext();
@@ -812,7 +851,7 @@ namespace Rock.Jobs
         private int CleanupExceptionLog( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
-            int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
+            int? exceptionExpireDays = dataMap.GetString( AttributeKey.DaysKeepExceptions ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
