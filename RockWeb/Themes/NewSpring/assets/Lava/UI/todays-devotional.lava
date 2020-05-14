@@ -9,7 +9,7 @@
   {% assign id = Item.Id %}
   {% assign dataset = Item.Dataset %}
   {% assign title = Item.Title | Replace:"'","’" %}
-  {% assign content = Item.Content | HtmlDecode | Replace:"'","’" | Truncate:250,'...' %}
+  {% assign content = Item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:250,'...' %}
   {% assign label = 'Today’s Devotional' %}
   {% assign imagealignment = 'Left' %}
   {% assign ratio = 'square' %}
