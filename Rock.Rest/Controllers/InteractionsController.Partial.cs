@@ -21,18 +21,11 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Rock.BulkImport;
-using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -57,7 +50,6 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Interactions/Import" )]
         public void InteractionImport( Rock.BulkImport.InteractionsImport interactionsImport )
         {
-            Debug.WriteLine( $"Got Request {RockDateTime.Now.ToString( "o" )}" );
             if ( interactionsImport == null )
             {
                 var response = new HttpResponseMessage
@@ -70,7 +62,6 @@ namespace Rock.Rest.Controllers
             }
 
             InteractionService.BulkInteractionImport( interactionsImport );
-            Debug.WriteLine( $"Send Response {RockDateTime.Now.ToString( "o" )}" );
         }
 
         #endregion Import related
