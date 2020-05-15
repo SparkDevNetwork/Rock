@@ -162,6 +162,11 @@ namespace Rock.Model
         /// <returns></returns>
         public static string CreateNew( PersonAlias personAlias, DateTime? expireDateTime, int? usageLimit, int? pageId )
         {
+            if ( personAlias == null )
+            {
+                return null;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var token = Rock.Security.Encryption.GenerateUniqueToken();
