@@ -282,6 +282,7 @@
                                 <asp:ListItem Text="Praise" Value="2" />
                             </Rock:RockRadioButtonList>
                             <Rock:RockTextBox ID="tbComment" runat="server" TextMode="MultiLine" Rows="3" CssClass="margin-t-sm" Placeholder="Enter message..."/>
+                            <Rock:RockCheckBox ID="cbKeepPrivate" runat="server" Text="Keep This Confidential" Checked="false" />
                         </div>
                     </asp:Panel>
 

@@ -257,7 +257,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
             }
             else
             {
-                if ( PageParameter( "Phone" ).Length == 10 && PageParameter( "Phone" ).AsIntegerOrNull().HasValue )
+                if ( PageParameter( "Phone" ).AsDoubleOrNull().HasValue )
                 {
                     pnbPhoneSearch.Number = PageParameter( "Phone" );
                 }
@@ -1116,6 +1116,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                 var key = sel == 0 ? "Comment" :
                             sel == 1 ? "PrayerRequest" : "PraiseReport";
                 workflowTransaction.WorkflowAttributeValues.Add(key, tbComment.Text);
+                workflowTransaction.WorkflowAttributeValues.Add( "IsPublicRequest", cbKeepPrivate.Checked ? "False" : "True" );  //reverse boolean
             }
 			if(ChangedAddress) {
 				 workflowTransaction.WorkflowAttributeValues.Add("AddressStreet", tbChangeAddress.Street1);
