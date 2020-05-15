@@ -1142,6 +1142,65 @@ formfield .required-indicator {
     background-color: ?color-gray-400;
 }
 
+
+/* Cards */
+.card {
+    margin-bottom: 24;
+}
+
+.card-container {
+   padding: 0; 
+   -xf-spacing: 0;
+}
+
+.card-content {
+    -xf-spacing: 0;
+}
+
+.card-inline .card-content,
+.card-contained .card-content {
+    padding: 16;
+}
+
+.card-block .card-content {
+    padding-top: 16;
+}
+
+.card-image {
+    margin: 0;
+}
+
+.card-tagline {
+    font-style: normal;
+}
+
+.card-title {
+    margin: 0;
+}
+
+.card-descriptions {
+    margin-bottom: 8;
+}
+
+.card-tagline,
+.card-description-left, 
+.card-description-right {
+    opacity: .7;
+}
+
+
+.card-additionalcontent .paragraph {
+    margin-bottom: 0;
+    margin-top: 12;
+}
+
+.card-inline .card-tagline,
+.card-inline .card-title,
+.card-inline .card-description-left,
+.card-inline .card-description-right,
+.card-inline .card-additionalcontent .paragraph {
+    color: #ffffff;
+}
 ";
         #endregion
     }
