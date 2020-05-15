@@ -186,7 +186,10 @@
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
     <Compile Include="CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="CodeGenerated\InteractionImport.cs" />
+    <Compile Include="CodeGenerated\InteractionImportInteraction.cs" />
     <Compile Include="CodeGenerated\InteractionSession.cs" />
+    <Compile Include="CodeGenerated\InteractionsImport.cs" />
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
