@@ -72,16 +72,15 @@ namespace Rock.Model
         /// Adds AddRunReportTransaction to transaction queue
         /// </summary>
         /// <param name="reportId">The unique identifier of a Report.</param>
-        /// <param name="timeToRunMS">The time to run dataview in milliseconds.</param>
-        /// <returns></returns>
-        public static void AddRunReportTransaction( int reportId, int? timeToRunMS )
+        /// <param name="timeToRunDurationMilliseconds">The time to run duration milliseconds.</param>
+        public static void AddRunReportTransaction( int reportId, int? timeToRunDurationMilliseconds )
         {
             var transaction = new Rock.Transactions.RunReportTransaction();
             transaction.ReportId = reportId;
-            if ( timeToRunMS.HasValue )
+            if ( timeToRunDurationMilliseconds.HasValue )
             {
                 transaction.LastRunDateTime = RockDateTime.Now;
-                transaction.TimeToRunMS = timeToRunMS;
+                transaction.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
             }
 
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );

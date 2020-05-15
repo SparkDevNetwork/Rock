@@ -187,19 +187,23 @@ namespace Rock.Model
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction length.
+        /// Gets or sets the length of time (or percent of time) of the interaction.
+        /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc
+        /// For example, if this interaction type is watching a video, this might be what percent of the video they watched
         /// </summary>
         /// <value>
-        /// The interaction length.
+        /// The length of the interaction.
         /// </value>
         [DataMember]
         public double? InteractionLength { get; set; }
 
         /// <summary>
-        /// Gets or sets the time to serve the interaction in seconds.
+        /// Gets or sets the interaction time to serve. 
+        /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
+        /// For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
         /// </summary>
         /// <value>
-        /// The time to serve the interaction in seconds.
+        /// The interaction time to serve.
         /// </value>
         [DataMember]
         public double? InteractionTimeToServe { get; set; }
