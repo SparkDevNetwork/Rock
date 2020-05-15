@@ -285,9 +285,9 @@ BEGIN
 END
 ",
 new SqlParameter( "@browserSessionId", browserSessionId ),
-new SqlParameter( "@ipAddress", ipAddress.Truncate(45) ),
+new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
 new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId ),
-new SqlParameter( "@currentDateTime", currentDateTime)
+new SqlParameter( "@currentDateTime", currentDateTime )
 ).FirstOrDefault();
 
             return interactionSessionId;
@@ -486,13 +486,11 @@ new SqlParameter( "@currentDateTime", currentDateTime)
                 interaction.ForeignKey = interactionImport.Interaction.ForeignKey;
                 interaction.ForeignGuid = interactionImport.Interaction.ForeignGuid;
 
-                /* Fields that are introduced in v11.0
-                interaction.ChannelCustom1 = interactionImport.Interaction.ChannelCustom1;
-                interaction.ChannelCustom2 = interactionImport.Interaction.ChannelCustom2;
-                interaction.ChannelCustomIndexed1 = interactionImport.Interaction.ChannelCustomIndexed1;
+                interaction.ChannelCustom1 = interactionImport.Interaction.ChannelCustom1.Truncate( 500, true );
+                interaction.ChannelCustom2 = interactionImport.Interaction.ChannelCustom2.Truncate( 2000, true );
+                interaction.ChannelCustomIndexed1 = interactionImport.Interaction.ChannelCustomIndexed1.Truncate( 500, true );
                 interaction.InteractionLength = interactionImport.Interaction.InteractionLength;
                 interaction.InteractionTimeToServe = interactionImport.Interaction.InteractionTimeToServe;
-                */
 
                 interactionsToInsert.Add( interaction );
             }
