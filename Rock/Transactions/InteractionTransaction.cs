@@ -30,7 +30,7 @@ using Rock.Web.UI;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Transaction that will insert interactions. For example, Page Views
+    /// Transaction that will insert <seealso cref="Rock.Model.Interaction">Interactions</seealso>. For example, Page Views.
     /// </summary>
     public class InteractionTransaction : ITransaction
     {
@@ -165,10 +165,12 @@ namespace Rock.Transactions
             public bool LogCrawlers { get; set; }
 
             /// <summary>
-            /// Gets or sets the time to serve the interaction.
+            /// Gets or sets the interaction time to serve. 
+            /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
+            /// For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
             /// </summary>
             /// <value>
-            /// The time to serve the interaction.
+            /// The interaction time to serve.
             /// </value>
             public double? InteractionTimeToServe { get; set; }
         }

@@ -1836,7 +1836,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 var firstMiddleValue = timesToServe.ElementAt( ( count - 1 ) / 2 );
                 var secondMiddleValue = timesToServe.ElementAt( count / 2 );
 
-                page.MedianPageLoadTime = ( firstMiddleValue + secondMiddleValue ) / 2;
+                page.MedianPageLoadTimeDurationSeconds = ( firstMiddleValue + secondMiddleValue ) / 2;
             }
 
             rockContext.SaveChanges();
