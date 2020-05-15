@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Administration
                 viewModelQuery = viewModelQuery.OrderByDescending( vm => vm.InteractionDateTime );
             }
 
-            gInteractions.SetLinqDataSource( viewModelQuery );
+            gInteractions.DataSource = viewModelQuery.ToList();
             gInteractions.DataBind();
         }
 
