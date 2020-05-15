@@ -99,23 +99,14 @@ namespace com.bemaservices.MailChimp.Utility
                         UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, rockContext );
                     }
 
-                    // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.  We also need to remove any attribute Values assigned to these lists.
+                    // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.
                     var mailChimpListValuesToRemove = mailChimpListValues
                                                        .Where( x => !mailChimpListCollection.Any( y => y.WebId == x.ForeignId && x.ForeignKey == MailChimp.Constants.ForeignKey )
                                                        && mailChimpListDefinedValueIds.Contains( x.Id )
                                                        );
+                   
+                    definedValueService.DeleteRange( mailChimpListValuesToRemove );
 
-                    var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
-
-                    if( attributeValuesToRemove.Any() )
-                    {
-                        attributeValueService.DeleteRange( attributeValuesToRemove );
-                    }
-                    if ( mailChimpListValuesToRemove.Any() )
-                    {
-                        definedValueService.DeleteRange( mailChimpListValuesToRemove );
-                    }
-                    
                     rockContext.SaveChanges();
 
                     return definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() )
