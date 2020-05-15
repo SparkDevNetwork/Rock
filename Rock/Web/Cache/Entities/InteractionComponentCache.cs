@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -30,6 +32,12 @@ namespace Rock.Web.Cache
     [DataContract]
     public class InteractionComponentCache : ModelCache<InteractionComponentCache, InteractionComponent>
     {
+
+        #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _interactionComponentIdLookupFromForeignKey = new ConcurrentDictionary<string, int>();
+
+        #endregion
 
         #region Properties
 
@@ -81,11 +89,20 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var interactionComponent = entity as InteractionComponent;
-            if ( interactionComponent == null ) return;
+            if ( interactionComponent == null )
+            {
+                return;
+            }
 
             Name = interactionComponent.Name;
             EntityId = interactionComponent.EntityId;
             ChannelId = interactionComponent.ChannelId;
+
+            if ( interactionComponent.ForeignKey.IsNotNullOrWhiteSpace() )
+            {
+                var lookupKey = $"{interactionComponent.ForeignKey}|interactionChannelId:{interactionComponent.ChannelId}";
+                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+            }
         }
 
         /// <summary>
@@ -105,7 +122,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead")]
+        [Obsolete( "Use Get Instead" )]
         public static InteractionComponentCache Read( string guid )
         {
             Guid realGuid = guid.AsGuid();
@@ -115,6 +132,53 @@ namespace Rock.Web.Cache
             }
 
             return Get( realGuid );
+        }
+
+        /// <summary>
+        /// Gets the component identifier by foreign key and ChannelId, and creates it if it doesn't exist.
+        /// If foreignKey is blank, this will throw a <seealso cref="ArgumentNullException" />
+        /// If creating a new InteractionComponent with this, componentName must be specified
+        /// </summary>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <param name="interactionChannelId">The interaction channel identifier.</param>
+        /// <param name="componentName">Name of the component.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetComponentIdByForeignKey</exception>
+        public static int GetComponentIdByForeignKeyAndChannelId( string foreignKey, int interactionChannelId, string componentName )
+        {
+            if ( foreignKey.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( "ForeignKey must be specified when using GetComponentIdByForeignKey" );
+            }
+
+            var lookupKey = $"{foreignKey}|interactionChannelId:{interactionChannelId}";
+
+            if ( _interactionComponentIdLookupFromForeignKey.TryGetValue( lookupKey, out int channelId ) )
+            {
+                return channelId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var interactionComponent = interactionComponentService.Queryable()
+                        .Where( a => a.ForeignKey == foreignKey && a.ChannelId == interactionChannelId ).FirstOrDefault();
+
+                if ( interactionComponent == null )
+                {
+                    interactionComponent = new InteractionComponent();
+                    interactionComponent.Name = componentName;
+                    interactionComponent.ForeignKey = foreignKey;
+                    interactionComponent.ChannelId = interactionChannelId;
+                    interactionComponentService.Add( interactionComponent );
+                    rockContext.SaveChanges();
+                }
+
+                var interactionComponentId = Get( interactionComponent ).Id;
+                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKey, interactionComponentId, ( k, v ) => interactionComponentId );
+
+                return interactionComponentId;
+            }
         }
 
         #endregion
