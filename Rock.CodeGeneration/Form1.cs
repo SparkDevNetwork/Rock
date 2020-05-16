@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
@@ -186,6 +187,9 @@ namespace Rock.CodeGeneration
             MessageBox.Show( "Files have been generated" );
         }
 
+        /// <summary>
+        /// Reports the rock code warnings.
+        /// </summary>
         public void ReportRockCodeWarnings()
         {
             StringBuilder missingDbSetWarnings = new StringBuilder();
@@ -207,7 +211,14 @@ namespace Rock.CodeGeneration
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
-                var allTypes = rockAssembly.GetTypes();
+                Type[] allTypes = rockAssembly.GetTypes();
+
+                // ignore anonymous types (see https://stackoverflow.com/a/2483048/1755417)
+                allTypes = allTypes.Where( a =>
+                    a.IsClass == true &&
+                    a.GetCustomAttributes<CompilerGeneratedAttribute>()?.Any() != true
+                    && a.GetCustomAttributes<DebuggerDisplayAttribute>()?.Any() != true ).ToArray();
+
                 foreach ( var type in allTypes.OrderBy( a => a.FullName ) )
                 {
                     /* See if the class is Obsolete/RockObsolete */
@@ -261,8 +272,13 @@ namespace Rock.CodeGeneration
                            NOTE: This won't catch all of them, but hopefully most
                          */
 
+                        // types that OK based on how they are used
+                        var ignoredThreadSafeTypeWarning = new Type[] {
+                            typeof(Rock.UniversalSearch.IndexComponents.Lucene),
+                        };
+
                         // fields that OK based on how we use them
-                        var ignoredClassVariables = new string[]
+                        var ignoredThreadSafeFieldWarning = new string[]
                         {
                             "Rock.Extension.Component.Attributes",
                             "Rock.Extension.Component.AttributeValues",
@@ -276,6 +292,11 @@ namespace Rock.CodeGeneration
                         {
                             if ( member is FieldInfo fieldInfo )
                             {
+                                if ( ignoredThreadSafeTypeWarning.Contains( type ) )
+                                {
+                                    continue;
+                                }
+
                                 /* 2020-05-11 MDP - To detect non-thread safe fields and properties
                                     - All properties have a field behind them, even ones with a simple get/set (those will be named *k__BackingField)
                                     - So this will also end up finding non-threadsafe properties as well
@@ -310,7 +331,7 @@ namespace Rock.CodeGeneration
                                         }
 
                                         string fullyQualifiedFieldName = $"{type.FullName}.{fieldOrPropertyName}";
-                                        if ( !ignoredClassVariables.Contains( fullyQualifiedFieldName ) )
+                                        if ( !ignoredThreadSafeFieldWarning.Contains( fullyQualifiedFieldName ) )
                                         {
                                             singletonClassVariablesWarnings.AppendLine( $" - {fullyQualifiedFieldName}" );
                                         }
@@ -676,30 +697,6 @@ GO
 
             sqlconn.Open();
 
-            string sql = @"
-select * from
-(
-select 
-  OBJECT_NAME([fk].[parent_object_id]) [parentTable], 
-  OBJECT_NAME([fk].[referenced_object_id]) [refTable], 
-  [cc].[name] [columnName],
-  isnull(OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey'), 0) [IsPrimaryKey],
-  [fk].[delete_referential_action] [CascadeAction]
-from 
-sys.foreign_key_columns [fkc]
-join sys.foreign_keys [fk]
-on fkc.constraint_object_id = fk.object_id
-join sys.columns cc
-on fkc.parent_column_id = cc.column_id
-left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE [kcu]
-on kcu.COLUMN_NAME = cc.Name and kcu.TABLE_NAME = OBJECT_NAME([fk].[parent_object_id]) and OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey') = 1
-where cc.object_id = fk.parent_object_id
-and [fk].[delete_referential_action_desc] != 'CASCADE'
-) sub
-where [refTable] = @refTable
-order by [parentTable], [columnName] 
-";
-
             SqlCommand sqlCommand = sqlconn.CreateCommand();
             TableAttribute tableAttribute = type.GetCustomAttribute<TableAttribute>();
             if ( tableAttribute == null )
@@ -708,6 +705,7 @@ order by [parentTable], [columnName]
                 return string.Empty;
             }
 
+            string sql = $"exec sp_fkeys @pktable_name = '{tableAttribute.Name}', @pktable_owner = 'dbo'";
             sqlCommand.CommandText = sql;
             sqlCommand.Parameters.Add( new SqlParameter( "@refTable", tableAttribute.Name ) );
             var reader = sqlCommand.ExecuteReader();
@@ -715,12 +713,19 @@ order by [parentTable], [columnName]
             List<TableColumnInfo> parentTableColumnNameList = new List<TableColumnInfo>();
             while ( reader.Read() )
             {
-                string parentTable = reader["parentTable"] as string;
-                string columnName = reader["columnName"] as string;
-                bool isPrimaryKey = ( int ) reader["IsPrimaryKey"] == 1;
+                string parentTable = reader["FKTABLE_NAME"] as string;
+                string columnName = reader["FKCOLUMN_NAME"] as string;
+                bool isCascadeDelete = reader["DELETE_RULE"] as short? == 0;
+                
                 bool ignoreCanDelete = false;
                 bool hasEntityModel = true;
 
+                if ( isCascadeDelete )
+                {
+                    continue;
+                }
+
+                bool isPrimaryKey = false;
                 Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ) );
                 if ( parentEntityType != null )
                 {
@@ -731,6 +736,8 @@ order by [parentTable], [columnName]
                         {
                             ignoreCanDelete = true;
                         }
+
+                        isPrimaryKey = columnProp.GetCustomAttribute<KeyAttribute>() != null;
                     }
                 }
                 else
@@ -800,7 +807,6 @@ order by [parentTable], [columnName]
                     relationShipText = "is assigned to a";
                     pluralizeCode = "";
                 }
-
 
                 // #pragma warning disable 612, 618
                 var entityTypes = cblModels.Items.Cast<Type>().ToList();
@@ -1587,7 +1593,6 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
-            //var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + ".cs" ) );
             WriteFile( file, sb );
         }
@@ -1807,18 +1812,6 @@ order by [parentTable], [columnName]
 
     public static class HelperExtensions
     {
-        /*public static CustomAttributeData GetCustomAttributeData<T>( this Type type ) where T : System.Attribute
-        {
-            var attributeType = typeof( T );
-            return type.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
-        }
-
-        public static CustomAttributeData GetCustomAttributeData<T>( this MemberInfo memberInfo ) where T : System.Attribute
-        {
-            var attributeType = typeof( T );
-            return memberInfo.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
-        }*/
-
         public static PropertyInfo[] SortByStandardOrder( this PropertyInfo[] properties )
         {
             string[] baseModelPropertyTypeNames = new string[] { "Id", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId" };
@@ -1846,7 +1839,4 @@ order by [parentTable], [columnName]
             return result.ToArray();
         }
     }
-
-
-
 }
