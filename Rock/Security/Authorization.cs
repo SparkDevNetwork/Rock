@@ -57,6 +57,32 @@ namespace Rock.Security
             Strict
         }
 
+        /// <summary>
+        /// Authentication Level Type
+        /// </summary>
+        public enum AuthenticationLevel
+        {
+            /// <summary>
+            /// TrustedLogin
+            /// </summary>
+            TrustedLogin = 10,
+
+            /// <summary>
+            /// TokenAuthentication
+            /// </summary>
+            TokenAuthentication = 20,
+
+            /// <summary>
+            /// Identified
+            /// </summary>
+            Identified = 30,
+
+            /// <summary>
+            /// None
+            /// </summary>
+            None = 40
+        }
+
         #region Constants
 
         /// <summary>
@@ -113,6 +139,11 @@ namespace Rock.Security
         /// Authorization action for using (tagging with) the Tag.
         /// </summary>
         public const string TAG = "Tag";
+
+        /// <summary>
+        /// Unauthenticated Person Identifier cookie.
+        /// </summary>
+        public const string COOKIE_UNSECURED_PERSON_IDENTIFIER = ".ROCK-UnauthenticatedPersonIdentifier";
 
         #endregion
 
