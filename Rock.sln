@@ -122,6 +122,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.rockypeak.Autobuild", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.northwaychurch.Autobuild", "com.northwaychurch.Autobuild\com.northwaychurch.Autobuild.csproj", "{CA69F06F-B61A-4009-96DE-6C710F6F2650}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.HrManagement", "com.bemaservices.HrManagement\com.bemaservices.HrManagement.csproj", "{67771521-06DC-450D-88CC-71D09A16F8A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -316,6 +318,10 @@ Global
 		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA69F06F-B61A-4009-96DE-6C710F6F2650}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67771521-06DC-450D-88CC-71D09A16F8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67771521-06DC-450D-88CC-71D09A16F8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67771521-06DC-450D-88CC-71D09A16F8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67771521-06DC-450D-88CC-71D09A16F8A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
