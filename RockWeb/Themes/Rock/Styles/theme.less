@@ -389,8 +389,12 @@ textarea,
 }
 
 .modal {
-  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, .1));
+  .box-shadow(@shadow-modal);
   border-radius: 0;
+
+  .modal-content {
+    .box-shadow(none);
+  }
 }
 
 .modal-header small {
