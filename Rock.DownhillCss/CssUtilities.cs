@@ -557,6 +557,10 @@ namespace Rock.DownhillCss
 
         private static string baseStylesMobile = @"
 /* Resets */
+^contentpage {
+    background-color: ?color-background;
+}
+
 ^label {
     font-size: default;
     color: ?color-text;
@@ -1065,7 +1069,7 @@ namespace Rock.DownhillCss
 
 /* Field Titles */
 fieldgroupheader {
-    margin-bottom: 4;
+   
 }
 
 fieldgroupheader .title,
@@ -1104,12 +1108,17 @@ fieldstack {
     border-radius: 0;
     border-color: ?color-secondary;
     border-width: 1;
+    margin-top: 4;
     margin-bottom: 12;
 }
 
 /* Form Fields  */
 formfield {
     padding: 12 12 12 6;
+}
+
+fieldcontainer > .no-fieldstack {
+    margin-bottom: 12;
 }
 
 formfield .required-indicator {
