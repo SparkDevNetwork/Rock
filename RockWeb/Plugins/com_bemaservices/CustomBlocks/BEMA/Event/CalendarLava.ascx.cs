@@ -110,7 +110,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Category = "BEMA Additional Features" )]
 
     [AttributeField( "Defined Type Topic Filter Attribute",
-        Key = AttributeKey.DefinedTypeTopicFilterAttribute,
+        Key = BemaAttributeKey.DefinedTypeTopicFilterAttribute,
         EntityTypeGuid = "E37FB26F-03F6-48DA-8E96-F412616F5EE4",
         Description = "If you want to further narrow down the results using a defined value attribute, set it here",
         IsRequired = false,
@@ -118,7 +118,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Category = "BEMA Additional Features" )]
 
     [AttributeField( "Defined Type Audience Filter Attribute",
-        Key = AttributeKey.DefinedTypeAudienceFilterAttribute,
+        Key = BemaAttributeKey.DefinedTypeAudienceFilterAttribute,
         EntityTypeGuid = "E37FB26F-03F6-48DA-8E96-F412616F5EE4",
         Description = "If you want to further narrow down the results using a defined value attribute, set it here",
         IsRequired = false,
@@ -438,7 +438,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             /* Bema.FE3 Start */
             // If using custom filters, don't do the default campus filtering
 
-            if( !GetAttributeValue(AttributeKey.AreCoreFiltersReplacedWithCustomFilters).AsBoolean() )
+            if( !GetAttributeValue(BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters).AsBoolean() )
             {
                 if ( selectedCampusIdList.Any() )
                 {
@@ -835,7 +835,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         }
         private void SetupCustomFilters()
         {
-            var definedValueAudienceAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeAudienceFilterAttribute ).AsGuidOrNull();
+            var definedValueAudienceAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeAudienceFilterAttribute ).AsGuidOrNull();
             if ( definedValueAudienceAttributeGuid.HasValue )
             {
                 var definedValueAudienceAttribute = AttributeCache.Get( definedValueAudienceAttributeGuid.Value );
@@ -864,7 +864,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 ddlCatPicker.SelectedDefinedValueId = PageParameter( "AudienceId" ).AsIntegerOrNull();
             }
 
-            var definedValueTopicAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeTopicFilterAttribute ).AsGuidOrNull();
+            var definedValueTopicAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeTopicFilterAttribute ).AsGuidOrNull();
             if ( definedValueTopicAttributeGuid.HasValue )
             {
                 var definedValueTopicAttribute = AttributeCache.Get( definedValueTopicAttributeGuid.Value );
@@ -901,7 +901,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             cpCampus.Items.Remove( cpCampus.Items.FindByValue( "" ) );
             cpCampus.Items.Insert( 0, new ListItem( "Congregation", "" ) );
             */
-            var campusAttributeGuid = GetAttributeValue( AttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
+            var campusAttributeGuid = GetAttributeValue( BemaAttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
             if ( campusAttributeGuid.HasValue )
             {
                 var campusAttribute = AttributeCache.Get( campusAttributeGuid.Value );
@@ -932,7 +932,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( definedValue != null )
                     {
                         var definedValueGuid = definedValue.Guid.ToString();
-                        var definedValueAudienceAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeAudienceFilterAttribute ).AsGuidOrNull();
+                        var definedValueAudienceAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeAudienceFilterAttribute ).AsGuidOrNull();
                         if ( definedValueAudienceAttributeGuid.HasValue )
                         {
                             var definedValueAudienceAttribute = AttributeCache.Get( definedValueAudienceAttributeGuid.Value );
@@ -971,7 +971,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( definedValue != null )
                     {
                         var definedValueGuid = definedValue.Guid.ToString();
-                        var definedValueTopicAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeTopicFilterAttribute ).AsGuidOrNull();
+                        var definedValueTopicAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeTopicFilterAttribute ).AsGuidOrNull();
                         if ( definedValueTopicAttributeGuid.HasValue )
                         {
                             var definedValueTopicAttribute = AttributeCache.Get( definedValueTopicAttributeGuid.Value );
