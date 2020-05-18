@@ -239,7 +239,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// <summary>
             /// The group identifier
             /// </summary>
-            public const string GroupId = "GroupId";
+            public const string GroupGuid = "GroupGuid";
         }
 
         #region Attribute Properties
@@ -433,8 +433,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             using ( var rockContext = new RockContext() )
             {
-                var groupId = RequestContext.GetPageParameter( PageParameterKeys.GroupId ).AsInteger();
-                var group = new GroupService( rockContext ).Get( groupId );
+                var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null )
                 {
@@ -569,8 +569,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var groupId = RequestContext.GetPageParameter( PageParameterKeys.GroupId ).AsInteger();
-                var group = new GroupService( rockContext ).Get( groupId );
+                var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null || !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
@@ -635,7 +635,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return new CallbackResponse
                 {
                     Command = "ReplacePage",
-                    CommandParameter = $"{GroupDetailPage}?GroupId={RequestContext.GetPageParameter( PageParameterKeys.GroupId )}"
+                    CommandParameter = $"{GroupDetailPage}?GroupGuid={RequestContext.GetPageParameter( PageParameterKeys.GroupGuid )}"
                 };
             }
             else

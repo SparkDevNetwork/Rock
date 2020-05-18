@@ -130,6 +130,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #endregion
 
+        /// <summary>
+        /// The page parameter keys for the GroupMemberList block.
+        /// </summary>
+        public static class PageParameterKeys
+        {
+            /// <summary>
+            /// The group identifier
+            /// </summary>
+            public const string GroupGuid = "GroupGuid";
+        }
+
         #region IRockMobileBlockType Implementation
 
         /// <summary>
@@ -178,6 +189,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var properties = new Dictionary<string, string>
             {
                 { "Id", "Id" },
+                { "Guid", "Guid" },
                 { "PersonId", "PersonId" },
                 { "FullName", "Person.FullName" },
                 { "FirstName", "Person.FirstName" },
@@ -207,14 +219,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Gets the group details.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
         /// <returns></returns>
         [BlockAction]
-        public object GetGroupDetails( int groupId )
+        public object GetGroupDetails()
         {
             using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupId );
+                var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 var lavaTemplate = CreateLavaTemplate();
 

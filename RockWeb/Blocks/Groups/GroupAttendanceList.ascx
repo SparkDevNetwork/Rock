@@ -37,7 +37,7 @@
                             <Rock:BoolField DataField="AttendanceEntered" HeaderText="Attendance Entered" SortExpression="AttendanceEntered" />
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
                             <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" HeaderStyle-HorizontalAlign="Right" />
-                            <Rock:RockBoundField DataField="PercentMembersAttended" HtmlEncode="false" HeaderText="% Members Attended&nbsp;<i class='fa fa-info-circle' data-toggle='tooltip' data-placement='top' title='The percentage of members that were marked &quot;Did Attend&quot;.'></i>" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="PercentMembersAttended" HeaderStyle-HorizontalAlign="Right"/>
+                            <Rock:RockBoundField DataField="AttendanceRate" HtmlEncode="false" HeaderText="Percent Attended&nbsp;<i class='fa fa-info-circle' data-toggle='tooltip' data-placement='top' title='The percentage of attendees that were marked &quot;Did Attend&quot;.'></i>" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="AttendanceRate" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:RockBoundField DataField="Notes" HeaderText="Notes" HtmlEncode="false" ColumnPriority="Desktop" SortExpression="Notes"/>
                             <Rock:EditField IconCssClass="fa fa-check-square-o" OnClick="gOccurrences_Edit" ToolTip="Enter Attendance" />
                             <Rock:DeleteField OnClick="gOccurrences_Delete" />
