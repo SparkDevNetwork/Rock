@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Humanizer;
 using Quartz;
 
 using Rock.Attribute;
@@ -278,7 +279,7 @@ namespace Rock.Jobs
             var stopwatch = new Stopwatch();
             try
             {
-                jobContext.UpdateLastStatusMessage( $"{cleanupTitle}..." );
+                jobContext.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Sentence )}..." );
                 stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
                 stopwatch.Stop();
