@@ -248,7 +248,7 @@ namespace Rock.Model
         /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
         /// </summary>
         public static void RegisterEntityTypes( string physWebAppPath )
-    {
+        {
             List<Type> reflectedTypes = new List<Type>();
 
             // we'll auto-register anything that implements IEntity, ISecured or IRockBlockType
@@ -266,7 +266,7 @@ namespace Rock.Model
                 entityType.Name = reflectedType.FullName;
                 entityType.FriendlyName = reflectedType.Name.SplitCase();
                 entityType.AssemblyName = reflectedType.AssemblyQualifiedName;
-                if ( reflectedType is Rock.Data.IEntity )
+                if ( typeof( IEntity ).IsAssignableFrom( reflectedType ) )
                 {
                     entityType.IsEntity = reflectedType.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute>() == null;
                 }
@@ -275,7 +275,7 @@ namespace Rock.Model
                     entityType.IsEntity = false;
                 }
 
-                entityType.IsSecured = reflectedType is Rock.Security.ISecured;
+                entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( reflectedType );
 
                 entityTypesFromReflection.AddOrIgnore( reflectedType.FullName, entityType );
             };
