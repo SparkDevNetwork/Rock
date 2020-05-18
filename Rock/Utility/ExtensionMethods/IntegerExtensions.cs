@@ -24,6 +24,30 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         /// <summary>
+        /// Determines whether [is null or zero].
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is null or zero] [the specified value]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNullOrZero( this int? value )
+        {
+            return ( value ?? 0 ) == 0;
+        }
+
+        /// <summary>
+        /// Determines whether [is not null or zero].
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is not null or zero] [the specified value]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNotNullOrZero( this int? value )
+        {
+            return !IsNullOrZero( value );
+        }
+
+        /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>

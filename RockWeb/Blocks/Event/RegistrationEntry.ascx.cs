@@ -2680,6 +2680,11 @@ namespace RockWeb.Blocks.Event
                                 registrant.PersonAliasId = null;
                             }
                         }
+                        else if ( registrantInfo.PersonId.HasValue )
+                        {
+                            // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
+                            person = personService.Get( registrantInfo.PersonId.Value );
+                        }
                     }
                     else
                     {
@@ -3070,7 +3075,9 @@ namespace RockWeb.Blocks.Event
                     // Save the signed document
                     try
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue &&
+                            !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) &&
+                            registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
                         {
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
@@ -3085,6 +3092,8 @@ namespace RockWeb.Blocks.Event
                             documentService.Add( document );
                             rockContext.SaveChanges();
 
+                            registrantInfo.SignatureDocumentId = document.Id;
+
                             var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
                         }
@@ -3093,6 +3102,8 @@ namespace RockWeb.Blocks.Event
                     {
                         ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                     }
+
+                    registrantInfo.PersonId = person.Id;
                 }
 
                 rockContext.SaveChanges();
