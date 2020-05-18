@@ -264,7 +264,7 @@ namespace Rock.Jobs
             else
             {
                 var icon = "<i class='fa fa-circle text-success'></i>";
-                var title = result.Title.PluralizeIf( result.RowsAffected != 1 );
+                var title = result.Title.PluralizeIf( result.RowsAffected != 1 ).ApplyCase( LetterCasing.Title );
                 return $"{icon} {result.RowsAffected} {title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
         }
@@ -279,7 +279,7 @@ namespace Rock.Jobs
             var stopwatch = new Stopwatch();
             try
             {
-                jobContext.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Sentence )}..." );
+                jobContext.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}..." );
                 stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
                 stopwatch.Stop();
