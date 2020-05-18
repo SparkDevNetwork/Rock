@@ -290,6 +290,8 @@ namespace Rock.Model
         /// The percent members attended is the number of attendance records marked as did attend
         /// divided by the total number of members in the group.
         /// </value>
+        [RockObsolete( "1.10" )]
+        [System.Obsolete( "Use Attendance Rate instead." )]
         public double PercentMembersAttended
         {
             get
