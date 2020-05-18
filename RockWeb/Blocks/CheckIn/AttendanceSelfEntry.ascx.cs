@@ -307,7 +307,6 @@ ORDER BY [Text]",
 
         #region Fields
 
-        private const string ROCK_UNSECUREDPERSONIDENTIFIER = "rock_UnsecuredPersonIdentifier";
         private const string KNOWN_RELATIONSHIP_SPOUSE = "Spouse";
 
         #endregion Fields
@@ -756,7 +755,7 @@ ORDER BY [Text]",
             if ( PrimaryWatcher.BirthDate.HasValue )
             {
                 person.SetBirthDate( PrimaryWatcher.BirthDate );
-            } 
+            }
 
             // Save the email address
             if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
@@ -1417,9 +1416,9 @@ ORDER BY [Text]",
         /// </summary>
         private Guid? GetUnsecuredPersonIdentifier()
         {
-            if ( Request.Cookies[ROCK_UNSECUREDPERSONIDENTIFIER] != null )
+            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
             {
-                return Request.Cookies[ROCK_UNSECUREDPERSONIDENTIFIER].Value.AsGuidOrNull();
+                return Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
             }
 
             return null;
@@ -1430,7 +1429,7 @@ ORDER BY [Text]",
         /// </summary>
         private void SetUnsecuredPersonIdentifier( Guid personAliasGuid )
         {
-            HttpCookie httpcookie = new HttpCookie( ROCK_UNSECUREDPERSONIDENTIFIER );
+            HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
             Response.Cookies.Add( httpcookie );
         }
