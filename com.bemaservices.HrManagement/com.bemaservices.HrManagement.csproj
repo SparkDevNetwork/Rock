@@ -71,7 +71,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\PtoTier.cs" />
+    <Compile Include="Model\PtoBracket.cs" />
     <Compile Include="Model\PtoType.cs" />
+    <Compile Include="Model\PtoTierService.cs" />
+    <Compile Include="Model\PtoBracketService.cs" />
     <Compile Include="Model\PtoTypeService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
