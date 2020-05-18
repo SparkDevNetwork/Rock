@@ -193,7 +193,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// <summary>
             /// The request identifier
             /// </summary>
-            public const string RequestId = "RequestId";
+            public const string RequestGuid = "RequestGuid";
 
             /// <summary>
             /// The request
@@ -505,17 +505,17 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
             using ( var rockContext = new RockContext() )
             {
-                int? requestId = RequestContext.GetPageParameter( PageParameterKeys.RequestId ).AsIntegerOrNull();
+                Guid? requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
                 PrayerRequest request = null;
 
-                if ( requestId.HasValue )
+                if ( requestGuid.HasValue )
                 {
                     if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
                         return "<Rock:NotificationBox HeaderText=\"Error\" Text=\"You are not authorized to edit prayer requests.\" NotificationType=\"Error\" />";
                     }
 
-                    request = new PrayerRequestService( rockContext ).Get( requestId.Value );
+                    request = new PrayerRequestService( rockContext ).Get( requestGuid.Value );
 
                     if ( request == null )
                     {
@@ -601,15 +601,15 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             {
                 var items = CategoryCache.Get( ParentCategory.Value )
                     .Categories
-                    .Select( a => new KeyValuePair<string, string>( a.Id.ToString(), a.Name ) );
+                    .Select( a => new KeyValuePair<string, string>( a.Guid.ToString(), a.Name ) );
 
-                int? categoryId = request?.CategoryId;
-                if ( !categoryId.HasValue && DefaultCategory.HasValue )
+                var categoryGuid = request?.Category?.Guid;
+                if ( !categoryGuid.HasValue && DefaultCategory.HasValue )
                 {
-                    categoryId = CategoryCache.Get( DefaultCategory.Value ).Id;
+                    categoryGuid = CategoryCache.Get( DefaultCategory.Value ).Guid;
                 }
 
-                field = MobileHelper.GetDropDownFieldXaml( "category", "Category", categoryId.ToStringSafe(), true, items );
+                field = MobileHelper.GetDropDownFieldXaml( "category", "Category", categoryGuid.ToStringSafe(), true, items );
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "category", "SelectedValue" );
             }
@@ -646,11 +646,11 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 PrayerRequest prayerRequest;
-                var requestId = RequestContext.GetPageParameter( PageParameterKeys.RequestId ).AsIntegerOrNull();
+                var requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
 
-                if ( requestId.HasValue )
+                if ( requestGuid.HasValue )
                 {
-                    prayerRequest = prayerRequestService.Get( requestId.Value );
+                    prayerRequest = prayerRequestService.Get( requestGuid.Value );
 
                     if ( prayerRequest == null || !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
@@ -712,7 +712,16 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 if ( ShowCategory && parameters.ContainsKey( "category" ) )
                 {
-                    prayerRequest.CategoryId = ( ( string ) parameters["category"] ).AsIntegerOrNull();
+                    var categoryGuid = ( ( string ) parameters["category"] ).AsGuidOrNull();
+
+                    if ( categoryGuid.HasValue )
+                    {
+                        prayerRequest.CategoryId = CategoryCache.Get( categoryGuid.Value ).Id;
+                    }
+                    else if ( prayerRequest.Id > 0 )
+                    {
+                        prayerRequest.CategoryId = null;
+                    }
                 }
 
                 if ( ShowPublicDisplayFlag )
