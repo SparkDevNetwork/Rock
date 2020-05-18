@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
-            string mergeFields = PageParameter( "mergeFields" );
+            string mergeFields = PageParameter( "MergeFields" );
 
             if ( !string.IsNullOrEmpty( mergeFields ) )
             {

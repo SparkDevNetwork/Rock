@@ -121,12 +121,31 @@ namespace RockWeb.Blocks.Administration
                         case "Exception":
                             lStatus.Text = "<span class='label label-danger'>Failed</span>";
                             break;
+                        case "Warning":
+                            lStatus.Text = "<span class='label label-warning'>Warning</span>";
+                            break;
                         case "":
                             lStatus.Text = "";
                             break;
                         default:
                             lStatus.Text = String.Format( "<span class='label label-warning'>{0}</span>", status );
                             break;
+                    }
+
+                    var lStatusMessageAsHtml = e.Row.FindControl( "lStatusMessageAsHtml" ) as Literal;
+                    if ( lStatusMessageAsHtml != null )
+                    {
+                        var statusMessageAsHtml = e.Row.DataItem.GetPropertyValue( "StatusMessageAsHtml" ) as string;
+                        if ( statusMessageAsHtml.Length > 255 )
+                        {
+                            // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
+                            // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
+                            lStatusMessageAsHtml.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", statusMessageAsHtml );
+                        }
+                        else
+                        {
+                            lStatusMessageAsHtml.Text = statusMessageAsHtml;
+                        }
                     }
                 }
             }

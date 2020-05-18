@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "lavaShortcodeId" ).AsInteger() );
+                ShowDetail( PageParameter( "LavaShortcodeId" ).AsInteger() );
             }
         }
 

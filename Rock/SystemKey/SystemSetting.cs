@@ -113,7 +113,7 @@ namespace Rock.SystemKey
         /// The redis connection string
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.", true )]
+        [Obsolete( "Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.", true )]
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
         /// <summary>
@@ -142,23 +142,33 @@ namespace Rock.SystemKey
         public const string SPARK_DATA = "core_SparkData";
 
         /// <summary>
+        /// The rock logging settings
+        /// </summary>
+        public const string ROCK_LOGGING_SETTINGS = "core_LoggingConfig";
+
+        /// <summary>
+        /// Enable system.diagnostics ADO.NET Off-By-Default Performance Counters
+        /// </summary>
+        public const string SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS = "core_EnableAdoNetPerformanceCounters";
+
+        /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
-        [Obsolete("This functionality is no longer used.")]
+        [Obsolete( "This functionality is no longer used." )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
 
         /// <summary>
         /// Settings for Do Not Disturb End
         /// </summary>
-        [Obsolete("This functionality is no longer used.")]
+        [Obsolete( "This functionality is no longer used." )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
 
         /// <summary>
         /// Settings for Do Not Disturb Active
         /// </summary>
-        [Obsolete("This functionality is no longer used.")]
+        [Obsolete( "This functionality is no longer used." )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
     }

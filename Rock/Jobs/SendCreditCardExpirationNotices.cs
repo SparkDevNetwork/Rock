@@ -33,8 +33,10 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
+    /// Checks scheduled transactions for credit cards that are expiring next month and sends an email notice to the person.
     /// </summary>
-    [Description( "Sends an email and optional workflow if a credit card that is used for a scheduled transaction is going to expire next month. There is also an option to delete expired saved accounts." )]
+    [DisplayName( "Expiring Credit Card Notices" )]
+    [Description( "Checks scheduled transactions for credit cards that are expiring next month and sends an email notice to the person." )]
 
     [SystemCommunicationField(
         "Expiring Credit Card Email",

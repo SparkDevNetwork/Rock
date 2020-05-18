@@ -15,6 +15,7 @@
                 <div class="grid grid-panel">
 
                     <Rock:GridFilter ID="gfFilter" runat="server">
+                        <Rock:CategoryPicker ID="cpCategories" runat="server" Label="Categories" AllowMultiSelect="true" EntityTypeName="Rock.Model.ContentChannel" />
                         <Rock:RockDropDownList ID="ddlType" runat="server" Label="Type" />
                     </Rock:GridFilter>
 

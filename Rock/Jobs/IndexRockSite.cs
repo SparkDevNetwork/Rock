@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-
+using System.ComponentModel;
 using Quartz;
 
 using Rock.Attribute;
@@ -28,8 +28,11 @@ using Rock.UniversalSearch.IndexModels;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to run quick SQL queries on a schedule
+    /// This job indexes the specified site.
     /// </summary>
+    [DisplayName( "Index Rock Site" )]
+    [Description( "This job indexes the specified site." )]
+
     [DisallowConcurrentExecution]
 
     [SiteField( "Site", "The site that will be indexed", true, order: 0 )]

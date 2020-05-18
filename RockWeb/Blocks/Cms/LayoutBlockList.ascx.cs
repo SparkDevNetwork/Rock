@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Cms
         {
             pnlBlocks.Visible = false;
 
-            int layoutId = PageParameter( "layoutId" ).AsInteger();
+            int layoutId = PageParameter( "LayoutId" ).AsInteger();
             if ( layoutId == 0 )
             {
                 pnlContent.Visible = false;

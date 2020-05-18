@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SiteId", 0 );
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SiteId", e.RowKeyId );
         }
 
         /// <summary>

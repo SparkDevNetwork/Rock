@@ -9,7 +9,7 @@
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
     xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0">
 
-{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss,feed-{{ Channel.Id }}-{{ feedtype }}' duration:'{{ Channel.TimeToLive | Timems:60 }}' %}
+{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss,feed-{{ Channel.Id }}-{{ feedtype }}' duration:'{{ Channel.TimeToLive | Times:60 }}' %}
 
 <channel>
 {% assign PublicApplicationRoot = "https://newspring.cc" %}
@@ -20,6 +20,7 @@
 {% assign channelNameParts = Channel.Name | Split:' - ' %}
 {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
 {% assign channelFeedKeywords = Channel | Attribute:'RSSFeedKeywords' %}
+{% assign channelHiddenAttributeGuids = Channel | Attribute:'HiddenAttributes','RawValue' %}
 {% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
 
     <title>{% if feedtype and feedtype != empty and feedtype != 'Editorial' %}{{ orgName }}{% if channelNameParts[0] contains 'Fuse' %} Fuse{% endif %} {{ channelNameParts[1] | Singularize }}{% if feedtype == 'Audio' %} Audio{% elseif feedtype == 'Video' %} Video{% endif %}{% else %}{{ channelNameParts[1] }}{% endif %}</title>
@@ -67,17 +68,30 @@
 
 {% for item in Items -%}
 
-  {% capture parentTitle %}{[ getParentTitleFromChildId id:'{{ item.Id }}' ]}{% endcapture %}
-  {% capture permalink %}{{ PublicApplicationRoot }}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
+  {% capture parentTitle %}{[ getParentTitleFromChildId cciid:'{{ item.Id }}' ]}{% endcapture %}
+  {% capture permalink %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
 
     {% if permalink and permalink != empty %}
+        {% assign permalink = permalink | Prepend:PublicApplicationRoot %}
         {% capture itemLink %}{{ permalink }}{% endcapture %}
         {% assign itemSubtitle = item | Attribute:'Subtitle' | StripHtml | HtmlDecode %}
         {% assign itemSummary = item | Attribute:'Summary' | HtmlDecode %}
         {% assign itemContent = item.Content | HtmlDecode %}
-        {% assign communicatorsGuid = item | Attribute:'Communicators','RawValue' %}
-        {% capture communicators %}{[ communicatorNames guid:'{{ communicatorsGuid }}' ]}{% endcapture %}
-        {% assign communicators = communicators | Trim %}
+
+        {% if channelHiddenAttributeGuids contains '3a7c9ca6-83a9-4b7e-80f3-3b2711623c79' %}{% else %}
+            {%- comment -%}Only get scripture data if the attribute isn't hidden for the channel{%- endcomment -%}
+            {% capture scriptureJSON %}{{ item | Attribute:'Scriptures' }}{% endcapture %}
+            {% assign scriptureObject = scriptureJSON | FromJSON %}
+            {% capture itemScriptures %}{% for scripture in scriptureObject.Attributes %}{{ scripture.Book }} {{ scripture.Reference }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+        {% endif %}
+
+        {% if channelHiddenAttributeGuids contains '59e4c62a-07b8-4377-9764-77b54981d6fc' %}{% else %}
+            {%- comment -%}Only get communicator data if the attribute isn't hidden for the channel{%- endcomment -%}
+            {% capture communicatorsJSON %}{{ item | Attribute:'Communicators' }}{% endcapture %}
+            {% assign communicatorsObject = communicatorsJSON | FromJSON %}
+            {% capture communicators %}{% for communicator in communicatorsObject.Attributes %}{% if communicator.Communicator != empty %}{{ communicator.Communicator }}{% else %}{{ communicator.GuestCommunicator }}{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+        {% endif %}
+
         {% assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Escape %}
         {% assign itemImageSquare = item | Attribute:'ImageSquare','Url' | Escape %}
         {% assign itemAudio = item | Attribute:'AudioFile','Url' | Escape %}
@@ -85,9 +99,6 @@
         {% assign itemActualDate = item | Attribute:'ActualDate' | Date:'ddd, dd MMM yyyy HH:mm:00 EST' %}
         {% assign itemWistia = item | Attribute:'Video','RawValue' %}
         {% capture itemWistiaEmbed %}{[ wistiaEmbed id:'{{ itemWistia }}' ]}{% endcapture %}
-        {% assign itemScripturesGuid = item | Attribute:'Scriptures','RawValue' %}
-        {% capture itemScriptures %}{[ scriptureReferences guid:'{{ itemScripturesGuid }}' ]}{% endcapture %}
-        {% assign itemScriptures = itemScriptures | Trim %}
 
         <item>
             <title><![CDATA[{% if parentTitle and parentTitle != empty %}{{ parentTitle }}: {% endif %}{{ item.Title }}]]></title>
@@ -123,6 +134,8 @@
             {% if feedtype and feedtype != 'Editorial' %}
                 <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare | Split:'?' | First }}{% elseif parentImageSquare != empty %}{{ parentImageSquare | Split:'?' | First }}{% else %}{{ fallbackImage | Split:'?' | First }}{% endif %}"/>
                 {% if communicators and communicators != empty %}
+                    <itunes:author>{{ communicators }}</itunes:author>
+                {% else %}
                     <itunes:author>NewSpring Church</itunes:author>
                 {% endif %}
                 {% if itemSubtitle != empty %}<itunes:subtitle>{{ itemSubtitle }}</itunes:subtitle>{% endif %}

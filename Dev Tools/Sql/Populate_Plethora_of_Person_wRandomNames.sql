@@ -3,6 +3,7 @@ SET NOCOUNT ON
 -- NOTE: Set @maxPerson to the number of people you want to add. Setting it as high as 99999 might take a minute or so
 DECLARE @maxPerson INT = 9999
     ,@genderInt INT
+    ,@countryCode nvarchar(3) = null
     ,@personRecordType INT = (
         SELECT id
         FROM DefinedValue
@@ -12094,7 +12095,9 @@ BEGIN
         INSERT INTO [PhoneNumber] (
             IsSystem
             ,PersonId
+            ,CountryCode
             ,Number
+            ,FullNumber
             ,NumberFormatted
             ,IsMessagingEnabled
             ,IsUnlisted
@@ -12104,7 +12107,9 @@ BEGIN
         VALUES (
             0
             ,@personId
+            ,@countryCode
             ,@phoneNumber
+            ,concat(@countryCode, @phoneNumber)
             ,@phoneNumberFormatted
             ,0
             ,0
@@ -12118,7 +12123,9 @@ BEGIN
         INSERT INTO [PhoneNumber] (
             IsSystem
             ,PersonId
+            ,CountryCode
             ,Number
+            ,FullNumber
             ,NumberFormatted
             ,IsMessagingEnabled
             ,IsUnlisted
@@ -12128,7 +12135,9 @@ BEGIN
         VALUES (
             0
             ,@personId
+            ,@countryCode
             ,@phoneNumber
+            ,concat(@countryCode, @phoneNumber)
             ,@phoneNumberFormatted
             ,1
             ,0
@@ -12217,7 +12226,9 @@ BEGIN
         INSERT INTO [PhoneNumber] (
             IsSystem
             ,PersonId
+            ,CountryCode
             ,Number
+            ,FullNumber
             ,NumberFormatted
             ,IsMessagingEnabled
             ,IsUnlisted
@@ -12227,7 +12238,9 @@ BEGIN
         VALUES (
             0
             ,@spousePersonId
+            ,@countryCode
             ,@phoneNumber
+            ,concat(@countryCode, @phoneNumber)
             ,@phoneNumberFormatted
             ,0
             ,0
@@ -12242,7 +12255,9 @@ BEGIN
         INSERT INTO [PhoneNumber] (
             IsSystem
             ,PersonId
+            ,CountryCode
             ,Number
+            ,FullNumber
             ,NumberFormatted
             ,IsMessagingEnabled
             ,IsUnlisted
@@ -12252,7 +12267,9 @@ BEGIN
         VALUES (
             0
             ,@spousePersonId
+            ,@countryCode
             ,@phoneNumber
+            ,concat(@countryCode, @phoneNumber)
             ,@phoneNumberFormatted
             ,1
             ,0
@@ -12592,5 +12609,8 @@ BEGIN
         DROP TABLE #firstNames
 
     SELECT COUNT(*) [Total Person Count]
-    FROM PERSON
+    FROM [Person]
+
+    SELECT COUNT(*) [Total PhoneNumber Count]
+    FROM PhoneNumber
 END

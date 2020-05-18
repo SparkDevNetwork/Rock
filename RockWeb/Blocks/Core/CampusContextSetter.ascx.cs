@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
             var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
             var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-            var campusIdString = Request.QueryString["campusId"];
+            var campusIdString = Request.QueryString["CampusId"];
             if ( campusIdString != null )
             {
                 var campusId = campusIdString.AsInteger();
@@ -190,10 +190,10 @@ namespace RockWeb.Blocks.Core
             // Only redirect if refreshPage is true
             if ( refreshPage )
             {
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "campusId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "campusId", campusId.ToString() );
+                    queryString.Set( "CampusId", campusId.ToString() );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

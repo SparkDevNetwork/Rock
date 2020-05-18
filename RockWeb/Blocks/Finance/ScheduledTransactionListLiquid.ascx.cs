@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Finance
                 foreach ( FinancialScheduledTransactionDetail detail in transactionSchedule.ScheduledTransactionDetails )
                 {
                     Dictionary<string, object> detailSummary = new Dictionary<string, object>();
-                    detailSummary.Add( "AccountId", detail.Id );
+                    detailSummary.Add( "AccountId", detail.Account.Id );
                     detailSummary.Add( "AccountName", detail.Account.Name );
                     detailSummary.Add( "Amount", detail.Amount );
                     detailSummary.Add( "Summary", detail.Summary );

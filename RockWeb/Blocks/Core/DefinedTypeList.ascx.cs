@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "definedTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", 0 );
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "definedTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", e.RowKeyId );
         }
 
         /// <summary>

@@ -24,6 +24,7 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
+    /// Data Migrations for v7.4
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]

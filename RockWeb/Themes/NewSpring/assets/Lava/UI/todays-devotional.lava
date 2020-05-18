@@ -1,0 +1,23 @@
+{% if Item and Item != empty %}
+
+  {% assign parentChannelId = Item.ParentChannelId | AsInteger %}
+  {% assign parent = Item.Parents | Where:'ChannelId', parentChannelId | First %}
+  {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+  {% assign imageurl = parentItem.ImageSquare %}
+
+
+  {% assign id = Item.Id %}
+  {% assign dataset = Item.Dataset %}
+  {% assign title = Item.Title | Replace:"'","’" %}
+  {% capture content %}<p>{{ Item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:250,'...' }}</p>{% endcapture %}
+  {% assign label = 'Today’s Devotional' %}
+  {% assign imagealignment = 'Left' %}
+  {% assign ratio = 'square' %}
+  {% assign linkurl = Item.Permalink %}
+  {% assign linktext = 'Read Devotional' %}
+
+  {[ sideBySide id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+{% else %}
+    No item object defined.
+{% endif %}

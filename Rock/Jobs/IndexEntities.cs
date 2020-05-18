@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -31,6 +32,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Re-indexes the selected entity types in Universal Search
     /// </summary>
+    [DisplayName( "Universal Search Re-Index" )]
+    [Description( "Re-indexes the selected entity types in Universal Search." )]
+
     [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
     [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
     [DisallowConcurrentExecution]

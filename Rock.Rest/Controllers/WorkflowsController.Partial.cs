@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{workflowTypeId}" )]
+        [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{WorkflowTypeId}" )]
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();

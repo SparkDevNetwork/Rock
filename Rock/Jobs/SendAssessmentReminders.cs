@@ -31,15 +31,19 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace Rock.Jobs
 {
     #region Job Attributes
 
     /// <summary>
-    /// 
+    /// Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Send Assessment Reminders" )]
+    [Description( "Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date." )]
+
     [IntegerField( "Reminder Every",
             Key = AttributeKeys.ReminderEveryDays,
             Description = "The number of days between reminder emails.",

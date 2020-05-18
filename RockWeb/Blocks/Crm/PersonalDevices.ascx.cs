@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Crm
                 mergeFields.Add( "PersonalDevices", items );
 
                 var queryParams = new Dictionary<string, string>();
-                queryParams.Add( "personalDeviceId", "_PersonDeviceIdParam_" );
+                queryParams.Add( "PersonalDeviceId", "_PersonDeviceIdParam_" );
                 string url = LinkedPageUrl( "InteractionsPage", queryParams );
                 if ( !string.IsNullOrWhiteSpace( url ) )
                 {

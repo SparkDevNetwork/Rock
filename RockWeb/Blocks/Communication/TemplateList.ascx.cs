@@ -416,12 +416,6 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
             var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
 
-            var privateCol = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "SenderPersonAlias.Person.FullName" );
-            if ( privateCol != null )
-            {
-                privateCol.Visible = GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean();
-            }
-
             if ( _canFilterCreatedBy )
             {
                 var personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();

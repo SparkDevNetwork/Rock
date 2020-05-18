@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -33,6 +35,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to run quick SQL queries on a schedule
     /// </summary>
+    [DisplayName( "Database Maintenance" )]
+    [Description( "Performs routine SQL Server database maintenance." )]
+
     [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order: 0 )]
     [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
     [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]
@@ -75,7 +80,19 @@ namespace Rock.Jobs
 
             int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
             StringBuilder resultsMessage = new StringBuilder();
-            bool hasIntegrityCheckPassed = false;
+            bool integrityCheckPassed = false;
+            bool integrityCheckIgnored = false;
+
+            /*
+             * DJL 2020-04-08
+             * For Microsoft Azure, disable the Integrity Check and Statistics Update tasks.
+             * Refer: https://azure.microsoft.com/en-us/blog/data-integrity-in-azure-sql-database/
+             */
+            if ( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+            {
+                runIntegrityCheck = false;
+                runStatisticsUpdate = false;
+            }
 
             // run integrity check
             if ( runIntegrityCheck )
@@ -83,7 +100,7 @@ namespace Rock.Jobs
                 try
                 {
                     string alertEmail = dataMap.GetString( "AlertEmail" );
-                    hasIntegrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail, resultsMessage );
+                    integrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail, resultsMessage );
 
                 }
                 catch ( Exception ex )
@@ -93,8 +110,12 @@ namespace Rock.Jobs
                     throw;
                 }
             }
+            else
+            {
+                integrityCheckIgnored = true;
+            }
 
-            if ( hasIntegrityCheckPassed )
+            if ( integrityCheckPassed || integrityCheckIgnored )
             {
                 // rebuild fragmented indexes
                 if ( runIndexRebuild )
@@ -141,7 +162,6 @@ namespace Rock.Jobs
             stopwatch.Stop();
 
             resultsMessage.Append( $"Integrity Check took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
-                
 
             if ( errors > 0 )
             {
@@ -194,7 +214,7 @@ namespace Rock.Jobs
             resultsMessage.Append( $", Index Rebuild took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
         }
 
-        private void UpdateStatistics(int commandTimeout, StringBuilder resultsMessage )
+        private void UpdateStatistics( int commandTimeout, StringBuilder resultsMessage )
         {
             // derived from http://www.sqlservercentral.com/scripts/Indexing/31823/
             // NOTE: Can't use sp_MSForEachtable because it isn't supported on AZURE (and it is undocumented)

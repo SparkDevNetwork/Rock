@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "binaryFileTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "BinaryFileTypeId" ).AsInteger() );
             }
             else
             {

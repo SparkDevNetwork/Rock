@@ -18,7 +18,7 @@
                             <Rock:DateTimeField DataField="StopDateTime" HeaderText="Stop DateTime" SortExpression="StopDateTime"/>
                             <Rock:RockLiteralField ID="lDurationSeconds" HeaderText="Run Duration" SortExpression="DurationSeconds" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:RockLiteralField ID="lStatus" HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"/>
-                            <Rock:RockBoundField DataField="StatusMessageAsHtml" HeaderText="Status Message" HtmlEncode="false" SortExpression="StatusMessage" TruncateLength="255" />
+                            <Rock:RockLiteralField ID="lStatusMessageAsHtml" HeaderText="Status Message" SortExpression="StatusMessage" />
                         </Columns>
                     </Rock:Grid>
                 </div>

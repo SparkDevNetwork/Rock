@@ -958,7 +958,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If a template guid was passed in, it overrides any default template.
-            string templateGuid = PageParameter( "templateGuid" );
+            string templateGuid = PageParameter( "TemplateGuid" );
             if ( !string.IsNullOrEmpty( templateGuid ) )
             {
                 var guid = new Guid( templateGuid );

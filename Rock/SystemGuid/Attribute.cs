@@ -613,5 +613,15 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_ACTION_SEND_EMAIL_SAVE_COMMUNICATION_HISTORY = "65E69B78-37D8-4A88-B8AC-71893D2F75EF";
 
         #endregion Workflow Action Attributes
+
+        /// <summary>
+        /// The defined value logging domains to log
+        /// </summary>
+        public const string DEFINED_VALUE_LOGGING_DOMAINS_TO_LOG = "9BEA544F-0636-485E-8772-B63180E529F9";
+
+        /// <summary>
+        /// The defined value log system settings
+        /// </summary>
+        public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
     }
 }

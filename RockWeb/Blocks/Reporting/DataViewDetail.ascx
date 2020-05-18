@@ -39,12 +39,7 @@
                                         <Rock:Switch ID="swPersistDataView" runat="server" Text="Enable Persistence" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed."  />
 
                                         <asp:Panel runat="server" ID="pnlSpeedSettings" class="mt-4">
-                                            <Rock:RangeSlider ID="rsPersistedScheduleInterval" runat="server" Label="Persistence Interval" MaxValue="24" MinValue="1" SelectedValue="12" />
-                                            <Rock:ButtonGroup ID="bgPersistedScheduleUnit" runat="server" CssClass="pull-right margin-b-md" UnselectedItemClass="btn btn-xs btn-default" SelectedItemClass="btn btn-xs btn-primary" AutoPostBack="true" OnSelectedIndexChanged="bgPersistedScheduleUnit_SelectedIndexChanged">
-                                                <asp:ListItem Text="Mins" Value="1" />
-                                                <asp:ListItem Text="Hours" Value="2" Selected="True" />
-                                                <asp:ListItem Text="Days" Value="3" />
-                                            </Rock:ButtonGroup>
+                                            <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" />
                                         </asp:Panel>
                                     </ContentTemplate>
                                 </asp:UpdatePanel>

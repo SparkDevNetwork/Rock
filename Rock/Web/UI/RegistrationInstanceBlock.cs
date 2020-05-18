@@ -271,6 +271,61 @@ namespace Rock.Web.UI
         #region Properties and Fields
 
         /// <summary>
+        /// Filter Campus Identifier
+        /// </summary>
+        protected const string FILTER_CAMPUS_ID = "ddlCampus";
+
+        /// <summary>
+        /// Filter Email Identifier
+        /// </summary>
+        protected const string FILTER_EMAIL_ID = "tbEmailFilter";
+
+        /// <summary>
+        /// Filter BirthDate Identifier
+        /// </summary>
+        protected const string FILTER_BIRTHDATE_ID = "drpBirthdateFilter";
+
+        /// <summary>
+        /// Filter Middle name Identifier
+        /// </summary>
+        protected const string FILTER_MIDDLE_NAME_ID = "tbMiddleNameFilter";
+
+        /// <summary>
+        /// Filter Anniversary date Identifier
+        /// </summary>
+        protected const string FILTER_ANNIVERSARY_DATE_ID = "drpAnniversaryDateFilter";
+
+        /// <summary>
+        /// Filter grade Identifier
+        /// </summary>
+        protected const string FILTER_GRADE_ID = "gpGradeFilter";
+
+        /// <summary>
+        /// Filter gender Identifier
+        /// </summary>
+        protected const string FILTER_GENDER_ID = "ddlGenderFilter";
+
+        /// <summary>
+        /// Filter martial status Identifier
+        /// </summary>
+        protected const string FILTER_MARTIAL_STATUS_ID = "dvpMaritalStatusFilter";
+
+        /// <summary>
+        /// Filter mmobile phone Identifier
+        /// </summary>
+        protected const string FILTER_MOBILE_PHONE_ID = "tbMobilePhoneFilter";
+
+        /// <summary>
+        /// Filter home phone Identifier
+        /// </summary>
+        protected const string FILTER_HOME_PHONE_ID = "tbHomePhoneFilter";
+
+        /// <summary>
+        /// Filter attribute prefix
+        /// </summary>
+        protected const string FILTER_ATTRIBUTE_PREFIX = "filterAttribute_";
+
+        /// <summary>
         /// The active RegistrationInstance in this context.
         /// </summary>
         public RegistrationInstance RegistrationInstance
@@ -428,7 +483,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.Campus:
                                 {
                                     var ddlCampus = new RockDropDownList();
-                                    ddlCampus.ID = "ddlGroupPlacementsCampus";
+                                    ddlCampus.ID = FILTER_CAMPUS_ID;
                                     ddlCampus.Label = "Home Campus";
                                     ddlCampus.DataValueField = "Id";
                                     ddlCampus.DataTextField = "Name";
@@ -444,7 +499,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( ddlCampus );
 
                                     var templateField = new RockLiteralField();
-                                    templateField.ID = "lGroupPlacementsCampus";
+                                    templateField.ID = "lCampus";
                                     templateField.HeaderText = "Campus";
                                     grid.Columns.Add( templateField );
                                 }
@@ -454,7 +509,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.Email:
                                 {
                                     var tbEmailFilter = new RockTextBox();
-                                    tbEmailFilter.ID = "tbGroupPlacementsEmailFilter";
+                                    tbEmailFilter.ID = FILTER_EMAIL_ID;
                                     tbEmailFilter.Label = "Email";
 
                                     if ( setValues )
@@ -478,7 +533,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.Birthdate:
                                 {
                                     var drpBirthdateFilter = new DateRangePicker();
-                                    drpBirthdateFilter.ID = "drpGroupPlacementsBirthdateFilter";
+                                    drpBirthdateFilter.ID = FILTER_BIRTHDATE_ID;
                                     drpBirthdateFilter.Label = "Birthdate Range";
 
                                     if ( setValues )
@@ -502,7 +557,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.MiddleName:
                                 {
                                     var tbMiddleNameFilter = new RockTextBox();
-                                    tbMiddleNameFilter.ID = "tbGroupPlacementsMiddleNameFilter";
+                                    tbMiddleNameFilter.ID = FILTER_MIDDLE_NAME_ID;
                                     tbMiddleNameFilter.Label = "MiddleName";
 
                                     if ( setValues )
@@ -526,7 +581,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.AnniversaryDate:
                                 {
                                     var drpAnniversaryDateFilter = new DateRangePicker();
-                                    drpAnniversaryDateFilter.ID = "drpGroupPlacementsAnniversaryDateFilter";
+                                    drpAnniversaryDateFilter.ID = FILTER_ANNIVERSARY_DATE_ID;
                                     drpAnniversaryDateFilter.Label = "AnniversaryDate Range";
 
                                     if ( setValues )
@@ -550,7 +605,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.Grade:
                                 {
                                     var gpGradeFilter = new GradePicker();
-                                    gpGradeFilter.ID = "gpGroupPlacementsGradeFilter";
+                                    gpGradeFilter.ID = FILTER_GRADE_ID;
                                     gpGradeFilter.Label = "Grade";
                                     gpGradeFilter.UseAbbreviation = true;
                                     gpGradeFilter.UseGradeOffsetAsValue = true;
@@ -584,7 +639,7 @@ namespace Rock.Web.UI
                                 {
                                     var ddlGenderFilter = new RockDropDownList();
                                     ddlGenderFilter.BindToEnum<Gender>( true );
-                                    ddlGenderFilter.ID = "ddlGroupPlacementsGenderFilter";
+                                    ddlGenderFilter.ID = FILTER_GENDER_ID;
                                     ddlGenderFilter.Label = "Gender";
 
                                     if ( setValues )
@@ -608,7 +663,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.MaritalStatus:
                                 {
                                     var dvpMaritalStatusFilter = new DefinedValuePicker();
-                                    dvpMaritalStatusFilter.ID = "dvpGroupPlacementsMaritalStatusFilter";
+                                    dvpMaritalStatusFilter.ID = FILTER_MARTIAL_STATUS_ID;
                                     dvpMaritalStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                                     dvpMaritalStatusFilter.Label = "Marital Status";
 
@@ -636,7 +691,7 @@ namespace Rock.Web.UI
                                     var mobileLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
 
                                     var tbMobilePhoneFilter = new RockTextBox();
-                                    tbMobilePhoneFilter.ID = "tbGroupPlacementsMobilePhoneFilter";
+                                    tbMobilePhoneFilter.ID = FILTER_MOBILE_PHONE_ID;
                                     tbMobilePhoneFilter.Label = mobileLabel;
 
                                     if ( setValues )
@@ -647,7 +702,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
 
                                     var phoneNumbersField = new RockLiteralField();
-                                    phoneNumbersField.ID = "lGroupPlacementsMobile";
+                                    phoneNumbersField.ID = "lMobile";
                                     phoneNumbersField.HeaderText = mobileLabel;
                                     grid.Columns.Add( phoneNumbersField );
                                 }
@@ -660,7 +715,7 @@ namespace Rock.Web.UI
                                     var homePhoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Value;
 
                                     var tbHomePhoneFilter = new RockTextBox();
-                                    tbHomePhoneFilter.ID = "tbGroupPlacementsHomePhoneFilter";
+                                    tbHomePhoneFilter.ID = FILTER_HOME_PHONE_ID;
                                     tbHomePhoneFilter.Label = homePhoneLabel;
 
                                     if ( setValues )
@@ -671,7 +726,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( tbHomePhoneFilter );
 
                                     var homePhoneNumbersField = new RockLiteralField();
-                                    homePhoneNumbersField.ID = "lGroupPlacementsHomePhone";
+                                    homePhoneNumbersField.ID = "lHomePhone";
                                     homePhoneNumbersField.HeaderText = homePhoneLabel;
                                     grid.Columns.Add( homePhoneNumbersField );
                                 }
@@ -701,7 +756,7 @@ namespace Rock.Web.UI
                         var attribute = field.Attribute;
 
                         // Add dynamic filter fields
-                        var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterGroupPlacements_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                        var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                         if ( filterFieldControl != null )
                         {
                             if ( filterFieldControl is IRockControl )

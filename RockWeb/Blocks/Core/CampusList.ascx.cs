@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "campusId", 0 );
+            NavigateToLinkedPage( "DetailPage", "CampusId", 0 );
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "campusId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "CampusId", e.RowKeyId );
         }
 
         /// <summary>

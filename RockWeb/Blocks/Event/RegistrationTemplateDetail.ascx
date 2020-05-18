@@ -592,6 +592,7 @@
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbFeeItemsConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                         <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
                             <asp:HiddenField ID="hfFeeItemSingleGuid" runat="server" />
                             <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
@@ -615,10 +616,12 @@
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
+
+                            <div class="actions">
+                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                            </div>
                         </Rock:RockControlWrapper>
-                        <div class="actions">
-                            <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
-                        </div>
+
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check" />
@@ -627,6 +630,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbFeeIsRequired" runat="server" Label="Is Required" ValidationGroup="Fee" Text="Yes" Help="Checking this will mark the fee for new registrations required." />
+                        <Rock:RockCheckBox ID="cbHideWhenNoneRemaining" runat="server" Label="Hide When None Remaining" ValidationGroup="Fee" Text="Yes" Help="If checked then items that have 0 remaining will not display. If not checked then the items will display but will not be selectable." />
                     </div>
                 </div>
             </Content>

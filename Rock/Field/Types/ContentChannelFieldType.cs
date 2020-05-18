@@ -209,6 +209,16 @@ namespace Rock.Field.Types
             return null;
         }
 
+        /// <summary>
+        /// Gets the copy value. This will always return empty so the content channel will not be copied.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public override string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            return string.Empty;
+        }
         #endregion
     }
 }

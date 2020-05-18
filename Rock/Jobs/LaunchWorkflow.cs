@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using System.ComponentModel;
 using Quartz;
 
 using Rock.Attribute;
@@ -27,8 +27,11 @@ using Rock.Web.UI;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to launch a workflow
+    /// This job launches the specified workflow.
     /// </summary>
+    [DisplayName( "Launch Workflow" )]
+    [Description( "This job launches the specified workflow." )]
+
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
     [DisallowConcurrentExecution]
     public class LaunchWorkflow : RockBlock, IJob

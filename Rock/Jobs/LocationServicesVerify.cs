@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -27,6 +28,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
+    [DisplayName( "Location Services Verify" )]
+    [Description( "Attempts to standardize and geocode addresses that have not been verified yet. It also attempts to re-verify address that failed in the past after a given wait period." )]
+
     [IntegerField("Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
     [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
