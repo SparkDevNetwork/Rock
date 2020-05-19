@@ -557,6 +557,11 @@ namespace Rock.DownhillCss
 
         private static string baseStylesMobile = @"
 /* Resets */
+
+NavigationPage {
+    -rock-status-bar-text: dark;
+}
+
 ^contentpage {
     background-color: ?color-background;
 }
@@ -820,7 +825,7 @@ namespace Rock.DownhillCss
     font-size: default;
     color: ?color-text;
     line-height: 1.15;
-    margin-bottom: 12;
+    margin-bottom: 24;
 }
 
 .paragraph-sm {
@@ -1017,11 +1022,12 @@ namespace Rock.DownhillCss
     font-size: 28;
 }
 
+
+/* Calendar Classes */
 .calendar-filter-panel {
     margin-bottom: 5;
 }
 
-/* Calendar Classes */
 .calendar-filter {
     padding: 8;
     border-radius: ?radius-base;
@@ -1054,6 +1060,83 @@ namespace Rock.DownhillCss
 
 .calendar-header {
     font-style: bold;
+}
+
+.calendar-day {
+    background-color: initial;
+}
+.calendar-day-current {
+    background-color: ?color-gray-200;
+}
+.calendar-day-current .calendar-day-title {
+    color: ?color-text;
+}
+
+.calendar-day-adjacent .calendar-day-title {
+    color: ?color-gray-400;
+}
+
+.calendar-events-heading {
+    margin-top: 32;
+    text-align: center;
+}
+
+.calendar-events-day {
+    text-align: left;
+    margin-bottom: 8;
+}
+
+.calendar-event {
+    padding: 12;
+    border-radius: ?radius-base;
+    background-color: ?color-gray-200;
+    margin-bottom: 24;
+}
+
+.calendar-event-summary {
+    padding: 0;
+    background-color: ?color-gray-200;
+}
+
+.calendar-event-title {
+    font-style: bold;
+}
+
+.calendar-event-text {
+    font-size: small;
+}
+
+.calendar-event-audience,
+.calendar-event-campus {
+    font-size: small;
+    color: #888888;
+}
+
+.calendar-list-navigation {
+    margin-bottom: 16;
+}
+
+.previous-month,
+.next-month {
+    padding: 4 12 0;
+    font-size: 24;
+    opacity: 0.8;
+}
+
+.next-month {
+    padding-right: 0;
+}
+
+/* Modals */
+.modal-header {
+    background-color: ?color-gray-400;
+}
+
+.modal-title {  
+}
+
+.modal-close {
+    opacity: 0.5;
 }
 
 /* Forms Styles */
