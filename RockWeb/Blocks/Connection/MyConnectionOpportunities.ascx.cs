@@ -577,9 +577,9 @@ namespace RockWeb.Blocks.Connection
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gRequests_GridRebind( object sender, EventArgs e )
+        protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGrid();
+            BindGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -986,7 +986,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( bool isExporting = false )
         {
             ConnectionTypeSummary connectionTypeSummary = null;
             OpportunitySummary opportunitySummary = null;
@@ -1157,14 +1157,14 @@ namespace RockWeb.Blocks.Connection
                             GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
                             GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
                             Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullNameReversed : "",
-                            LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                            LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault(), isExporting ),
                             LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
-                            LastActivityNote = lastActivityNoteBoundField != null && lastActivityNoteBoundField.Visible ? r.ConnectionRequestActivities.OrderByDescending(
+                            LastActivityNote = lastActivityNoteBoundField != null && ( lastActivityNoteBoundField.Visible || isExporting ) ? r.ConnectionRequestActivities.OrderByDescending(
                                 a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
                             Status = r.ConnectionStatus.Name,
                             StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                             ConnectionState = r.ConnectionState,
-                            StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
+                            StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate, isExporting )
                         } )
                        .ToList();
 
@@ -1230,13 +1230,21 @@ namespace RockWeb.Blocks.Connection
             return string.Format( "{0}-{1}", SelectedOpportunityId ?? 0, key );
         }
 
-        private string FormatActivity( object item )
+        private string FormatActivity( object item, bool isExporting )
         {
             var connectionRequestActivity = item as ConnectionRequestActivity;
             if ( connectionRequestActivity != null )
             {
-                return string.Format( "{0} (<span class='small'>{1}</small>)",
-                    connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                if ( isExporting )
+                {
+                    return string.Format( "{0} ({1})",
+                        connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                }
+                else
+                {
+                    return string.Format( "{0} (<span class='small'>{1}</small>)",
+                        connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                }
             }
             return string.Empty;
         }
@@ -1263,7 +1271,7 @@ namespace RockWeb.Blocks.Connection
             return resolvedValues.AsDelimited( ", " );
         }
 
-        private string FormatStateLabel( ConnectionState connectionState, DateTime? followupDate )
+        private string FormatStateLabel( ConnectionState connectionState, DateTime? followupDate, bool isExporting )
         {
             string css = string.Empty;
             switch ( connectionState )
@@ -1288,7 +1296,14 @@ namespace RockWeb.Blocks.Connection
                 text += string.Format( " ({0})", followupDate.Value.ToShortDateString() );
             }
 
-            return string.Format( "<span class='label label-{0}'>{1}</span>", css, text );
+            if ( isExporting )
+            {
+                return text;
+            }
+            else
+            {
+                return string.Format( "<span class='label label-{0}'>{1}</span>", css, text );
+            }
         }
 
         #endregion
