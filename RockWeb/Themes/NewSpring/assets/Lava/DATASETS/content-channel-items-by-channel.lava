@@ -75,7 +75,7 @@
             ON pd.Id = av.Value
             WHERE ccia.ContentChannelItemId = {{ item.Id }}
             AND cci.ContentChannelId = {{ childchannelid }}
-            AND av.AttributeId = 105665
+            AND av.AttributeId = 107096
             {% if childItemsManuallyOrdered == 'true' %}
               ORDER BY ccia.[Order]
             {% else %}
@@ -104,7 +104,7 @@
             ON pd.Id = av.Value
             WHERE ccia.ChildContentChannelItemId = {{ item.Id }}
             AND cci.ContentChannelId = {{ parentchannelid }}
-            AND av.AttributeId = 105665
+            AND av.AttributeId = 107096
             ORDER BY ccia.[Order]
           {%- endsql -%}
         {%- endif -%}
@@ -126,7 +126,7 @@
                   JOIN PersistedDataset pd
                   ON av.Value = pd.Id
                   WHERE av.EntityId = cci2.ContentChannelId
-                  AND av.AttributeId = 105665
+                  AND av.AttributeId = 107096
               ) 'Dataset'
           FROM ContentChannelItem cci
           JOIN TaggedItem ti
