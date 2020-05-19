@@ -378,14 +378,11 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
 
                 int? orphanedPhotoId = null;
-                if ( imgupPhoto.BinaryFileId != null )
+                if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
                 {
-                    if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
-                    {
-                        orphanedPhotoId = connectionOpportunity.PhotoId;
-                    }
-                    connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
+                    orphanedPhotoId = connectionOpportunity.PhotoId;
                 }
+                connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId;
 
                 // remove any workflows that removed in the UI
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
