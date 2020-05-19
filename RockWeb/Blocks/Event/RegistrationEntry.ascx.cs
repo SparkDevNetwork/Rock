@@ -690,15 +690,6 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                // Show the pnlFamilyMembers panel if RegistrantsSameFamily is not no, and there is a same family selection
-                bool showPnlFamilyMembers = false;
-                if ( RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily != RegistrantsSameFamily.No && rblFamilyOptions.SelectedItem != null )
-                {
-                    showPnlFamilyMembers = rblFamilyOptions.SelectedItem.Text != "None of the above";
-                }
-
-                pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = showPnlFamilyMembers ? "block" : "none";
-
                 // Load values from controls into the state objects
                 ParseDynamicControls();
 
@@ -3855,6 +3846,58 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Shows the family members panel if it should be shown. This should only be called by SetPanel()
+        /// </summary>
+        /// <returns></returns>
+        private void ShowFamilyMembersPanel()
+        {
+            // Hide the panel by default
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "none";
+
+            // Are we on the right panel and showing the info?
+            if ( pnlRegistrantFields.Visible == false )
+            {
+                return;
+            }
+
+            // Is the template loaded?
+            if ( RegistrationTemplate == null )
+            {
+                return;
+            }
+
+            // Are we supposed to show it ever?
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
+            {
+                return;
+            }
+
+            // Are there family members to choose from?
+            if ( ddlFamilyMembers.Items.Count == 0 )
+            {
+                return;
+            }
+
+            // Don't show if RegistrantsSameFamily is ask and there is no same family selection
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
+            {
+                if ( rblFamilyOptions.SelectedItem == null )
+                {
+                    return;
+                }
+
+                if ( rblFamilyOptions.SelectedItem.Text == "None of the above" )
+                {
+                    return;
+                }
+            }
+
+            // Show the pnlFamilyMembers panel if none of the above hide conditions are met.
+            // The RegistrantsSameFamily is yes or is ask and rboFamilyOptions has a valid selection
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "block";
+        }
+
+        /// <summary>
         /// Shows the registrant panel
         /// </summary>
         private void ShowRegistrant()
@@ -3971,7 +4014,6 @@ namespace RockWeb.Blocks.Event
 
                                 if ( familyMembers.Any() )
                                 {
-                                    ddlFamilyMembers.Visible = true;
                                     ddlFamilyMembers.Items.Add( new ListItem() );
 
                                     foreach ( var familyMember in familyMembers )
@@ -3983,8 +4025,6 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
                         }
-
-                        pnlFamilyMembers.Visible = ddlFamilyMembers.Items.Count > 0;
                     }
 
                     SetPanel( PanelIndex.PanelRegistrant );
@@ -4193,6 +4233,8 @@ namespace RockWeb.Blocks.Event
 
             lSummaryAndPaymentTitle.Text = ( CurrentPanel == PanelIndex.PanelSummary && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
             lPaymentInfoTitle.Text = CurrentPanel == PanelIndex.PanelSummary ? "<h4>Payment Method</h4>" : string.Empty;
+
+            ShowFamilyMembersPanel();
         }
 
         /// <summary>
