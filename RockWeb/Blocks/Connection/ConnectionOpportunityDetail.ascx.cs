@@ -172,6 +172,11 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gConnectionRequestAttributes.GridRebind += gConnectionRequestAttributes_GridRebind;
             gConnectionRequestAttributes.GridReorder += gConnectionRequestAttributes_GridReorder;
+            var securityField = gConnectionRequestAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             lvDefaultConnectors.ItemDataBound += lvDefaultConnectors_ItemDataBound;
 
