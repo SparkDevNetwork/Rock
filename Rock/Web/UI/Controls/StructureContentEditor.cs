@@ -247,12 +247,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfValue.Value;
+                return HttpUtility.UrlDecode(  _hfValue.Value );
             }
             set
             {
                 EnsureChildControls();
-                _hfValue.Value = value;
+                _hfValue.Value = HttpUtility.UrlEncode( value );
 
             }
         }
