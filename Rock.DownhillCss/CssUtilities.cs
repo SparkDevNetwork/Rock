@@ -611,6 +611,14 @@ NavigationPage {
     color: ?color-primary;
 }
 
+/* Class for styling code that matches Gitbook */
+.code {
+    background-color: #183055;
+    color: #e6ecf1;
+    padding: 16;
+    font-size: 12;
+}
+
 /* Forms Styling */
 .form-group {
     margin: 0 0 12 0;
