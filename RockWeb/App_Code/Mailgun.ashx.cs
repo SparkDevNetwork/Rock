@@ -355,19 +355,20 @@ public class Mailgun : IHttpHandler
                     break;
 
                 case "failed":
-                    // The new mailgun API bundles undeliverable mail unto a failed event. The reason (e.g. bounced) is in a seperate property called reason.
+                    // The new mailgun API bundles undeliverable mail into a failed event. The reason (e.g. bounced) is in a seperate property called reason.
                     if( mailgunRequestPayload.EventTypeReason.IsNotNullOrWhiteSpace())
                     {
                         switch ( mailgunRequestPayload.EventTypeReason )
                         {
-                            case "bounced":
+                            case "bounce":
+                            case "suppress-bounce":
                                 communicationRecipient.Status = CommunicationRecipientStatus.Failed;
                                 communicationRecipient.StatusNote = mailgunRequestPayload.Description;
 
                                 Rock.Communication.Email.ProcessBounce(
                                     mailgunRequestPayload.Recipient,
                                     Rock.Communication.BounceType.HardBounce,
-                                    mailgunRequestPayload.Notification,
+                                    mailgunRequestPayload.Description,
                                     timeStamp );
                                 break;
 
@@ -410,9 +411,10 @@ public class Mailgun : IHttpHandler
                 status = SendEmailWithEvents.OPENED_STATUS;
                 break;
 
-            case "failed":
             case "dropped":
-            case "suppress-bounce":
+                status = SendEmailWithEvents.FAILED_STATUS;
+                break;
+
             case "bounced":
                 status = SendEmailWithEvents.FAILED_STATUS;
                 string message = mailgunRequestPayload.Notification.IsNotNullOrWhiteSpace() ? mailgunRequestPayload.Notification : mailgunRequestPayload.Description;
@@ -423,6 +425,31 @@ public class Mailgun : IHttpHandler
                         message,
                         RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( mailgunRequestPayload.TimeStamp ).ToLocalTime() ) );
                 break;
+
+            case "failed":
+                // The new mailgun API bundles undeliverable mail into a failed event. The reason (e.g. bounced) is in a seperate property called reason.
+                if( mailgunRequestPayload.EventTypeReason.IsNotNullOrWhiteSpace())
+                {
+                    switch ( mailgunRequestPayload.EventTypeReason )
+                    {
+                        case "bounce":
+                        case "suppress-bounce":
+                            status = SendEmailWithEvents.FAILED_STATUS;
+
+                            Rock.Communication.Email.ProcessBounce(
+                                mailgunRequestPayload.Recipient,
+                                Rock.Communication.BounceType.HardBounce,
+                                mailgunRequestPayload.Description,
+                                RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( mailgunRequestPayload.TimeStamp ).ToLocalTime() ) );
+                            break;
+
+                        default:
+                            status = SendEmailWithEvents.FAILED_STATUS;
+                            break;
+                    }
+                }
+                break;
+
         }
 
         if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
