@@ -551,6 +551,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Message = message ?? GetCompletionMessage( workflow, responseText )
                     };
                 }
+                else
+                {
+                    //
+                    // If there is a second form, we need to persist.
+                    //
+                    workflowService.PersistImmediately( action );
+                }
             }
 
             //
@@ -561,7 +568,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var mobileForm = new WorkflowForm
             {
-                WorkflowGuid = workflow.Guid
+                WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null
             };
 
             //
