@@ -735,9 +735,9 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                             @PointID,
                             @PointType,
                             @StartCmd,
-                            @StartDateUTC,
+                            @StartDate,
                             @StopCmd,
-                            @StopDateUTC,
+                            @StopDate,
                             @Opr,
                             @OprID,
                             @Status
@@ -780,16 +780,13 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                 sql.Parameters.AddWithValue( "@PointID", item.OverrideGroup );
                 sql.Parameters.AddWithValue( "@PointType", 2 );
                 sql.Parameters.AddWithValue( "@StartCmd", startAction );
-                sql.Parameters.AddWithValue( "@StartDateUTC", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
                 sql.Parameters.AddWithValue( "@StopCmd", endAction );
-                sql.Parameters.AddWithValue( "@StopDateUTC", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
                 sql.Parameters.AddWithValue( "@Opr", "Rock " + RockDateTime.Now.ToShortDateTimeString() );
                 sql.Parameters.AddWithValue( "@OprID", 29 );
                 sql.Parameters.AddWithValue( "@Status", 1 );
                 sql.Parameters.AddWithValue( "@LocationName", item.RoomName );
-
-                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
-                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
 
                 // Validating record was added
                 if ( sql.ExecuteNonQuery() < 1 )
