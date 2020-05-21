@@ -16,6 +16,7 @@ using Rock.Web.Cache;
 using System.Data.Entity;
 using MailChimp.Net.Core;
 using DotLiquid.Tags;
+using MailChimp.Net.Models;
 
 namespace com.bemaservices.MailChimp.Utility
 {
@@ -166,11 +167,25 @@ namespace com.bemaservices.MailChimp.Utility
 
                 }
 
+                var mailChimpMembersNotAdded = new List<Member>();
+
                 //Match all the mailChimpMembers to people in Rock.
                 foreach ( var member in mailChimpMembers )
                 {
-                    var personId = GetRockPerson( member ).Id;
-                    mailChimpMemberLookUp.Add( personId, member );
+                    var rockPerson = GetRockPerson( member );
+                    if ( rockPerson.IsNotNull() )
+                    {
+                        mailChimpMemberLookUp.Add( rockPerson.Id, member );
+                    }
+                    else
+                    {
+                        mailChimpMembersNotAdded.Add( member );
+                    }
+                }
+
+                if( mailChimpMembersNotAdded.Any() )
+                {
+                    ExceptionLogService.LogException( new Exception( mailChimpMembersNotAdded.Count().ToString() + " Mailchimp Members not added." ) );
                 }
 
                 //Get all Groups that have an attribute set to this Mail Chimp List's Defined Value.
@@ -188,6 +203,9 @@ namespace com.bemaservices.MailChimp.Utility
                         {
                             var rockGroupMembers = groupMemberService.GetByGroupId( group.Id );
                             // Filter out Inactive and Archived Group Members for adding new members to Mail Chimp.
+
+                            rockContext.Database.CommandTimeout = 600;
+
                             var rockPeopleToAdd = rockGroupMembers.Where( m => !mailChimpMemberLookUp.Keys.ToList().Contains( m.PersonId ) &&
                                                                                 m.GroupMemberStatus != GroupMemberStatus.Inactive && !m.IsArchived );
                             foreach ( var groupMember in rockPeopleToAdd )
@@ -321,14 +339,23 @@ namespace com.bemaservices.MailChimp.Utility
                 person.EmailNote = emailNote;
                 person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 person.ForeignKey = mailchimpForeignKey;
+
+                if( !person.Email.IsValidEmail() )
+                {
+                    ExceptionLogService.LogException( new Exception( "Could not Add Mailchimp Member because their email address isn't valid(" + person.Email + ")" ) );
+                    return null;
+                }
+
                 var familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                 if ( familyGroup != null && familyGroup.Members.Any() )
                 {
                     person = familyGroup.Members.Select( m => m.Person ).First();
                 }
+               
             }
 
             rockContext.SaveChanges();
+
 
             return person;
         }
