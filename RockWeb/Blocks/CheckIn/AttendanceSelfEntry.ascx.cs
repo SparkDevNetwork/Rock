@@ -1431,6 +1431,7 @@ ORDER BY [Text]",
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
+            httpcookie.Expires = DateTime.Now.AddYears( 1 );
             Response.Cookies.Add( httpcookie );
         }
 
