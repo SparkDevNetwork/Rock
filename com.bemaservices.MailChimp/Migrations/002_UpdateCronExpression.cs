@@ -21,7 +21,7 @@ namespace com.bemaservices.MailChimp.Migrations
             //Add Job
             Sql( string.Format( @"
 			    UPDATE ServiceJob
-			    SET CronExpression = '0 0 0/4 1/1 * ? *'
+			    SET CronExpression = '0 0 1 1/1 * ? *'
 				WHERE Guid = 'A7EF4133-6616-4CF1-AD44-6F8DBE4EA46C'
             " ) );
         }
