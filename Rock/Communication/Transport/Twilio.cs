@@ -370,60 +370,47 @@ namespace Rock.Communication.Transport
 
                 foreach ( var messageChunk in messageChunks )
                 {
-                    CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
-                    {
-                        From = new TwilioTypes.PhoneNumber( fromPhone ),
-                        Body = messageChunk
-                    };
+                    var shouldAddAttachments = messageChunk == messageChunks.Last();
 
-                    if ( callbackUrl.IsNotNullOrWhiteSpace() )
-                    {
-                        createMessageOptions.StatusCallback = new Uri( callbackUrl );
-                    }
-
-                    // if this is the final chunk, add the attachment(s) 
-                    if ( messageChunk == messageChunks.Last() )
-                    {
-                        if ( attachmentMediaUrls.Any() )
-                        {
-                            createMessageOptions.MediaUrl = attachmentMediaUrls;
-                        }
-                    }
-
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        createMessageOptions.StatusCallback = null;
-                    }
-
-                    response = MessageResource.Create( createMessageOptions );
+                    response = SendTwilioMessage( fromPhone, callbackUrl, shouldAddAttachments ? attachmentMediaUrls : null, twilioNumber, messageChunk );
                 }
             }
             else
             {
-                CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
-                {
-                    From = new TwilioTypes.PhoneNumber( fromPhone ),
-                    Body = message
-                };
+                response = SendTwilioMessage( fromPhone, callbackUrl, attachmentMediaUrls, twilioNumber, message );
+            }
 
-                if ( callbackUrl.IsNotNullOrWhiteSpace() )
-                {
-                    createMessageOptions.StatusCallback = new Uri( callbackUrl );
-                }
+            return response;
+        }
 
-                if ( attachmentMediaUrls.Any() )
-                {
-                    createMessageOptions.MediaUrl = attachmentMediaUrls;
-                }
+        private static MessageResource SendTwilioMessage( string fromPhone, string callbackUrl, List<Uri> attachmentMediaUrls, string twilioNumber, string messageText )
+        {
+            MessageResource response;
+            CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+            {
+                From = new TwilioTypes.PhoneNumber( fromPhone ),
+                Body = messageText
+            };
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains( ".ngrok.io" ) )
+            if ( callbackUrl.IsNotNullOrWhiteSpace() )
+            {
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment
+                    && !callbackUrl.Contains( ".ngrok.io" ) )
                 {
                     createMessageOptions.StatusCallback = null;
                 }
-
-                response = MessageResource.Create( createMessageOptions );
+                else
+                {
+                    createMessageOptions.StatusCallback = new Uri( callbackUrl );
+                }
             }
 
+            if ( attachmentMediaUrls != null && attachmentMediaUrls.Any() )
+            {
+                createMessageOptions.MediaUrl = attachmentMediaUrls;
+            }
+
+            response = MessageResource.Create( createMessageOptions );
             return response;
         }
 
