@@ -491,6 +491,8 @@ namespace RockWeb.Blocks.Crm
                 // If there is a template then apply it
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 tbDocumentName.Text = template.ResolveMergeFields( mergeFields );
+
+                fuUploader.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).GetGuid( documentTypeCache.BinaryFileTypeId ).Value;
             }
         }
 
