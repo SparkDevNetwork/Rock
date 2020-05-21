@@ -506,6 +506,23 @@ $(document).ready(function() {
             NavigateToLinkedPage( "ReportDetailPage", queryParams );
         }
 
+        protected void lbResetRunCount_Click( object sender, EventArgs e )
+        {
+            var dataViewId = hfDataViewId.ValueAsInt();
+            if ( dataViewId > 0 )
+            {
+                var rockContext = new RockContext();
+                var dataViewService = new DataViewService( rockContext );
+                var dataView = dataViewService.Get( dataViewId );
+                if ( dataView != null )
+                {
+                    dataView.RunCount = 0;
+                    dataView.RunCountLastRefreshDateTime = RockDateTime.Now;
+                    rockContext.SaveChanges();
+                    ShowReadonlyDetails( dataView );
+                }
+            }
+        }
         #endregion
 
         #region Internal Methods
@@ -741,6 +758,10 @@ $(document).ready(function() {
 
             lblMainDetails.Text = descriptionListMain.Html;
 
+            SetupTimeToRunLabel( dataView );
+            SetupNumberOfRuns( dataView );
+            SetupLastRun( dataView );
+
             DescriptionList descriptionListFilters = new DescriptionList();
 
             if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
@@ -852,6 +873,85 @@ $(document).ready(function() {
             }
 
             ShowReport( dataView );
+        }
+
+        private void SetupLastRun( DataView dataView )
+        {
+            if ( dataView.LastRunDateTime == null )
+            {
+                return;
+            }
+
+            hlLastRun.Text = string.Format( "Last Run: {0}", dataView.LastRunDateTime.ToShortDateString() );
+            hlLastRun.LabelType = LabelType.Default;
+        }
+
+        private void SetupNumberOfRuns( DataView dataView )
+        {
+            hlRunSince.Text = "";
+            hlRunSince.LabelType = LabelType.Info;
+
+            if ( dataView.RunCountLastRefreshDateTime == null )
+            {
+                return;
+            }
+
+            if ( dataView.RunCount == null || dataView.RunCount.Value == 0 )
+            {
+                hlRunSince.LabelType = LabelType.Warning;
+                hlRunSince.Text = string.Format( "Not Run Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+                return;
+            }
+
+            hlRunSince.Text = string.Format( "{0:0} Runs Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+        }
+
+        private void SetupTimeToRunLabel( DataView dataView )
+        {
+            hlTimeToRun.Text = "";
+            hlTimeToRun.LabelType = LabelType.Default;
+
+            if ( dataView == null || dataView.TimeToRunDurationMilliseconds == null )
+            {
+                return;
+            }
+
+            var labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+            var labelUnit = "ms";
+            var labelType = LabelType.Success;
+            if ( labelValue > 1000 )
+            {
+                labelValue = labelValue / 1000;
+                labelUnit = "s";
+
+                if ( labelValue > 10 )
+                {
+                    labelType = LabelType.Warning;
+                }
+            }
+
+            if ( labelValue > 60 && labelUnit == "s" )
+            {
+                labelValue = labelValue / 60;
+                labelUnit = "m";
+
+                if ( labelValue > 1 )
+                {
+                    labelType = LabelType.Danger;
+                }
+            }
+
+            hlTimeToRun.LabelType = labelType;
+            var isValueAWholeNumber = Math.Abs( labelValue % 1 ) < 0.01;
+            if ( isValueAWholeNumber )
+            {
+                hlTimeToRun.Text = string.Format( "Time To Run: {0:0}{1}", labelValue, labelUnit );
+            }
+            else
+            {
+                hlTimeToRun.Text = string.Format( "Time To Run: {0:0.0}{1}", labelValue, labelUnit );
+            }
+
         }
 
         /// <summary>

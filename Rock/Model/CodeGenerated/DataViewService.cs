@@ -144,6 +144,7 @@ namespace Rock.Model
             target.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.RunCount = source.RunCount;
+            target.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
             target.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;

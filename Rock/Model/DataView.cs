@@ -177,6 +177,14 @@ namespace Rock.Model
         [DataMember]
         public double? TimeToRunDurationMilliseconds { get; set; }
 
+        /// <summary>
+        /// Gets or sets the datetime that the Run Count was last reset to 0.
+        /// </summary>
+        /// <value>
+        /// The run count last refresh date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RunCountLastRefreshDateTime { get; set; }
         #endregion
 
         #region Virtual Properties
