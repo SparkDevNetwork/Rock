@@ -82,6 +82,9 @@ namespace Rock.Client
         public int? RunCount { get; set; }
 
         /// <summary />
+        public DateTime? RunCountLastRefreshDateTime { get; set; }
+
+        /// <summary />
         public double? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary />
@@ -135,6 +138,7 @@ namespace Rock.Client
             this.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
             this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             this.RunCount = source.RunCount;
+            this.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
             this.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             this.TransformEntityTypeId = source.TransformEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
