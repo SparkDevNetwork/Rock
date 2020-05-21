@@ -1221,13 +1221,13 @@ namespace RockWeb.Blocks.Cms
 
             gChildItems.DataSource = childItemList.Select( i => new
             {
-                i.ChildContentChannelItem.Id,
-                i.ChildContentChannelItem.Guid,
-                i.ChildContentChannelItem.Title,
-                i.ChildContentChannelItem.StartDateTime,
-                ExpireDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ChildContentChannelItem.ExpireDateTime : ( DateTime? ) null,
+                i.Id,
+                i.Guid,
+                i.Title,
+                i.StartDateTime,
+                ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : ( DateTime? ) null,
                 Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) i.Order : ( int? ) null,
-                Status = ( i.ChildContentChannelItem.ContentChannel.RequiresApproval && !i.ChildContentChannelItem.ContentChannelType.DisableStatus ) ? DisplayStatus( i.ChildContentChannelItem.Status ) : string.Empty,
+                Status = ( i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus ) ? DisplayStatus( i.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
 
