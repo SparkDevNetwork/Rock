@@ -319,7 +319,7 @@ namespace com.bemaservices.MailChimp.Utility
             string emailNote = null;
             bool isEmailActive = GetIsEmailActive( member.Status, out emailNote );
 
-            person = personService.Queryable().Where( p => p.ForeignKey == mailchimpForeignKey ).FirstOrDefault();
+            person = personService.Queryable().AsNoTracking().Where( p => p.ForeignKey == mailchimpForeignKey ).FirstOrDefault();
 
             if ( person.IsNull() )
             {
