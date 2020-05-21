@@ -53,15 +53,6 @@ namespace Rock.Logging
             LoadConfiguration( LogConfiguration );
         }
 
-        ~RockLoggerSerilog()
-        {
-            if ( _logger != null )
-            {
-                ( ( IDisposable ) _logger ).Dispose();
-                _logger = null;
-            }
-        }
-
         /// <summary>
         /// Closes this instance and releases file locks.
         /// </summary>
