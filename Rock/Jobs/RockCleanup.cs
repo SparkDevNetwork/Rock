@@ -181,7 +181,7 @@ namespace Rock.Jobs
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup( dataMap ) );
 
-            RunCleanupTask( "anonymous giver", () => RemoveAnonymousGiverUserLogins() );
+            RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
             RunCleanupTask( "temporary registration", () => CleanUpTemporaryRegistrations() );
 
@@ -212,15 +212,15 @@ namespace Rock.Jobs
             // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
             RunCleanupTask( "attribute value", () => CleanupAttributeValues( dataMap ) );
 
-            RunCleanupTask( "streak data", () => MergeStreaks() );
+            RunCleanupTask( "merge streak data", () => MergeStreaks() );
 
-            RunCleanupTask( "streak data", () => RefreshStreaksDenormalizedData() );
+            RunCleanupTask( "refresh streak data", () => RefreshStreaksDenormalizedData() );
 
-            RunCleanupTask( "schedule", () => EnsureScheduleEffectiveStartEndDates() );
+            RunCleanupTask( "validate schedule", () => EnsureScheduleEffectiveStartEndDates() );
 
-            RunCleanupTask( "nameless person", () => EnsureNamelessPersonForSMSResponses() );
+            RunCleanupTask( "set nameless SMS response", () => EnsureNamelessPersonForSMSResponses() );
 
-            RunCleanupTask( "nameless person", () => MatchNamelessPersonToRegularPerson() );
+            RunCleanupTask( "merge nameless to person", () => MatchNamelessPersonToRegularPerson() );
 
             //// ***********************
             ////  Final count and report
