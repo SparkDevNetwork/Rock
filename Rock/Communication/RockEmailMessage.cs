@@ -94,6 +94,14 @@ namespace Rock.Communication
         public string Subject { get; set; }
 
         /// <summary>
+        /// Gets or sets the text only message.
+        /// </summary>
+        /// <value>
+        /// The text only message.
+        /// </value>
+        public string PlainTextMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets the message.
         /// </summary>
         /// <value>
