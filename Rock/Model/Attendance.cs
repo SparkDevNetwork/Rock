@@ -256,6 +256,28 @@ namespace Rock.Model
         public int? ScheduledByPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance check in session identifier.
+        /// </summary>
+        /// <value>
+        /// The attendance check in session identifier.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        public int? AttendanceCheckInSessionId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the attendance check in session.
+        /// </summary>
+        /// <value>
+        /// The attendance check in session.
+        /// </value>
+        public virtual AttendanceCheckInSession AttendanceCheckInSession { get; set; }
+
+        /// <summary>
         /// Gets or sets additional data associated with the Attendance, including LabelData
         /// </summary>
         /// <value>
@@ -263,10 +285,6 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual AttendanceData AttendanceData { get; set; }
-
-        #endregion
-
-        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AttendanceOccurrence"/> for the attendance.
@@ -807,6 +825,7 @@ namespace Rock.Model
     }
 
     #endregion
+
 
     #region Enumerations
 

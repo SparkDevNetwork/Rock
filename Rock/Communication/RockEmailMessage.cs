@@ -238,6 +238,7 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="systemEmail">The system email.</param>
         [Obsolete()]
+        [RockObsolete( "1.10" )]
         private void InitEmailMessage( SystemEmail systemEmail )
         {
             if ( systemEmail != null )

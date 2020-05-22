@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ContentChannel Service class
+    /// AttendanceCheckInSession Service class
     /// </summary>
-    public partial class ContentChannelService : Service<ContentChannel>
+    public partial class AttendanceCheckInSessionService : Service<AttendanceCheckInSession>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentChannelService"/> class
+        /// Initializes a new instance of the <see cref="AttendanceCheckInSessionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ContentChannelService(RockContext context) : base(context)
+        public AttendanceCheckInSessionService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,11 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ContentChannel item, out string errorMessage )
+        public bool CanDelete( AttendanceCheckInSession item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Attendance,AttendanceCheckInSessionId 
             return true;
         }
     }
@@ -64,60 +60,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ContentChannelExtensionMethods
+    public static partial class AttendanceCheckInSessionExtensionMethods
     {
         /// <summary>
-        /// Clones this ContentChannel object to a new ContentChannel object
+        /// Clones this AttendanceCheckInSession object to a new AttendanceCheckInSession object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ContentChannel Clone( this ContentChannel source, bool deepCopy )
+        public static AttendanceCheckInSession Clone( this AttendanceCheckInSession source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ContentChannel;
+                return source.Clone() as AttendanceCheckInSession;
             }
             else
             {
-                var target = new ContentChannel();
+                var target = new AttendanceCheckInSession();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ContentChannel object to this ContentChannel object
+        /// Copies the properties from another AttendanceCheckInSession object to this AttendanceCheckInSession object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ContentChannel target, ContentChannel source )
+        public static void CopyPropertiesFrom( this AttendanceCheckInSession target, AttendanceCheckInSession source )
         {
             target.Id = source.Id;
-            target.ChannelUrl = source.ChannelUrl;
-            target.ChildItemsManuallyOrdered = source.ChildItemsManuallyOrdered;
-            target.ContentChannelTypeId = source.ContentChannelTypeId;
-            target.ContentControlType = source.ContentControlType;
-            target.Description = source.Description;
-            target.EnableRss = source.EnableRss;
+            target.Attendances = source.Attendances;
+            target.ClientIpAddress = source.ClientIpAddress;
+            target.DeviceId = source.DeviceId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IconCssClass = source.IconCssClass;
-            target.IsIndexEnabled = source.IsIndexEnabled;
-            target.IsStructuredContent = source.IsStructuredContent;
-            target.IsTaggingEnabled = source.IsTaggingEnabled;
-            target.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
-            target.ItemTagCategoryId = source.ItemTagCategoryId;
-            target.ItemUrl = source.ItemUrl;
-            target.Name = source.Name;
-            target.RequiresApproval = source.RequiresApproval;
-            target.RootImageDirectory = source.RootImageDirectory;
-            target.StructuredContentToolValueId = source.StructuredContentToolValueId;
-            target.TimeToLive = source.TimeToLive;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.ModifiedDateTime = source.ModifiedDateTime;
-            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
-            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -61,6 +61,7 @@
     <Compile Include="CodeGenerated\AssessmentType.cs" />
     <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
+    <Compile Include="CodeGenerated\AttendanceCheckInSession.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\AttendanceData.cs" />
     <Compile Include="CodeGenerated\AttendanceImport.cs" />
