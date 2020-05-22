@@ -508,6 +508,8 @@
     <Compile Include="Model\AttendanceCheckInSession.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Utility\RockSerializableList.cs" />
+    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />

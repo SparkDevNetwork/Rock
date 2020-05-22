@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -131,11 +132,11 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
-            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            foreach ( string nameValue in nameValues )
+            var nameValues = RockSerializableDictionary.FromUriEncodedString( this.Value );
+
+            foreach ( var nameValuePair in nameValues.Dictionary )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
-                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
+                var nameAndValue = new string[] { nameValuePair.Key, nameValuePair.Value.ToStringSafe() };
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -143,7 +144,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( DisplayValueFirst )
                 {
-                    WriteValueControls( writer, nameAndValue, values );
+                    WriteValueControls( writer,  nameAndValue, values );
                     WriteKeyControls( writer, nameAndValue );
                 }
                 else
