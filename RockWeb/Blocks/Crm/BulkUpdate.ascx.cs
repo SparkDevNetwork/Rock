@@ -569,8 +569,6 @@ namespace RockWeb.Blocks.Crm
             pnlConfirm.Visible = false;
         }
 
-        private long _errorCount;
-
         /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
@@ -644,8 +642,6 @@ namespace RockWeb.Blocks.Crm
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
             {
-                _errorCount = 0;
-
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {
