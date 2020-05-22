@@ -245,6 +245,10 @@
     <Compile Include="Migrations\202005191357126_AddRunCountLastRefreshDateTimeToDataView.Designer.cs">
       <DependentUpon>202005191357126_AddRunCountLastRefreshDateTimeToDataView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202005221755447_AttendanceCheckInSession.cs" />
+    <Compile Include="Migrations\202005221755447_AttendanceCheckInSession.Designer.cs">
+      <DependentUpon>202005221755447_AttendanceCheckInSession.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1364,6 +1368,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202005191357126_AddRunCountLastRefreshDateTimeToDataView.resx">
       <DependentUpon>202005191357126_AddRunCountLastRefreshDateTimeToDataView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005221755447_AttendanceCheckInSession.resx">
+      <DependentUpon>202005221755447_AttendanceCheckInSession.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

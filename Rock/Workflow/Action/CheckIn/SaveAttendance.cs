@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -63,12 +64,17 @@ namespace Rock.Workflow.Action.CheckIn
                 int securityCodeNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericLength : 0;
                 bool securityCodeNumericRandom = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericRandom : true;
 
-
                 var attendanceCodeService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var attendanceRecords = new List<Attendance>();
+
+                AttendanceCheckInSession attendanceCheckInSession = new AttendanceCheckInSession()
+                {
+                    DeviceId = checkInState.DeviceId,
+                    ClientIpAddress = RockPage.GetClientIpAddress()
+                };
 
                 checkInState.Messages.Clear();
 
@@ -190,6 +196,8 @@ namespace Rock.Workflow.Action.CheckIn
                                                 attendance.PersonAlias = primaryAlias;
                                             }
                                         }
+
+                                        attendance.AttendanceCheckInSession = attendanceCheckInSession;
 
                                         attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                         attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;

@@ -39,6 +39,7 @@ namespace Rock.Utility
             {
                 return forwardedHost;
             }
+
             return context.Request.Url.Host;
         }
 
@@ -49,7 +50,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static bool IsSecureConnection( HttpContext context )
         {
-            return String.Equals( context.Request.ServerVariables["HTTP_X_FORWARDED_PROTO"], "https", StringComparison.OrdinalIgnoreCase ) || context.Request.IsSecureConnection;
+            return string.Equals( context.Request.ServerVariables["HTTP_X_FORWARDED_PROTO"], "https", StringComparison.OrdinalIgnoreCase ) || context.Request.IsSecureConnection;
         }
 
         /// <summary>
@@ -61,35 +62,35 @@ namespace Rock.Utility
         {
             string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-            if (String.IsNullOrWhiteSpace( ipAddress ))
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
                 ipAddress = request.ServerVariables["REMOTE_ADDR"];
             }
 
-            if (string.IsNullOrWhiteSpace( ipAddress ))
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
                 ipAddress = request.UserHostAddress;
             }
 
-            if (string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1")
+            if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )
             {
                 ipAddress = string.Empty;
             }
 
-            if (string.IsNullOrWhiteSpace( ipAddress ))
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
                 string stringHostName = System.Net.Dns.GetHostName();
-                if (!string.IsNullOrWhiteSpace( stringHostName ))
+                if ( !string.IsNullOrWhiteSpace( stringHostName ) )
                 {
                     try
                     {
                         var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                        if (ipHostEntries != null)
+                        if ( ipHostEntries != null )
                         {
                             try
                             {
                                 var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                                if (arrIpAddress != null)
+                                if ( arrIpAddress != null )
                                 {
                                     ipAddress = arrIpAddress.ToString();
                                 }
@@ -99,7 +100,7 @@ namespace Rock.Utility
                                 try
                                 {
                                     var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                                    if (arrIpAddress != null)
+                                    if ( arrIpAddress != null )
                                     {
                                         ipAddress = arrIpAddress.ToString();
                                     }
@@ -111,7 +112,7 @@ namespace Rock.Utility
                             }
                         }
                     }
-                    catch (System.Net.Sockets.SocketException ex)
+                    catch ( System.Net.Sockets.SocketException ex )
                     {
                         ExceptionLogService.LogException( ex );
                     }

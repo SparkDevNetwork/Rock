@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     /// </summary>
     /// <seealso cref="Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter" />
     [Obsolete( "Use the InRegistrationInstanceFilter from the Rock.Reporting.DataFilter.Person namespace instead" )]
+    [RockObsolete( "1.11" )]
     public class InRegistrationInstanceFilter : Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter { };
 }
 
@@ -188,7 +189,7 @@ function() {
             _ddlRegistrationInstance.ID = filterControl.ID + "_ddlRegistrationInstance";
             filterControl.Controls.Add( _ddlRegistrationInstance );
 
-            PopulateRegistrationInstanceList( filterControl  );
+            PopulateRegistrationInstanceList( filterControl );
 
             var _rblRegistrationType = new RockRadioButtonList();
             _rblRegistrationType.CssClass = "js-registration-type";
@@ -230,7 +231,7 @@ function() {
             {
                 _ddlRegistrationInstance.Items.Clear();
                 _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", "" ) );
-                foreach ( var item in new RegistrationInstanceService( new RockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId  ).OrderBy( r => r.Name ) )
+                foreach ( var item in new RegistrationInstanceService( new RockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
                 {
                     _ddlRegistrationInstance.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -284,7 +285,7 @@ function() {
                 int registrationTemplateId = selectionValues[0].AsInteger();
                 var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( registrationTemplateId );
                 var ddlRegistrationTemplate = ( controls[0] as RockDropDownList );
-                if ( registrationTemplate  != null )
+                if ( registrationTemplate != null )
                 {
                     ddlRegistrationTemplate.SetValue( registrationTemplateId );
                 }
@@ -330,7 +331,7 @@ function() {
                 Guid? registrationInstanceGuid = selectionValues[1].AsGuidOrNull();
                 var registrationType = selectionValues[2];
 
-                var rockContext = (RockContext) serviceInstance.Context;
+                var rockContext = ( RockContext ) serviceInstance.Context;
 
                 IQueryable<RegistrationRegistrant> registrantQuery;
                 IQueryable<Registration> registrationQuery;
@@ -366,11 +367,11 @@ function() {
                     {
                         registrationQuery = registrationQuery.Where( r => r.RegistrationInstance.Guid == registrationInstanceGuid );
                     }
-                    
+
                     qry = new PersonService( rockContext ).Queryable()
                         .Where( p => registrationQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
                 }
-                
+
                 Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
                 return result;

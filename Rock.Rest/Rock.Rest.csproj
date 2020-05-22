@@ -125,6 +125,7 @@
     <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceCheckInSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
