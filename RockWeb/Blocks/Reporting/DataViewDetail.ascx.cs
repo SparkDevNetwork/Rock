@@ -636,6 +636,7 @@ $(document).ready(function() {
             {
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
+                lbResetRunCount.Visible = false;
                 ShowReadonlyDetails( dataView );
             }
             else
