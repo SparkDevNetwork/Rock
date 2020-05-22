@@ -1077,7 +1077,8 @@ namespace RockWeb.Blocks.Communication
             lNumRecipients.Text = recipientCount.ToString( "N0" ) +
                 ( recipientCount == 1 ? " Person" : " People" );
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;
