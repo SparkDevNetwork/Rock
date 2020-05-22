@@ -3397,6 +3397,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
+            if ( txtCreditCard.Text == "0000000000000000000" )
+            {
+                errorMessage = "No soup for you!";
+                return false;
+            }
+
             GatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
@@ -5735,6 +5741,13 @@ namespace RockWeb.Blocks.Event
                     .Where( d => d.AutoApplyDiscount )
                     .OrderBy( d => d.Order )
                     .ToList();
+
+            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() )
+            {
+                // If we have a discount code already use it. This can happen if an exception during credit processing clears out the registration.
+                // In those cases we want to use the code already entered instead of auto applying one.
+                return false;
+            }
 
             foreach ( var discount in discounts )
             {
