@@ -38,7 +38,7 @@ using Rock.Web.UI.Controls;
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
- * - FE1) Added Ability to limit campuses shown based off of a campus attribute
+ * - FE1) Added Ability to require users in certain security roles to use a certain authentication provider
  */
 namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Security
 {
@@ -74,7 +74,9 @@ Thank you for logging in, however, we need to confirm the email associated with 
     [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 15 )]
 
     /* BEMA.FE1.Start */
-    [RemoteAuthsField( "Required Authorization Types", "If a user has one of these authorization types, they are required to use it instead of their database login.", false, "", "BEMA Additional Features", 16, BemaAttributeKey.RequiredAuthorizationTypes )]
+    [CustomDropdownListField( "Required Authentication Provider", "The Authentication Provider we are going to require for users in the configured security roles",
+        @"SELECT [FriendlyName] AS [Text], [Name] AS [Value] FROM [EntityType] WHERE [Name] like '%Authenticat%'", false, "", "BEMA Additional Features", 16, BemaAttributeKey.RequiredAuthorizationType )]
+    [CustomCheckboxListField( "Security Roles", "The Security roles to require the configured Authentication Provider for.", @"Select [Name] AS [Text], [Guid] AS [Value] From [Group] Where IsSecurityRole = 1", false, "", "BEMA Additional Features", 17, BemaAttributeKey.SecurityRoles )]
 
     /* BEMA.FE1.End */
     public partial class Login : Rock.Web.UI.RockBlock
@@ -83,7 +85,8 @@ Thank you for logging in, however, we need to confirm the email associated with 
         #region Bema Attribute Keys
         private static class BemaAttributeKey
         {
-            public const string RequiredAuthorizationTypes = "RequiredAuthorizationTypes";
+            public const string RequiredAuthorizationType = "RequiredAuthorizationType";
+            public const string SecurityRoles = "SecurityRoles";
         }
 
         #endregion
@@ -149,7 +152,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
                             var userLogin = userLoginService.GetByUserName( tbUserName.Text );
                             if ( userLogin != null && userLogin.EntityType != null )
                             {
-                                customErrorMessage = CheckForRequiredProviders( customErrorMessage, userLogin, component );
+                                customErrorMessage = CheckForRequiredProvider( customErrorMessage, userLogin, component );
                             }
 
                             if ( customErrorMessage.IsNotNullOrWhiteSpace() )
@@ -299,7 +302,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
 
                     /* BEMA.FE1.Start */
-                    customErrorMessage = CheckForRequiredProviders( customErrorMessage, userLogin, component );
+                    customErrorMessage = CheckForRequiredProvider( customErrorMessage, userLogin, component );
 
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication && customErrorMessage.IsNullOrWhiteSpace() )
                     {
@@ -563,74 +566,53 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
         /* BEMA.FE1.Start */
 
-        private string CheckForRequiredProviders( string customErrorMessage, UserLogin userLogin, AuthenticationComponent component )
+        private string CheckForRequiredProvider( string customErrorMessage, UserLogin userLogin, AuthenticationComponent component )
         {
             if ( component != null && component.IsActive )
             {
-
-                List<AuthenticationComponent> requiredAuthProviders = GetRequiredAuthProviders();
-
-                if ( !requiredAuthProviders.Contains( component ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = GetListOfRequiredProviders( userLogin, requiredAuthProviders );
-                    if ( errorMessage.IsNotNullOrWhiteSpace() )
+                    var groupService = new GroupService( rockContext );
+                    var groupMemberService = new GroupMemberService( rockContext );
+
+                    var requiredAuthProviderName = GetAttributeValue( BemaAttributeKey.RequiredAuthorizationType );
+                    var requiredAuthProvider = AuthenticationContainer.GetComponent( requiredAuthProviderName );
+
+                    var requiredSecurityRoleGuids = GetAttributeValue( BemaAttributeKey.SecurityRoles ).SplitDelimitedValues().AsGuidList();
+                    var requiredSecurityRoles = groupService.GetByGuids( requiredSecurityRoleGuids );
+
+                    if ( requiredAuthProvider != null &&
+                        requiredSecurityRoles.Count() > 0 &&
+                        requiredAuthProvider != component &&
+                        userLogin.PersonId.HasValue )
                     {
-                        customErrorMessage = errorMessage;
+                        var hasRequiredAuthLogin = false;
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append( "Please login using the following:</br><ul>" );
+                        foreach ( var securityRole in requiredSecurityRoles )
+                        {
+                            var groupMember = groupMemberService.GetByGroupIdAndPersonId( securityRole.Id, userLogin.PersonId.Value ).FirstOrDefault();
+                            if ( groupMember != null )
+                            {
+                                hasRequiredAuthLogin = true;
+                                sb.AppendFormat( "<li>{0}</li>", requiredAuthProvider.LoginButtonText );
+                                break;
+                            }
+                        }
+
+                        sb.Append( "</ul>" );
+                        customErrorMessage = sb.ToString();
+
+                        if ( hasRequiredAuthLogin == false )
+                        {
+                            customErrorMessage = null;
+                        }
                     }
                 }
+
             }
 
             return customErrorMessage;
-        }
-
-        private static string GetListOfRequiredProviders( UserLogin userLogin, List<AuthenticationComponent> requiredAuthProviders )
-        {
-            var hasRequiredAuthLogin = false;
-            StringBuilder sb = new StringBuilder();
-            sb.Append( "Please login using one of the following:</br><ul>" );
-            foreach ( var login in userLogin.Person.Users )
-            {
-                var loginComponent = AuthenticationContainer.GetComponent( login.EntityType.Name );
-                if ( requiredAuthProviders.Contains( loginComponent ) )
-                {
-                    hasRequiredAuthLogin = true;
-                    sb.AppendFormat( "<li>{0}</li>", loginComponent.LoginButtonText );
-                }
-            }
-            sb.Append( "</ul>" );
-            var errorMessage = sb.ToString();
-
-            if ( hasRequiredAuthLogin == false )
-            {
-                errorMessage = null;
-            }
-
-            return errorMessage;
-        }
-
-        private List<AuthenticationComponent> GetRequiredAuthProviders()
-        {
-            List<AuthenticationComponent> requiredAuthProviders = new List<AuthenticationComponent>();
-
-            var selectedGuids = new List<Guid>();
-            GetAttributeValue( BemaAttributeKey.RequiredAuthorizationTypes ).SplitDelimitedValues()
-                .ToList()
-                .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
-
-            // Look for active external authentication providers
-            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
-            {
-                var requiredComponent = serviceEntry.Value.Value;
-
-                if ( requiredComponent.IsActive &&
-                    requiredComponent.RequiresRemoteAuthentication &&
-                    selectedGuids.Contains( requiredComponent.EntityType.Guid ) )
-                {
-                    requiredAuthProviders.Add( requiredComponent );
-                }
-            }
-
-            return requiredAuthProviders;
         }
 
         /* BEMA.FE1.End */
