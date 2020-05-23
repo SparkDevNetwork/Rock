@@ -70,91 +70,93 @@ namespace Rock.Attribute
             bool attributesUpdated = false;
             bool attributesDeleted = false;
 
-            if ( type != null )
+            if ( type == null )
             {
-                List<string> existingKeys = new List<string>();
+                return false;
+            }
 
-                var entityProperties = new List<FieldAttribute>();
+            List<string> existingKeys = new List<string>();
 
-                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
-                int properties = 0;
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+            var entityProperties = new List<FieldAttribute>();
+
+            // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+            int properties = 0;
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+            {
+                var contextAttribute = ( ContextAwareAttribute ) customAttribute;
+                if ( contextAttribute != null && contextAttribute.IsConfigurable )
                 {
-                    var contextAttribute = ( ContextAwareAttribute ) customAttribute;
-                    if ( contextAttribute != null && contextAttribute.IsConfigurable )
-                    {
-                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                        properties++;
+                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                    properties++;
 
-                        entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
-                    }
+                    entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
                 }
+            }
 
-                // Add any property attributes that were defined for the entity
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
-                {
-                    entityProperties.Add( ( FieldAttribute ) customAttribute );
-                }
+            // Add any property attributes that were defined for the entity
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
+            {
+                entityProperties.Add( ( FieldAttribute ) customAttribute );
+            }
 
-                rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
-                bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
-                if ( customGridColumnsBlock )
-                {
-                    entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
-                }
+            bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
+            if ( customGridColumnsBlock )
+            {
+                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
+            }
 
-                bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
-                if ( customGridOptionsBlock )
-                {
-                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
-                    entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
-                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
-                }
+            bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
+            if ( customGridOptionsBlock )
+            {
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
+            }
 
-                bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
+            bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
 
-                // Create any attributes that need to be created
-                foreach ( var entityProperty in entityProperties )
-                {
-                    try
-                    {
-                        attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
-                        existingKeys.Add( entityProperty.Key );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( new Exception( string.Format( "Could not update an entity attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, entityProperty.Name ), ex ), null );
-                    }
-                }
-
-                // Remove any old attributes
+            // Create any attributes that need to be created
+            foreach ( var entityProperty in entityProperties )
+            {
                 try
                 {
-                    var attributeService = new Model.AttributeService( rockContext );
-
-                    // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
-                    if ( !dynamicAttributesBlock )
-                    {
-                        foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
-                        {
-                            if ( !existingKeys.Contains( a.Key ) )
-                            {
-                                attributeService.Delete( a );
-                                attributesDeleted = true;
-                            }
-                        }
-                    }
-
-                    if ( attributesDeleted )
-                    {
-                        rockContext.SaveChanges();
-                    }
+                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                    existingKeys.Add( entityProperty.Key );
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
+                    ExceptionLogService.LogException( new Exception( string.Format( "Could not update an entity attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, entityProperty.Name ), ex ), null );
                 }
+            }
+
+            // Remove any old attributes
+            try
+            {
+                var attributeService = new Model.AttributeService( rockContext );
+
+                // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
+                if ( !dynamicAttributesBlock )
+                {
+                    foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                    {
+                        if ( !existingKeys.Contains( a.Key ) )
+                        {
+                            attributeService.Delete( a );
+                            attributesDeleted = true;
+                        }
+                    }
+                }
+
+                if ( attributesDeleted )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
             }
 
             return attributesUpdated;
@@ -188,6 +190,7 @@ namespace Rock.Attribute
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             Model.Attribute attribute = attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
+
             if ( attribute == null )
             {
                 // If an existing attribute record doesn't exist, create a new one
@@ -247,82 +250,89 @@ namespace Rock.Attribute
 
             }
 
-            if ( updated )
-            {
-                // Update the attribute
-                attribute.Name = property.Name;
-                attribute.Description = property.Description;
-                attribute.DefaultValue = property.DefaultValue;
-
-                // if the block is IDynamicAttributesBlock, only update the attribute.Order if this is a new attribute 
-                if ( !dynamicAttributesBlock || attribute.Id == 0 )
-                {
-                    attribute.Order = property.Order;
-                }
-
-                attribute.IsRequired = property.IsRequired;
-
-                attribute.Categories.Clear();
-                if ( propertyCategories.Any() )
-                {
-                    foreach ( string propertyCategory in propertyCategories )
-                    {
-                        int attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
-                        var category = categoryService.Get( propertyCategory, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
-                        if ( category == null )
-                        {
-                            category = new Category();
-                            category.Name = propertyCategory;
-                            category.EntityTypeId = attributeEntityTypeId;
-                            category.EntityTypeQualifierColumn = "EntityTypeId";
-                            category.EntityTypeQualifierValue = entityTypeId.ToString();
-                            category.Order = 0;
-                        }
-                        attribute.Categories.Add( category );
-
-                    }
-
-                    // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case they were changed
-                    attribute.ModifiedDateTime = RockDateTime.Now;
-                }
-
-                foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
-                {
-                    attributeQualifierService.Delete( qualifier );
-                }
-                attribute.AttributeQualifiers.Clear();
-
-                foreach ( var configValue in property.FieldConfigurationValues )
-                {
-                    var qualifier = new Model.AttributeQualifier();
-                    qualifier.Key = configValue.Key;
-                    qualifier.Value = configValue.Value.Value;
-                    attribute.AttributeQualifiers.Add( qualifier );
-                }
-
-                // Try to set the field type by searching for an existing field type with the same assembly and class name
-                if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
-                    attribute.FieldType.Class != property.FieldTypeClass )
-                {
-                    attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
-                        f.Assembly == property.FieldTypeAssembly &&
-                        f.Class == property.FieldTypeClass );
-                }
-
-                // If this is a new attribute, add it, otherwise remove the exiting one from the cache
-                if ( attribute.Id == 0 )
-                {
-                    attributeService.Add( attribute );
-                }
-
-                rockContext.SaveChanges();
-
-                return true;
-            }
-            else
+            if ( !updated )
             {
                 return false;
             }
+
+            // Update the attribute
+            attribute.Name = property.Name;
+            attribute.Description = property.Description;
+            attribute.DefaultValue = property.DefaultValue;
+
+            // if the block is IDynamicAttributesBlock, only update the attribute.Order if this is a new attribute 
+            if ( !dynamicAttributesBlock || attribute.Id == 0 )
+            {
+                attribute.Order = property.Order;
+            }
+
+            attribute.IsRequired = property.IsRequired;
+
+            attribute.Categories.Clear();
+            if ( propertyCategories.Any() )
+            {
+                foreach ( string propertyCategory in propertyCategories )
+                {
+                    int attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+                    var category = categoryService.Get( propertyCategory, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
+                    if ( category == null )
+                    {
+                        category = new Category();
+                        category.Name = propertyCategory;
+                        category.EntityTypeId = attributeEntityTypeId;
+                        category.EntityTypeQualifierColumn = "EntityTypeId";
+                        category.EntityTypeQualifierValue = entityTypeId.ToString();
+                        category.Order = 0;
+                    }
+                    attribute.Categories.Add( category );
+
+                }
+
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case they were changed
+                attribute.ModifiedDateTime = RockDateTime.Now;
+            }
+
+            foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
+            {
+                attributeQualifierService.Delete( qualifier );
+            }
+            attribute.AttributeQualifiers.Clear();
+
+            foreach ( var configValue in property.FieldConfigurationValues )
+            {
+                var qualifier = new Model.AttributeQualifier();
+                qualifier.Key = configValue.Key;
+                qualifier.Value = configValue.Value.Value;
+                attribute.AttributeQualifiers.Add( qualifier );
+            }
+
+            // Try to set the field type by searching for an existing field type with the same assembly and class name
+            if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
+                attribute.FieldType.Class != property.FieldTypeClass )
+            {
+                attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
+                    f.Assembly == property.FieldTypeAssembly &&
+                    f.Class == property.FieldTypeClass );
+            }
+
+            // If this is a new attribute, add it, otherwise remove the exiting one from the cache
+            if ( attribute.Id == 0 )
+            {
+                // double check that another thread didn't add this attribute
+                if ( !attributeService.AlreadyExists( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key ) )
+                {
+                    attributeService.Add( attribute );
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine( $@"Tried to add {attribute}, but it already exists.
+This can be due to multiple threads updating the same attribute at the same time." );
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            return true;
         }
 
         /// <summary>
@@ -1002,11 +1012,11 @@ namespace Rock.Attribute
                         var fieldType = attribute.FieldType.Field as Field.FieldType;
 
                         var value = item.Value;
-                        if (fieldType != null && value != null )
+                        if ( fieldType != null && value != null )
                         {
                             var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = value.AttributeId;
-                            attributeValue.Value = fieldType.GetCopyValue(value.Value, rockContext);
+                            attributeValue.Value = fieldType.GetCopyValue( value.Value, rockContext );
                             target.AttributeValues.Add( item.Key, attributeValue );
                         }
                         else

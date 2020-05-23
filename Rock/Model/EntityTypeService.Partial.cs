@@ -247,7 +247,18 @@ namespace Rock.Model
         /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
         /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
         /// </summary>
+        [Obsolete( "Use the RegisterEntityTypes() that doesn't have any parameters (physWebAppPath is never used)" )]
+        [RockObsolete( "1.11" )]
         public static void RegisterEntityTypes( string physWebAppPath )
+        {
+            RegisterEntityTypes();
+        }
+
+        /// <summary>
+        /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
+        /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
+        /// </summary>
+        public static void RegisterEntityTypes()
         {
             List<Type> reflectedTypes = new List<Type>();
 
@@ -301,9 +312,24 @@ namespace Rock.Model
 
                 foreach ( var oldEntityType in reflectedEntityTypesThatNoLongerExist )
                 {
+
+                    Type foundType = null;
                     // if this isn't one of the EntityTypes that we self-register,
                     // see if it was manually registered first (with EntityTypeCache.Get(Type type, bool createIfNotExists))
-                    var foundType = Type.GetType( oldEntityType.AssemblyName );
+                    try
+                    {
+                        foundType = Type.GetType( oldEntityType.AssemblyName, false );
+                    }
+                    catch
+                    {
+                        /* 2020-05-22 MDP
+                         * GetType (string typeName, bool throwOnError) can throw exceptions even if throwOnError is false!
+                         * see https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype?view=netframework-4.5.2#System_Type_GetType_System_String_System_Boolean_
+
+                          so, if this happens, we'll ignore any error it returns in those cases too
+                         */
+                    }
+                    
                     if ( foundType == null )
                     {
                         // it was manually registered but we can't create a Type from it

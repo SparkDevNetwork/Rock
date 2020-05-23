@@ -26,18 +26,33 @@ using DotLiquid.FileSystems;
 using Rock;
 using Rock.Web.Cache;
 
-namespace RockWeb
+namespace Rock.Lava
 {
-
     /// <summary>
-    /// 
+    /// Lava's <seealso cref="IFileSystem"/>. This is used when Lava templates retrieve other Lava templates when using the include tag.
     /// </summary>
     public class LavaFileSystem : IFileSystem
     {
+        /// <summary>
+        /// Gets or sets the root.
+        /// </summary>
+        /// <value>
+        /// The root.
+        /// </value>
         public string Root { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaFileSystem"/> class.
+        /// </summary>
         public LavaFileSystem() {}
 
+        /// <summary>
+        /// Called by Liquid to retrieve a template file
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="templateName"></param>
+        /// <returns></returns>
+        /// <exception cref="FileSystemException">LavaFileSystem Template Not Found</exception>
         public string ReadTemplateFile( Context context, string templateName )
         {
             string templatePath = (string)context[templateName];
@@ -83,9 +98,14 @@ namespace RockWeb
             }
 
             throw new FileSystemException( "LavaFileSystem Template Not Found", templatePath );
-
         }
 
+        /// <summary>
+        /// Fulls the path.
+        /// </summary>
+        /// <param name="templatePath">The template path.</param>
+        /// <returns></returns>
+        /// <exception cref="FileSystemException">LavaFileSystem Illegal Template Name</exception>
         public string FullPath( string templatePath )
         {
             if ( templatePath != null && HttpContext.Current != null )
@@ -111,6 +131,5 @@ namespace RockWeb
 
             return HttpContext.Current.Server.MapPath( templatePath );
         }
-
     }
 }

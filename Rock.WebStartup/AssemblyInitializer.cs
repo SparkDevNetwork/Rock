@@ -14,71 +14,59 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
-using System.Web;
+using Rock.WebStartup;
 
 namespace Rock
 {
     /// <summary>
-    /// Initializer for the project and also used by Rock for all startup logic relating to the web project.
+    /// Initializer that runs prior to RockWeb's Global.Application_Start. (see comments on PreApplicationStartMethod in AssemblyInfo.cs)
+    /// This calls <seealso cref="RockApplicationStartupHelper.RunApplicationStartup"/> to take care of most for all startup logic relating to the web project.
     /// </summary>
     public static class AssemblyInitializer
     {
         /// <summary>
-        /// 
+        /// Contains any Exception that occurred during <see cref="AssemblyInitializer.Initialize"/>
         /// </summary>
-        /// <seealso cref="System.Exception" />
-        internal class RockAssemblyInitializerException : Exception
-        {
-            public RockAssemblyInitializerException( string message, Exception innerException )
-                : base( message, innerException )
-            {
-            }
-        }
+        /// <value>
+        /// The assembly initializer exception.
+        /// </value>
+        public static Exception AssemblyInitializerException { get; private set; }
 
         /// <summary>
         /// Initializes this instance.
         /// </summary>
         public static void Initialize()
         {
+            if ( System.Web.Hosting.HostingEnvironment.InClientBuildManager == true )
+            {
+                // AssemblyInitializer is pre-loaded before RockWeb starts,
+                // but it is also loaded when just loading the Rock solution or building RockWeb!
+                // see https://stackoverflow.com/questions/13642691/avoid-aspnet-compiler-running-preapplicationstart-method/13689600#13689600
+
+                // We don't want RockApplicationStartupHelper.RunApplicationStartup to run in the situation, but 
+                // we can detect that with System.Web.Hosting.HostingEnvironment.InClientBuildManager
+
+                // so just exit
+
+                RockApplicationStartupHelper.LogStartupMessage( "AssemblyInitializer started by Visual Studio" );
+                return;
+            }
+
+            RockApplicationStartupHelper.LogStartupMessage( "AssemblyInitializer started by RockWeb" );
+
             try
             {
-                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    try
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "Application_Initialize: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-                        new Rock.Model.AttributeService( new Data.RockContext() ).GetSelect( 0, a => a.Id );
-                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                        stopwatch.Restart();
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-
-                // Step 1: Load registered HTTP Modules - http://blog.davidebbo.com/2011/02/register-your-http-modules-at-runtime.html
-                var activeHttpModules = Rock.Web.HttpModules.HttpModuleContainer.GetActiveComponents(); // takes 8 seconds :(
-
-                foreach ( var httpModule in activeHttpModules )
-                {
-                    HttpApplication.RegisterModule( httpModule.GetType() );
-                }
-
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "WebStartup.Initialize - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                }
+                RockApplicationStartupHelper.RunApplicationStartup();
+            }
+            catch ( RockStartupException rockStartupException )
+            {
+                AssemblyInitializerException = rockStartupException;
             }
             catch ( Exception ex )
             {
-                // incase something bad happens when access the database, like a problem with a migration. We will just log this,
-                var rockAssemblyInitializerException = new RockAssemblyInitializerException( $"Exception in AssemblyInitializer.Initialize {ex.Message}. It is OK to ignore this because it is probably due to pending migrations.", ex );
-                System.Diagnostics.Debug.WriteLine( rockAssemblyInitializerException.Message );
-                Rock.Model.ExceptionLogService.LogException( rockAssemblyInitializerException );
+                AssemblyInitializerException = new RockStartupException( "Error occurred in RunApplicationStartup", ex );
             }
         }
     }
