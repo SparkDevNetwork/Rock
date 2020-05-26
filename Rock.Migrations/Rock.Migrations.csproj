@@ -253,6 +253,10 @@
     <Compile Include="Migrations\202005262058455_Rollup_0526.Designer.cs">
       <DependentUpon>202005262058455_Rollup_0526.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.cs" />
+    <Compile Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.Designer.cs">
+      <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1378,6 +1382,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202005262058455_Rollup_0526.resx">
       <DependentUpon>202005262058455_Rollup_0526.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.resx">
+      <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
