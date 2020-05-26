@@ -30,11 +30,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateMobileBlockTemplates();
-            AddMobileNotesChannel();
-            EnableLabelReprintingByDefault();
-            AddStructuredContentMessageNote();
-            AttendanceSelfEntryBlockSetting();
+            //UpdateMobileBlockTemplates();
+            //AddMobileNotesChannel();
+            //EnableLabelReprintingByDefault();
+            //AddStructuredContentMessageNote();
+            //AttendanceSelfEntryBlockSetting();
         }
 
         /// <summary>
