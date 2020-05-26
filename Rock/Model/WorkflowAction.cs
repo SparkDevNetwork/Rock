@@ -334,7 +334,7 @@ namespace Rock.Model
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         [RockObsolete( "1.11" )]
-        [Obsolete( "Use GetWorkflowAttributeValue instead." )]
+        [Obsolete( "Use GetWorkflowAttributeValue instead (the one with the correct spelling)." )]
         public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
             return GetWorkflowAttributeValue( guid, formatted, condensed );

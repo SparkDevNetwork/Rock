@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE, "true" );
+            HttpCookie isMobileCookie = new HttpCookie( CheckInCookieKey.IsMobile, "true" );
             isMobileCookie.Expires = DateTime.MaxValue;
             Response.Cookies.Set( isMobileCookie );
             NavigateToNextPage();
