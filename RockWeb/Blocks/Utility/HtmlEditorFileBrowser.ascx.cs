@@ -829,7 +829,7 @@ namespace RockWeb.Blocks.Utility
             invalidChars.Add( '~' );
 
             // ensure that folder is a simple folder name (no backslashs, invalidchars, etc)
-            var validFolderName = !( renameFolderName.ToList().Any( a => invalidChars.Contains( a ) ) || renameFolderName.StartsWith( ".." ) );
+            var validFolderName = !( renameFolderName.ToList().Any( a => invalidChars.Contains( a ) ) || renameFolderName.StartsWith( ".." ) || renameFolderName.EndsWith( "." ) );
             return validFolderName;
         }
 
