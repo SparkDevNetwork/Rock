@@ -298,6 +298,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the active leaders of the group who have active emails.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetLeadersWithActiveEmails( int groupId )
+        {
+            return GetLeaders( groupId )
+                .Where( m => !string.IsNullOrEmpty( m.Person.Email ) )
+                .Where( m => m.Person.IsEmailActive );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="System.String"/> objects representing the first names of each person in a <see cref="Rock.Model.Group"/> ordered by group role, age, and gender
         /// </summary>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
