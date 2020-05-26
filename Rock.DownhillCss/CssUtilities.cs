@@ -619,6 +619,26 @@ NavigationPage {
     font-size: 12;
 }
 
+/* Note Editor */
+.noteeditor {
+    border-color: ?color-text;
+    padding: 8;
+    background-color: ?color-gray-100;
+    margin-top: 12;
+    margin-bottom: 12;
+}
+
+.noteeditor ^texteditor {
+    height: 100;
+    color: ?color-text;
+    margin: 0;
+    font-size: small;
+}
+
+.noteeditor-label {
+    font-size: 11;
+}
+
 /* Forms Styling */
 .form-group {
     margin: 0 0 12 0;

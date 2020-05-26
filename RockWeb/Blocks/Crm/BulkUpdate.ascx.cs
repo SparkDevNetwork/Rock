@@ -978,7 +978,8 @@ namespace RockWeb.Blocks.Crm
             lNumIndividuals.Text = individualCount.ToString( "N0" ) +
                 ( individualCount == 1 ? " Person" : " People" );
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;
