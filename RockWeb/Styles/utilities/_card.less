@@ -8,7 +8,7 @@
   flex-direction: column;
   min-width: 0; // See https://github.com/twbs/bootstrap/pull/22740#issuecomment-305868106
   // LESS PORT: Less doesn’t strip “empty” property values so we have to check for a value first.
-	& when not (@card-height = ~"") { height: @card-height; }
+  & when not (@card-height = ~"") { height: @card-height; }
   word-wrap: break-word;
   background-color: @card-bg;
   background-clip: border-box;
@@ -164,7 +164,7 @@
   }
 
   @media (min-width: @bs4-screen-sm) {
-  //@include media-breakpoint-up(sm) {
+    //@include media-breakpoint-up(sm) {
     display: flex;
     flex-flow: row wrap;
     margin-right: -@card-deck-margin;
@@ -193,7 +193,7 @@
   }
 
   @media (min-width: @bs4-screen-sm) {
-  //@include media-breakpoint-up(sm) {
+    //@include media-breakpoint-up(sm) {
     display: flex;
     flex-flow: row wrap;
     // The child selector allows nested `.card` within `.card-group`
@@ -268,8 +268,8 @@
     }
 
     > .card-header {
-      border-radius: 0;
       margin-bottom: -@card-border-width;
+      border-radius: 0;
     }
   }
 }
