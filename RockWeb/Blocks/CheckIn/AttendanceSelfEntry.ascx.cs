@@ -145,6 +145,22 @@ ORDER BY [Text]",
         Description = "The optional workflow type to launch when a person is checked in. The primary person will be passed to the workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: GroupId, LocationId (if found), ScheduleId (if found), CheckedInPersonIds. (NOTE: If you want a workflow 'form' type of workflow use the Redirect URL setting instead.)",
         IsRequired = false,
         Order = 14 )]
+    [IntegerField(
+        "Hide Individuals Younger Than",
+        Description = "The age that should be used as the cut-off for displaying on the attendance list. The value of 14 will hide individuals younger than 14. Individuals without an age will always be shown. Defaults to blank.",
+        Key = AttributeKey.HideIndividualsYoungerThan,
+        IsRequired =false,
+        Order = 25
+        )]
+    [DefinedValueField(
+        "Hide Individuals In Grade Less Than",
+        Description = "Individuals in grades lower than this value will not be show on the attendance list. Defaults to empty (not set).",
+        Key = AttributeKey.HideIndividualsInGradeLessThan,
+        IsRequired = false,
+        Order = 26,
+        DisplayDescription = true,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.SCHOOL_GRADES
+        )]
     #region Messages Block Attribute Settings
 
     [TextField(
@@ -243,6 +259,7 @@ ORDER BY [Text]",
         Order = 24,
         Key = AttributeKey.KnownIndividualPanel2IntroText )]
     #endregion Messages Block Attribute Settings
+
     #endregion Block Attributes
     public partial class AttendanceSelfEntry : RockBlock
     {
@@ -278,6 +295,8 @@ ORDER BY [Text]",
             public const string KnownIndividualPanel1IntroText = "KnownIndividualPanel1IntroText";
             public const string KnownIndividualPanel2Title = "KnownIndividualPanel2Title";
             public const string KnownIndividualPanel2IntroText = "KnownIndividualPanel2IntroText";
+            public const string HideIndividualsYoungerThan = "HideIndividualsYoungerThan";
+            public const string HideIndividualsInGradeLessThan = "HideIndividualsInGradeLessThan";
         }
 
         #endregion
@@ -1043,13 +1062,39 @@ ORDER BY [Text]",
             lKnownIndividualText.Text = GetAttributeValue( AttributeKey.KnownIndividualPanel1IntroText ).ResolveMergeFields( mergeFields );
             pnlKnownIndividual.Visible = true;
             btnCheckIn.Text = GetAttributeValue( AttributeKey.CheckinButtonText );
-            var familyMembers = OtherWatchers
+
+            var validWatchers = OtherWatchers.AsEnumerable();
+
+            var hideIndividualsYoungerThan = GetAttributeValue( AttributeKey.HideIndividualsYoungerThan).AsIntegerOrNull();
+            if ( hideIndividualsYoungerThan.HasValue )
+            {
+                validWatchers = OtherWatchers
+                                .Where( a =>
+                                            !a.BirthDate.HasValue ||
+                                            a.BirthDate.Value.Age() >= hideIndividualsYoungerThan.Value );
+            }
+
+            var gradeLessThanDefinedValue = GetAttributeValue( AttributeKey.HideIndividualsInGradeLessThan ).AsGuidOrNull();
+            if ( gradeLessThanDefinedValue.HasValue )
+            {
+               var gradeOffsetValue =  DefinedValueCache.Get( gradeLessThanDefinedValue.Value );
+                if ( gradeOffsetValue != null )
+                {
+                    // Need to Show Individuals who are in Grade greater Than
+                    validWatchers = OtherWatchers
+                                    .Where( a =>
+                                                !a.GradeOffset.HasValue ||
+                                                a.GradeOffset.Value <= gradeOffsetValue.Value.AsInteger() );
+                }
+            }
+
+            var familyMembers = validWatchers
                             .Where( a => a.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()
                                     || a.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
                             .ToList();
             familyMembers.Insert( 0, PrimaryWatcher );
 
-            var otherMembers = OtherWatchers
+            var otherMembers = validWatchers
                             .Where( a => a.RelationshipTypeGuid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()
                                     && a.RelationshipTypeGuid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
                             .ToList();
@@ -1431,6 +1476,7 @@ ORDER BY [Text]",
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
+            httpcookie.Expires = DateTime.Now.AddYears( 1 );
             Response.Cookies.Add( httpcookie );
         }
 
@@ -1645,6 +1691,14 @@ ORDER BY [Text]",
             public DateTime? BirthDate { get; set; }
 
             /// <summary>
+            /// Gets or sets the grade offset.
+            /// </summary>
+            /// <value>
+            /// The grade offset.
+            /// </value>
+            public int? GradeOffset { get; set; }
+
+            /// <summary>
             /// Gets or sets the mobile phone number.
             /// </summary>
             /// <value>
@@ -1735,6 +1789,7 @@ ORDER BY [Text]",
                 LastName = person.LastName;
                 BirthDate = person.BirthDate;
                 EmailAddress = person.Email;
+                GradeOffset = person.GradeOffset;
                 var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                 if ( mobilePhone != null )
                 {
