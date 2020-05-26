@@ -106,5 +106,10 @@ namespace Rock.SystemGuid
         /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
+
+        /// <summary>
+        /// The Job to send an email digest with an attendance summary of all child groups to regional group leaders
+        /// </summary>
+        public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
     }
 }
