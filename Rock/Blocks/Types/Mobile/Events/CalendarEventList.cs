@@ -129,7 +129,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The day header template default value.
             /// </summary>
-            public const string DayHeaderTemplate = @"<Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" StyleClass=""calendar-events-day, heading2"" />";
+            public const string DayHeaderTemplate = @"<Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" StyleClass=""calendar-events-day, h2"" />";
         }
 
         /// <summary>
