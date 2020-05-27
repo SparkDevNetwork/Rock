@@ -345,7 +345,23 @@ namespace Rock.Reporting.DataFilter.GroupMember
             }
         }
 
-        private List<EntityField> entityFields = null;
+        /// <summary>
+        /// Threadsafe storage for entity fields
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields = null;
+
+        /// <summary>
+        /// Gets or sets the entity fields.
+        /// </summary>
+        /// <value>
+        /// The entity fields.
+        /// </value>
+        private List<EntityField> entityFields
+        {
+            get => _entityFields;
+            set => _entityFields = value;
+        }
 
         /// <summary>
         /// Renders the controls.

@@ -378,7 +378,7 @@ namespace Rock.Model
         /// The median page load time in seconds.
         /// </value>
         [DataMember]
-        public double? MedianPageLoadTime { get; set; }
+        public double? MedianPageLoadTimeDurationSeconds { get; set; }
 
         #endregion
 

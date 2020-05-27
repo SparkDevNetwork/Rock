@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.CheckIn
         "Allow Label Reprinting",
         Key = AttributeKey.AllowLabelReprinting,
         Description = " Determines if reprinting labels should be allowed.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = "Manager Settings",
         Order = 21 )]
 

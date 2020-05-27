@@ -18,8 +18,13 @@ Rock.XML
 Quartz.xml
 StyleCop.Cache
 
+#build artifacts
+**/[Bb]in/[Db]ebug
+**/[Bb]in/[Rr]elease
+**/[O]bj/[Db]ebug
+**/[O]bj/[Rr]elease
+
 #specific folders
-[Oo]bj/
 RockWeb/Cache/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging

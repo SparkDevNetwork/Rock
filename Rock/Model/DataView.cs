@@ -148,7 +148,7 @@ namespace Rock.Model
         /// The persisted last run duration in mulliseconds.
         /// </value>
         [DataMember]
-        public int? PersistedLastRunDuration { get; set; }
+        public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Gets or sets the last run date time.
@@ -175,8 +175,16 @@ namespace Rock.Model
         /// The time to run in ms.
         /// </value>
         [DataMember]
-        public double? TimeToRunMS { get; set; }
+        public double? TimeToRunDurationMilliseconds { get; set; }
 
+        /// <summary>
+        /// Gets or sets the datetime that the Run Count was last reset to 0.
+        /// </summary>
+        /// <value>
+        /// The run count last refresh date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RunCountLastRefreshDateTime { get; set; }
         #endregion
 
         #region Virtual Properties

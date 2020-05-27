@@ -150,15 +150,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         #endregion
-
-        #region Private Declarations
-
-        private SingleEntityPicker<StepProgram> _stepProgramPicker = null;
-        private RockCheckBoxList _cblStepType = null;
-        private RockCheckBoxList _cblStepStatus = null;
-        private RockCheckBoxList _cblStepCampus = null;
-
-        #endregion
+        
 
         #region Properties
 
@@ -361,25 +353,18 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int? selectedStepProgramId = null;
-
-            if ( _stepProgramPicker != null )
-            {
-                selectedStepProgramId = _stepProgramPicker.SelectedId;
-            }
-
             var dataContext = new RockContext();
 
             // Step Program selection
-            _stepProgramPicker = new SingleEntityPicker<StepProgram>();
-            _stepProgramPicker.ID = filterControl.ID + "_StepProgramPicker";
-            _stepProgramPicker.AddCssClass( "js-step-program-picker" );
-            _stepProgramPicker.Label = "Step Program";
-            _stepProgramPicker.Help = "The Program in which the Step was undertaken.";
-            _stepProgramPicker.Required = true;
+            var stepProgramPicker = new SingleEntityPicker<StepProgram>();
+            stepProgramPicker.ID = filterControl.ID + "_StepProgramPicker";
+            stepProgramPicker.AddCssClass( "js-step-program-picker" );
+            stepProgramPicker.Label = "Step Program";
+            stepProgramPicker.Help = "The Program in which the Step was undertaken.";
+            stepProgramPicker.Required = true;
 
-            _stepProgramPicker.SelectedIndexChanged += StepProgramPicker_SelectedIndexChanged;
-            _stepProgramPicker.AutoPostBack = true;
+            stepProgramPicker.SelectedIndexChanged += StepProgramPicker_SelectedIndexChanged;
+            stepProgramPicker.AutoPostBack = true;
 
             var programService = new StepProgramService( dataContext );
 
@@ -389,29 +374,28 @@ function() {
                 .ThenBy( a => a.Name )
                 .ToList();
 
-            _stepProgramPicker.InitializeListItems( availablePrograms, x => x.Name, allowEmptySelection: true );
+            stepProgramPicker.InitializeListItems( availablePrograms, x => x.Name, allowEmptySelection: true );
 
-            _stepProgramPicker.SelectedId = selectedStepProgramId;
 
-            filterControl.Controls.Add( _stepProgramPicker );
+            filterControl.Controls.Add( stepProgramPicker );
 
             // Step Type selection
-            _cblStepType = new RockCheckBoxList();
-            _cblStepType.ID = filterControl.ID + "_cblStepType";
-            _cblStepType.AddCssClass( "js-step-type" );
-            _cblStepType.Label = "Steps";
-            _cblStepType.Help = "If selected, specifies the required Steps that have been undertaken.";
+            var cblStepType = new RockCheckBoxList();
+            cblStepType.ID = filterControl.ID + "_cblStepType";
+            cblStepType.AddCssClass( "js-step-type" );
+            cblStepType.Label = "Steps";
+            cblStepType.Help = "If selected, specifies the required Steps that have been undertaken.";
 
-            filterControl.Controls.Add( _cblStepType );
+            filterControl.Controls.Add( cblStepType );
 
             // Step Status selection
-            _cblStepStatus = new RockCheckBoxList();
-            _cblStepStatus.ID = filterControl.ID + "_cblStepStatus";
-            _cblStepStatus.AddCssClass( "js-step-status" );
-            _cblStepStatus.Label = "Statuses";
-            _cblStepStatus.Help = "If selected, specifies the required Statuses of the Steps.";
+            var cblStepStatus = new RockCheckBoxList();
+            cblStepStatus.ID = filterControl.ID + "_cblStepStatus";
+            cblStepStatus.AddCssClass( "js-step-status" );
+            cblStepStatus.Label = "Statuses";
+            cblStepStatus.Help = "If selected, specifies the required Statuses of the Steps.";
 
-            filterControl.Controls.Add( _cblStepStatus );
+            filterControl.Controls.Add( cblStepStatus );
 
             // Date Started
             var drpStarted = new SlidingDateRangePicker();
@@ -432,19 +416,19 @@ function() {
             filterControl.Controls.Add( drpCompleted );
 
             // Step Campus selection
-            _cblStepCampus = new RockCheckBoxList();
-            _cblStepCampus.ID = filterControl.ID + "_cblStepCampus";
-            _cblStepCampus.AddCssClass( "js-step-campus" );
-            _cblStepCampus.Label = "Campuses";
-            _cblStepCampus.Help = "Select the campuses that the steps were completed at. Not selecting a value will select all campuses.";
+            var cblStepCampus = new RockCheckBoxList();
+            cblStepCampus.ID = filterControl.ID + "_cblStepCampus";
+            cblStepCampus.AddCssClass( "js-step-campus" );
+            cblStepCampus.Label = "Campuses";
+            cblStepCampus.Help = "Select the campuses that the steps were completed at. Not selecting a value will select all campuses.";
 
-            filterControl.Controls.Add( _cblStepCampus );
+            filterControl.Controls.Add( cblStepCampus );
 
             // Populate lists
-            PopulateStepProgramRelatedSelectionLists( selectedStepProgramId );
-            PopulateStepCampuses();
+            PopulateStepProgramRelatedSelectionLists( filterControl );
+            PopulateStepCampuses( cblStepCampus );
 
-            return new Control[] { _stepProgramPicker, _cblStepType, _cblStepStatus, drpStarted, drpCompleted, _cblStepCampus };
+            return new Control[] { stepProgramPicker, cblStepType, cblStepStatus, drpStarted, drpCompleted, cblStepCampus };
         }
 
         /// <summary>
@@ -454,31 +438,37 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void StepProgramPicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int stepProgramId = _stepProgramPicker.SelectedValueAsId() ?? 0;
+            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
 
-            PopulateStepProgramRelatedSelectionLists( stepProgramId );
+            PopulateStepProgramRelatedSelectionLists( filterField );
         }
 
         /// <summary>
         /// Populates the step campuses.
         /// </summary>
-        private void PopulateStepCampuses()
+        private void PopulateStepCampuses( RockCheckBoxList cblStepCampus )
         {
-            _cblStepCampus.DataSource = CampusCache.All();
-            _cblStepCampus.DataTextField = "Name";
-            _cblStepCampus.DataValueField = "Guid";
-            _cblStepCampus.DataBind();
+            cblStepCampus.DataSource = CampusCache.All();
+            cblStepCampus.DataTextField = "Name";
+            cblStepCampus.DataValueField = "Guid";
+            cblStepCampus.DataBind();
         }
 
         /// <summary>
         /// Populates the selection lists for Step Type and Step Status.
         /// </summary>
-        /// <param name="stepProgramId">The Step Program identifier.</param>
-        private void PopulateStepProgramRelatedSelectionLists( int? stepProgramId )
+        /// <param name="filterField">The filter field.</param>
+        private void PopulateStepProgramRelatedSelectionLists( FilterField filterField )
         {
             var dataContext = new RockContext();
 
             var programService = new StepProgramService( dataContext );
+
+            StepProgramPicker stepProgramPicker = filterField.ControlsOfTypeRecursive<StepProgramPicker>().FirstOrDefault( c => c.HasCssClass( "js-step-program-picker" ) );
+            RockCheckBoxList cblStepType = filterField.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( c => c.HasCssClass( "js-step-type" ) );
+            RockCheckBoxList _cblStepStatus = filterField.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( c => c.HasCssClass( "js-step-status" ) );
+
+            int? stepProgramId = stepProgramPicker.SelectedValueAsId();
 
             StepProgram stepProgram = null;
 
@@ -490,7 +480,7 @@ function() {
             if ( stepProgram != null )
             {
                 // Step Type list
-                _cblStepType.Items.Clear();
+                cblStepType.Items.Clear();
 
                 var stepTypeService = new StepTypeService( dataContext );
 
@@ -498,10 +488,10 @@ function() {
 
                 foreach ( var item in stepTypes )
                 {
-                    _cblStepType.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
+                    cblStepType.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
 
-                _cblStepType.Visible = _cblStepType.Items.Count > 0;
+                cblStepType.Visible = cblStepType.Items.Count > 0;
 
                 // Step Status list
                 _cblStepStatus.Items.Clear();
@@ -519,7 +509,7 @@ function() {
             }
             else
             {
-                _cblStepType.Visible = false;
+                cblStepType.Visible = false;
                 _cblStepStatus.Visible = false;
             }
         }
@@ -635,8 +625,9 @@ function() {
             }
 
             stepProgramPicker.SetValue( stepProgramId );
+            var filterField = stepProgramPicker.FirstParentControlOfType<FilterField>();
 
-            PopulateStepProgramRelatedSelectionLists( stepProgramId );
+            PopulateStepProgramRelatedSelectionLists( filterField );
 
             foreach ( var item in cblStepTypes.Items.OfType<ListItem>() )
             {
@@ -652,7 +643,7 @@ function() {
 
             sdpDateCompleted.DelimitedValues = settings.CompletedInPeriod.ToDelimitedString();
 
-            PopulateStepCampuses();
+            PopulateStepCampuses( cblStepStatuses );
 
             foreach ( var item in cblStepCampuses.Items.OfType<ListItem>() )
             {

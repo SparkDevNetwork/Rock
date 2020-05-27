@@ -83,10 +83,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring GroupTypeAssociation,ChildGroupTypeId 
-            
-            // ignoring GroupTypeAssociation,GroupTypeId 
  
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {

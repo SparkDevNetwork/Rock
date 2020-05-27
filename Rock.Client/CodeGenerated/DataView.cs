@@ -73,7 +73,7 @@ namespace Rock.Client
         public DateTime? PersistedLastRefreshDateTime { get; set; }
 
         /// <summary />
-        public int? PersistedLastRunDuration { get; set; }
+        public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary />
         public int? PersistedScheduleIntervalMinutes { get; set; }
@@ -82,7 +82,10 @@ namespace Rock.Client
         public int? RunCount { get; set; }
 
         /// <summary />
-        public double? TimeToRunMS { get; set; }
+        public DateTime? RunCountLastRefreshDateTime { get; set; }
+
+        /// <summary />
+        public double? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary />
         public int? TransformEntityTypeId { get; set; }
@@ -132,10 +135,11 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
-            this.PersistedLastRunDuration = source.PersistedLastRunDuration;
+            this.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
             this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             this.RunCount = source.RunCount;
-            this.TimeToRunMS = source.TimeToRunMS;
+            this.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
+            this.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             this.TransformEntityTypeId = source.TransformEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

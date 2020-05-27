@@ -361,10 +361,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             var thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
 
             var virtualThumbPath = Path.Combine( thumbDir, name );
-            var physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+            var physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();

@@ -81,7 +81,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( contentGuid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    string contentAttributeValue = action.GetWorklowAttributeValue( contentGuid.Value );
+                    string contentAttributeValue = action.GetWorkflowAttributeValue( contentGuid.Value );
                     if ( !string.IsNullOrWhiteSpace( contentAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
@@ -106,7 +106,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( startDateTimeAttributeGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string attributeValue = action.GetWorklowAttributeValue( startDateTimeAttributeGuid );
+                    string attributeValue = action.GetWorkflowAttributeValue( startDateTimeAttributeGuid );
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action
                 if ( attribute != null )
                 {
                     DateTime aDateTime;
-                    string attributeValue = action.GetWorklowAttributeValue( expireDateTimeAttributeGuid );
+                    string attributeValue = action.GetWorkflowAttributeValue( expireDateTimeAttributeGuid );
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||

@@ -569,8 +569,6 @@ namespace RockWeb.Blocks.Crm
             pnlConfirm.Visible = false;
         }
 
-        private long _errorCount;
-
         /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
@@ -644,8 +642,6 @@ namespace RockWeb.Blocks.Crm
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
             {
-                _errorCount = 0;
-
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {
@@ -982,7 +978,8 @@ namespace RockWeb.Blocks.Crm
             lNumIndividuals.Text = individualCount.ToString( "N0" ) +
                 ( individualCount == 1 ? " Person" : " People" );
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;

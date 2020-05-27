@@ -35,8 +35,8 @@ namespace Rock.Badge.Component
     public class AttendingDuration : BadgeComponent
     {
 
-        private int _weeksPeriodInDays = 56;
-        private int _monthsPeriodInDays = 720;
+        private const int _weeksPeriodInDays = 56;
+        private const int _monthsPeriodInDays = 720;
 
         /// <summary>
         /// Determines of this badge component applies to the given type

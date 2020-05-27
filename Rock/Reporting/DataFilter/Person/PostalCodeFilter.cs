@@ -150,13 +150,6 @@ function() {
         }
 
         /// <summary>
-        /// The GroupPicker
-        /// </summary>
-        private RockTextBox tbPostalCode = null;
-        private RockDropDownList ddlStringFilterComparison = null;
-        private DefinedValuePicker dvpLocationType = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
@@ -164,19 +157,19 @@ function() {
         {
             var controls = new List<Control>();
 
-            ddlStringFilterComparison = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
+            var ddlStringFilterComparison = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
             ddlStringFilterComparison.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
             ddlStringFilterComparison.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlStringFilterComparison );
             controls.Add( ddlStringFilterComparison );
 
-            tbPostalCode = new RockTextBox();
+            var tbPostalCode = new RockTextBox();
             tbPostalCode.ID = filterControl.ID + "_tbPostalCode";
             tbPostalCode.AddCssClass( "js-filter-control" );
             filterControl.Controls.Add( tbPostalCode );
             controls.Add( tbPostalCode );
 
-            dvpLocationType = new DefinedValuePicker();
+            var dvpLocationType = new DefinedValuePicker();
             dvpLocationType.ID = filterControl.ID + "_ddlLocationType";
             dvpLocationType.Label = "Location Type";
             dvpLocationType.DataValueField = "Id";

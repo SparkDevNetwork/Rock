@@ -76,7 +76,7 @@ namespace Rock.Client
         public int? RunCount { get; set; }
 
         /// <summary />
-        public int? TimeToRunMS { get; set; }
+        public int? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -124,7 +124,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.QueryHint = source.QueryHint;
             this.RunCount = source.RunCount;
-            this.TimeToRunMS = source.TimeToRunMS;
+            this.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

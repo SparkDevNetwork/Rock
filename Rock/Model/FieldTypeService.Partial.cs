@@ -50,11 +50,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of all <see cref="Rock.Model.FieldType">FieldTypes</see> (all items that implement the <see cref="Rock.Field.IFieldType"/> interface) and registers the 
+        /// Gets a list of all <see cref="Rock.Model.FieldType">FieldTypes</see> (all items that implement the <see cref="Rock.Field.IFieldType" /> interface) and registers the
         /// <see cref="Rock.Model.FieldType">FieldTypes</see> that have not been previously registered.
         /// </summary>
-        /// <param name="physWebAppPath">A <see cref="System.String"/> representing the physical path of the web application.</param>
+        /// <param name="physWebAppPath">The physical web application path.</param>
+        [Obsolete( "Use the RegisterFieldTypes() that doesn't have any parameters (physWebAppPath is never used)" )]
+        [RockObsolete( "1.11" )]
         public static void RegisterFieldTypes( string physWebAppPath )
+        {
+            RegisterFieldTypes();
+        }
+
+        /// <summary>
+        /// Gets a list of all <see cref="Rock.Model.FieldType">FieldTypes</see> (all items that implement the <see cref="Rock.Field.IFieldType" /> interface) and registers the
+        /// <see cref="Rock.Model.FieldType">FieldTypes</see> that have not been previously registered.
+        /// </summary>
+        public static void RegisterFieldTypes()
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 

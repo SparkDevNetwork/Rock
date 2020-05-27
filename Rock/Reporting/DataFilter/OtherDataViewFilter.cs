@@ -163,7 +163,7 @@ namespace Rock.Reporting.DataFilter
             // if selecting another dataview, default the cbUsePersisted to True
             Control control = sender as Control;
             FilterField filterField = control.FirstParentControlOfType<FilterField>();
-            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.CssClass.Contains( "js-usepersisted" ) ).FirstOrDefault();
+            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.HasCssClass( "js-usepersisted" ) ).FirstOrDefault();
             if ( cbUsePersisted != null )
             {
                 cbUsePersisted.Checked = true;

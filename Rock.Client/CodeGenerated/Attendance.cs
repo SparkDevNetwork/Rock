@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? AttendanceCheckInSessionId { get; set; }
+
+        /// <summary />
         public int? AttendanceCodeId { get; set; }
 
         /// <summary />
@@ -172,6 +175,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Attendance source )
         {
             this.Id = source.Id;
+            this.AttendanceCheckInSessionId = source.AttendanceCheckInSessionId;
             this.AttendanceCodeId = source.AttendanceCodeId;
             this.CampusId = source.CampusId;
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;

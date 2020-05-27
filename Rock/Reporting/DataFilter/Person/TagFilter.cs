@@ -124,39 +124,30 @@ function() {
         }
 
         /// <summary>
-        /// The Tag Type radio button list
-        /// </summary>
-        private RockRadioButtonList _rblTagType = null;
-
-        /// <summary>
-        /// The tag list dropdownlist
-        /// </summary>
-        private RockDropDownList _ddlTagList = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            _rblTagType = new RockRadioButtonList();
-            _rblTagType.ID = filterControl.ID + "_tagType";
-            _rblTagType.RepeatDirection = RepeatDirection.Horizontal;
-            _rblTagType.Items.Add( new ListItem( "Personal Tags", "1" ) );
-            _rblTagType.Items.Add( new ListItem( "Organizational Tags", "2" ) );
-            _rblTagType.SelectedValue = "1";
-            _rblTagType.AutoPostBack = true;
-            _rblTagType.SelectedIndexChanged += rblTagType_SelectedIndexChanged;
-            filterControl.Controls.Add( _rblTagType );
+            var rblTagType = new RockRadioButtonList();
+            rblTagType.ID = filterControl.ID + "_tagType";
+            rblTagType.RepeatDirection = RepeatDirection.Horizontal;
+            rblTagType.Items.Add( new ListItem( "Personal Tags", "1" ) );
+            rblTagType.Items.Add( new ListItem( "Organizational Tags", "2" ) );
+            rblTagType.SelectedValue = "1";
+            rblTagType.AutoPostBack = true;
+            rblTagType.SelectedIndexChanged += rblTagType_SelectedIndexChanged;
+            rblTagType.CssClass = "js-tag-type";
+            filterControl.Controls.Add( rblTagType );
 
-            _ddlTagList = new RockDropDownList();
-            _ddlTagList.ID = filterControl.ID + "_ddlTagList";
-            _ddlTagList.AddCssClass( "js-tag-filter-list" );
-            filterControl.Controls.Add( _ddlTagList );
+            var ddlTagList = new RockDropDownList();
+            ddlTagList.ID = filterControl.ID + "_ddlTagList";
+            ddlTagList.AddCssClass( "js-tag-filter-list" );
+            filterControl.Controls.Add( ddlTagList );
 
-            PopulateTagList();
+            PopulateTagList( filterControl );
 
-            return new Control[2] { _rblTagType, _ddlTagList };
+            return new Control[2] { rblTagType, ddlTagList };
         }
 
         /// <summary>
@@ -166,19 +157,23 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblTagType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            PopulateTagList();
+            var filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            PopulateTagList( filterField );
         }
 
         /// <summary>
         /// Populates the tag list.
         /// </summary>
-        private void PopulateTagList()
+        private void PopulateTagList( FilterField filterField )
         {
             int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
             var tagQry = new TagService( new RockContext() ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
-            RockPage rockPage = _rblTagType.Page as RockPage;
 
-            if ( _rblTagType.SelectedValueAsInt() == 1 )
+            var rblTagType = filterField.ControlsOfTypeRecursive<RockRadioButtonList>().FirstOrDefault( a => a.HasCssClass( "js-tag-type" ) );
+            var ddlTagList = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-tag-filter-list" ) );
+            RockPage rockPage = rblTagType.Page as RockPage;
+
+            if ( rblTagType.SelectedValueAsInt() == 1 )
             {
                 // Personal tags - tags where the ownerid is the current person id
                 tagQry = tagQry.Where( a => a.OwnerPersonAlias.PersonId == rockPage.CurrentPersonId ).OrderBy( a => a.Name );
@@ -189,12 +184,12 @@ function() {
                 tagQry = tagQry.Where( a => a.OwnerPersonAlias == null ).OrderBy( a => a.Name );
             }
 
-            _ddlTagList.Items.Clear();
+            ddlTagList.Items.Clear();
             var tempTagList = tagQry.ToList();
 
             foreach ( var tag in tagQry.Select( a => new { a.Guid, a.Name } ) )
             {
-                _ddlTagList.Items.Add( new ListItem( tag.Name, tag.Guid.ToString() ) );
+                ddlTagList.Items.Add( new ListItem( tag.Name, tag.Guid.ToString() ) );
             }
         }
 
@@ -238,7 +233,9 @@ function() {
 
                 ( controls[0] as RadioButtonList ).SelectedValue = tagType.ToString();
 
-                rblTagType_SelectedIndexChanged( this, new EventArgs() );
+                var rblTagType = controls[0] as RadioButtonList;
+
+                rblTagType_SelectedIndexChanged( rblTagType, new EventArgs() );
 
                 RockDropDownList ddlTagList = controls[1] as RockDropDownList;
 
