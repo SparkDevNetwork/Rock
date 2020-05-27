@@ -1300,6 +1300,19 @@ formfield .required-indicator {
 .card-inline .card-additionalcontent .paragraph {
     color: #ffffff;
 }
+
+/* HTML Parser CSS */
+^grid.ordered-list,
+^grid.unordered-list {
+    margin-bottom: 24;
+}
+
+^grid.ordered-list ^grid.ordered-list,
+^grid.ordered-list ^grid.unordered-list,
+^grid.unordered-list ^grid.ordered-list,
+^grid.unordered-list ^grid.unordered-list {
+    margin-bottom: 0;
+}
 ";
         #endregion
     }
