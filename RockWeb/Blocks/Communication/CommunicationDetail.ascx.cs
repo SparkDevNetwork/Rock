@@ -951,6 +951,7 @@ namespace RockWeb.Blocks.Communication
         #region Recipients Grid Events
 
         private bool _GridIsExporting = false;
+        private bool _GridIsCommunication = false;
 
         /// <summary>
         /// Handles the GridRebind event of the Recipient grid controls.
@@ -960,7 +961,7 @@ namespace RockWeb.Blocks.Communication
         void gRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
             _GridIsExporting = e.IsExporting;
-
+            _GridIsCommunication = e.IsCommunication;
             BindRecipientsGrid();
         }
 
@@ -983,7 +984,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            if ( _GridIsExporting )
+            if ( _GridIsExporting || _GridIsCommunication )
             {
                 return;
             }
@@ -1675,8 +1676,13 @@ namespace RockWeb.Blocks.Communication
                 {
                     contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText;
                 }
-                else
+                else if ( !_GridIsCommunication )
                 {
+
+                    /* 27-May-2020 - SK
+                     * Not allow paging if grid is binded for exporting OR Communication.
+                     */
+
                     // Only retrieve data for the current grid page.
                     pageSize = gRecipients.PageSize;
                     pageIndex = gRecipients.PageIndex;
