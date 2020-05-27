@@ -169,22 +169,12 @@ function() {
         }
 
         /// <summary>
-        /// The ddlInteractionChannel RockDropDownList
-        /// </summary>
-        private RockDropDownList ddlInteractionChannel = null;
-
-        /// <summary>
-        /// The ddlInteractionComponent RockDropDownList
-        /// </summary>
-        private RockDropDownList ddlInteractionComponent = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            ddlInteractionChannel = new RockDropDownList();
+            var ddlInteractionChannel = new RockDropDownList();
             ddlInteractionChannel.ID = filterControl.ID + "_ddlInteractionChannel";
             ddlInteractionChannel.Label = "Interaction Channel";
             ddlInteractionChannel.CssClass = "js-interaction-channel";
@@ -208,7 +198,7 @@ function() {
             int? selectedInteractionChannelId = filterControl.Page.Request.Params[ddlInteractionChannel.UniqueID].AsIntegerOrNull();
             ddlInteractionChannel.SetValue( selectedInteractionChannelId );
 
-            ddlInteractionComponent = new RockDropDownList();
+            var ddlInteractionComponent = new RockDropDownList();
             ddlInteractionComponent.ID = filterControl.ID + "_ddlInteractionComponent";
             ddlInteractionComponent.Label = "Interaction Component";
             ddlInteractionComponent.CssClass = "js-interaction-component";
@@ -270,9 +260,13 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlInteractionChannel_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int? interactionChannelId = ddlInteractionChannel.SelectedValueAsId();
-            PopulateInteractionComponent( interactionChannelId, ddlInteractionComponent );
+            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
 
+            var ddlInteractionChannel = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-interaction-channel" ) );
+            var ddlInteractionComponent = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-interaction-component" ) );
+
+            int ? interactionChannelId = ddlInteractionChannel.SelectedValueAsId();
+            PopulateInteractionComponent( interactionChannelId, ddlInteractionComponent );
         }
 
         /// <summary>

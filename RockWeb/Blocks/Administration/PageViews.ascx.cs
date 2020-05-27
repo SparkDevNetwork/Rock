@@ -187,17 +187,13 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Sort the results
-            var sortProperty = gInteractions.SortProperty;
-
-            if ( sortProperty != null )
+            var sortProperty = gInteractions.SortProperty ?? new SortProperty
             {
-                viewModelQuery = viewModelQuery.Sort( sortProperty );
-            }
-            else
-            {
-                viewModelQuery = viewModelQuery.OrderByDescending( vm => vm.InteractionDateTime );
-            }
+                Direction = SortDirection.Descending,
+                Property = "InteractionDateTime"
+            };
 
+            viewModelQuery = viewModelQuery.Sort( sortProperty );
             gInteractions.SetLinqDataSource( viewModelQuery );
             gInteractions.DataBind();
         }
@@ -310,14 +306,46 @@ namespace RockWeb.Blocks.Administration
         private PageCache _pageCache = null;
 
         /// <summary>
+        /// Gets the interaction component ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetInteractionComponentIds()
+        {
+            if ( _interactionComponentIds == null )
+            {
+                var pageCache = GetPageCache();
+
+                if ( pageCache == null )
+                {
+                    return null;
+                }
+
+                var rockContext = new RockContext();
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var channelMediumTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
+
+                _interactionComponentIds = interactionComponentService.Queryable()
+                    .AsNoTracking()
+                    .Where( ic => ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                    .Where( ic => ic.EntityId == pageCache.Id )
+                    .Select( ic => ic.Id )
+                    .ToList();
+            }
+
+            return _interactionComponentIds;
+        }
+        private List<int> _interactionComponentIds = null;
+
+        /// <summary>
         /// Gets the view model query.
         /// </summary>
         /// <returns></returns>
         private IQueryable<GridRowViewModel> GetViewModelQuery()
         {
-            var pageCache = GetPageCache();
+            // Get the components that this page uses. This is a separate query so the interaction query does not time out
+            var componentIds = GetInteractionComponentIds();
 
-            if ( pageCache == null )
+            if ( componentIds == null || !componentIds.Any() )
             {
                 return Enumerable.Empty<GridRowViewModel>().AsQueryable();
             }
@@ -325,12 +353,9 @@ namespace RockWeb.Blocks.Administration
             var rockContext = new RockContext();
             var interactionService = new InteractionService( rockContext );
 
-            var channelMediumTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
-
-            return interactionService.Queryable().AsNoTracking()
-                .Where( i =>
-                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                    i.InteractionComponent.EntityId == pageCache.Id )
+            return interactionService.Queryable()
+                .AsNoTracking()
+                .Where( i => componentIds.Contains( i.InteractionComponentId ) )
                 .Select( i => new GridRowViewModel
                 {
                     InteractionId = i.Id,

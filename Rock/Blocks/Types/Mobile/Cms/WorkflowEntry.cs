@@ -194,14 +194,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <summary>
         /// Loads the workflow.
         /// </summary>
-        /// <param name="workflowId">The workflow identifier.</param>
+        /// <param name="workflowGuid">The workflow identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Model.Workflow LoadWorkflow( int? workflowId, RockContext rockContext )
+        private Model.Workflow LoadWorkflow( Guid? workflowGuid, RockContext rockContext )
         {
-            if ( workflowId.HasValue )
+            if ( workflowGuid.HasValue )
             {
-                return new WorkflowService( rockContext ).Get( workflowId.Value );
+                return new WorkflowService( rockContext ).Get( workflowGuid.Value );
             }
             else
             {
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 if ( formAttribute.IsVisible && !formAttribute.IsReadOnly )
                 {
                     var attribute = AttributeCache.Get( formAttribute.AttributeId );
-                    var formField = formFields.FirstOrDefault( f => f.AttributeId == formAttribute.AttributeId );
+                    var formField = formFields.FirstOrDefault( f => f.AttributeGuid == formAttribute.Attribute.Guid );
 
                     if ( attribute != null && formField != null )
                     {
@@ -510,18 +510,18 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <returns>A collection of string/string pairs.</returns>
         [BlockAction]
-        public WorkflowForm GetNextForm( int? workflowId = null, string formAction = null, List<MobileField> formFields = null )
+        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null )
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
 
-            var workflow = LoadWorkflow( workflowId, rockContext );
+            var workflow = LoadWorkflow( workflowGuid, rockContext );
             var currentPerson = GetCurrentPerson();
 
             //
             // Set initial workflow attribute values.
             //
-            if ( !workflowId.HasValue )
+            if ( !workflowGuid.HasValue )
             {
                 SetInitialWorkflowAttributes( workflow, formFields );
             }
@@ -551,6 +551,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Message = message ?? GetCompletionMessage( workflow, responseText )
                     };
                 }
+                else
+                {
+                    //
+                    // If there is a second form, we need to persist.
+                    //
+                    workflowService.PersistImmediately( action );
+                }
             }
 
             //
@@ -561,7 +568,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var mobileForm = new WorkflowForm
             {
-                WorkflowId = workflow.Id
+                WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null
             };
 
             //
@@ -588,7 +595,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                     var mobileField = new MobileField
                     {
-                        AttributeId = attribute.Id,
+                        AttributeGuid = attribute.Guid,
                         Key = attribute.Key,
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
@@ -635,7 +642,19 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var actionDetails = btn.Split( new char[] { '^' } );
                 if ( actionDetails.Length > 0 )
                 {
-                    var btnType = DefinedValueCache.Get( actionDetails[1].AsGuid() );
+                    DefinedValueCache btnType;
+
+                    if ( !actionDetails[1].IsNullOrWhiteSpace() )
+                    {
+                        btnType = DefinedValueCache.Get( actionDetails[1].AsGuid() );
+                    }
+                    else
+                    {
+                        btnType = DefinedTypeCache.Get( SystemGuid.DefinedType.BUTTON_HTML )
+                            .DefinedValues
+                            .OrderBy( a => a.Order )
+                            .FirstOrDefault();
+                    }
 
                     if ( btnType != null )
                     {

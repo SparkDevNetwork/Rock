@@ -171,7 +171,7 @@ namespace Rock.Logging
 
             return new RockLogEvent
             {
-                DateTime = evt.Timestamp.DateTime,
+                DateTime = evt.Timestamp.DateTime.ToLocalTime(),
                 Exception = evt.Exception,
                 Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
                 Domain = domain,

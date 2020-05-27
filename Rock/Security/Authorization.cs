@@ -57,6 +57,32 @@ namespace Rock.Security
             Strict
         }
 
+        /// <summary>
+        /// Authentication Level Type
+        /// </summary>
+        public enum AuthenticationLevel
+        {
+            /// <summary>
+            /// TrustedLogin
+            /// </summary>
+            TrustedLogin = 10,
+
+            /// <summary>
+            /// TokenAuthentication
+            /// </summary>
+            TokenAuthentication = 20,
+
+            /// <summary>
+            /// Identified
+            /// </summary>
+            Identified = 30,
+
+            /// <summary>
+            /// None
+            /// </summary>
+            None = 40
+        }
+
         #region Constants
 
         /// <summary>
@@ -113,6 +139,11 @@ namespace Rock.Security
         /// Authorization action for using (tagging with) the Tag.
         /// </summary>
         public const string TAG = "Tag";
+
+        /// <summary>
+        /// Unauthenticated Person Identifier cookie.
+        /// </summary>
+        public const string COOKIE_UNSECURED_PERSON_IDENTIFIER = ".ROCK-UnauthenticatedPersonIdentifier";
 
         #endregion
 
@@ -761,6 +792,7 @@ namespace Rock.Security
         /// </summary>
         public static void SignOut()
         {
+            ExpireUnsecuredPersonIdentifierCookie();
             var domainCookie = HttpContext.Current.Request.Cookies[$"{FormsAuthentication.FormsCookieName}_DOMAIN"];
             if ( domainCookie != null )
             {
@@ -783,6 +815,23 @@ namespace Rock.Security
             else
             {
                 FormsAuthentication.SignOut();
+            }
+        }
+
+        /// <summary>
+        /// Expires the Unsecured Person Identifier Cookie
+        /// </summary>
+        /// <returns></returns>
+        private static void ExpireUnsecuredPersonIdentifierCookie()
+        {
+            var unsecuredPersonIdentifierCookie = HttpContext.Current.Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER];
+            if ( unsecuredPersonIdentifierCookie != null )
+            {
+                HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+                httpcookie.Value = null;
+                httpcookie.Expires = DateTime.Now.AddDays( -1d );
+                HttpContext.Current.Response.Cookies.Remove( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+                HttpContext.Current.Response.Cookies.Add( httpcookie );
             }
         }
 

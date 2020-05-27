@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action
 
             // Get the connection request
             ConnectionRequest request = null;
-            Guid connectionRequestGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid() ).AsGuid();
+            Guid connectionRequestGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid() ).AsGuid();
             var connectionRequestService = new ConnectionRequestService( rockContext );
             request = connectionRequestService.Get( connectionRequestGuid );
             if ( request == null )
@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
 
             // Get the opportunity
             ConnectionOpportunity opportunity = null;
-            Guid opportunityTypeGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionOpportunityAttribute" ).AsGuid() ).AsGuid();
+            Guid opportunityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionOpportunityAttribute" ).AsGuid() ).AsGuid();
             opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityTypeGuid );
             if ( opportunity == null )
             {

@@ -43,7 +43,11 @@ namespace Rock.Reporting.DataSelect.GroupMember
     {
         #region Private Methods
 
-        private List<EntityField> _GroupMemberAttributes = null;
+        /// <summary>
+        /// Thread-safe field to cache _groupMemberAttributes for GetGroupMemberAttributes
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _groupMemberAttributes = null;
 
         /// <summary>
         /// Gets the Attributes for a Group Member of a specific Group Type.
@@ -51,7 +55,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         /// <returns></returns>
         private List<EntityField> GetGroupMemberAttributes()
         {
-            if (_GroupMemberAttributes == null)
+            if ( _groupMemberAttributes == null)
             {
                 var entityAttributeFields = new Dictionary<string, EntityField>();
                 var context = new RockContext();
@@ -129,10 +133,10 @@ namespace Rock.Reporting.DataSelect.GroupMember
                     sortedFields.Add( entityProperty );
                 }
 
-                _GroupMemberAttributes = sortedFields;
+                _groupMemberAttributes = sortedFields;
             }
 
-            return _GroupMemberAttributes;
+            return _groupMemberAttributes;
         }
 
         #endregion

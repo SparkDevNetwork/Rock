@@ -39,7 +39,7 @@ namespace Rock.Badge.Component
         /// <summary>
         /// The max value of a Natural DISC score.
         /// </summary>
-        private int MAX = 100;
+        private const int MAX = 100;
 
         /// <summary>
         /// Determines of this badge component applies to the given type

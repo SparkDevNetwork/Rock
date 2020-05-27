@@ -51,7 +51,7 @@ namespace Rock.Transactions
         /// <value>
         /// The time to run in ms.
         /// </value>
-        public int? TimeToRunMS { get; set; }
+        public int? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RunReportTransaction"/> class.
@@ -82,9 +82,9 @@ namespace Rock.Transactions
                 }
 
                 // We will only update the RunCount if we were given a TimeToRun value.
-                if ( TimeToRunMS != null )
+                if ( TimeToRunDurationMilliseconds != null )
                 {
-                    report.TimeToRunMS = TimeToRunMS;
+                    report.TimeToRunDurationMilliseconds = TimeToRunDurationMilliseconds;
                 }
 
                 rockContext.SaveChanges();

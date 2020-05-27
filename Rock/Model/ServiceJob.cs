@@ -226,7 +226,7 @@ namespace Rock.Model
         /// The history count per job.
         /// </value>
         [DataMember]
-        public int HistoryCount { get; set; } = 100;
+        public int HistoryCount { get; set; } = 500;
 
         #endregion
 
