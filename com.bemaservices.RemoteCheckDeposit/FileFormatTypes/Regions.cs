@@ -121,10 +121,7 @@ ItemCount: {{ ItemCount }}", order: 20 )]
 
             // Override routing number with institution routing number for Field 4
             header.ClientInstitutionRoutingNumber = originRoutingNumber;
-
-            // Override Return Location Routing Number
-            header.ReturnLocationRoutingNumber = originRoutingNumber;
-
+            
             // Set Bundle ID  (should be same as Bundle Sequence Number )
             header.ID = (bundleIndex + 1).ToString();
 
