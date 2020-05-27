@@ -41,8 +41,23 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Edit" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
-    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
-        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 0 )]
+
+    [BooleanField(
+        name: "Impersonation",
+        trueText: "Allow (only use on an internal page used by staff)",
+        falseText: "Don't Allow",
+        description: "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        defaultValue: false,
+        key: AttributeKey.Impersonation )]
+
+    [BooleanField(
+        name: "Impersonator can see saved accounts",
+        trueText: "Allow (only use on an internal page used by staff)",
+        falseText: "Don't Allow",
+        description: "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        defaultValue: false,
+        key: AttributeKey.ImpersonatorCanSeeSavedAccounts )]
+
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 1 )]
     [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
         "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 2 )]
@@ -76,8 +91,7 @@ achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 11 )]
     [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
-", "Text Options", 12 )]
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"", "Text Options", 12 )]
 
     [WorkflowTypeField(
         name: "Workflow Trigger",
@@ -85,15 +99,31 @@ achieve our mission.  We are so grateful for your commitment.
         allowMultiple: true,
         required: false,
         order: 13,
-        key: AttributeKeys.WorkflowType )]
+        key: AttributeKey.WorkflowType )]
 
     #endregion
 
     public partial class ScheduledTransactionEdit : RockBlock
     {
-        private class AttributeKeys
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        private static class AttributeKey
         {
+            /// <summary>
+            /// The workflow type
+            /// </summary>
             public const string WorkflowType = "WorkflowType";
+
+            /// <summary>
+            /// Allow impersonation
+            /// </summary>
+            public const string Impersonation = "Impersonation";
+
+            /// <summary>
+            /// The impersonator can see saved accounts
+            /// </summary>
+            public const string ImpersonatorCanSeeSavedAccounts = "ImpersonatorCanSeeSavedAccounts";
         }
 
         #region Fields
@@ -248,7 +278,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                     GetAccounts( scheduledTransaction );
                     SetFrequency( scheduledTransaction );
-                    SetSavedAccounts();
+                    SetSavedAccounts( scheduledTransaction );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
                     tbSummary.Text = scheduledTransaction.Summary;
@@ -273,7 +303,7 @@ achieve our mission.  We are so grateful for your commitment.
                     lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues );
                     lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues );
                     lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
-                    lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues );
+                    lSuccessFooter.Text = ( GetAttributeValue( "SuccessFooter" ) ?? string.Empty ).ResolveMergeFields( configValues );
 
                     hfPaymentTab.Value = "None";
 
@@ -533,8 +563,7 @@ achieve our mission.  We are so grateful for your commitment.
             using ( var rockContext = new RockContext() )
             {
                 // If impersonation is allowed, and a valid person key was used, set the target to that person
-                bool allowImpersonation = GetAttributeValue( "Impersonation" ).AsBoolean();
-                if ( allowImpersonation )
+                if ( IsImpersonationAllowed() )
                 {
                     string personKey = PageParameter( "Person" );
                     if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -562,8 +591,8 @@ achieve our mission.  We are so grateful for your commitment.
                         var service = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = service
                             .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                            .Where( t => 
-                                t.Id == txnId && 
+                            .Where( t =>
+                                t.Id == txnId &&
                                 t.AuthorizedPersonAlias != null &&
                                 t.AuthorizedPersonAlias.Person != null &&
                                 validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) )
@@ -741,15 +770,19 @@ achieve our mission.  We are so grateful for your commitment.
         /// <summary>
         /// Binds the saved accounts.
         /// </summary>
-        private void SetSavedAccounts()
+        /// <param name="scheduledTransaction"></param>
+        private void SetSavedAccounts( FinancialScheduledTransaction scheduledTransaction )
         {
             rblSavedCC.Items.Clear();
             rblSavedAch.Items.Clear();
 
-            if ( TargetPersonId.HasValue && CurrentPerson != null && TargetPersonId == CurrentPerson.Id )
+            var isSelf = TargetPersonId.HasValue && CurrentPerson != null && TargetPersonId == CurrentPerson.Id;
+            var savedAccountViewModels = new List<SavedAccountViewModel>();
+
+            if ( isSelf || CanImpersonatorSeeSavedAccounts() )
             {
                 // Get the saved accounts for the target person
-                var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() )
+                var savedAccountQuery = new FinancialPersonSavedAccountService( new RockContext() )
                     .GetByPersonId( TargetPersonId.Value );
 
                 if ( Gateway != null && Gateway.SupportsSavedAccount( true ) )
@@ -757,18 +790,26 @@ achieve our mission.  We are so grateful for your commitment.
                     var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                     if ( Gateway.SupportsSavedAccount( ccCurrencyType ) )
                     {
-                        rblSavedCC.DataSource = savedAccounts
+                        var cards = savedAccountQuery
                             .Where( a =>
                                 a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
                                 a.FinancialPaymentDetail != null &&
                                 a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
                             .OrderBy( a => a.Name )
-                            .Select( a => new
+                            .Select( a => new SavedAccountViewModel
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")",
+                                GatewayPersonIdentifier = a.GatewayPersonIdentifier,
+                                ReferenceNumber = a.ReferenceNumber,
+                                TransactionCode = a.TransactionCode,
+                                IsCard = true
                             } ).ToList();
+
+                        savedAccountViewModels.AddRange(cards);
+                        rblSavedCC.DataSource = cards;
                         rblSavedCC.DataBind();
+
                         if ( rblSavedCC.Items.Count > 0 )
                         {
                             rblSavedCC.Items.Add( new ListItem( "Use a different card", "0" ) );
@@ -778,18 +819,26 @@ achieve our mission.  We are so grateful for your commitment.
                     var achCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
                     if ( Gateway.SupportsSavedAccount( achCurrencyType ) )
                     {
-                        rblSavedAch.DataSource = savedAccounts
+                        var bankAccounts = savedAccountQuery
                             .Where( a =>
                                 a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
                                 a.FinancialPaymentDetail != null &&
                                 a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
                             .OrderBy( a => a.Name )
-                            .Select( a => new
+                            .Select( a => new SavedAccountViewModel
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")",
+                                GatewayPersonIdentifier = a.GatewayPersonIdentifier,
+                                ReferenceNumber = a.ReferenceNumber,
+                                TransactionCode = a.TransactionCode,
+                                IsCard = false
                             } ).ToList();
+
+                        savedAccountViewModels.AddRange( bankAccounts );
+                        rblSavedAch.DataSource = bankAccounts;
                         rblSavedAch.DataBind();
+
                         if ( rblSavedAch.Items.Count > 0 )
                         {
                             rblSavedAch.Items.Add( new ListItem( "Use a different bank account", "0" ) );
@@ -803,6 +852,17 @@ achieve our mission.  We are so grateful for your commitment.
                 rblSavedCC.Items[0].Selected = true;
                 rblSavedCC.Visible = true;
                 divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
+
+                var likelyCurrentCard = savedAccountViewModels.FirstOrDefault( sa =>
+                    sa.IsCard &&
+                    sa.ReferenceNumber == scheduledTransaction.TransactionCode ||
+                    sa.TransactionCode == scheduledTransaction.TransactionCode ||
+                    sa.GatewayPersonIdentifier == scheduledTransaction.TransactionCode );
+
+                if ( likelyCurrentCard != null )
+                {
+                    rblSavedCC.SetValue( likelyCurrentCard.Id );
+                }
             }
             else
             {
@@ -815,6 +875,17 @@ achieve our mission.  We are so grateful for your commitment.
                 rblSavedAch.Items[0].Selected = true;
                 rblSavedAch.Visible = true;
                 divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+
+                var likelyCurrentBankAccount = savedAccountViewModels.FirstOrDefault( sa =>
+                    !sa.IsCard &&
+                    sa.ReferenceNumber == scheduledTransaction.TransactionCode ||
+                    sa.TransactionCode == scheduledTransaction.TransactionCode ||
+                    sa.GatewayPersonIdentifier == scheduledTransaction.TransactionCode );
+
+                if ( likelyCurrentBankAccount != null )
+                {
+                    rblSavedAch.SetValue( likelyCurrentBankAccount.Id );
+                }
             }
             else
             {
@@ -1255,6 +1326,28 @@ achieve our mission.  We are so grateful for your commitment.
         #region Helper Methods
 
         /// <summary>
+        /// Determines whether Impersonation is allowed.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is impersonation allowed]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsImpersonationAllowed()
+        {
+            return GetAttributeValue( AttributeKey.Impersonation ).AsBoolean();
+        }
+
+        /// <summary>
+        /// Determines whether the impersonator can see saved accounts.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance [can impersonator can see saved accounts]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool CanImpersonatorSeeSavedAccounts()
+        {
+            return GetAttributeValue( AttributeKey.ImpersonatorCanSeeSavedAccounts ).AsBoolean();
+        }
+
+        /// <summary>
         /// Binds the accounts.
         /// </summary>
         private void BindAccounts()
@@ -1420,13 +1513,13 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ";
-            string script = string.Format( 
-                scriptFormat, 
+            string script = string.Format(
+                scriptFormat,
                 divCCPaymentInfo.ClientID, // {0}
-                divACHPaymentInfo.ClientID, // {1} 
-                hfPaymentTab.ClientID, // {2} 
-                oneTimeFrequencyId, // {3} 
-                GlobalAttributesCache.Value( "CurrencySymbol") // {4}
+                divACHPaymentInfo.ClientID, // {1}
+                hfPaymentTab.ClientID, // {2}
+                oneTimeFrequencyId, // {3}
+                GlobalAttributesCache.Value( "CurrencySymbol" ) // {4}
                 );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
@@ -1441,7 +1534,7 @@ achieve our mission.  We are so grateful for your commitment.
                 return;
             }
 
-            var workflowTypeGuids = GetAttributeValues( AttributeKeys.WorkflowType ).AsGuidList();
+            var workflowTypeGuids = GetAttributeValues( AttributeKey.WorkflowType ).AsGuidList();
 
             if ( workflowTypeGuids.Any() )
             {
@@ -1500,6 +1593,42 @@ achieve our mission.  We are so grateful for your commitment.
                 CampusId = campusId;
                 PublicName = publicName;
             }
+        }
+
+        /// <summary>
+        /// Saved Account View Model
+        /// </summary>
+        private class SavedAccountViewModel
+        {
+            /// <summary>
+            /// Id
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Name
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Reference Number
+            /// </summary>
+            public string ReferenceNumber { get; set; }
+
+            /// <summary>
+            /// Transaction Code
+            /// </summary>
+            public string TransactionCode { get; set; }
+
+            /// <summary>
+            /// Gateway Person Identifier
+            /// </summary>
+            public string GatewayPersonIdentifier { get; set; }
+
+            /// <summary>
+            /// Is this a card?
+            /// </summary>
+            public bool IsCard { get; set; }
         }
 
         #endregion
