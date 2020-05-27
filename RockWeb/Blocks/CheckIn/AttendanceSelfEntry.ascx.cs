@@ -153,7 +153,7 @@ ORDER BY [Text]",
         Order = 25
         )]
     [DefinedValueField(
-        "Hide Individuals In Grade Less Than",
+        "Hide Individuals in Grade Less Than",
         Description = "Individuals in grades lower than this value will not be show on the attendance list. Defaults to empty (not set).",
         Key = AttributeKey.HideIndividualsInGradeLessThan,
         IsRequired = false,

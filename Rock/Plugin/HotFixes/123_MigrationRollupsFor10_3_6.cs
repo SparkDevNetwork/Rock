@@ -329,7 +329,7 @@ WHERE [Name] = 'Podcast Series'" );
             // Attrib for BlockType: Attendance Self Entry:Hide Individuals Younger Than
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Hide Individuals Younger Than", "HideIndividualsYoungerThan", "Hide Individuals Younger Than", @"The age that should be used as the cut-off for displaying on the attendance list. The value of 14 will hide individuals younger than 14. Individuals without an age will always be shown. Defaults to blank.", 25, @"", "1612C057-122C-4110-9E06-2750828653FD" );
             // Attrib for BlockType: Attendance Self Entry:Hide Individuals In Grade Less Than
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Hide Individuals In Grade Less Than", "HideIndividualsInGradeLessThan", "Hide Individuals In Grade Less Than", @"Individuals in grades lower than this value will not be show on the attendance list. Defaults to empty (not set).", 26, @"", "8F12D1F7-0855-43E5-9D6D-F5F8F3F8F13F" );  
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Hide Individuals in Grade Less Than", "HideIndividualsInGradeLessThan", "Hide Individuals in Grade Less Than", @"Individuals in grades lower than this value will not be show on the attendance list. Defaults to empty (not set).", 26, @"", "8F12D1F7-0855-43E5-9D6D-F5F8F3F8F13F" );  
         }
     }
 }
