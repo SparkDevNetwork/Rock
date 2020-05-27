@@ -133,6 +133,5 @@ namespace Rock.Model
         }
 
         #endregion Static Methods
-
     }
 }
