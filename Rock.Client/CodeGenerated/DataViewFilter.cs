@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? DataViewId { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
@@ -53,6 +56,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ParentId { get; set; }
+
+        /// <summary />
+        public int? RelatedDataViewId { get; set; }
 
         /// <summary />
         public string Selection { get; set; }
@@ -90,12 +96,14 @@ namespace Rock.Client
         public void CopyPropertiesFrom( DataViewFilter source )
         {
             this.Id = source.Id;
+            this.DataViewId = source.DataViewId;
             this.EntityTypeId = source.EntityTypeId;
             this.ExpressionType = source.ExpressionType;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ParentId = source.ParentId;
+            this.RelatedDataViewId = source.RelatedDataViewId;
             this.Selection = source.Selection;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

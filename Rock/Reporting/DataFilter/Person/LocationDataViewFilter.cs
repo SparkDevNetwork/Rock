@@ -37,9 +37,9 @@ namespace Rock.Reporting.DataFilter.Person
     ///     A DataFilter that selects people associated with a set of locations identified by a Location Data View.
     /// </summary>
     [Description( "Filter people by address using a set of locations identified by a Location Data View" )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Data View Filter" )]
-    public class LocationDataViewFilter : DataFilterComponent
+    public class LocationDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Settings
 
@@ -119,7 +119,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Model.Person).FullName; }
+            get { return typeof( Model.Person ).FullName; }
         }
 
         /// <summary>
@@ -188,18 +188,18 @@ function() {
 
             string result = "Connected to Location";
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return result;
             }
 
-            using (var context = new RockContext())
+            using ( var context = new RockContext() )
             {
                 var dataView = new DataViewService( context ).Get( settings.DataViewGuid.GetValueOrDefault() );
 
                 string locationTypeName = null;
 
-                if (settings.LocationTypeGuid.HasValue)
+                if ( settings.LocationTypeGuid.HasValue )
                 {
                     locationTypeName = DefinedValueCache.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
@@ -241,7 +241,7 @@ function() {
 
             var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
-            foreach (var value in familyLocations)
+            foreach ( var value in familyLocations )
             {
                 ddlLocationType.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
@@ -251,10 +251,10 @@ function() {
             parentControl.Controls.Add( ddlLocationType );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Get( typeof(Location) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Location ) ).Id;
             dvpDataView.EntityTypeId = entityTypeId;
 
-            return new Control[] {dvpDataView, ddlLocationType};
+            return new Control[] { dvpDataView, ddlLocationType };
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ function() {
 
             var settings = new FilterSettings( selection );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return;
             }
@@ -317,7 +317,7 @@ function() {
         {
             var settings = new FilterSettings( selection );
 
-            var context = (RockContext)serviceInstance.Context;
+            var context = ( RockContext ) serviceInstance.Context;
 
             // Get the Location Data View that defines the set of candidates from which proximate Locations can be selected.
             var dataView = DataComponentSettingsHelper.GetDataViewForFilterComponent( settings.DataViewGuid, context );
@@ -339,7 +339,7 @@ function() {
                                                                          .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
 
             // If a Location Type is specified, apply the filter condition.
-            if (settings.LocationTypeGuid.HasValue)
+            if ( settings.LocationTypeGuid.HasValue )
             {
                 int groupLocationTypeId = DefinedValueCache.Get( settings.LocationTypeGuid.Value ).Id;
 
@@ -360,6 +360,26 @@ function() {
             return extractedFilterExpression;
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
     }
 }
