@@ -1,0 +1,3 @@
+<a href="{{ url }}" target="_blank" class="display-block soft-half bg-primary shadowed text-decoration-none text-center">
+    <small class="sans-serif stronger letter-spacing-condensed text-white pulse-opacity flush">{{ text }}</small>
+</a>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class CustomerVaultImportRecord
         {
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private abstract class MigrationResult
         {
@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class SavedAccountMigrationResult : MigrationResult
         {
@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class ScheduledTransactionMigrationResult : MigrationResult
         {
@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Finance
         #region Migrate Scheduled Transactions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class SubscriptionCustomerImportRecord
         {
