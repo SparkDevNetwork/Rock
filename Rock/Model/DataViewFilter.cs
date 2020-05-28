@@ -81,6 +81,23 @@ namespace Rock.Model
         [DataMember]
         public string Selection { get; set; }
 
+        /// <summary>
+        /// Gets or sets the id of the Data View that owns this record.
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        [DataMember]
+        public int? DataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the data view that this record uses for filtering.
+        /// </summary>
+        /// <value>
+        /// The related data view identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedDataViewId { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -93,6 +110,22 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual DataViewFilter Parent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view that owns this record.
+        /// </summary>
+        /// <value>
+        /// The data view.
+        /// </value>
+        public virtual DataView DataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view that this record uses to filter.
+        /// </summary>
+        /// <value>
+        /// The related data view.
+        /// </value>
+        public virtual DataView RelatedDataView { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> that the DataView is being filtered by or that contains the property/properties that the DataView is being filtered by.
@@ -281,7 +314,7 @@ namespace Rock.Model
                                         return component.GetExpression( filteredEntityType, serviceInstance, parameter, selection );
                                     }
                                 }
-                                catch (SystemException ex)
+                                catch ( SystemException ex )
                                 {
                                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                                     errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( filteredEntityType, this.Selection ), ex.Message ) );
@@ -360,7 +393,7 @@ namespace Rock.Model
         /// <returns>
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
-        public string ToString(Type filteredEntityType)
+        public string ToString( Type filteredEntityType )
         {
             if ( this.ExpressionType == FilterExpressionType.Filter )
             {
@@ -380,8 +413,8 @@ namespace Rock.Model
 
                 string conjunction;
 
-                if (this.ExpressionType == FilterExpressionType.GroupAny
-                    || this.ExpressionType == FilterExpressionType.GroupAllFalse)
+                if ( this.ExpressionType == FilterExpressionType.GroupAny
+                    || this.ExpressionType == FilterExpressionType.GroupAllFalse )
                 {
                     // If any of the conditions can be True or all of the conditions must be False, use a logical "OR" operation.
                     conjunction = " OR ";
@@ -391,8 +424,8 @@ namespace Rock.Model
                     conjunction = " AND ";
                 }
 
-                var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
-                for(int i = 0; i < children.Count; i++)
+                var children = this.ChildFilters.OrderBy( f => f.ExpressionType ).ToList();
+                for ( int i = 0; i < children.Count; i++ )
                 {
                     string childString = children[i].ToString( filteredEntityType );
                     if ( !string.IsNullOrWhiteSpace( childString ) )
@@ -401,14 +434,14 @@ namespace Rock.Model
                     }
                 }
 
-                if (children.Count > 1 && Parent != null)
+                if ( children.Count > 1 && Parent != null )
                 {
-                    sb.Insert(0, "( ");
-                    sb.Append(" )");
+                    sb.Insert( 0, "( " );
+                    sb.Append( " )" );
                 }
 
-                if (this.ExpressionType == FilterExpressionType.GroupAllFalse
-                    || this.ExpressionType == FilterExpressionType.GroupAnyFalse)
+                if ( this.ExpressionType == FilterExpressionType.GroupAllFalse
+                    || this.ExpressionType == FilterExpressionType.GroupAnyFalse )
                 {
                     sb.Insert( 0, "NOT " );
                 }
@@ -431,7 +464,7 @@ namespace Rock.Model
             {
                 return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
             }
-            else 
+            else
             {
                 return this.ExpressionType.ConvertToString();
             }
@@ -453,8 +486,11 @@ namespace Rock.Model
         /// </summary>
         public DataViewFilterConfiguration()
         {
-            this.HasOptional( r => r.Parent ).WithMany( r => r.ChildFilters).HasForeignKey( r => r.ParentId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.Parent ).WithMany( r => r.ChildFilters ).HasForeignKey( r => r.ParentId ).WillCascadeOnDelete( false );
             this.HasOptional( e => e.EntityType ).WithMany().HasForeignKey( e => e.EntityTypeId ).WillCascadeOnDelete( false );
+
+            this.HasOptional( r => r.DataView ).WithMany().HasForeignKey( r => r.DataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( e => e.RelatedDataView ).WithMany().HasForeignKey( e => e.RelatedDataViewId ).WillCascadeOnDelete( false );
         }
     }
 

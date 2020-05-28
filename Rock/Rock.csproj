@@ -493,6 +493,7 @@
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -516,6 +517,7 @@
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
+    <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
     <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />

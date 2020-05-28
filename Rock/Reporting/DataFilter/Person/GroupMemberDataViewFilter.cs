@@ -35,9 +35,9 @@ namespace Rock.Reporting.DataFilter.Person
     ///     A Data Filter to select People by their inclusion in a Group Member Data View.
     /// </summary>
     [Description( "Select people according to their inclusion in a Group Member Data View." )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Data View" )]
-    public class GroupMemberDataViewFilter : DataFilterComponent
+    public class GroupMemberDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Settings
 
@@ -70,7 +70,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 get
                 {
-                    if (!GroupMemberDataViewGuid.HasValue)
+                    if ( !GroupMemberDataViewGuid.HasValue )
                     {
                         return false;
                     }
@@ -127,7 +127,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Model.Person).FullName; }
+            get { return typeof( Model.Person ).FullName; }
         }
 
         /// <summary>
@@ -199,12 +199,12 @@ function ()
 
             string result = GetTitle( null );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return result;
             }
 
-            using (var context = new RockContext())
+            using ( var context = new RockContext() )
             {
                 var dataView = new DataViewService( context ).Get( settings.GroupMemberDataViewGuid.GetValueOrDefault() );
 
@@ -259,9 +259,9 @@ function ()
             parentControl.Controls.Add( nbCount );
 
             // Populate the Data View Picker
-            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.GroupMember) ).Id;
+            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.GroupMember ) ).Id;
 
-            return new Control[] {dvpDataView, ddlCompare, nbCount};
+            return new Control[] { dvpDataView, ddlCompare, nbCount };
         }
 
         /// <summary>
@@ -338,7 +338,7 @@ function ()
 
             var settings = new FilterSettings( selection );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return;
             }
@@ -362,7 +362,7 @@ function ()
         {
             var settings = new FilterSettings( selection );
 
-            var context = (RockContext)serviceInstance.Context;
+            var context = ( RockContext ) serviceInstance.Context;
 
             //
             // Define Candidate Group Members.
@@ -375,7 +375,7 @@ function ()
 
             var memberQuery = memberService.Queryable();
 
-            if (dataView != null)
+            if ( dataView != null )
             {
                 memberQuery = DataComponentSettingsHelper.FilterByDataView( memberQuery, dataView, memberService );
             }
@@ -388,8 +388,8 @@ function ()
 
             BinaryExpression result;
 
-            if (settings.MemberCountComparison.HasValue
-                && settings.MemberCount.HasValue)
+            if ( settings.MemberCountComparison.HasValue
+                && settings.MemberCount.HasValue )
             {
                 var comparisonType = settings.MemberCountComparison.Value;
                 int memberCountValue = settings.MemberCount.Value;
@@ -404,7 +404,7 @@ function ()
             }
             else
             {
-                personQuery = personQuery.Where( p => memberQuery.Any(m => m.PersonId == p.Id ));
+                personQuery = personQuery.Where( p => memberQuery.Any( m => m.PersonId == p.Id ) );
 
                 result = FilterExpressionExtractor.Extract<Model.Person>( personQuery, parameterExpression, "p" ) as BinaryExpression;
             }
@@ -412,6 +412,26 @@ function ()
             return result;
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
     }
 }
