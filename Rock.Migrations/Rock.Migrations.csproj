@@ -257,6 +257,10 @@
     <Compile Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.Designer.cs">
       <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202005281058275_AddGetPersonNameFunction.cs" />
+    <Compile Include="Migrations\202005281058275_AddGetPersonNameFunction.Designer.cs">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1386,6 +1390,9 @@
     <EmbeddedResource Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.resx">
       <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005281058275_AddGetPersonNameFunction.resx">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -2164,6 +2171,9 @@
     </Content>
     <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql">
       <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202005281058275_AddGetPersonNameFunction _ufnUtility_GetPersonName.sql">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>

@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -2061,6 +2061,35 @@ namespace Rock.Migrations.Migrations {
         public static string _202003311924098_Rollup_0331_FixChartYAxisShortcode {
             get {
                 return ResourceManager.GetString("_202003311924098_Rollup_0331_FixChartYAxisShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This admin helper function returns the person name (and Id) for the given person alias.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The name and person Id of the given person alias id.
+        ///	&lt;/returns&gt;
+        ///
+        ///	&lt;remarks&gt;
+        /// 		NOTE: This is NOT FOR USE in Rock code. Only use for troubleshooting.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnUtility_GetPersonName](3)
+        ///		SELECT Content, [dbo].[ufnUtility_GetPersonName(ModifiedByPersonAliasId) FROM [HtmlContent]
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///CREATE FUNCTION [dbo].[ufn [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202005281058275_AddGetPersonNameFunction__ufnUtility_GetPersonName {
+            get {
+                return ResourceManager.GetString("_202005281058275_AddGetPersonNameFunction__ufnUtility_GetPersonName", resourceCulture);
             }
         }
     }
