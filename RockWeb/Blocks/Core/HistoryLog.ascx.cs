@@ -42,9 +42,21 @@ namespace RockWeb.Blocks.Core
     [Description( "Block for displaying the history of changes to a particular entity." )]
 
     [ContextAware]
-    [TextField( "Heading", "The Lava template to use for the heading. <span class='tip tip-lava'></span>", false, "{{ Entity.EntityStringValue }} (ID:{{ Entity.Id }})", "", 0 )]
+
+    [TextField( "Heading",
+        Description = "The Lava template to use for the heading. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "{{ Entity.EntityStringValue }} (ID:{{ Entity.Id }})",
+        Order = 0,
+        Key = AttributeKey.Heading )]
+
     public partial class HistoryLog : RockBlock, ISecondaryBlock
     {
+        public static class AttributeKey
+        {
+            public const string Heading = "Heading";
+        }
+
 
         #region Fields
 
@@ -80,30 +92,50 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-            _entity = this.ContextEntity();
-            if ( _entity != null )
+            try
             {
-                if ( !Page.IsPostBack )
+                nbMessage.Visible = false;
+
+                base.OnLoad( e );
+                _entity = this.ContextEntity();
+                if ( _entity != null )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.Add( "Entity", _entity );
-                    lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
 
-                    BindFilter();
-                    BindGrid();
 
-                    IModel model = _entity as IModel;
-                    if ( model != null && model.CreatedDateTime.HasValue )
+                    if ( !Page.IsPostBack )
                     {
-                        hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
-                    }
-                    else
-                    {
-                        hlDateAdded.Visible = false;
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Entity", _entity );
+                        lHeading.Text = GetAttributeValue( AttributeKey.Heading ).ResolveMergeFields( mergeFields );
+
+                        BindFilter();
+                        BindGrid();
+
+                        IModel model = _entity as IModel;
+                        if ( model != null && model.CreatedDateTime.HasValue )
+                        {
+                            hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        else
+                        {
+                            hlDateAdded.Visible = false;
+                        }
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                Exception sqlException = ex;
+                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
+                {
+                    sqlException = sqlException.InnerException;
+                }
+
+                nbMessage.Visible = true;
+                nbMessage.Text = string.Format( "<p>An error occurred trying to retrieve the history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",
+                    sqlException != null ? sqlException.Message : ex.Message );
             }
         }
 
@@ -120,7 +152,7 @@ namespace RockWeb.Blocks.Core
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Entity", _entity );
-            lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
+            lHeading.Text = GetAttributeValue( AttributeKey.Heading ).ResolveMergeFields( mergeFields );
 
             BindGrid();
         }
@@ -271,7 +303,7 @@ namespace RockWeb.Blocks.Core
                         var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
                         var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
                         var allowedAttributeIds = GetAuthorizedPersonAttributes( rockContext ).Select( a => a.Id ).ToList();
-                        qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );                            
+                        qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );
                     }
                     else
                     {

@@ -35,15 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string ChannelCustom1Label { get; set; }
-
-        /// <summary />
-        public string ChannelCustom2Label { get; set; }
-
-        /// <summary />
-        public string ChannelCustomIndexed1Label { get; set; }
-
-        /// <summary />
         public string ChannelData { get; set; }
 
         /// <summary />
@@ -62,6 +53,15 @@ namespace Rock.Client
         public int? ComponentCacheDuration { get; set; }
 
         /// <summary />
+        public string ComponentCustom1Label { get; set; }
+
+        /// <summary />
+        public string ComponentCustom2Label { get; set; }
+
+        /// <summary />
+        public string ComponentCustomIndexed1Label { get; set; }
+
+        /// <summary />
         public string ComponentDetailTemplate { get; set; }
 
         /// <summary />
@@ -78,6 +78,15 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string InteractionCustom1Label { get; set; }
+
+        /// <summary />
+        public string InteractionCustom2Label { get; set; }
+
+        /// <summary />
+        public string InteractionCustomIndexed1Label { get; set; }
 
         /// <summary />
         public string InteractionDetailTemplate { get; set; }
@@ -144,21 +153,24 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionChannel source )
         {
             this.Id = source.Id;
-            this.ChannelCustom1Label = source.ChannelCustom1Label;
-            this.ChannelCustom2Label = source.ChannelCustom2Label;
-            this.ChannelCustomIndexed1Label = source.ChannelCustomIndexed1Label;
             this.ChannelData = source.ChannelData;
             this.ChannelDetailTemplate = source.ChannelDetailTemplate;
             this.ChannelEntityId = source.ChannelEntityId;
             this.ChannelListTemplate = source.ChannelListTemplate;
             this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             this.ComponentCacheDuration = source.ComponentCacheDuration;
+            this.ComponentCustom1Label = source.ComponentCustom1Label;
+            this.ComponentCustom2Label = source.ComponentCustom2Label;
+            this.ComponentCustomIndexed1Label = source.ComponentCustomIndexed1Label;
             this.ComponentDetailTemplate = source.ComponentDetailTemplate;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ComponentListTemplate = source.ComponentListTemplate;
             this.EngagementStrength = source.EngagementStrength;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InteractionCustom1Label = source.InteractionCustom1Label;
+            this.InteractionCustom2Label = source.InteractionCustom2Label;
+            this.InteractionCustomIndexed1Label = source.InteractionCustomIndexed1Label;
             this.InteractionDetailTemplate = source.InteractionDetailTemplate;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
             this.InteractionListTemplate = source.InteractionListTemplate;

@@ -140,12 +140,16 @@ namespace Rock.Model
         public string UniqueMessageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the response code.
+        /// The response code from 100-99999 (excluding 666 and 911)
+        /// with a prefix of '@'. For example, '@126345'
+        /// Note: this numeric portion must be between 3 and 5 digits due
+        /// to a regex that parses the message to find response codes
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the response code.
+        /// The response code.
         /// </value>
         [DataMember]
+        [MaxLength( 6 )]
         public string ResponseCode { get; set; }
 
         /// <summary>

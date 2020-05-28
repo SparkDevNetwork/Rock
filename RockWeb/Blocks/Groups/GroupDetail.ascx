@@ -182,10 +182,10 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" />
+                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" />
+                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

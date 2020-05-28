@@ -38,10 +38,26 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the defined types and allows for managing them and their values." )]
 
-    [LinkedPage( "Detail Page", order: 0 )]
-    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1, required: false )]
+    [LinkedPage( "Detail Page",
+        Order = 0,
+        Key = AttributeKey.DetailPage )]
+
+    [CategoryField( AttributeKey.Categories,
+        Description = "If block should only display Defined Types from specific categories, select the categories here.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.DefinedType",
+        Order = 1,
+        IsRequired = false,
+        Key = AttributeKey.Categories )]
+
     public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string Categories = "Categories";
+        }
+
         #region Control Methods
 
         private List<Guid> _categoryGuids = null;
@@ -54,7 +70,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _categoryGuids = GetAttributeValue( "Categories" ).SplitDelimitedValues().AsGuidList();
+            _categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();
             if ( _categoryGuids.Any() )
             {
                 tFilter.Visible = false;
@@ -153,7 +169,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "DefinedTypeId", 0 );
         }
 
         /// <summary>
@@ -163,7 +179,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "DefinedTypeId", e.RowKeyId );
         }
 
         /// <summary>

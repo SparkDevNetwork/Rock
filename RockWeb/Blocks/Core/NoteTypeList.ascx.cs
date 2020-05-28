@@ -40,10 +40,23 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Allows note types to be managed." )]
 
-    [LinkedPage( "Detail Page" )]
-    [EntityTypeField( "Entity Type", false, "Select an entity type to only show note types for the selected entity type, or leave blank to show all", required: false, order: 0 )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    [EntityTypeField( "Entity Type",
+        IncludeGlobalAttributeOption = false,
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EntityType )]
+
     public partial class NoteTypeList : RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string EntityType = "EntityType";
+        }
+
         #region fields
 
         private EntityTypeCache _blockConfigEntityType = null;
@@ -94,7 +107,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ApplyBlockSettings()
         {
-            Guid? entityTypeGuid = this.GetAttributeValue( "EntityType" ).AsGuidOrNull();
+            Guid? entityTypeGuid = this.GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
                 _blockConfigEntityType = EntityTypeCache.Get( entityTypeGuid.Value );
@@ -130,7 +143,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfNoteTypes_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfNoteTypes.SaveUserPreference( "EntityType", entityTypeFilter.SelectedValue );
+            gfNoteTypes.SaveUserPreference( AttributeKey.EntityType, entityTypeFilter.SelectedValue );
             BindGrid();
         }
 
@@ -143,7 +156,7 @@ namespace RockWeb.Blocks.Core
         {
             switch ( e.Key )
             {
-                case "EntityType":
+                case AttributeKey.EntityType:
 
                     int? entityTypeId = e.Value.AsIntegerOrNull();
                     if ( entityTypeId.HasValue )
@@ -207,7 +220,7 @@ namespace RockWeb.Blocks.Core
                 queryParams.Add( "EntityTypeId", entityTypeId.ToString() );
             }
 
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
@@ -220,7 +233,7 @@ namespace RockWeb.Blocks.Core
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "NoteTypeId", e.RowKeyId.ToString() );
 
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
@@ -273,7 +286,7 @@ namespace RockWeb.Blocks.Core
                 .ToList();
 
             entityTypeFilter.EntityTypes = noteTypeEntityTypes;
-            entityTypeFilter.SetValue( gfNoteTypes.GetUserPreference( "EntityType" ) );
+            entityTypeFilter.SetValue( gfNoteTypes.GetUserPreference( AttributeKey.EntityType ) );
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [TextField( "Title",
         Description = "The main title to display over the image. <span class='tip tip-lava'></span>",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.Title,
         Order = 0 )]
 
@@ -83,15 +83,17 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.HorizontalTextAlign,
         Order = 6 )]
 
-    [TextField( "Title Color",
+    [ColorField( "Title Color",
         Description = "Will override the theme's hero title (.hero-title) color.",
         IsRequired = false,
+        DefaultValue = "#ffffff",
         Key = AttributeKeys.TitleColor,
         Order = 7 )]
 
-    [TextField( "Subtitle Color",
+    [ColorField( "Subtitle Color",
         Description = "Will override the theme's hero subtitle (.hero-subtitle) color.",
         IsRequired = false,
+        DefaultValue = "#ffffff",
         Key = AttributeKeys.SubtitleColor,
         Order = 8 )]
 
@@ -282,7 +284,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 DynamicContent = additionalSettings.ProcessLavaOnClient || additionalSettings.ProcessLavaOnServer
             };
 
-            if (config.DynamicContent)
+            if ( !config.DynamicContent )
             {
                 config.Content = GetContent();
             }

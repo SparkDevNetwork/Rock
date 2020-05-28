@@ -231,8 +231,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.7\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.8\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
@@ -469,7 +469,9 @@
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\StructuredContentView.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
@@ -481,9 +483,11 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSession.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
+    <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendMessageResults.cs" />
@@ -497,6 +501,7 @@
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
+    <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
     <Compile Include="Plugin\HotFixes\116_MigrationRollupsFor10_3_4.cs" />
     <Compile Include="Plugin\HotFixes\115_RegistrationLinkage.cs" />
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
@@ -512,6 +517,9 @@
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\121_MigrationRollupsFor10_3_5.cs" />
+    <Compile Include="Plugin\HotFixes\120_StructuredContentTools.cs" />
+    <Compile Include="Plugin\HotFixes\119_AddMobileGroupMemberListBlockTemplate.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
@@ -531,6 +539,7 @@
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
+    <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -654,7 +663,6 @@
     <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />

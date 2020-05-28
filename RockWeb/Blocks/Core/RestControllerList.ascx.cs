@@ -36,9 +36,16 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Lists all the REST controllers." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class RestControllerList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
 
         #region Base Control Methods
 
@@ -96,7 +103,7 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-       /// <summary>
+        /// <summary>
         /// Handles the RowSelected event of the gControllers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -105,14 +112,14 @@ namespace RockWeb.Blocks.Administration
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "Controller", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
             RefreshControllerList();
         }
-        
+
         #endregion
 
         #region Methods
@@ -133,13 +140,13 @@ namespace RockWeb.Blocks.Administration
                 Actions = c.Actions.Count()
             } );
 
-            if (sortProperty != null)
+            if ( sortProperty != null )
             {
-                qry = qry.Sort(sortProperty);
+                qry = qry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( c => c.Name);
+                qry = qry.OrderBy( c => c.Name );
             }
 
             gControllers.EntityTypeId = EntityTypeCache.Get<RestController>().Id;
@@ -155,5 +162,5 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
 
-}
+    }
 }

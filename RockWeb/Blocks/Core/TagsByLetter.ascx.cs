@@ -40,11 +40,32 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists tags grouped by the first letter of the name with counts for people to select." )]
 
-    [LinkedPage("Detail Page")]
-    [BooleanField("User-Selectable Entity Type", "Should user be able to select the entity type to show tags for?", true, "", 0, "ShowEntityType" )]
-    [EntityTypeField("Entity Type", false, "The entity type to display tags for. If entity type is user-selectable, this will be the default entity type", false, "", DefaultValue = Rock.SystemGuid.EntityType.PERSON )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    [BooleanField( "User-Selectable Entity Type",
+        Description = "Should user be able to select the entity type to show tags for?",
+        DefaultValue = "true",
+        Order = 0,
+        Key = AttributeKey.ShowEntityType )]
+
+    [EntityTypeField( "Entity Type",
+        IncludeGlobalAttributeOption = false,
+        Description = "The entity type to display tags for. If entity type is user-selectable, this will be the default entity type",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.EntityType.PERSON,
+        Order = 1,
+        Key = AttributeKey.EntityType )]
+
     public partial class TagsByLetter : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string ShowEntityType = "ShowEntityType";
+            public const string EntityType = "EntityType";
+        }
+
         #region Fields
 
         // used for private variables
@@ -80,16 +101,16 @@ namespace RockWeb.Blocks.Core
         {
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger(upnlTagCloud);
+            this.AddConfigurationUpdateTrigger( upnlTagCloud );
 
             base.OnInit( e );
 
-            _showEntityType = GetAttributeValue( "ShowEntityType" ).AsBoolean();
+            _showEntityType = GetAttributeValue( AttributeKey.ShowEntityType ).AsBoolean();
 
             if ( !EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Get( GetAttributeValue( "EntityType" ).AsGuid() );
-                EntityTypeId = entityType != null ? entityType.Id : (int?)null;
+                var entityType = EntityTypeCache.Get( GetAttributeValue( AttributeKey.EntityType ).AsGuid() );
+                EntityTypeId = entityType != null ? entityType.Id : ( int? ) null;
             }
         }
 
@@ -115,7 +136,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowControls();
             DisplayTags();
@@ -127,13 +148,13 @@ namespace RockWeb.Blocks.Core
             DisplayTags();
         }
 
-        protected void lbPersonalTags_Click(object sender, EventArgs e)
+        protected void lbPersonalTags_Click( object sender, EventArgs e )
         {
             TagCloudTab = "personal";
             DisplayTags();
         }
 
-        protected void lbPublicTags_Click(object sender, EventArgs e)
+        protected void lbPublicTags_Click( object sender, EventArgs e )
         {
             TagCloudTab = "organization";
             DisplayTags();
@@ -200,23 +221,23 @@ namespace RockWeb.Blocks.Core
                 tagQry = tagQry.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == ownerId.Value );
             }
 
-            var qry = tagQry.Select( t => new 
-                {
-                    Tag = t,
-                    Count = t.TaggedItems.Count()
-                })
-                .OrderBy(t => t.Tag.Name);
+            var qry = tagQry.Select( t => new
+            {
+                Tag = t,
+                Count = t.TaggedItems.Count()
+            } )
+                .OrderBy( t => t.Tag.Name );
 
             // create dictionary to group by first letter of name
             Dictionary<char, List<TagSummary>> tagAlphabit = new Dictionary<char, List<TagSummary>>();
 
             // load alphabit into dictionary
-            for (char c = 'A'; c <= 'Z'; c++)
+            for ( char c = 'A'; c <= 'Z'; c++ )
             {
-                tagAlphabit.Add(c, new List<TagSummary>());
+                tagAlphabit.Add( c, new List<TagSummary>() );
             }
 
-            tagAlphabit.Add('#', new List<TagSummary>());
+            tagAlphabit.Add( '#', new List<TagSummary>() );
             tagAlphabit.Add( '*', new List<TagSummary>() );
 
             // load tags
@@ -224,14 +245,14 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var tagInfo in tags )
             {
-                bool canView = 
+                bool canView =
                     ( tagInfo.Tag.OwnerPersonAlias != null && ownerId.HasValue && tagInfo.Tag.OwnerPersonAlias.PersonId == ownerId.Value ) ||
                     ( tagInfo.Tag.OwnerPersonAlias == null && tagInfo.Tag.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) );
 
                 if ( canView )
                 {
                     var tagSummary = new TagSummary { Id = tagInfo.Tag.Id, Name = tagInfo.Tag.Name, Count = tagInfo.Count };
-                    char key = (char)tagSummary.Name.Substring( 0, 1 ).ToUpper()[0];
+                    char key = ( char ) tagSummary.Name.Substring( 0, 1 ).ToUpper()[0];
 
                     if ( Char.IsNumber( key ) )
                     {
@@ -253,44 +274,44 @@ namespace RockWeb.Blocks.Core
             StringBuilder tagOutput = new StringBuilder();
             StringBuilder letterOutput = new StringBuilder();
 
-            letterOutput.Append("<ul class='list-inline tag-letterlist'>");
-            tagOutput.Append("<ul class='list-unstyled taglist'>");
-            foreach (var letterItem in tagAlphabit)
+            letterOutput.Append( "<ul class='list-inline tag-letterlist'>" );
+            tagOutput.Append( "<ul class='list-unstyled taglist'>" );
+            foreach ( var letterItem in tagAlphabit )
             {
-                if (letterItem.Value.Count > 0)
+                if ( letterItem.Value.Count > 0 )
                 {
-                    letterOutput.Append(String.Format("<li><a href='#{0}'>{0}</a></li>", letterItem.Key.ToString()));
+                    letterOutput.Append( String.Format( "<li><a href='#{0}'>{0}</a></li>", letterItem.Key.ToString() ) );
 
                     // add tags to display
-                    tagOutput.Append(String.Format("<li class='clearfix'><h3><a name='{0}'></a>{1}</h3><ul class='list-inline'>", letterItem.Key.ToString(), letterItem.Key.ToString()));
+                    tagOutput.Append( String.Format( "<li class='clearfix'><h3><a name='{0}'></a>{1}</h3><ul class='list-inline'>", letterItem.Key.ToString(), letterItem.Key.ToString() ) );
 
-                    foreach (TagSummary tag in letterItem.Value)
+                    foreach ( TagSummary tag in letterItem.Value )
                     {
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
-                        queryString.Add("TagId", tag.Id.ToString());
-                        var detailPageUrl = LinkedPageUrl("DetailPage", queryString);
+                        queryString.Add( "TagId", tag.Id.ToString() );
+                        var detailPageUrl = LinkedPageUrl( AttributeKey.DetailPage, queryString );
 
-                        tagOutput.Append(string.Format("<a href='{0}'><span class='tag'>{1} <small>({2})</small></span></a>", detailPageUrl, tag.Name, tag.Count));
+                        tagOutput.Append( string.Format( "<a href='{0}'><span class='tag'>{1} <small>({2})</small></span></a>", detailPageUrl, tag.Name, tag.Count ) );
                     }
 
-                    tagOutput.Append("</ul></li>");
+                    tagOutput.Append( "</ul></li>" );
                 }
                 else
                 {
-                    letterOutput.Append(String.Format("<li>{0}</li>", letterItem.Key.ToString()));
+                    letterOutput.Append( String.Format( "<li>{0}</li>", letterItem.Key.ToString() ) );
                 }
 
 
             }
 
-            tagOutput.Append("</ul>");
-            letterOutput.Append("</ul>");
+            tagOutput.Append( "</ul>" );
+            letterOutput.Append( "</ul>" );
 
             // if no tags add message instead
             if ( tags.Count() == 0 )
             {
                 tagOutput.Clear();
-                tagOutput.Append( string.Format(@"<div class='alert alert-info'><h4>Note</h4>No {0} tags exist.</div>", TagCloudTab ) );
+                tagOutput.Append( string.Format( @"<div class='alert alert-info'><h4>Note</h4>No {0} tags exist.</div>", TagCloudTab ) );
             }
 
             lTagList.Text = tagOutput.ToString();

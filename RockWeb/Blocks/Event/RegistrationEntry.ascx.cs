@@ -787,6 +787,15 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                // Show the pnlFamilyMembers panel if RegistrantsSameFamily is not no, and there is a same family selection
+                bool showPnlFamilyMembers = false;
+                if ( RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily != RegistrantsSameFamily.No && rblFamilyOptions.SelectedItem != null )
+                {
+                    showPnlFamilyMembers = rblFamilyOptions.SelectedItem.Text != "None of the above";
+                }
+
+                pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = showPnlFamilyMembers ? "block" : "none";
+
                 // Load values from controls into the state objects
                 ParseDynamicControls();
 
@@ -1465,6 +1474,7 @@ namespace RockWeb.Blocks.Event
         protected void ddlFamilyMembers_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetRegistrantFields( ddlFamilyMembers.SelectedValueAsInt() );
+            CreateRegistrantControls( true );
 
             decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
@@ -4572,7 +4582,7 @@ namespace RockWeb.Blocks.Event
                 // so that current registrant can use the first registrant's value
                 RegistrantInfo registrant = null;
                 RegistrantInfo firstRegistrant = null;
-                var preselectCurrentPerson = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
+                //var preselectCurrentPerson = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
 
                 if ( RegistrationState != null && RegistrationState.RegistrantCount >= CurrentRegistrantIndex )
                 {
@@ -5036,8 +5046,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-
-            CreateRegistrantControls( true );
         }
 
         #endregion

@@ -38,9 +38,16 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Displays the actions for a given REST controller." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class RestActionList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
 
         #region Base Control Methods
 
@@ -56,7 +63,7 @@ namespace RockWeb.Blocks.Administration
             gActions.GridRebind += gActions_GridRebind;
             gActions.Actions.ShowAdd = false;
             gActions.IsDeleteEnabled = false;
-            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull() != null )
+            if ( GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull() != null )
             {
                 gActions.RowSelected += gActions_RowSelected;
             }
@@ -77,7 +84,7 @@ namespace RockWeb.Blocks.Administration
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "RestActionId", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
@@ -117,7 +124,7 @@ namespace RockWeb.Blocks.Administration
                     if ( controllerType != null )
                     {
                         var obsoleteAttribute = controllerType.GetCustomAttribute<System.ObsoleteAttribute>();
-                        if (obsoleteAttribute != null)
+                        if ( obsoleteAttribute != null )
                         {
                             hlblWarning.Text = string.Format( "Obsolete: {1}", controller.Name.SplitCase(), obsoleteAttribute.Message );
                         }

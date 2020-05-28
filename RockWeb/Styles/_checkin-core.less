@@ -25,8 +25,12 @@
 
 @checkin-keypad-width: 260px;
 
+@header-letter-spacing: -.03em;
+
 @font-size-base: 18px;
 @font-size-h1: 28px;
+
+@checkin-button-alttext-font-size: 20px;
 
 // 2. Bootstrap Overrides
 // -------------------------
@@ -57,7 +61,7 @@ select.form-control {
 h1,
 h2,
 h3 {
-  letter-spacing: -.03em;
+  letter-spacing: @header-letter-spacing;
 }
 
 h1 {
@@ -205,10 +209,7 @@ a.help {
 }
 
 // turn off configuration items
-#cms-admin-footer {
-  display: none;
-}
-
+#cms-admin-footer,
 .config-bar {
   display: none;
 }
@@ -254,7 +255,6 @@ body {
   .checkin-sub-title {
     margin-top: 12px;
     font-size: 24px;
-    font-weight: @subheader-font-weight;
     color: @subheader-text-color;
   }
 }
@@ -262,7 +262,7 @@ body {
 // button sub-text
 .btn .checkin-sub-title {
   margin-left: 20px;
-  font-size: 20px;
+  font-size: @checkin-button-alttext-font-size;
   font-weight: @checkin-button-alttext-weight;
   white-space: normal;
 }
@@ -326,6 +326,7 @@ body {
     padding: 12px 24px;
     font-size: 22px;
     font-weight: @checkin-button-text-weight;
+    margin-left: 12px;
   }
 
   .btn-primary {

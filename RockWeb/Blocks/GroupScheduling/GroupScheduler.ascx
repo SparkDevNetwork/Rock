@@ -43,7 +43,14 @@
                     <%-- Filter Options --%>
                     <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />
-                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" LimitToSchedulingEnabledGroups="true" OnValueChanged="gpGroup_ValueChanged" />
+                        <%--
+                            2020-05-01 BJW
+                            LimitToSchedulingEnabledGroups="true" was removed from this group picker because it was causing performance issues.
+                            The performance issue was a result of querying the heirarchy for groups that have group types with scheduling enabled.
+                            This heirarchy query was timing out on some Rock instances with a large amount of groups. Talked with JME to verify
+                            this was okay to remove.
+                        --%>
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnValueChanged="gpGroup_ValueChanged" />
                         <Rock:RockDropDownList ID="ddlWeek" runat="server" Label="Week" AutoPostBack="true" OnSelectedIndexChanged="ddlWeek_SelectedIndexChanged" />
 
                         <Rock:NotificationBox ID="nbGroupWarning" runat="server" NotificationBoxType="Warning" />
