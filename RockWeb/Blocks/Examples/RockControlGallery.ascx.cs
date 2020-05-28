@@ -177,11 +177,14 @@ namespace RockWeb.Blocks.Examples
 
             if ( !Page.IsPostBack )
             {
+                List<ListItem> exampleListItems = new List<ListItem>();
+                exampleListItems.Add( new ListItem( "Pickles", "44" ) );
+                exampleListItems.Add( new ListItem( "Onions", "88" ) );
+                exampleListItems.Add( new ListItem( "Ketchup", "150" ) );
+                exampleListItems.Add( new ListItem( "Mustard", "654" ) );
+
                 bddlExample.Items.Clear();
-                bddlExample.Items.Add( new ListItem( "Pickles", "44" ) );
-                bddlExample.Items.Add( new ListItem( "Onions", "88" ) );
-                bddlExample.Items.Add( new ListItem( "Ketchup", "150" ) );
-                bddlExample.Items.Add( new ListItem( "Mustard", "654" ) );
+                bddlExample.Items.AddRange( exampleListItems.ToArray() );
                 bddlExample.SelectedValue = "44";
 
                 bddlExampleCheckmark.Items.Clear();
@@ -190,12 +193,16 @@ namespace RockWeb.Blocks.Examples
                 bddlExampleCheckmark.Items.Add( new ListItem( "Large", "150" ) );
                 bddlExampleCheckmark.Items.Add( new ListItem( "Software Developer", "654" ) );
 
-                ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                ddlDataExample.Items.AddRange( exampleListItems.ToArray() );
 
-                cblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                cblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                cblExample.Items.AddRange( exampleListItems.ToArray() );
+                cblExampleHorizontal.Items.AddRange( exampleListItems.ToArray() );
+                rblExample.Items.AddRange( exampleListItems.ToArray() );
+                rblExampleHorizontal.Items.AddRange( exampleListItems.ToArray() );
+
+                lbExampleListBox.Items.AddRange( exampleListItems.ToArray() );
+                lbExampleListBox.SetValues( exampleListItems.Select( a => a.Value ).Take( 3 ).ToList() );
+
 
                 liExample.Value = "[{'Value':'Small'},{'Value':'Medium'},{'Value':'Large'}]";
 
