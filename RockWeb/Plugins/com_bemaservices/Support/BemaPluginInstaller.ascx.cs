@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
     [DisplayName( "BEMA Plugin Installer" )]
     [Category( "BEMA Services > Support" )]
     [Description( "Allows a client to download the latest copy of their BEMA Code." )]
-    [UrlLinkField( "Server Url", "The Url location to check for the latest BEMA packages." )]
+    [TextField( "Client Acronym" )]
     public partial class BemaPluginInstaller : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -109,13 +109,24 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         protected void lbInstall_Click( object sender, EventArgs e )
         {
             string errorResponse = string.Empty;
-            UpdateFile installedVersion = GetInstalledFileVersion();
-            UpdateFile latestVersion = GetLatestFileVersion();
+            InstallClientPackage( "BEMA" );
+
+            string acronym = GetAttributeValue( "ClientAcronym" );
+            if ( acronym.IsNotNullOrWhiteSpace() )
+            {
+                InstallClientPackage( acronym );
+            }
+        }
+
+        private void InstallClientPackage( string acronym )
+        {
+            UpdateFile installedVersion = GetInstalledFileVersion( acronym );
+            UpdateFile latestVersion = GetLatestFileVersion( acronym );
 
             if ( !IsLatestVersionInstalled( installedVersion, latestVersion ) )
             {
                 string appRoot = Server.MapPath( "~/" );
-                string bemaCodePackageWorkingDir = appRoot + "App_Data/BemaCodePackage";
+                string bemaCodePackageWorkingDir = appRoot + "App_Data/BemaClientPackage/" + acronym;
                 string sourceFile = latestVersion.FullPath;
                 string destinationFile = string.Format( "{0}/{1}", bemaCodePackageWorkingDir, latestVersion.FileName );
 
@@ -271,16 +282,35 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         #region Methods
         private void ShowDetail()
         {
-            UpdateFile installedVersion = GetInstalledFileVersion();
-            UpdateFile latestVersion = GetLatestFileVersion();
+            UpdateFile bemaInstalledVersion = GetInstalledFileVersion( "BEMA" );
+            UpdateFile bemaLatestVersion = GetLatestFileVersion( "BEMA" );
+            var isBemaLatestVersion = !IsLatestVersionInstalled( bemaInstalledVersion, bemaLatestVersion );
 
-            pnlView.Visible = !IsLatestVersionInstalled( installedVersion, latestVersion );
+            var isClientLatestVersion = true;
+            string acronym = GetAttributeValue( "ClientAcronym" );
+            if ( acronym.IsNotNullOrWhiteSpace() )
+            {
+                UpdateFile clientInstalledVersion = GetInstalledFileVersion( acronym );
+                UpdateFile clientLatestVersion = GetLatestFileVersion( acronym );
+                isClientLatestVersion = !IsLatestVersionInstalled( clientInstalledVersion, clientLatestVersion );
+            }
+
+            pnlView.Visible = ( !isBemaLatestVersion || !isClientLatestVersion );
         }
 
-        private static UpdateFile GetInstalledFileVersion()
+        private static UpdateFile GetInstalledFileVersion( string acronym )
         {
             var installedVersion = new UpdateFile();
-            var bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMACodePackageVersion" );
+            var bemaCodePackageVersion = "";
+            if ( acronym == "BEMA" )
+            {
+                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMABasePackageVersion" );
+            }
+            else
+            {
+                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMAClientPackageVersion" );
+            }
+
             var versionArray = bemaCodePackageVersion.Split( '.' ).AsIntegerList();
             if ( versionArray.Count() == 4 )
             {
@@ -334,9 +364,9 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             return isLatestVersionInstalled;
         }
 
-        private UpdateFile GetLatestFileVersion()
+        private UpdateFile GetLatestFileVersion( string acronym )
         {
-            var url = GetAttributeValue( "ServerUrl" );
+            var url = string.Format( "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/{0}/", acronym );
 
             if ( url.IsNotNullOrWhiteSpace() )
             {
