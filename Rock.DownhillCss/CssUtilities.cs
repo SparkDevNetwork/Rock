@@ -1002,7 +1002,7 @@ NavigationPage {
 .toggle-button {
     border-radius: 0;
     border-color: ?color-primary;
-    background-color: initial;
+    background-color: transparent;
     padding: 9 12 12 12;
 }
 
