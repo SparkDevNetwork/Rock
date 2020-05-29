@@ -16,7 +16,7 @@
 //
 using Rock.Plugin;
 
-namespace com.visitgracechurch.Autobuild
+namespace com.bemaservices.ClientPackage.GCKS
 {
     [MigrationNumber( 1, "1.9.4" )]
     public class InitialSetup : Migration

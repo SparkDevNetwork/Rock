@@ -8,8 +8,8 @@
     <ProjectGuid>{0B7F7B78-0D96-4610-8D93-903C4D3BA54C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.visitgracechurch.Autobuild</RootNamespace>
-    <AssemblyName>com.visitgracechurch.Autobuild</AssemblyName>
+    <RootNamespace>com.bemaservices.ClientPackage.GCKS</RootNamespace>
+    <AssemblyName>com.bemaservices.ClientPackage.GCKS</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -104,7 +104,7 @@
   <!-- Prepare the files to be zipped -->
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
-      <CopyFiles Include="$(OutputPath)com.visitgracechurch.Autobuild.dll;" />
+      <CopyFiles Include="$(OutputPath)com.bemaservices.ClientPackage.GCKS.dll;" />
       <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\BEMA\**\*.*" />
       <ClientCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\GCKS\**\*.*" />
       <VersionFile Include="builds\.version" />
