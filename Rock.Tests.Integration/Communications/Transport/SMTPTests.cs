@@ -4,10 +4,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
 using Rock.Communication.Transport;
-using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communications.Transport
 {
@@ -23,7 +22,7 @@ namespace Rock.Tests.Integration.Communications.Transport
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            SetAttributeValue( ServerAttributeGuid, 0, "localhost", out string previousValue, out Guid newAttributeValueGuid );
+            TestDataHelper.SetAttributeValue( ServerAttributeGuid, 0, "localhost", out string previousValue, out Guid newAttributeValueGuid );
             _serverAttributeValueValue = previousValue;
             _newServerAttributeValueGuid = newAttributeValueGuid;
         }
@@ -34,13 +33,13 @@ namespace Rock.Tests.Integration.Communications.Transport
             if ( !_newServerAttributeValueGuid.IsEmpty() )
             {
                 // Delete it.
-                DeleteAttributeValue( _newServerAttributeValueGuid );
+                TestDataHelper.DeleteAttributeValue( _newServerAttributeValueGuid );
             }
 
             if ( !string.IsNullOrEmpty( _serverAttributeValueValue ) )
             {
                 // Set it back.
-                SetAttributeValue( ServerAttributeGuid, 0, _serverAttributeValueValue, out _, out _ );
+                TestDataHelper.SetAttributeValue( ServerAttributeGuid, 0, _serverAttributeValueValue, out _, out _ );
             }
         }
 
@@ -69,80 +68,6 @@ namespace Rock.Tests.Integration.Communications.Transport
 
             // Assert
             Assert.That.AreEqual( 0, errorMessages.Count );
-        }
-
-        #endregion
-
-        #region Private Helpers
-
-        /// <summary>
-        /// Sets the value of an existing <see cref="AttributeValue"/> or creates a new database record if one doesn't already exist.
-        /// </summary>
-        /// <param name="attributeGuid">The parent <see cref="Rock.Model.Attribute"/> unique identifier.</param>
-        /// <param name="entityId">The ID of the entity - if any - to which this <see cref="AttributeValue"/> belongs.</param>
-        /// <param name="value">The value to be set.</param>
-        /// <param name="previousValue">If a <see cref="AttributeValue"/> already exists in the database, it's value will be returned, so you can set it back after the current tests complete.</param>
-        /// <param name="newAttributeValueGuid">If a <see cref="AttributeValue"/> doesn't already exist in the database, the <see cref="Guid"/> of the newly-created record will be returned, so you can delete it after the current tests complete.</param>
-        private static void SetAttributeValue( Guid attributeGuid, int? entityId, string value, out string previousValue, out Guid newAttributeValueGuid )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                previousValue = null;
-                newAttributeValueGuid = Guid.Empty;
-
-                var attributeId = AttributeCache.GetId( attributeGuid );
-                if ( !attributeId.HasValue )
-                {
-                    return;
-                }
-
-                var attributeValueService = new AttributeValueService( rockContext );
-
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId.Value, entityId );
-
-                if ( attributeValue == null )
-                {
-                    attributeValue = new AttributeValue
-                    {
-                        AttributeId = attributeId.Value,
-                        EntityId = entityId,
-                        Value = value
-                    };
-
-                    attributeValueService.Add( attributeValue );
-
-                    // Remember this so we can delete this AttributeValue upon cleanup.
-                    newAttributeValueGuid = attributeValue.Guid;
-                }
-                else
-                {
-                    // Remeber this so we can set it back upon cleanup.
-                    previousValue = attributeValue.Value;
-                    attributeValue.Value = value;
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        /// <summary>
-        /// Deletes the attribute value.
-        /// </summary>
-        /// <param name="attributeValueGuid">The attribute value unique identifier.</param>
-        private static void DeleteAttributeValue( Guid attributeValueGuid )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.Get( attributeValueGuid );
-                if ( attributeValue == null )
-                {
-                    return;
-                }
-
-                attributeValueService.Delete( attributeValue );
-                rockContext.SaveChanges();
-            }
         }
 
         #endregion
