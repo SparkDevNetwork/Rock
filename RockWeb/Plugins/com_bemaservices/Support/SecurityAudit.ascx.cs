@@ -42,6 +42,8 @@ namespace RockWeb.Plugins.com_bemaservices.Support
     [Description( "Report block to give an update on a site's security" )]
     [IntegerField( "Recommended Maximum Number of Rock Admins", "The recommended maximum number of Rock Admins to use for the audit.", true, 10, "", 0, AttributeKey.RecommendedMaximumAdminCount )]
     [IntegerField( "Recommended Maximum Number of Pages Allowing Unencrypted Traffic", "The recommended maximum number of pages that can allow unencrypted traffic.", true, 0, "", 1, AttributeKey.RecommendedUnencryptedPageCount )]
+    [IntegerField( "Recommended Maximum Number of Non-Staff Members of Security Roles", "The recommended maximum number of non-staff members of security roles.", true, 5, "", 2, AttributeKey.RecommendedNonStaffMembers )]
+    [CustomCheckboxListField( "Excluded Security Roles", "Security roles to exclude from the non-staff audit", "Select Id as Value, Name as Text from [Group] where IsSecurityRole = 1", false, "", "", 3, AttributeKey.ExcludedSecurityRoles )]
     public partial class SecurityAudit : RockBlock, ICustomGridColumns
     {
         #region Fields
@@ -56,6 +58,8 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         {
             public const string RecommendedMaximumAdminCount = "RecommendedMaximumAdminCount";
             public const string RecommendedUnencryptedPageCount = "RecommendedUnencryptedPageCount";
+            public const string RecommendedNonStaffMembers = "RecommendedNonStaffMembers";
+            public const string ExcludedSecurityRoles = "ExcludedSecurityRoles";
         }
 
         #endregion
@@ -118,6 +122,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             base.OnInit( e );
             gRockAdmins.GridRebind += gRockAdmins_GridRebind;
             gSslEnabled.GridRebind += gSslEnabled_GridRebind;
+            gNonStaff.GridRebind += gNonStaff_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -169,6 +174,9 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             BuildSslEnabledHeader( rockContext );
             BindSslEnabledGrid( rockContext );
 
+            BuildNonStaffHeader( rockContext );
+            BindNonStaffGrid( rockContext );
+
             PercentComplete = ( PassedChecks.ToString().AsDecimal() / TotalChecks.ToString().AsDecimal() ) * 100.0m;
 
             lChecksPassed.Text = String.Format( "{0}/{1} Checks Passed", PassedChecks.ToString(), TotalChecks.ToString() );
@@ -199,7 +207,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             {
                 headerCss = "header-danger";
             }
-            targetHeader.InnerHtml = String.Format( "<h5 class='mb-0'>{0}</h5>", headerText );
+            targetHeader.InnerHtml = String.Format( "<h5 class='mb-0'>{0}</h5><span class=\"pull-right\"><i class=\"fa fa-chevron-down\"></i></span>", headerText );
             targetLiteral.Text = descriptionText;
             targetHeader.AddCssClass( headerCss );
         }
@@ -279,6 +287,54 @@ namespace RockWeb.Plugins.com_bemaservices.Support
 
             gSslEnabled.DataSource = qry.ToList();
             gSslEnabled.DataBind();
+        }
+
+        #endregion
+
+        #region Non Staff Methods
+
+        private void BuildNonStaffHeader( RockContext rockContext )
+        {
+            var organizationUnitGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
+            var excludedRoleIds = GetAttributeValue( AttributeKey.ExcludedSecurityRoles ).SplitDelimitedValues().AsIntegerList();
+
+            var auditValue = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                .Where( gm =>
+                    gm.Person.Members.Where( gm1 => gm1.Group.Guid == organizationUnitGuid && gm1.GroupMemberStatus == GroupMemberStatus.Active ).Count() == 0 &&
+                    gm.Group.IsSecurityRole &&
+                    !excludedRoleIds.Contains( gm.GroupId ) &&
+                    gm.Group.IsActive
+                )
+                .Count();
+            var auditGoal = GetAttributeValue( AttributeKey.RecommendedNonStaffMembers ).AsInteger();
+
+            var headerText = String.Format( "Non-Staff Security Role Members: {0}", auditValue );
+            var descriptionText = String.Format( "One  than {0} pages to be accessed on an unencrypted connection.", auditValue );
+           // GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderSslEnabled, lDescriptionSslEnabled );
+        }
+
+        private void gNonStaff_GridRebind( object sender, EventArgs e )
+        {
+            BindNonStaffGrid();
+        }
+
+        private void BindNonStaffGrid( RockContext rockContext = null )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var pageService = new PageService( rockContext );
+
+            var administratorGroupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
+            // sample query to display a few people
+            var qry = pageService.Queryable()
+                        .AsNoTracking().Where( p => !p.RequiresEncryption && !p.Layout.Site.RequiresEncryption )
+                        .ToList();
+
+           // gSslEnabled.DataSource = qry.ToList();
+          //  gSslEnabled.DataBind();
         }
 
         #endregion

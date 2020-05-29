@@ -40,8 +40,7 @@
                 </div>
             </div>
         </div>
-
-        
+      
         <div class="panel panel-widget rock-panel-widget">
             <div class="panel-heading clearfix clickable" id="divHeaderSslEnabled" runat="server" data-toggle="collapse" data-target="#divBodySslEnabled">
             </div>
@@ -54,6 +53,28 @@
                 </div>
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gSslEnabled" runat="server" AllowSorting="true">
+                        <Columns>
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                            <Rock:RockBoundField DataField="Layout.Site.Name" HeaderText="Site" SortExpression="Site" />
+                            <Rock:RockBoundField DataField="PageTitle" HeaderText="Name" SortExpression="Name" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+            </div>
+        </div>
+      
+        <div class="panel panel-widget rock-panel-widget">
+            <div class="panel-heading clearfix clickable" id="divHeaderNonStaff" runat="server" data-toggle="collapse" data-target="#divBodyNonStaff">
+            </div>
+
+            <div id="divBodyNonStaff" class="collapse panel-body">
+                <div class="alert alert-info">
+                    <p>
+                        <asp:Literal ID="lDescriptionNonStaff" runat="server" />
+                    </p>
+                </div>
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gNonStaff" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                             <Rock:RockBoundField DataField="Layout.Site.Name" HeaderText="Site" SortExpression="Site" />
