@@ -111,6 +111,7 @@
     <Compile Include="Attendances\AttendanceCodeTests.cs" />
     <Compile Include="Communications\EmailTransportComponentTests.cs" />
     <Compile Include="Communications\Transport\MailgunTests.cs" />
+    <Compile Include="Communications\Transport\SMTPTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
