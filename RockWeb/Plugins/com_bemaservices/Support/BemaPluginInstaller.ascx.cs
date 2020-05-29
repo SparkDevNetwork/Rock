@@ -409,7 +409,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                                 using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) )
                                 {
                                     string html = reader.ReadToEnd();
-                                    Regex regex = new Regex( ".plugin\">(?<name>Autobuild-v........plugin)</A>" );
+                                    Regex regex = new Regex( String.Format( ".plugin\">(?<name>ClientPackage-{0}-v........plugin)</A>", isBasePackage ? "BEMA" : acronym ) );
                                     MatchCollection matches = regex.Matches( html );
                                     if ( matches.Count > 0 )
                                     {
@@ -427,7 +427,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                             foreach ( var fileName in fileNames )
                             {
                                 var fileEntry = requestUrl + fileName;
-                                var versionNumber = fileName.Replace( "Autobuild-v", "" ).Replace( ".plugin", "" );
+                                var versionNumber = fileName.Replace( String.Format( "ClientPackage-{0}-v", isBasePackage ? "BEMA" : acronym ), "" ).Replace( ".plugin", "" );
                                 var versionArray = versionNumber.Split( '.' ).AsIntegerList();
 
                                 if ( versionArray.Count() == 4 )
