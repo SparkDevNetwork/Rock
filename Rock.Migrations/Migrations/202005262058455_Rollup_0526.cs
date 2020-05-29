@@ -363,6 +363,11 @@ BEGIN
     END
 END
 
+-- Add new note content channel as a child to the existing message notes content channel
+DECLARE @MessageContentChannelId int = (SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '0a63a427-e6b5-2284-45b3-789b293c02ea')
+DECLARE @MessageNotesContentChannelId int = (SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '888ef5ea-e075-4a56-a61c-13a6dad93d6f')
+
+
 IF (@MessageContentChannelId IS NOT NULL AND @MessageNotesContentChannelId IS NOT NULL)
 BEGIN
 	IF NOT EXISTS (
