@@ -384,12 +384,13 @@ namespace Rock.WebStartup
             bool migrationsWereRun = false;
             var pluginAssemblies = Rock.Reflection.GetPluginAssemblies().ToList();
 
-            // also included the plugins that are in Rock.dll
+            // also include the plugins that are in Rock.dll
             pluginAssemblies.Add( typeof( Rock.Plugin.Migration ).Assembly );
 
             foreach ( var pluginMigration in pluginAssemblies )
             {
-                migrationsWereRun = migrationsWereRun || RunPluginMigrations( pluginMigration );
+                bool ranPluginMigration = RunPluginMigrations( pluginMigration );
+                migrationsWereRun = migrationsWereRun || ranPluginMigration;
             }
 
             return migrationsWereRun;
