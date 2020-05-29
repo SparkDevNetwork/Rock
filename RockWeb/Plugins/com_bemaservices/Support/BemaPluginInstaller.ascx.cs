@@ -109,24 +109,33 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         protected void lbInstall_Click( object sender, EventArgs e )
         {
             string errorResponse = string.Empty;
-            InstallClientPackage( "BEMA" );
 
             string acronym = GetAttributeValue( "ClientAcronym" );
             if ( acronym.IsNotNullOrWhiteSpace() )
             {
-                InstallClientPackage( acronym );
+                InstallClientPackage( acronym, true );
+                InstallClientPackage( acronym, false );
             }
         }
 
-        private void InstallClientPackage( string acronym )
+        private void InstallClientPackage( string acronym, bool isBasePackage )
         {
-            UpdateFile installedVersion = GetInstalledFileVersion( acronym );
-            UpdateFile latestVersion = GetLatestFileVersion( acronym );
+            UpdateFile installedVersion = GetInstalledFileVersion( acronym, isBasePackage );
+            UpdateFile latestVersion = GetLatestFileVersion( acronym, isBasePackage );
 
             if ( !IsLatestVersionInstalled( installedVersion, latestVersion ) )
             {
                 string appRoot = Server.MapPath( "~/" );
-                string bemaCodePackageWorkingDir = appRoot + "App_Data/BemaClientPackage/" + acronym;
+                string bemaCodePackageWorkingDir = "";
+                if ( isBasePackage )
+                {
+                    bemaCodePackageWorkingDir = String.Format( "{0}App_Data/BemaClientPackage/BEMA/", appRoot );
+                }
+                else
+                {
+                    bemaCodePackageWorkingDir = String.Format( "{0}App_Data/BemaClientPackage/{1}/", appRoot, acronym );
+                }
+
                 string sourceFile = latestVersion.FullPath;
                 string destinationFile = string.Format( "{0}/{1}", bemaCodePackageWorkingDir, latestVersion.FileName );
 
@@ -267,7 +276,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                 }
 
                 // update package install json file
-                UpdateInstalledVersion( latestVersion );
+                UpdateInstalledVersion( latestVersion, isBasePackage );
 
                 // Clear all cached items
                 RockCache.ClearAllCachedItems();
@@ -282,33 +291,34 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         #region Methods
         private void ShowDetail()
         {
-            UpdateFile bemaInstalledVersion = GetInstalledFileVersion( "BEMA" );
-            UpdateFile bemaLatestVersion = GetLatestFileVersion( "BEMA" );
-            var isBemaLatestVersion = !IsLatestVersionInstalled( bemaInstalledVersion, bemaLatestVersion );
-
             var isClientLatestVersion = true;
+            var isBemaLatestVersion = true;
             string acronym = GetAttributeValue( "ClientAcronym" );
             if ( acronym.IsNotNullOrWhiteSpace() )
             {
-                UpdateFile clientInstalledVersion = GetInstalledFileVersion( acronym );
-                UpdateFile clientLatestVersion = GetLatestFileVersion( acronym );
-                isClientLatestVersion = !IsLatestVersionInstalled( clientInstalledVersion, clientLatestVersion );
+                UpdateFile bemaInstalledVersion = GetInstalledFileVersion( acronym, true );
+                UpdateFile bemaLatestVersion = GetLatestFileVersion( acronym, true );
+                isBemaLatestVersion = IsLatestVersionInstalled( bemaInstalledVersion, bemaLatestVersion );
+
+                UpdateFile clientInstalledVersion = GetInstalledFileVersion( acronym, false );
+                UpdateFile clientLatestVersion = GetLatestFileVersion( acronym, false );
+                isClientLatestVersion = IsLatestVersionInstalled( clientInstalledVersion, clientLatestVersion );
             }
 
             pnlView.Visible = ( !isBemaLatestVersion || !isClientLatestVersion );
         }
 
-        private static UpdateFile GetInstalledFileVersion( string acronym )
+        private static UpdateFile GetInstalledFileVersion( string acronym, bool isBasePackage )
         {
             var installedVersion = new UpdateFile();
             var bemaCodePackageVersion = "";
-            if ( acronym == "BEMA" )
+            if ( isBasePackage )
             {
-                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMABasePackageVersion" );
+                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMABaseClientPackageVersion" );
             }
             else
             {
-                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMAClientPackageVersion" );
+                bemaCodePackageVersion = GlobalAttributesCache.Value( "BEMACustomClientPackageVersion" );
             }
 
             var versionArray = bemaCodePackageVersion.Split( '.' ).AsIntegerList();
@@ -364,56 +374,81 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             return isLatestVersionInstalled;
         }
 
-        private UpdateFile GetLatestFileVersion( string acronym )
+        private UpdateFile GetLatestFileVersion( string acronym, bool isBasePackage )
         {
-            var url = string.Format( "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/{0}/", acronym );
+            var clientUrl = string.Format( "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/{0}/", acronym );
+            var baseUrl = "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/BEMA/";
 
-            if ( url.IsNotNullOrWhiteSpace() )
+            if ( acronym.IsNotNullOrWhiteSpace() )
             {
+                var isValidClient = true;
+                HttpWebRequest testRequest = ( HttpWebRequest ) WebRequest.Create( clientUrl );
                 try
+                {
+                    HttpWebResponse testResponse = ( HttpWebResponse ) testRequest.GetResponse();
+                }
+                catch ( WebException ex )
+                {
+                    isValidClient = false;
+                }
+
+                if ( isValidClient )
                 {
                     try
                     {
-                        List<UpdateFile> updateFiles = new List<UpdateFile>();
-                        List<string> fileNames = new List<string>();
-                        HttpWebRequest request = ( HttpWebRequest ) WebRequest.Create( url );
-                        using ( HttpWebResponse response = ( HttpWebResponse ) request.GetResponse() )
+                        try
                         {
-                            using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) )
+                            List<UpdateFile> updateFiles = new List<UpdateFile>();
+                            List<string> fileNames = new List<string>();
+                            var requestUrl = isBasePackage ? baseUrl : clientUrl;
+
+                            HttpWebRequest request = ( HttpWebRequest ) WebRequest.Create( requestUrl );
+                            using ( HttpWebResponse response = ( HttpWebResponse ) request.GetResponse() )
                             {
-                                string html = reader.ReadToEnd();
-                                Regex regex = new Regex( ".plugin\">(?<name>Autobuild-v........plugin)</A>" );
-                                MatchCollection matches = regex.Matches( html );
-                                if ( matches.Count > 0 )
+                                using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) )
                                 {
-                                    foreach ( System.Text.RegularExpressions.Match match in matches )
+                                    string html = reader.ReadToEnd();
+                                    Regex regex = new Regex( ".plugin\">(?<name>Autobuild-v........plugin)</A>" );
+                                    MatchCollection matches = regex.Matches( html );
+                                    if ( matches.Count > 0 )
                                     {
-                                        if ( match.Success )
+                                        foreach ( System.Text.RegularExpressions.Match match in matches )
                                         {
-                                            fileNames.Add( match.Groups["name"].ToString() );
+                                            if ( match.Success )
+                                            {
+                                                fileNames.Add( match.Groups["name"].ToString() );
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        foreach ( var fileName in fileNames )
-                        {
-                            var fileEntry = url + fileName;
-                            var versionNumber = fileName.Replace( "Autobuild-v", "" ).Replace( ".plugin", "" );
-                            var versionArray = versionNumber.Split( '.' ).AsIntegerList();
-
-                            if ( versionArray.Count() == 4 )
+                            foreach ( var fileName in fileNames )
                             {
-                                var updateFile = new UpdateFile( fileName, fileEntry, versionArray[0], versionArray[1], versionArray[2], versionArray[3] );
-                                updateFiles.Add( updateFile );
+                                var fileEntry = requestUrl + fileName;
+                                var versionNumber = fileName.Replace( "Autobuild-v", "" ).Replace( ".plugin", "" );
+                                var versionArray = versionNumber.Split( '.' ).AsIntegerList();
+
+                                if ( versionArray.Count() == 4 )
+                                {
+                                    var updateFile = new UpdateFile( fileName, fileEntry, versionArray[0], versionArray[1], versionArray[2], versionArray[3] );
+                                    updateFiles.Add( updateFile );
+                                }
                             }
+
+                            var latestVersion = updateFiles.OrderByDescending( f => f.Major ).ThenByDescending( f => f.Minor ).ThenByDescending( f => f.Build ).ThenByDescending( f => f.Revision ).FirstOrDefault();
+                            return latestVersion;
+                        }
+                        catch ( InvalidCastException ex )
+                        {
+                            nbInfo.Text = "Valid Url needed to check for updates.";
+                            nbInfo.NotificationBoxType = NotificationBoxType.Warning;
+                            nbInfo.Visible = true;
+                            return null;
                         }
 
-                        var latestVersion = updateFiles.OrderByDescending( f => f.Major ).ThenByDescending( f => f.Minor ).ThenByDescending( f => f.Build ).ThenByDescending( f => f.Revision ).FirstOrDefault();
-                        return latestVersion;
                     }
-                    catch ( InvalidCastException ex )
+                    catch ( NotSupportedException ex )
                     {
                         nbInfo.Text = "Valid Url needed to check for updates.";
                         nbInfo.NotificationBoxType = NotificationBoxType.Warning;
@@ -422,9 +457,9 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                     }
 
                 }
-                catch ( NotSupportedException ex )
+                else
                 {
-                    nbInfo.Text = "Valid Url needed to check for updates.";
+                    nbInfo.Text = "You are not registered to recieve client pack.";
                     nbInfo.NotificationBoxType = NotificationBoxType.Warning;
                     nbInfo.Visible = true;
                     return null;
@@ -455,9 +490,10 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             }
         }
 
-        private static void UpdateInstalledVersion( UpdateFile latestVersion )
+        private static void UpdateInstalledVersion( UpdateFile latestVersion, bool isBasePackage )
         {
-            var attribute = AttributeCache.Get( com.bemaservices.Support.SystemGuid.Attribute.BEMA_CODE_VERSION_ATTRIBUTE_GUID );
+            var attributeGuid = isBasePackage ? com.bemaservices.Support.SystemGuid.Attribute.BEMA_CODE_VERSION_ATTRIBUTE_GUID : com.bemaservices.Support.SystemGuid.Attribute.CLIENT_CODE_VERSION_ATTRIBUTE_GUID;
+            var attribute = AttributeCache.Get( attributeGuid );
 
             var rockContext = new RockContext();
             var attributeValueService = new AttributeValueService( rockContext );
