@@ -140,7 +140,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
     <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
-    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\Autobuild-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
+    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\ClientPackage-WUMC-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
   </Target>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
