@@ -558,6 +558,11 @@ namespace Rock.DownhillCss
         private static string baseStylesMobile = @"
 /* Resets */
 
+/* Fixes frame backgrounds from being black while in dark mode */
+^frame {
+    background-color: transparent;
+}
+
 NavigationPage {
     -rock-status-bar-text: dark;
 }
