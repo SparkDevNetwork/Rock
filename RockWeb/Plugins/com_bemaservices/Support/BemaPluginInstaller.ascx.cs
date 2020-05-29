@@ -376,6 +376,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
 
         private UpdateFile GetLatestFileVersion( string acronym, bool isBasePackage )
         {
+            RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
             var clientUrl = string.Format( "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/{0}/", acronym );
             var baseUrl = "https://rockadmin.bemaservices.com/Content/ExternalSite/ClientPackages/BEMA/";
 
@@ -432,7 +433,11 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                                 if ( versionArray.Count() == 4 )
                                 {
                                     var updateFile = new UpdateFile( fileName, fileEntry, versionArray[0], versionArray[1], versionArray[2], versionArray[3] );
-                                    updateFiles.Add( updateFile );
+                                    var updateSemanticVersion = new RockSemanticVersion( updateFile.Major, updateFile.Minor, updateFile.Build );
+                                    if ( updateSemanticVersion <= rockVersion )
+                                    {
+                                        updateFiles.Add( updateFile );
+                                    }
                                 }
                             }
 
