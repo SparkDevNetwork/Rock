@@ -456,6 +456,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Transport Attributes
+
+        /// <summary>
+        /// The communication transport SMTP server Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_TRANSPORT_SMTP_SERVER = "6CFFDF99-E93A-49B8-B440-0EF93878A51F";
+
+        #endregion
+
         #region DefinedType Attributes
 
         /// <summary>
