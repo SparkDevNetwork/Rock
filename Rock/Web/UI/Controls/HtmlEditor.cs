@@ -704,7 +704,7 @@ $(document).ready( function() {{
         popover: {{
           image: [
             ['custom1', ['rockimagelink']],
-            ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
+            ['imagesize', ['resizeFull', 'resizeHalf', 'resizeQuarter']],
             ['custom2', ['rockimagebrowser', 'rockassetmanager']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
@@ -720,7 +720,6 @@ $(document).ready( function() {{
             ['insert', ['link', 'picture']]
           ]
         }},
-
         callbacks: {{
            {callbacksOption}
         }},
