@@ -16,7 +16,7 @@ namespace Rock.Tests.Integration.Communications.Transport
     {
         private static Guid ServerAttributeGuid = SystemGuid.Attribute.COMMUNICATION_TRANSPORT_SMTP_SERVER.AsGuid();
         private static string _serverAttributeValueValue;
-        private static Guid _newServerAttributeGuid;
+        private static Guid _newServerAttributeValueGuid;
 
         #region Setup & Teardown
 
@@ -25,16 +25,16 @@ namespace Rock.Tests.Integration.Communications.Transport
         {
             SetAttributeValue( ServerAttributeGuid, 0, "localhost", out string previousValue, out Guid newAttributeValueGuid );
             _serverAttributeValueValue = previousValue;
-            _newServerAttributeGuid = newAttributeValueGuid;
+            _newServerAttributeValueGuid = newAttributeValueGuid;
         }
 
         [ClassCleanup]
         public static void Cleanup()
         {
-            if ( !_newServerAttributeGuid.IsEmpty() )
+            if ( !_newServerAttributeValueGuid.IsEmpty() )
             {
                 // Delete it.
-                DeleteAttributeValue( _newServerAttributeGuid );
+                DeleteAttributeValue( _newServerAttributeValueGuid );
             }
 
             if ( !string.IsNullOrEmpty( _serverAttributeValueValue ) )
