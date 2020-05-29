@@ -848,6 +848,13 @@ NavigationPage {
     color: ?color-text;
 }
 
+.title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: default;
+    line-height: 1;
+}
+
 /* Body Styles */
 .paragraph {
     font-size: default;
@@ -1215,7 +1222,7 @@ formfield.required .required-indicator {
 }
 
 /* Field Stacks */
-fieldstack {
+^fieldstack {
     border-radius: 0;
     border-color: ?color-secondary;
     border-width: 1;
@@ -1271,6 +1278,7 @@ formfield .required-indicator {
 
 .card-tagline {
     font-style: normal;
+    font-size: 14;
 }
 
 .card-title {
