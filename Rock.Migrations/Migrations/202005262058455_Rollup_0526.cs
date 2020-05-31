@@ -354,22 +354,31 @@ BEGIN
     DECLARE @NotesContentChannelTypeId int = (SELECT TOP 1 [Id] FROM [ContentChannelType] WHERE [Guid] = '48951e97-0e45-4494-b87c-4eb9fca067eb')
     DECLARE @NoteStructuredToolValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '31c63fb9-1365-4eef-851d-8ab9a188a06c')
 
-    INSERT INTO [dbo].[ContentChannel]
-        ([ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl], [TimeToLive], [Guid], [ContentControlType], [RootImageDirectory], [ItemsManuallyOrdered], [ChildItemsManuallyOrdered], [IsIndexEnabled], [IsTaggingEnabled], [ItemTagCategoryId], [IsStructuredContent], [StructuredContentToolValueId])
-    VALUES
-        ( @NotesContentChannelTypeId, 'Message Notes', 'Notes for messages that are being podcasted.', 'fa fa-sticky-note', 0, 0, '', '', 0, '888ef5ea-e075-4a56-a61c-13a6dad93d6f', 0, '', 0, 0, 0, 0, null, 1, @NoteStructuredToolValueId)
+	IF (@NotesContentChannelTypeId IS NOT NULL AND @NoteStructuredToolValueId IS NOT NULL)
+	BEGIN
+		INSERT INTO [dbo].[ContentChannel]
+			([ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl], [TimeToLive], [Guid], [ContentControlType], [RootImageDirectory], [ItemsManuallyOrdered], [ChildItemsManuallyOrdered], [IsIndexEnabled], [IsTaggingEnabled], [ItemTagCategoryId], [IsStructuredContent], [StructuredContentToolValueId])
+		VALUES
+			( @NotesContentChannelTypeId, 'Message Notes', 'Notes for messages that are being podcasted.', 'fa fa-sticky-note', 0, 0, '', '', 0, '888ef5ea-e075-4a56-a61c-13a6dad93d6f', 0, '', 0, 0, 0, 0, null, 1, @NoteStructuredToolValueId)
+    END
 END
 
 -- Add new note content channel as a child to the existing message notes content channel
 DECLARE @MessageContentChannelId int = (SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '0a63a427-e6b5-2284-45b3-789b293c02ea')
 DECLARE @MessageNotesContentChannelId int = (SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '888ef5ea-e075-4a56-a61c-13a6dad93d6f')
 
-IF NOT EXISTS( SELECT * FROM [ContentChannelAssociation] WHERE [ContentChannelId] = @MessageContentChannelId AND [ChildContentChannelId] = @MessageNotesContentChannelId )
+
+IF (@MessageContentChannelId IS NOT NULL AND @MessageNotesContentChannelId IS NOT NULL)
 BEGIN
-    INSERT INTO [ContentChannelAssociation]
-        ([ContentChannelId], [ChildContentChannelId])
-    VALUES  
-        (@MessageContentChannelId, @MessageNotesContentChannelId)
+	IF NOT EXISTS (
+			SELECT *
+			FROM [ContentChannelAssociation]
+			WHERE [ContentChannelId] = @MessageContentChannelId AND [ChildContentChannelId] = @MessageNotesContentChannelId
+			)
+	BEGIN
+		INSERT INTO [ContentChannelAssociation] ([ContentChannelId], [ChildContentChannelId])
+		VALUES (@MessageContentChannelId, @MessageNotesContentChannelId)
+	END
 END
 
 -- Remove the word Podcast from existing channels
