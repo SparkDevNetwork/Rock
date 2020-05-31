@@ -995,15 +995,15 @@ NavigationPage {
 }
 
 .rounded-sm {
-    border-radius: 2;
+    border-radius: 4;
 }
 
 .rounded {
-    border-radius: 6;
+    border-radius: 8;
 }
 
 .rounded-lg {
-    border-radius: 10;
+    border-radius: 16;
 }
 
 .rounded-full {
