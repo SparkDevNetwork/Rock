@@ -2222,6 +2222,8 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                 var personService = new PersonService(rockContext);
                 var groupService = new GroupService(rockContext);
                 var recordTypePersonId = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
+                var recordStatusPending = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                var connectionStatusVisitor = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id; // use default visitor if needed
                 var maritalStatusMarried = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid());
                 var maritalStatusSingle = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid());
                 var numberTypeValueMobile = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid());
@@ -2311,8 +2313,8 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     }
 
                     // if a matching person was found, the familyPersonState's RecordStatusValueId and ConnectinoStatusValueId was already updated to match the matched person
-                    person.RecordStatusValueId = familyPersonState.RecordStatusValueId;
-                    person.ConnectionStatusValueId = familyPersonState.ConnectionStatusValueId;
+                    person.RecordStatusValueId = familyPersonState.RecordStatusValueId ?? recordStatusPending;
+                    person.ConnectionStatusValueId = familyPersonState.ConnectionStatusValueId ?? connectionStatusVisitor;
 
                     rockContext.SaveChanges();
 
@@ -2331,36 +2333,36 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     rockContext.SaveChanges();
                 }
 
-                if (primaryFamily == null)
+                if ( primaryFamily == null )
                 {
                     // new family and no family found by looking up matching adults, so create a new family
                     primaryFamily = new Group();
-                    var familyLastName = editFamilyState.FamilyPersonListState.OrderBy(a => a.IsAdult).Where(a => !a.IsDeleted).Select(a => a.LastName).FirstOrDefault();
+                    var familyLastName = editFamilyState.FamilyPersonListState.OrderBy( a => a.IsAdult ).Where( a => !a.IsDeleted ).Select( a => a.LastName ).FirstOrDefault();
                     primaryFamily.Name = familyLastName + " Family";
                     primaryFamily.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-                    primaryFamily.GroupLocations.Add(editFamilyState.HomeLocation);
+                    primaryFamily.GroupLocations.Add( editFamilyState.HomeLocation );
 
-                    // Set the Campus to the Campus of this Kiosk
-                    primaryFamily.CampusId = CampusId;
+                    // Set the Campus to the Campus of this Kiosk (Check for -1)
+                    primaryFamily.CampusId = CampusId == -1 ? null : CampusId;
 
-                    groupService.Add(primaryFamily);
-                    saveResult.NewFamilyList.Add(primaryFamily);
+                    groupService.Add( primaryFamily );
+                    saveResult.NewFamilyList.Add( primaryFamily );
                     rockContext.SaveChanges();
                 }
 
-                if (!editFamilyState.GroupId.HasValue)
+                if ( !editFamilyState.GroupId.HasValue )
                 {
                     editFamilyState.GroupId = primaryFamily.Id;
                 }
 
-                var groupMemberService = new GroupMemberService(rockContext);
+                var groupMemberService = new GroupMemberService( rockContext );
 
                 // loop thru all people that are part of the same family (in the UI) and ensure they are all in the same primary family (in the database)
-                foreach (var familyPersonState in editFamilyState.FamilyPersonListState.Where(a => !a.IsDeleted && a.InPrimaryFamily))
+                foreach ( var familyPersonState in editFamilyState.FamilyPersonListState.Where( a => !a.IsDeleted && a.InPrimaryFamily ) )
                 {
-                    var currentFamilyMember = primaryFamily.Members.FirstOrDefault(m => m.PersonId == familyPersonState.PersonId.Value);
+                    var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == familyPersonState.PersonId.Value );
 
-                    if (currentFamilyMember == null)
+                    if ( currentFamilyMember == null )
                     {
                         currentFamilyMember = new GroupMember
                         {
@@ -2369,7 +2371,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                             GroupMemberStatus = GroupMemberStatus.Active
                         };
 
-                        if (familyPersonState.IsAdult)
+                        if ( familyPersonState.IsAdult )
                         {
                             currentFamilyMember.GroupRoleId = groupTypeRoleAdultId;
                         }
@@ -2378,7 +2380,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                             currentFamilyMember.GroupRoleId = groupTypeRoleChildId;
                         }
 
-                        groupMemberService.Add(currentFamilyMember);
+                        groupMemberService.Add( currentFamilyMember );
 
                         rockContext.SaveChanges();
                     }
