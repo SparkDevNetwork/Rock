@@ -488,6 +488,45 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Country Attributes
+
+        /// <summary>
+        /// Country - Locality Label
+        /// </summary>
+        public const string COUNTRY_LOCALITY_LABEL = "1C234A6D-007F-4410-814E-13E9AE8654B4";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 1.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_1_REQUIREMENT = "8B7410F4-7EFB-4ABC-BFD0-B8A9A7ADB27D";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 2.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_2_REQUIREMENT = "0FCBA54C-0B88-45A8-9303-E9783F2A2D0E";
+
+        /// <summary>
+        /// Country Address Requirement Level for City.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_CITY_REQUIREMENT = "EE9B4454-ACBF-416F-8080-2885A3CD6CA6";
+
+        /// <summary>
+        /// Country Address Requirement Level for Locality.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LOCALITY_REQUIREMENT = "A0B0B033-9DA9-45F4-A593-B40EDCDB2D00";
+
+        /// <summary>
+        /// Country Address Requirement Level for State.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_STATE_REQUIREMENT = "E488AE1D-FC76-44FE-A48D-271E6DF44C24";
+
+        /// <summary>
+        /// Country Address Requirement Level for Postal Code.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_POSTCODE_REQUIREMENT = "0037453D-0D26-4F02-8AB3-6AD675D85AAE";
+
+        #endregion
+
         #region Fundraising Attributes
 
         /// <summary>
