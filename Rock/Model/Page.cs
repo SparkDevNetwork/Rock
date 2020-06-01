@@ -267,10 +267,10 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the length of time in that rendered output is cached. This property is required.
+        /// Gets or sets a value indicating the length of time (in seconds) in that rendered output is cached. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> represents the length of time that output is cached. 0 = no caching.
+        /// An <see cref="System.Int32"/> represents the length of time (in seconds) that output is cached. 0 = no caching.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
