@@ -4647,7 +4647,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls, DynamicControlPostbackMethod );
                     }
                 }
 
@@ -4672,6 +4672,18 @@ namespace RockWeb.Blocks.Event
             }
 
             divFees.Visible = phFees.Controls.Count > 0;
+        }
+
+        /// <summary>
+        /// Method to run for the dynamic control FieldVisibility.EditValueUpdated event.
+        /// This is to recreate the controls for filter conditions, so it is not used by
+        /// PersonFields.
+        /// </summary>
+        private void DynamicControlPostbackMethod()
+        {
+            CreateRegistrantControls( true );
+            ParseDynamicControls();
+            ShowFamilyMembersPanel();
         }
 
         /// <summary>
@@ -4735,7 +4747,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl, Action postbackMethod )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4760,7 +4772,9 @@ namespace RockWeb.Blocks.Event
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                    postbackMethod.Invoke();
                 };
+
 
                 parentControl.Controls.Add( fieldVisibilityWrapper );
 
@@ -4814,6 +4828,7 @@ namespace RockWeb.Blocks.Event
                     .OrderBy( f => f.Order ) )
                 {
                     object value = null;
+                    bool updateField = true;
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
@@ -4821,16 +4836,19 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        value = ParseAttributeField( field );
+                        value = ParseAttributeField( field, out updateField );
                     }
 
-                    if ( value != null )
+                    if ( updateField )
                     {
-                        registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
-                    }
-                    else
-                    {
-                        registrant.FieldValues.Remove( field.Id );
+                        if ( value != null )
+                        {
+                            registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
+                        }
+                        else
+                        {
+                            registrant.FieldValues.Remove( field.Id );
+                        }
                     }
                 }
 
@@ -4961,8 +4979,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object ParseAttributeField( RegistrationTemplateFormField field )
+        private object ParseAttributeField( RegistrationTemplateFormField field, out bool updateField )
         {
+            updateField = true;
+
             if ( field.AttributeId.HasValue )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
@@ -4971,7 +4991,15 @@ namespace RockWeb.Blocks.Event
                 Control control = phRegistrantControls.FindControl( fieldId );
                 if ( control != null )
                 {
-                    return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    if ( control.Visible )
+                    {
+                        return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    }
+
+                    // If the control is not visible we don't want to clear out the value.
+                    // So set updateField to false so the value is not set to null or empty
+                    updateField = false;
+                    return null;
                 }
             }
 
