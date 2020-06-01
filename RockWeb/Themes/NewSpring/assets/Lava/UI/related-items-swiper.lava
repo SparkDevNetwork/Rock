@@ -1,6 +1,26 @@
 {% assign relatedItems = Item.RelatedItems %}
 
-{% if relatedItems != empty %}
+{% comment %}
+    This loops through the related items from the Item object and strips out anything that is future-dated or expired.
+{% endcomment %}
+{%- capture displayItemsString -%}
+    {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+    [{%- for item in relatedItems -%}
+        {%- assign status = item.Status %}
+        {%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+            {{ item | ToJSON }},
+        {%- endif -%}
+    {%- endfor -%}]
+{%- endcapture -%}
+
+{% comment %}
+    This reassigns the results of the above filtered loop to the "relatedItems" object that is used by the card list below.
+{% endcomment %}
+{% assign relatedItems = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
+
+{% if relatedItems and relatedItems != empty %}
 
     {[ swiper title:'{{ title }}' ]}
 

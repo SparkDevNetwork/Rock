@@ -1,3 +1,21 @@
+{% comment %}
+    Redirect if item is expired
+{% endcomment %}
+{% assign itemId = Item.Id | AsInteger %}
+{% assign CurrentPersonCanEdit = itemId | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+{% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+
+{% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now or Item == null %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+
 {% assign parentChannelId = Item.ParentChannelId | AsInteger %}
 {% assign parent = Item.Parents | Where:'ChannelId', parentChannelId | First %}
 {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}

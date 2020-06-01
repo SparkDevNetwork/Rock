@@ -1,10 +1,10 @@
 {% if dataset and dataset != empty and cciid and cciid != empty %}
+
     {% assign cciid = cciid | AsInteger %}
     {% assign Item = dataset | PersistedDataset | Where:'Id', cciid | First %}
-
-    {% assign now = 'Now' | Date:'yyyy-MM-ddThh:mm:ss.000000' %}
-    {% assign startDate = Item.StartDateTime | Date:'yyyy-MM-ddThh:mm:ss.000000' %}
-    {% assign endDate = Item.EndDateTime | Date:'yyyy-MM-ddThh:mm:ss.000000' %}
+    {% assign now = 'Now' | Date:'yyyyMMddHHmmss' %}
+    {% assign startDate = Item.PublishDateTime | Date:'yyyyMMddHHmmss' %}
+    {% assign endDate = Item.EndDateTime | Date:'yyyyMMddHHmmss' %}
 
     {% comment %}
         Set current item slug so we can determine what the active slide should be
@@ -12,16 +12,42 @@
     {% assign currentSlug = 'Global' | Page:'Path' | Split:'/' | Last %}
     {% assign children = Item.Children %}
 
-    {% comment %}
-        If we're between the beginning/ending dates of this collection, make the latest item in the swiper active
-    {% endcomment %}
-    {% if now >= startDate and now < endDate %}
-        {% assign initialslide = children | Size | Minus:1 %}
-    {% else %}
-        {% assign initialslide = children | Where:'Slug', currentSlug | First | Property:'Index' | Minus:1 %}
+    {% if showfuturecontent != 'true' %}
+
+        {% comment %}
+            This loops through the items from the parent's children and strips out anything that is future-dated or expired.
+        {% endcomment %}
+        {%- capture displayItemsString -%}
+            {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+            [{%- for child in children -%}
+                {%- assign status = child.Status %}
+                {%- assign publishDateTime = child.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+                {%- assign expireDateTime = child.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+                {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+                    {{ child | ToJSON }},
+                {%- endif -%}
+            {%- endfor -%}]
+        {%- endcapture -%}
+
+        {% comment %}
+            This reassigns the results of the above filtered loop to the "children" object that is used by the card list below.
+        {% endcomment %}
+        {% assign children = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
+
     {% endif %}
 
     {% if children and children != empty %}
+
+        {% comment %}
+            If we're between the beginning/ending dates of this collection, make the latest item in the swiper active, otherwise make the first active
+        {% endcomment %}
+
+        {% if now >= startDate and now < endDate %}
+            {% assign initialslide = children | Size | Minus:1 %}
+        {% else %}
+            {% assign initialslide = children | Where:'Slug', currentSlug | First | Property:'Index' %}
+        {% endif %}
+
         {[ swiper id:'entries' initialslide:'{{ initialslide }}' ]}
             {% for child in children %}
 
@@ -60,7 +86,8 @@
                         {% endcapture %}
 
                         {% if type contains "Devotional" %}
-                            {% assign label = 'Session ' | Append:child.Index %}
+                            {% assign sessionNumber = child.Index | Plus:1 %}
+                            {% assign label = 'Session ' | Append:sessionNumber %}
                         {% else %}
                             {% assign imageurl = Item.ImageLandscape %}
                         {% endif %}

@@ -1,4 +1,26 @@
 {% if Items and Items != empty %}
+
+{% comment %}
+    This loops through the items from the dataset and strips out anything that is future-dated or expired.
+{% endcomment %}
+{%- capture displayItemsString -%}
+    {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+    [{%- for item in Items -%}
+        {%- assign status = item.Status %}
+        {%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+            {{ item | ToJSON }},
+        {%- endif -%}
+    {%- endfor -%}]
+{%- endcapture -%}
+
+{% comment %}
+    This reassigns the results of the above filtered loop to the "Items" object that is used by the card list below.
+{% endcomment %}
+{% assign Items = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
+
+
 {% assign channelItemsName = Items | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
 {% assign channelUrl = Items | First | Property:'ChannelUrl' %}
 <section class="bg-white soft xs-soft-half soft-half-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">

@@ -1,5 +1,6 @@
 {%- comment -%}Determine if this item's channel has a primary parent channel{%- endcomment -%}
 {% capture permalink %}
+{% assign cciid = cciid | AsInteger %}
 {% sql %}
     SELECT pcc.Id
     FROM Attribute a
