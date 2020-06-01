@@ -1,4 +1,20 @@
-﻿using Rock.Plugin;
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA
 {
@@ -55,6 +71,11 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Pages Allowing Unencrypted Traffic, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "43DD0895-6418-47EB-99FA-E037DBD5E728", "BEEE38DD-2791-4242-84B6-0495904143CC", @"30" );
 
+            RockMigrationHelper.UpdateHtmlContentBlock( "CD84D302-D9D6-495B-857C-BD83054353B0", @"<div class='alert alert-info'>
+    <p>
+        This report displays a list of pages that allow unencrypted traffic to access them. It does this by pulling all pages that neither require encryption themselves nor are on a site that forces SSL. We highly recommend requiring all your pages to require encrypted traffic by either setting 'Force SSL' on your sites or by checking 'Requires Encryption' on your individual pages.
+    </p>
+</div>", "F454DEAA-041F-40D6-8A29-1DD88CA59002" );
 
             // Hide Page from view
             RockMigrationHelper.AddSecurityAuthForPage( "F745A701-B8B5-42F6-9813-922A77524781", 0, "View", false, "", 1, "45F690FD-F3AF-4D39-A609-79DDD40F3D62" );
