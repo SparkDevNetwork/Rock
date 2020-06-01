@@ -2194,10 +2194,10 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             switch ( hfActiveDialog.Value )
             {
                 case "ATTRIBUTES":
-                    dlgAttribute.Hide();
+                    dlgAttribute.Hide( upDetail.ClientID );
                     break;
                 case "ACTIVITYATTRIBUTES":
-                    dlgActivityAttribute.Hide();
+                    dlgActivityAttribute.Hide( upDetail.ClientID );
                     break;
             }
 
