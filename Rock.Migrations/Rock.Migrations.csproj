@@ -265,6 +265,10 @@
     <Compile Include="Migrations\202005281232245_AddDataViewIdsToDataViewFilter.Designer.cs">
       <DependentUpon>202005281232245_AddDataViewIdsToDataViewFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202005312347352_AddAddressFieldRequirements.cs" />
+    <Compile Include="Migrations\202005312347352_AddAddressFieldRequirements.Designer.cs">
+      <DependentUpon>202005312347352_AddAddressFieldRequirements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1399,6 +1403,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202005281232245_AddDataViewIdsToDataViewFilter.resx">
       <DependentUpon>202005281232245_AddDataViewIdsToDataViewFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005312347352_AddAddressFieldRequirements.resx">
+      <DependentUpon>202005312347352_AddAddressFieldRequirements.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
