@@ -114,6 +114,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+        private const string LAST_FORM_INDEX_KEY = "LastFormIndexKey";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
 
@@ -241,6 +242,14 @@ namespace RockWeb.Blocks.Event
         /// The index of the current form.
         /// </value>
         private int CurrentFormIndex { get; set; }
+
+        /// <summary>
+        /// Used to keep track of the last form when clicking back from the Summary panel. This is needed because CurrentFormIndex gets set to 0 when there are no more forms.
+        /// </summary>
+        /// <value>
+        /// The last index of the form.
+        /// </value>
+        private int LastFormIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the step2 i frame URL.
@@ -579,6 +588,7 @@ namespace RockWeb.Blocks.Event
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
+            LastFormIndex = ViewState[LAST_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
             defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
 
@@ -773,6 +783,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_PANEL_KEY] = CurrentPanel;
             ViewState[CURRENT_REGISTRANT_INDEX_KEY] = CurrentRegistrantIndex;
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
+            ViewState[LAST_FORM_INDEX_KEY] = LastFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
             ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
 
@@ -1208,7 +1219,17 @@ namespace RockWeb.Blocks.Event
             {
                 _saveNavigationHistory = true;
 
-                ShowRegistrationAttributesEnd( false );
+                if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+                {
+                    ShowRegistrationAttributesEnd( false );
+                }
+                else
+                {
+                    // Show the last registrant
+                    CurrentRegistrantIndex = RegistrationState.RegistrantCount - 1;
+                    CurrentFormIndex = LastFormIndex;
+                    ShowRegistrant( false, false );
+                }
             }
             else
             {
@@ -3778,6 +3799,7 @@ namespace RockWeb.Blocks.Event
                         if ( ( CurrentFormIndex >= FormCount && !SignInline ) || CurrentFormIndex >= FormCount + 1 )
                         {
                             CurrentRegistrantIndex++;
+                            LastFormIndex = CurrentFormIndex - 1;
                             CurrentFormIndex = 0;
                         }
                     }
