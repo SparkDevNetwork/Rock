@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\003_PluginInstallerUpdates.cs" />
     <Compile Include="Migrations\002_AddBemaPluginInstaller.cs" />
     <Compile Include="Migrations\001_InitialSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
