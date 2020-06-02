@@ -186,7 +186,8 @@ namespace com.bemaservices.MailChimp.Utility
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( ex );
+                        string message = String.Format( "Error Grabbing record #{0} with email {1} for Mailchimp Audience '{2}'", member.Id, member.EmailAddress, mailChimpList.Value );
+                        ExceptionLogService.LogException( new Exception( message, ex ) );
                     }
                 }
 
@@ -225,7 +226,8 @@ namespace com.bemaservices.MailChimp.Utility
                                     }
                                     catch ( Exception ex )
                                     {
-                                        ExceptionLogService.LogException( ex );
+                                        string message = String.Format( "Error Adding Person #{0} to Mailchimp Audience '{1}'", groupMember.Person.Id, mailChimpList.Value );
+                                        ExceptionLogService.LogException( new Exception( message, ex ) );
                                     }
                                 }
 
@@ -247,7 +249,8 @@ namespace com.bemaservices.MailChimp.Utility
                                     }
                                     catch ( Exception ex )
                                     {
-                                        ExceptionLogService.LogException( ex );
+                                        string message = String.Format( "Error Adding Person #{0} to Group '{1}'", person.Id, group.Name );
+                                        ExceptionLogService.LogException( new Exception( message, ex ) );
                                     }
 
                                 }
