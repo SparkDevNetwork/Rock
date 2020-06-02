@@ -232,10 +232,10 @@ namespace Rock.Model
                         startDate = existingDates.Min();
                     }
 
-                    // Back up start time to the correct day of week
+                    // Roll forward to the first start time that matches the day of the week.
                     while ( startDate.DayOfWeek != groupSchedule.WeeklyDayOfWeek.Value )
                     {
-                        startDate = startDate.AddDays( -1 );
+                        startDate = startDate.AddDays( 1 );
                     }
 
                     // Add the start time

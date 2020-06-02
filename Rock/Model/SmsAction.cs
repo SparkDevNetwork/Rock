@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the action.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActive { get; set; }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// The order of this action in the system.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -65,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// The identifier for the entity type that handles this action's logic.
         /// </value>
+        [DataMember]
         public int SmsActionComponentEntityTypeId { get; set; }
 
         /// <summary>
@@ -83,6 +87,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if further actions should be processed; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool ContinueAfterProcessing { get; set; }
 
         #endregion
