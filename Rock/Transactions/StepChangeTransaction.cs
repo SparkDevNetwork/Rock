@@ -104,7 +104,7 @@ namespace Rock.Transactions
 
             var stepProgramId = stepType.StepProgramId;
 
-            // Get the triggers associated with the Step Program to which this Step is related.
+            // Get the triggers associated with the Step Program to which this Step is related, but are not associated with a specific Step Type.
             var stepProgramService = new StepProgramService( dataContext );
 
             var stepProgram = stepProgramService.Queryable()
@@ -119,7 +119,8 @@ namespace Rock.Transactions
             }
 
             var stepProgramTriggers = stepProgram.StepWorkflowTriggers
-                    .Where( w => w.TriggerType != StepWorkflowTrigger.WorkflowTriggerCondition.Manual )
+                    .Where( w => w.StepTypeId == null
+                                 && w.TriggerType != StepWorkflowTrigger.WorkflowTriggerCondition.Manual )
                     .ToList();
 
             triggers.AddRange( stepProgramTriggers );

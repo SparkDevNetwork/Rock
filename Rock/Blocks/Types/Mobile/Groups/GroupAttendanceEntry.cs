@@ -478,7 +478,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
                 {
                     return ActionNotFound();
                 }
@@ -511,7 +511,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
                 {
                     return ActionNotFound();
                 }
