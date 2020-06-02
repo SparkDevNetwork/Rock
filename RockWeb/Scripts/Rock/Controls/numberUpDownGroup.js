@@ -16,7 +16,7 @@
           isValid = false;
 
           $numberUpDownGroup.find('.js-number-up-down-lbl').each(function (i) {
-            if (parseInt(this.outerText, 10) > 0) {
+            if (parseInt(this.innerText, 10) > 0) {
               isValid = true;
             }
           });
