@@ -319,13 +319,21 @@ namespace com.bemaservices.MailChimp.Utility
             string emailNote = null;
             bool isEmailActive = GetIsEmailActive( member.Status, out emailNote );
 
+            // Check if there's a person in the DB who has already been created with a foreign key.  This will only match people added via the mail chimp plugin.
             person = personService.Queryable().AsNoTracking().Where( p => p.ForeignKey == mailchimpForeignKey ).FirstOrDefault();
 
             if ( person.IsNull() )
             {
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, null, null, null, null, null );
-                person = personService.FindPerson( personQuery, false );
+                // Use find persons vs find person because if there are multile matches, we'll just use the first match vs creating a new person.
+                person = personService.FindPersons( personQuery, false ).OrderBy( p => p.Id ).FirstOrDefault();
             }
+
+            if ( person.IsNull() )
+            {
+                person = personService.Queryable().AsNoTracking().Where( p => p.Email == email ).OrderBy( p => p.Id ).FirstOrDefault();
+            }
+
 
             if ( person.IsNull() )
             {
@@ -340,7 +348,7 @@ namespace com.bemaservices.MailChimp.Utility
                 person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 person.ForeignKey = mailchimpForeignKey;
 
-                if( !person.Email.IsValidEmail() )
+                if ( !person.Email.IsValidEmail() )
                 {
                     ExceptionLogService.LogException( new Exception( "Could not Add Mailchimp Member because their email address isn't valid(" + person.Email + ")" ) );
                     return null;
