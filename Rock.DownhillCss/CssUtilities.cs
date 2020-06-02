@@ -558,6 +558,11 @@ namespace Rock.DownhillCss
         private static string baseStylesMobile = @"
 /* Resets */
 
+/* Fixes frame backgrounds from being black while in dark mode */
+^frame {
+    background-color: transparent;
+}
+
 NavigationPage {
     -rock-status-bar-text: dark;
 }
@@ -848,6 +853,13 @@ NavigationPage {
     color: ?color-text;
 }
 
+.title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: default;
+    line-height: 1;
+}
+
 /* Body Styles */
 .paragraph {
     font-size: default;
@@ -983,15 +995,15 @@ NavigationPage {
 }
 
 .rounded-sm {
-    border-radius: 2;
+    border-radius: 4;
 }
 
 .rounded {
-    border-radius: 6;
+    border-radius: 8;
 }
 
 .rounded-lg {
-    border-radius: 10;
+    border-radius: 16;
 }
 
 .rounded-full {
@@ -1002,7 +1014,7 @@ NavigationPage {
 .toggle-button {
     border-radius: 0;
     border-color: ?color-primary;
-    background-color: initial;
+    background-color: transparent;
     padding: 9 12 12 12;
 }
 
@@ -1215,7 +1227,7 @@ formfield.required .required-indicator {
 }
 
 /* Field Stacks */
-fieldstack {
+^fieldstack {
     border-radius: 0;
     border-color: ?color-secondary;
     border-width: 1;
@@ -1271,6 +1283,7 @@ formfield .required-indicator {
 
 .card-tagline {
     font-style: normal;
+    font-size: 14;
 }
 
 .card-title {
