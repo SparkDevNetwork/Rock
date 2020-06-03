@@ -483,6 +483,10 @@ namespace RockWeb.Blocks.Cms
 
             if ( customAdminControls.Any() && blockControl != null)
             {
+                // Set a flag to indicate that the block should only render the necessary elements to allow configuration.
+                // Rendering the block content here may disrupt the formatting of the page.
+                blockControl.ConfigurationRenderModeIsEnabled = true;
+
                 pnlBlocksHolder.Controls.Add( blockControl );
             }
         }
