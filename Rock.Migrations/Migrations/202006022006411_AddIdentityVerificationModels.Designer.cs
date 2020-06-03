@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddDataViewIdsToDataViewFilter : IMigrationMetadata
+    public sealed partial class AddIdentityVerificationModels : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddDataViewIdsToDataViewFilter));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddIdentityVerificationModels));
         
         string IMigrationMetadata.Id
         {
-            get { return "202005211300079_AddDataViewIdsToDataViewFilter"; }
+            get { return "202006022006411_AddIdentityVerificationModels"; }
         }
         
         string IMigrationMetadata.Source

@@ -200,7 +200,7 @@ namespace Rock.Security
                         a.AllowOrDeny,
                         a.SpecialRole,
                         a.PersonAliasId,
-                        PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : (int?)null,
+                        PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : ( int? ) null,
                         a.GroupId,
                         a.Order
                     } ) )
@@ -460,7 +460,10 @@ namespace Rock.Security
         /// </returns>
         public static bool IsPrivate( ISecured entity, string action, Person person )
         {
-            if ( person == null ) return false;
+            if ( person == null )
+            {
+                return false;
+            }
 
             var authorizations = Get();
 
@@ -470,7 +473,10 @@ namespace Rock.Security
             if ( authorizations == null || !authorizations.Keys.Contains( entity.TypeId ) ||
                 !authorizations[entity.TypeId].Keys.Contains( entity.Id ) ||
                 !authorizations[entity.TypeId][entity.Id].Keys.Contains( action ) ||
-                authorizations[entity.TypeId][entity.Id][action].Count != 2 ) return false;
+                authorizations[entity.TypeId][entity.Id][action].Count != 2 )
+            {
+                return false;
+            }
 
             var firstRule = authorizations[entity.TypeId][entity.Id][action][0];
             var secondRule = authorizations[entity.TypeId][entity.Id][action][1];
@@ -612,9 +618,15 @@ namespace Rock.Security
             var authorizations = Get();
 
             // Find the Authrules for the given entity type, entity id, and action
-            if ( authorizations == null || !authorizations.ContainsKey( entityTypeId ) ) return rules;
+            if ( authorizations == null || !authorizations.ContainsKey( entityTypeId ) )
+            {
+                return rules;
+            }
 
-            if ( !authorizations[entityTypeId].ContainsKey( entityId ) ) return rules;
+            if ( !authorizations[entityTypeId].ContainsKey( entityId ) )
+            {
+                return rules;
+            }
 
             if ( authorizations[entityTypeId][entityId].ContainsKey( action ) )
             {
@@ -670,7 +682,10 @@ namespace Rock.Security
             {
                 if ( !string.IsNullOrWhiteSpace( action ) &&
                     !sourceAuth.Action.Equals( action, StringComparison.OrdinalIgnoreCase ) ||
-                    !targetEntity.SupportedActions.ContainsKey( sourceAuth.Action ) ) continue;
+                    !targetEntity.SupportedActions.ContainsKey( sourceAuth.Action ) )
+                {
+                    continue;
+                }
 
                 var auth = new Auth
                 {
@@ -772,7 +787,10 @@ namespace Rock.Security
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
             // when the user signs out.
-            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() ) return;
+            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() )
+            {
+                return;
+            }
 
             var domainCookie =
                 new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
@@ -872,7 +890,10 @@ namespace Rock.Security
             // Get the first domain in the list that the current request's host name ends with
             var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
             var domain = domains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
-            if ( !domain.IsNotNullOrWhiteSpace() ) return null;
+            if ( !domain.IsNotNullOrWhiteSpace() )
+            {
+                return null;
+            }
 
             // Make sure domain name is prefixed with a '.'
             domain = domain != null && domain.StartsWith( "." ) ? domain : $".{domain}";
@@ -907,6 +928,17 @@ namespace Rock.Security
             return ItemAuthorized( entity, action, person, true, checkParentAuthority );
         }
 
+        /// <summary>
+        /// Sets the unsecure person identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie.
+        /// </summary>
+        /// <param name="personAliasGuid">The person alias unique identifier.</param>
+        public static void SetUnsecurePersonIdentifier( Guid personAliasGuid )
+        {
+            HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+            httpcookie.Value = personAliasGuid.ToString();
+            httpcookie.Expires = DateTime.Now.AddYears( 1 );
+            HttpContext.Current.Response.Cookies.Add( httpcookie );
+        }
         #endregion
 
         #region Private Methods
@@ -939,7 +971,10 @@ namespace Rock.Security
             {
                 foreach ( var authRule in authorizations[entityTypeId][entity.Id][action] )
                 {
-                    if ( authRule.SpecialRole != specialRole ) continue;
+                    if ( authRule.SpecialRole != specialRole )
+                    {
+                        continue;
+                    }
 
                     matchFound = true;
                     authorized = authRule.AllowOrDeny == 'A';
@@ -958,7 +993,10 @@ namespace Rock.Security
             // parent authority return the default authorization
             bool? parentAuthorized = null;
 
-            if ( !checkParentAuthority ) return null;
+            if ( !checkParentAuthority )
+            {
+                return null;
+            }
 
             if ( isRootEntity && entity.ParentAuthorityPre != null )
             {
@@ -1048,7 +1086,10 @@ namespace Rock.Security
                     }
 
                     // If rule is a special role, or the person is unknown, just continue, we don't need to check for person/role access
-                    if ( authRule.SpecialRole != SpecialRole.None || person == null ) continue;
+                    if ( authRule.SpecialRole != SpecialRole.None || person == null )
+                    {
+                        continue;
+                    }
 
                     // Rule is for this person
                     if ( authRule.PersonId.HasValue && authRule.PersonId.Value == person.Id )
@@ -1059,13 +1100,19 @@ namespace Rock.Security
                     }
 
                     // If the rule is not for a group, just keep looping, we don't need to see if they're in a role
-                    if ( !authRule.GroupId.HasValue ) continue;
+                    if ( !authRule.GroupId.HasValue )
+                    {
+                        continue;
+                    }
 
                     // Get the role
                     var role = RoleCache.Get( authRule.GroupId.Value );
 
                     // If the role was invalid, or person is not in the role, keep checking
-                    if ( role == null || !role.IsPersonInRole( personGuid ) ) continue;
+                    if ( role == null || !role.IsPersonInRole( personGuid ) )
+                    {
+                        continue;
+                    }
 
                     // At this point, the rule is for a group/role that user belongs to
                     matchFound = true;
@@ -1083,7 +1130,10 @@ namespace Rock.Security
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the default authorization
             bool? parentAuthorized = null;
-            if ( !checkParentAuthority ) return null;
+            if ( !checkParentAuthority )
+            {
+                return null;
+            }
 
             if ( isRootEntity && entity.ParentAuthorityPre != null )
             {
@@ -1144,12 +1194,21 @@ namespace Rock.Security
         /// <param name="rockContext">The rock context.</param>
         private static void MyMakePrivate( ISecured entity, string action, Person person, RockContext rockContext )
         {
-            if ( IsPrivate( entity, action, person ) ) return;
+            if ( IsPrivate( entity, action, person ) )
+            {
+                return;
+            }
 
-            if ( person == null ) return;
+            if ( person == null )
+            {
+                return;
+            }
 
             var personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( person.Id );
-            if ( personAlias == null ) return;
+            if ( personAlias == null )
+            {
+                return;
+            }
 
             var authService = new AuthService( rockContext );
 
@@ -1202,7 +1261,10 @@ namespace Rock.Security
         /// <param name="rockContext">The rock context.</param>
         private static void MyMakeUnPrivate( ISecured entity, string action, Person person, RockContext rockContext )
         {
-            if ( !IsPrivate( entity, action, person ) ) return;
+            if ( !IsPrivate( entity, action, person ) )
+            {
+                return;
+            }
 
             var authService = new AuthService( rockContext );
 
@@ -1238,7 +1300,10 @@ namespace Rock.Security
                 personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( person.Id );
             }
 
-            if ( personAlias == null && group == null && specialRole == SpecialRole.None ) return;
+            if ( personAlias == null && group == null && specialRole == SpecialRole.None )
+            {
+                return;
+            }
 
             var authService = new AuthService( rockContext );
 
@@ -1492,7 +1557,10 @@ namespace Rock.Security
                             }
                         }
 
-                        if ( !GroupId.HasValue ) return "*** Unknown User/Role ***";
+                        if ( !GroupId.HasValue )
+                        {
+                            return "*** Unknown User/Role ***";
+                        }
 
                         try
                         {

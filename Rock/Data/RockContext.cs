@@ -1478,6 +1478,22 @@ namespace Rock.Data
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary>
+        /// Gets or sets the phone verifications.
+        /// </summary>
+        /// <value>
+        /// The phone verifications.
+        /// </value>
+        public DbSet<IdentityVerification> IdentityVerifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone verification codes.
+        /// </summary>
+        /// <value>
+        /// The phone verification codes.
+        /// </value>
+        public DbSet<IdentityVerificationCode> IdentityVerificationCodes { get; set; }
+
+        /// <summary>
         /// Gets or sets the plugin migrations.
         /// </summary>
         /// <value>

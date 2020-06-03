@@ -671,5 +671,55 @@ namespace Rock.SystemGuid
         /// The defined value log system settings
         /// </summary>
         public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
+
+        /// <summary>
+        /// The phone number lookup title
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP_TITLE = "7FD2383A-A2E8-4158-8E78-2E2E0C6CBA11";
+
+        /// <summary>
+        /// The phone number initial instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INITIAL_INSTRUCTIONS = "D9DFC4E4-A1F7-435C-8CF4-AD67CFA3F26E";
+
+        /// <summary>
+        /// The phone number verification instructions
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_INSTRUCTIONS = "B14CA36A-CC8F-4858-A2B8-AE0966EDEF2D";
+
+        /// <summary>
+        /// The phone number individual selection instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INDIVIDUAL_SELECTION_INSTRUCTIONS = "1DFA50D7-0819-4659-96DE-D25F80B880E5";
+
+        /// <summary>
+        /// The phone number not found message
+        /// </summary>
+        public const string PHONE_NUMBER_NOT_FOUND_MESSAGE = "F752712B-C2CA-4541-8347-A632652E0764";
+
+        /// <summary>
+        /// The phone number authentication level
+        /// </summary>
+        public const string PHONE_NUMBER_AUTHENTICATION_LEVEL = "92C72C91-8670-4B1B-B529-F744EEE38B5A";
+
+        /// <summary>
+        /// The phone number verification time limit
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_TIME_LIMIT = "4569E05C-DE8F-40D4-8DF7-4DE6A564FF6E";
+
+        /// <summary>
+        /// The phone number ip throttle limit
+        /// </summary>
+        public const string PHONE_NUMBER_IP_THROTTLE_LIMIT = "2D148814-418A-45A3-9A98-1498363759E7";
+
+        /// <summary>
+        /// The phone number SMS number
+        /// </summary>
+        public const string PHONE_NUMBER_SMS_NUMBER = "AE2979DF-EDE5-4389-ACBA-0FF7680BFE52";
+
+        /// <summary>
+        /// The phone number text message template
+        /// </summary>
+        public const string PHONE_NUMBER_TEXT_MESSAGE_TEMPLATE = "7F12E9B4-0CD1-42C8-AE68-457212B0B459";
     }
 }
