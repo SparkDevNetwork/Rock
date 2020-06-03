@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Migrations\001_InitialSetup.cs" />
     <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
+    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
     <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
