@@ -71,6 +71,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\PtoBracketTypeService.cs" />
+    <Compile Include="Model\PtoBracketType.cs" />
     <Compile Include="Model\PtoTier.cs" />
     <Compile Include="Model\PtoBracket.cs" />
     <Compile Include="Model\PtoType.cs" />
