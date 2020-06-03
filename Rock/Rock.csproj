@@ -507,10 +507,16 @@
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Model\IdentityVerification.cs" />
+    <Compile Include="Model\IdentityVerificationCode.cs" />
+    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
+    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
