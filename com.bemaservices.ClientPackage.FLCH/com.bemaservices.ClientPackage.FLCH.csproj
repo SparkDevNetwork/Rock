@@ -104,7 +104,6 @@
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
       <CopyFiles Include="$(OutputPath)com.bemaservices.ClientPackage.FLCH.dll;" />
-      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\BEMA\**\*.*" />
       <ClientCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\FLCH\**\*.*" />
       <VersionFile Include="builds\.version" />
     </ItemGroup>
@@ -115,7 +114,6 @@
     <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
     <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
-    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\CustomBlocks\BEMA\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(ClientCode)" DestinationFiles="@(ClientCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\CustomBlocks\FLCH\%(RecursiveDir)%(Filename)%(Extension)')" />
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
