@@ -76,6 +76,7 @@
     <Compile Include="Migrations\001_InitialSetup.cs" />
     <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
