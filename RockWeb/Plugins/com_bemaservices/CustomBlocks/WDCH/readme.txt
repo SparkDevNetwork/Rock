@@ -1,0 +1,1 @@
+﻿As you edit or add new custom blocks for Woodlands Church, add them under this folder.
