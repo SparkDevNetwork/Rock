@@ -1,0 +1,12 @@
+﻿<div class='panel panel-default'>
+    <div class='panel-heading'>
+        <h4><a href='https://rock.hfbc.org/Person/{{Person.Id}}/Daycation'>{{Person.PersonName}}</a></h4>
+    </div>
+    <ul class="list-group list-group-panel">
+        {% for registrant in Person.Registrants %}
+        <li class="list-group-item">
+                <a href='https://rock.hfbc.org/page/1455?RegistrationId={{registrant.RegistrationId}}'>{{registrant.Registration.RegistrationInstance.RegistrationTemplate.Name}} - {{registrant.Registration.RegistrationInstance.Name}}{% if registrant.OnWaitList %} (Waitlist){% endif %}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>

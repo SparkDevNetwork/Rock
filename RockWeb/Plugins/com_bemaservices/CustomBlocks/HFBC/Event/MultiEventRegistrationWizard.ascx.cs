@@ -1365,7 +1365,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                             if ( registrationInformation.RegistrationState.Registrants.Any( r => r.DiscountApplies ) )
                             {
                                 registrationInformation.RegistrationState.DiscountCode = discountCode;
-                                registrationInformation.RegistrationState.DiscountAmount = .50m;
+                                registrationInformation.RegistrationState.DiscountPercentage = .50m;
 
                                 SaveViewState();
                             }
