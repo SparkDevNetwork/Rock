@@ -81,11 +81,13 @@ namespace Rock.Plugin.HotFixes
     {% if VisibleAttributes != empty %}
         <Rock:ResponsiveLayout ColumnSpacing=""0"">
             {% for attribute in VisibleAttributes %}
-                <Rock:ResponsiveColumn ExtraSmall=""6"">
-                    <Rock:FieldContainer>
-                        <Rock:Literal Label=""{{ attribute.Name | Escape }}"" Text=""{{ attribute.FormattedValue }}"" />
-                    </Rock:FieldContainer>
-                </Rock:ResponsiveColumn>
+                {% if attribute.FormattedValue != '' %}
+                    <Rock:ResponsiveColumn ExtraSmall=""6"">
+                        <Rock:FieldContainer>
+                            <Rock:Literal Label=""{{ attribute.Name | Escape }}"" Text=""{{ attribute.FormattedValue }}"" />
+                        </Rock:FieldContainer>
+                    </Rock:ResponsiveColumn>
+                {% endif %}
             {% endfor %}
         </Rock:ResponsiveLayout>
     {% endif %}
@@ -145,11 +147,13 @@ namespace Rock.Plugin.HotFixes
     {% if VisibleAttributes != empty %}
         <Rock:ResponsiveLayout ColumnSpacing=""0"">
             {% for attribute in VisibleAttributes %}
-            <Rock:ResponsiveColumn ExtraSmall=""6"">
-                <Rock:FieldContainer Margin=""0, 0, 0, {% if forloop.last %}40{% else %}10{% endif %}"">
-                    <Rock:Literal Label=""{{ attribute.Name | Escape }}"" Text=""{{ attribute.FormattedValue }}"" />
-                </Rock:FieldContainer>
-            </Rock:ResponsiveColumn>
+                {% if attribute.FormattedValue != '' %}
+                    <Rock:ResponsiveColumn ExtraSmall=""6"">
+                        <Rock:FieldContainer Margin=""0, 0, 0, {% if forloop.last %}40{% else %}10{% endif %}"">
+                            <Rock:Literal Label=""{{ attribute.Name | Escape }}"" Text=""{{ attribute.FormattedValue }}"" />
+                        </Rock:FieldContainer>
+                    </Rock:ResponsiveColumn>
+                {% endif %}
             {% endfor %}
         </Rock:ResponsiveLayout>
     {% endif %}
@@ -164,7 +168,7 @@ namespace Rock.Plugin.HotFixes
                 <Label FontSize=""16"" FontAttributes=""Bold"" Text=""{{ Member.Person.Email | Escape }}"" />
                 <Label Text=""Email"" />
             </StackLayout>
-            <Rock:Icon IconFamily=""MaterialDesignIcons"" IconClass=""email-outline"" FontSize=""36"" Command=""{Binding SendEmail}"" CommandParameter=""{{ Member.Person.Email | Escape }}"" VerticalOptions=""Center"" />
+            <Rock:Icon IconClass=""envelope"" FontSize=""36"" Command=""{Binding SendEmail}"" CommandParameter=""{{ Member.Person.Email | Escape }}"" VerticalOptions=""Center"" />
         </StackLayout>
     {% endif %}
 
@@ -178,8 +182,8 @@ namespace Rock.Plugin.HotFixes
                 <Label FontSize=""16"" FontAttributes=""Bold"" Text=""{{ phoneNumber }}"" />
                 <Label Text=""Mobile"" />
             </StackLayout>
-            <Rock:Icon IconFamily=""MaterialDesignIcons"" IconClass=""comment-outline"" FontSize=""36"" Command=""{Binding SendSms}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
-            <Rock:Icon IconFamily=""MaterialDesignIcons"" IconClass=""phone-outline"" FontSize=""36"" Command=""{Binding CallPhoneNumber}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
+            <Rock:Icon IconClass=""comment"" FontSize=""36"" Command=""{Binding SendSms}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
+            <Rock:Icon IconClass=""phone"" FontSize=""36"" Command=""{Binding CallPhoneNumber}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
         </StackLayout>
     {% endif %}
 
@@ -193,7 +197,7 @@ namespace Rock.Plugin.HotFixes
                 <Label FontSize=""16"" FontAttributes=""Bold"" Text=""{{ phoneNumber }}"" />
                 <Label Text=""Home"" />
             </StackLayout>
-            <Rock:Icon IconClass=""Phone"" FontSize=""36"" Command=""{Binding CallPhoneNumber}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
+            <Rock:Icon IconClass=""phone"" FontSize=""36"" Command=""{Binding CallPhoneNumber}"" CommandParameter=""{{ phoneNumberLong }}"" VerticalOptions=""Center"" />
         </StackLayout>
     {% endif %}
 
