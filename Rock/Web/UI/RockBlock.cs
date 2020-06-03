@@ -303,6 +303,12 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Indicates if the block should be rendered in configuration-only mode.
+        /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
+        /// </summary>
+        public bool ConfigurationRenderModeIsEnabled { get; set; }
+
         #endregion
 
         #region Constructors
