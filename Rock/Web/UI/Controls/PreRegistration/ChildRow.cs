@@ -770,6 +770,12 @@ namespace Rock.Web.UI.Controls
             _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
             _ddlGradePicker.Label = "Grade";
 
+            /*
+                    06/03/2020 - SK 
+                    This is not needed because the PhoneNumberBox control already adds form-control in the correct spot
+             */
+            //_pnbMobile.CssClass = "form-control";
+
             _pnbMobile.Label = "Mobile Phone";
             _pnbMobile.RequiredErrorMessage = "A valid phone number is required for all children.";
 
