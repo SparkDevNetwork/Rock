@@ -18,8 +18,8 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA
 {
-    [MigrationNumber( 2, "1.9.4" )]
-    public class PagesAllowingUnencryptedTraffic : Migration
+    [MigrationNumber( 5, "1.9.4" )]
+    public class GiversWithoutPledges : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
