@@ -46,6 +46,7 @@ namespace Rock.Web.UI.Controls
     {
         #region Constants
 
+        private const string GRID_SELECT_CELL_CSS_CLASS = "grid-select-cell";
         private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
         private const string PAGE_SIZE_KEY = "grid-page-size-preference";
         private const string PAGE_SIZE_LIST_DEFAULT = "50,500,5000";
@@ -637,28 +638,54 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the row selected columns.
+        /// Gets or sets the row selected column statuses.
         /// </summary>
         /// <value>
-        /// The row selected columns.
+        /// The row selected column statuses.
         /// </value>
-        private Dictionary<int, string> RowSelectedColumns
+        private List<bool> RowSelectedColumnStatuses
         {
             get
             {
-                var rowSelectedColumns = ViewState["RowSelectedColumns"] as Dictionary<int, string>;
-                if ( rowSelectedColumns == null )
+                var rowSelectedColumnStatuses = ViewState["RowSelectedColumnStatuses"] as List<bool>;
+                if ( rowSelectedColumnStatuses == null )
                 {
-                    rowSelectedColumns = new Dictionary<int, string>();
-                    ViewState["RowSelectedColumns"] = rowSelectedColumns;
+                    rowSelectedColumnStatuses = new List<bool>();
+                    ViewState["RowSelectedColumnStatuses"] = rowSelectedColumnStatuses;
                 }
 
-                return rowSelectedColumns;
+                return rowSelectedColumnStatuses;
             }
 
             set
             {
-                ViewState["RowSelectedColumns"] = value;
+                ViewState["RowSelectedColumnStatuses"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the column CSS classes.
+        /// </summary>
+        /// <value>
+        /// The column CSS classes.
+        /// </value>
+        private List<string> ColumnCssClasses
+        {
+            get
+            {
+                var columnCssClasses = ViewState["ColumnCssClasses"] as List<string>;
+                if ( columnCssClasses == null )
+                {
+                    columnCssClasses = new List<string>();
+                    ViewState["ColumnCssClasses"] = columnCssClasses;
+                }
+
+                return columnCssClasses;
+            }
+
+            set
+            {
+                ViewState["ColumnCssClasses"] = value;
             }
         }
 
@@ -1004,7 +1031,7 @@ $('#{this.ClientID} .grid-delete-button').not('.disabled').on( 'click', function
             }
 
             string gridSelectCellScript = $@"
-$('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
+$('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event) {{
     if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
         var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
         var postbackArg = 'RowSelected$' + dataRowIndexValue;
@@ -1185,9 +1212,33 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         insertPosition = columnConfig.PositionOffset;
                     }
 
+                    if ( insertPosition < 0 )
+                    {
+                        insertPosition = 0;
+                    }
+
+                    if ( insertPosition > columns.Count )
+                    {
+                        insertPosition = columns.Count;
+                    }
+
                     var column = columnConfig.GetGridColumn();
                     columns.Insert( insertPosition, column );
-                    insertPosition++;
+
+                    if ( !Page.IsPostBack )
+                    {
+                        // Insert a status of true for this custom column to enable the firing of the OnRowSelected event when the column is clicked
+                        if ( insertPosition <= RowSelectedColumnStatuses.Count )
+                        {
+                            RowSelectedColumnStatuses.Insert( insertPosition, true );
+                        }
+
+                        // Insert any CSS class(es) that were defined for this custom column
+                        if ( insertPosition <= ColumnCssClasses.Count )
+                        {
+                            ColumnCssClasses.Insert( insertPosition, column.ItemStyle.CssClass );
+                        }
+                    }
                 }
 
                 this.CreatedColumns = columns;
@@ -1353,13 +1404,16 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnDataBinding( EventArgs e )
         {
-            // Get the css class for any column that does not implement the INotRowSelectedField
-            RowSelectedColumns = new Dictionary<int, string>();
+            RowSelectedColumnStatuses = new List<bool>();
+            ColumnCssClasses = new List<string>();
             _columnDataPriorities = new Dictionary<DataControlField, string>();
 
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
+
+                // Determine if clicking this column should fire the OnRowSelected event
+                var isRowSelected = false;
                 if ( !( column is INotRowSelectedField ) )
                 {
                     if ( !( column is HyperLinkField ) )
@@ -1368,15 +1422,20 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         {
                             if ( ( column as RockTemplateField ).OnRowSelectedEnabled )
                             {
-                                RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                                isRowSelected = true;
                             }
                         }
                         else
                         {
-                            RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                            isRowSelected = true;
                         }
                     }
                 }
+
+                RowSelectedColumnStatuses.Add( isRowSelected );
+
+                // Take note of any CSS class(es) that were defined within the template for this column
+                ColumnCssClasses.Add( this.Columns[i].ItemStyle.CssClass );
 
                 // get data priority from column
                 if ( column is IPriorityColumn )
@@ -1540,14 +1599,20 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
-                if ( this.RowSelected != null )
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
-                    // For each column that supports the clicking to select add the css class to enable this functionality
-                    foreach ( var col in RowSelectedColumns )
+                    var cell = e.Row.Cells[i];
+
+                    // For each column that should fire the OnRowSelected event, add the CSS class to enable this functionality
+                    if ( this.RowSelected != null && RowSelectedColumnStatuses.Count >= i + 1 && RowSelectedColumnStatuses[i] )
                     {
-                        var cell = e.Row.Cells[col.Key];
-                        cell.AddCssClass( col.Value );
-                        cell.AddCssClass( "grid-select-cell" );
+                        cell.AddCssClass( GRID_SELECT_CELL_CSS_CLASS );
+                    }
+
+                    // Add any CSS class(es) that were defined for this column
+                    if ( ColumnCssClasses.Count >= i + 1 )
+                    {
+                        cell.AddCssClass( ColumnCssClasses[i] );
                     }
                 }
             }
