@@ -2,10 +2,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlPhoneNumberLookup" runat="server">
+            <h3 class="mt-0"><asp:Literal ID="litTitle" runat="server" /></h3>
             <fieldset>
-                <legend>
-                    <asp:Literal ID="litTitle" runat="server" />
-                </legend>
                 <Rock:NotificationBox ID="nbConfigurationError" runat="server" NotificationBoxType="Danger" Text="This block is not yet configured for use." Visible="false" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
@@ -18,67 +16,72 @@
                     <div class="mb-3">
                         <asp:Literal ID="litInitialInstructions" runat="server" />
                     </div>
-                    <Rock:PhoneNumberBox ID="pbPhoneNumberLookup" runat="server" ValidationGroup="vgPrimary" CountryCode="1" />
-                    <Rock:BootstrapButton ID="btnLookup" runat="server" Text="Lookup" CssClass="btn btn-primary btn-block mt-3" OnClick="btnLookup_Click" />
+                    <Rock:PhoneNumberBox ID="pbPhoneNumberLookup" runat="server" ValidationGroup="vgPrimary" CountryCode="1" CssClass="input-group-lg" />
+                    <Rock:BootstrapButton ID="btnLookup" runat="server" Text="Lookup" CssClass="btn btn-lg btn-primary btn-block mt-3" OnClick="btnLookup_Click" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlVerificationCodeEntry" runat="server" Visible="false">
                     <div class="mb-3">
                         <asp:Literal ID="litVerificationInstructions" runat="server" />
                     </div>
-                    <div class="row">
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox1"
-                                runat="server"
-                                box-number="1"
-                                CssClass="js-verification-code js-code-1" />
-                        </div>
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox2"
-                                runat="server"
-                                box-number="2"
-                                CssClass="js-verification-code js-code-2" />
-                        </div>
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox3"
-                                runat="server"
-                                box-number="3"
-                                CssClass="js-verification-code js-code-3" />
-                        </div>
-                        <div class="col-xs-1">
-                            -
-                        </div>
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox4"
-                                runat="server"
-                                box-number="4"
-                                CssClass="js-verification-code js-code-4" />
-                        </div>
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox5"
-                                runat="server"
-                                box-number="5"
-                                CssClass="js-verification-code js-code-5" />
-                        </div>
-                        <div class="col-xs-1">
-                            <Rock:NumberBox ID="nbVerificationCodeBox6"
-                                runat="server"
-                                box-number="6"
-                                CssClass="js-verification-code js-code-6" />
+
+                    <div class="d-flex justify-content-center">
+                        <div class="mobile-auth-row d-flex">
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox1"
+                                    runat="server"
+                                    minValue="0" maxValue="9"
+                                    data-box-number="1"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-1" />
+                            </div>
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox2"
+                                    runat="server"
+                                    data-box-number="2"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-2" />
+                            </div>
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox3"
+                                    runat="server"
+                                    data-box-number="3"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-3" />
+                            </div>
+                            <div class="col-auto align-self-center">
+                                <span>-</span>
+                            </div>
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox4"
+                                    runat="server"
+                                    data-box-number="4"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-4" />
+                            </div>
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox5"
+                                    runat="server"
+                                    data-box-number="5"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-5" />
+                            </div>
+                            <div class="col">
+                                <Rock:NumberBox ID="nbVerificationCodeBox6"
+                                    runat="server"
+                                    data-box-number="6"
+                                    CssClass="input-lg px-0 text-center js-verification-code js-code-6" />
+                            </div>
                         </div>
                     </div>
+
 
                     <Rock:BootstrapButton ID="btnVerify"
                         runat="server"
                         Text="Next"
                         OnClick="btnVerify_Click"
-                        CssClass="btn btn-primary btn-block mt-3 js-verify-button" />
+                        CssClass="btn btn-lg btn-primary btn-block mt-3 js-verify-button" />
 
                     <Rock:BootstrapButton ID="btnResend"
                         runat="server"
                         Text="Resend"
                         OnClick="btnResend_Click"
-                        CssClass="btn btn-link btn-block mt-3" />
+                        CssClass="btn btn-lg btn-link btn-block" />
                 </asp:Panel>
                 <asp:Panel ID="pnlPersonChooser" runat="server" Visible="false">
                     <div class="mb-3">
@@ -87,7 +90,7 @@
                     <asp:Repeater runat="server" ID="rptPeople">
                         <ItemTemplate>
                             <Rock:BootstrapButton ID="btnPersonChooser"
-                                CssClass="btn btn-primary btn-block mt-3"
+                                CssClass="btn btn-lg btn-primary btn-block mt-3"
                                 runat="server"
                                 OnCommand="btnPersonChooser_Command"
                                 Text='<%# Eval("FullName") %>'
