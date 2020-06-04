@@ -44,7 +44,18 @@ namespace Rock.Reporting.DataFilter.Step
 
         #region Fields
 
-        private List<EntityField> _entityFields = null;
+        private List<EntityField> entityFields
+        {
+            get => _entityFields;
+            set => _entityFields = value;
+        }
+
+        /// <summary>
+        /// Threadsafe field for entityFields
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields = null;
+
 
         #endregion Fields
 
@@ -261,7 +272,7 @@ namespace Rock.Reporting.DataFilter.Step
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
             // Get the EntityFields for the attributes associated with the selected StepType.
-            _entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
+            entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
 
             // Create the attribute selection dropdown.
             string propertyControlId = string.Format( "{0}_ddlProperty", containerControl.ID );
@@ -283,7 +294,7 @@ namespace Rock.Reporting.DataFilter.Step
             ddlProperty.Items.Add( new ListItem() );
 
             // Add a ListItem for each of the attributes.
-            foreach ( var entityField in _entityFields )
+            foreach ( var entityField in entityFields )
             {
                 ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
             }
@@ -295,7 +306,7 @@ namespace Rock.Reporting.DataFilter.Step
             }
 
             // Add the filter controls (comparison type and value).
-            foreach ( var entityField in _entityFields )
+            foreach ( var entityField in entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
@@ -320,7 +331,7 @@ namespace Rock.Reporting.DataFilter.Step
             var containerControl = ddlProperty.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
 
-            var entityField = _entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );

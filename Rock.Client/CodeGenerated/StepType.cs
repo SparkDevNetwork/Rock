@@ -62,6 +62,9 @@ namespace Rock.Client
         {% if LatestStepStatus %}
             <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
         {% endif %}
+        {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
+            <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
+        {% endif %}
         {% if LatestStep and LatestStep.CompletedDateTime != '' %}
             <br />
             <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>

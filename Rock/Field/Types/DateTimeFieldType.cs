@@ -40,16 +40,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
         {
-            var controls = base.ConfigurationControls();
-            _tbDateFormat.Label = "Date Time Format";
-            _tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
-
-            _ddlDatePickerMode.Visible = false;
-            _nbFutureYearCount.Visible = false;
-
-            _cbDisplayCurrent.Help = "Include option to specify value as the current time.";
-
-            return controls;
+            // DateFieldType takes care of creating the ConfigurationControls, and 
+            return base.ConfigurationControls();
         }
 
         /// <summary>

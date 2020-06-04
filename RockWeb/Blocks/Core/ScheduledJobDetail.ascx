@@ -46,6 +46,7 @@
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
                             Help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>" AutoPostBack="true" OnTextChanged="tbCronExpression_TextChanged"  />
                         <Rock:RockLiteral ID="lCronExpressionDesc" Label="Cron Description" runat="server" />
+                        <Rock:NumberBox ID="nbHistoryCount" runat="server" Label="Job History Count" Help="The number of job history records to keep for this job instance." CssClass="input-width-lg" MinimumValue="0" />
                         <Rock:RockLiteral ID="lLastStatusMessage" Label="Last Status Message" runat="server" />
                     </div>
                 </div>

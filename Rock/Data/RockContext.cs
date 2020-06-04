@@ -238,6 +238,14 @@ namespace Rock.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance check in sessions.
+        /// </summary>
+        /// <value>
+        /// The attendance check in sessions.
+        /// </value>
+        public DbSet<AttendanceCheckInSession> AttendanceCheckInSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance codes.
         /// </summary>
         /// <value>

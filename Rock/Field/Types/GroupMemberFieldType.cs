@@ -36,13 +36,6 @@ namespace Rock.Field.Types
     [Serializable]
     public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
     {
-        #region Controls
-
-        private GroupPicker _gpGroupPicker;
-        private int? _groupId;
-
-        #endregion
-
         #region Configuration
 
         private const string GROUP_KEY = "group";
@@ -72,27 +65,14 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // Save the selected groupType before we rebind it.
-            int? groupId = null;
-            if ( _gpGroupPicker != null )
-            {
-                groupId = _gpGroupPicker.SelectedValue.AsIntegerOrNull();
-
-                // store this so we know if the Group actually changes when the SelectedIndexChanged is fired.
-                _groupId = groupId;
-            }
-
             // build a group picker (the one that gets selected is
             // used to build a list of groupmember values) 
-            _gpGroupPicker = new GroupPicker();
-            _gpGroupPicker.Label = "Group";
-            _gpGroupPicker.Help = "The Group to select the member(s) from.";
-            _gpGroupPicker.SelectItem += OnQualifierUpdated;
-            if ( groupId.HasValue )
-            {
-                _gpGroupPicker.SetValue( groupId.Value );
-            }
-            controls.Add( _gpGroupPicker );
+            var gpGroupPicker = new GroupPicker();
+
+            gpGroupPicker.Label = "Group";
+            gpGroupPicker.Help = "The Group to select the member(s) from.";
+            gpGroupPicker.SelectItem += OnQualifierUpdated;
+            controls.Add( gpGroupPicker );
 
             // Add checkbox for deciding if the group member picker list is rendered as a drop
             // down list or a checkbox list.

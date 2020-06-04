@@ -68,6 +68,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the primary alias id for the specified <paramref name="personGuid"/>.
+        /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPrimaryAliasId( Guid personGuid )
+        {
+            return this.GetPrimaryAliasQuery().Where( a => a.Person.Guid == personGuid ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the person identifier for the specified PersonAliasId
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>

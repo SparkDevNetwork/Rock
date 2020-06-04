@@ -38,13 +38,28 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a note watch." )]
 
-    [EntityTypeField( "Entity Type", "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.", false, order: 0 )]
-    [NoteTypeField( "Note Type", "Set Note Type to limit this block to a specific note type", false, order: 1 )]
+    [EntityTypeField( "Entity Type",
+        Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EntityType )]
+
+    [NoteTypeField( "Note Type",
+        Description = "Set Note Type to limit this block to a specific note type",
+        AllowMultiple = false,
+        Order = 1,
+        Key = AttributeKey.NoteType )]
 
     // Context Aware will limit the Watcher Option to the Person or Group context (when a new watch is added)
     [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
     public partial class NoteWatchDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string EntityType = "EntityType";
+            public const string NoteType = "NoteType";
+        }
+
         #region Base Control Methods
 
         /// <summary>

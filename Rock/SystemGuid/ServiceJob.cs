@@ -82,9 +82,14 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_103_SPIRITUAL_GIFTS = "B16F889F-3349-4CA9-976D-7EF098DD8BC6";
 
         /// <summary>
-        /// The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates
+        /// The Job to run Post v11 Data Migrations to update Date Keys on several tables
         /// </summary>
         public const string DATA_MIGRATIONS_110_POPULATE_DATE_KEYS = "E56FD4FC-02F8-4A46-A91D-E86C2B635870";
+
+        /// <summary>
+        /// The job to run Post V11 to create an index on <seealso cref="Rock.Model.CommunicationRecipient.ResponseCode"/>
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX = "131F9418-777B-4A34-A19B-EB9A65893602";
 
         /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data

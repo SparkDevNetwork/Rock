@@ -29,6 +29,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
 
         /// <summary>
+        /// The block template for the event template on the mobile calendar item view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW = "128F7350-97FD-4ECA-9C79-D02DE0C434EB";
+
+        /// <summary>
         /// The block template for the mobile group member list.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
@@ -192,6 +197,40 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_ANDROID_PAY = "6151F6E0-3223-46BA-A59E-E091BE4AF75C";
 
+        #endregion Financial Currency Type
+
+        #region Credit Card Types
+
+        /// <summary>
+        /// The creditcard type amex
+        /// </summary>
+        public const string CREDITCARD_TYPE_AMEX = "696A54E3-352C-49FB-88A1-BCDBD81AA9EC";
+
+        /// <summary>
+        /// The creditcard type diners club
+        /// </summary>
+        public const string CREDITCARD_TYPE_DINERS_CLUB = "1A9A4DB9-AFF3-4773-875C-C10346BD1CA7";
+
+        /// <summary>
+        /// The creditcard type discover
+        /// </summary>
+        public const string CREDITCARD_TYPE_DISCOVER = "4B746601-E9EB-4660-BA13-C0B66B24E248";
+
+        /// <summary>
+        /// The creditcard type JCB
+        /// </summary>
+        public const string CREDITCARD_TYPE_JCB = "	4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
+
+        /// <summary>
+        /// The creditcard type mastercard
+        /// </summary>
+        public const string CREDITCARD_TYPE_MASTERCARD = "6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621";
+
+        /// <summary>
+        /// The creditcard type visa
+        /// </summary>
+        public const string CREDITCARD_TYPE_VISA = "FC66B5F8-634F-4800-A60D-436964D27B64";
+
         #endregion
 
         #region Financial Non-Cash Asset Type
@@ -253,13 +292,13 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The financial source of Kiosk
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_KIOSK	= "260EEA80-821A-4F79-973F-49DF79C955F7";
-        
+        public const string FINANCIAL_SOURCE_TYPE_KIOSK = "260EEA80-821A-4F79-973F-49DF79C955F7";
+
         /// <summary>
         /// The financial source of Mobile Application
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION	= "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
-        
+        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
+
         /// <summary>
         /// The financial source of On-site Collection
         /// </summary>
@@ -638,7 +677,7 @@ namespace Rock.SystemGuid
         /// Flot Chart Style
         /// </summary>
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
-        
+
         /// <summary>
         /// Rock Chart Style
         /// </summary>

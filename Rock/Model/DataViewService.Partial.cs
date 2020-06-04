@@ -170,24 +170,23 @@ namespace Rock.Model
         /// Adds AddRunDataViewTransaction to transaction queue
         /// </summary>
         /// <param name="dataViewId">The unique identifier of a Data View.</param>
-        /// <param name="timeToRunMS">The time to run dataview in milliseconds.</param>
-        /// /// <param name="persistedLastRunDuration">The time to persist dataview in milliseconds.</param>
-        /// <returns></returns>
-        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunMS = null, int? persistedLastRunDuration = null )
+        /// <param name="timeToRunDurationMilliseconds">The time to run dataview in milliseconds.</param>
+        /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
+        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
         {
             var transaction = new Rock.Transactions.RunDataViewTransaction();
             transaction.DataViewId = dataViewId;
             transaction.LastRunDateTime = RockDateTime.Now;
 
-            if ( timeToRunMS.HasValue )
+            if ( timeToRunDurationMilliseconds.HasValue )
             {
-                transaction.TimeToRunMS = timeToRunMS;
+                transaction.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
             }
 
-            if ( persistedLastRunDuration.HasValue )
+            if ( persistedLastRunDurationMilliseconds.HasValue )
             {
                 transaction.PersistedLastRefreshDateTime = RockDateTime.Now;
-                transaction.PersistedLastRunDuration = persistedLastRunDuration.Value;
+                transaction.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
             }
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }

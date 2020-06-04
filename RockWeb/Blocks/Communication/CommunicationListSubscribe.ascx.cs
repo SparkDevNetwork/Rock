@@ -156,22 +156,15 @@ namespace RockWeb.Blocks.Communication
                 cbCommunicationListIsSubscribed.Checked = groupMember != null && groupMember.GroupMemberStatus == GroupMemberStatus.Active;
 
                 CommunicationType communicationType = CurrentPerson.CommunicationPreference == CommunicationType.SMS ? CommunicationType.SMS : CommunicationType.Email;
-                if ( groupMember != null )
+
+                // if GroupMember record has SMS or Email specified, that takes precedence over their Person.CommunicationPreference
+                var groupMemberHasSmsOrEmailPreference = groupMember != null &&
+                        ( groupMember.CommunicationPreference == CommunicationType.SMS ||
+                            groupMember.CommunicationPreference == CommunicationType.Email );
+
+                if ( groupMemberHasSmsOrEmailPreference )
                 {
-                    groupMember.LoadAttributes();
-                    var groupMemberCommunicationType = ( CommunicationType? ) groupMember.GetAttributeValue( "PreferredCommunicationMedium" ).AsIntegerOrNull();
-                    if ( groupMemberCommunicationType.HasValue )
-                    {
-                        // if GroupMember record has SMS or Email specified, that takes precedence over their Person.CommunicationPreference
-                        if ( groupMemberCommunicationType.Value == CommunicationType.SMS )
-                        {
-                            communicationType = CommunicationType.SMS;
-                        }
-                        else if ( groupMemberCommunicationType.Value == CommunicationType.Email )
-                        {
-                            communicationType = CommunicationType.Email;
-                        }
-                    }
+                    communicationType = groupMember.CommunicationPreference;
                 }
 
                 tglCommunicationPreference.Checked = communicationType == CommunicationType.Email;
@@ -251,10 +244,8 @@ namespace RockWeb.Blocks.Communication
                             }
                         }
 
-                        groupMember.LoadAttributes();
                         CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
-                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
-                        groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
+                        groupMember.CommunicationPreference = communicationType;
                     }
                 }
                 else
@@ -279,15 +270,13 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        groupMember.LoadAttributes();
                         CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
-                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
+                        groupMember.CommunicationPreference = communicationType;
 
                         if ( groupMember.IsValidGroupMember( rockContext ) )
                         {
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
-                            groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
                         }
                         else
                         {

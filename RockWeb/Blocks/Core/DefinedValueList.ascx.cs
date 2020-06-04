@@ -35,9 +35,19 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Defined Value List" )]
     [Category( "Core" )]
     [Description( "Block for viewing values for a defined type." )]
-    [DefinedTypeField( "Defined Type", "If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).", required: false, defaultValue: "" )]
+
+    [DefinedTypeField( "Defined Type",
+        Description = "If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).",
+        IsRequired = false,
+        Key = AttributeKey.DefinedType )]
+
     public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DefinedType = "DefinedType";
+        }
+
         #region Private Variables
 
         private DefinedType _definedType = null;
@@ -100,7 +110,7 @@ namespace RockWeb.Blocks.Core
             int definedTypeId = 0;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
-            if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
+            if ( Guid.TryParse( GetAttributeValue( AttributeKey.DefinedType ), out definedTypeGuid ) )
             {
                 definedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
             }
@@ -307,7 +317,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
-            var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Value);
+            var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
             var changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
             BindDefinedValuesGrid();
@@ -409,7 +419,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            
+
             hfDefinedValueId.SetValue( definedValue.Id );
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;

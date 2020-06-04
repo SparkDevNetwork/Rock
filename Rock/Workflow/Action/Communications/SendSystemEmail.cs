@@ -65,7 +65,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( guid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    string toValue = action.GetWorklowAttributeValue( guid.Value );
+                    string toValue = action.GetWorkflowAttributeValue( guid.Value );
                     if ( !string.IsNullOrWhiteSpace( toValue ) )
                     {
                         switch ( attribute.FieldType.Class )

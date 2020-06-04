@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attendance target, Attendance source )
         {
             target.Id = source.Id;
+            target.AttendanceCheckInSessionId = source.AttendanceCheckInSessionId;
             target.AttendanceCodeId = source.AttendanceCodeId;
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;

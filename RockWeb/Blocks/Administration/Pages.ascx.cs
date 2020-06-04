@@ -262,13 +262,7 @@ namespace RockWeb.Blocks.Administration
                 if ( cbDeleteInteractions.Checked )
                 {
                     var interactionComponentService = new InteractionComponentService( rockContext );
-                    var interactionService = new InteractionService( rockContext );
-
                     var componentQuery = interactionComponentService.QueryByPage( page );
-                    var interactionQuery = interactionService.Queryable()
-                        .Where( i => componentQuery.Any( ic => ic.Id == i.InteractionComponentId ) );
-
-                    interactionService.DeleteRange( interactionQuery );
                     interactionComponentService.DeleteRange( componentQuery );
                 }
 

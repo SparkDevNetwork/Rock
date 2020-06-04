@@ -639,6 +639,7 @@ namespace RockWeb.Blocks.Communication
                 var dataContext = this.GetDataContext();
 
                 var service = new CommunicationService( dataContext );
+                var communicationRecipientService = new CommunicationRecipientService( dataContext );
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
@@ -658,15 +659,37 @@ namespace RockWeb.Blocks.Communication
                     newCommunication.ReviewerNote = string.Empty;
                     newCommunication.SendDateTime = null;
 
-                    communication.Recipients.ToList().ForEach( r =>
+                    // Get the recipients from the original communication,
+                    // but only for recipients that are using the person's primary alias id.
+                    // This will avoid an issue where a copied communication will include the same person multiple times
+                    // if they have been merged since the original communication was created
+                    var primaryAliasRecipients = communicationRecipientService.Queryable()
+                        .Where( a => a.CommunicationId == communication.Id )
+                        .Select( a => new
+                        {
+                            a.PersonAlias.Person,
+                            a.AdditionalMergeValuesJson,
+                            a.PersonAliasId
+                        } ).ToList()
+                        .GroupBy( a => a.Person.PrimaryAliasId )
+                        .Select( s => new
+                        {
+                            PersonAliasId = s.Key,
+                            AdditionalMergeValuesJson = s.Where( a => a.PersonAliasId == s.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault()
+                        } )
+                        .Where( s => s.PersonAliasId.HasValue )
+                        .ToList();
+
+                    foreach ( var primaryAliasRecipient in primaryAliasRecipients )
+                    {
                         newCommunication.Recipients.Add( new CommunicationRecipient()
                         {
-                            PersonAliasId = r.PersonAliasId,
+                            PersonAliasId = primaryAliasRecipient.PersonAliasId.Value,
                             Status = CommunicationRecipientStatus.Pending,
                             StatusNote = string.Empty,
-                            AdditionalMergeValuesJson = r.AdditionalMergeValuesJson
-                        } ) );
-
+                            AdditionalMergeValuesJson = primaryAliasRecipient.AdditionalMergeValuesJson
+                        } );
+                    }
 
                     foreach ( var attachment in communication.Attachments.ToList() )
                     {
@@ -2654,7 +2677,7 @@ namespace RockWeb.Blocks.Communication
 
             // create dictionary
             var recipients = new Dictionary<int, RecipientInfo>();
-            foreach( var recipient in queryList )
+            foreach ( var recipient in queryList )
             {
                 // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
                 // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
@@ -2701,7 +2724,7 @@ namespace RockWeb.Blocks.Communication
                         HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
                         HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId ),
                         ModifiedDateTime = x.ModifiedDateTime
-                    });
+                    } );
 
             return recipientQuery;
         }

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -46,6 +47,12 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]
+    [IntegerField(
+        "Maximum Metrics to Retain",
+        Key = AttributeKey.MaximumMetricstoRetain,
+        Description = "The maximum number of metric values to retain for these hosting metrics. When the maximum is reached, the oldest records are deleted to stay below this limit.",
+        IsRequired = false,
+        DefaultIntegerValue = 10000 )]
     public class CollectHostingMetrics : IJob
     {
         #region AttributeKeys
@@ -53,6 +60,7 @@ namespace Rock.Jobs
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
+            public const string MaximumMetricstoRetain = "MaximumMetricstoRetain";
         }
 
         #endregion
@@ -71,6 +79,7 @@ namespace Rock.Jobs
         #region Fields
 
         private int _commandTimeout;
+        private int? _maximumMetricsToRetain;
 
         private const string PerformanceCounterCategoryAdoNet = ".NET Data Provider for SqlServer";
         
@@ -169,6 +178,7 @@ namespace Rock.Jobs
 
                 // Get the configured timeout, or default to 60 minutes if it is blank.
                 _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+                _maximumMetricsToRetain = dataMap.GetString( AttributeKey.MaximumMetricstoRetain ).AsIntegerOrNull();
 
                 SetUpPerformanceCounters();
                 ReadPerformanceCounters();
@@ -302,6 +312,7 @@ namespace Rock.Jobs
              */
 
             var metricValueService = new MetricValueService( rockContext );
+            var metricValuePartitionService = new MetricValuePartitionService( rockContext );
 
             foreach ( var metricValue in metricValues )
             {
@@ -314,6 +325,30 @@ namespace Rock.Jobs
             }
 
             rockContext.SaveChanges();
+
+            /*
+             * 2020-05-19 - SK
+             * Removing the old metrics based on Maximum Metric to Retain value
+             *
+             */
+            if ( _maximumMetricsToRetain.HasValue )
+            {
+                foreach ( var metric in metrics )
+                {
+                    var deleteMetricValuesQry = metricValueService
+                                        .Queryable()
+                                        .AsNoTracking()
+                                        .Where( a => a.MetricId == metric.Id )
+                                        .OrderByDescending( a => a.MetricValueDateTime )
+                                        .Skip( _maximumMetricsToRetain.Value );
+                    if ( deleteMetricValuesQry.Any() )
+                    {
+                        var metricValuePartitionQry = metricValuePartitionService.Queryable().AsNoTracking().Where( a => deleteMetricValuesQry.Any( u => u.Id == a.MetricValueId ) );
+                        rockContext.BulkDelete( metricValuePartitionQry );
+                        rockContext.BulkDelete( deleteMetricValuesQry );
+                    }
+                }
+            }
 
             context.Result = $"Calculated a total of {metricValues.Count} metric values for {metrics.Count} metrics";
         }
