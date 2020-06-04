@@ -126,12 +126,13 @@ namespace Rock.Model
             // If an attendance record doesn't exist for the occurrence, add a new record
             if ( attendance == null )
             {
-                attendance = ( ( RockContext ) Context ).Attendances.Create();
+                attendance = new Attendance
                 {
-                    attendance.Occurrence = occurrence;
-                    attendance.OccurrenceId = occurrence.Id;
-                    attendance.PersonAliasId = personAliasId;
+                    Occurrence = occurrence,
+                    OccurrenceId = occurrence.Id,
+                    PersonAliasId = personAliasId
                 };
+
                 Add( attendance );
             }
 

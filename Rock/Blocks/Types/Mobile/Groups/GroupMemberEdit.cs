@@ -122,7 +122,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// <summary>
             /// The group member identifier
             /// </summary>
-            public const string GroupMemberId = "GroupMemberId";
+            public const string GroupMemberGuid = "GroupMemberGuid";
         }
 
         #region Attribute Properties
@@ -244,8 +244,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberId = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId ).AsInteger();
-                var member = new GroupMemberService( rockContext ).Get( groupMemberId );
+                var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
+                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
                 if ( member == null )
                 {
@@ -341,8 +341,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberId = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId ).AsInteger();
-                var member = new GroupMemberService( rockContext ).Get( groupMemberId );
+                var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
+                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
                 if ( member == null || (!member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
                 {
@@ -392,7 +392,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return new CallbackResponse
                 {
                     Command = "ReplacePage",
-                    CommandParameter = $"{MemberDetailPage}?GroupMemberId={RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId )}"
+                    CommandParameter = $"{MemberDetailPage}?GroupMemberGuid={RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid )}"
                 };
             }
             else

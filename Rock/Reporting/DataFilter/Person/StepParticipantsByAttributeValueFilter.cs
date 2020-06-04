@@ -44,7 +44,11 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Fields
 
-        private List<EntityField> _entityFields = null;
+        /// <summary>
+        /// Threadsafe storage for entity fields
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields = null;
 
         #endregion Fields
 

@@ -27,11 +27,6 @@ namespace Rock.Field.Types
     public class BadgesFieldType : SelectFromListFieldType
     {
         /// <summary>
-        /// The configuration values
-        /// </summary>
-        private Dictionary<string, ConfigurationValue> _configurationValues = null;
-
-        /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -41,7 +36,6 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            _configurationValues = configurationValues;
             return base.EditControl( configurationValues, id );
         }
 
@@ -51,32 +45,29 @@ namespace Rock.Field.Types
         /// <value>
         /// The list source.
         /// </value>
-        internal override Dictionary<string, string> ListSource
+        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            get
+            List<BadgeCache> badges = null;
+            int? entityTypeId = null;
+
+            if ( configurationValues != null && configurationValues.TryGetValue( BadgesFieldAttribute.ENTITY_TYPE_KEY, out var value ) )
             {
-                List<BadgeCache> badges = null;
-                int? entityTypeId = null;
-
-                if ( _configurationValues != null && _configurationValues.TryGetValue( BadgesFieldAttribute.ENTITY_TYPE_KEY, out var value ) )
-                {
-                    entityTypeId = ( value.Value as string ).AsIntegerOrNull();
-                }
-
-                if ( entityTypeId.HasValue )
-                {
-                    badges = BadgeCache.All( entityTypeId.Value );
-                }
-                else
-                {
-                    badges = BadgeCache.All();
-                }
-
-                var orderedBadges = badges.OrderBy( x => x.Order )
-                    .ToDictionary( k => k.Guid.ToString(), v => v.Name );
-
-                return orderedBadges;
+                entityTypeId = ( value.Value as string ).AsIntegerOrNull();
             }
+
+            if ( entityTypeId.HasValue )
+            {
+                badges = BadgeCache.All( entityTypeId.Value );
+            }
+            else
+            {
+                badges = BadgeCache.All();
+            }
+
+            var orderedBadges = badges.OrderBy( x => x.Order )
+                .ToDictionary( k => k.Guid.ToString(), v => v.Name );
+
+            return orderedBadges;
         }
     }
 }

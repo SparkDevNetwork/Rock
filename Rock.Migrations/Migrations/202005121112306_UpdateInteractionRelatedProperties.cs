@@ -45,15 +45,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            AddColumn("dbo.InteractionChannel", "ChannelCustomIndexed1Label", c => c.String(maxLength: 100));
-            AddColumn("dbo.InteractionChannel", "ChannelCustom2Label", c => c.String(maxLength: 100));
-            AddColumn("dbo.InteractionChannel", "ChannelCustom1Label", c => c.String(maxLength: 100));
+            RenameColumn( "dbo.InteractionChannel", "InteractionCustom1Label", "ChannelCustom1Label" );
+            RenameColumn( "dbo.InteractionChannel", "InteractionCustom2Label", "ChannelCustom2Label" );
+            RenameColumn( "dbo.InteractionChannel", "InteractionCustomIndexed1Label", "ChannelCustomIndexed1Label" );
             DropColumn("dbo.InteractionChannel", "ComponentCustomIndexed1Label");
             DropColumn("dbo.InteractionChannel", "ComponentCustom2Label");
             DropColumn("dbo.InteractionChannel", "ComponentCustom1Label");
-            DropColumn("dbo.InteractionChannel", "InteractionCustomIndexed1Label");
-            DropColumn("dbo.InteractionChannel", "InteractionCustom2Label");
-            DropColumn("dbo.InteractionChannel", "InteractionCustom1Label");
             DropColumn("dbo.InteractionComponent", "ChannelCustomIndexed1");
             DropColumn("dbo.InteractionComponent", "ChannelCustom2");
             DropColumn("dbo.InteractionComponent", "ChannelCustom1");

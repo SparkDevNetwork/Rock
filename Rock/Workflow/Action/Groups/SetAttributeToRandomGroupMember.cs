@@ -78,7 +78,7 @@ namespace Rock.Workflow.Action
             Guid? filterValueGuid = filterValue.AsGuidOrNull();
             if ( filterValueGuid.HasValue )
             {
-                filterValue = action.GetWorklowAttributeValue( filterValueGuid.Value );
+                filterValue = action.GetWorkflowAttributeValue( filterValueGuid.Value );
             }
             else
             {

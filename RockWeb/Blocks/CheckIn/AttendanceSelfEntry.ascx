@@ -67,11 +67,11 @@
                         <div class="col-sm-6 col-md-5 margin-b-lg">
                             <Rock:RockControlWrapper ID="rcwListed" runat="server" Label="Currently Listed">
                                 <hr class="margin-t-sm" />
-                                <asp:Repeater ID="rptListed" runat="server" OnItemCommand="rptListed_ItemCommand">
+                                <asp:Repeater ID="rptListed" runat="server" OnItemCommand="rptListed_ItemCommand" OnItemDataBound="rptListed_ItemDataBound">
                                     <ItemTemplate>
                                         <div class="form-inline rollover-container margin-b-sm">
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Guid") %>' />
-                                            <b><%# Eval("Name") %></b> <span><%#Eval("Relationship") %></span>
+                                            <b><%# Eval("FullName") %></b> <span><%#Eval("RelationshipType") %></span>
                                             <div class="rollover-item actions pull-right">
                                                 <asp:LinkButton ID="lbDelete" runat="server" CommandName="delete" CommandArgument='<%# Eval("Guid") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>

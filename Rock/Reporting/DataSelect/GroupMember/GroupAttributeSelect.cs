@@ -43,7 +43,8 @@ namespace Rock.Reporting.DataSelect.GroupMember
     {
         #region Private Methods
 
-        private List<EntityField> _GroupAttributes = null;
+        [ThreadStatic]
+        private static List<EntityField> _groupAttributes = null;
 
         /// <summary>
         /// Gets the Attributes associated to groups.
@@ -51,9 +52,9 @@ namespace Rock.Reporting.DataSelect.GroupMember
         /// <returns></returns>
         private List<EntityField> GetGroupAttributes()
         {
-            if (_GroupAttributes == null)
+            if ( _groupAttributes == null )
             {
-                _GroupAttributes = new List<EntityField>();
+                _groupAttributes = new List<EntityField>();
 
                 var rockContext = new RockContext();
                 var attributeService = new AttributeService( rockContext );
@@ -63,10 +64,10 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
                 var groupAttributes = attributeService
                     .Queryable().AsNoTracking()
-                    .Where( a => 
+                    .Where( a =>
                         a.EntityTypeId == groupEntityTypeId &&
                         a.EntityTypeQualifierColumn == "GroupTypeId" )
-                    .Join( groupTypeService.Queryable(), 
+                    .Join( groupTypeService.Queryable(),
                         a => a.EntityTypeQualifierValue, gt => gt.Id.ToString(), ( a, gt ) =>
                             new
                             {
@@ -81,7 +82,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 int index = 0;
                 foreach ( var attribute in groupAttributes )
                 {
-                    if ( !_GroupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
+                    if ( !_groupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
                     {
                         var attributeCache = AttributeCache.Get( attribute.Guid );
                         var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
@@ -90,13 +91,13 @@ namespace Rock.Reporting.DataSelect.GroupMember
                             entityField.Title = $"{attribute.GroupTypeName}: {attribute.Name}";
                             entityField.AttributeGuid = attribute.Guid;
                             entityField.Index = index++;
-                            _GroupAttributes.Add( entityField );
+                            _groupAttributes.Add( entityField );
                         }
                     }
                 }
             }
 
-            return _GroupAttributes;
+            return _groupAttributes;
         }
 
         #endregion

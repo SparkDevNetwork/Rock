@@ -144,7 +144,7 @@ namespace Rock.Model
         /// The time to run in ms.
         /// </value>
         [DataMember]
-        public int? TimeToRunMS { get; set; }
+        public int? TimeToRunDurationMilliseconds { get; set; }
 
         #endregion
 

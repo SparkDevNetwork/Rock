@@ -357,7 +357,9 @@ namespace Rock.Jobs
         {
             var eligibleConnectors = new List<ConnectionConnector>();
             var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
-                        .Where( a => a.ConnectionOpportunityId == connectionOpportunityId );
+                        .Where( a => a.ConnectionOpportunityId == connectionOpportunityId
+                                    && a.ConnectorGroup.IsActive
+                                    && !a.ConnectorGroup.IsArchived );
 
             // Get all connection requests that are active for the given opportunity that have a connector
             var activeConnectionRequestsWithConnector = new ConnectionRequestService( rockContext )

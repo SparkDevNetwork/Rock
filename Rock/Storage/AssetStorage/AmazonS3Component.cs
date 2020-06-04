@@ -302,7 +302,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Lists the folder in folder. Asset.Key or Asset.Name is the folder.
         /// If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
-        /// If Key and Name are not provided the list then list all files in the current RootFolder.
+        /// If Key and Name are not provided then list all files in the current RootFolder.
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in the key is the folder name.
         /// </summary>
@@ -327,17 +327,23 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
+                ListObjectsV2Response response;
 
-                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
-                ListObjectsV2Response response = client.ListObjectsV2( request );
-                foreach ( string subFolder in response.CommonPrefixes )
+                do
                 {
-                    if ( subFolder.IsNotNullOrWhiteSpace() )
+                    response = client.ListObjectsV2( request );
+                    foreach ( string subFolder in response.CommonPrefixes )
                     {
-                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                        assets.Add( subFolderAsset );
+                        if ( subFolder.IsNotNullOrWhiteSpace() )
+                        {
+                            var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                            assets.Add( subFolderAsset );
+                        }
                     }
-                }
+
+                    request.ContinuationToken = response.NextContinuationToken;
+
+                } while ( response.IsTruncated );
 
                 return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
@@ -686,10 +692,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();

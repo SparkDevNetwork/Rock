@@ -293,7 +293,17 @@ namespace Rock.Reporting.DataFilter
             }
         }
 
-        private List<EntityField> entityFields = null;
+        private List<EntityField> entityFields
+        {
+            get => _entityFields;
+            set => _entityFields = value;
+        }
+
+        /// <summary>
+        /// Threadsafe field for entityFields
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields = null;
 
         /// <summary>
         /// Renders the controls.
@@ -356,7 +366,17 @@ namespace Rock.Reporting.DataFilter
         /// <value>
         /// The entity.
         /// </value>
-        public IEntity Entity { get; set; }
+        public IEntity Entity
+        {
+            get => entity;
+            set => entity = value;
+        }
+
+        /// <summary>
+        /// Thread safe storage of Entity property
+        /// </summary>
+        [ThreadStatic]
+        private static IEntity entity;
 
         /// <summary>
         /// Gets the entity fields.

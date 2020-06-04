@@ -91,7 +91,7 @@ namespace Rock.Migrations
             if ( lastMigrationName != null && stopwatch != null )
             {
                 stopwatch.Stop();
-                WriteToLog( $"{lastMigrationName} - [{stopwatch.Elapsed.TotalMilliseconds}ms]" );
+                WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
             }
         }
 

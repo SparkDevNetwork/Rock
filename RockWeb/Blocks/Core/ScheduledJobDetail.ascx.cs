@@ -85,8 +85,8 @@ namespace RockWeb.Blocks.Administration
                 tbCronExpression.ShowErrorMessage( "Invalid Cron Expression: " + ex.Message );
                 return;
             }
-            
-            
+
+
             ServiceJob job;
             var rockContext = new RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Administration
             job.Name = tbName.Text;
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
-            
+
             if (job.Class != ddlJobTypes.SelectedValue)
             {
                 job.Class = ddlJobTypes.SelectedValue;
@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Administration
             job.NotificationEmails = tbNotificationEmails.Text;
             job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
+            job.HistoryCount = nbHistoryCount.Text.AsInteger();
 
             if ( !job.IsValid )
             {
@@ -231,6 +232,7 @@ namespace RockWeb.Blocks.Administration
             tbNotificationEmails.Text = job.NotificationEmails;
             ddlNotificationStatus.SetValue( (int)job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
+            nbHistoryCount.Text = job.HistoryCount.ToString();
 
             if (job.Id == 0)
             {
@@ -274,7 +276,7 @@ namespace RockWeb.Blocks.Administration
                 avcAttributes.Visible = false;
                 tbCronExpression.Text = job.CronExpression;
             }
-            
+
             tbName.ReadOnly = readOnly || job.IsSystem;
             tbDescription.ReadOnly = readOnly || job.IsSystem;
             cbActive.Enabled = !( readOnly || job.IsSystem );

@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -180,7 +181,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
-            string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
+            string comparisonType = ( ( DropDownList ) controls[0] ).SelectedValue;
             decimal? amount = ( controls[1] as NumberBox ).Text.AsDecimal();
 
             var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
@@ -270,6 +271,58 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override DataControlField GetGridField( Type entityType, string selection )
+        {
+            ComparisonType comparisonType;
+            decimal totalAmountCutoff;
+
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length < 2 )
+            {
+                // shouldn't happen, but just in case, just do the default
+                comparisonType = ComparisonType.GreaterThanOrEqualTo;
+                totalAmountCutoff = 0.00M;
+            }
+            else
+            {
+
+                comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+                totalAmountCutoff = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
+            }
+
+            // if it is just greater than or equal to 0, they want to show total giving, regardless of amount
+            // so there is no need to do the comparison logic
+            bool skipComparison = ( comparisonType == ComparisonType.GreaterThanOrEqualTo && totalAmountCutoff == 0.00M );
+
+            var callbackField = new CallbackField();
+            callbackField.OnFormatDataValue += ( sender, e ) =>
+            {
+                decimal? totalGiving = e.DataValue as decimal?;
+                if ( !totalGiving.HasValue || totalGiving.Value == 0.00M )
+                {
+                    e.FormattedValue = string.Empty;
+                }
+                else if ( skipComparison || ComparisonHelper.CompareNumericValues( comparisonType, totalGiving, totalAmountCutoff ) )
+                {
+                    // it meets the comparison criteria, so display total amount
+                    e.FormattedValue = totalGiving?.ToString();
+                }
+                else
+                {
+                    // if the total giving is an amount that doesn't meet the comparison criteria, show blank
+                    e.FormattedValue = string.Empty;
+                }
+            };
+
+            return callbackField;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -284,8 +337,16 @@ namespace Rock.Reporting.DataSelect.Person
                 return null;
             }
 
-            ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
+            /* 2020-05-19 MDP
+             * The TotalAmount Comparison logic is that the displayed TotalAmount will show blank if the criteria doesn't match
+             * For example:
+             *   Total Amount >= $100.00
+             *   If a person's total giving is $100.01, $100.01 will be displayed as the total giving in the report
+             *   If the person's total giving is $99.99, the total giving in the report will just show blank
+             *
+             *
+             *  This display logic is done in the GetGridField method
+             */
 
             DateRange dateRange;
 
@@ -308,11 +369,10 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
 
-
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
-                var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).Where( a => a != Guid.Empty ).ToList();
                 accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
@@ -334,63 +394,61 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( useAnalytics )
             {
-                var financialTransactionQry = new AnalyticsSourceFinancialTransactionService( context ).Queryable()
+                /* 2020-05-20 MDP
+                    Analytics tables don't have a reference between a transaction and it's refund (unless we join the analytics tables to the TransactionRefund table).
+                    That isn't a problem unless the refund for a transaction is later than the specified date range.
+                    We discussed this and decided to not worry abou the late refund problem right now.
+
+                    Also, the total giving will be correct even when factoring in refunds
+                    because the Analytics tables will have a negative amount for refund transactions
+
+                 */
+
+                var analyticsFinancialTransactionQry = new AnalyticsSourceFinancialTransactionService( context ).Queryable()
                     .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
                     .Where( xx => xx.AuthorizedPersonAliasId.HasValue );
+
                 if ( dateRange.Start.HasValue )
                 {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime >= dateRange.Start.Value );
+                    analyticsFinancialTransactionQry = analyticsFinancialTransactionQry.Where( xx => xx.TransactionDateTime >= dateRange.Start.Value );
                 }
 
                 if ( dateRange.End.HasValue )
                 {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < dateRange.End.Value );
+                    analyticsFinancialTransactionQry = analyticsFinancialTransactionQry.Where( xx => xx.TransactionDateTime < dateRange.End.Value );
                 }
 
                 bool limitToAccounts = accountIdList.Any();
                 if ( limitToAccounts )
                 {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.AccountId.HasValue && accountIdList.Contains( xx.AccountId.Value ) );
-                }
-
-                if ( comparisonType == ComparisonType.LessThan )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
-                }
-                else if ( comparisonType == ComparisonType.EqualTo )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
-                }
-                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
+                    analyticsFinancialTransactionQry = analyticsFinancialTransactionQry.Where( xx => xx.AccountId.HasValue && accountIdList.Contains( xx.AccountId.Value ) );
                 }
 
                 if ( combineGiving )
                 {
-                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
-                        .Join( financialTransactionQry, p => p.GivingId, f => f.GivingId, ( p, f ) => new
+                    var analyticsPersonAmountQry = new AnalyticsDimPersonCurrentService( context ).Queryable()
+                        .Join( analyticsFinancialTransactionQry, p => p.GivingId, f => f.GivingId, ( p, f ) => new
                         {
                             p.PersonId,
                             f.Amount
                         } );
 
                     personTotalAmountQry = new PersonService( context ).Queryable()
-                        .Select( p => personAmount
+                        .Select( p => analyticsPersonAmountQry
                             .Where( ww => ww.PersonId == p.Id )
                             .Sum( ww => ww.Amount ) );
                 }
                 else
                 {
-                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
-                        .Join( financialTransactionQry, p => p.Id, f => f.AuthorizedPersonKey, ( p, f ) => new
+                    var analyticsPersonAmountQry = new AnalyticsDimPersonCurrentService( context ).Queryable()
+                        .Join( analyticsFinancialTransactionQry, p => p.Id, f => f.AuthorizedPersonKey, ( p, f ) => new
                         {
                             p.PersonId,
                             f.Amount
                         } );
 
                     personTotalAmountQry = new PersonService( context ).Queryable()
-                        .Select( p => personAmount
+                        .Select( p => analyticsPersonAmountQry
                             .Where( ww => ww.PersonId == p.Id )
                             .Sum( ww => ww.Amount ) );
                 }
@@ -417,38 +475,64 @@ namespace Rock.Reporting.DataSelect.Person
                     financialTransactionQry = financialTransactionQry.Where( xx => accountIdList.Contains( xx.AccountId ) );
                 }
 
-                if ( comparisonType == ComparisonType.LessThan )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
-                }
-                else if ( comparisonType == ComparisonType.EqualTo )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
-                }
-                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
-                }
+                // exclude the financial transactions that were used for refunds.
+                // This is because we'll get the refund transactions of each non-refund transaction when getting the total amount
+
+                var refundsQry = new FinancialTransactionRefundService( context ).Queryable();
+
+                financialTransactionQry = financialTransactionQry.Where( xx => !refundsQry.Any( r => r.Id == xx.TransactionId ) );
+
+                /* 2020-05-02 MDP
+                 * To factor in Refunds, subtract (but actually add since the amount will be negative)
+                 * the refund amount if there is a refund associated with that transaction.
+                 *
+                 * Also, don't apply a date filter on the refund since we want to factor in refunds
+                 * that might have occurred after the date range
+                 *
+                 * The Linq is written in a way to avoid the RefundAmount getting queried twice (once if it is null and another if it not null)
+                */
 
                 if ( combineGiving )
                 {
-                    //// if combineGiving..
-                    // if they aren't in a giving group, sum up transactions amounts by the person
-                    // if they are in a giving group, sum up transactions amounts by the persons that are in the person's giving group
                     personTotalAmountQry = new PersonService( context ).Queryable()
-                                    .Select( p => financialTransactionQry
-                                    .Where( ww =>
-                                        ( !p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
-                                        ||
-                                        ( p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.Person.GivingGroupId == p.GivingGroupId ) )
-                                    .Sum( aa => aa.Amount ) );
+                                    .Select( p =>
+                                        financialTransactionQry.Where( ww => p.GivingId == ww.Transaction.AuthorizedPersonAlias.Person.GivingId
+                                    )
+                                    .Select( x => new
+                                    {
+                                        x.Amount,
+                                        RefundAmount = ( x.Transaction.RefundDetails.FinancialTransaction
+                                                .TransactionDetails
+                                                .Where( r => r.AccountId == x.AccountId )
+                                                    .Sum( r => ( decimal? ) r.Amount )
+                                                )
+                                    } )
+                                    .Sum
+                                    (
+                                        aa => aa.Amount + ( aa.RefundAmount ?? 0.00M )
+                                    )
+                            );
                 }
                 else
                 {
                     personTotalAmountQry = new PersonService( context ).Queryable()
-                    .Select( p => financialTransactionQry
-                    .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
-                    .Sum( aa => aa.Amount ) );
+                                    .Select( p =>
+                                        financialTransactionQry.Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id
+                                     )
+                                    .Select( x => new
+                                    {
+                                        x.Amount,
+                                        RefundAmount = ( x.Transaction.RefundDetails.FinancialTransaction
+                                                    .TransactionDetails
+                                                    .Where( r => r.AccountId == x.AccountId )
+                                                        .Sum( r => ( decimal? ) r.Amount )
+                                                    )
+                                    } )
+                                    .Sum
+                                    (
+                                        aa => aa.Amount + ( aa.RefundAmount ?? 0.00M )
+                                    )
+                            );
                 }
             }
 

@@ -117,17 +117,12 @@ function() {
         }
 
         /// <summary>
-        /// The GroupPicker
-        /// </summary>
-        private GroupPicker gp = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            gp = new GroupPicker();
+            var gp = new GroupPicker();
             gp.ID = filterControl.ID + "_gp";
             gp.Label = "Group";
             filterControl.Controls.Add( gp );

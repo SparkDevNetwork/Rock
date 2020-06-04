@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                url = action.GetWorklowAttributeValue( guid );
+                url = action.GetWorkflowAttributeValue( guid );
             }
 
             var processOpt = GetAttributeValue( action, "ProcessingOptions" );
