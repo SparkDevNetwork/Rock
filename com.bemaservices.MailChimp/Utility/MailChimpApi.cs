@@ -174,6 +174,7 @@ namespace com.bemaservices.MailChimp.Utility
                 {
                     try
                     {
+
                         var rockPerson = GetRockPerson( member );
                         if ( rockPerson.IsNotNull() )
                         {
