@@ -265,6 +265,33 @@ namespace Rock.Model
         [IgnoreCanDelete]
         public int? AttendanceCheckInSessionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the present date and time.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the present date and time.
+        /// </value>
+        [DataMember]
+        public DateTime? PresentDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person that presented the <see cref="PersonAlias"/> person attended.
+        /// </summary>
+        /// <value>
+        /// The person that presented the <see cref="PersonAlias"/> person attended.
+        /// </value>
+        [DataMember]
+        public int? PresentByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person that checked-out the <see cref="PersonAlias"/> person attended.
+        /// </summary>
+        /// <value>
+        /// The person that checked-out the <see cref="PersonAlias"/> person attended.
+        /// </value>
+        [DataMember]
+        public int? CheckedOutByPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -375,6 +402,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias ScheduledByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the presented by person alias.
+        /// </summary>
+        /// <value>
+        /// The presented by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias PresentByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the checked-out by person alias.
+        /// </summary>
+        /// <value>
+        /// The checked-out by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias CheckedOutByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this attendance is currently checked in.
@@ -820,6 +865,8 @@ namespace Rock.Model
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.DeclineReasonValue ).WithMany().HasForeignKey( a => a.DeclineReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.ScheduledByPersonAlias ).WithMany().HasForeignKey( p => p.ScheduledByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.CheckedOutByPersonAlias ).WithMany().HasForeignKey( p => p.CheckedOutByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PresentByPersonAlias ).WithMany().HasForeignKey( p => p.PresentByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceData ).WithRequired().WillCascadeOnDelete();
         }
     }
