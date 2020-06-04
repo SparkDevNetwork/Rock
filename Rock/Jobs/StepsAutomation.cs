@@ -39,7 +39,7 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Duplicate Prevention Day Range",
-        description: "If duplicates are enabled above, this setting will keep steps from being added if a previous step was within the number of days provided.",
+        description: "This setting will keep additional step records from being added if a step was already added within the number of days provided.",
         required: false,
         defaultValue: 7,
         order: 1,
