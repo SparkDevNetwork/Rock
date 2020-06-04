@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Security
                         }
 
                         if (key === 8) {
-                            var boxNumber = parseInt(self.attr('box-number'));
+                            var boxNumber = parseInt(self.attr('data-box-number'));
                             if (boxNumber && boxNumber > 1 && boxNumber <= 6) {
                                 var nextBox = $('.js-code-' + (boxNumber - 1));
                                 nextBox.val('');
@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.Security
                         if (!event.ctrlKey) {
                             self.one('keyup', function () {
                                 var self = $(this);
-                                var boxNumber = parseInt(self.attr('box-number'));
+                                var boxNumber = parseInt(self.attr('data-box-number'));
                                 if (boxNumber && boxNumber < 6) {
                                     var nextBox = $('.js-code-' + (boxNumber + 1));
                                     nextBox.focus();

@@ -740,3 +740,36 @@
     border-color: @btn-primary-border !important;
   }
 }
+
+.mobile-auth-row {
+  max-width: 400px;
+  margin-right: -4px;
+  margin-left: -4px;
+  font-size: 36px;
+  text-align: center;
+
+  .input-lg {
+    .max(36px, @font-size-large);
+    min-height: 54px;
+    font-size: @max;
+    border-radius: 0;
+  }
+
+  > .col {
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: 4px;
+    padding-left: 4px;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+  }
+
+  > .col-auto {
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+  }
+}
