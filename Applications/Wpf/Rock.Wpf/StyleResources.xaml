@@ -544,13 +544,13 @@
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="buttonBorder" Property="Opacity" Value=".35" />
                         </Trigger>
-                        <Trigger Property="ToggleButton.IsChecked" Value="True">
-                            <Setter Property="Background" Value="#ee7624" />
-                            <Setter Property="Foreground" Value="#fefefe" />
-                        </Trigger>
                         <Trigger Property="IsFocused" Value="true">
                             <Setter TargetName="buttonBorder" Property="BorderBrush" Value="{DynamicResource focusBorderBrush}" />
                             <Setter TargetName="buttonBorder" Property="Background" Value="{DynamicResource focusBackgroundColor}" />
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked" Value="True">
+                            <Setter TargetName="buttonBorder" Property="Background" Value="#ee7624" />
+                            <Setter Property="Foreground" Value="#fefefe" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
