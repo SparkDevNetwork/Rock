@@ -1,0 +1,97 @@
+   
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"> </script> 
+<style>
+
+.year {
+    text-align:center;
+}
+
+.yeartables >div:nth-child(-n+2) {
+       margin-right:12.5%;
+       padding-right: 20px;
+    }
+
+</style>
+
+{% assign Month = 'Now' | Date:'M' | AsInteger %}
+{% if Month < 9 %}
+    {% assign 3yearsback = 'Now' | Date:'yyyy' | Minus:3 %}
+    {% assign currentyear = 'Now' | Date:'yyyy' %}
+{% else %}
+    {% assign 3yearsback = 'Now' | Date:'yyyy' | Minus:2 %}
+    {% assign currentyear = 'Now' | Date:'yyyy' | Plus:1 %}
+{% endif %}
+
+{% assign 2yearsback = 3yearsback | Plus:1 %}
+{% assign 1yearback = 3yearsback | Plus:2 %}
+{% assign 3yearpresent = 'False' %}
+{% assign rowcount = 0 %}
+{% assign CurrentTotal = 0 %}
+{% assign currentPercentTotal = 0 %}
+{% assign currentmonth = 'Now' | Date:'M' | AsInteger %}
+
+<div class="chart-container" style="position: relative; height:300px; width:100%; margin-bottom:50px;"> 
+    <h4> Giving History By Month</h4> 
+    <canvas id="myChart"> 
+    </canvas> 
+</div> 
+
+<script> 
+var ctx = document.getElementById("myChart").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [ "January", "February", "March", "April", "May", "June","July","August", "September", "October", "November", "December"],
+        datasets: [
+        
+        
+        {% for row in rows %}
+        {% if row.Year != 'Total'%}
+        {
+            label: '{{row.Year}}',
+            fill: false,
+            data: [{{row.January}},{{row.February}},{{row.March}},{{row.April}},{{row.May}},{{row.June}},{{row.July}},{{row.August}},{{row.September}},{{row.October}},{{row.November}},{{row.December}}],
+            {% if row.Year == 3yearsback %}
+                {% assign color = 'rgba(54,162,235,' %}
+            {% elseif row.Year == 2yearsback %}
+                {% assign color = 'rgba(75,192,192,' %}
+            {% elseif row.year == 1yearback %}
+                {% assign color = 'rgba(255,159,64,' %}
+            {% elseif row.year == currentyear %}
+                {% assign color = 'rgba(153,102,255,' %}
+            {% else %}
+                {% assign color = 'rgba(252, 3, 3,' %}
+            
+            {% endif %}
+            backgroundColor: [
+                '{{color}} 1)',
+            ],
+            borderColor: [
+                '{{color}} 1)',
+            ],
+            borderWidth: 1
+        },
+            {% endif %}
+        {% endfor %}
+        ]
+    },
+    options: {
+         responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2500,
+            },
+            legend: {
+                position: 'right'
+            },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:false
+                }
+            }]
+        }
+    }
+});
+
+</script> 
