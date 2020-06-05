@@ -576,6 +576,12 @@ NavigationPage {
     color: ?color-text;
 }
 
+/* Utility Classes */
+
+.list-item {
+    padding-bottom: 12;
+}
+
 .h1 {
     color: ?color-heading;
     font-style: bold;
