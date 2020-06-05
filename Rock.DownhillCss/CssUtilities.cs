@@ -556,7 +556,10 @@ namespace Rock.DownhillCss
         private static string baseStylesWeb = @"";
 
         private static string baseStylesMobile = @"
-/* Resets */
+/*
+    Resets
+    -----------------------------------------------------------
+*/
 
 /* Fixes frame backgrounds from being black while in dark mode */
 ^frame {
@@ -574,6 +577,15 @@ NavigationPage {
 ^label {
     font-size: default;
     color: ?color-text;
+}
+
+/*
+    Utility Classes
+    -----------------------------------------------------------
+*/
+
+.list-item {
+    padding-bottom: 12;
 }
 
 .h1 {
@@ -622,167 +634,6 @@ NavigationPage {
     color: #e6ecf1;
     padding: 16;
     font-size: 12;
-}
-
-/* Note Editor */
-.noteeditor {
-    border-color: ?color-text;
-    padding: 8;
-    background-color: ?color-gray-100;
-    margin-top: 12;
-    margin-bottom: 12;
-}
-
-.noteeditor ^texteditor {
-    height: 100;
-    color: ?color-text;
-    margin: 0;
-    font-size: small;
-}
-
-.noteeditor-label {
-    font-size: 11;
-}
-
-/* Forms Styling */
-.form-group {
-    margin: 0 0 12 0;
-}
-
-.form-group .form-group-title {
-    margin: 0 0 5 0;
-    color: ?color-primary;
-    font-size: 12;
-}
-
-.form-field {
-    padding: 12;
-    color: #282828;
-}
-
-/* Buttons */
-.btn {
-    border-radius: ?radius-base;
-}
-
-.btn.btn-primary {
-    background-color: ?color-primary;
-    color: #ffffff;
-}
-
-.btn.btn-success {
-    background-color: ?color-success;
-    color: #ffffff;
-}
-
-.btn.btn-info {
-    background-color: ?color-info;
-    color: #ffffff;
-}
-
-.btn.btn-warning {
-    background-color: ?color-warning;
-    color: #ffffff;
-}
-
-.btn.btn-danger {
-    background-color: ?color-danger;
-    color: #ffffff;
-}
-
-.btn.btn-dark {
-    color: #ffffff;
-    background-color: ?color-dark;
-}
-
-.btn.btn-light {
-    color: ?color-text;
-    background-color: ?color-light;
-}
-
-.btn.btn-secondary {
-    color: #ffffff;
-    background-color: ?color-secondary;
-}
-
-.btn.btn-default {
-    color: ?color-primary;
-    border-color: ?color-primary;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-link {
-    color: ?color-primary;
-    border-width: 0;
-    background-color: transparent;
-}
-
-.btn.btn-outline-primary {
-    color: ?color-primary;
-    border-color: ?color-primary;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-secondary {
-    color: ?color-secondary;
-    border-color: ?color-secondary;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-success {
-    color: ?color-success;
-    border-color: ?color-success;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-danger {
-    color: ?color-danger;
-    border-color: ?color-danger;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-warning {
-    color: ?color-warning;
-    border-color: ?color-warning;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-info {
-    color: ?color-info;
-    border-color: ?color-info;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-light {
-    color: ?color-text;
-    border-color: ?color-light;
-    border-width: 1;
-    background-color: transparent;
-}
-
-.btn.btn-outline-dark {
-    color: ?color-dark;
-    border-color: ?color-dark;
-    border-width: 1;
-    background-color: transparent;
-}
-
-/* Button Sizes */
-.btn.btn-lg {
-    font-size: large;
-    padding: 20;
-}
-
-.btn.btn-sm {
-    font-size: micro;
-    height: 35;
 }
 
 /* Text Weights */
@@ -1010,6 +861,169 @@ NavigationPage {
     border-radius: 1000;
 }
 
+/*
+    Control CSS
+    -----------------------------------------------------------
+*/
+
+/* Divider */
+.divider {
+    height: 1;
+}
+
+.divider-thick {
+    height: 2;
+}
+
+.divider-thicker {
+    height: 4;
+}
+
+.divider-thickest {
+    height: 8;
+}
+
+/* Forms Styling */
+.form-group {
+    margin: 0 0 12 0;
+}
+
+.form-group .form-group-title {
+    margin: 0 0 5 0;
+    color: ?color-primary;
+    font-size: 12;
+}
+
+.form-field {
+    padding: 12;
+    color: #282828;
+}
+
+/* Buttons */
+.btn {
+    border-radius: ?radius-base;
+}
+
+.btn.btn-primary {
+    background-color: ?color-primary;
+    color: #ffffff;
+}
+
+.btn.btn-success {
+    background-color: ?color-success;
+    color: #ffffff;
+}
+
+.btn.btn-info {
+    background-color: ?color-info;
+    color: #ffffff;
+}
+
+.btn.btn-warning {
+    background-color: ?color-warning;
+    color: #ffffff;
+}
+
+.btn.btn-danger {
+    background-color: ?color-danger;
+    color: #ffffff;
+}
+
+.btn.btn-dark {
+    color: #ffffff;
+    background-color: ?color-dark;
+}
+
+.btn.btn-light {
+    color: ?color-text;
+    background-color: ?color-light;
+}
+
+.btn.btn-secondary {
+    color: #ffffff;
+    background-color: ?color-secondary;
+}
+
+.btn.btn-default {
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-link {
+    color: ?color-primary;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-outline-primary {
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-secondary {
+    color: ?color-secondary;
+    border-color: ?color-secondary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-success {
+    color: ?color-success;
+    border-color: ?color-success;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-danger {
+    color: ?color-danger;
+    border-color: ?color-danger;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-warning {
+    color: ?color-warning;
+    border-color: ?color-warning;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-info {
+    color: ?color-info;
+    border-color: ?color-info;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-light {
+    color: ?color-text;
+    border-color: ?color-light;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-dark {
+    color: ?color-dark;
+    border-color: ?color-dark;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Button Sizes */
+.btn.btn-lg {
+    font-size: large;
+    padding: 20;
+}
+
+.btn.btn-sm {
+    font-size: micro;
+    height: 35;
+}
+
 /* Toggle Button CSS */
 .toggle-button {
     border-radius: 0;
@@ -1039,6 +1053,31 @@ NavigationPage {
 
 .toggle-button.checked .icon {
     color: white;
+}
+
+/*
+    Block CSS
+    -----------------------------------------------------------
+*/
+
+/* Note Editor */
+.noteeditor {
+    border-color: ?color-text;
+    padding: 8;
+    background-color: ?color-gray-100;
+    margin-top: 12;
+    margin-bottom: 12;
+}
+
+.noteeditor ^texteditor {
+    height: 100;
+    color: ?color-text;
+    margin: 0;
+    font-size: small;
+}
+
+.noteeditor-label {
+    font-size: 11;
 }
 
 /* Hero Block */
