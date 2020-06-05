@@ -18,8 +18,8 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA.Migrations
 {
-    [MigrationNumber( 2, "1.9.4" )]
-    public class _002_AttendanceMetricsHistoryDashboard : Migration
+    [MigrationNumber( 9, "1.9.4" )]
+    public class AttendanceMetricsHistoryDashboard : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
