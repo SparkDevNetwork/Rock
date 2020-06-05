@@ -4375,7 +4375,7 @@ END
         /// <param name="description">The description.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="guid">The unique identifier.</param>
-        /// <param name="cacheToServerFileSystem">if set to <c>true</c> [allow caching].</param>
+        /// <param name="allowCaching">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
         [Obsolete( "Use UpdateBinaryFileTypeRecord instead." )]
         [RockObsolete( "1.11.0" )]
@@ -4426,6 +4426,7 @@ END
         /// <param name="guid">The unique identifier.</param>
         /// <param name="cacheToServerFileSystem">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
+        /// <param name="cacheControlHeaderSettings">The cache control header settings.</param>
         public void UpdateBinaryFileTypeRecord( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool cacheToServerFileSystem = false, bool requiresViewSecurity = false, string cacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}" )
         {
             Migration.Sql( string.Format( @"
