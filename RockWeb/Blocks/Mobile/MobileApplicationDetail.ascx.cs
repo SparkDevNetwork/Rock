@@ -500,6 +500,7 @@ namespace RockWeb.Blocks.Mobile
                 cpWarning.Value = additionalSettings.DownhillSettings.ApplicationColors.Warning;
                 cpLight.Value = additionalSettings.DownhillSettings.ApplicationColors.Light;
                 cpDark.Value = additionalSettings.DownhillSettings.ApplicationColors.Dark;
+                cpBrand.Value = additionalSettings.DownhillSettings.ApplicationColors.Brand;
 
                 nbRadiusBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.RadiusBase ).ToStringSafe();
 
@@ -915,6 +916,7 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Dark = ParseColor( cpDark.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Brand = ParseColor( cpBrand.Value );
 
                 additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
 
