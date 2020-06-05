@@ -76,7 +76,7 @@
                     <div class="panel-body">
 
                         <fieldset>
-                            <div class="pull-right">
+                            <div class="text-right">
                                 <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
 
                                 <Rock:HighlightLabel runat="server" ID="hlRunSince" /><Rock:BootstrapButton CssClass="label btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
