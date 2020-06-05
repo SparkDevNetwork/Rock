@@ -1,0 +1,1 @@
+﻿As you edit or add new custom blocks for Faithbridge, add them under this folder.

@@ -1,0 +1,90 @@
+﻿{% assign now = 'Now' | Date:'yyyy-MM-dd HH:mm:ss' %}
+{% assign familyMembers = CurrentPerson.PrimaryFamily.Members %}
+
+<h2 style='text-align:center;'>Upcoming Lunches</h2>
+{% registrationinstance where:'RegistrationTemplateId == 180' sort:'EndDateTime' %}
+    {% for registrationInstance in registrationinstanceItems %}
+        {% if registrationInstance.EndDateTime > now %}
+            {% assign personHtml = '<ul>'%}
+            {% assign registrationId = 0 %}
+
+            {%registration where:'RegistrationInstanceId == {{registrationInstance.Id}}'%}
+                {% for registration in registrationItems %}
+                    {% for registrationRegistrant in registration.Registrants %}
+                        {% for familyMember in familyMembers%}
+                            {% if familyMember.PersonId == registrationRegistrant.PersonAlias.PersonId %}
+                                {% assign fee = registrationRegistrant.Fees | Where:'RegistrationTemplateFeeId',130 | First %}
+
+                                {% capture html %}<li>{{familyMember.Person.FullName}} - {{fee.RegistrationTemplateFeeItem.Name}} <small>({{fee.RegistrationTemplateFeeItem.Cost | FormatAsCurrency}})</small></li>{% endcapture%}
+                                {% assign personHtml = personHtml | Append:html%}
+                                {% assign registrationId = registration.Id %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endregistration %}
+
+            {% assign personHtml = personHtml | Append:'</ul>'%}
+
+            {% if registrationId != 0 %}
+                <a href='https://rock.hfbc.org/page/1956?RegistrationInstanceId={{registrationInstance.Id}}&RegistrationId={{registrationId}}'>
+                    <div class='alert alert-success'>
+                        <h4>{{registrationInstance.Name}}</h4>
+                        {{personHtml}}
+                    </div>
+                </a>
+            {% else %}
+                <a href='https://rock.hfbc.org/page/1956?RegistrationInstanceId={{registrationInstance.Id}}'>
+                    <div class='alert alert-info'>
+                        <h4>{{registrationInstance.Name}}</h4>
+                    </div>
+                </a>
+            {% endif %}
+
+        {% endif %}
+    {% endfor %}
+{% endregistrationinstance %}
+
+<h2 style='text-align:center;'>Past Lunches</h2>
+{% registrationinstance where:'RegistrationTemplateId == 180' sort:'EndDateTime desc' %}
+    {% for registrationInstance in registrationinstanceItems %}
+        {% if registrationInstance.EndDateTime < now %}
+            {% assign personHtml = '<ul>'%}
+            {% assign registrationId = 0 %}
+
+            {%registration where:'RegistrationInstanceId == {{registrationInstance.Id}}'%}
+                {% for registration in registrationItems %}
+                    {% for registrationRegistrant in registration.Registrants %}
+                        {% for familyMember in familyMembers%}
+                            {% if familyMember.PersonId == registrationRegistrant.PersonAlias.PersonId %}
+                                {% assign fee = registrationRegistrant.Fees | Where:'RegistrationTemplateFeeId',130 | First %}
+
+                                {% capture html %}<li>{{familyMember.Person.FullName}} - {{fee.RegistrationTemplateFeeItem.Name}} <small>({{fee.RegistrationTemplateFeeItem.Cost | FormatAsCurrency}})</small></li>{% endcapture%}
+                                {% assign personHtml = personHtml | Append:html%}
+                                {% assign registrationId = registration.Id %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endregistration %}
+
+            {% assign personHtml = personHtml | Append:'</ul>'%}
+
+            {% if registrationId != 0 %}
+                <a href='https://rock.hfbc.org/page/1956?RegistrationInstanceId={{registrationInstance.Id}}&RegistrationId={{registrationId}}'>
+                    <div class='alert alert-default'>
+                        <h4>{{registrationInstance.Name}}</h4>
+                        {{personHtml}}
+                    </div>
+                </a>
+            {% else %}
+                <a href='https://rock.hfbc.org/page/1956?RegistrationInstanceId={{registrationInstance.Id}}'>
+                    <div class='alert alert-default'>
+                        <h4>{{registrationInstance.Name}}</h4>
+                    </div>
+                </a>
+            {% endif %}
+
+        {% endif %}
+    {% endfor %}
+{% endregistrationinstance %}

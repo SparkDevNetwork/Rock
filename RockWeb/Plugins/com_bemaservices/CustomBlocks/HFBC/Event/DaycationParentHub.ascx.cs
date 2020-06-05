@@ -80,6 +80,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         IsRequired = true,
         DefaultValue = @"{% include '~/Plugins/com_bemaservices/Event/Assets/Lava/DaycationTransactions.lava'  %}",
         Order = 7 )]
+    [WorkflowTypeField( "Workflow", "The workflow that records the cancellation.", false, false, "", "", 8 )]
 
 
     public partial class DaycationParentHub : RockBlock
@@ -300,6 +301,36 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = false;
                                 emailMessage.Send();
+
+                                WorkflowType workflowType = null;
+                                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                                if ( workflowTypeGuid.HasValue )
+                                {
+                                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                                }
+
+                                if ( workflowType != null)
+                                {
+                                    foreach(var registrant in registration.Registrants )
+                                    try
+                                    {
+                                        List<string> workflowErrors;
+
+                                        var workflow = Rock.Model.Workflow.Activate( WorkflowTypeCache.Get( workflowType ), registrant.Person.FullName );
+                                        workflow.SetAttributeValue( "RegistrationTemplateName", registration.RegistrationInstance.RegistrationTemplate.Name );
+                                        workflow.SetAttributeValue( "RegistrationInstanceName", registration.RegistrationInstance.Name );
+                                        workflow.SetAttributeValue( "Registrant", registrant.PersonId );
+                                    
+                                        workflow.SaveAttributeValues( rockContext );
+
+                                        new WorkflowService( rockContext ).Process( workflow, registrant.Person, out workflowErrors );
+                                    }
+                                    catch ( Exception ex )
+                                    {
+                                        ExceptionLogService.LogException( ex, this.Context );
+                                    }
+                                }
 
                                 rockContext.WrapTransaction( () =>
                                 {

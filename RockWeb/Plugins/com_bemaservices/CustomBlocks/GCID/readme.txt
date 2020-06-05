@@ -1,0 +1,1 @@
+﻿As you edit or add new custom blocks for Grace Church - Indiana, add them under this folder.
