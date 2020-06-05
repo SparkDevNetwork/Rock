@@ -4377,7 +4377,56 @@ END
         /// <param name="guid">The unique identifier.</param>
         /// <param name="cacheToServerFileSystem">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
-        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool cacheToServerFileSystem = false, bool requiresViewSecurity = false )
+        [Obsolete( "Use UpdateBinaryFileTypeRecord instead." )]
+        [RockObsolete( "1.11.0" )]
+        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @StorageEntityTypeId int
+                SET @StorageEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [BinaryFileType]
+                    WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [BinaryFileType] SET
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [IconCssClass] = '{3}',
+                        [StorageEntityTypeId] = @StorageEntityTypeId,
+                        [AllowCaching] = {5},
+                        [RequiresViewSecurity] = {6}
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[AllowCaching],[RequiresViewSecurity],[Guid] )
+                    VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )
+                END
+",
+                    storageEntityTypeGuid,
+                    name,
+                    description.Replace( "'", "''" ),
+                    iconCssClass,
+                    guid,
+                    ( allowCaching ? "1" : "0" ),
+                    ( requiresViewSecurity ? "1" : "0" )
+            ) );
+        }
+
+        /// <summary>
+        /// Updates the type of the binary file.
+        /// </summary>
+        /// <param name="storageEntityTypeGuid">The storage entity type identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="cacheToServerFileSystem">if set to <c>true</c> [allow caching].</param>
+        /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
+        public void UpdateBinaryFileTypeRecord( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool cacheToServerFileSystem = false, bool requiresViewSecurity = false, string cacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}" )
         {
             Migration.Sql( string.Format( @"
 
@@ -4395,13 +4444,14 @@ END
                         [IconCssClass] = '{3}',
                         [StorageEntityTypeId] = @StorageEntityTypeId,
                         [CacheToServerFileSystem] = {5},
-                        [RequiresViewSecurity] = {6}
+                        [RequiresViewSecurity] = {6},
+                        [CacheControlHeaderSettings] = '{7}'
                     WHERE [Guid] = '{4}'
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[CacheToServerFileSystem],[RequiresViewSecurity],[Guid] )
-                    VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )
+                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[CacheToServerFileSystem],[RequiresViewSecurity],[Guid],[CacheControlHeaderSettings] )
+                    VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}','{7}' )
                 END
 ",
                     storageEntityTypeGuid,
@@ -4410,12 +4460,13 @@ END
                     iconCssClass,
                     guid,
                     ( cacheToServerFileSystem ? "1" : "0" ),
-                    ( requiresViewSecurity ? "1" : "0" )
+                    ( requiresViewSecurity ? "1" : "0" ),
+                    cacheControlHeaderSettings
             ) );
         }
 
         #endregion
-        
+
         #region Security/Auth
 
         /// <summary>
