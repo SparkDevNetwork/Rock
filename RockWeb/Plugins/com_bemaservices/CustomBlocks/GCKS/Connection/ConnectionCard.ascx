@@ -115,9 +115,7 @@
                     <label>Where are you worshiping today?</label>
                     <div class="btn-group" role="group" aria-label="Wher are you worshiping today">
                         <Rock:BootstrapButton ID="btnOnline" runat="server" CssClass="btn btn-sm btn-primary" Text="Online" OnClick="btnOnline_Click" />
-                        <!-- Temporarily disabled, at Sheila's request, due to COVID-19
-							<Rock:BootstrapButton ID="btnInPerson" runat="server" CssClass="btn btn-sm btn-primary" Text="In Person" OnClick="btnInPerson_Click" />
-						-->
+                        <Rock:BootstrapButton ID="btnInPerson" runat="server" CssClass="btn btn-sm btn-primary" Text="In Person" OnClick="btnInPerson_Click" />
                     </div>
                 </div>
             </div>
@@ -211,14 +209,16 @@
         <asp:Panel ID="pnFinalStep" runat="server" Visible="false">
             <div class="row margin-t-md">
                 <div class="col-xs-12 text-left">
-                    <Rock:BootstrapButton ID="btnSalvation" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnSalvation_Click" >
-                        <i class='fa fa-square-o'></i> I made a decision to follow Jesus today
-                    </Rock:BootstrapButton>	
+                    	
                     
 					<div class="margin-b-sm"">
 						I would like to:
-					</div>					
+					</div>
+                    
 					<div class="margin-l-lg margin-b-sm">
+                        <Rock:BootstrapButton ID="btnSalvation" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnSalvation_Click" >
+                            <i class='fa fa-square-o'></i> Learn more about Following Jesus
+                        </Rock:BootstrapButton>
 						<Rock:BootstrapButton ID="btnExplore" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnExplore_Click" >
 							<i class='fa fa-square-o'></i> Learn more about Grace Church at Explore
 						</Rock:BootstrapButton>
@@ -245,9 +245,9 @@
 							<i class='fa fa-square-o'></i> Find out more information about baptism
 						</Rock:BootstrapButton>
 						
-						<Rock:BootstrapButton ID="btnUpdate" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnUpdate_Click" >
+<%--					<Rock:BootstrapButton ID="btnUpdate" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnUpdate_Click" >
 							<i class='fa fa-square-o'></i> Receive the Weekly Campus Update
-						</Rock:BootstrapButton>
+						</Rock:BootstrapButton>--%>
 					</div>
                     
                     <Rock:BootstrapButton ID="btnNew" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnNew_Click" >

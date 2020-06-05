@@ -147,11 +147,11 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
             set { ViewState["Connect"] = value; }
         }
 
-        private bool WeeklyUpdate
-        {
-            get { return ViewState["WeeklyUpdate"] as bool? ?? false; }
-            set { ViewState["WeeklyUpdate"] = value; }
-        }
+        //private bool WeeklyUpdate
+        //{
+        //    get { return ViewState["WeeklyUpdate"] as bool? ?? false; }
+        //    set { ViewState["WeeklyUpdate"] = value; }
+        //}
 
         private bool ContactMe
         {
@@ -1102,7 +1102,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
             workflowTransaction.WorkflowAttributeValues.Add("FindOutAboutExplore", Explore.ToString());
             workflowTransaction.WorkflowAttributeValues.Add("DiscoverWhereToServe", Discover.ToString());
             workflowTransaction.WorkflowAttributeValues.Add("ConnectWithOthers", Connect.ToString());
-            workflowTransaction.WorkflowAttributeValues.Add("ReceiveWeeklyUpdate", WeeklyUpdate.ToString());
+            //workflowTransaction.WorkflowAttributeValues.Add("ReceiveWeeklyUpdate", WeeklyUpdate.ToString());
             workflowTransaction.WorkflowAttributeValues.Add("GraceStaffContact", ContactMe.ToString());
             workflowTransaction.WorkflowAttributeValues.Add("NewToGrace", NewToGrace.ToString());
 			workflowTransaction.WorkflowAttributeValues.Add("ChangedAddress", ChangedAddress.ToString());
@@ -1216,21 +1216,21 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
             }
         }
 
-        protected void btnUpdate_Click(object sender, EventArgs e)
-        {
-            if (WeeklyUpdate)
-            {
-                WeeklyUpdate = false;
-                btnUpdate.RemoveCssClass("btn-select");
-                btnUpdate.Text = btnUpdate.Text.Replace( "fa-check-square-o", "fa-square-o" );
-            }
-            else
-            {
-                WeeklyUpdate = true;
-                btnUpdate.AddCssClass("btn-select");
-                btnUpdate.Text = btnUpdate.Text.Replace( "fa-square-o", "fa-check-square-o" );
-            }
-        }
+        //protected void btnUpdate_Click(object sender, EventArgs e)
+        //{
+        //    if (WeeklyUpdate)
+        //    {
+        //        WeeklyUpdate = false;
+        //        btnUpdate.RemoveCssClass("btn-select");
+        //        btnUpdate.Text = btnUpdate.Text.Replace( "fa-check-square-o", "fa-square-o" );
+        //    }
+        //    else
+        //    {
+        //        WeeklyUpdate = true;
+        //        btnUpdate.AddCssClass("btn-select");
+        //        btnUpdate.Text = btnUpdate.Text.Replace( "fa-square-o", "fa-check-square-o" );
+        //    }
+        //}
 
         protected void btnContact_Click(object sender, EventArgs e)
         {
