@@ -42,13 +42,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #region Block Attributes
 
+    [BooleanField( "Show Header",
+        Description = "If enabled, a 'Group Details' header will be displayed.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.ShowHeader,
+        Order = 0 )]
+
     [BooleanField( "Show Group Name",
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupName,
-        Order = 0 )]
+        Order = 1 )]
 
     [BooleanField( "Enable Group Name Edit",
         Description = "",
@@ -56,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupNameEdit,
-        Order = 1 )]
+        Order = 2 )]
 
     [BooleanField( "Show Description",
         Description = "",
@@ -64,7 +72,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowDescription,
-        Order = 2 )]
+        Order = 3 )]
 
     [BooleanField( "Enable Description Edit",
         Description = "",
@@ -72,7 +80,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDescriptionEdit,
-        Order = 3 )]
+        Order = 4 )]
 
     [BooleanField( "Show Campus",
         Description = "",
@@ -80,7 +88,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowCampus,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Enable Campus Edit",
         Description = "",
@@ -88,7 +96,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableCampusEdit,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Show Group Capacity",
         Description = "",
@@ -96,7 +104,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupCapacity,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Enable Group Capacity Edit",
         Description = "",
@@ -104,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupCapacityEdit,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField( "Show Active Status",
         Description = "",
@@ -112,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowActiveStatus,
-        Order = 8 )]
+        Order = 9 )]
 
     [BooleanField( "Enable Active Status Edit",
         Description = "",
@@ -120,7 +128,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableActiveStatusEdit,
-        Order = 9 )]
+        Order = 10 )]
 
     [BooleanField( "Show Public Status",
         Description = "",
@@ -128,7 +136,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPublicStatus,
-        Order = 10 )]
+        Order = 11 )]
 
     [BooleanField( "Enable Public Status Edit",
         Description = "",
@@ -136,20 +144,20 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnablePublicStatusEdit,
-        Order = 11 )]
+        Order = 12 )]
 
     [AttributeCategoryField( "Attribute Category",
         Description = "Category of attributes to show and allow editing on.",
         IsRequired = false,
         EntityType = typeof( Group ),
         Key = AttributeKeys.AttributeCategory,
-        Order = 12 )]
+        Order = 13 )]
 
     [LinkedPage( "Group Detail Page",
         Description = "The group detail page to return to, if not set then the edit page is popped off the navigation stack.",
         IsRequired = false,
         Key = AttributeKeys.GroupDetailPage,
-        Order = 13 )]
+        Order = 14 )]
 
     #endregion
 
@@ -160,6 +168,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The show header
+            /// </summary>
+            public const string ShowHeader = "EnableHeader";
+
             /// <summary>
             /// The show group name
             /// </summary>
@@ -243,6 +256,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         #region Attribute Properties
+
+        /// <summary>
+        /// Gets a value indicating whether [show header].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show header]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowHeader => GetAttributeValue( AttributeKeys.ShowHeader ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether [show group name].
@@ -406,8 +427,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             string content = @"
 <StackLayout>
-    <Label StyleClass=""h2"" Text=""Group Details"" />
-    <Rock:Divider />
+    ##HEADER##
 
     ##FIELDS##
     
@@ -462,6 +482,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             else
             {
                 content = content.Replace( "##CANCEL##", "Command=\"{Binding PopPage}\"" );
+            }
+
+            if ( ShowHeader )
+            {
+                content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Details"" />
+<Rock:Divider />" );
             }
 
             return content.Replace( "##FIELDS##", fieldsContent )
