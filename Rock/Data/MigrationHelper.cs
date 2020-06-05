@@ -4375,9 +4375,9 @@ END
         /// <param name="description">The description.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="guid">The unique identifier.</param>
-        /// <param name="allowCaching">if set to <c>true</c> [allow caching].</param>
+        /// <param name="cacheToServerFileSystem">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
-        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool cacheToServerFileSystem = false, bool requiresViewSecurity = false )
         {
             Migration.Sql( string.Format( @"
 
@@ -4394,13 +4394,13 @@ END
                         [Description] = '{2}',
                         [IconCssClass] = '{3}',
                         [StorageEntityTypeId] = @StorageEntityTypeId,
-                        [AllowCaching] = {5},
+                        [CacheToServerFileSystem] = {5},
                         [RequiresViewSecurity] = {6}
                     WHERE [Guid] = '{4}'
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[AllowCaching],[RequiresViewSecurity],[Guid] )
+                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[CacheToServerFileSystem],[RequiresViewSecurity],[Guid] )
                     VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )
                 END
 ",
@@ -4409,7 +4409,7 @@ END
                     description.Replace( "'", "''" ),
                     iconCssClass,
                     guid,
-                    ( allowCaching ? "1" : "0" ),
+                    ( cacheToServerFileSystem ? "1" : "0" ),
                     ( requiresViewSecurity ? "1" : "0" )
             ) );
         }
