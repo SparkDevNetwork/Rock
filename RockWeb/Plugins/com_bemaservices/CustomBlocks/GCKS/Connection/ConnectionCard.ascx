@@ -217,7 +217,7 @@
                     
 					<div class="margin-l-lg margin-b-sm">
                         <Rock:BootstrapButton ID="btnSalvation" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnSalvation_Click" >
-                            <i class='fa fa-square-o'></i> Learn more about Following Jesus
+                            <i class='fa fa-square-o'></i> Learn how to become a follower of Jesus
                         </Rock:BootstrapButton>
 						<Rock:BootstrapButton ID="btnExplore" runat="server" CssClass="btn btn-primary btn-block btn-checkin-select margin-b-sm text-left" OnClick="btnExplore_Click" >
 							<i class='fa fa-square-o'></i> Learn more about Grace Church at Explore
