@@ -152,7 +152,7 @@
                                         </div>
 
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpBrand" runat="server" Label="Brand" Help="Color to use for branding controls like the navigation header.." />
+                                            <Rock:ColorPicker ID="cpBrand" runat="server" Label="Brand" Help="Color to use for branding controls like the navigation header." />
                                         </div>
                                     </div>
                                 </Rock:RockControlWrapper>
