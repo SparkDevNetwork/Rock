@@ -81,6 +81,7 @@
     <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />    
     <None Include="Migrations\006_AlternateBusinessList.cs.exclude" />
     <None Include="Migrations\007_PersonAuthorizedOnPage.cs.exclude" />
+    <None Include="Migrations\008_LargeDonations.cs.exclude" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
