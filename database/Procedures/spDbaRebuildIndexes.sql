@@ -32,18 +32,11 @@ BEGIN
 DECLARE @SchemaName AS varchar(100);
 DECLARE @TableName AS varchar(100);
 DECLARE @IndexName AS varchar(100);
+DECLARE @IndexType AS varchar(100);
 DECLARE @FragmentationPercent AS varchar(100);
 DECLARE @PageCount AS varchar(100);
-
 DECLARE @MaintenanceCursor AS CURSOR;
-
 DECLARE @CommandOption varchar(100) = 'FILLFACTOR = 80';
-
-IF ( @UseONLINEIndexRebuild = 1 )
-BEGIN
-    SELECT @CommandOption = @CommandOption + ', ONLINE = ON';
-END
-
 DECLARE @SqlCommand AS nvarchar(2000);
 
 SET @MaintenanceCursor = CURSOR FOR
@@ -51,6 +44,7 @@ SET @MaintenanceCursor = CURSOR FOR
 				dbschemas.[name] as 'Schema', 
 				dbtables.[name] as 'Table', 
 				dbindexes.[name] as 'Index',
+				dbindexes.[type_desc] as 'IndexType',
 				CONVERT(INT, indexstats.avg_fragmentation_in_percent),
 				indexstats.page_count
 			FROM 
@@ -67,26 +61,30 @@ SET @MaintenanceCursor = CURSOR FOR
 				indexstats.avg_fragmentation_in_percent DESC
  
 OPEN @MaintenanceCursor;
-FETCH NEXT FROM @MaintenanceCursor INTO @SchemaName, @TableName, @IndexName, @FragmentationPercent, @PageCount;
+FETCH NEXT FROM @MaintenanceCursor INTO @SchemaName, @TableName, @IndexName, @IndexType, @FragmentationPercent, @PageCount;
  
 WHILE @@FETCH_STATUS = 0
 BEGIN
- 
- 
- IF (@FragmentationPercent > @MinFragmentationRebuild)
-	SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REBUILD WITH (' + @CommandOption + ')';
- ELSE
-	SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REORGANIZE';
+	IF (@FragmentationPercent > @MinFragmentationRebuild)
+	BEGIN
+		IF ( @UseONLINEIndexRebuild = 1 AND @IndexType NOT IN ('SPATIAL','XML') )
+		BEGIN
+			SELECT @CommandOption = @CommandOption + ', ONLINE = ON';
+		END
 
- PRINT @SqlCommand;
+		SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REBUILD WITH (' + @CommandOption + ')';
+	END
+	ELSE BEGIN
+		SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REORGANIZE';
+	END
 
- EXECUTE sp_executeSQL @SqlCommand;
+	PRINT @SqlCommand;
+	EXECUTE sp_executeSQL @SqlCommand;
 
- FETCH NEXT FROM @MaintenanceCursor INTO @SchemaName, @TableName, @IndexName, @FragmentationPercent, @PageCount;
+	FETCH NEXT FROM @MaintenanceCursor INTO @SchemaName, @TableName, @IndexName, @IndexType, @FragmentationPercent, @PageCount;
 END
  
 CLOSE @MaintenanceCursor;
 DEALLOCATE @MaintenanceCursor;
-
 
 END
