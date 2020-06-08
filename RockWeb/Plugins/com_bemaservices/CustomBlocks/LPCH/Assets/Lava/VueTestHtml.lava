@@ -1,0 +1,43 @@
+﻿{% raw %}
+<div id="app">
+  <ol>
+    <group-card
+      v-for="group in groups"
+      v-bind:group="group"
+      v-bind:key="group.id"
+    ></group-card>
+  </ol>
+</div>
+
+<script>
+Vue.component('group-card', {
+  props: ['group'],
+  template: `<div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="lg-card-name fontSize-body">{{group.Name}}</h2>
+                    </div>
+                    <div class=" panel-body">
+                        <div class="fontSize-body lg-day-of-week">{{group.Schedule.FriendlyScheduleText}}</div>
+                        <p class="lg-card-description">{{group.Description}}</p>
+                        <a class="more-info-text" href="/page/367?GroupId={{group.Id}}" target="_blank">More Info</a>
+                    </div>
+                </div>
+            </div>`
+})
+
+var app = new Vue({
+  el: '#app',
+  data () {
+    return {
+      groups: null
+    }
+  },
+  mounted () {
+    axios
+      .get('/api/Groups?$expand=Schedule%2C%20GroupLocations' )
+      .then(response => (this.groups = response.data))
+  }
+})
+</script>
+{% endraw %}
