@@ -475,6 +475,7 @@
     max-width: 100%;
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
+    overflow: hidden;
 
     &:hover {
       opacity: .85;
@@ -492,6 +493,7 @@
       width: ~"calc(100% - 2px)";
       min-width: 2px;
       min-height: 1px;
+      max-height: 100%;
       background: @persondetails-badge-color;
 
       .animate & {
