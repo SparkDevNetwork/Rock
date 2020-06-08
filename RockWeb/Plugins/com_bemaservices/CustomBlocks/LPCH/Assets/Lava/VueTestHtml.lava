@@ -1,42 +1,70 @@
 ﻿{% raw %}
 <div id="app">
   <ol>
-    <group-card
-      v-for="group in groups"
-      v-bind:group="group"
-      v-bind:key="group.id"
-    ></group-card>
+    <div v-if="groups.length === 0" class="loading">Loading...</div>
+    <div v-for="i in Math.ceil(groups.length / 3)" class="row">
+      <div v-for="group in groups.slice((i - 1) * 3, i * 3)" class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h2 class="lg-card-name fontSize-body">{{group.Name}}</h2>
+          </div>
+          <div class=" panel-body">
+            <div class="fontSize-body lg-day-of-week">{{group.Schedule.FriendlyScheduleText}}</div>
+            <p class="lg-card-description">{{group.Description}}</p>
+            <a class="more-info-text" target="_blank">More Info</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </ol>
 </div>
 
 <script>
-Vue.component('group-card', {
-  props: ['group'],
-  template: `<div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h2 class="lg-card-name fontSize-body">{{group.Name}}</h2>
-                    </div>
-                    <div class=" panel-body">
-                        <div class="fontSize-body lg-day-of-week">{{group.Schedule.FriendlyScheduleText}}</div>
-                        <p class="lg-card-description">{{group.Description}}</p>
-                        <a class="more-info-text" href="/page/367?GroupId={{group.Id}}" target="_blank">More Info</a>
-                    </div>
-                </div>
-            </div>`
-})
-
 var app = new Vue({
   el: '#app',
   data () {
     return {
-      groups: null
+      bottom: false,
+      groups: [],
+      limit: 10
     }
   },
-  mounted () {
-    axios
-      .get('/api/Groups?$expand=Schedule%2C%20GroupLocations' )
-      .then(response => (this.groups = response.data))
+  watch: {
+    bottom(bottom) {
+      if (bottom) {
+        this.addGroups()
+      }
+    }
+  },
+  created() {
+    window.addEventListener('scroll', () => {
+      this.bottom = this.bottomVisible()
+    })
+    this.addGroups()
+  },
+  methods: {
+    bottomVisible() {
+      const scrollY = window.scrollY
+      const visible = document.documentElement.clientHeight
+      const pageHeight = document.documentElement.scrollHeight
+      const bottomOfPage = visible + scrollY >= pageHeight
+      return bottomOfPage || pageHeight < visible
+    },
+    addGroups() {
+      var orderBy = 'Name';
+      var url = '/api/Groups?$expand=Schedule%2C%20GroupLocations&$orderby='+orderBy+'&$top='+this.limit+'&$skip='+this.groups.length
+      axios.get(url)
+        .then(response => {
+          response.data.forEach((value, index) => {
+              this.groups.push(value);
+              console.log(value);
+              console.log(index);
+          });
+          if (this.bottomVisible()) {
+            this.addGroups()
+          }
+      })
+    }
   }
 })
 </script>
