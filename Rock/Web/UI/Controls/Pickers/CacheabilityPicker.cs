@@ -45,18 +45,13 @@ namespace Rock.Web.UI.Controls
         private Literal _maxSharedAgeLabel;
         #endregion
 
-        private RockCacheability _rockCacheability = new RockCacheability();
         /// <summary>
         /// Gets or sets the current cacheablity.
         /// </summary>
         /// <value>
         /// The current cacheablity.
         /// </value>
-        public RockCacheability CurrentCacheablity
-        {
-            get => _rockCacheability;
-            set => _rockCacheability = value;
-        }
+        public RockCacheability CurrentCacheablity { get; set; } = new RockCacheability();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheabilityPicker"/> class.
@@ -79,11 +74,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( _maxAgeValue.Text.IsNullOrWhiteSpace() )
                 {
-                    _rockCacheability.MaxAge = null;
+                    CurrentCacheablity.MaxAge = null;
                 }
                 else
                 {
-                    _rockCacheability.MaxAge = new TimeInterval
+                    CurrentCacheablity.MaxAge = new TimeInterval
                     {
                         Unit = _maxAgeUnit.SelectedValue.ConvertToEnum<TimeIntervalUnit>(),
                         Value = _maxAgeValue.Text.AsInteger()
@@ -92,18 +87,25 @@ namespace Rock.Web.UI.Controls
 
                 if ( _maxSharedAgeValue.Text.IsNullOrWhiteSpace() )
                 {
-                    _rockCacheability.SharedMaxAge = null;
+                    CurrentCacheablity.SharedMaxAge = null;
                 }
                 else
                 {
-                    _rockCacheability.SharedMaxAge = new TimeInterval
+                    CurrentCacheablity.SharedMaxAge = new TimeInterval
                     {
                         Unit = _maxSharedAgeUnit.SelectedValue.ConvertToEnum<TimeIntervalUnit>(),
                         Value = _maxSharedAgeValue.Text.AsInteger()
                     };
                 }
 
-                _rockCacheability.RockCacheablityType = _cacheabilityType.SelectedValue.ConvertToEnum<RockCacheablityType>();
+                if ( _cacheabilityType.SelectedValue.IsNotNullOrWhiteSpace() )
+                {
+                    CurrentCacheablity.RockCacheablityType = _cacheabilityType.SelectedValue.ConvertToEnum<RockCacheablityType>();
+                }
+                else
+                {
+                    CurrentCacheablity.RockCacheablityType = RockCacheablityType.Public;
+                }
             }
         }
 
@@ -214,25 +216,35 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            _cacheabilityType.SelectedValue = _rockCacheability.RockCacheablityType.ConvertToInt().ToString();
+            var showAges = false;
+
+            if ( CurrentCacheablity == null )
+            {
+                _cacheabilityType.SelectedValue = RockCacheablityType.Public.ConvertToInt().ToString();
+                showAges = true;
+            }
+            else
+            {
+                showAges = CurrentCacheablity.OptionSupportsAge( CurrentCacheablity.RockCacheablityType );
+                _cacheabilityType.SelectedValue = CurrentCacheablity.RockCacheablityType.ConvertToInt().ToString();
+
+                _maxAgeValue.Text = CurrentCacheablity.MaxAge?.Value.ToStringSafe();
+                if ( CurrentCacheablity.MaxAge != null )
+                {
+                    _maxAgeUnit.SelectedValue = CurrentCacheablity.MaxAge.Unit.ConvertToInt().ToStringSafe();
+                }
+
+                _maxSharedAgeValue.Text = CurrentCacheablity.SharedMaxAge?.Value.ToStringSafe();
+                if ( CurrentCacheablity.SharedMaxAge != null )
+                {
+                    _maxSharedAgeUnit.SelectedValue = CurrentCacheablity.SharedMaxAge?.Unit.ConvertToInt().ToStringSafe();
+                }
+            }
+
             _cacheabilityType.Enabled = Enabled;
-
-            if ( _rockCacheability.MaxAge != null )
-            {
-                _maxAgeUnit.SelectedValue = _rockCacheability.MaxAge.Unit.ConvertToInt().ToStringSafe();
-            }
             _maxAgeUnit.Enabled = Enabled;
-
-            _maxAgeValue.Text = _rockCacheability.MaxAge?.Value.ToStringSafe();
             _maxAgeValue.Enabled = Enabled;
-
-            if ( _rockCacheability.SharedMaxAge != null )
-            {
-                _maxSharedAgeUnit.SelectedValue = _rockCacheability.SharedMaxAge?.Unit.ConvertToInt().ToStringSafe();
-            }
             _maxSharedAgeUnit.Enabled = Enabled;
-
-            _maxSharedAgeValue.Text = _rockCacheability.SharedMaxAge?.Value.ToStringSafe();
             _maxSharedAgeValue.Enabled = Enabled;
 
             writer.AddAttribute( HtmlTextWriterAttribute.Style, Style.Value );
@@ -240,7 +252,7 @@ namespace Rock.Web.UI.Controls
 
             _cacheabilityType.RenderControl( writer );
 
-            if ( _rockCacheability.OptionSupportsAge( _rockCacheability.RockCacheablityType ) )
+            if ( showAges )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6 pl-0" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -319,10 +331,12 @@ namespace Rock.Web.UI.Controls
 
         private void CreateMaxAgeControls()
         {
+            
             _maxAgeUnit = new RockDropDownList
             {
                 ID = $"{ID}_{MAX_AGE_UNIT_NAME}",
-                CssClass = "w-auto pull-left"
+                CssClass = "w-auto pull-left",
+                EnableViewState = false
             };
 
             _maxAgeUnit.Items.AddRange( new ListItem[]
@@ -336,9 +350,10 @@ namespace Rock.Web.UI.Controls
             _maxAgeValue = new NumberBox
             {
                 ID = $"{ID}_{MAX_AGE_VALUE_NAME}",
-                CssClass = "w-auto pull-left"
+                CssClass = "w-auto pull-left",
+                EnableViewState = false
             };
-
+            
             _maxAgeLabel = new Literal
             {
                 Text = @"<div><label class=""control-label"">Max Age<a class=""help""
@@ -353,7 +368,8 @@ namespace Rock.Web.UI.Controls
             _maxSharedAgeUnit = new RockDropDownList
             {
                 ID = $"{ID}_{MAX_SHARED_AGE_UNIT_NAME}",
-                CssClass = "w-auto pull-left"
+                CssClass = "w-auto pull-left",
+                EnableViewState = false
             };
             _maxSharedAgeUnit.Items.AddRange( new ListItem[]
             {
@@ -366,7 +382,8 @@ namespace Rock.Web.UI.Controls
             _maxSharedAgeValue = new NumberBox
             {
                 ID = $"{ID}_{MAX_SHARED_AGE_VALUE_NAME}",
-                CssClass = "w-auto pull-left"
+                CssClass = "w-auto pull-left",
+                EnableViewState = false
             };
 
             _maxSharedAgeLabel = new Literal
@@ -380,9 +397,7 @@ namespace Rock.Web.UI.Controls
 
         private void CacheabilityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            _rockCacheability.RockCacheablityType = _cacheabilityType.SelectedValue.ConvertToEnum<RockCacheablityType>();
+            CurrentCacheablity.RockCacheablityType = _cacheabilityType.SelectedValue.ConvertToEnum<RockCacheablityType>();
         }
-
-
     }
 }
