@@ -321,6 +321,8 @@
                 });
 
             $pickerCancel.on('click', function () {
+                
+                clearSearchFields();
                 $pickerMenu.slideUp(function () {
                     exports.personPickers[controlId].updateScrollbar();
                 });
@@ -347,12 +349,20 @@
                 $pickerMenu.slideUp();
             }
 
+            var clearSearchFields = function () {
+                $searchFieldName.val('');
+                $searchFieldAddress.val('');
+                $searchFieldPhone.val('');
+                $searchFieldEmail.val('');
+            }
+
             $pickerSelect.on('click', function () {
                 var $radInput = $pickerControl.find('input:checked'),
                     selectedValue = $radInput.val(),
                     selectedText = $radInput.closest('.js-picker-select-item').attr('data-person-name');
 
                 setSelectedPerson(selectedValue, selectedText);
+                clearSearchFields();
             });
 
             var toggleSearchFields = function () {

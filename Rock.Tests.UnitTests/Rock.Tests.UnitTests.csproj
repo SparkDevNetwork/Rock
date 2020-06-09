@@ -87,11 +87,16 @@
     <Compile Include="Rock\Model\PageContextTests.cs" />
     <Compile Include="Rock\Model\PageRouteTests.cs" />
     <Compile Include="Rock\Model\PageTests.cs" />
+    <Compile Include="Rock\Model\BinaryFileTypeTests.cs" />
     <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
+    <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
+    <Compile Include="Rock\Utility\RockSerializableDictionaryTests.cs" />
     <Compile Include="Rock\Utility\RockDynamicTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalSettingTests.cs" />
+    <Compile Include="Rock\Utility\RockCacheabilityTests.cs" />
+    <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

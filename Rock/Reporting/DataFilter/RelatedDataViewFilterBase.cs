@@ -29,7 +29,7 @@ namespace Rock.Reporting.DataFilter
     /// <summary>
     /// A base implementation of a Data View filter component that filters the target entity by a specified foreign-key property to match a set of candidate entities provided by another Data View.
     /// </summary>
-    public abstract class RelatedDataViewFilterBase<TTargetEntity, TRelatedEntity> : DataFilterComponent
+    public abstract class RelatedDataViewFilterBase<TTargetEntity, TRelatedEntity> : DataFilterComponent, IRelatedChildDataView
         where TTargetEntity : IEntity
         where TRelatedEntity : IEntity
     {
@@ -305,6 +305,26 @@ function() {
             ddlDataView.SetValue( DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ) );
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
     }
 }

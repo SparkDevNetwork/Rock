@@ -253,6 +253,46 @@
     <Compile Include="Migrations\202005262058455_Rollup_0526.Designer.cs">
       <DependentUpon>202005262058455_Rollup_0526.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.cs" />
+    <Compile Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.Designer.cs">
+      <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005281058275_AddGetPersonNameFunction.cs" />
+    <Compile Include="Migrations\202005281058275_AddGetPersonNameFunction.Designer.cs">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005281232245_AddDataViewIdsToDataViewFilter.cs" />
+    <Compile Include="Migrations\202005281232245_AddDataViewIdsToDataViewFilter.Designer.cs">
+      <DependentUpon>202005281232245_AddDataViewIdsToDataViewFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005312347352_AddAddressFieldRequirements.cs" />
+    <Compile Include="Migrations\202005312347352_AddAddressFieldRequirements.Designer.cs">
+      <DependentUpon>202005312347352_AddAddressFieldRequirements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006022006411_AddIdentityVerificationModels.cs" />
+    <Compile Include="Migrations\202006022006411_AddIdentityVerificationModels.Designer.cs">
+      <DependentUpon>202006022006411_AddIdentityVerificationModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006041131047_AddPropertyToAttendance.cs" />
+    <Compile Include="Migrations\202006041131047_AddPropertyToAttendance.Designer.cs">
+      <DependentUpon>202006041131047_AddPropertyToAttendance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006051339147_BinaryFileTypeCachingChanges.cs" />
+    <Compile Include="Migrations\202006051339147_BinaryFileTypeCachingChanges.Designer.cs">
+      <DependentUpon>202006051339147_BinaryFileTypeCachingChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs" />
+    <Compile Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.Designer.cs">
+      <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.cs" />
+    <Compile Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.Designer.cs">
+      <DependentUpon>202006091311282_AddCacheControlHeaderSettingsToRestAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006091841047_Rollup_0609.cs" />
+    <Compile Include="Migrations\202006091841047_Rollup_0609.Designer.cs">
+      <DependentUpon>202006091841047_Rollup_0609.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1379,6 +1419,36 @@
     <EmbeddedResource Include="Migrations\202005262058455_Rollup_0526.resx">
       <DependentUpon>202005262058455_Rollup_0526.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005262250298_AddGroupAttendanceDigestSystemCommunication.resx">
+      <DependentUpon>202005262250298_AddGroupAttendanceDigestSystemCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005281058275_AddGetPersonNameFunction.resx">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005281232245_AddDataViewIdsToDataViewFilter.resx">
+      <DependentUpon>202005281232245_AddDataViewIdsToDataViewFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005312347352_AddAddressFieldRequirements.resx">
+      <DependentUpon>202005312347352_AddAddressFieldRequirements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006022006411_AddIdentityVerificationModels.resx">
+      <DependentUpon>202006022006411_AddIdentityVerificationModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006041131047_AddPropertyToAttendance.resx">
+      <DependentUpon>202006041131047_AddPropertyToAttendance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006051339147_BinaryFileTypeCachingChanges.resx">
+      <DependentUpon>202006051339147_BinaryFileTypeCachingChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.resx">
+      <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.resx">
+      <DependentUpon>202006091311282_AddCacheControlHeaderSettingsToRestAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006091841047_Rollup_0609.resx">
+      <DependentUpon>202006091841047_Rollup_0609.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -2157,6 +2227,18 @@
     </Content>
     <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql">
       <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202005281058275_AddGetPersonNameFunction _ufnUtility_GetPersonName.sql">
+      <DependentUpon>202005281058275_AddGetPersonNameFunction.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset_spCrm_FamilyAnalyticsEraDataset_down.sql">
+      <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202006091841047_Rollup_0609_spDbaRebuildIndexes.sql">
+      <DependentUpon>202006091841047_Rollup_0609.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>

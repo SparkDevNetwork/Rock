@@ -556,7 +556,15 @@ namespace Rock.DownhillCss
         private static string baseStylesWeb = @"";
 
         private static string baseStylesMobile = @"
-/* Resets */
+/*
+    Resets
+    -----------------------------------------------------------
+*/
+
+/* Fixes frame backgrounds from being black while in dark mode */
+^frame {
+    background-color: transparent;
+}
 
 NavigationPage {
     -rock-status-bar-text: dark;
@@ -569,6 +577,15 @@ NavigationPage {
 ^label {
     font-size: default;
     color: ?color-text;
+}
+
+/*
+    Utility Classes
+    -----------------------------------------------------------
+*/
+
+.list-item {
+    padding-bottom: 12;
 }
 
 .h1 {
@@ -619,24 +636,251 @@ NavigationPage {
     font-size: 12;
 }
 
-/* Note Editor */
-.noteeditor {
-    border-color: ?color-text;
-    padding: 8;
-    background-color: ?color-gray-100;
-    margin-top: 12;
+/* Text Weights */
+.font-weight-bold {
+    font-style: bold;
+}
+
+.font-italic {
+    font-style: italic;
+}
+
+/* Visibility Classes */
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.collapse {
+    visibility: collapse;
+}
+
+/* Text Named Sizes */
+.text {
+    font-size: default;
+    color: ?color-text;
+}
+
+.text-xs {
+    font-size: micro;
+    color: ?color-text;
+}
+
+.text-sm {
+    font-size: small;
+    color: ?color-text;
+}
+
+.text-md {
+    font-size: medium;
+    color: ?color-text;
+}
+
+.text-lg {
+    font-size: large;
+    color: ?color-text;
+}
+
+.text-title {
+    font-size: title;
+    color: ?color-text;
+}
+
+.text-subtitle {
+    font-size: subtitle;
+    color: ?color-text;
+}
+
+.text-caption {
+    font-size: caption;
+    color: ?color-text;
+}
+
+.text-body {
+    font-size: body;
+    color: ?color-text;
+}
+
+.title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: default;
+    line-height: 1;
+}
+
+/* Body Styles */
+.paragraph {
+    font-size: default;
+    color: ?color-text;
+    line-height: 1.15;
+    margin-bottom: 24;
+}
+
+.paragraph-sm {
+    font-size: small;
+    color: ?color-text;
+    line-height: 1.25;
     margin-bottom: 12;
 }
 
-.noteeditor ^texteditor {
-    height: 100;
+.paragraph-xs {
+    font-size: micro;
     color: ?color-text;
-    margin: 0;
-    font-size: small;
+    line-height: 1.25;
+    margin-bottom: 8;
 }
 
-.noteeditor-label {
-    font-size: 11;
+.paragraph-lg {
+    font-size: large;
+    color: ?color-text;
+    line-height: 1;
+    margin-bottom: 16;
+}
+
+/* Text Decoration */
+.text-underline {
+    text-decoration: underline;
+}
+
+.text-strikethrough {
+    text-decoration: strikethrough;
+}
+
+.text-linethrough {
+    text-decoration: line-through;
+}
+
+/* Opacity */
+.o-00, .o-0 {
+    opacity: 0;
+}
+
+.o-10 {
+    opacity: .1;
+}
+
+.o-20 {
+    opacity: .2;
+}
+
+.o-30 {
+    opacity: .3;
+}
+
+.o-40 {
+    opacity: .4;
+}
+
+.o-50 {
+    opacity: .5;
+}
+
+.o-60 {
+    opacity: .6;
+}
+
+.o-70 {
+    opacity: .7;
+}
+
+.o-80 {
+    opacity: .8;
+}
+
+.o-90 {
+    opacity: .9;
+}
+
+/* Leading */
+.leading-none {
+    line-height: 1;
+}
+
+.leading-tight {
+    line-height: 1.1;
+}
+
+.leading-snug {
+    line-height: 1.2;
+}
+
+.leading-normal {
+    line-height: 1.25;
+}
+
+.leading-relaxed {
+    line-height: 1.4;
+}
+
+.leading-loose {
+    line-height: 1.6;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+/* Border Radius */
+.rounded-none {
+    border-radius: 0;
+}
+
+.rounded-sm {
+    border-radius: 4;
+}
+
+.rounded {
+    border-radius: 8;
+}
+
+.rounded-lg {
+    border-radius: 16;
+}
+
+.rounded-full {
+    border-radius: 1000;
+}
+
+/*
+    Control CSS
+    -----------------------------------------------------------
+*/
+
+/* Divider */
+.divider {
+    height: 1;
+}
+
+.divider-thick {
+    height: 2;
+}
+
+.divider-thicker {
+    height: 4;
+}
+
+.divider-thickest {
+    height: 8;
 }
 
 /* Forms Styling */
@@ -780,229 +1024,11 @@ NavigationPage {
     height: 35;
 }
 
-/* Text Weights */
-.font-weight-bold {
-    font-style: bold;
-}
-
-.font-italic {
-    font-style: italic;
-}
-
-/* Visibility Classes */
-.visible {
-    visibility: visible;
-}
-
-.invisible {
-    visibility: hidden;
-}
-
-.collapse {
-    visibility: collapse;
-}
-
-/* Text Named Sizes */
-.text {
-    font-size: default;
-    color: ?color-text;
-}
-
-.text-xs {
-    font-size: micro;
-    color: ?color-text;
-}
-
-.text-sm {
-    font-size: small;
-    color: ?color-text;
-}
-
-.text-md {
-    font-size: medium;
-    color: ?color-text;
-}
-
-.text-lg {
-    font-size: large;
-    color: ?color-text;
-}
-
-.text-title {
-    font-size: title;
-    color: ?color-text;
-}
-
-.text-subtitle {
-    font-size: subtitle;
-    color: ?color-text;
-}
-
-.text-caption {
-    font-size: caption;
-    color: ?color-text;
-}
-
-.text-body {
-    font-size: body;
-    color: ?color-text;
-}
-
-/* Body Styles */
-.paragraph {
-    font-size: default;
-    color: ?color-text;
-    line-height: 1.15;
-    margin-bottom: 24;
-}
-
-.paragraph-sm {
-    font-size: small;
-    color: ?color-text;
-    line-height: 1.25;
-    margin-bottom: 12;
-}
-
-.paragraph-xs {
-    font-size: micro;
-    color: ?color-text;
-    line-height: 1.25;
-    margin-bottom: 8;
-}
-
-.paragraph-lg {
-    font-size: large;
-    color: ?color-text;
-    line-height: 1;
-    margin-bottom: 16;
-}
-
-/* Text Decoration */
-.text-underline {
-    text-decoration: underline;
-}
-
-.text-strikethrough {
-    text-decoration: strikethrough;
-}
-
-.text-linethrough {
-    text-decoration: line-through;
-}
-
-/* Opacity */
-.o-00, .o-0 {
-    opacity: 0;
-}
-
-.o-10 {
-    opacity: .1;
-}
-
-.o-20 {
-    opacity: .2;
-}
-
-.o-30 {
-    opacity: .3;
-}
-
-.o-40 {
-    opacity: .4;
-}
-
-.o-50 {
-    opacity: .5;
-}
-
-.o-60 {
-    opacity: .6;
-}
-
-.o-70 {
-    opacity: .7;
-}
-
-.o-80 {
-    opacity: .8;
-}
-
-.o-90 {
-    opacity: .9;
-}
-
-/* Leading */
-.leading-none {
-    line-height: 1;
-}
-
-.leading-tight {
-    line-height: 1.1;
-}
-
-.leading-snug {
-    line-height: 1.2;
-}
-
-.leading-normal {
-    line-height: 1.25;
-}
-
-.leading-relaxed {
-    line-height: 1.4;
-}
-
-.leading-loose {
-    line-height: 1.6;
-}
-
-/* Text Alignment */
-.text-center {
-    text-align: center;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.text-left {
-    text-align: left;
-}
-
-.text-start {
-    text-align: start;
-}
-
-.text-end {
-    text-align: end;
-}
-
-/* Border Radius */
-.rounded-none {
-    border-radius: 0;
-}
-
-.rounded-sm {
-    border-radius: 2;
-}
-
-.rounded {
-    border-radius: 6;
-}
-
-.rounded-lg {
-    border-radius: 10;
-}
-
-.rounded-full {
-    border-radius: 1000;
-}
-
 /* Toggle Button CSS */
 .toggle-button {
     border-radius: 0;
     border-color: ?color-primary;
-    background-color: initial;
+    background-color: transparent;
     padding: 9 12 12 12;
 }
 
@@ -1027,6 +1053,31 @@ NavigationPage {
 
 .toggle-button.checked .icon {
     color: white;
+}
+
+/*
+    Block CSS
+    -----------------------------------------------------------
+*/
+
+/* Note Editor */
+.noteeditor {
+    border-color: ?color-text;
+    padding: 8;
+    background-color: ?color-gray-100;
+    margin-top: 12;
+    margin-bottom: 12;
+}
+
+.noteeditor ^texteditor {
+    height: 100;
+    color: ?color-text;
+    margin: 0;
+    font-size: small;
+}
+
+.noteeditor-label {
+    font-size: 11;
 }
 
 /* Hero Block */
@@ -1215,7 +1266,7 @@ formfield.required .required-indicator {
 }
 
 /* Field Stacks */
-fieldstack {
+^fieldstack {
     border-radius: 0;
     border-color: ?color-secondary;
     border-width: 1;
@@ -1271,6 +1322,7 @@ formfield .required-indicator {
 
 .card-tagline {
     font-style: normal;
+    font-size: 14;
 }
 
 .card-title {
