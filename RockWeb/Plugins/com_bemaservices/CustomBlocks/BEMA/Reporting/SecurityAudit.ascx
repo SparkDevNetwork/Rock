@@ -106,7 +106,46 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-widget rock-panel-widget">
+            <div class="panel-heading heading-thin clearfix clickable" id="divHeaderFinancePages" runat="server" data-toggle="collapse" data-target="#divBodyFinancePages">
+            </div>
 
+            <div id="divBodyFinancePages" class="collapse panel-body">
+                <div class="alert alert-info">
+                    <p>
+                        <asp:Literal ID="lDescriptionFinancePages" runat="server" />
+                    </p>
+                </div>
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gFinancePages" runat="server" AllowSorting="true">
+                        <Columns>
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                            <Rock:RockBoundField DataField="PageTitle" HeaderText="Name" SortExpression="Name" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-widget rock-panel-widget">
+            <div class="panel-heading heading-thin clearfix clickable" id="divHeaderAdminPages" runat="server" data-toggle="collapse" data-target="#divBodyAdminPages">
+            </div>
+
+            <div id="divBodyAdminPages" class="collapse panel-body">
+                <div class="alert alert-info">
+                    <p>
+                        <asp:Literal ID="lDescriptionAdminPages" runat="server" />
+                    </p>
+                </div>
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gAdminPages" runat="server" AllowSorting="true">
+                        <Columns>
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                            <Rock:RockBoundField DataField="PageTitle" HeaderText="Name" SortExpression="Name" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -68,8 +68,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
     // Finance Data Views Settings
     [IntegerField( "Recommended Maximum Number of Unsecured Finance Data Views", "The recommended maximum number of unsecured finance data views to use for the audit.", true, 4, "Finance Data View Settings", 9, AttributeKey.RecommendedMaximumUnsecuredFinanceDataViewCount )]
 
+    // Finance Pages Settings
+    [IntegerField( "Recommended Maximum Number of Unsecured Finance Pages", "The recommended maximum number of unsecured finance pages to use for the audit.", true, 0, "Finance Page Settings", 10, AttributeKey.RecommendedMaximumUnsecuredFinancePageCount )]
+
+    // Admin Pages Settings
+    [IntegerField( "Recommended Maximum Number of Unsecured Admin Pages", "The recommended maximum number of unsecured admin pages to use for the audit.", true, 6, "Admin Page Settings", 11, AttributeKey.RecommendedMaximumUnsecuredAdminPageCount )]
+
     // Sensitive File Type Settings
-    [BinaryFileTypesField( "Sensitive File Types", "The file types that should not be accessible to all users.", true, "", "Sensitive File Type Settings", 10, AttributeKey.SensitiveFileTypes )]
+    [BinaryFileTypesField( "Sensitive File Types", "The file types that should not be accessible to all users.", true, "", "Sensitive File Type Settings", 12, AttributeKey.SensitiveFileTypes )]
 
     public partial class SecurityAudit : RockBlock, ICustomGridColumns
     {
@@ -91,6 +97,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             public const string SqlLavaCommandSites = "SqlLavaCommandSites";
             public const string RecommendedMaximumPersonAuthCount = "RecommendedMaximumPersonAuthCount";
             public const string RecommendedMaximumUnsecuredFinanceDataViewCount = "RecommendedMaximumUnsecuredFinanceDataViewCount";
+            public const string RecommendedMaximumUnsecuredFinancePageCount = "RecommendedMaximumUnsecuredFinancePageCount";
+            public const string RecommendedMaximumUnsecuredAdminPageCount = "RecommendedMaximumUnsecuredAdminPageCount";
             public const string SensitiveFileTypes = "SensitiveFileTypes";
         }
 
@@ -160,6 +168,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gFinanceDataViews.GridRebind += gFinanceDataViews_GridRebind;
             gFileTypeSecurity.GridRebind += gFileTypeSecurity_GridRebind;
             gGlobalLavaCommands.GridRebind += gGlobalLavaCommands_GridRebind;
+            gFinancePages.GridRebind += gFinancePages_GridRebind;
+            gAdminPages.GridRebind += gAdminPages_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -229,6 +239,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             BuildFinanceDataViewsHeader( rockContext );
             BindFinanceDataViewsGrid( rockContext );
 
+            BuildFinancePagesHeader( rockContext );
+            BindFinancePagesGrid( rockContext );
+
+            BuildAdminPagesHeader( rockContext );
+            BindAdminPagesGrid( rockContext );
+
             BuildFileTypeSecurityHeader( rockContext );
             BindFileTypeSecurityGrid( rockContext );
 
@@ -269,6 +285,61 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             targetHeader.InnerHtml = String.Format( "<h5 class='mb-0'>{0}<span class=\"pull-right\"><i class=\"fa fa-chevron-down\"></i></span></h5>", headerText );
             targetLiteral.Text = descriptionText;
             targetHeader.AddCssClass( headerCss );
+        }
+
+        private void AddParentRules( AuthService authService, List<AuthRule> itemRules, ISecured parent, string action, bool recurse )
+        {
+            if ( parent != null )
+            {
+                var entityType = EntityTypeCache.Get( parent.TypeId );
+                foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
+                {
+                    var rule = new AuthRule( auth );
+
+                    if ( !itemRules.Exists( r =>
+                            r.SpecialRole == rule.SpecialRole &&
+                            r.PersonId == rule.PersonId &&
+                            r.GroupId == rule.GroupId ) )
+                    {
+                        itemRules.Add( rule );
+                    }
+                }
+
+                if ( recurse )
+                {
+                    AddParentRules( authService, itemRules, parent.ParentAuthority, action, true );
+                }
+            }
+        }
+
+        private void CheckItemSecurity( RockContext rockContext, List<int> isecuredIdList, List<int> authorizedGroupIds, ISecured iSecuredEntity )
+        {
+            var authService = new AuthService( rockContext );
+
+            var itemRules = new List<AuthRule>();
+            foreach ( var auth in authService.GetAuths( iSecuredEntity.TypeId, iSecuredEntity.Id, Authorization.VIEW ) )
+            {
+                itemRules.Add( new AuthRule( auth ) );
+            }
+            AddParentRules( authService, itemRules, iSecuredEntity.ParentAuthorityPre, Authorization.VIEW, false );
+            AddParentRules( authService, itemRules, iSecuredEntity.ParentAuthority, Authorization.VIEW, true );
+
+            var authRules = Authorization.AuthRules( iSecuredEntity.TypeId, iSecuredEntity.Id, Authorization.VIEW );
+            if ( !itemRules.Where( a => a.AllowOrDeny == 'D' && a.SpecialRole == SpecialRole.AllUsers ).Any() )
+            {
+                isecuredIdList.Add( iSecuredEntity.Id );
+            }
+            else
+            {
+                var denyRule = itemRules.Where( a => a.AllowOrDeny == 'D' && a.SpecialRole == SpecialRole.AllUsers ).FirstOrDefault();
+                foreach ( var authRule in itemRules.Where( a => a.AllowOrDeny == 'A' && ( !a.GroupId.HasValue || !authorizedGroupIds.Contains( a.GroupId.Value ) ) ).ToList() )
+                {
+                    if ( itemRules.IndexOf( denyRule ) > itemRules.IndexOf( authRule ) )
+                    {
+                        isecuredIdList.Add( iSecuredEntity.Id );
+                    }
+                }
+            }
         }
 
         #endregion
@@ -613,28 +684,24 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildFinanceDataViewsHeader( RockContext rockContext )
         {
-            List<Rock.Model.DataView> unsecuredDataViews = new List<Rock.Model.DataView>();
+            var dataViewService = new DataViewService( rockContext );
+
+            List<int> unsecuredDataViewIds = new List<int>();
             List<int> authorizedGroupIds = new List<int>();
 
             var groupService = new GroupService( rockContext );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
 
-            var dataViews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( dv => dv.EntityType.Name.Contains( "Financ" ) ).ToList();
+            var dataViews = dataViewService.Queryable().AsNoTracking().Where( dv => dv.EntityType.Name.Contains( "Financ" ) ).ToList();
             foreach ( var dataView in dataViews )
             {
-                var authRules = Authorization.AuthRules( dataView.TypeId, dataView.Id, Authorization.VIEW );
-                if ( !authRules.Where( a => a.AllowOrDeny == 'D' && a.SpecialRole == SpecialRole.AllUsers ).Any() )
-                {
-                    unsecuredDataViews.Add( dataView );
-                }
-
-                if ( authRules.Where( a => a.AllowOrDeny == 'D' && ( !a.GroupId.HasValue || !authorizedGroupIds.Contains( a.GroupId.Value ) ) ).Any() )
-                {
-                    unsecuredDataViews.Add( dataView );
-                }
+                CheckItemSecurity( rockContext, unsecuredDataViewIds, authorizedGroupIds, dataView );
             }
+
+            var unsecuredDataViews = dataViewService.GetByIds( unsecuredDataViewIds ).ToList();
 
             var auditValue = unsecuredDataViews.Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinanceDataViewCount ).AsInteger();
@@ -655,30 +722,24 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             {
                 rockContext = new RockContext();
             }
+            var dataViewService = new DataViewService( rockContext );
 
-
-            List<Rock.Model.DataView> unsecuredDataViews = new List<Rock.Model.DataView>();
+            List<int> unsecuredDataViewIds = new List<int>();
             List<int> authorizedGroupIds = new List<int>();
 
             var groupService = new GroupService( rockContext );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
 
-            var dataViews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( dv => dv.EntityType.Name.Contains( "Financ" ) ).ToList();
+            var dataViews = dataViewService.Queryable().AsNoTracking().Where( dv => dv.EntityType.Name.Contains( "Financ" ) ).ToList();
             foreach ( var dataView in dataViews )
             {
-                var authRules = Authorization.AuthRules( dataView.TypeId, dataView.Id, Authorization.VIEW );
-                if ( !authRules.Where( a => a.AllowOrDeny == 'D' && a.SpecialRole == SpecialRole.AllUsers ).Any() )
-                {
-                    unsecuredDataViews.Add( dataView );
-                }
-
-                if ( authRules.Where( a => a.AllowOrDeny == 'D' && ( !a.GroupId.HasValue || !authorizedGroupIds.Contains( a.GroupId.Value ) ) ).Any() )
-                {
-                    unsecuredDataViews.Add( dataView );
-                }
+                CheckItemSecurity( rockContext, unsecuredDataViewIds, authorizedGroupIds, dataView );
             }
+
+            var unsecuredDataViews = dataViewService.GetByIds( unsecuredDataViewIds ).ToList();
             gFinanceDataViews.DataSource = unsecuredDataViews;
             gFinanceDataViews.DataBind();
         }
@@ -738,7 +799,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #endregion
 
-
         #region GlobalLavaCommands Methods
 
         private void BuildGlobalLavaCommandsHeader( RockContext rockContext )
@@ -779,6 +839,151 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gGlobalLavaCommands.DataBind();
         }
 
-        #endregion       
+        #endregion
+
+        #region Finance Page Methods
+
+        private void BuildFinancePagesHeader( RockContext rockContext )
+        {
+            var pageService = new PageService( rockContext );
+
+            List<int> unsecuredPageIds = new List<int>();
+            List<int> authorizedGroupIds = new List<int>();
+
+            var groupService = new GroupService( rockContext );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
+
+            var rootPage = pageService.Get( Rock.SystemGuid.Page.FINANCE.AsGuid() );
+            if ( rootPage != null )
+            {
+                var pages = pageService.GetAllDescendents( rootPage.Id );
+                foreach ( var page in pages )
+                {
+                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
+                }
+            }
+            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
+
+            var auditValue = unsecuredPages.Count;
+            var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinancePageCount ).AsInteger();
+
+            var headerText = String.Format( "Unsecured Finance Pages: {0}", auditValue );
+            var descriptionText = String.Format( "A key part of improving your site's security is to limit access to financial information. BEMA recommends allowing no more than {0} unsecured financial pages.", auditGoal );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderFinancePages, lDescriptionFinancePages );
+        }
+
+        private void gFinancePages_GridRebind( object sender, EventArgs e )
+        {
+            BindFinancePagesGrid();
+        }
+
+        private void BindFinancePagesGrid( RockContext rockContext = null )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var pageService = new PageService( rockContext );
+
+            List<int> unsecuredPageIds = new List<int>();
+            List<int> authorizedGroupIds = new List<int>();
+
+            var groupService = new GroupService( rockContext );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
+
+            var rootPage = pageService.Get( Rock.SystemGuid.Page.FINANCE.AsGuid() );
+            if ( rootPage != null )
+            {
+                var pages = pageService.GetAllDescendents( rootPage.Id );
+                foreach ( var page in pages )
+                {
+                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
+                }
+            }
+            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
+            gFinancePages.DataSource = unsecuredPages;
+            gFinancePages.DataBind();
+        }
+
+        #endregion
+
+        #region Admin Page Methods
+
+        private void BuildAdminPagesHeader( RockContext rockContext )
+        {
+            var pageService = new PageService( rockContext );
+
+            List<int> unsecuredPageIds = new List<int>();
+            List<int> authorizedGroupIds = new List<int>();
+
+            var groupService = new GroupService( rockContext );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( "1918E74F-C00D-4DDD-94C4-2E7209CE12C3".AsGuid() ).Id );
+
+            var rootPage = pageService.Get( Rock.SystemGuid.Page.ADMIN_TOOLS.AsGuid() );
+            if ( rootPage != null )
+            {
+                var pages = pageService.GetAllDescendents( rootPage.Id );
+                foreach ( var page in pages )
+                {
+                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
+                }
+            }
+            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
+
+            var auditValue = unsecuredPages.Count;
+            var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredAdminPageCount ).AsInteger();
+
+            var headerText = String.Format( "Unsecured Admin Pages: {0}", auditValue );
+            var descriptionText = String.Format( "A key part of improving your site's security is to limit access to admin configuration pages. BEMA recommends allowing no more than {0} unsecured admin pages.", auditGoal );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderAdminPages, lDescriptionAdminPages );
+        }
+
+        private void gAdminPages_GridRebind( object sender, EventArgs e )
+        {
+            BindAdminPagesGrid();
+        }
+
+        private void BindAdminPagesGrid( RockContext rockContext = null )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var pageService = new PageService( rockContext );
+
+            List<int> unsecuredPageIds = new List<int>();
+            List<int> authorizedGroupIds = new List<int>();
+
+            var groupService = new GroupService( rockContext );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() ).Id );
+            authorizedGroupIds.Add( groupService.Get( "1918E74F-C00D-4DDD-94C4-2E7209CE12C3".AsGuid() ).Id );
+
+            var rootPage = pageService.Get( Rock.SystemGuid.Page.ADMIN_TOOLS.AsGuid() );
+            if ( rootPage != null )
+            {
+                var pages = pageService.GetAllDescendents( rootPage.Id );
+                foreach ( var page in pages )
+                {
+                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
+                }
+            }
+            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
+
+            gAdminPages.DataSource = unsecuredPages;
+            gAdminPages.DataBind();
+        }
+
+        #endregion
     }
 }
