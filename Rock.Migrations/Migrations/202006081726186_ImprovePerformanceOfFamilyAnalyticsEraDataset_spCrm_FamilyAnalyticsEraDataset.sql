@@ -1,4 +1,4 @@
-/*
+﻿/*
 <doc>
 	<summary>
  		This stored procedure returns a data set used by the Rock eRA job to add/remove
