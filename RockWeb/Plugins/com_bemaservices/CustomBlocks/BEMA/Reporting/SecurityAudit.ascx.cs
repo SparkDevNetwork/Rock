@@ -584,7 +584,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// <param name="rockContext">The rock context.</param>
         private void BuildPageParameterSqlHeader( RockContext rockContext )
         {
-            var auditValue = GetPageParameterSqlData().Count;
+            var auditValue = GetPageParameterSqlData().Rows.Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlPageParameterBlocks ).AsInteger();
 
             var headerText = String.Format( "Blocks Using Page Parameters in SQL Queries: {0}", auditValue );
@@ -613,7 +613,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
-            DataRowCollection data = GetPageParameterSqlData();
+            DataTable data = GetPageParameterSqlData();
 
             gPageParameterSql.DataSource = data;
             gPageParameterSql.DataBind();
@@ -623,7 +623,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// Gets the page parameter SQL data.
         /// </summary>
         /// <returns></returns>
-        private DataRowCollection GetPageParameterSqlData()
+        private DataTable GetPageParameterSqlData()
         {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
             var query = @"Select distinct p.Id as PageId, p.PageTitle, b.Id as BlockId, b.Name
@@ -635,7 +635,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             Where av.Value like '%{%PageParameter%}%'
                             And l.SiteId in (" + siteList + ")";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            var data = dataSet.Tables[0].Rows;
+            var data = dataSet.Tables[0];
             return data;
         }
 
@@ -649,7 +649,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// <param name="rockContext">The rock context.</param>
         private void BuildSqlLavaCommandHeader( RockContext rockContext )
         {
-            var auditValue = GetSqlLavaCommandData().Count;
+            var auditValue = GetSqlLavaCommandData().Rows.Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlLavaCommandBlocks ).AsInteger();
 
             var headerText = String.Format( "Blocks Using SQL Lava Commands: {0}", auditValue );
@@ -688,7 +688,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// Gets the SQL lava command data.
         /// </summary>
         /// <returns></returns>
-        private DataRowCollection GetSqlLavaCommandData()
+        private DataTable GetSqlLavaCommandData()
         {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
             var query = @"Declare @BlockAttributes table(
@@ -706,7 +706,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             Where hc.Content like '%{%sql%}%' or b.PreHtml like '%{%sql%}%' or b.PostHtml like '%{%sql%}%' or av.Value like '%{%sql%}%'
                             And l.SiteId in (" + siteList + ")";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            var data = dataSet.Tables[0].Rows;
+            var data = dataSet.Tables[0];
             return data;
         }
 
@@ -778,7 +778,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// <param name="rockContext">The rock context.</param>
         private void BuildUnencryptedSensitiveDataHeader( RockContext rockContext )
         {
-            var auditValue = GetUnencryptedSensitiveDataData().Count;
+            var auditValue = GetUnencryptedSensitiveDataData().Rows.Count;
             var auditGoal = 0;
 
             var headerText = String.Format( "Unencrypted Sensitive Attributes: {0}", auditValue );
@@ -807,7 +807,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
-            DataRowCollection data = GetUnencryptedSensitiveDataData();
+            DataTable data = GetUnencryptedSensitiveDataData();
 
             gUnencryptedSensitiveData.DataSource = data;
             gUnencryptedSensitiveData.DataBind();
@@ -817,7 +817,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         /// Gets the unencrypted sensitive data data.
         /// </summary>
         /// <returns></returns>
-        private DataRowCollection GetUnencryptedSensitiveDataData()
+        private DataTable GetUnencryptedSensitiveDataData()
         {
             var query = @"Select a.Id, a.Name, et.Name as EntityType, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue, count(0) as SensitiveRecords
                             From AttributeValue av
@@ -828,7 +828,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             or av.Value like '[0-9][0-9][0-9] [0-9][0-9] [0-9][0-9][0-9][0-9]'
                             Group By a.Id, a.Name, et.Name, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            var data = dataSet.Tables[0].Rows;
+            var data = dataSet.Tables[0];
             return data;
         }
 
