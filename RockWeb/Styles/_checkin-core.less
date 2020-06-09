@@ -52,10 +52,10 @@ select.form-control {
 
 // Fix to allow SVGs inside of buttons.
 .btn svg {
+  display: block;
   width: auto;
   height: 1em;
   fill: currentColor;
-  display: block;
 }
 
 h1,
@@ -283,11 +283,12 @@ body {
   padding: 0 0 @padding-base-vertical 0;
 }
 
-.checkin-search-actions{
+.checkin-search-actions {
   text-align: center;
   a {
+    width: 520px;
     max-width: 100%;
-    padding: 20px 200px;
+    padding: 20px;
     font-size: 48px;
     font-weight: @checkin-button-text-weight;
     line-height: 48px;
@@ -326,7 +327,6 @@ body {
     padding: 12px 24px;
     font-size: 22px;
     font-weight: @checkin-button-text-weight;
-    margin-left: 12px;
   }
 
   .btn-primary {
@@ -455,7 +455,7 @@ input.checkin-phone-entry {
   width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
@@ -464,13 +464,13 @@ input.namesearch {
   width: 360px;
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
 
 .checkin-phone-keypad {
-  margin: 0 auto 24px auto;
+  margin: 0 auto 24px;
 }
 
 // time select

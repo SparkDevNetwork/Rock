@@ -311,8 +311,10 @@ $(document).ready(function() {
             if ( adding )
             {
                 service.Add( dataView );
+                // We need to save the new data view so we can bind the data view filters.
+                rockContext.SaveChanges();
             }
-
+            
             rockContext.WrapTransaction( () =>
             {
                 if ( origDataViewFilterId.HasValue )
@@ -889,22 +891,30 @@ $(document).ready(function() {
 
         private void SetupNumberOfRuns( DataView dataView )
         {
-            hlRunSince.Text = "";
+            hlRunSince.Text = "Not Run";
             hlRunSince.LabelType = LabelType.Info;
+
+            var lastRefreshDateTime = dataView.CreatedDateTime;
 
             if ( dataView.RunCountLastRefreshDateTime == null )
             {
-                return;
+                lastRefreshDateTime = dataView.RunCountLastRefreshDateTime;
+            }
+
+            var status = "Since Creation";
+            if(lastRefreshDateTime != null )
+            {
+                status = string.Format( "Since {0}", lastRefreshDateTime.Value.ToShortDateString() );
             }
 
             if ( dataView.RunCount == null || dataView.RunCount.Value == 0 )
             {
                 hlRunSince.LabelType = LabelType.Warning;
-                hlRunSince.Text = string.Format( "Not Run Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+                hlRunSince.Text = string.Format( "Not Run {0}", status );
                 return;
             }
 
-            hlRunSince.Text = string.Format( "{0:0} Runs Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+            hlRunSince.Text = string.Format( "{0:0} Runs {1}", dataView.RunCount, status );
         }
 
         private void SetupTimeToRunLabel( DataView dataView )

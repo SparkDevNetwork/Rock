@@ -38,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people according to their membership of Groups from a Group Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Data View" )]
-    public class GroupDataViewFilter : DataFilterComponent
+    public class GroupDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties
 
@@ -341,6 +341,26 @@ function ()
             ddlGroupMemberStatus.SelectedValue = settings.MemberStatus.ToStringSafe();
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
 
         #region Settings

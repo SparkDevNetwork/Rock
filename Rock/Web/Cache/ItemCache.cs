@@ -164,7 +164,7 @@ namespace Rock.Web.Cache
         /// Ensure that the Key is part of the AllIds list
         /// </summary>
         /// <param name="key">The key.</param>
-        private static void AddToAllIds( string key )
+        internal static void AddToAllIds( string key )
         {
             // Get the dictionary of all item ids
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );

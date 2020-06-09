@@ -103,13 +103,17 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                // first try to determine it from ViewState 
-                var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
+                /* [DL] 2020-06-02
+                 * The picker mode is stored both in ViewState and in a hidden field that is updated by client script to reflect any changes.
+                 * To retrieve the current picker mode we need to use the value stored in the hidden field if it is available, in preference to ViewState.
+                 * In some circumstances, such as when this control is used as a child control of the AttributeMatrixEditor, ViewState does not correctly
+                 * reflect the picker mode if a postback is triggered by another editor control and the picker has not been previously accessed.
+                 */
+                var currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
 
-                // if ViewState didn't know, try to get it from _hfCurrentPickerMode 
                 if ( !currentPickerMode.HasValue )
                 {
-                    currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
+                    currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
                 }
 
                 if ( !currentPickerMode.HasValue )

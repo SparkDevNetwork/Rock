@@ -19,10 +19,10 @@ Quartz.xml
 StyleCop.Cache
 
 #build artifacts
-**/[Bb]in/[Db]ebug
+**/[Bb]in/[Dd]ebug
 **/[Bb]in/[Rr]elease
-**/[O]bj/[Db]ebug
-**/[O]bj/[Rr]elease
+**/[Oo]bj/[Dd]ebug
+**/[Oo]bj/[Rr]elease
 
 #specific folders
 RockWeb/Cache/*

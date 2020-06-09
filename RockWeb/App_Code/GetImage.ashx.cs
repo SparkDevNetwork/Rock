@@ -27,6 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -225,8 +226,9 @@ namespace RockWeb
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 a.Id,
-                BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
+                BinaryFileType_CacheToServerFileSystem = a.BinaryFileType.CacheToServerFileSystem,
                 BinaryFileType_RequiresViewSecurity = a.BinaryFileType.RequiresViewSecurity,
+                a.BinaryFileTypeId,
                 ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
@@ -259,7 +261,7 @@ namespace RockWeb
                 // Is it cached
                 string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
                 string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-                if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
+                if ( binaryFileMetaData.BinaryFileType_CacheToServerFileSystem && File.Exists( physCachedFilePath ) )
                 {
                     //// Compare the File's LastWrite DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
                     //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
@@ -296,7 +298,7 @@ namespace RockWeb
                             }
                         }
 
-                        if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                        if ( binaryFileMetaData.BinaryFileType_CacheToServerFileSystem )
                         {
                             Cache( fileContent, physCachedFilePath );
 
@@ -321,12 +323,10 @@ namespace RockWeb
                 }
 
                 // respond with File
-                if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                if ( binaryFileMetaData.BinaryFileTypeId != null )
                 {
-                    // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
-                    context.Response.Cache.SetCacheability( HttpCacheability.Public );
-                    context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
-                    context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
+                    var binaryFileCache = BinaryFileTypeCache.Get( binaryFileMetaData.BinaryFileTypeId.Value );
+                    binaryFileCache.CacheControlHeader.SetupHttpCachePolicy( context.Response.Cache );
                 }
 
                 // set the mime-type to that of the binary file
@@ -425,8 +425,8 @@ namespace RockWeb
             // use the binaryFileService.BeginGet/EndGet which is a little faster than the regular get
             AsyncCallback cb = ( IAsyncResult asyncResult ) =>
             {
-                    // restore the context from the asyncResult.AsyncState 
-                    HttpContext asyncContext = ( HttpContext ) asyncResult.AsyncState;
+                // restore the context from the asyncResult.AsyncState 
+                HttpContext asyncContext = ( HttpContext ) asyncResult.AsyncState;
                 binaryFile = new BinaryFileService( rockContext ).EndGet( asyncResult, context );
                 completedEvent.Set();
             };

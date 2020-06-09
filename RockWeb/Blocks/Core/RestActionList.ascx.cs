@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -73,19 +74,12 @@ namespace RockWeb.Blocks.Administration
             {
                 securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RestAction ) ).Id;
             }
+
+            modalActionSettings.SaveClick += btnSaveActionSettings_Click;
+            modalActionSettings.OnCancelScript = string.Format( "$('#{0}').val('');", hfControllerActionId.ClientID );
         }
 
-        /// <summary>
-        /// Handles the RowSelected event of the gActions control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gActions_RowSelected( object sender, RowEventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "RestActionId", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
-        }
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -141,6 +135,16 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Events
+        /// <summary>
+        /// Handles the RowSelected event of the gActions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gActions_RowSelected( object sender, RowEventArgs e )
+        {
+            ShowActionSettingsEdit( ( int ) e.RowKeyValue );
+        }
+
 
         /// <summary>
         /// Handles the GridRebind event of the gActions control.
@@ -152,6 +156,41 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the OnFormatDataValue event of the gActionsPath control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
+        protected void gActionsPath_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
+        {
+            e.FormattedValue = e.DataValue.ToString();
+            if ( e.FormattedValue.EndsWith( "?key={key}" ) )
+            {
+                e.FormattedValue = e.FormattedValue.Replace( "?key={key}", "(id)" );
+            }
+        }
+
+        private void btnSaveActionSettings_Click( object sender, EventArgs e )
+        {
+            SaveRestAction();
+        }
+
+        protected void gActions_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var restAction = e.Row.DataItem as RestAction;
+                var litCacheHeader = e.Row.FindControl( "litCacheHeader" ) as Literal;
+                if ( litCacheHeader != null
+                        && restAction != null
+                        && restAction.CacheControlHeader != null
+                        && restAction.CacheControlHeader.RockCacheablityType == Rock.Utility.RockCacheablityType.Public )
+                {
+                    litCacheHeader.Text = string.Format( "<span class='text-success fa fa-tachometer-alt' title='{0}' data-toggle='tooltip'></span>",
+                        restAction.CacheControlHeader.ToString() );
+                }
+            }
+        }
         #endregion
 
         #region Methods
@@ -184,20 +223,47 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        /// <summary>
-        /// Handles the OnFormatDataValue event of the gActionsPath control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
-        protected void gActionsPath_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
+        private void ShowActionSettingsEdit( int controllerActionId )
         {
-            e.FormattedValue = e.DataValue.ToString();
-            if ( e.FormattedValue.EndsWith( "?key={key}" ) )
+            var restAction = new RestActionService( new RockContext() ).Get( controllerActionId );
+
+            if ( restAction.Method == "GET" )
             {
-                e.FormattedValue = e.FormattedValue.Replace( "?key={key}", "(id)" );
+                modalActionSettings.SubTitle = restAction.Path;
+
+                hfControllerActionId.Value = controllerActionId.ToString();
+
+                var cacheHeader = restAction.CacheControlHeader;
+                if(cacheHeader == null )
+                {
+                    cacheHeader = new Rock.Utility.RockCacheability
+                    {
+                        RockCacheablityType = Rock.Utility.RockCacheablityType.NoCache
+                    };
+                }
+                cpActionCacheSettings.CurrentCacheablity = cacheHeader;
+
+                modalActionSettings.Show();
             }
         }
 
+        private void SaveRestAction()
+        {
+            var controllerActionId = hfControllerActionId.Value.AsInteger();
+            var rockContext = new RockContext();
+            var restAction = new RestActionService( rockContext ).Get( controllerActionId );
+            if ( restAction != null )
+            {
+                restAction.CacheControlHeaderSettings = cpActionCacheSettings.CurrentCacheablity.ToJson();
+                rockContext.SaveChanges();
+            }
+
+            modalActionSettings.Hide();
+            BindGrid();
+        }
+
         #endregion
+
+
     }
 }
