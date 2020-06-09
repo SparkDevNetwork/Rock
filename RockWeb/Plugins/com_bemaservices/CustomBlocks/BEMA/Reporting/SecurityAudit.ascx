@@ -1,15 +1,15 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SecurityAudit.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting.SecurityAudit" %>
 <style>
     .header-success {
-        background-color: #16c98d !important;
+        background-color: #dff0d8 !important;
     }
 
     .header-warning {
-        background-color: #ffc870 !important;
+        background-color: #fcf8e3 !important;
     }
 
     .header-danger {
-        background-color: #d85642 !important;
+        background-color: #f2dede !important;
     }
 
     .heading-thin {
