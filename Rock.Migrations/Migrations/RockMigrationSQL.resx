@@ -409,4 +409,7 @@
   <data name="_202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset_spCrm_FamilyAnalyticsEraDataset_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202006081726186_improveperformanceoffamilyanalyticseradataset_spcrm_familyanalyticseradataset_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202006091841047_Rollup_0609_spDbaRebuildIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202006091841047_rollup_0609_spdbarebuildindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
