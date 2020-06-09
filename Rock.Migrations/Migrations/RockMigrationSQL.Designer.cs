@@ -2138,5 +2138,24 @@ namespace Rock.Migrations.Migrations {
                         "icsEraDataset_down", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function rebuilds the database indexes.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;PageCountLimit&apos; datatype=&apos;int&apos;&gt;The number of page counts the index must have in order to be considered for re-indexing (default 100).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentation&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentation a index must have to be considered for re-indexing (default 10).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentationRebuild&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentat [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202006091841047_Rollup_0609_spDbaRebuildIndexes {
+            get {
+                return ResourceManager.GetString("_202006091841047_Rollup_0609_spDbaRebuildIndexes", resourceCulture);
+            }
+        }
     }
 }
