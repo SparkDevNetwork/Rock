@@ -293,18 +293,18 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             if ( auditValue <= auditGoal )
             {
                 PassedChecks++;
-                if ( auditValue == auditGoal && showWarning )
+                headerCss = "header-success";
+            }
+            else
+            {
+                if ( showWarning )
                 {
                     headerCss = "header-warning";
                 }
                 else
                 {
-                    headerCss = "header-success";
+                    headerCss = "header-danger";
                 }
-            }
-            else
-            {
-                headerCss = "header-danger";
             }
 
             targetHeader.InnerHtml = String.Format( "<h5 class='mb-0'>{0}<span class=\"pull-right\"><i class=\"fa fa-chevron-down\"></i></span></h5>", headerText );
@@ -398,7 +398,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Number of Rock Admins: {0}", auditValue );
             var descriptionText = String.Format( "Limiting the number of people who have access to modify all of Rock is crucial to improving your organization's security. BEMA recommends having no more than {0} members of the Rock Administration Group.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderRockAdmin, lDescriptionRockAdmin );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderRockAdmin, lDescriptionRockAdmin );
         }
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Non-Staff Security Role Members: {0}", auditValue );
             var descriptionText = String.Format( "BEMA recommends limiting the number of people in security roles that are not in your organization. We recommend no more than {0} people be in a security role that are not part of your organization in some way.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderNonStaff, lDescriptionNonStaff );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderNonStaff, lDescriptionNonStaff );
         }
 
         /// <summary>
@@ -725,7 +725,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Number of Person-Specific Auth Rules: {0}", auditValue );
             var descriptionText = String.Format( "Limiting the number of person-specific auth rules and relying on group-based auth rules is crucial to improving your organization's security. BEMA recommends having no more than {0} person-specific auth rules set on your database.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderPersonAuth, lDescriptionPersonAuth );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderPersonAuth, lDescriptionPersonAuth );
         }
 
         /// <summary>
@@ -847,7 +847,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Unsecured Finance Data Views: {0}", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to financial information. BEMA recommends allowing no more than {0} unsecured financial data views.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderFinanceDataViews, lDescriptionFinanceDataViews );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFinanceDataViews, lDescriptionFinanceDataViews );
         }
 
         /// <summary>
@@ -1044,7 +1044,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Unsecured Finance Pages: {0}", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to financial information. BEMA recommends allowing no more than {0} unsecured financial pages.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderFinancePages, lDescriptionFinancePages );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFinancePages, lDescriptionFinancePages );
         }
 
         /// <summary>
@@ -1120,7 +1120,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
             var headerText = String.Format( "Unsecured Admin Pages: {0}", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to admin configuration pages. BEMA recommends allowing no more than {0} unsecured admin pages.", auditGoal );
-            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderAdminPages, lDescriptionAdminPages );
+            GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderAdminPages, lDescriptionAdminPages );
         }
 
         /// <summary>
