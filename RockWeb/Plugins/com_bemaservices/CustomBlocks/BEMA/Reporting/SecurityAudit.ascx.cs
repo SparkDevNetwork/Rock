@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,9 +37,6 @@ using Rock.Security;
 
 namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Security Audit" )]
     [Category( "BEMA Services > Reporting" )]
     [Description( "Report block to give an update on a site's security" )]
@@ -77,7 +74,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
     // Sensitive File Type Settings
     [BinaryFileTypesField( "Sensitive File Types", "The file types that should not be accessible to all users.", true, "", "Sensitive File Type Settings", 12, AttributeKey.SensitiveFileTypes )]
 
-    public partial class SecurityAudit : RockBlock, ICustomGridColumns
+    public partial class SecurityAudit : RockBlock
     {
         #region Fields
 
@@ -106,6 +103,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the percent complete.
+        /// </summary>
+        /// <value>
+        /// The percent complete.
+        /// </value>
         public decimal PercentComplete
         {
             get
@@ -119,6 +122,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
         }
 
+        /// <summary>
+        /// Gets or sets the passed checks.
+        /// </summary>
+        /// <value>
+        /// The passed checks.
+        /// </value>
         public int PassedChecks
         {
             get
@@ -132,6 +141,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
         }
 
+        /// <summary>
+        /// Gets or sets the total checks.
+        /// </summary>
+        /// <value>
+        /// The total checks.
+        /// </value>
         public int TotalChecks
         {
             get
@@ -150,7 +165,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -204,13 +218,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowDetail();
-
         }
 
         #endregion
 
         #region Generic Methods
 
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
         private void ShowDetail()
         {
             var rockContext = new RockContext();
@@ -260,6 +276,16 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             </div>", PercentComplete );
         }
 
+        /// <summary>
+        /// Generates the header.
+        /// </summary>
+        /// <param name="headerText">The header text.</param>
+        /// <param name="descriptionText">The description text.</param>
+        /// <param name="auditValue">The audit value.</param>
+        /// <param name="auditGoal">The audit goal.</param>
+        /// <param name="showWarning">if set to <c>true</c> [show warning].</param>
+        /// <param name="targetHeader">The target header.</param>
+        /// <param name="targetLiteral">The target literal.</param>
         private void GenerateHeader( string headerText, string descriptionText, int auditValue, int auditGoal, bool showWarning, HtmlGenericControl targetHeader, Literal targetLiteral )
         {
             var headerCss = "";
@@ -270,7 +296,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 if ( auditValue == auditGoal && showWarning )
                 {
                     headerCss = "header-warning";
-
                 }
                 else
                 {
@@ -287,6 +312,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             targetHeader.AddCssClass( headerCss );
         }
 
+        /// <summary>
+        /// Adds the parent rules.
+        /// </summary>
+        /// <param name="authService">The authentication service.</param>
+        /// <param name="itemRules">The item rules.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="recurse">if set to <c>true</c> [recurse].</param>
         private void AddParentRules( AuthService authService, List<AuthRule> itemRules, ISecured parent, string action, bool recurse )
         {
             if ( parent != null )
@@ -312,6 +345,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
         }
 
+        /// <summary>
+        /// Checks the item security.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="isecuredIdList">The isecured identifier list.</param>
+        /// <param name="authorizedGroupIds">The authorized group ids.</param>
+        /// <param name="iSecuredEntity">The i secured entity.</param>
         private void CheckItemSecurity( RockContext rockContext, List<int> isecuredIdList, List<int> authorizedGroupIds, ISecured iSecuredEntity )
         {
             var authService = new AuthService( rockContext );
@@ -321,6 +361,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             {
                 itemRules.Add( new AuthRule( auth ) );
             }
+
             AddParentRules( authService, itemRules, iSecuredEntity.ParentAuthorityPre, Authorization.VIEW, false );
             AddParentRules( authService, itemRules, iSecuredEntity.ParentAuthority, Authorization.VIEW, true );
 
@@ -346,6 +387,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Rock Admin Methods
 
+        /// <summary>
+        /// Builds the rock admin header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildRockAdminHeader( RockContext rockContext )
         {
             var auditValue = GetRockAdminData( rockContext ).Count;
@@ -356,11 +401,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderRockAdmin, lDescriptionRockAdmin );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gRockAdmins control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gRockAdmins_GridRebind( object sender, EventArgs e )
         {
             BindRockAdminGrid();
         }
 
+        /// <summary>
+        /// Binds the rock admin grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindRockAdminGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -373,12 +427,16 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gRockAdmins.DataBind();
         }
 
+        /// <summary>
+        /// Gets the rock admin data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private static List<GroupMember> GetRockAdminData( RockContext rockContext )
         {
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             var administratorGroupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
-            // sample query to display a few people
             var qry = groupMemberService.Queryable()
                         .Where( gm => gm.Group.Guid == administratorGroupGuid &&
                                 gm.GroupMemberStatus == GroupMemberStatus.Active )
@@ -390,6 +448,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region SSL Enabled Methods
 
+        /// <summary>
+        /// Builds the SSL enabled header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildSslEnabledHeader( RockContext rockContext )
         {
             var auditValue = GetSslEnabledData( rockContext ).Count();
@@ -400,11 +462,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderSslEnabled, lDescriptionSslEnabled );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gSslEnabled control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gSslEnabled_GridRebind( object sender, EventArgs e )
         {
             BindSslEnabledGrid();
         }
 
+        /// <summary>
+        /// Binds the SSL enabled grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindSslEnabledGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -418,12 +489,16 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gSslEnabled.DataBind();
         }
 
+        /// <summary>
+        /// Gets the SSL enabled data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private static List<Rock.Model.Page> GetSslEnabledData( RockContext rockContext )
         {
             var pageService = new PageService( rockContext );
 
             var administratorGroupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
-            // sample query to display a few people
             var qry = pageService.Queryable()
                         .AsNoTracking().Where( p => !p.RequiresEncryption && !p.Layout.Site.RequiresEncryption )
                         .ToList();
@@ -434,6 +509,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Non Staff Methods
 
+        /// <summary>
+        /// Builds the non staff header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildNonStaffHeader( RockContext rockContext )
         {
             var auditValue = GetNonStaffData( rockContext ).Count();
@@ -444,11 +523,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderNonStaff, lDescriptionNonStaff );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gNonStaff control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gNonStaff_GridRebind( object sender, EventArgs e )
         {
             BindNonStaffGrid();
         }
 
+        /// <summary>
+        /// Binds the non staff grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindNonStaffGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -462,6 +550,11 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gNonStaff.DataBind();
         }
 
+        /// <summary>
+        /// Gets the non staff data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<GroupMember> GetNonStaffData( RockContext rockContext )
         {
             var pageService = new PageService( rockContext );
@@ -485,6 +578,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region PageParameterSql Methods
 
+        /// <summary>
+        /// Builds the page parameter SQL header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildPageParameterSqlHeader( RockContext rockContext )
         {
             var auditValue = GetPageParameterSqlData().Count;
@@ -495,22 +592,37 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderPageParameterSql, lDescriptionPageParameterSql );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPageParameterSql control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPageParameterSql_GridRebind( object sender, EventArgs e )
         {
             BindPageParameterSqlGrid();
         }
 
+        /// <summary>
+        /// Binds the page parameter SQL grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindPageParameterSqlGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
             }
+
             DataRowCollection data = GetPageParameterSqlData();
+
             gPageParameterSql.DataSource = data;
             gPageParameterSql.DataBind();
         }
 
+        /// <summary>
+        /// Gets the page parameter SQL data.
+        /// </summary>
+        /// <returns></returns>
         private DataRowCollection GetPageParameterSqlData()
         {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
@@ -531,6 +643,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region SqlLavaCommand Methods
 
+        /// <summary>
+        /// Builds the SQL lava command header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildSqlLavaCommandHeader( RockContext rockContext )
         {
             var auditValue = GetSqlLavaCommandData().Count;
@@ -541,22 +657,37 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderSqlLavaCommand, lDescriptionSqlLavaCommand );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gSqlLavaCommand control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gSqlLavaCommand_GridRebind( object sender, EventArgs e )
         {
             BindSqlLavaCommandGrid();
         }
 
+        /// <summary>
+        /// Binds the SQL lava command grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindSqlLavaCommandGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
             }
+
             var data = GetSqlLavaCommandData();
+
             gSqlLavaCommand.DataSource = data;
             gSqlLavaCommand.DataBind();
         }
 
+        /// <summary>
+        /// Gets the SQL lava command data.
+        /// </summary>
+        /// <returns></returns>
         private DataRowCollection GetSqlLavaCommandData()
         {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
@@ -581,9 +712,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #endregion
 
-
         #region Person Auth Methods
 
+        /// <summary>
+        /// Builds the person authentication header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildPersonAuthHeader( RockContext rockContext )
         {
             var auditValue = GetPersonAuthData( rockContext ).Count();
@@ -594,11 +728,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderPersonAuth, lDescriptionPersonAuth );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPersonAuth control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPersonAuth_GridRebind( object sender, EventArgs e )
         {
             BindPersonAuthGrid();
         }
 
+        /// <summary>
+        /// Binds the person authentication grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindPersonAuthGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -612,11 +755,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gPersonAuth.DataBind();
         }
 
+        /// <summary>
+        /// Gets the person authentication data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private static List<Auth> GetPersonAuthData( RockContext rockContext )
         {
             AuthService authService = new AuthService( rockContext );
-
-            // sample query to display a few people
             var qry = authService.Queryable().AsNoTracking().Where( a => a.PersonAliasId != null )
                         .ToList();
             return qry;
@@ -626,6 +772,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Unencrypted Sensitive Data Methods
 
+        /// <summary>
+        /// Builds the unencrypted sensitive data header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildUnencryptedSensitiveDataHeader( RockContext rockContext )
         {
             var auditValue = GetUnencryptedSensitiveDataData().Count;
@@ -636,11 +786,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderUnencryptedSensitiveData, lDescriptionUnencryptedSensitiveData );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gUnencryptedSensitiveData control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gUnencryptedSensitiveData_GridRebind( object sender, EventArgs e )
         {
             BindUnencryptedSensitiveDataGrid();
         }
 
+        /// <summary>
+        /// Binds the unencrypted sensitive data grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindUnencryptedSensitiveDataGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -649,10 +808,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
 
             DataRowCollection data = GetUnencryptedSensitiveDataData();
+
             gUnencryptedSensitiveData.DataSource = data;
             gUnencryptedSensitiveData.DataBind();
         }
 
+        /// <summary>
+        /// Gets the unencrypted sensitive data data.
+        /// </summary>
+        /// <returns></returns>
         private DataRowCollection GetUnencryptedSensitiveDataData()
         {
             var query = @"Select a.Id, a.Name, et.Name as EntityType, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue, count(0) as SensitiveRecords
@@ -670,9 +834,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #endregion
 
-
         #region Finance Data View Methods
 
+        /// <summary>
+        /// Builds the finance data views header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildFinanceDataViewsHeader( RockContext rockContext )
         {
             var auditValue = GetFinanceDataViewsData( rockContext ).Count;
@@ -683,22 +850,38 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderFinanceDataViews, lDescriptionFinanceDataViews );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gFinanceDataViews control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gFinanceDataViews_GridRebind( object sender, EventArgs e )
         {
             BindFinanceDataViewsGrid();
         }
 
+        /// <summary>
+        /// Binds the finance data views grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindFinanceDataViewsGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
             }
+
             List<Rock.Model.DataView> unsecuredDataViews = GetFinanceDataViewsData( rockContext );
+
             gFinanceDataViews.DataSource = unsecuredDataViews;
             gFinanceDataViews.DataBind();
         }
 
+        /// <summary>
+        /// Gets the finance data views data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<Rock.Model.DataView> GetFinanceDataViewsData( RockContext rockContext )
         {
             var dataViewService = new DataViewService( rockContext );
@@ -724,9 +907,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #endregion
 
-
         #region FileTypeSecurity Methods
 
+        /// <summary>
+        /// Builds the file type security header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildFileTypeSecurityHeader( RockContext rockContext )
         {
             var auditValue = GetFileTypeSecurityData( rockContext ).Count;
@@ -737,11 +923,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFileTypeSecurity, lDescriptionFileTypeSecurity );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gFileTypeSecurity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gFileTypeSecurity_GridRebind( object sender, EventArgs e )
         {
             BindFileTypeSecurityGrid();
         }
 
+        /// <summary>
+        /// Binds the file type security grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindFileTypeSecurityGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -750,10 +945,16 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
 
             List<BinaryFileType> atRiskFileTypes = GetFileTypeSecurityData( rockContext );
+
             gFileTypeSecurity.DataSource = atRiskFileTypes;
             gFileTypeSecurity.DataBind();
         }
 
+        /// <summary>
+        /// Gets the file type security data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<BinaryFileType> GetFileTypeSecurityData( RockContext rockContext )
         {
             List<BinaryFileType> atRiskFileTypes = new List<BinaryFileType>();
@@ -774,22 +975,34 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region GlobalLavaCommands Methods
 
+        /// <summary>
+        /// Builds the global lava commands header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildGlobalLavaCommandsHeader( RockContext rockContext )
         {
             var auditValue = GetGlobalLavaCommandsData().Count;
             var auditGoal = 0;
-
 
             var headerText = String.Format( "Vulnerable Default Lava Commands: {0}", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is limit where lava commands can be used. BEMA recommends disabling the Execute, RockEntity, and Sql commands from the Global Default Enabled Lava Commands.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderGlobalLavaCommands, lDescriptionGlobalLavaCommands );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gGlobalLavaCommands control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gGlobalLavaCommands_GridRebind( object sender, EventArgs e )
         {
             BindGlobalLavaCommandsGrid();
         }
 
+        /// <summary>
+        /// Binds the global lava commands grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindGlobalLavaCommandsGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -798,10 +1011,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
 
             List<string> defaultLavaCommands = GetGlobalLavaCommandsData();
+
             gGlobalLavaCommands.DataSource = defaultLavaCommands;
             gGlobalLavaCommands.DataBind();
         }
 
+        /// <summary>
+        /// Gets the global lava commands data.
+        /// </summary>
+        /// <returns></returns>
         private static List<string> GetGlobalLavaCommandsData()
         {
             return GlobalAttributesCache.Get()
@@ -815,9 +1033,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Finance Page Methods
 
+        /// <summary>
+        /// Builds the finance pages header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildFinancePagesHeader( RockContext rockContext )
         {
-
             var auditValue = GetFinancePagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinancePageCount ).AsInteger();
 
@@ -826,11 +1047,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderFinancePages, lDescriptionFinancePages );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gFinancePages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gFinancePages_GridRebind( object sender, EventArgs e )
         {
             BindFinancePagesGrid();
         }
 
+        /// <summary>
+        /// Binds the finance pages grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindFinancePagesGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -839,10 +1069,16 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
 
             List<Rock.Model.Page> unsecuredPages = GetFinancePagesData( rockContext );
+
             gFinancePages.DataSource = unsecuredPages;
             gFinancePages.DataBind();
         }
 
+        /// <summary>
+        /// Gets the finance pages data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<Rock.Model.Page> GetFinancePagesData( RockContext rockContext )
         {
             var pageService = new PageService( rockContext );
@@ -873,9 +1109,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         #region Admin Page Methods
 
+        /// <summary>
+        /// Builds the admin pages header.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BuildAdminPagesHeader( RockContext rockContext )
         {
-
             var auditValue = GetAdminPagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredAdminPageCount ).AsInteger();
 
@@ -884,11 +1123,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderAdminPages, lDescriptionAdminPages );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gAdminPages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gAdminPages_GridRebind( object sender, EventArgs e )
         {
             BindAdminPagesGrid();
         }
 
+        /// <summary>
+        /// Binds the admin pages grid.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void BindAdminPagesGrid( RockContext rockContext = null )
         {
             if ( rockContext == null )
@@ -902,6 +1150,11 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             gAdminPages.DataBind();
         }
 
+        /// <summary>
+        /// Gets the admin pages data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<Rock.Model.Page> GetAdminPagesData( RockContext rockContext )
         {
             var pageService = new PageService( rockContext );
