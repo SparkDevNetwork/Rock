@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.CheckIn
                     NavigateToNextPage( queryParams );
                     return;
                 }
-
+                 
                 ShowDetail();
             }
             else
@@ -144,6 +144,18 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ShowDetail()
         {
+            // just in case the device config home page override got set (from the MobileLauncher Block)
+            // un-override it
+            LocalDeviceConfig.HomePageOverride = null;
+
+            // just in case the device config DisableIdleRedirect got set (from the MobileLauncher Block) make sure the IdleRedirect mode is enabled
+            LocalDeviceConfig.DisableIdleRedirect = false;
+
+            // just in case the device config GenerateQRCodeForAttendanceSessions got set (from the MobileLauncher Block), turn off the QR Code option
+            LocalDeviceConfig.GenerateQRCodeForAttendanceSessions = false;
+
+            SaveState();
+
             bool enableLocationSharing = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean();
             bool allowManualSetup = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean( true );
 
@@ -301,7 +313,8 @@ namespace RockWeb.Blocks.CheckIn
     <script>
         $(document).ready(function (e) {{
 
-            tryGeoLocation();
+debugger
+tryGeoLocation();
 
             function tryGeoLocation() {{
                 if ( geo_position_js.init() ) {{
@@ -497,10 +510,10 @@ namespace RockWeb.Blocks.CheckIn
             if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
-                SaveState();
+                LocalDeviceConfig.SaveToCookie( this.Page );
             }
 
-            if ( !RockPage.Site.Theme.Equals(LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
+            if ( !RockPage.Site.Theme.Equals( LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
             {
                 // if the site's theme doesn't match the configured theme, reload the page with the theme parameter so that the correct theme gets loaded and the theme cookie gets set
                 Dictionary<string, string> themeParameters = new Dictionary<string, string>();
@@ -566,6 +579,9 @@ namespace RockWeb.Blocks.CheckIn
             LocalDeviceConfig.CurrentKioskId = ddlKiosk.SelectedValueAsInt();
             LocalDeviceConfig.CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
             LocalDeviceConfig.CurrentGroupTypeIds = groupTypeIds;
+
+            LocalDeviceConfig.SaveToCookie( this.Page );
+
             CurrentCheckInState = null;
             CurrentWorkflow = null;
             SaveState();
@@ -580,8 +596,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <returns></returns>
         private List<GroupTypeCache> GetDeviceGroupTypes( int deviceId, RockContext rockContext )
         {
-            var groupTypes = new Dictionary<int, GroupTypeCache>();
-
             var locationService = new LocationService( rockContext );
             var groupLocationService = new GroupLocationService( rockContext );
 
@@ -599,7 +613,9 @@ namespace RockWeb.Blocks.CheckIn
                 .ToList()
                 .Select( a => GroupTypeCache.Get( a ) ).ToList();
 
-            // ReQuery using EF
+            // get all distinct group types
+            var groupTypes = new Dictionary<int, GroupTypeCache>();
+
             foreach ( var groupType in locationGroupTypes )
             {
                 groupTypes.AddOrIgnore( groupType.Id, groupType );
@@ -623,11 +639,6 @@ namespace RockWeb.Blocks.CheckIn
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var kioskCheckinTypes = new List<GroupType>();
-
-                    var kioskGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
-                    var kioskGroupTypeIds = kioskGroupTypes.Select( t => t.Id ).ToList();
-
                     var groupTypeService = new GroupTypeService( rockContext );
 
                     var checkinTemplateTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
@@ -719,35 +730,6 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Gets the descendent group types.
-        /// </summary>
-        /// <param name="groupType">Type of the group.</param>
-        /// <param name="recursionControl">The recursion control.</param>
-        /// <returns></returns>
-        private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
-        {
-            var results = new List<GroupTypeCache>();
-
-            if ( groupType != null )
-            {
-                recursionControl = recursionControl ?? new List<int>();
-                if ( !recursionControl.Contains( groupType.Id ) )
-                {
-                    recursionControl.Add( groupType.Id );
-                    results.Add( groupType );
-
-                    foreach ( var childGroupType in groupType.ChildGroupTypes )
-                    {
-                        var childResults = GetDescendentGroupTypes( childGroupType, recursionControl );
-                        childResults.ForEach( c => results.Add( c ) );
-                    }
-                }
-            }
-
-            return results;
-        }
-
-        /// <summary>
         /// Gets the selected GroupType Ids
         /// </summary>
         private List<int> GetSelectedGroupTypeIds()
@@ -773,7 +755,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Binds the group types.
+        /// Binds the group types (checkin areas)
         /// </summary>
         /// <param name="selectedValues">The selected values.</param>
         private void BindGroupTypes( List<int> groupTypeIds )
@@ -787,7 +769,13 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     var deviceGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
 
-                    var primaryGroupTypeIds = GetDescendentGroupTypes( GroupTypeCache.Get( ddlCheckinType.SelectedValueAsInt() ?? 0 ) ).Select( t => t.Id ).ToList();
+                    var checkinType = GroupTypeCache.Get( ddlCheckinType.SelectedValue.AsInteger() );
+                    if ( checkinType == null )
+                    {
+                        return;
+                    }
+
+                    var primaryGroupTypeIds = checkinType.GetDescendentGroupTypes().Select( a => a.Id ).ToList();
 
                     cblPrimaryGroupTypes.DataSource = deviceGroupTypes.Where( t => primaryGroupTypeIds.Contains( t.Id ) ).ToList();
                     cblPrimaryGroupTypes.DataBind();

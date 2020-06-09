@@ -295,7 +295,7 @@ namespace RockWeb
         /// <summary>
         /// Dictionary of deprecated or incorrect mime types and what they should be mapped to instead
         /// </summary>
-        private Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
         {
             { "text/directory", "text/vcard" },
             { "text/directory; profile=vCard", "text/vcard" },

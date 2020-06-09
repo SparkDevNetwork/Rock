@@ -848,6 +848,45 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache GetSecurityRoleGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
+        /// <summary>
+        /// Gets the descendent group types (all children recursively)
+        /// </summary>
+        /// <returns></returns>
+        public List<GroupTypeCache> GetDescendentGroupTypes()
+        {
+            List<int> recursionControl = new List<int>();
+            return GetDescendentGroupTypes( this, recursionControl );
+        }
+
+        /// <summary>
+        /// Gets the descendent group types.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="recursionControl">A list of GroupTypeIds that have already been added, this helps prevent infinite recursion.</param>
+        /// <returns></returns>
+        private static List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
+        {
+            var results = new List<GroupTypeCache>();
+
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    results.Add( groupType );
+
+                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                    {
+                        var childResults = GetDescendentGroupTypes( childGroupType, recursionControl );
+                        childResults.ForEach( c => results.Add( c ) );
+                    }
+                }
+            }
+
+            return results;
+        }
+
         #endregion
     }
 

@@ -139,7 +139,7 @@ namespace Rock.CheckIn
         /// The messages.
         /// </value>
         public List<CheckInMessage> Messages { get; set; }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
@@ -185,7 +185,7 @@ namespace Rock.CheckIn
     /// Checkin Device Configuration
     /// Used for the Checkin Cookie and REST status operations
     /// </summary>
-    [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}" )]
+    [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}.." )]
     public class LocalDeviceConfiguration
     {
         /// <summary>
@@ -197,7 +197,7 @@ namespace Rock.CheckIn
         public string CurrentTheme { get; set; }
 
         /// <summary>
-        /// Gets or sets the current kiosk identifier.
+        /// Gets or sets the current kiosk identifier <see cref="Rock.Model.Device"/>
         /// </summary>
         /// <value>
         /// The current kiosk identifier.
@@ -205,7 +205,7 @@ namespace Rock.CheckIn
         public int? CurrentKioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current checkin type identifier.
+        /// Gets or sets the current checkin type identifier (which is a <see cref="Rock.Model.GroupType" />)
         /// </summary>
         /// <value>
         /// The current checkin type identifier.
@@ -213,12 +213,36 @@ namespace Rock.CheckIn
         public int? CurrentCheckinTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current group type ids.
+        /// Gets or sets the current group type ids (Checkin Areas)
         /// </summary>
         /// <value>
         /// The current group type ids.
         /// </value>
         public List<int> CurrentGroupTypeIds { get; set; }
+
+        /// <summary>
+        /// Gets home page Guid to use instead of the one configured in <seealso cref="CheckInBlock"/>'s HomePage block setting.
+        /// This is handy for things such as a checkin that start with the MobileLauncher Page
+        /// </summary>
+        /// <value>
+        /// </value>
+        public Guid? HomePageOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether checkin pages should disable IdleRedirect blocks
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable idle redirect]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableIdleRedirect { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [generate qr code for attendance sessions].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [generate qr code for attendance sessions]; otherwise, <c>false</c>.
+        /// </value>
+        public bool GenerateQRCodeForAttendanceSessions { get; set; } = false;
 
         /// <summary>
         /// Determines whether this instance is configured.
@@ -229,6 +253,35 @@ namespace Rock.CheckIn
         public bool IsConfigured()
         {
             return this.CurrentKioskId.HasValue && this.CurrentGroupTypeIds.Any() && this.CurrentCheckinTypeId.HasValue;
+        }
+
+        /// <summary>
+        /// Saves the LocalDeviceConfig to the <seealso cref="CheckInCookieKey.LocalDeviceConfig"/> cookie
+        /// </summary>
+        /// <param name="page">The page.</param>
+        public void SaveToCookie( System.Web.UI.Page page )
+        {
+            var localDeviceConfigCookie = page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
+            if ( localDeviceConfigCookie == null )
+            {
+                localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
+            }
+
+            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            localDeviceConfigCookie.Value = this.ToJson( Newtonsoft.Json.Formatting.None );
+
+            page.Response.Cookies.Set( localDeviceConfigCookie );
+        }
+
+        /// <summary>
+        /// Gets from cookie.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page )
+        {
+            var localDeviceConfigCookie = page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
+            return localDeviceConfigCookie?.Value?.FromJsonOrNull<LocalDeviceConfiguration>();
         }
     }
 
