@@ -348,7 +348,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildRockAdminHeader( RockContext rockContext )
         {
-            var auditValue = new GroupService( rockContext ).Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Members.Count;
+            var auditValue = GetRockAdminData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumAdminCount ).AsInteger();
 
             var headerText = String.Format( "Number of Rock Admins: {0}", auditValue );
@@ -368,6 +368,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<GroupMember> qry = GetRockAdminData( rockContext );
+            gRockAdmins.DataSource = qry.ToList();
+            gRockAdmins.DataBind();
+        }
+
+        private static List<GroupMember> GetRockAdminData( RockContext rockContext )
+        {
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             var administratorGroupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
@@ -376,9 +383,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                         .Where( gm => gm.Group.Guid == administratorGroupGuid &&
                                 gm.GroupMemberStatus == GroupMemberStatus.Active )
                         .ToList();
-
-            gRockAdmins.DataSource = qry.ToList();
-            gRockAdmins.DataBind();
+            return qry;
         }
 
         #endregion
@@ -387,7 +392,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildSslEnabledHeader( RockContext rockContext )
         {
-            var auditValue = new PageService( rockContext ).Queryable().AsNoTracking().Where( p => !p.RequiresEncryption && !p.Layout.Site.RequiresEncryption ).Count();
+            var auditValue = GetSslEnabledData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedUnencryptedPageCount ).AsInteger();
 
             var headerText = String.Format( "Pages Allowing Unencrypted Traffic: {0}", auditValue );
@@ -407,6 +412,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<Rock.Model.Page> qry = GetSslEnabledData( rockContext );
+
+            gSslEnabled.DataSource = qry.ToList();
+            gSslEnabled.DataBind();
+        }
+
+        private static List<Rock.Model.Page> GetSslEnabledData( RockContext rockContext )
+        {
             var pageService = new PageService( rockContext );
 
             var administratorGroupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
@@ -414,9 +427,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var qry = pageService.Queryable()
                         .AsNoTracking().Where( p => !p.RequiresEncryption && !p.Layout.Site.RequiresEncryption )
                         .ToList();
-
-            gSslEnabled.DataSource = qry.ToList();
-            gSslEnabled.DataBind();
+            return qry;
         }
 
         #endregion
@@ -425,17 +436,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildNonStaffHeader( RockContext rockContext )
         {
-            var organizationUnitGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
-            var excludedRoleIds = GetAttributeValue( AttributeKey.ExcludedSecurityRoles ).SplitDelimitedValues().AsIntegerList();
-
-            var auditValue = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                .Where( gm =>
-                    gm.Person.Members.Where( gm1 => gm1.Group.GroupType.Guid == organizationUnitGuid && gm1.GroupMemberStatus == GroupMemberStatus.Active ).Count() == 0 &&
-                    gm.Group.IsSecurityRole &&
-                    !excludedRoleIds.Contains( gm.GroupId ) &&
-                    gm.Group.IsActive
-                )
-                .Count();
+            var auditValue = GetNonStaffData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedNonStaffMembers ).AsInteger();
 
             var headerText = String.Format( "Non-Staff Security Role Members: {0}", auditValue );
@@ -455,6 +456,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<GroupMember> qry = GetNonStaffData( rockContext );
+
+            gNonStaff.DataSource = qry.ToList();
+            gNonStaff.DataBind();
+        }
+
+        private List<GroupMember> GetNonStaffData( RockContext rockContext )
+        {
             var pageService = new PageService( rockContext );
 
             var organizationUnitGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
@@ -469,9 +478,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 )
                 .OrderBy( gm => gm.Person.LastName ).ThenBy( gm => gm.Person.FirstName ).ThenBy( gm => gm.Group.Name )
                 .ToList();
-
-            gNonStaff.DataSource = qry.ToList();
-            gNonStaff.DataBind();
+            return qry;
         }
 
         #endregion
@@ -480,18 +487,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildPageParameterSqlHeader( RockContext rockContext )
         {
-            var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
-            var query = @"Select distinct p.Id as PageId, p.PageTitle, b.Id as BlockId, b.Name
-                            From AttributeValue av
-                            Join Attribute a on a.Id = av.AttributeId and a.Name Like '%SQL%' or a.Name like '%Query%' and a.EntityTypeQualifierColumn = 'BlockTypeId'
-                            Join Block b on b.Id = av.EntityId
-                            Join Page p on b.PageId = p.Id
-                            Join Layout l on p.LayoutId = l.Id
-                            Where av.Value like '%{%PageParameter%}%'
-                            And l.SiteId in (" + siteList + ")";
-            DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-
-            var auditValue = dataSet.Tables[0].Rows.Count;
+            var auditValue = GetPageParameterSqlData().Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlPageParameterBlocks ).AsInteger();
 
             var headerText = String.Format( "Blocks Using Page Parameters in SQL Queries: {0}", auditValue );
@@ -510,7 +506,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             {
                 rockContext = new RockContext();
             }
+            DataRowCollection data = GetPageParameterSqlData();
+            gPageParameterSql.DataSource = data;
+            gPageParameterSql.DataBind();
+        }
 
+        private DataRowCollection GetPageParameterSqlData()
+        {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
             var query = @"Select distinct p.Id as PageId, p.PageTitle, b.Id as BlockId, b.Name
                             From AttributeValue av
@@ -521,8 +523,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             Where av.Value like '%{%PageParameter%}%'
                             And l.SiteId in (" + siteList + ")";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            gPageParameterSql.DataSource = dataSet.Tables[0];
-            gPageParameterSql.DataBind();
+            var data = dataSet.Tables[0].Rows;
+            return data;
         }
 
         #endregion
@@ -531,26 +533,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildSqlLavaCommandHeader( RockContext rockContext )
         {
-            var siteList = GetAttributeValue( AttributeKey.SqlLavaCommandSites );
-            var query = @"Declare @BlockAttributes table(
-	                            AttributeId int
-	                            )
-                            Insert into @BlockAttributes
-                            Select Id From Attribute Where EntityTypeQualifierColumn = 'BlockTypeId'
-
-                            Select distinct p.Id as PageId, p.PageTitle, b.Id as BlockId, b.Name
-                            From Block b
-                            Join Page p on b.PageId = p.Id
-                            Join Layout l on p.LayoutId = l.Id
-                            Left Join HtmlContent hc on hc.BlockId = b.Id and (hc.ExpireDateTime is null or hc.ExpireDateTime > GetDate())
-                            Left Join AttributeValue av on av.EntityId = b.Id and av.AttributeId in (Select AttributeId from @BlockAttributes) and av.Value like '%{%sql%}%'
-                            Where hc.Content like '%{%sql%}%' or b.PreHtml like '%{%sql%}%' or b.PostHtml like '%{%sql%}%' or av.Value like '%{%sql%}%'
-                            And l.SiteId in (" + siteList + ")";
-            DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-
-            var auditValue = dataSet.Tables[0].Rows.Count;
+            var auditValue = GetSqlLavaCommandData().Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlLavaCommandBlocks ).AsInteger();
-
 
             var headerText = String.Format( "Blocks Using SQL Lava Commands: {0}", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit the capability for Sql injection attacks. BEMA recommends allowing no more than {0} blocks to use sql commands in their lava.", auditGoal );
@@ -568,7 +552,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             {
                 rockContext = new RockContext();
             }
+            var data = GetSqlLavaCommandData();
+            gSqlLavaCommand.DataSource = data;
+            gSqlLavaCommand.DataBind();
+        }
 
+        private DataRowCollection GetSqlLavaCommandData()
+        {
             var siteList = GetAttributeValue( AttributeKey.SqlPageParameterSites );
             var query = @"Declare @BlockAttributes table(
 	                            AttributeId int
@@ -585,8 +575,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             Where hc.Content like '%{%sql%}%' or b.PreHtml like '%{%sql%}%' or b.PostHtml like '%{%sql%}%' or av.Value like '%{%sql%}%'
                             And l.SiteId in (" + siteList + ")";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            gSqlLavaCommand.DataSource = dataSet.Tables[0];
-            gSqlLavaCommand.DataBind();
+            var data = dataSet.Tables[0].Rows;
+            return data;
         }
 
         #endregion
@@ -596,7 +586,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildPersonAuthHeader( RockContext rockContext )
         {
-            var auditValue = new AuthService( rockContext ).Queryable().AsNoTracking().Where( a => a.PersonAliasId != null ).Count();
+            var auditValue = GetPersonAuthData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumPersonAuthCount ).AsInteger();
 
             var headerText = String.Format( "Number of Person-Specific Auth Rules: {0}", auditValue );
@@ -616,15 +606,20 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<Auth> qry = GetPersonAuthData( rockContext );
 
+            gPersonAuth.DataSource = qry.ToList();
+            gPersonAuth.DataBind();
+        }
+
+        private static List<Auth> GetPersonAuthData( RockContext rockContext )
+        {
             AuthService authService = new AuthService( rockContext );
 
             // sample query to display a few people
             var qry = authService.Queryable().AsNoTracking().Where( a => a.PersonAliasId != null )
                         .ToList();
-
-            gPersonAuth.DataSource = qry.ToList();
-            gPersonAuth.DataBind();
+            return qry;
         }
 
         #endregion
@@ -633,17 +628,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildUnencryptedSensitiveDataHeader( RockContext rockContext )
         {
-            var query = @"Select a.Id, a.Name, et.Name as EntityType, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue, count(0) as SensitiveRecords
-                            From AttributeValue av
-                            Join Attribute a on a.Id = av.AttributeId
-                            Join EntityType et on a.EntityTypeId = et.Id
-                            Where av.Value like '[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]'
-                            or av.Value like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
-                            or av.Value like '[0-9][0-9][0-9] [0-9][0-9] [0-9][0-9][0-9][0-9]'
-                            Group By a.Id, a.Name, et.Name, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue";
-            DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-            var auditValue = dataSet.Tables[0].Rows.Count;
-
+            var auditValue = GetUnencryptedSensitiveDataData().Count;
             var auditGoal = 0;
 
             var headerText = String.Format( "Unencrypted Sensitive Attributes: {0}", auditValue );
@@ -663,6 +648,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            DataRowCollection data = GetUnencryptedSensitiveDataData();
+            gUnencryptedSensitiveData.DataSource = data;
+            gUnencryptedSensitiveData.DataBind();
+        }
+
+        private DataRowCollection GetUnencryptedSensitiveDataData()
+        {
             var query = @"Select a.Id, a.Name, et.Name as EntityType, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue, count(0) as SensitiveRecords
                             From AttributeValue av
                             Join Attribute a on a.Id = av.AttributeId
@@ -672,9 +664,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                             or av.Value like '[0-9][0-9][0-9] [0-9][0-9] [0-9][0-9][0-9][0-9]'
                             Group By a.Id, a.Name, et.Name, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue";
             DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-
-            gUnencryptedSensitiveData.DataSource = dataSet.Tables[0];
-            gUnencryptedSensitiveData.DataBind();
+            var data = dataSet.Tables[0].Rows;
+            return data;
         }
 
         #endregion
@@ -684,26 +675,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildFinanceDataViewsHeader( RockContext rockContext )
         {
-            var dataViewService = new DataViewService( rockContext );
-
-            List<int> unsecuredDataViewIds = new List<int>();
-            List<int> authorizedGroupIds = new List<int>();
-
-            var groupService = new GroupService( rockContext );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
-
-            var dataViews = dataViewService.Queryable().AsNoTracking().Where( dv => dv.EntityType.Name.Contains( "Financ" ) ).ToList();
-            foreach ( var dataView in dataViews )
-            {
-                CheckItemSecurity( rockContext, unsecuredDataViewIds, authorizedGroupIds, dataView );
-            }
-
-            var unsecuredDataViews = dataViewService.GetByIds( unsecuredDataViewIds ).ToList();
-
-            var auditValue = unsecuredDataViews.Count;
+            var auditValue = GetFinanceDataViewsData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinanceDataViewCount ).AsInteger();
 
             var headerText = String.Format( "Unsecured Finance Data Views: {0}", auditValue );
@@ -722,6 +694,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             {
                 rockContext = new RockContext();
             }
+            List<Rock.Model.DataView> unsecuredDataViews = GetFinanceDataViewsData( rockContext );
+            gFinanceDataViews.DataSource = unsecuredDataViews;
+            gFinanceDataViews.DataBind();
+        }
+
+        private List<Rock.Model.DataView> GetFinanceDataViewsData( RockContext rockContext )
+        {
             var dataViewService = new DataViewService( rockContext );
 
             List<int> unsecuredDataViewIds = new List<int>();
@@ -740,8 +719,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             }
 
             var unsecuredDataViews = dataViewService.GetByIds( unsecuredDataViewIds ).ToList();
-            gFinanceDataViews.DataSource = unsecuredDataViews;
-            gFinanceDataViews.DataBind();
+            return unsecuredDataViews;
         }
 
         #endregion
@@ -751,18 +729,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildFileTypeSecurityHeader( RockContext rockContext )
         {
-            List<BinaryFileType> atRiskFileTypes = new List<BinaryFileType>();
-            var selectedFileTypes = new BinaryFileTypeService( rockContext ).GetByGuids( GetAttributeValue( AttributeKey.SensitiveFileTypes ).SplitDelimitedValues().AsGuidList() );
-            foreach ( var fileType in selectedFileTypes )
-            {
-                var authRules = Authorization.AuthRules( fileType.TypeId, fileType.Id, Authorization.VIEW );
-                if ( !authRules.Where( a => a.AllowOrDeny == 'D' && a.SpecialRole == SpecialRole.AllUsers ).Any() )
-                {
-                    atRiskFileTypes.Add( fileType );
-                }
-            }
-
-            var auditValue = atRiskFileTypes.Count;
+            var auditValue = GetFileTypeSecurityData( rockContext ).Count;
             var auditGoal = 0;
 
             var headerText = String.Format( "Unsecured Sensitive File Types: {0}", auditValue );
@@ -782,7 +749,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<BinaryFileType> atRiskFileTypes = GetFileTypeSecurityData( rockContext );
+            gFileTypeSecurity.DataSource = atRiskFileTypes;
+            gFileTypeSecurity.DataBind();
+        }
 
+        private List<BinaryFileType> GetFileTypeSecurityData( RockContext rockContext )
+        {
             List<BinaryFileType> atRiskFileTypes = new List<BinaryFileType>();
             var selectedFileTypes = new BinaryFileTypeService( rockContext ).GetByGuids( GetAttributeValue( AttributeKey.SensitiveFileTypes ).SplitDelimitedValues().AsGuidList() );
             foreach ( var fileType in selectedFileTypes )
@@ -793,8 +766,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                     atRiskFileTypes.Add( fileType );
                 }
             }
-            gFileTypeSecurity.DataSource = atRiskFileTypes;
-            gFileTypeSecurity.DataBind();
+
+            return atRiskFileTypes;
         }
 
         #endregion
@@ -803,13 +776,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildGlobalLavaCommandsHeader( RockContext rockContext )
         {
-            var defaultLavaCommands = GlobalAttributesCache.Get()
-                        .GetValue( "DefaultEnabledLavaCommands" )
-                        .SplitDelimitedValues()
-                        .Where( lc => lc == "RockEntity" || lc == "Sql" || lc == "Execute" || lc == "All" )
-                        .ToList();
-
-            var auditValue = defaultLavaCommands.Count;
+            var auditValue = GetGlobalLavaCommandsData().Count;
             var auditGoal = 0;
 
 
@@ -830,13 +797,18 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
-            var defaultLavaCommands = GlobalAttributesCache.Get()
-                        .GetValue( "DefaultEnabledLavaCommands" )
-                        .SplitDelimitedValues()
-                        .Where( lc => lc == "RockEntity" || lc == "Sql" || lc == "Execute" || lc == "All" )
-                        .ToList();
+            List<string> defaultLavaCommands = GetGlobalLavaCommandsData();
             gGlobalLavaCommands.DataSource = defaultLavaCommands;
             gGlobalLavaCommands.DataBind();
+        }
+
+        private static List<string> GetGlobalLavaCommandsData()
+        {
+            return GlobalAttributesCache.Get()
+                                    .GetValue( "DefaultEnabledLavaCommands" )
+                                    .SplitDelimitedValues()
+                                    .Where( lc => lc == "RockEntity" || lc == "Sql" || lc == "Execute" || lc == "All" )
+                                    .ToList();
         }
 
         #endregion
@@ -845,29 +817,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildFinancePagesHeader( RockContext rockContext )
         {
-            var pageService = new PageService( rockContext );
 
-            List<int> unsecuredPageIds = new List<int>();
-            List<int> authorizedGroupIds = new List<int>();
-
-            var groupService = new GroupService( rockContext );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_FINANCE_USERS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_BENEVOLENCE.AsGuid() ).Id );
-
-            var rootPage = pageService.Get( Rock.SystemGuid.Page.FINANCE.AsGuid() );
-            if ( rootPage != null )
-            {
-                var pages = pageService.GetAllDescendents( rootPage.Id );
-                foreach ( var page in pages )
-                {
-                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
-                }
-            }
-            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
-
-            var auditValue = unsecuredPages.Count;
+            var auditValue = GetFinancePagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinancePageCount ).AsInteger();
 
             var headerText = String.Format( "Unsecured Finance Pages: {0}", auditValue );
@@ -887,6 +838,13 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<Rock.Model.Page> unsecuredPages = GetFinancePagesData( rockContext );
+            gFinancePages.DataSource = unsecuredPages;
+            gFinancePages.DataBind();
+        }
+
+        private List<Rock.Model.Page> GetFinancePagesData( RockContext rockContext )
+        {
             var pageService = new PageService( rockContext );
 
             List<int> unsecuredPageIds = new List<int>();
@@ -908,8 +866,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 }
             }
             var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
-            gFinancePages.DataSource = unsecuredPages;
-            gFinancePages.DataBind();
+            return unsecuredPages;
         }
 
         #endregion
@@ -918,28 +875,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
 
         private void BuildAdminPagesHeader( RockContext rockContext )
         {
-            var pageService = new PageService( rockContext );
 
-            List<int> unsecuredPageIds = new List<int>();
-            List<int> authorizedGroupIds = new List<int>();
-
-            var groupService = new GroupService( rockContext );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() ).Id );
-            authorizedGroupIds.Add( groupService.Get( "1918E74F-C00D-4DDD-94C4-2E7209CE12C3".AsGuid() ).Id );
-
-            var rootPage = pageService.Get( Rock.SystemGuid.Page.ADMIN_TOOLS.AsGuid() );
-            if ( rootPage != null )
-            {
-                var pages = pageService.GetAllDescendents( rootPage.Id );
-                foreach ( var page in pages )
-                {
-                    CheckItemSecurity( rockContext, unsecuredPageIds, authorizedGroupIds, page );
-                }
-            }
-            var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
-
-            var auditValue = unsecuredPages.Count;
+            var auditValue = GetAdminPagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredAdminPageCount ).AsInteger();
 
             var headerText = String.Format( "Unsecured Admin Pages: {0}", auditValue );
@@ -959,6 +896,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 rockContext = new RockContext();
             }
 
+            List<Rock.Model.Page> unsecuredPages = GetAdminPagesData( rockContext );
+
+            gAdminPages.DataSource = unsecuredPages;
+            gAdminPages.DataBind();
+        }
+
+        private List<Rock.Model.Page> GetAdminPagesData( RockContext rockContext )
+        {
             var pageService = new PageService( rockContext );
 
             List<int> unsecuredPageIds = new List<int>();
@@ -979,9 +924,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
                 }
             }
             var unsecuredPages = pageService.GetByIds( unsecuredPageIds ).ToList();
-
-            gAdminPages.DataSource = unsecuredPages;
-            gAdminPages.DataBind();
+            return unsecuredPages;
         }
 
         #endregion
