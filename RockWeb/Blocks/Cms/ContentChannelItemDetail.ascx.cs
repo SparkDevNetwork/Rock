@@ -1217,6 +1217,7 @@ namespace RockWeb.Blocks.Cms
 
             gChildItems.ObjectList = new Dictionary<string, object>();
             var childItemList = childItemAssociationList.Select( a => a.ChildContentChannelItem ).ToList();
+            var childItemAssociationOrder = childItemAssociationList.Distinct().ToDictionary( k => k.ChildContentChannelItemId, v => v.Order );
             childItemList.ForEach( i => gChildItems.ObjectList.Add( i.Id.ToString(), i ) );
 
             gChildItems.DataSource = childItemList.Select( i => new
@@ -1226,7 +1227,7 @@ namespace RockWeb.Blocks.Cms
                 i.Title,
                 i.StartDateTime,
                 ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : ( DateTime? ) null,
-                Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) i.Order : ( int? ) null,
+                Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) childItemAssociationOrder.GetValueOrNull( i.Id ) : ( int? ) null,
                 Status = ( i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus ) ? DisplayStatus( i.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
