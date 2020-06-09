@@ -32,26 +32,25 @@ namespace Rock.Jobs
     /// Job that auto open the closed locations
     /// </summary>
     [DisplayName( "Auto Open Locations" )]
-    [Description( "Job that auto open the closed locations." )]
+    [Description( "Job that auto opens closed (inactive) named locations." )]
 
     [LocationField(
         "Parent Location",
-        Description = "Optional Location that if set will limit which locations are considered for re-opening. If not set, all named locations will be used.",
+        Description = "Optional location that if set will limit which locations are considered for re-opening. If not set, all named locations will be used.",
         IsRequired = false,
         Order = 0,
         CurrentPickerMode = LocationPickerMode.Named,
         AllowedPickerModes = new LocationPickerMode[] { LocationPickerMode.Named },
         Key = AttributeKey.ParentLocation )]
     [IntegerField(
-        "Re-open Period (Minutes)",
+        "Re-open Period (minutes)",
         Key = AttributeKey.ReopenPeriod,
         IsRequired = false,
-        Description = "Optional period of time (in mins) to look for locations that have been closed/inactivated (modified). If left empty, the time the location was modified will not be considered.",
+        Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
     [DisallowConcurrentExecution]
     public class AutoOpenLocations : IJob
     {
-
         /// <summary>
         /// Keys for DataMap Field Attributes.
         /// </summary>
@@ -107,7 +106,7 @@ namespace Rock.Jobs
             if ( reopenPeriod.HasValue )
             {
                 var reopenDateTime = RockDateTime.Now.AddMinutes( -reopenPeriod.Value );
-                // limit to only Named Locations (don't show home addresses, etc)
+                // Only consider locations that were modified within the re-open period.
                 inactiveLocationsQry = inactiveLocationsQry.Where( a => a.ModifiedDateTime >= reopenDateTime );
             }
 
@@ -140,7 +139,7 @@ namespace Rock.Jobs
 
             var results = new StringBuilder();
             // Format the result message
-            results.AppendLine( $"Marked {updatedLocationCount} {"location".PluralizeIf( updatedLocationCount != 1 )} as Open." );
+            results.AppendLine( $"Opened {updatedLocationCount} {"location".PluralizeIf( updatedLocationCount != 1 )}" );
 
             context.Result = results.ToString();
 
