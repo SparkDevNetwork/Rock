@@ -332,6 +332,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Sets the Selected property of each item to true for each of the given matching Guid values.
+        /// </summary>
+        /// <param name="listBox">The list box.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this ListBox listBox, IEnumerable<Guid> values )
+        {
+            listBox.SetValues( values.Select( v => v.ToString() ).ToList() );
+        }
+
+        /// <summary>
         /// Sets the Selected property of each item to true for each given matching int values.
         /// </summary>
         /// <param name="listBox">The list box.</param>
@@ -340,8 +350,7 @@ namespace Rock
         {
             foreach ( ListItem item in listBox.Items )
             {
-                int numValue = int.MinValue;
-                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+                listBox.SetValues( values.Select( v => v.ToString() ).ToList() );
             }
         }
 

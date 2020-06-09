@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
@@ -195,6 +196,7 @@ namespace RockWeb.Blocks.CheckIn
                                 .ThenBy( l => l.Order )
                                 .ToList()
                                 .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
@@ -207,6 +209,29 @@ namespace RockWeb.Blocks.CheckIn
                         var successLavaTemplate = CurrentCheckInState.CheckInType.SuccessLavaTemplate;
                         lCheckinResultsHtml.Text = successLavaTemplate.ResolveMergeFields( mergeFields );
 
+                        if ( LocalDeviceConfig.GenerateQRCodeForAttendanceSessions )
+                        {
+                            HttpCookie attendanceSessionGuidsCookie = Request.Cookies[CheckInCookieKey.AttendanceSessionGuids];
+                            if ( attendanceSessionGuidsCookie == null )
+                            {
+                                attendanceSessionGuidsCookie = new HttpCookie( CheckInCookieKey.AttendanceSessionGuids );
+                                attendanceSessionGuidsCookie.Expires = RockDateTime.Now.AddHours( 8 );
+                                attendanceSessionGuidsCookie.Value = string.Empty;
+                            }
+
+                            var attendanceSessionGuids = attendanceSessionGuidsCookie.Value.Split( ',' ).AsGuidList();
+                            if ( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.HasValue )
+                            {
+                                attendanceSessionGuids.Add( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.Value );
+                            }
+
+                            attendanceSessionGuidsCookie.Value = attendanceSessionGuids.AsDelimited( "," );
+
+                            Response.Cookies.Set( attendanceSessionGuidsCookie );
+
+                            lCheckinQRCodeHtml.Text = string.Format( "<div class='center-block'><img class='img-responsive center-block' src='{0}' alt=''></div>", GetAttendanceSessionsQrCodeImageUrl() );
+                        }
+
                     }
                     catch ( Exception ex )
                     {
@@ -215,6 +240,8 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
         }
+
+        
 
         /// <summary>
         /// Handles the Click event of the lbDone control.

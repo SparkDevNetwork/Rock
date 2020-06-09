@@ -1878,6 +1878,7 @@ END" );
             string formattedName = name.Replace( "'", "''" );
             string formattedDescription = description.Replace( "'", "''" );
             string formattedDefaultValue = defaultValue.Replace( "'", "''" );
+            string formattedAbbreviatedName = abbreviatedName.Replace( "'", "''" );
 
             Migration.Sql( $@"
                 DECLARE @BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{blockTypeGuid}')
@@ -1931,7 +1932,7 @@ END" );
                             , [Order] = {order}
                             , [DefaultValue] = '{formattedDefaultValue}'
                             , [Guid] = '{guid}'
-                            , [AbbreviatedName] = '{abbreviatedName}'
+                            , [AbbreviatedName] = '{formattedAbbreviatedName}'
                         WHERE [Id] = @FirstAttributeId
                     END
                     ELSE
@@ -1967,7 +1968,7 @@ END" );
                             , 0
                             , 0
                             , '{guid}'
-                            , '{abbreviatedName}' )
+                            , '{formattedAbbreviatedName}' )
                     END
 
                 END" );

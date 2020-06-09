@@ -222,6 +222,31 @@ namespace RockWeb.Blocks.Cms
                 // update SiteBlock, LayoutBlock and PageBlock repeaters
                 var zoneBlocks = page.Blocks.Where( a => a.Zone == zoneName ).ToList();
 
+                var blockTypes = zoneBlocks.Select( a => a.BlockType ).Distinct().ToList();
+
+                // if the blockType has changed since it IsInstancePropertiesVerified, check for updated attributes
+                foreach ( var blockType in blockTypes )
+                {
+                    if ( blockType != null && !blockType.IsInstancePropertiesVerified )
+                    {
+                        try
+                        {
+                            int blockTypeId = blockType.Id;
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var blockCompiledType = blockType.GetCompiledType();
+                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+                                bool attributesUpdated = Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
+                                BlockTypeCache.Get( blockTypeId ).MarkInstancePropertiesVerified( true );
+                            }
+                        }
+                        catch
+                        {
+                            // ignore if it can't be compiled
+                        }
+                    }
+                }
+
                 rptSiteBlocks.DataSource = zoneBlocks.Where(a => a.BlockLocation == BlockLocation.Site).ToList();
                 rptSiteBlocks.DataBind();
 

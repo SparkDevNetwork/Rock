@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Rock - License</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
@@ -63,6 +63,7 @@
                             <li><a href="http://json.codeplex.com/">JSON.Net</a> (MIT)</li>
                             <li><a href="http://nuget.codeplex.com/">Nuget</a> (Apache)</li>
                             <li><a href="http://nunit.org/index.php?p=license&r=2.6.2">Nunit</a> (Custom)</li>
+                            <li><a href="https://github.com/codebude/QRCoder">QRCoder</a> (MIT)</li>
                             <li><a href="http://quartz-scheduler.org">Quartz</a> (Apache)</li>
                             <li><a href="http://jquery.com/">jQuery</a> (MIT)</li>
                             <li><a href="https://github.com/mikesherov/jquery-idletimer">Idle Timer</a> (Custom)</li>
