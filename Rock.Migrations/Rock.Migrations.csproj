@@ -285,6 +285,10 @@
     <Compile Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.Designer.cs">
       <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.cs" />
+    <Compile Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.Designer.cs">
+      <DependentUpon>202006091311282_AddCacheControlHeaderSettingsToRestAction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1434,6 +1438,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.resx">
       <DependentUpon>202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006091311282_AddCacheControlHeaderSettingsToRestAction.resx">
+      <DependentUpon>202006091311282_AddCacheControlHeaderSettingsToRestAction.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
