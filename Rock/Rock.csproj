@@ -537,6 +537,8 @@
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\127_MigrationRollupsFor10_4_0.cs" />
+    <Compile Include="Plugin\HotFixes\126_MigrationRollupsFor10_3_7.cs" />
     <Compile Include="Plugin\HotFixes\125_MobileTemplateUpdatesPostAlpha.cs" />
     <Compile Include="Plugin\HotFixes\123_MigrationRollupsFor10_3_6.cs" />
     <Compile Include="Plugin\HotFixes\122_FixContentChannelItemChildItemsOrder.cs" />
