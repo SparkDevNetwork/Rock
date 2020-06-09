@@ -1167,7 +1167,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             authorizedGroupIds.Add( groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() ).Id );
             authorizedGroupIds.Add( groupService.Get( "1918E74F-C00D-4DDD-94C4-2E7209CE12C3".AsGuid() ).Id );
 
-            var rootPage = pageService.Get( Rock.SystemGuid.Page.ADMIN_TOOLS.AsGuid() );
+            var rootPage = pageService.Get( Rock.SystemGuid.Page.ROCK_SETTINGS.AsGuid() );
             if ( rootPage != null )
             {
                 var pages = pageService.GetAllDescendents( rootPage.Id );
