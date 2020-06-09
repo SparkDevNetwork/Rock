@@ -396,7 +396,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetRockAdminData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumAdminCount ).AsInteger();
 
-            var headerText = String.Format( "Number of Rock Admins: {0}", auditValue );
+            var headerText = String.Format( "Number of Rock Admins: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "Limiting the number of people who have access to modify all of Rock is crucial to improving your organization's security. BEMA recommends having no more than {0} members of the Rock Administration Group.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderRockAdmin, lDescriptionRockAdmin );
         }
@@ -457,7 +457,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetSslEnabledData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedUnencryptedPageCount ).AsInteger();
 
-            var headerText = String.Format( "Pages Allowing Unencrypted Traffic: {0}", auditValue );
+            var headerText = String.Format( "Pages Allowing Unencrypted Traffic: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to require SSL Encryption. BEMA recommends allowing no more than {0} pages to be accessed on an unencrypted connection.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderSslEnabled, lDescriptionSslEnabled );
         }
@@ -518,7 +518,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetNonStaffData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedNonStaffMembers ).AsInteger();
 
-            var headerText = String.Format( "Non-Staff Security Role Members: {0}", auditValue );
+            var headerText = String.Format( "Non-Staff Security Role Members: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "BEMA recommends limiting the number of people in security roles that are not in your organization. We recommend no more than {0} people be in a security role that are not part of your organization in some way.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderNonStaff, lDescriptionNonStaff );
         }
@@ -587,7 +587,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetPageParameterSqlData().Rows.Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlPageParameterBlocks ).AsInteger();
 
-            var headerText = String.Format( "Blocks Using Page Parameters in SQL Queries: {0}", auditValue );
+            var headerText = String.Format( "Blocks Using Page Parameters in SQL Queries: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit the capability for Sql injection attacks. BEMA recommends allowing no more than {0} blocks to use page parameters in their sql queries.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderPageParameterSql, lDescriptionPageParameterSql );
         }
@@ -652,7 +652,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetSqlLavaCommandData().Rows.Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedSqlLavaCommandBlocks ).AsInteger();
 
-            var headerText = String.Format( "Blocks Using SQL Lava Commands: {0}", auditValue );
+            var headerText = String.Format( "Blocks Using SQL Lava Commands: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit the capability for Sql injection attacks. BEMA recommends allowing no more than {0} blocks to use sql commands in their lava.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, true, divHeaderSqlLavaCommand, lDescriptionSqlLavaCommand );
         }
@@ -723,7 +723,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetPersonAuthData( rockContext ).Count();
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumPersonAuthCount ).AsInteger();
 
-            var headerText = String.Format( "Number of Person-Specific Auth Rules: {0}", auditValue );
+            var headerText = String.Format( "Number of Person-Specific Auth Rules: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "Limiting the number of person-specific auth rules and relying on group-based auth rules is crucial to improving your organization's security. BEMA recommends having no more than {0} person-specific auth rules set on your database.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderPersonAuth, lDescriptionPersonAuth );
         }
@@ -781,7 +781,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetUnencryptedSensitiveDataData().Rows.Count;
             var auditGoal = 0;
 
-            var headerText = String.Format( "Unencrypted Sensitive Attributes: {0}", auditValue );
+            var headerText = String.Format( "Unencrypted Sensitive Attributes: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "Below is a list of all attributes containing sensitive data that are not currently encrypted. Currently this only includes Social Security Numbers. BEMA recommends using the encrypted text field type for all attributes containing sensitive data." );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderUnencryptedSensitiveData, lDescriptionUnencryptedSensitiveData );
         }
@@ -845,7 +845,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetFinanceDataViewsData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinanceDataViewCount ).AsInteger();
 
-            var headerText = String.Format( "Unsecured Finance Data Views: {0}", auditValue );
+            var headerText = String.Format( "Unsecured Finance Data Views: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to financial information. BEMA recommends allowing no more than {0} unsecured financial data views.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFinanceDataViews, lDescriptionFinanceDataViews );
         }
@@ -918,7 +918,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetFileTypeSecurityData( rockContext ).Count;
             var auditGoal = 0;
 
-            var headerText = String.Format( "Unsecured Sensitive File Types: {0}", auditValue );
+            var headerText = String.Format( "Unsecured Sensitive File Types: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to secure file types dealing with sensitive data. BEMA recommends locking down all sensitive file types.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFileTypeSecurity, lDescriptionFileTypeSecurity );
         }
@@ -984,7 +984,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetGlobalLavaCommandsData().Count;
             var auditGoal = 0;
 
-            var headerText = String.Format( "Vulnerable Default Lava Commands: {0}", auditValue );
+            var headerText = String.Format( "Vulnerable Default Lava Commands: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is limit where lava commands can be used. BEMA recommends disabling the Execute, RockEntity, and Sql commands from the Global Default Enabled Lava Commands.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderGlobalLavaCommands, lDescriptionGlobalLavaCommands );
         }
@@ -1042,7 +1042,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetFinancePagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredFinancePageCount ).AsInteger();
 
-            var headerText = String.Format( "Unsecured Finance Pages: {0}", auditValue );
+            var headerText = String.Format( "Unsecured Finance Pages: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to financial information. BEMA recommends allowing no more than {0} unsecured financial pages.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderFinancePages, lDescriptionFinancePages );
         }
@@ -1118,7 +1118,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.Bema.Reporting
             var auditValue = GetAdminPagesData( rockContext ).Count;
             var auditGoal = GetAttributeValue( AttributeKey.RecommendedMaximumUnsecuredAdminPageCount ).AsInteger();
 
-            var headerText = String.Format( "Unsecured Admin Pages: {0}", auditValue );
+            var headerText = String.Format( "Unsecured Admin Pages: <span class='badge'>{0}</span>", auditValue );
             var descriptionText = String.Format( "A key part of improving your site's security is to limit access to admin configuration pages. BEMA recommends allowing no more than {0} unsecured admin pages.", auditGoal );
             GenerateHeader( headerText, descriptionText, auditValue, auditGoal, false, divHeaderAdminPages, lDescriptionAdminPages );
         }
