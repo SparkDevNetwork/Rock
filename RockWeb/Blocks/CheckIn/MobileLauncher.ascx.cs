@@ -36,7 +36,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Mobile Check-in Launcher" )]
     [Category( "Check-in" )]
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.CheckIn
     #region Block Attributes for Text options
 
     [CodeEditorField(
-        "Mobile check-in header",
+        "Mobile Check-In Header",
         Key = AttributeKey.MobileCheckinHeader,
         Category = "Text",
         DefaultValue = "Mobile Check-in",
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 6 )]
 
     [CodeEditorField(
-        "Can't determine location. <span class='tip tip-lava'></span>",
+        "Can't Determine Location <span class='tip tip-lava'></span>",
         Key = AttributeKey.UnableToDetermineMobileLocationTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! We can't determine your location. Please be sure to enable location permissions for your device.",
@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.CheckIn
                         var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl();
                         if ( qrCodeImageUrl.IsNotNullOrWhiteSpace() )
                         {
-                            lCheckinQRCodeHtml.Text = string.Format( "<div class='center-block'><img class='img-responsive center-block' src='{0}' alt=''></div>", qrCodeImageUrl );
+                            lCheckinQRCodeHtml.Text = string.Format( "<div class='qr-code-container text-center mt-3'><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code'></div>", qrCodeImageUrl );
                             lCheckinQRCodeHtml.Visible = true;
                         }
                         else

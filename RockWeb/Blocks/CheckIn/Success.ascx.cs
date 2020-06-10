@@ -35,7 +35,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Success" )]
     [Category( "Check-in" )]
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.CheckIn
 
                             Response.Cookies.Set( attendanceSessionGuidsCookie );
 
-                            lCheckinQRCodeHtml.Text = string.Format( "<div class='center-block'><img class='img-responsive center-block' src='{0}' alt=''></div>", GetAttendanceSessionsQrCodeImageUrl() );
+                            lCheckinQRCodeHtml.Text = string.Format( "<div class='qr-code-container text-center'><img class='img-responsive qr-code' src='{0}' alt=''></div>", GetAttendanceSessionsQrCodeImageUrl() );
                         }
 
                     }
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        
+
 
         /// <summary>
         /// Handles the Click event of the lbDone control.
@@ -306,21 +306,21 @@ namespace RockWeb.Blocks.CheckIn
         var labelData = {0};
 
 		function onDeviceReady() {{
-            try {{			
+            try {{
                 printLabels();
-            }} 
+            }}
             catch (err) {{
                 console.log('An error occurred printing labels: ' + err);
             }}
 		}}
-		
+
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
-            	JSON.stringify(labelData), 
-            	function(result) {{ 
+            	JSON.stringify(labelData),
+            	function(result) {{
 			        console.log('Tag printed');
 			    }},
-			    function(error) {{   
+			    function(error) {{
 				    // error is an array where:
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
