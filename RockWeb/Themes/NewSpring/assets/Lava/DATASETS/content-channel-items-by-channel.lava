@@ -1,0 +1,146 @@
+{%- if ccid != empty -%}
+[
+    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status != 3' limit:'10000' sort:'StartDateTime desc' iterator:'items' -%}
+      {%- for item in items -%}
+        {%- assign itemsManuallyOrdered = item.ContentChannel.ItemsManuallyOrdered -%}
+        {%- assign childItemsManuallyOrdered = item.ContentChannel.ChildItemsManuallyOrdered -%}
+        {%- capture permalink -%}{{ 'Global' | Attribute:'PublicApplicationRoot' | ReplaceLast:'/', '' }}{[ getPermalink cciid:'{{ item.Id }}' ]}{%- endcapture -%}
+        {%- capture scripturesString %}{{ item | Attribute:'Scriptures' }}{% endcapture -%}
+        {%- assign scripturesObject = scripturesString | FromJSON -%}
+        {%- capture videosString %}{{ item | Attribute:'Videos' }}{% endcapture -%}{%- assign videosObject = videosString | FromJSON -%}
+        {%- capture downloadsString %}{{ item | Attribute:'Downloads' }}{% endcapture -%}
+        {%- assign downloadsObject = downloadsString | FromJSON -%}
+        {%- assign category = item | Attribute:'Category' -%}
+        {%- sql return:'interactionData' -%}
+          SELECT TOP 1
+            ic.Id 'InteractionChannelId',
+            ico.Id 'InteractionComponentId'
+          FROM ContentChannelItem cci
+          JOIN InteractionChannel ic
+          ON cci.ContentChannelId = ic.ChannelEntityId
+          JOIN InteractionComponent ico
+          ON ico.InteractionChannelId = ic.Id
+          WHERE cci.Id = '{{ item.Id }}'
+          AND ic.ChannelTypeMediumValueId = 906
+          AND ico.EntityId = cci.Id
+        {%- endsql -%}
+        {%- sql return:'tags' -%}
+          SELECT
+            t.Id,
+            t.Name
+          FROM TaggedItem ti
+          JOIN Tag t
+          ON ti.TagId = t.Id
+          WHERE ti.EntityGuid = '{{ item.Guid }}'
+        {%- endsql -%}
+        {%- sql return:'communicators' -%}
+          SELECT
+            ami.Id,
+            CASE
+                WHEN TRY_CONVERT(UNIQUEIDENTIFIER, av2.Value) IS NOT NULL THEN p.NickName + ' ' + p.LastName
+                ELSE av2.Value
+            END 'Name',
+            p.Id 'PersonId'
+          FROM AttributeValue av
+          JOIN AttributeMatrix am
+          ON av.Value = am.Guid
+          JOIN AttributeMatrixItem ami
+          ON ami.AttributeMatrixId = am.Id
+          JOIN AttributeValue av2
+          ON av2.EntityId = ami.Id
+          LEFT JOIN Person p
+          ON av2.ValueAsPersonId = p.Id
+          WHERE av.EntityId = {{ item.Id }}
+          AND av.AttributeId = 86072
+          AND av2.AttributeId IN (86070,86071)
+        {%- endsql -%}
+
+        {%- if childchannelid and childchannelid != empty -%}
+          {% assign childchannelid = childchannelid | AsInteger %}
+          {% assign children = 'content_children' | PersistedDataset | Where:'Id', item.Id | Select:'Children' | First | Where:'ChannelId', childchannelid %}
+        {%- endif -%}
+
+        {%- if parentchannelid and parentchannelid != empty -%}
+          {% assign parentchannelid = parentchannelid | AsInteger %}
+          {% assign parents = 'content_parents' | PersistedDataset | Where:'Id', item.Id | Select:'Parents' | First | Where:'ChannelId', parentchannelid %}
+        {%- endif -%}
+
+        {% assign related_items = 'content_related' | PersistedDataset | Where:'Id', item.Id | Select:'Related' | First %}
+        {%- assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Trim -%}
+        {%- assign video = item | Attribute:'Video','RawValue' -%}
+        {%- capture itemVideoImageLandscape -%}{[ getImageFromVideoId id:'{{ item | Attribute:"Video","RawValue" }}' resolution:'2000x1000' ]}{%- endcapture -%}
+        {%- assign parentsSize = parents | Size -%}
+        {%- capture itemParentImageLandscape -%}{%- if parentsSize >= 1 -%}{[ getImageFromItemId id:'{{ parents | First | Property:"Id" }}' ratio:'' ]}{%- endif -%}{%- endcapture -%}
+        {%- assign itemChannelImageLandscape = item.ContentChannel | Attribute:'ChannelImageLandscape','Url' | Trim -%}
+        {%- capture imageLandscape -%}
+          {%- if itemImageLandscape and itemImageLandscape != empty -%}
+            {{ itemImageLandscape }}
+          {%- elseif video and video != empty and itemVideoImageLandscape and itemVideoImageLandscape != empty -%}
+            {{ itemVideoImageLandscape }}
+          {%- elseif parentsSize >= 1 and itemParentImageLandscape and itemParentImageLandscape != empty -%}
+            {{ itemParentImageLandscape }}
+          {%- elseif itemChannelImageLandscape and itemChannelImageLandscape != empty -%}
+            {{ itemChannelImageLandscape }}
+          {%- endif -%}
+        {%- endcapture -%}{
+        "Id": {{ item.Id }},
+        "Title": {{ item.Title | Replace:"'","’" | ToJSON }},
+        "Slug": {{ item.PrimarySlug | ToJSON }},
+        "Guid": {{ item.Guid | ToJSON }},
+        "Status": {{ item.Status | ToJSON }},
+        "Permalink": {{ permalink | Trim | ToJSON }},
+        "PublishDateTime": {{ item.StartDateTime | ToJSON }},
+        "ExpireDateTime": {{ item.ExpireDateTime | ToJSON }},
+        "ModifiedDateTime": {{ item.ModifiedDateTime | ToJSON }},
+        "Dataset": {{ dataset | ToJSON }},
+        "ChannelId": {{ item.ContentChannel.Id }},
+        "ChannelName": {{ item.ContentChannel.Name | ToJSON }},
+        "ContentType": {% if category and category != empty -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | ToJSON }}{%- endif -%},
+        "ChannelVerb": "{% if video and video != empty %}Watch{% else %}{{ item.ContentChannel | Attribute:'ChannelVerb' }}{% endif %}",
+        "ChannelUrl": {{ item.ContentChannel.ChannelUrl | ToJSON }},
+        "ItemsOrderedManually": {{ itemsManuallyOrdered | ToJSON }},
+        "ChildItemsOrderedManually": {{ childItemsManuallyOrdered | ToJSON }},
+        "ParentChannelId": {{ parentchannelid | ToJSON }},
+        "ChildChannelId": {{ childchannelid | ToJSON }},
+        "ChannelRSSFeedKeywords": {{ item.ContentChannel | Attribute:'RSSFeedKeywords' | ToJSON }},
+        "IsDateVisible": {{ item.ContentChannel | Attribute:'IsDateVisible' | ToJSON }},
+        "InteractionChannelId": {{ interactionData | First | Property:'InteractionChannelId' | ToJSON }},
+        "InteractionComponentId": {{ interactionData | First | Property:'InteractionComponentId' | ToJSON }},
+        "Category": {{ category | ToJSON }},
+        "Content": {{ item.Content | Replace:"'","’" | Escape | ToJSON }},
+        "Departments": {{ item | Attribute:'Department' | ToJSON }},
+        "Subtitle": {{ item | Attribute:'Subtitle' | Replace:"'","’" | ToJSON }},
+        "Summary": {{ item | Attribute:'Summary' | Replace:"'","’" | Escape | ToJSON }},
+        "Video": {{ video | ToJSON }},
+        "MetaTitle": {{ item | Attribute:'MetaTitle' | Replace:"'","’" | ToJSON }},
+        "MetaDescription": {{ item | Attribute:'MetaDescription' | Replace:"'","’" | ToJSON }},
+        "StartDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'0' | WithFallback:'', null | ToJSON }},
+        "EndDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'1' | ToJSON }},
+        "ImageLandscape": {{ imageLandscape | StripNewlines | Trim | ToJSON }},
+        "ImageSquare": {{ item | Attribute:'ImageSquare' | ToJSON }},
+        "ImagePortrait": {{ item | Attribute:'ImagePortrait' | ToJSON }},
+        "ImageApp": {{ item | Attribute:'ImageApp' | ToJSON }},
+        "BackgroundColor": {{ item | Attribute:'BackgroundColor' | Replace:'#','' | ToJSON }},
+        "ForegroundColor": {{ item | Attribute:'ForegroundColor' | Replace:'#','' | ToJSON }},
+        "Campuses": "{{ item | Attribute:'Campuses','Name' | Replace:' ','' }}",
+        "RelatedItem": {{ item | Attribute:'RelatedEntry','RawValue' | ToJSON }},
+        "VideoFileHigh": {{ item | Attribute:'VideoFileHigh' | ToJSON }},
+        "VideoFileMid": {{ item | Attribute:'VideoFileMid' | ToJSON }},
+        "VideoFileLow": {{ item | Attribute:'VideoFileLow' | ToJSON }},
+        "AudioFile": {{ item | Attribute:'AudioFile' | ToJSON }},
+        "AudioDuration": {{ item | Attribute:'AudioDuration' | ToJSON }},
+        "ActualDate": {{ item | Attribute:'ActualDate','RawValue' | Date:'yyyy-MM-ddThh:mm:ss' | ToJSON }},
+        "DataViews": "{{ item | Attribute:'DataViews','RawValue' }}",
+        "Videos": {{ videosObject.Attributes | ToJSON }},
+        "Communicators": {{ communicators | ToJSON }},
+        "Scriptures": {{ scripturesObject.Attributes | ToJSON }},
+        "ItemHasDownloads": {% assign downloadsSize = downloadsObject | Size %}{% if downloadsSize >= 1 %}true{% else %}false{% endif %},
+        "Downloads": {{ downloadsObject.Attributes | ToJSON }},
+        "Tags": {{ tags | ToJSON }},
+        "Children": {{ children | ToJSON }},
+        "Parents": {{ parents | ToJSON }},
+        "RelatedItems": {{ related_items | ToJSON }}
+      }{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}
+    {%- endcontentchannelitem %}
+]
+{%- endif -%}
