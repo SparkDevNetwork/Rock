@@ -299,6 +299,11 @@
                         <Rock:RockCheckBoxList ID="cblExampleHorizontal" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
                     </div>
 
+                    <a id="Rock List Box"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockListBox ID="lbExampleListBox" runat="server" Label="Rock:RockListBox" />
+                    </div>
+
                     <a id="RockRadioButtonList"></a>
                     <h2>Radio Button</h2>
                     <div runat="server" class="r-example">
@@ -835,7 +840,7 @@
                     <a id="AttributeEditor"></a>
                     <h2 runat="server">Rock:AttributeEditor</h2>
                     <div runat="server" class="r-example">
-                        <asp:LinkButton ID="lbExample" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
                         <asp:Panel ID="pnlAttributeEditor" runat="server" Visible="false" CssClass="well">
                             <Rock:AttributeEditor ID="edtExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
                         </asp:Panel>

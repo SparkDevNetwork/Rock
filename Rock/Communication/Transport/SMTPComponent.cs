@@ -143,23 +143,22 @@ namespace Rock.Communication.Transport
                 Priority = MailPriority.Normal
             };
 
+            // From
+            mailMessage.From = new MailAddress( rockEmailMessage.FromEmail, rockEmailMessage.FromName );
+            
+            // Reply to
             try
             {
                 if ( rockEmailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
-                    // Resolve any possible merge fields in the replyTo address
                     mailMessage.ReplyToList.Add( new MailAddress( rockEmailMessage.ReplyToEmail ) );
                 }
             }
             catch { }
 
-            mailMessage.From = new MailAddress( rockEmailMessage.FromEmail, rockEmailMessage.FromName );
-
+            // To
             var recipients = rockEmailMessage.GetRecipients().ToList();
             recipients.ForEach( r => mailMessage.To.Add( new MailAddress( r.To, r.Name ) ) );
-
-            // reply to
-            mailMessage.ReplyToList.Add( rockEmailMessage.ReplyToEmail );
 
             // cc
             rockEmailMessage

@@ -22,6 +22,12 @@ Quartz.xml
 StyleCop.Cache
 .vscode
 
+#build artifacts
+**/[Bb]in/[Dd]ebug
+**/[Bb]in/[Rr]elease
+**/[Oo]bj/[Dd]ebug
+**/[Oo]bj/[Rr]elease
+
 #specific folders
 [Oo]bj/
 RockWeb/Cache/*

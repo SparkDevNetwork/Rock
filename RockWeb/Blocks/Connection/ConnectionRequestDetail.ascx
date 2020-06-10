@@ -41,12 +41,12 @@
                                 <div class="col-md-9">
                                     <h3 class="margin-t-none"><asp:Literal ID="lTitle" runat="server" /></h3>
                                 </div>
-                                <div class="col-md-3 text-right">
+                                <div class="text-right col-md-3">
                                     <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:HyperLink>
                                 </div>
                             </div>
 
-                            <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
+                            <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
                                 <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
 

@@ -19,6 +19,18 @@
 @belowminimum-icon-color: fade(@brand-danger, 75%);
 
 .group-scheduler {
+  // Duplicated Style for Embedding in External Themes
+  .panel.panel-block {
+
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid @panel-default-border;
+  }
+
   .panel.panel-block > .panel-heading {
     display: inherit;
   }
@@ -54,11 +66,6 @@
   position: sticky !important;
   top: 16px;
   max-height: ~"calc(100vh - 32px)";
-
-  @media (min-width: @screen-md-min) {
-    top: @navbar-top-height + 16px;
-    max-height: ~"calc(100vh - 112px)";
-  }
 
   .is-fullscreen & {
     top: 16px;

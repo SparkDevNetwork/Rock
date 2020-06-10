@@ -163,6 +163,52 @@ namespace Rock.Model
             return newItem;
         }
 
+        /// <summary>
+        /// Gets the data views referenced by this data view's filters.
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public List<DataView> GetReferencedDataViews( int dataViewId, RockContext context )
+        {
+            var dataViewFilterService = new DataViewFilterService( context );
+
+            var relatedDataViews = GetDistinctRelatedDataViews( dataViewId, dataViewFilterService )
+                .ToDictionary( dvf => dvf.RelatedDataView.Id, dvf => dvf.RelatedDataView );
+
+            var relatedDataViewIds = relatedDataViews.Keys.ToList();
+            for ( var i = 0; i < relatedDataViewIds.Count; i++ )
+            {
+                var key = relatedDataViewIds[i];
+                var relatedDataView = relatedDataViews[key];
+
+                var relatedChildDataViews = GetDistinctRelatedDataViews( dataViewId, dataViewFilterService )
+                    .Select( dvf => dvf.RelatedDataView )
+                    .ToList();
+
+                foreach ( var dv in relatedChildDataViews )
+                {
+                    if ( relatedDataViewIds.Contains( dv.Id ) )
+                    {
+                        continue;
+                    }
+
+                    relatedDataViewIds.Add( dv.Id );
+                    relatedDataViews[dv.Id] = dv;
+                }
+            }
+
+            return relatedDataViews.Values.ToList();
+        }
+
+        private IEnumerable<DataViewFilter> GetDistinctRelatedDataViews( int dataViewId, DataViewFilterService dataViewFilterService )
+        {
+            return dataViewFilterService
+                            .Queryable()
+                            .Where( dvf => dvf.DataViewId != null && dvf.DataViewId == dataViewId && dvf.RelatedDataViewId != null )
+                            .Include( "RelatedDataView" )
+                            .DistinctBy( dvf => dvf.RelatedDataView.Id );
+        }
 
         #region Static Methods
 

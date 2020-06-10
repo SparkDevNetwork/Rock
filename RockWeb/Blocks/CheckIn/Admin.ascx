@@ -16,7 +16,7 @@
     <div class="checkin-header">
         <h1>Check-in Options</h1>
     </div>
-    
+
     <asp:Panel runat="server" CssClass="checkin-body">
 
         <div class="checkin-scroll-panel">
@@ -41,12 +41,12 @@
         </div>
 
     </asp:Panel>
-    
 
-    <div class="checkin-footer">   
+
+    <div class="checkin-footer">
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-primary" ID="lbOk" runat="server" OnClick="lbOk_Click" Text="OK" Visible="false" />
-            <a class="btn btn-primary" runat="server" ID="lbRetry" visible="false" href="javascript:window.location.href=window.location.href" >Retry</a>
+            <a class="btn btn-default" runat="server" ID="lbRetry" visible="false" href="javascript:window.location.href=window.location.href" >Retry</a>
         </div>
     </div>
 

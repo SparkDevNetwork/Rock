@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Web.Cache
 {
@@ -88,6 +89,22 @@ namespace Rock.Web.Cache
         /// </value>
         public override ISecured ParentAuthority => RestController;
 
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [DataMember]
+        public string CacheControlHeaderSettings { get; private set; }
+
+        /// <summary>
+        /// Gets the cache control header.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        public string CacheControlHeader { get; private set; }
         #endregion
 
         #region Public Methods
@@ -107,6 +124,8 @@ namespace Rock.Web.Cache
             Method = restAction.Method;
             ApiId = restAction.ApiId;
             Path = restAction.Path;
+            CacheControlHeader = restAction.CacheControlHeader.ToStringSafe();
+            CacheControlHeaderSettings = restAction.CacheControlHeaderSettings;
         }
 
         /// <summary>
@@ -210,6 +229,31 @@ namespace Rock.Web.Cache
             return restAction?.Method;
         }
 
+        /// <summary>
+        /// Removes or invalidates the CachedItem based on EntityState
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        public static void UpdateCachedEntity( string entityId, EntityState entityState )
+        {
+            // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
+            // Reading it from the database here could also cause a deadlock depending on the database isolation level.
+            // Just remove it from Cache, and update the AllIds based on entityState
+
+            if ( entityState == EntityState.Deleted )
+            {
+                Remove( entityId );
+            }
+            else if ( entityState == EntityState.Added )
+            {
+                // add this entity to All Ids, but don't fetch it into cache until somebody asks for it
+                AddToAllIds( entityId );
+            }
+            else
+            {
+                FlushItem( entityId );
+            }
+        }
         #endregion
 
     }

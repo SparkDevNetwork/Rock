@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Reporting;
+using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -486,6 +487,23 @@ namespace Rock.Web.UI.Controls
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId()
+        {
+            EnsureChildControls();
+
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
+            if ( component != null )
+            {
+                return component.GetRelatedDataViewId( filterControls );
+            }
+
+            return null;
         }
 
         /// <summary>

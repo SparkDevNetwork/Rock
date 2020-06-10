@@ -104,6 +104,7 @@ namespace RockWeb.Blocks.CheckIn
                                         var now = attendance.Campus != null ? attendance.Campus.CurrentDateTime : RockDateTime.Now;
 
                                         attendance.EndDateTime = now;
+                                        attendance.CheckedOutByPersonAliasId = GetCheckoutPersonAliasId();
 
                                         if ( attendance.Occurrence.Group != null &&
                                             attendance.Occurrence.Location != null &&
@@ -215,6 +216,35 @@ namespace RockWeb.Blocks.CheckIn
 	    }}
 ", jsonObject );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
+        }
+
+        private int? GetCheckoutPersonAliasId()
+        {
+            if ( CurrentCheckInState.CheckIn.CheckedInByPersonAliasId.HasValue )
+            {
+                return CurrentCheckInState.CheckIn.CheckedInByPersonAliasId;
+            }
+
+            int? personAliasId = null;
+            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
+            {
+                var personAliasGuid = Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
+                if ( personAliasGuid.HasValue )
+                {
+                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
+                    if ( personAlias != null )
+                    {
+                        personAliasId = personAlias.Id;
+                    }
+                }
+            }
+
+            if ( !personAliasId.HasValue )
+            {
+                personAliasId = CurrentPersonAliasId;
+            }
+
+            return personAliasId;
         }
 
     }
