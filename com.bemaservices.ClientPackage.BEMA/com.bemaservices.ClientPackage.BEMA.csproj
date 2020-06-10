@@ -73,12 +73,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Migrations\009_DuplicateContentChannelItemSlugs.cs.exclude" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Migrations\001_InitialSetup.cs" />
     <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
     <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
     <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
-    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />    
+    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
     <None Include="Migrations\006_AlternateBusinessList.cs.exclude" />
     <None Include="Migrations\007_PersonAuthorizedOnPage.cs.exclude" />
     <None Include="Migrations\008_LargeDonations.cs.exclude" />
