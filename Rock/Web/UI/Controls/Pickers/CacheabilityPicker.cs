@@ -218,6 +218,9 @@ namespace Rock.Web.UI.Controls
         {
             var showAges = false;
 
+            _maxAgeUnit.SelectedValue = TimeIntervalUnit.Minutes.ConvertToInt().ToString();
+            _maxSharedAgeUnit.SelectedValue = TimeIntervalUnit.Minutes.ConvertToInt().ToString();
+
             if ( CurrentCacheablity == null )
             {
                 _cacheabilityType.SelectedValue = RockCacheablityType.Public.ConvertToInt().ToString();
@@ -341,8 +344,8 @@ namespace Rock.Web.UI.Controls
 
             _maxAgeUnit.Items.AddRange( new ListItem[]
             {
-                new ListItem("Seconds", TimeIntervalUnit.Seconds.ConvertToInt().ToString()),
-                new ListItem("Minutes", TimeIntervalUnit.Minutes.ConvertToInt().ToString()),
+                new ListItem("Secs", TimeIntervalUnit.Seconds.ConvertToInt().ToString()),
+                new ListItem("Mins", TimeIntervalUnit.Minutes.ConvertToInt().ToString()),
                 new ListItem("Hours", TimeIntervalUnit.Hours.ConvertToInt().ToString()),
                 new ListItem("Days", TimeIntervalUnit.Days.ConvertToInt().ToString())
             } );
@@ -373,8 +376,8 @@ namespace Rock.Web.UI.Controls
             };
             _maxSharedAgeUnit.Items.AddRange( new ListItem[]
             {
-                new ListItem("Seconds", TimeIntervalUnit.Seconds.ConvertToInt().ToString()),
-                new ListItem("Minutes", TimeIntervalUnit.Minutes.ConvertToInt().ToString()),
+                new ListItem("Secs", TimeIntervalUnit.Seconds.ConvertToInt().ToString()),
+                new ListItem("Mins", TimeIntervalUnit.Minutes.ConvertToInt().ToString()),
                 new ListItem("Hours", TimeIntervalUnit.Hours.ConvertToInt().ToString()),
                 new ListItem("Days", TimeIntervalUnit.Days.ConvertToInt().ToString())
             } );
