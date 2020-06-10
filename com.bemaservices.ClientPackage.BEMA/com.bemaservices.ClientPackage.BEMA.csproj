@@ -73,6 +73,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Migrations\011_PledgeProgressReport.cs.exclude" />
     <None Include="Migrations\010_DuplicateEmails.cs.exclude" />
     <None Include="Migrations\009_DuplicateContentChannelItemSlugs.cs.exclude" />
     <Compile Include="Properties\AssemblyInfo.cs" />
