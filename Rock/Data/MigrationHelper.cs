@@ -5709,7 +5709,136 @@ END
 
         #endregion
 
-        #region PersonBadge
+        #region Badge
+
+        /// <summary>
+        /// Updates the Badge by Guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="badgeEntityTypeName">Name of the EntityType this badge applies to (e.g., Rock.Model.Person).</param>
+        /// <param name="badgeComponentEntityTypeName">Name of the BadgeComponent EntityType.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdateBadge( string name, string description, string badgeEntityTypeName, string badgeComponentEntityTypeName, int order, string guid )
+        {
+            Migration.Sql( string.Format(@"
+                DECLARE @BadgeEntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{5}')
+                DECLARE @BadgeComponentEntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+                IF EXISTS ( SELECT * FROM [Badge] where [Guid] = '{4}')
+                BEGIN
+                        UPDATE [Badge] set
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [BadgeComponentEntityTypeId] = @BadgeComponentEntityTypeId,
+                            [Order] = {3},
+                            [EntityTypeId] = @BadgeEntityTypeId
+                        WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                        INSERT INTO [Badge] ([Name],[Description],[BadgeComponentEntityTypeId],[Order],[Guid],[EntityTypeId])
+                            VALUES ('{0}', '{1}', @BadgeComponentEntityTypeId, {3}, '{4}', @BadgeEntityTypeId)
+                END
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    badgeComponentEntityTypeName,
+                    order,
+                    guid,
+                    badgeEntityTypeName )
+            );
+        }
+
+        /// <summary>
+        /// Adds (or Deletes and Adds) the person badge attribute.
+        /// </summary>
+        /// <param name="badgeGuid">The person badge unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddBadgeAttribute( string badgeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Migration.Sql( string.Format(@"
+                DECLARE @BadgeComponentEntityTypeId INT = (SELECT [BadgeComponentEntityTypeId] FROM [Badge] WHERE [Guid] = '{0}')
+                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                -- get the EntityTypeId for 'Rock.Model.Badge'
+                DECLARE @EntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Badge')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute]
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'BadgeComponentEntityTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@BadgeComponentEntityTypeId AS VARCHAR)
+                AND [Key] = '{2}'
+
+                INSERT INTO [Attribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId, @EntityTypeId,'BadgeComponentEntityTypeId',CAST(@BadgeComponentEntityTypeId as varchar),
+                    '{2}','{3}','{4}',
+                    {5},0,'{6}',0,0,
+                    '{7}')
+                ",
+                    badgeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+
+        }
+
+        /// <summary>
+        /// Adds/Updates the person badge attribute value.
+        /// </summary>
+        /// <param name="personBadgeGuid">The person badge unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( string.Format(@"
+                DECLARE @BadgeId INT = (SELECT [Id] FROM [Badge] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @BadgeId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],
+                    [AttributeId],
+                    [EntityId],
+                    [Value],
+                    [Guid])
+                VALUES(
+                    1,
+                    @AttributeId,
+                    @BadgeId,
+                    '{2}',
+                    NEWID())
+                ",
+                    personBadgeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                ) );
+        }
+
+        #endregion Badge
+
+        #region PersonBadge (Obsolete)
 
         /// <summary>
         /// Updates the PersonBadge by Guid (if it exists); otherwise it inserts a new record.
@@ -5719,17 +5848,22 @@ END
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The unique identifier.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use AddOrUpdateBadge() instead.", false )]
         public void UpdatePersonBadge( string name, string description, string entityTypeName, int order, string guid )
         {
-            Migration.Sql( string.Format( @"
-                    DECLARE @EntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+            Migration.Sql( string.Format(@"
+                DECLARE @PersonBadgeTableId INT = OBJECT_ID('dbo.PersonBadge', 'U')
+                DECLARE @BadgeComponentEntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
 
+                IF @PersonBadgeTableId IS NOT NULL
+                BEGIN -- Run old migration on [PersonBadge] table.
                     IF EXISTS ( SELECT * FROM [PersonBadge] where [Guid] = '{4}')
                     BEGIN
                         UPDATE [PersonBadge] set
                             [Name] = '{0}',
                             [Description] = '{1}',
-                            [EntityTypeId] = @EntityTypeId,
+                            [EntityTypeId] = @BadgeComponentEntityTypeId,
                             [Order] = {3}
                         WHERE [Guid] = '{4}'
 
@@ -5737,10 +5871,29 @@ END
                     ELSE
                     BEGIN
                         INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
-                            VALUES ('{0}', '{1}', @EntityTypeId, {3}, '{4}')
+                            VALUES ('{0}', '{1}', @BadgeComponentEntityTypeId, {3}, '{4}')
                     END
-
-",
+                END
+                ELSE
+                BEGIN -- Run new migration on [Badge] table.
+                    DECLARE @PersonEntityTypeId int = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Person')
+                    IF EXISTS ( SELECT * FROM [Badge] where [Guid] = '{4}')
+                    BEGIN
+                        UPDATE [Badge] set
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [BadgeComponentEntityTypeId] = @BadgeComponentEntityTypeId,
+                            [Order] = {3},
+                            [EntityTypeId] = @PersonEntityTypeId
+                        WHERE [Guid] = '{4}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Badge] ([Name],[Description],[BadgeComponentEntityTypeId],[Order],[Guid],[EntityTypeId])
+                            VALUES ('{0}', '{1}', @BadgeComponentEntityTypeId, {3}, '{4}', @PersonEntityTypeId)
+                    END
+                END
+                ",
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     entityTypeName,
@@ -5760,41 +5913,68 @@ END
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use AddBadgeAttribute() instead.", false )]
         public void AddPersonBadgeAttribute( string personBadgeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
-            Migration.Sql( string.Format( @"
+            Migration.Sql( string.Format(@"
+                DECLARE @PersonBadgeTableId INT = OBJECT_ID('dbo.PersonBadge', 'U')
+                DECLARE @FieldTypeId INT
+                DECLARE @EntityTypeId INT
 
-                DECLARE @PersonBadgeId int
-                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+                IF @PersonBadgeTableId IS NOT NULL
+                BEGIN -- Run old migration on [PersonBadge] table.
+                    DECLARE @PersonBadgeEntityTypeId INT = (SELECT [EntityTypeId] FROM [PersonBadge] WHERE [Guid] = '{0}')
+                    SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
 
-                DECLARE @PersonBadgeEntityTypeId int
-                SET @PersonBadgeEntityTypeId = (SELECT [EntityTypeId] FROM [PersonBadge] WHERE [Guid] = '{0}')
+                    -- get the EntityTypeId for 'Rock.Model.PersonBadge'
+                    SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonBadge')
 
-                DECLARE @FieldTypeId int
-                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                    -- Delete existing attribute first (might have been created by Rock system)
+                    DELETE [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@PersonBadgeEntityTypeId AS VARCHAR)
+                    AND [Key] = '{2}'
 
-                -- get the EntityTypeId for 'Rock.Model.PersonBadge'
-                DECLARE @EntityTypeId int
-                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonBadge')
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'EntityTypeId',CAST(@PersonBadgeEntityTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')
+                END
+                ELSE
+                BEGIN -- Run new migration on [Badge] table.
+                    DECLARE @BadgeComponentEntityTypeId INT = (SELECT [BadgeComponentEntityTypeId] FROM [Badge] WHERE [Guid] = '{0}')
+                    SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
 
-                -- Delete existing attribute first (might have been created by Rock system)
-                DELETE [Attribute]
-                WHERE [EntityTypeId] = @EntityTypeId
-                AND [EntityTypeQualifierColumn] = 'EntityTypeId'
-                AND [EntityTypeQualifierValue] = CAST(@PersonBadgeEntityTypeId as varchar)
-                AND [Key] = '{2}'
+                    -- get the EntityTypeId for 'Rock.Model.Badge'
+                    SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Badge')
 
-                INSERT INTO [Attribute] (
-                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                    [Key],[Name],[Description],
-                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                    [Guid])
-                VALUES(
-                    1,@FieldTypeId, @EntityTypeId,'EntityTypeId',CAST(@PersonBadgeEntityTypeId as varchar),
-                    '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
-                    '{7}')
-",
+                    -- Delete existing attribute first (might have been created by Rock system)
+                    DELETE [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'BadgeComponentEntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@BadgeComponentEntityTypeId AS VARCHAR)
+                    AND [Key] = '{2}'
+
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'BadgeComponentEntityTypeId',CAST(@BadgeComponentEntityTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')
+                END
+                ",
                     personBadgeGuid,
                     fieldTypeGuid,
                     key ?? name.Replace( " ", string.Empty ),
@@ -5812,29 +5992,61 @@ END
         /// <param name="personBadgeGuid">The person badge unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="value">The value.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use AddBadgeAttributeValue() instead.", false )]
         public void AddPersonBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
         {
-            Migration.Sql( string.Format( @"
+            Migration.Sql( string.Format(@"
+                DECLARE @PersonBadgeTableId INT = OBJECT_ID('dbo.PersonBadge', 'U')
+                DECLARE @AttributeId INT
 
-                DECLARE @PersonBadgeId int
-                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+                IF @PersonBadgeTableId IS NOT NULL
+                BEGIN -- Run old migration on [PersonBadge] table.
+                    DECLARE @PersonBadgeId INT = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+                    SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+                    -- Delete existing attribute value first (might have been created by Rock system)
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @PersonBadgeId
 
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @PersonBadgeId
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],
+                        [AttributeId],
+                        [EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,
+                        @AttributeId,
+                        @PersonBadgeId,
+                        '{2}',
+                        NEWID())
+                END
+                ELSE
+                BEGIN -- Run new migration on [Badge] table.
+                    DECLARE @BadgeId INT = (SELECT [Id] FROM [Badge] WHERE [Guid] = '{0}')
+                    SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@PersonBadgeId,
-                    '{2}',
-                    NEWID())
+                    -- Delete existing attribute value first (might have been created by Rock system)
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @BadgeId
+
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],
+                        [AttributeId],
+                        [EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,
+                        @AttributeId,
+                        @BadgeId,
+                        '{2}',
+                        NEWID())
+                END
+
 ",
                     personBadgeGuid,
                     attributeGuid,
