@@ -71,11 +71,13 @@
       <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,8 +88,11 @@
   <ItemGroup>
     <Compile Include="Jobs\MailChimpSync.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Migrations\003_CreateDb.cs" />
     <Compile Include="Migrations\002_UpdateCronExpression.cs" />
     <Compile Include="Migrations\001_AddSystemData.cs" />
+    <Compile Include="Model\MailChimpMember.cs" />
+    <Compile Include="Model\MailChimpMemberService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\SystemDefinedTypes.cs" />
