@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock.Communication;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -375,6 +376,43 @@ namespace Rock.Model
         public string PushSound { get; set; }
 
         /// <summary>
+        /// Gets or sets the push image file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image file identifier.
+        /// </value>
+        [DataMember]
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        [DataMember]
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        [DataMember]
+        public string PushData { get; set; }
+        #endregion
+
+        /// <summary>
         /// Option to prevent communications from being sent to people with the same email/SMS addresses.
         /// This will mean two people who share an address will not receive a personalized communication, only one of them will.
         /// </summary>
@@ -383,8 +421,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool ExcludeDuplicateRecipientAddress { get; set; }
-
-        #endregion
 
         #endregion
 
