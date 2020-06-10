@@ -18,7 +18,7 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA.Migrations
 {
-    [MigrationNumber( 9, "1.9.4" )]
+    [MigrationNumber( 16, "1.9.4" )]
     public class AttendanceMetricsHistoryDashboard : Migration
     {
         /// <summary>

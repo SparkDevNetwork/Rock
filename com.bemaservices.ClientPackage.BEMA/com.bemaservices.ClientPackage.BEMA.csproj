@@ -76,7 +76,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Migrations\001_InitialSetup.cs" />
     <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
-    <None Include="Migrations\010_GivingByFinancialAccount.cs.exclude" />
     <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
     <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
     <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
@@ -92,6 +91,8 @@
     <None Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs.exclude" />
     <None Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs.exclude" />
     <None Include="Migrations\017_FamilyCampusNotLastTransaction.cs.exclude" />
+    <None Include="Migrations\018_GivingByFinancialAccount.cs.exclude" />
+
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
