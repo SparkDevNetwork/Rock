@@ -20,7 +20,7 @@
   --input-border-focus: #fff;
   --btn-checkinselect-bg: transparent !important;
   --btn-checkinselect-color: #fff !important;
-  --btn-checkinselect-disabled-bg: rgba(0,0,0,0.5);
+  --btn-checkinselect-disabled-bg: rgba(0,0,0,.5);
   --btn-default-color: #fff;
   --btn-default-border: #f7fafc;
   --btn-default-bg: transparent;
@@ -29,13 +29,13 @@
 }
 
 body {
-  background-color: @dark-background-color;
   color: @dark-text-color;
+  background-color: @dark-background-color;
 
   & when not (@dark-logo-image-url = ~"") {
     &::before {
       background: url(@dark-logo-image-url);
-      border-bottom: 1px solid #E2E8F0;
+      border-bottom: 1px solid #e2e8f0;
     }
   }
 }
@@ -50,7 +50,8 @@ a,
 }
 
 h1,
-.checkin-messages li, .checkin-summary li,
+.checkin-messages li,
+.checkin-summary li,
 .checkin-header .checkin-sub-title {
   color: @dark-text-color;
 }

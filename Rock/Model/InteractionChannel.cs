@@ -118,10 +118,10 @@ namespace Rock.Model
         public int? RetentionDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the length of time that components of this channel should be cached
+        /// Gets or sets the length of time (in minutes) that components of this channel should be cached
         /// </summary>
         /// <value>
-        /// The duration of the component cache.
+        /// The duration (in minutes) of the component cache.
         /// </value>
         [DataMember]
         public int? ComponentCacheDuration { get; set; }

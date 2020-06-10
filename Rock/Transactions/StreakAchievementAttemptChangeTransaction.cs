@@ -37,6 +37,11 @@ namespace Rock.Transactions
         private int StreakId { get; }
 
         /// <summary>
+        /// Gets the streak achievement attempt unique identifier.
+        /// </summary>
+        private Guid StreakAchievementAttemptGuid { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is starting.
         /// </summary>
         private bool IsNowStarting { get; }
@@ -83,6 +88,7 @@ namespace Rock.Transactions
             var wasSuccessful = entry.State != EntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
 
             StreakId = streakAchievementAttempt.StreakId;
+            StreakAchievementAttemptGuid = streakAchievementAttempt.Guid;
             IsNowStarting = entry.State == EntityState.Added;
             IsNowEnding = !wasClosed && streakAchievementAttempt.IsClosed;
             IsNowSuccessful = !wasSuccessful && streakAchievementAttempt.IsSuccessful;
@@ -144,9 +150,38 @@ namespace Rock.Transactions
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         private void LaunchWorkflow( int workflowTypeId )
         {
-            var transaction = new LaunchWorkflowTransaction( workflowTypeId );
+            var attempt = GetStreakAchievementAttempt();
+            ITransaction transaction;
+
+            if ( attempt != null )
+            {
+                transaction = new LaunchWorkflowTransaction<StreakAchievementAttempt>( workflowTypeId, attempt.Id );
+            }
+            else
+            {
+                transaction = new LaunchWorkflowTransaction( workflowTypeId );
+            }
+
             transaction.Enqueue();
         }
+
+        /// <summary>
+        /// Gets the streak achievement attempt.
+        /// </summary>
+        /// <returns></returns>
+        private StreakAchievementAttempt GetStreakAchievementAttempt()
+        {
+            if ( _streakAchievementAttempt != null )
+            {
+                return _streakAchievementAttempt;
+            }
+
+            var rockContext = new RockContext();
+            var service = new StreakAchievementAttemptService( rockContext );
+            _streakAchievementAttempt = service.Get( StreakAchievementAttemptGuid );
+            return _streakAchievementAttempt;
+        }
+        private StreakAchievementAttempt _streakAchievementAttempt = null;
 
         /// <summary>
         /// Adds the step.

@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics;
 using System.Linq;
@@ -641,6 +643,43 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State != EntityState.Deleted )
+            {
+                if ( DataViewFilter != null )
+                {
+                    DataViewFilter.DataView = this;
+                    SetDataViewOnChildFilters( DataViewFilter.ChildFilters, this );
+                }
+            }
+
+            if ( entry.State == EntityState.Added )
+            {
+                RunCountLastRefreshDateTime = RockDateTime.Now;
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        private void SetDataViewOnChildFilters( ICollection<DataViewFilter> dataViewFilters, DataView dataView )
+        {
+            if ( dataViewFilters == null )
+            {
+                return;
+            }
+
+            foreach ( var filter in dataViewFilters )
+            {
+                filter.DataView = dataView;
+                SetDataViewOnChildFilters( filter.ChildFilters, dataView );
+            }
+        }
         #endregion
 
     }

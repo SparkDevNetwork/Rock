@@ -249,6 +249,10 @@ namespace Rock.Web.Cache
             ItemCache<T>.AddToAllIds( key );
         }
 
+        internal static void AddToAllIds( string key )
+        {
+            ItemCache<T>.AddToAllIds( key );
+        }
         /// <summary>
         /// Flushes the object from the cache without removing it from AllIds.
         /// Call this to force the cache to reload the object from the database the next time it is requested. 

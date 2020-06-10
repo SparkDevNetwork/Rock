@@ -18,7 +18,7 @@
                             <Rock:RockBoundField DataField="StorageEntityType" HeaderText="Storage Type" SortExpression="StorageEntityType" />
                             <Rock:RockBoundField DataField="BinaryFileCount" HeaderText="File Count" SortExpression="BinaryFileCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                            <Rock:BoolField DataField="AllowCaching" HeaderText="Allows Caching" SortExpression="AllowCaching" />
+                            <Rock:BoolField DataField="CacheToServerFileSystem" HeaderText="Cache To Server" SortExpression="CacheToServerFileSystem" />
                             <Rock:BoolField DataField="RequiresViewSecurity" HeaderText="Requires View Security" SortExpression="RequiresViewSecurity" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gBinaryFileType_Delete" />

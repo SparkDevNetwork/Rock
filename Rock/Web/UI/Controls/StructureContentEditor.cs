@@ -252,8 +252,10 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _hfValue.Value = HttpUtility.UrlEncode( value );
-
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    _hfValue.Value = Uri.EscapeUriString( value ); // HttpUtility.UrlEncode makes spaces + instead of %20
+                }
             }
         }
 

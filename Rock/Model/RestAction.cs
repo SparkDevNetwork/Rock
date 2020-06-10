@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -76,6 +77,47 @@ namespace Rock.Model
         [DataMember]
         public string Path { get; set; }
 
+        private string _cacheControlHeaderSettings;
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [MaxLength( 500 )]
+        [DataMember]
+        public string CacheControlHeaderSettings
+        {
+            get => _cacheControlHeaderSettings;
+            set
+            {
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
+                _cacheControlHeaderSettings = value;
+            }
+        }
+
+        private RockCacheability _cacheControlHeader;
+        /// <summary>
+        /// Gets the cache control header.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+                return _cacheControlHeader;
+            }
+        }
         #endregion
 
         #region Virtual Properties
@@ -128,7 +170,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return RestActionCache.Get( this.Id );
+            return RestActionCache.Get( this.ApiId );
         }
 
         /// <summary>
@@ -138,7 +180,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            RestActionCache.UpdateCachedEntity( this.Id, entityState );
+            RestActionCache.UpdateCachedEntity( this.ApiId, entityState );
         }
 
         #endregion

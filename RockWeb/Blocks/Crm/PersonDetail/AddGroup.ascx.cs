@@ -1621,14 +1621,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Gets the location key.
+        /// Returns a unique identifier for a location based on non-default field values.
         /// </summary>
         /// <returns></returns>
         private string GetLocationKey()
         {
             var location = new Location();
+
             acAddress.GetValues( location );
-            return location.GetFullStreetAddress().Trim();
+
+            // Compose a key using only fields that do not have default values.
+            var locationKey = string.Format( "{0}|{1}|{2}|{3}|{4}",
+                                             location.Street1, location.Street2, location.City, location.County, location.PostalCode );
+
+            if ( location.State != acAddress.GetDefaultState() )
+            {
+                locationKey += "|" + location.State;
+            }
+
+            if ( location.Country != acAddress.GetDefaultCountry() )
+            {
+                locationKey += "|" + location.Country;
+            }
+
+            if ( string.IsNullOrWhiteSpace(locationKey.ReplaceWhileExists( "|", string.Empty ) ) )
+            {
+                locationKey = string.Empty;
+            }
+
+            return locationKey;
         }
 
         /// <summary>

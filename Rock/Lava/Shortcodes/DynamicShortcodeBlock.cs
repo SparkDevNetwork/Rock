@@ -27,6 +27,7 @@ using DotLiquid.Util;
 
 using Rock.Lava.Blocks;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
@@ -359,15 +360,11 @@ namespace Rock.Lava.Shortcodes
             LoadBlockMergeFields( context, parms );
 
             // create all the parameters from the shortcode with their default values
-            var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
-            foreach ( var shortcodeParm in shortcodeParms )
+            var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( _shortcode.Parameters );
+
+            foreach ( var shortcodeParm in shortcodeParms.Dictionary )
             {
-                var shortcodeParmKV = shortcodeParm.Split( '^' );
-                if ( shortcodeParmKV.Length == 2 )
-                {
-                    // Add shortcode confirmation to the parameters, decode %2C back to a comma
-                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1].Replace( "%2C", "," )  );
-                }
+                parms.AddOrReplace( shortcodeParm.Key, shortcodeParm.Value );
             }
 
             // first run lava across the inputted markup

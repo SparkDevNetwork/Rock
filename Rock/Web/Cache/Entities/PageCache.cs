@@ -222,10 +222,10 @@ namespace Rock.Web.Cache
         public int Order { get; private set; }
 
         /// <summary>
-        /// Gets or sets the duration of the output cache.
+        /// Gets or sets the duration (in seconds) of the output cache.
         /// </summary>
         /// <value>
-        /// The duration of the output cache.
+        /// The duration (in seconds) of the output cache.
         /// </value>
         [DataMember]
         public int OutputCacheDuration { get; private set; }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -120,6 +121,19 @@ namespace RockWeb.Blocks.Administration
             RefreshControllerList();
         }
 
+        protected void gControllers_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var restControllerModel = e.Row.DataItem as RestControllerModel;
+                var litCacheHeader = e.Row.FindControl( "litCacheHeader" ) as Literal;
+                if ( litCacheHeader != null && restControllerModel != null && restControllerModel.ActionsWithPublicCachingHeaders > 0 )
+                {
+                    litCacheHeader.Text = string.Format( "<span class='text-success fa fa-tachometer-alt' title='{0}' data-toggle='tooltip'></span>",
+                        restControllerModel.ActionsWithPublicCachingHeaders );
+                }
+            }
+        }
         #endregion
 
         #region Methods
@@ -132,12 +146,15 @@ namespace RockWeb.Blocks.Administration
             var service = new RestControllerService( new RockContext() );
             var sortProperty = gControllers.SortProperty;
 
-            var qry = service.Queryable().Select( c => new
+            var qry = service.Queryable().Select( c => new RestControllerModel
             {
-                c.Id,
-                c.Name,
-                c.ClassName,
-                Actions = c.Actions.Count()
+                Id = c.Id,
+                Name = c.Name,
+                ClassName = c.ClassName,
+                Actions = c.Actions.Count(),
+                ActionsWithPublicCachingHeaders = c.Actions.Count( a => a.CacheControlHeaderSettings != null
+                                            && a.CacheControlHeaderSettings != ""
+                                            && a.CacheControlHeaderSettings.Contains( "\"RockCacheablityType\":0" ) )
             } );
 
             if ( sortProperty != null )
@@ -161,6 +178,13 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-
+        private class RestControllerModel
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string ClassName { get; set; }
+            public int Actions { get; set; }
+            public int ActionsWithPublicCachingHeaders { get; set; }
+        }
     }
 }

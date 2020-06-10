@@ -108,11 +108,11 @@ namespace Rock.Model
         public int MinimumDaysToRetake { get; set; }
 
         /// <summary>
-        /// Gets or sets the number for valid duration of the <see cref="Rock.Model.AssessmentType"/>.
-        /// How long is this assessment valid before it must be taken again.
+        /// Gets or sets the number of days the assessment is valid for <see cref="Rock.Model.AssessmentType"/>.
+        /// How long (in days) is this assessment valid before it must be taken again.
         /// </summary>
         /// <value>
-        /// The valid duration of the <see cref="Rock.Model.AssessmentType"/>..
+        /// The duration (in days) the <see cref="Rock.Model.AssessmentType"/> is considered valid.
         /// </value>
         [DataMember]
         public int ValidDuration { get; set; }

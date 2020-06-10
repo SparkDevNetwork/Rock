@@ -95,6 +95,13 @@ namespace Rock.Transactions
                 {
                     dataView.LastRunDateTime = LastRunDateTime;
                     dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
+
+                    var relatedDataViews = dataViewService.GetReferencedDataViews( DataViewId, rockContext );
+                    foreach ( var related in relatedDataViews )
+                    {
+                        related.LastRunDateTime = LastRunDateTime;
+                        related.RunCount = ( related.RunCount ?? 0 ) + 1;
+                    }
                 }
 
                 if ( PersistedLastRefreshDateTime != null )
@@ -112,7 +119,6 @@ namespace Rock.Transactions
                 {
                     dataView.TimeToRunDurationMilliseconds = TimeToRunDurationMilliseconds;
                 }
-
                 rockContext.SaveChanges();
             }
         }

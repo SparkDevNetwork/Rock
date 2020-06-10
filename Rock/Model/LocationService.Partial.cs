@@ -75,6 +75,25 @@ namespace Rock.Model
             //    return null;
             //}
 
+            // Remove leading and trailing whitespace.
+            street1 = street1.ToStringSafe().Trim();
+            street2 = street2.ToStringSafe().Trim();
+            city = city.ToStringSafe().Trim();
+            state = state.ToStringSafe().Trim();
+            postalCode = postalCode.ToStringSafe().Trim();
+            country = country.ToStringSafe().Trim();
+
+            // Make sure the address has some content.
+            if ( string.IsNullOrWhiteSpace( street1 )
+                 && string.IsNullOrWhiteSpace( street2 )
+                 && string.IsNullOrWhiteSpace( city )
+                 && string.IsNullOrWhiteSpace( state )
+                 && string.IsNullOrWhiteSpace( postalCode )
+                 && string.IsNullOrWhiteSpace( country ) )
+            {
+                return null;
+            }
+
             // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
             if ( foundLocation != null )

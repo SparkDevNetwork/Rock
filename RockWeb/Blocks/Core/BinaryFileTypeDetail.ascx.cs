@@ -24,6 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -162,20 +163,26 @@ namespace RockWeb.Blocks.Core
             tbName.Text = binaryFileType.Name;
             tbDescription.Text = binaryFileType.Description;
             tbIconCssClass.Text = binaryFileType.IconCssClass;
-            cbAllowCaching.Checked = binaryFileType.AllowCaching;
+            cbCacheToServerFileSystem.Checked = binaryFileType.CacheToServerFileSystem;
+
+            if ( binaryFileType.CacheControlHeaderSettings != null )
+            {
+                cpCacheSettings.CurrentCacheablity = JsonConvert.DeserializeObject<RockCacheability>( binaryFileType.CacheControlHeaderSettings );
+            }
+
             cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
 
             nbMaxWidth.Text = binaryFileType.MaxWidth.ToString();
             nbMaxHeight.Text = binaryFileType.MaxHeight.ToString();
 
             ddlPreferredFormat.BindToEnum<Format>();
-            ddlPreferredFormat.SetValue( (int)binaryFileType.PreferredFormat );
+            ddlPreferredFormat.SetValue( ( int ) binaryFileType.PreferredFormat );
 
             ddlPreferredResolution.BindToEnum<Resolution>();
-            ddlPreferredResolution.SetValue( (int)binaryFileType.PreferredResolution );
+            ddlPreferredResolution.SetValue( ( int ) binaryFileType.PreferredResolution );
 
             ddlPreferredColorDepth.BindToEnum<ColorDepth>();
-            ddlPreferredColorDepth.SetValue( (int)binaryFileType.PreferredColorDepth );
+            ddlPreferredColorDepth.SetValue( ( int ) binaryFileType.PreferredColorDepth );
 
             cbPreferredRequired.Checked = binaryFileType.PreferredRequired;
 
@@ -240,7 +247,8 @@ namespace RockWeb.Blocks.Core
             // allow these to be edited in restricted edit mode if not readonly
             tbDescription.ReadOnly = readOnly;
             tbIconCssClass.ReadOnly = readOnly;
-            cbAllowCaching.Enabled = !readOnly;
+            cbCacheToServerFileSystem.Enabled = !readOnly;
+            cpCacheSettings.Enabled = !readOnly;
             cbRequiresViewSecurity.Enabled = !readOnly;
             cpStorageType.Enabled = !readOnly;
             nbMaxWidth.ReadOnly = readOnly;
@@ -296,7 +304,8 @@ namespace RockWeb.Blocks.Core
             binaryFileType.Name = tbName.Text;
             binaryFileType.Description = tbDescription.Text;
             binaryFileType.IconCssClass = tbIconCssClass.Text;
-            binaryFileType.AllowCaching = cbAllowCaching.Checked;
+            binaryFileType.CacheToServerFileSystem = cbCacheToServerFileSystem.Checked;
+            binaryFileType.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheablity.ToJson();
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
             binaryFileType.MaxWidth = nbMaxWidth.Text.AsInteger();
             binaryFileType.MaxHeight = nbMaxHeight.Text.AsInteger();
@@ -380,7 +389,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gBinaryFileAttributes_ShowEdit( attributeGuid );
         }
 
@@ -419,7 +428,7 @@ namespace RockWeb.Blocks.Core
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gBinaryFileAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             BinaryFileAttributesState.RemoveEntity( attributeGuid );
 
             BindBinaryFileAttributesGrid();
