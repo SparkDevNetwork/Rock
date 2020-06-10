@@ -420,7 +420,6 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            cpCampus.Items.Clear();
             cpCampus.SelectedCampusId = prayerRequest.CampusId;
 
             pnlDetails.Visible = true;
