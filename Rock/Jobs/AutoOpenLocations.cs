@@ -24,15 +24,16 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job that auto open the closed locations
+    /// Job that auto opens closed (inactive) named locations that are designated as a 'Room' location type.
     /// </summary>
     [DisplayName( "Auto Open Locations" )]
-    [Description( "Job that auto opens closed (inactive) named locations." )]
+    [Description( "Job that auto opens closed (inactive) named locations that are designated as a 'Room' location type." )]
 
     [LocationField(
         "Parent Location",
@@ -86,17 +87,9 @@ namespace Rock.Jobs
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );
 
-            var inactiveLocationsQry = locationService.Queryable().Where( a => !a.IsActive );
+            var locationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid() ).Id;
 
-            var parentLocationGuid = dataMap.GetString( AttributeKey.ParentLocation ).AsGuidOrNull();
-            if ( parentLocationGuid.HasValue )
-            {
-                var parentLocation = locationService.Get( parentLocationGuid.Value );
-                if ( parentLocation != null )
-                {
-                    inactiveLocationsQry = inactiveLocationsQry.Where( a => a.ParentLocationId == parentLocation.Id );
-                }
-            }
+            var inactiveLocationsQry = locationService.Queryable().Where( a => locationTypeValueId == a.LocationTypeValueId && !a.IsActive );
 
             // limit to only Named Locations (don't show home addresses, etc)
             inactiveLocationsQry = inactiveLocationsQry.Where( a => a.Name != null && a.Name != string.Empty );
@@ -110,13 +103,24 @@ namespace Rock.Jobs
                 inactiveLocationsQry = inactiveLocationsQry.Where( a => a.ModifiedDateTime >= reopenDateTime );
             }
 
-            var inactiveLocations = inactiveLocationsQry.ToList();
+            var inactiveLocations = inactiveLocationsQry.AsEnumerable();
+
+            var parentLocationGuid = dataMap.GetString( AttributeKey.ParentLocation ).AsGuidOrNull();
+            if ( parentLocationGuid.HasValue )
+            {
+                var parentLocation = locationService.Get( parentLocationGuid.Value );
+                if ( parentLocation != null )
+                {
+                    var descendentLocations = locationService.GetAllDescendentIds( parentLocation.Id );
+                    inactiveLocations = inactiveLocations.Where( a => descendentLocations.Contains( a.Id ) );
+                }
+            }
 
             int updatedLocationCount = 0;
             List<string> errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
 
-            foreach ( var inactiveLocation in inactiveLocations )
+            foreach ( var inactiveLocation in inactiveLocations.ToList() )
             {
                 try
                 {
