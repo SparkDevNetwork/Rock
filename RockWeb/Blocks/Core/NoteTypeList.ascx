@@ -20,16 +20,16 @@
                         <Rock:Grid ID="gNoteTypes" runat="server" RowItemText="Note Type" OnRowSelected="gNoteTypes_Edit" >
                             <Columns>
                                 <Rock:ReorderField />
-                                <asp:BoundField DataField="EntityType.Name" HeaderText="Entity Type" />
-                                <Rock:RockBoundField DataField="Name" HeaderText="Note Type" />
-                                <Rock:RockBoundField DataField="CssClass" HeaderText="CSS Class" ColumnPriority="DesktopSmall" />
-                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon CSS Class" ColumnPriority="DesktopSmall" />
-                                <Rock:BoolField DataField="UserSelectable" HeaderText="User Selectable" ColumnPriority="Desktop" />
-                                <Rock:BoolField DataField="RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />
-                                <Rock:BoolField DataField="AllowsWatching" HeaderText="Allows Watching" ColumnPriority="DesktopLarge" />
-                                <Rock:BoolField DataField="AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
-                                <Rock:BoolField DataField="AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />
-                                <Rock:BoolField DataField="IsSystem" HeaderText="System" />
+                                <asp:BoundField DataField="EntityTypeFriendlyName" HeaderText="Entity Type" />
+                                <Rock:RockBoundField DataField="NoteType.Name" HeaderText="Note Type" />
+                                <Rock:RockBoundField DataField="NoteType.CssClass" HeaderText="CSS Class" ColumnPriority="DesktopSmall" />
+                                <Rock:RockBoundField DataField="NoteType.IconCssClass" HeaderText="Icon CSS Class" ColumnPriority="DesktopSmall" />
+                                <Rock:BoolField DataField="NoteType.UserSelectable" HeaderText="User Selectable" ColumnPriority="Desktop" />
+                                <Rock:BoolField DataField="NoteType.RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />
+                                <Rock:BoolField DataField="NoteType.AllowsWatching" HeaderText="Allows Watching" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="NoteType.AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="NoteType.AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="NoteType.IsSystem" HeaderText="System" />
                                 <Rock:SecurityField />
                                 <Rock:DeleteField OnClick="gNoteTypes_Delete" />
                             </Columns>
