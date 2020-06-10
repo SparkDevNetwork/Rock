@@ -136,7 +136,11 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.LavaFieldsJson = source.LavaFieldsJson;
+            target.PushData = source.PushData;
+            target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;
+            target.PushOpenAction = source.PushOpenAction;
+            target.PushOpenMessage = source.PushOpenMessage;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
