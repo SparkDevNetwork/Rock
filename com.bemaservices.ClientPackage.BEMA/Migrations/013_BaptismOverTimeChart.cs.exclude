@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Baptisms Over Time Chart
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Baptisms Over Time Chart","Bar Chart of Baptism Dates over Time","1EB4A10C-DE48-4182-97E6-37B23EFFA211","fa fa-tint"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Baptisms Over Time Chart","Bar Chart of Baptism Dates over Time","1EB4A10C-DE48-4182-97E6-37B23EFFA211","fa fa-tint"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Chart", "Block to display a chart using SQL as the chart datasource", "~/Blocks/Reporting/DynamicChart.ascx", "Reporting", "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" );
             // Add Block to Page: Baptisms Over Time Chart, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "1EB4A10C-DE48-4182-97E6-37B23EFFA211","","7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723","Baptisms","Main","","",0,"C19F1155-93D4-4217-96C3-90D752066434");

@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Giving By Financial Account
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Giving By Financial Account", "Shows amount totals for each Financial Account over a given timespan (12 Months Default)", "A1E82D63-4735-4F37-9BF3-09D9C631A5EE","fa fa-money"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Giving By Financial Account", "Shows amount totals for each Financial Account over a given timespan (12 Months Default)", "A1E82D63-4735-4F37-9BF3-09D9C631A5EE","fa fa-money"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Data", "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.", "~/Blocks/Reporting/DynamicData.ascx", "Reporting", "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" );
             // Add Block to Page: Giving By Financial Account, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "A1E82D63-4735-4F37-9BF3-09D9C631A5EE","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",0,"C12006A4-0BDF-4C25-B23B-A0065BACD515");

@@ -107,6 +107,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public const string SlotsAttribute = "SlotsAttribute";
             public const string SingleSelectKeyAttribute = "SingleSelectKeyAttribute";
+            public const string FilterKeyAttribute = "FilterKeyAttribute";
         }
         /* BEMA.End */
 
@@ -5843,7 +5844,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         private string GetFilterValue()
         {
             var filterValue = "";
-            var filterKeyAttribute = AttributeCache.Get( GetAttributeValue( BemaAttributeKey.FieldKeyAttribute ).AsGuid() );
+            var filterKeyAttribute = AttributeCache.Get( GetAttributeValue( BemaAttributeKey.FilterKeyAttribute ).AsGuid() );
 
             if ( filterKeyAttribute != null )
             {

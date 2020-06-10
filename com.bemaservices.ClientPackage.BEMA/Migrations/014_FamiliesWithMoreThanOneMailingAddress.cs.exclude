@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Families with More Than One Mailing Address
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Families with More Than One Mailing Address","Shows Family Groups That Have More Than One Mailing Addressed Marked","86043E5A-FB51-4483-A90D-D88DCA75E03C","fa fa-home"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Families with More Than One Mailing Address","Shows Family Groups That Have More Than One Mailing Addressed Marked","86043E5A-FB51-4483-A90D-D88DCA75E03C","fa fa-home"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Data", "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.", "~/Blocks/Reporting/DynamicData.ascx", "Reporting", "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" );
             // Add Block to Page: Families with More Than One Mailing Address, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "86043E5A-FB51-4483-A90D-D88DCA75E03C","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","dyn","Main","","",0,"46DB2968-1B1F-4202-8122-3341E424BA7B");

@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Alternate Business List              
-            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Alternate Business List","","439D2663-12C8-4CD5-B9DA-0934BC84387B",""); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Alternate Business List","This report is an alternate form of the business list page which includes additional information such as email and a list of contacts.","439D2663-12C8-4CD5-B9DA-0934BC84387B",""); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType("HTML Content","Adds an editable HTML fragment to the page.","~/Blocks/Cms/HtmlContentDetail.ascx","CMS","19B61D65-37E3-459F-A44F-DEF0089118A3");
             RockMigrationHelper.UpdateBlockType("Dynamic Data","Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.","~/Blocks/Reporting/DynamicData.ascx","Reporting","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
             // Add Block to Page: Alternate Business List, Site: Rock RMS              

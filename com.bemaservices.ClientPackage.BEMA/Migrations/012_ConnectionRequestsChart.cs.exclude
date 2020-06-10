@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Connections Chart
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Connections Chart","Shows a Pie Chart of open connection requests and how many in each opportunity.","0403E0FE-64C1-4671-BD90-01E5AF9D0EEC","fa fa-plug"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Connections Chart","Shows a Pie Chart of open connection requests and how many in each opportunity.","0403E0FE-64C1-4671-BD90-01E5AF9D0EEC","fa fa-plug"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Data", "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.", "~/Blocks/Reporting/DynamicData.ascx", "Reporting", "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" );
             RockMigrationHelper.UpdateBlockType( "Dynamic Chart", "Block to display a chart using SQL as the chart datasource", "~/Blocks/Reporting/DynamicChart.ascx", "Reporting", "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" );
             // Add Block to Page: Connections Chart, Site: Rock RMS

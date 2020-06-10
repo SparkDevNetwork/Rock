@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Family Campus Not Last Transaction
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Family Campus Not Last Transaction","Lists out families and their campuses that do not match most recent transaction's campus.","F89E8A6B-8BBC-4F4B-9AFE-CC025AFF01D0","fa fa-money"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Family Campus Not Last Transaction","Lists out families and their campuses that do not match most recent transaction's campus.","F89E8A6B-8BBC-4F4B-9AFE-CC025AFF01D0","fa fa-money"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Data", "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.", "~/Blocks/Reporting/DynamicData.ascx", "Reporting", "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" );
             // Add Block to Page: Family Campus Not Last Transaction, Site:
             RockMigrationHelper.AddBlock( true, "F89E8A6B-8BBC-4F4B-9AFE-CC025AFF01D0","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",0,"D4928DA6-8722-43E3-B144-A504F9FE8C68");

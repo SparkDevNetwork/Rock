@@ -27,7 +27,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         public override void Up()
         {
             // Page: Families with More Than Two Adults
-            RockMigrationHelper.AddPage("C8CD3B5C-ABC8-4CD1-9F1E-DCA4B161DAE7","D65F783D-87A9-4CC9-8110-E83466A0EADB","Families with More Than Two Adults","Shows list of families with more than two adult people as group members","8032F679-68C5-4168-AE4F-7376FCD87E07","fa fa-users"); // Site:Rock RMS
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Families with More Than Two Adults","Shows list of families with more than two adult people as group members","8032F679-68C5-4168-AE4F-7376FCD87E07","fa fa-users"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Dynamic Data", "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.", "~/Blocks/Reporting/DynamicData.ascx", "Reporting", "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" );
             // Add Block to Page: Families with More Than Two Adults, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "8032F679-68C5-4168-AE4F-7376FCD87E07","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",0,"4EEEA483-439A-47E5-B9CC-2E00CFF2C659");
