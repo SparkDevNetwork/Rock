@@ -71,7 +71,7 @@ namespace Rock.Model
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
             // store our Command to be later retrieved by EndGet
-            context.AddOrReplaceItem( "cmd", cmd );
+            context.AddOrReplaceItem( "Rock.Model.BinaryFileService:SqlCommand", cmd );
 
             // start async DB read
             return cmd.BeginExecuteReader(
@@ -104,7 +104,7 @@ namespace Rock.Model
         public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresViewSecurity )
         {
             // restore the command from the context
-            SqlCommand cmd = (SqlCommand)context.Items["cmd"];
+            SqlCommand cmd = (SqlCommand)context.Items["Rock.Model.BinaryFileService:SqlCommand"];
 
             using ( SqlDataReader reader = cmd.EndExecuteReader( asyncResult ) )
             {
