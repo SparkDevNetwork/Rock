@@ -181,11 +181,6 @@ namespace Rock.Reporting
                 entityFields = new List<EntityField>();
             }
 
-            if ( entityFields == null )
-            {
-                entityFields = new List<EntityField>();
-            }
-
             List<PropertyInfo> entityProperties = entityType.GetProperties().ToList();
 
             // filter the properties to narrow down the ones that we want to include in EntityFields
