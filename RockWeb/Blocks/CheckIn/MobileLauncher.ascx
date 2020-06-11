@@ -71,10 +71,10 @@
 
             <div class="checkin-scroll-panel">
                 <div class="scroller">
-
                     <div class="control-group checkin-body-container">
-                        <label class="control-label">
-                            <asp:Literal ID="lMessage" runat="server" Text="Before we proceed we'll need to identify you for check-in" /></label>
+                        <ol class="checkin-summary">
+                            <li><asp:Literal ID="lMessage" runat="server" Text="Before we proceed we'll need to identify you for check-in" /></li>
+                        </ol>
 
                         <div class="controls">
                             <Rock:BootstrapButton ID="bbtnPhoneLookup" runat="server" Text="Phone Lookup" OnClick="bbtnPhoneLookup_Click" CssClass="btn btn-primary btn-block" />
@@ -85,7 +85,6 @@
                         </div>
 
                         <asp:Literal ID="lCheckinQRCodeHtml" runat="server" />
-
                     </div>
                 </div>
             </div>
