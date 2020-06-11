@@ -43,56 +43,50 @@ namespace Rock.Reporting.DataSelect.GroupMember
     {
         #region Private Methods
 
-        [ThreadStatic]
-        private static List<EntityField> _groupAttributes = null;
-
         /// <summary>
         /// Gets the Attributes associated to groups.
         /// </summary>
         /// <returns></returns>
-        private List<EntityField> GetGroupAttributes()
+        private List<EntityField> GetGroupAttributeEntityFields()
         {
-            if ( _groupAttributes == null )
-            {
-                _groupAttributes = new List<EntityField>();
+            var _groupAttributes = new List<EntityField>();
 
-                var rockContext = new RockContext();
-                var attributeService = new AttributeService( rockContext );
-                var groupTypeService = new GroupTypeService( rockContext );
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            var groupTypeService = new GroupTypeService( rockContext );
 
-                var groupEntityTypeId = EntityTypeCache.GetId( typeof( Model.Group ) );
+            var groupEntityTypeId = EntityTypeCache.GetId( typeof( Model.Group ) );
 
-                var groupAttributes = attributeService
-                    .Queryable().AsNoTracking()
-                    .Where( a =>
-                        a.EntityTypeId == groupEntityTypeId &&
-                        a.EntityTypeQualifierColumn == "GroupTypeId" )
-                    .Join( groupTypeService.Queryable(),
-                        a => a.EntityTypeQualifierValue, gt => gt.Id.ToString(), ( a, gt ) =>
-                            new
-                            {
-                                a.Name,
-                                a.Guid,
-                                GroupTypeName = gt.Name
-                            } )
-                    .OrderBy( a => a.GroupTypeName )
-                    .ThenBy( a => a.Name )
-                    .ToList();
-
-                int index = 0;
-                foreach ( var attribute in groupAttributes )
-                {
-                    if ( !_groupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
-                    {
-                        var attributeCache = AttributeCache.Get( attribute.Guid );
-                        var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
-                        if ( entityField != null )
+            var groupAttributes = attributeService
+                .Queryable().AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == groupEntityTypeId &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" )
+                .Join( groupTypeService.Queryable(),
+                    a => a.EntityTypeQualifierValue, gt => gt.Id.ToString(), ( a, gt ) =>
+                        new
                         {
-                            entityField.Title = $"{attribute.GroupTypeName}: {attribute.Name}";
-                            entityField.AttributeGuid = attribute.Guid;
-                            entityField.Index = index++;
-                            _groupAttributes.Add( entityField );
-                        }
+                            a.Name,
+                            a.Guid,
+                            GroupTypeName = gt.Name
+                        } )
+                .OrderBy( a => a.GroupTypeName )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            int index = 0;
+            foreach ( var attribute in groupAttributes )
+            {
+                if ( !_groupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
+                {
+                    var attributeCache = AttributeCache.Get( attribute.Guid );
+                    var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
+                    if ( entityField != null )
+                    {
+                        entityField.Title = $"{attribute.GroupTypeName}: {attribute.Name}";
+                        entityField.AttributeGuid = attribute.Guid;
+                        entityField.Index = index++;
+                        _groupAttributes.Add( entityField );
                     }
                 }
             }
@@ -166,8 +160,9 @@ namespace Rock.Reporting.DataSelect.GroupMember
             pnl.Controls.Add( ddlProperty );
 
             // Add empty selection as first item.
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
             ddlProperty.Items.Add( new ListItem() );
-            foreach ( var entityField in GetGroupAttributes() )
+            foreach ( var entityField in groupAttributeEntityFields )
             {
                 // Add the field to the dropdown of available fields
                 ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.AttributeGuid.ToString() ) );
@@ -219,7 +214,9 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var attributeGuid = selection.AsGuid();
 
-            var entityField = GetGroupAttributes().FirstOrDefault( f => f.AttributeGuid == attributeGuid );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
+
+            var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
             {
                 var serviceInstance = new AttributeValueService( context );
@@ -250,7 +247,9 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var attributeGuid = selection.AsGuid();
 
-            var entityField = GetGroupAttributes().FirstOrDefault( f => f.AttributeGuid == attributeGuid );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
+
+            var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
             {
                 if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )

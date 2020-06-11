@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Web;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
@@ -84,18 +85,42 @@ namespace Rock.Badge
             }
         }
 
-
         /// <summary>
         /// Gets or sets the parent context block.
         /// </summary>
         public ContextEntityBlock ParentContextEntityBlock
         {
-            get => _parentContextEntityBlock;
-            set => _parentContextEntityBlock = value;
+            get
+            {
+                if ( HttpContext.Current != null )
+                {
+                    return HttpContext.Current.Items[$"{this.GetType().FullName}:ParentContextEntityBlock"] as ContextEntityBlock;
+                }
+
+                return _nonHttpContextParentContextEntityBlock;
+            }
+
+            set
+            {
+                if ( HttpContext.Current != null )
+                {
+                    HttpContext.Current.Items[$"{this.GetType().FullName}:ParentContextEntityBlock"] = value;
+                }
+                else
+                {
+                    _nonHttpContextParentContextEntityBlock = value;
+                }
+            }
         }
 
+        /// <summary>
+        /// The parent context entity block when HttpContext.Current is null
+        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
+        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
+        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
+        /// </summary>
         [ThreadStatic]
-        private static ContextEntityBlock _parentContextEntityBlock;
+        private static ContextEntityBlock _nonHttpContextParentContextEntityBlock;
 
         /// <summary>
         /// Gets or sets the parent person block.
@@ -108,19 +133,44 @@ namespace Rock.Badge
         }
 
         /// <summary>
-        /// Gets or sets the entity.
+        /// Optional: The Entity that should be used when determining which PropertyFields and Attributes to show (instead of just basing it off of EntityType)
         /// </summary>
         /// <value>
-        /// The person.
+        /// The entity.
         /// </value>
-        public virtual IEntity Entity
+        public IEntity Entity
         {
-            get => _entity;
-            set => _entity = value;
+            get
+            {
+                if ( HttpContext.Current != null )
+                {
+                    return HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] as IEntity;
+                }
+
+                return _nonHttpContextEntity;
+            }
+
+            set
+            {
+                if ( HttpContext.Current != null )
+                {
+                    HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] = value;
+                }
+                else
+                {
+                    _nonHttpContextEntity = value;
+                }
+            }
         }
 
+        /// <summary>
+        /// Thread safe storage of Entity property when HttpContext.Current is null
+        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
+        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
+        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary, and only if it can't be stored in HttpContext.Current
+        /// </summary>
         [ThreadStatic]
-        private static IEntity _entity;
+        private static IEntity _nonHttpContextEntity;
 
         /// <summary>
         /// Gets or sets the entity as a person.
