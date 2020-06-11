@@ -1631,6 +1631,13 @@ namespace Rock.Web.UI
                 Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson != null )
                 {
+                    // Is the impersonated person the same as the person who's already logged in?
+                    // If so, don't ruin their existing session... just return true.
+                    if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
+                    {
+                        return true;
+                    }
+
                     Authorization.SignOut();
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
