@@ -131,7 +131,7 @@
                 $('.modal-backdrop').each(function () {
                     const $modalBackdrop = $(this);
                     var $owner = $('#' + $modalBackdrop.attr('data-modal-id'));
-                    var hasOwner = $owner.length > 0;
+                    var hasOwner = $owner.selector.length > 0;
 
                     if (hasOwner && !$owner.is(':visible')) {
                         $modalBackdrop.remove();
