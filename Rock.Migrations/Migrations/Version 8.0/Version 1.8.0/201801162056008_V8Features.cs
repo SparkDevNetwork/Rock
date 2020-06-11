@@ -366,12 +366,14 @@ namespace Rock.Migrations
             //
             // Register the Top Person Signal badge in the database.
             //
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.UpdatePersonBadge(
                 "Top Person Signal",
                 "Shows the top person badge and the number of signals.",
                 "Rock.PersonProfile.Badge.TopPersonSignal",
                 0,
                 BADGE_TOP_PERSON_SIGNAL );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             //
             // Add the signal badge to the left badge bar on the person details page.
@@ -662,8 +664,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "B5A94C63-869C-4B4C-B129-9E098EF5537C", "EE777BF3-9953-4830-A7A9-37CCA6EAF175", @"5a31d3d3-91a7-409f-8aff-c3802ac055ec" );
 
             RockMigrationHelper.UpdateEntityType( "Rock.PersonProfile.Badge.PersonalDevice", "C92E1D6C-EE4B-4BD6-B5C6-9E6071243341", false, true );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.UpdatePersonBadge( "Personal Devices", "Badge showing the number of personal devices that have been associated to a person.",
                 "Rock.PersonProfile.Badge.PersonalDevice", 0, "307CB56D-140C-4CC9-8B54-DD551CC40174" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             #endregion
 

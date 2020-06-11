@@ -68,7 +68,9 @@ namespace Rock.Migrations
         private void AddAssessmentBadgeUp()
         {
             RockMigrationHelper.UpdateEntityType( "Rock.PersonProfile.Badge.Assessment", "C10B68B3-A13C-4B1A-9C56-91F0630AED90", false, true );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.UpdatePersonBadge( "Assessments", "Shows the person's Personality Assessments.", "Rock.PersonProfile.Badge.Assessment", 0, "CCE09793-89F6-4042-A98A-ED38392BCFCC" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void AddAssessmentBadgeDown()
