@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Migrations
             CorrectCaptivePortPages();
 
             // Add Existing Page to Personal Device Badge
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPersonBadgeAttribute(
                  "307CB56D-140C-4CC9-8B54-DD551CC40174",
                  "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108",
@@ -54,8 +55,9 @@ namespace Rock.Migrations
                 "307CB56D-140C-4CC9-8B54-DD551CC40174",
                 "8DEE4220-DB81-4EF8-88C2-7303493FABF7",
                 "b2786294-99dc-477e-871d-2e28fce00a98" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
