@@ -257,18 +257,29 @@ namespace Rock.Web.UI.Controls
 
             if ( showAges )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6 pl-0" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _maxAgeLabel.RenderControl( writer );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group d-flex" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _maxAgeValue.RenderControl( writer );
                 _maxAgeUnit.RenderControl( writer );
+                writer.RenderEndTag();
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _maxSharedAgeLabel.RenderControl( writer );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group d-flex" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _maxSharedAgeValue.RenderControl( writer );
                 _maxSharedAgeUnit.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
             }
 
@@ -334,11 +345,11 @@ namespace Rock.Web.UI.Controls
 
         private void CreateMaxAgeControls()
         {
-            
+
             _maxAgeUnit = new RockDropDownList
             {
                 ID = $"{ID}_{MAX_AGE_UNIT_NAME}",
-                CssClass = "w-auto pull-left",
+                CssClass = "w-auto",
                 EnableViewState = false
             };
 
@@ -353,16 +364,16 @@ namespace Rock.Web.UI.Controls
             _maxAgeValue = new NumberBox
             {
                 ID = $"{ID}_{MAX_AGE_VALUE_NAME}",
-                CssClass = "w-auto pull-left",
+                CssClass = "flex-shrink-1 input-width-md min-w-0 border-right-0",
                 EnableViewState = false
             };
-            
+
             _maxAgeLabel = new Literal
             {
-                Text = @"<div><label class=""control-label"">Max Age<a class=""help""
+                Text = @"<label class=""control-label"">Max Age<a class=""help""
                 href=""#"" tabindex=""-1"" data-toggle=""tooltip"" data-placement=""auto""
                 data-container=""body"" data-html=""true"" title=""The maximum amount of time that the item will be cached."">
-                <i class=""fa fa-info-circle""></i></a></label></div>"
+                <i class=""fa fa-info-circle""></i></a></label>"
             };
         }
 
@@ -371,7 +382,7 @@ namespace Rock.Web.UI.Controls
             _maxSharedAgeUnit = new RockDropDownList
             {
                 ID = $"{ID}_{MAX_SHARED_AGE_UNIT_NAME}",
-                CssClass = "w-auto pull-left",
+                CssClass = "w-auto",
                 EnableViewState = false
             };
             _maxSharedAgeUnit.Items.AddRange( new ListItem[]
@@ -385,16 +396,16 @@ namespace Rock.Web.UI.Controls
             _maxSharedAgeValue = new NumberBox
             {
                 ID = $"{ID}_{MAX_SHARED_AGE_VALUE_NAME}",
-                CssClass = "w-auto pull-left",
+                CssClass = "flex-shrink-1 input-width-md min-w-0 border-right-0",
                 EnableViewState = false
             };
 
             _maxSharedAgeLabel = new Literal
             {
-                Text = @"<div><label class=""control-label"">Max Shared Age<a class=""help""
+                Text = @"<label class=""control-label"">Max Shared Age<a class=""help""
                 href=""#"" tabindex=""-1"" data-toggle=""tooltip"" data-placement=""auto""
                 data-container=""body"" data-html=""true"" title=""The maximum amount of time the item will be cached in a shared cache (e.g. CDN). If not provided then the Max Age is typically used."">
-                <i class=""fa fa-info-circle""></i></a></label></div>"
+                <i class=""fa fa-info-circle""></i></a></label>"
             };
         }
 
