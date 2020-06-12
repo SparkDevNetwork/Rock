@@ -217,13 +217,16 @@ namespace RockWeb.Blocks.Cms
             /*
              * 2020-06-10 - JH
              *
-             * In some areas of Rock, we force a full postback (page reload), as opposed to the default partial postback that occurs from within an
-             * UpdatePanel. See the 'Cms/EmailForm' Block for an example of forcing a full postback, by way of the 'PostBackTrigger' control:
+             * In some areas of Rock, we force a full postback (page reload), as opposed to the default
+             * partial postback that occurs from within an UpdatePanel. See the 'Cms/EmailForm' Block
+             * for an example of forcing a full postback, by way of the 'PostBackTrigger' control:
              *
              * https://github.com/SparkDevNetwork/Rock/blob/b0239d87882d6986afb32bc5a5353dcbfc3edee3/RockWeb/Blocks/Cms/EmailForm.ascx#L87
              * 
-             * When this happens, any 'HtmlContentDetail' Blocks on the page lose their content, because the 'this.IsPostBack' check below only returns true
-             * for partial postbacks. The fix is to detect if the current postback represents a full postback, and reload the HTML content in this case.
+             * When this happens, any 'HtmlContentDetail' Blocks on the page lose their content,
+             * because the 'this.IsPostBack' check below only returns true for partial postbacks.
+             * The fix is to detect if the current postback represents a full postback, and reload
+             * the HTML content in this case.
              * 
              * '!ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack'
              * 
