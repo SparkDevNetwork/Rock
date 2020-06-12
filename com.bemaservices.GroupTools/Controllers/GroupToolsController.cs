@@ -17,12 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Drawing;
 using System.Linq;
 using DDay.iCal;
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace com.bemaservices.GroupTools.Controllers
@@ -61,45 +63,11 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string ageRanges = "",
+            string ageRangeIds = "",
             int? offset = null,
             int? limit = null )
         {
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-            var qry = groupService.Queryable().AsNoTracking();
-
-            var groupTypeIdList = groupTypeIds.SplitDelimitedValues().AsIntegerList();
-            var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
-            var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
-            var ageRangeList = ageRanges.SplitDelimitedValues();
-
-            if ( groupTypeIdList.Any() )
-            {
-                qry = qry.Where( g => groupTypeIdList.Contains( g.GroupTypeId ) );
-            }
-
-            if ( campusIdList.Any() )
-            {
-                qry = qry.Where( g => g.CampusId.HasValue && campusIdList.Contains( g.CampusId.Value ) );
-            }
-
-            if ( meetingDayList.Any() )
-            {
-                qry = qry.Where( g => g.Schedule != null && g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
-            }
-
-            qry = qry.OrderBy( g => g.Name );
-
-            if ( offset.HasValue )
-            {
-                qry = qry.Skip( offset.Value );
-            }
-
-            if ( limit.HasValue )
-            {
-                qry = qry.Take( limit.Value );
-            }
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, ageRangeIds );
 
             var groupInfoList = new List<GroupInformation>();
             foreach ( var group in qry.ToList() )
@@ -133,7 +101,27 @@ namespace com.bemaservices.GroupTools.Controllers
                         var category = categories.OrderBy( c => c.Order ).First();
                         category.LoadAttributes();
                         groupInfo.Category = category.Value;
-                        groupInfo.Color = category.GetAttributeValue( "Color" );
+                        groupInfo.Color = "#428bca";
+
+                        var colorString = category.GetAttributeValue( "Color" );
+                        if ( colorString.IsNotNullOrWhiteSpace() )
+                        {
+                            if ( colorString.Contains( "rgb" ) )
+                            {
+                                var colorList = colorString.Replace( "rgb(", "" ).Replace( ")", "" ).SplitDelimitedValues().AsIntegerList();
+                                if ( colorList.Count == 3 )
+                                {
+                                    Color myColor = Color.FromArgb( colorList[0], colorList[1], colorList[2] );
+                                    string hex = myColor.R.ToString( "X2" ) + myColor.G.ToString( "X2" ) + myColor.B.ToString( "X2" );
+
+                                    groupInfo.Color = "#" + hex;
+                                }
+                            }
+                            else
+                            {
+                                groupInfo.Color = colorString;
+                            }
+                        }
 
                     }
                 }
@@ -182,7 +170,66 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfoList.Add( groupInfo );
             }
 
-            return groupInfoList.AsQueryable();
+            var groupInfoQry = groupInfoList.AsQueryable()
+                .OrderBy( g => g.Category == "Featured" )
+                .ThenBy( g => g.Category == "New" )
+                .ThenBy( g => g.Name )
+                .AsQueryable();
+
+
+            if ( offset.HasValue )
+            {
+                groupInfoQry = groupInfoQry.Skip( offset.Value );
+            }
+
+            if ( limit.HasValue )
+            {
+                groupInfoQry = groupInfoQry.Take( limit.Value );
+            }
+
+            return groupInfoQry;
+        }
+
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string ageRangeIds )
+        {
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var qry = groupService.Queryable().AsNoTracking();
+
+            var groupTypeIdList = groupTypeIds.SplitDelimitedValues().AsIntegerList();
+            var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
+            var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
+            var categoryIdList = categoryIds.SplitDelimitedValues().AsIntegerList();
+            var ageRangeIdList = ageRangeIds.SplitDelimitedValues().AsIntegerList();
+
+            if ( groupTypeIdList.Any() )
+            {
+                qry = qry.Where( g => groupTypeIdList.Contains( g.GroupTypeId ) );
+            }
+
+            if ( campusIdList.Any() )
+            {
+                qry = qry.Where( g => g.CampusId.HasValue && campusIdList.Contains( g.CampusId.Value ) );
+            }
+
+            if ( meetingDayList.Any() )
+            {
+                qry = qry.Where( g => g.Schedule != null && g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
+            }
+
+            if ( categoryIdList.Any() )
+            {
+                var categoryList = new DefinedValueService( rockContext ).GetByIds( categoryIdList ).Select( c => c.Guid.ToString() ).ToList();
+                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "Category" && categoryList.Any( c => av.Value.Contains( c ) ) );
+            }
+
+            if ( ageRangeIdList.Any() )
+            {
+                var ageRangeList = new DefinedValueService( rockContext ).GetByIds( ageRangeIdList ).Select( c => c.Guid.ToString() ).ToList();
+                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "AgeRange" && ageRangeList.Any( c => av.Value.Contains( c ) ) );
+            }
+
+            return qry;
         }
 
         /// <summary>
@@ -203,34 +250,9 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string ageRanges = "" )
+            string ageRangeIds = "" )
         {
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-            var qry = groupService.Queryable().AsNoTracking();
-
-            var groupTypeIdList = groupTypeIds.SplitDelimitedValues().AsIntegerList();
-            var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
-            var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
-            var ageRangeList = ageRanges.SplitDelimitedValues();
-
-            if ( groupTypeIdList.Any() )
-            {
-                qry = qry.Where( g => groupTypeIdList.Contains( g.GroupTypeId ) );
-            }
-
-            if ( campusIdList.Any() )
-            {
-                qry = qry.Where( g => g.CampusId.HasValue && campusIdList.Contains( g.CampusId.Value ) );
-            }
-
-            if ( meetingDayList.Any() )
-            {
-                qry = qry.Where( g => g.Schedule != null && g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
-            }
-
-            qry = qry.OrderBy( g => g.Name );
-
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, ageRangeIds );
 
             return qry.Count();
         }
