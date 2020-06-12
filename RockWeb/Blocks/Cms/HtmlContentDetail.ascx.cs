@@ -766,6 +766,14 @@ namespace RockWeb.Blocks.Cms
 
             pnlEdit.Visible = false;
             pnlVersionGrid.Visible = false;
+
+            // If we are rendering in configuration-only mode, hide the block runtime content.
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                upnlHtmlContentView.Visible = false;
+                return;
+            }
+
             string entityValue = EntityValue();
             string html = string.Empty;
 

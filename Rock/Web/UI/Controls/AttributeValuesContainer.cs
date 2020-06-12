@@ -101,6 +101,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Overrides which Attributes are required. Leave null to use normal IsRequired for the attribute
+        /// </summary>
+        /// <value>
+        /// The required attributes.
+        /// </value>
+        public AttributeCache[] RequiredAttributes
+        {
+            get => ViewState["RequiredAttributes"] as AttributeCache[];
+            set => ViewState["RequiredAttributes"] = value;
+        }
+        
+        /// <summary>
         /// Gets or sets a list of Attributes to exclude when creating Display/Edit controls
         /// </summary>
         /// <value>
@@ -387,6 +399,7 @@ namespace Rock.Web.UI.Controls
                         {
                             NumberOfColumns = this.NumberOfColumns,
                             IncludedAttributes = attributes.ToList(),
+                            RequiredAttributes = this.RequiredAttributes?.ToList(),
                             ShowCategoryLabel = ShowCategoryLabel,
                             ShowPrePostHtml = this.ShowPrePostHtml
                         };
