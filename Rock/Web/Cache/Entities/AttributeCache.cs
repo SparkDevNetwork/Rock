@@ -849,7 +849,7 @@ namespace Rock.Web.Cache
         public bool SetId { get; set; }
 
         /// <summary>
-        /// Gets or sets the required.
+        /// Overrides the required value of the attribute. Leave null to use the normal IsRequired of the attribute
         /// </summary>
         /// <value>
         /// The required.
