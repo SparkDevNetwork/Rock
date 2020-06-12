@@ -304,8 +304,11 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
-            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+            if ( this.ConfigurationRenderModeIsEnabled == false )
+            {
+                RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
+                RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+            }
 
             if ( this.IsPostBack )
             {
@@ -359,9 +362,10 @@ namespace RockWeb.Blocks.CheckIn
             bbtnCheckin.Visible = false;
             hfGetGeoLocation.Value = false.ToJavaScriptValue();
 
-            if ( this.InPagesConfigurationMode )
+            if ( this.ConfigurationRenderModeIsEnabled )
             {
                 // the current page is different than the Block's page, so  we are probably on the Home > CMS Configuration > Pages page
+                pnlView.Visible = false;
                 return;
             }
 

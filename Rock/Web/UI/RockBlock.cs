@@ -197,28 +197,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// If this block has custom admin controls, the Pages Configuration page
-        /// Home > CMS Configuration > Pages
-        /// needs to load this block onto the page (but hide it). In this case, 
-        /// use InPagesConfigurationMode to do determine if any special logic needs to be done.
-        /// For example, you might skip some logic since the block isn't really being shown.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [in pages configuration mode]; otherwise, <c>false</c>.
-        /// </value>
-        public bool InPagesConfigurationMode
-        {
-            get
-            {
-                // if this block is getting configured on the Pages Configuration page
-                // the block's Page will be set to the page that is lived on, and not the actual page that we are showing
-                // We can use this to determine if we are InPagesConfigurationMode
-                bool inPagesConfigurationMode = this.RockPage.PageId != this.PageCache.Id;
-                return inPagesConfigurationMode;
-            }
-        }
-
-        /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
         public virtual List<EntityTypeCache> ContextTypesRequired
@@ -325,6 +303,14 @@ namespace Rock.Web.UI
                 return null;
             }
         }
+
+        /* 2020-06-12 MDP/DL
+         * If this block has custom admin controls, the Pages Configuration page ( Home > CMS Configuration > Pages)
+         * needs to load this block onto the page (but hide it off screen). This can sometimes cause an issue
+         * because the block still thinks it needs to render its content. To avoid this issue,
+         * we added the ConfigurationRenderModeIsEnabled so the block can use that flag to not render
+         * its content
+         */
 
         /// <summary>
         /// Indicates if the block should be rendered in configuration-only mode.

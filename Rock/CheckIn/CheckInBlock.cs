@@ -360,7 +360,7 @@ namespace Rock.CheckIn
         {
             base.OnInit( e );
 
-            if ( this.InPagesConfigurationMode )
+            if ( this.ConfigurationRenderModeIsEnabled )
             {
                 return;
             }

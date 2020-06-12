@@ -154,7 +154,6 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    //page.RemoveBlocks();
                     PageCache.Remove( page.Id );
 
                     if ( block.LayoutId.HasValue )
@@ -179,7 +178,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlZones_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowDetailForZone( ddlZones.SelectedValue );
+            // Note: nothing should be done here since this is already been take care of when OnLoad calls ShowDetailForZone
         }
 
         /// <summary>
@@ -513,7 +512,9 @@ namespace RockWeb.Blocks.Cms
                 // Rendering the block content here may disrupt the formatting of the page.
                 blockControl.ConfigurationRenderModeIsEnabled = true;
 
-                pnlBlocksHolder.Controls.Add( blockControl );
+                // if the block an ID so that viewstate (in the dynamicplaceholder) can be tracked by id
+                blockControl.ID = string.Format( "config_block_control_{0}", block.Id );
+                phBlockHolder.Controls.Add( blockControl );
             }
         }
 
