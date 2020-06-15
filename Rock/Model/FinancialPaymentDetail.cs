@@ -509,7 +509,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
                 foreach ( var txn in new FinancialTransactionService( ( RockContext ) dbContext )
                     .Queryable().AsNoTracking()
@@ -546,7 +546,15 @@ namespace Rock.Model
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.BillingLocation ).WithMany().HasForeignKey( t => t.BillingLocationId ).WillCascadeOnDelete( false );
 
-            // NOTE: Migration for this makes this a 'ON DELETE SET NULL' cascade
+            /*
+             * 2020-06-12 - JH
+             *
+             * When a FinancialPersonSavedAccount record that this FinancialPaymentDetail references is deleted, SQL will simply null-out the
+             * FinancialPaymentDetail.FinancialPersonSavedAccountId field. See here for how we manually introduced this "ON DELETE SET NULL"
+             * behavior:
+             *
+             * https://github.com/SparkDevNetwork/Rock/commit/6953aa1986d46c9c84663ce818333425c0807c01#diff-e0c4fac8254b21998bb9235c3dee4ee9R36
+             */
             this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
 
             /* BW and MDP 2019-04-18

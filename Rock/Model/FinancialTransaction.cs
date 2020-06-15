@@ -614,10 +614,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="entry"></param>
+        /// <param name="entry">The database entity entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = ( RockContext ) dbContext;
@@ -738,6 +738,11 @@ namespace Rock.Model
                         {
                             image.PreSaveChanges( dbContext, entry.State );
                         }
+
+                        // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+
                         break;
                     }
             }
@@ -751,16 +756,19 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
                 HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }
 
-            foreach ( var keyVal in BatchHistoryChangeList )
+            if ( BatchHistoryChangeList != null )
             {
-                if ( keyVal.Value.Any() )
+                foreach ( var keyVal in BatchHistoryChangeList )
                 {
-                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    if ( keyVal.Value.Any() )
+                    {
+                        HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    }
                 }
             }
 
