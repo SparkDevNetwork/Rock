@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -62,6 +64,68 @@ namespace Rock.Communication
         /// The sound.
         /// </value>
         public string Sound { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push image binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image binary file identifier.
+        /// </value>
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        public PushOpenAction? OpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        public string OpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        public PushData Data { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockPushMessage"/> class.
+        /// </summary>
+        public RockPushMessage() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockPushMessage"/> class.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication.</param>
+        public RockPushMessage( SystemCommunication systemCommunication ) : this()
+        {
+            InitializePushMessage( systemCommunication );
+        }
+
+        private void InitializePushMessage( SystemCommunication systemCommunication )
+        {
+            if ( systemCommunication == null )
+            {
+                return;
+            }
+
+            Message = systemCommunication.PushMessage;
+            Title = systemCommunication.PushTitle;
+            Sound = systemCommunication.PushSound;
+            ImageBinaryFileId = systemCommunication.PushImageBinaryFileId;
+            OpenAction = systemCommunication.PushOpenAction;
+            OpenMessage = systemCommunication.PushOpenMessage;
+            Data = Newtonsoft.Json.JsonConvert.DeserializeObject<PushData>( systemCommunication.PushData );
+        }
 
         /// <summary>
         /// Sets the recipients.

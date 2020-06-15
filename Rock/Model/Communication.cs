@@ -795,6 +795,7 @@ namespace Rock.Model
 
             var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
             foreach ( var newMember in newMemberInList )
             {
@@ -805,7 +806,10 @@ namespace Rock.Model
                     CommunicationId = Id
                 };
 
-                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id, smsMediumEntityType.Id, CommunicationType,
+                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id,
+                                                                smsMediumEntityType.Id,
+                                                                pushMediumEntityType.Id,
+                                                                CommunicationType,
                                                                 newMember.CommunicationPreference,
                                                                 newMember.Person.CommunicationPreference );
 
@@ -833,10 +837,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
         /// <param name="recipientPreference">The recipient preference.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - recipientPreference</exception>
         /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
-        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] recipientPreference )
         {
             for ( var i = 0; i < recipientPreference.Length; i++ )
             {
@@ -849,6 +855,8 @@ namespace Rock.Model
                         return emailMediumEntityTypeId;
                     case CommunicationType.SMS:
                         return smsMediumEntityTypeId;
+                    case CommunicationType.PushNotification:
+                        return pushMediumEntityTypeId;
                     case CommunicationType.RecipientPreference:
                         if ( hasNextCommunicaitonPreference )
                         {
