@@ -354,10 +354,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="entry"></param>
+        /// <param name="entry">The database entity entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
@@ -421,6 +421,10 @@ namespace Rock.Model
                 case EntityState.Deleted:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
+
+                        // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it.
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
 
                         break;
                     }
