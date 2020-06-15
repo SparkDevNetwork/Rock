@@ -158,7 +158,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChanges != null && HistoryChanges.Any() && HistoryPersonId.HasValue )
+            if ( HistoryChanges?.Any() == true && HistoryPersonId.HasValue )
             {
                 HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), HistoryPersonId.Value, HistoryChanges, true, this.ModifiedByPersonAliasId );
             }
