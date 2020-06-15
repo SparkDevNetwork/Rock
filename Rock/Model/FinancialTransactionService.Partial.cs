@@ -77,26 +77,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public override bool Delete( FinancialTransaction item )
-        {
-            if ( item.FinancialPaymentDetailId.HasValue )
-            {
-                var paymentDetailsService = new FinancialPaymentDetailService( ( Rock.Data.RockContext ) this.Context );
-                var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
-                if ( paymentDetail != null )
-                {
-                    paymentDetailsService.Delete( paymentDetail );
-                }
-            }
-
-            return base.Delete( item );
-        }
-
-        /// <summary>
         /// Process a refund for a transaction.
         /// </summary>
         /// <param name="transaction">The refund transaction.</param>
