@@ -301,6 +301,10 @@
     <Compile Include="Migrations\202006101237397_AddPushFieldsToComminicationTables.Designer.cs">
       <DependentUpon>202006101237397_AddPushFieldsToComminicationTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202006150730556_AddEnablePresence.cs" />
+    <Compile Include="Migrations\202006150730556_AddEnablePresence.Designer.cs">
+      <DependentUpon>202006150730556_AddEnablePresence.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1462,6 +1466,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202006101237397_AddPushFieldsToComminicationTables.resx">
       <DependentUpon>202006101237397_AddPushFieldsToComminicationTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006150730556_AddEnablePresence.resx">
+      <DependentUpon>202006150730556_AddEnablePresence.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
