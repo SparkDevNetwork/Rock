@@ -271,7 +271,7 @@ namespace Rock.Data
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
-            if ( HistoryItems != null && HistoryItems.Any() )
+            if ( HistoryItems?.Any() == true )
             {
                 new SaveHistoryTransaction( HistoryItems ).Enqueue();
             }
