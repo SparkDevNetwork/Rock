@@ -62,7 +62,7 @@ namespace Rock.Migrations
             foreach ( var pageGuidAuthGuid in pageGuidAuthGuids )
             {
                 RockMigrationHelper.DeleteSecurityAuthForPage( pageGuidAuthGuid.Key );
-                RockMigrationHelper.AddSecurityAuthForPage( pageGuidAuthGuid.Key, 0, "VIEW", true, null, ( int ) Rock.Model.SpecialRole.AllUsers, pageGuidAuthGuid.Value );
+                RockMigrationHelper.AddSecurityAuthForPage( pageGuidAuthGuid.Key, 0, Rock.Security.Authorization.VIEW, true, null, ( int ) Rock.Model.SpecialRole.AllUsers, pageGuidAuthGuid.Value );
             }
         }
 
