@@ -391,6 +391,7 @@ namespace Rock.Jobs
                 var mediumType = Rock.Model.Communication.DetermineMediumEntityTypeId(
                                     ( int ) CommunicationType.Email,
                                     ( int ) CommunicationType.SMS,
+                                    ( int ) CommunicationType.PushNotification,
                                     jobPreferredCommunicationType,
                                     leader.CommunicationPreference,
                                     leader.Person.CommunicationPreference );
