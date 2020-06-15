@@ -73,18 +73,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Migrations\011_PledgeProgressReport.cs.exclude" />
-    <None Include="Migrations\010_DuplicateEmails.cs.exclude" />
-    <None Include="Migrations\009_DuplicateContentChannelItemSlugs.cs.exclude" />
+    <Compile Include="Migrations\011_PledgeProgressReport.cs" />
+    <Compile Include="Migrations\010_DuplicateEmails.cs" />
+    <Compile Include="Migrations\009_DuplicateContentChannelItemSlugs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Migrations\001_InitialSetup.cs" />
-    <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
-    <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
-    <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
-    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
-    <None Include="Migrations\006_AlternateBusinessList.cs.exclude" />
-    <None Include="Migrations\007_PersonAuthorizedOnPage.cs.exclude" />
-    <None Include="Migrations\008_LargeDonations.cs.exclude" />
+    <Compile Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs" />
+    <Compile Include="Migrations\003_GivingHistoryByMonthLineGraph.cs" />
+    <Compile Include="Migrations\004_StaffGivingSQLReport.cs" />
+    <Compile Include="Migrations\005_GiversWithoutPledges.cs" />
+    <Compile Include="Migrations\006_AlternateBusinessList.cs" />
+    <Compile Include="Migrations\007_PersonAuthorizedOnPage.cs" />
+    <Compile Include="Migrations\008_LargeDonations.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

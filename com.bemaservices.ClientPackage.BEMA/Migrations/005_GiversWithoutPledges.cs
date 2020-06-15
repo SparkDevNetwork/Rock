@@ -143,7 +143,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Givers Without Pledges, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "61020580-891A-482F-9964-D60BF00B4AA8", @"<h4>This report will list out personal and giving information for givers who do not have pledges.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "61020580-891A-482F-9964-D60BF00B4AA8", @"<div class='alert alert-info'>This report will list out personal and giving information for givers who do not have pledges.</div>"
             , "9b033558-6eaf-4342-ad70-b17f4a6b186f" );
 
             // Hide Page from view

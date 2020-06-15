@@ -143,7 +143,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Alternate Business List, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "11CA848C-273A-4683-B107-23EE506B5717", @"<h4>This report is an alternate form of the business list page which includes additional information such as email and a list of contacts.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "11CA848C-273A-4683-B107-23EE506B5717", @"<div class='alert alert-info'>This report is an alternate form of the business list page which includes additional information such as email and a list of contacts.</div>"
             , "8ff37d48-4899-4786-9a8d-bfe68445519d" );
 
             // Hide Page from view

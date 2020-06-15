@@ -311,7 +311,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Person Authorized On Page, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "7E27CF7C-4F47-4F06-B9CF-B41FB0E8241A", @"<h4>A report of affected pages where a Person is allowed authorization to View, Edit, Administrate, etc on a page.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "7E27CF7C-4F47-4F06-B9CF-B41FB0E8241A", @"<div class='alert alert-info'>A report of affected pages where a Person is allowed authorization to View, Edit, Administrate, etc on a page.</div>"
             , "d4962856-7c74-4ee1-a98a-d946cebf8ad5" );
 
             // Hide Page from view

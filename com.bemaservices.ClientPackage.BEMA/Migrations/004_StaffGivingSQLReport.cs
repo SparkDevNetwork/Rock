@@ -143,8 +143,8 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Staff Giving SQL Report, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("D83DBFAF-C6C5-4CF8-81EC-3AEBDF0DE1ED","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "F3EF1CDF-A488-45ED-9FE1-0AD0292125DE", @"<h4>This report gets all active members of the Rock Admin and Staff Workers groups and displays information on their financial givings the past 2 years. 
-            The groups it pulls from can be configured in the SQL File.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "F3EF1CDF-A488-45ED-9FE1-0AD0292125DE", @"<div class='alert alert-info'>This report gets all active members of the Rock Admin and Staff Workers groups and displays information on their financial givings the past 2 years. 
+            The groups it pulls from can be configured in the SQL File.</div>"
             , "4b550d19-4fcf-4fa0-8df9-fe35ade3b699" );
 
             // Hide Page from view

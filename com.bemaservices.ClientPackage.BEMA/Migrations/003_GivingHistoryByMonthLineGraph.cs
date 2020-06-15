@@ -144,8 +144,11 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.AddBlockAttributeValue("6A13B51F-CF95-49E9-BF73-DCEA7A95EEAF","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
             RockMigrationHelper.UpdateHtmlContentBlock("1DA4F1A6-5A89-4BC9-98DC-EBB2C59F35D3", 
-            @"<h5>A graphical display of the total giving for each completed month. To hide/unhide a select year on the graph, in the legend on the right, click on the year.</h5>
-            <h5>The graph retrieves all contributions from the past 4 years and displays them month-over-month with a line per year. You can set the financial accounts to limit the data to inside the dynamic data block.</h5>"
+            @"<div class='alert alert-info'>
+    <p>A graphical display of the total giving for each completed month. To hide/unhide a select year on the graph, in the legend on the right, click on the year.</br>
+    The graph retrieves all contributions from the past 4 years and displays them month-over-month with a line per year. You can set the financial accounts to limit the data to inside the dynamic data block.
+    </p>
+</div>"
             ,"e8ef7fce-ab79-4bfe-877e-1e1444176951");
 
             RockMigrationHelper.AddSecurityAuthForPage( "D184942A-E5F6-4E79-A627-1C74D7EB0330", 0, "View", false, "", 1, "64e804ba-871b-4a69-9288-c5babcab348f" );
