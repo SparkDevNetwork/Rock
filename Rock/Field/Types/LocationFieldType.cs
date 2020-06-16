@@ -214,7 +214,7 @@ namespace Rock.Field.Types
             // If there are no configuration values then set to legacy defaults
             if ( !configurationValues.Any() )
             {
-                return new LocationPicker { ID = id, CurrentPickerMode = LocationPickerMode.Address, AllowedPickerModes = LocationPickerMode.All };
+                return new LocationPicker { ID = id, AllowedPickerModes = LocationPickerMode.All };
             }
 
             // Default allowed location picker modes is all

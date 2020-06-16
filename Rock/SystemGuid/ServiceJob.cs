@@ -82,14 +82,34 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_103_SPIRITUAL_GIFTS = "B16F889F-3349-4CA9-976D-7EF098DD8BC6";
 
         /// <summary>
-        /// The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates
+        /// The Job to run Post v11 Data Migrations to update Date Keys on several tables
         /// </summary>
         public const string DATA_MIGRATIONS_110_POPULATE_DATE_KEYS = "E56FD4FC-02F8-4A46-A91D-E86C2B635870";
+
+        /// <summary>
+        /// The job to run Post V11 to create an index on <seealso cref="Rock.Model.CommunicationRecipient.ResponseCode"/>
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX = "131F9418-777B-4A34-A19B-EB9A65893602";
+
+        /// <summary>
+        /// The Job to run Post v11 Data Migrations to update Related DataView Id in DataView Filter table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID = "C3882742-714B-4E82-8894-4B944142CDC7";
 
         /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
+
+        /// <summary>
+        /// The Job to Migrate pre-v7.0 PageViews and Communication Recipient Activity to Interactions
+        /// </summary>
+        public static string MIGRATE_INTERACTIONS_DATA = "189AE3F1-92E9-4394-ACC5-0F244967F32E";
+
+        /// <summary>
+        /// The job to migrate pre-v7.0 Communication Medium data from JSON to regular fields
+        /// </summary>
+        public static string MIGRATE_COMMUNICATION_MEDIUM_DATA = "E7C54AAB-451E-4E89-8083-CF398D37416E";
 
         /// <summary>
         /// The Job to get NCOA
@@ -116,5 +136,10 @@ namespace Rock.SystemGuid
         /// The collect hosting metrcis job - collect metrics regarding database connections, Etc.
         /// </summary>
         public const string COLLECT_HOSTING_METRICS = "36FA38CA-9DB0-40A8-BABD-5411121B4809";
+
+        /// <summary>
+        /// The Job to send an email digest with an attendance summary of all child groups to regional group leaders
+        /// </summary>
+        public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
     }
 }

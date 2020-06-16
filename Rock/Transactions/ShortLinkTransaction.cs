@@ -168,7 +168,7 @@ namespace Rock.Transactions
 
                             ClientInfo client = uaParser.Parse( userAgent );
                             var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UserAgent.ToString();
+                            var clientBrowser = client.UA.ToString();
 
                             new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, personAliasId, DateViewed,
                                 clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );

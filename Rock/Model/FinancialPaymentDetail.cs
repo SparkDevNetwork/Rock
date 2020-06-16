@@ -351,7 +351,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets from payment information.
+        /// Clears the payment information.
+        /// Use this before telling a gateway to update the payment info for an existing transaction.
+        /// </summary>
+        public void ClearPaymentInfo()
+        {
+            AccountNumberMasked = null;
+            GatewayPersonIdentifier = null;
+            FinancialPersonSavedAccountId = null;
+
+            CurrencyTypeValueId = null;
+            CreditCardTypeValueId = null;
+
+            NameOnCardEncrypted = null;
+            ExpirationMonthEncrypted = null;
+            ExpirationYearEncrypted = null;
+        }
+
+        /// <summary>
+        /// Sets any payment information that the <seealso cref="GatewayComponent">paymentGateway</seealso> didn't set
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>

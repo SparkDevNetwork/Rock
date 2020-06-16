@@ -35,7 +35,7 @@
                         context.invoke('editor.restoreRange');
                         context.invoke('editor.createLink', {
                             text: resultParts[1],
-                            url: Rock.settings.get('baseUrl') + resultParts[0],
+                            url: encodeURI(Rock.settings.get('baseUrl') + resultParts[0]),
                             newWindow: false
                         });
 

@@ -109,9 +109,16 @@
                 }
             },
             // closes a ModalDialog control (non-IFrame Modal)
-            closeModalDialog: function ($modalDialog) {
+            closeModalDialog: function ($modalDialog, $manager) {
                 if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
                     $modalDialog.modal('hide');
+                }
+
+                // remove the modal-open class from this modal's manager
+                if ($manager && $manager.length) {
+                    $manager.each(function () {
+                        $(this).removeClass('modal-open');
+                    });
                 }
 
                 // if all modals are closed, remove the modal-open class from the body

@@ -131,12 +131,19 @@ textarea,
   }
 }
 
+.label.btn-label {
+  padding: .2em .5em .3em;
+  color: @btn-default-color !important;
+  background: @btn-default-bg;
+  box-shadow: inset 0 0 0 1px @btn-default-border;
+}
+
 .nav-tabs {
   border-bottom: 1px solid @nav-tabs-border-color;
 
   > li {
     padding: 0;
-    margin: 0 0 -1px 0;
+    margin: 0 0 -1px;
 
     // Actual tabs (as links)
     > a {
@@ -410,8 +417,12 @@ textarea,
 }
 
 .modal {
-  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, .1));
+  .box-shadow(@shadow-modal);
   border-radius: 0;
+
+  .modal-content {
+    .box-shadow(none);
+  }
 }
 
 .modal-header small {
@@ -438,10 +449,10 @@ textarea,
 }
 
 .wizard {
-  margin: -5px -15px 35px -15px;
+  margin: -5px -15px 35px;
 
   @media (min-width: @screen-md-min) {
-    margin: -35px -35px 35px -35px;
+    margin: -35px -35px 35px;
   }
 }
 
@@ -575,7 +586,7 @@ td.grid-actions {
     border: 0;
     transition: color 250ms;
 
-    &:hover{
+    &:hover {
       color: @link-color;
     }
   }
@@ -878,7 +889,7 @@ body.nav-open {
           background-color: @brand-color;
           background-color: var(--brand-color);
 
-          & > li > a{
+          & > li > a {
             color: @navbartop-color;
             color: var(--navbartop-color);
           }
@@ -973,7 +984,6 @@ body.nav-open {
     bottom: 0;
     left: 0;
     z-index: -1;
-    width: inherit;
     width: @navbarside-width;
     content: "";
     background-color: @navbarside-background-color;
@@ -1137,7 +1147,6 @@ body.nav-open {
         }
 
 
-
         li {
 
           a {
@@ -1293,7 +1302,7 @@ body.navbar-side-open {
 
   .page-title {
     padding: 20px 15px;
-    margin: -5px -15px 5px -15px;
+    margin: -5px -15px 5px;
     color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
@@ -1334,11 +1343,11 @@ body.navbar-side-open {
 
   @media (min-width: @screen-md-min) {
     padding: 0;
-    margin: 35px 35px 0 35px;
+    margin: 35px 35px 0;
 
     .page-title {
       padding: 20px 35px;
-      margin: -35px -35px 35px -35px;
+      margin: -35px -35px 35px;
     }
   }
 }
@@ -1418,7 +1427,7 @@ body.navbar-side-open {
   }
 }
 
-.attribute-panel{
+.attribute-panel {
   .panel-body {
     padding: 0;
   }

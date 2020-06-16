@@ -364,32 +364,6 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </value>
-        [NotMapped]
-        public virtual List<MediumComponent> Mediums
-        {
-            get
-            {
-                var mediums = new List<MediumComponent>();
-
-                foreach ( var serviceEntry in MediumContainer.Instance.Components )
-                {
-                    var component = serviceEntry.Value.Value;
-                    if ( component.IsActive )
-                    {
-                        mediums.Add( component );
-                    }
-                }
-
-                return mediums;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the SMS from defined value.
         /// </summary>
         /// <value>

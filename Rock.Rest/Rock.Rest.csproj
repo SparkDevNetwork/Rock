@@ -66,8 +66,8 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.7\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
@@ -125,6 +125,7 @@
     <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceCheckInSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
@@ -178,9 +179,11 @@
     <Compile Include="Controllers\CodeGenerated\SystemCommunicationsController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controllers\DocumentsController.partial.cs" />
     <Compile Include="Controllers\DataViewsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
+    <Compile Include="Controllers\InteractionsController.Partial.cs" />
     <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\GroupFinderController.cs" />
@@ -194,6 +197,7 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="HeaderTokens.cs" />
     <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Jwt\JwtHelper.cs" />

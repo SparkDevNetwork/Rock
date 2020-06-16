@@ -933,13 +933,13 @@ namespace RockWeb.Blocks.Administration
         private void RenderMedianPageLoadTime( Rock.Model.Page page )
         {
             var cssClass =
-                !page.MedianPageLoadTime.HasValue ? "default" :
-                page.MedianPageLoadTime.Value <= 1 ? "success" :
-                page.MedianPageLoadTime.Value <= 3 ? "warning" :
+                !page.MedianPageLoadTimeDurationSeconds.HasValue ? "default" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 1 ? "success" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 3 ? "warning" :
                 "danger";
 
-            var seconds = !page.MedianPageLoadTime.HasValue ? "Not Measured" :
-                string.Format( "{0:n2}s", page.MedianPageLoadTime.Value );
+            var seconds = !page.MedianPageLoadTimeDurationSeconds.HasValue ? "Not Measured" :
+                string.Format( "{0:n2}s", page.MedianPageLoadTimeDurationSeconds.Value );
 
             lMedianTime.Text = string.Format( "<span class='label label-{0} padding-l-md padding-r-md'>{1}</span>",
                 cssClass,
@@ -1114,13 +1114,7 @@ namespace RockWeb.Blocks.Administration
                 if ( cbDeleteInteractions.Checked )
                 {
                     var interactionComponentService = new InteractionComponentService( rockContext );
-                    var interactionService = new InteractionService( rockContext );
-
                     var componentQuery = interactionComponentService.QueryByPage( page );
-                    var interactionQuery = interactionService.Queryable()
-                        .Where( i => componentQuery.Any( ic => ic.Id == i.InteractionComponentId ) );
-
-                    interactionService.DeleteRange( interactionQuery );
                     interactionComponentService.DeleteRange( componentQuery );
                 }
 

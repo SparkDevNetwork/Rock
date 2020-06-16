@@ -247,13 +247,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfValue.Value;
+                return HttpUtility.UrlDecode(  _hfValue.Value );
             }
             set
             {
                 EnsureChildControls();
-                _hfValue.Value = value;
-
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    _hfValue.Value = Uri.EscapeUriString( value ); // HttpUtility.UrlEncode makes spaces + instead of %20
+                }
             }
         }
 

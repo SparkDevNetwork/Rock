@@ -150,6 +150,11 @@ namespace Rock.Apps.CheckScannerUtility
                 this.DisplayAlertMessage( AlertMessageType.Warning, alertMessageBuilder.ToString() );
 
                 ShowUploadWarnings( scannedDocInfo );
+
+                if ( scannedDocInfo.IsCheck )
+                {
+                    btnSkipAndContinue.Focus();
+                }
             }
 
             if ( scannedDocInfo.Upload )
@@ -1447,6 +1452,13 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             HandleDetailAmountChange( sender );
+
+            if ( e.Key == System.Windows.Input.Key.Return && !string.IsNullOrWhiteSpace( ( ( CurrencyBox ) sender ).Text ) )
+            {
+                btnNext.Focus();
+
+                ProcessIgnoreUploadResponse( UploadResponse.UploadWithAmount );
+            }
         }
 
         private CurrencyBox _firstAmountBox = null;

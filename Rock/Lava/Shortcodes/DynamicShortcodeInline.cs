@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
@@ -149,14 +150,11 @@ namespace Rock.Lava.Shortcodes
             var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
             // create all the parameters from the shortcode with their default values
-            var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
-            foreach (var shortcodeParm in shortcodeParms )
+            var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( _shortcode.Parameters );
+
+            foreach ( var shortcodeParm in shortcodeParms.Dictionary )
             {
-                var shortcodeParmKV = shortcodeParm.Split( '^' );
-                if (shortcodeParmKV.Length == 2 )
-                {
-                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
-                }
+                parms.AddOrReplace( shortcodeParm.Key, shortcodeParm.Value );
             }
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )

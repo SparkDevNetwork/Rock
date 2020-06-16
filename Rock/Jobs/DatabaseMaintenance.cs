@@ -26,6 +26,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -200,6 +201,16 @@ namespace Rock.Jobs
             int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
             bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
+
+            if ( useONLINEIndexRebuild
+                 && !( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql
+                       || RockInstanceConfig.Database.Edition.Contains( "Enterprise" ) ) )
+            {
+                // Online index rebuild is only available for Azure SQL or SQL Enterprise.
+                RockLogger.Log.Information( RockLogDomains.Jobs, "Database Maintenance - Online Index Rebuild option is selected but not available for the current database platform." );
+
+                useONLINEIndexRebuild = false;
+            }
 
             Dictionary<string, object> parms = new Dictionary<string, object>();
             parms.Add( "@PageCountLimit", minimumIndexPageCount );

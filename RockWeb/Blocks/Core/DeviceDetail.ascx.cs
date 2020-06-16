@@ -34,9 +34,22 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Device Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given device." )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
+
+    [DefinedValueField( "Map Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MAP_STYLES,
+        Description = "The map theme that should be used for styling the GeoPicker map.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
+        Key = AttributeKey.MapStyle )]
+
     public partial class DeviceDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string MapStyle = "MapStyle";
+        }
+
         #region Properties
 
         /// <summary>
@@ -119,7 +132,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            Guid mapStyleValueGuid = GetAttributeValue( AttributeKey.MapStyle ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
         }
@@ -196,7 +209,7 @@ namespace RockWeb.Blocks.Core
 
                 // Remove any deleted locations
                 foreach ( var location in device.Locations
-                    .Where( l =>!Locations.Keys.Contains( l.Id ) )
+                    .Where( l => !Locations.Keys.Contains( l.Id ) )
                     .ToList() )
                 {
                     device.Locations.Remove( location );
@@ -447,7 +460,7 @@ namespace RockWeb.Blocks.Core
 
             BindLocations();
 
-            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            Guid mapStyleValueGuid = GetAttributeValue( AttributeKey.MapStyle ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
 

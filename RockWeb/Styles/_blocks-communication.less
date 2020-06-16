@@ -279,7 +279,7 @@ iframe.email-body {
     }
   }
 
-  .messages-outer-container{
+  .messages-outer-container {
     position: relative;
     flex-grow: 1;
     padding: 15px;
@@ -400,7 +400,7 @@ iframe.email-body {
       border-radius: 20px;
     }
 
-    &.outbound .bubble{
+    &.outbound .bubble {
       color: #fff;
       background-color: #0084ff;
     }
@@ -451,9 +451,9 @@ iframe.email-body {
     font-size: 12px;
     color: @text-color;
     text-align: center;
-    cursor: grab;
     cursor: -webkit-grab;
     cursor: -moz-grab;
+    cursor: grab;
     zoom: 1;
     background-color: #fff;
     border: 1px solid transparent;
@@ -506,7 +506,7 @@ iframe.email-body {
 }
 
 .sms-actions-container {
-  padding: 20px 20px !important;
+  padding: 20px !important;
   counter-reset: section;
 
   .component {
@@ -610,7 +610,7 @@ iframe.email-body {
   }
 }
 
-.sms-pipeline-detail  {
+.sms-pipeline-detail {
   .sms-heading {
     max-width: 500px;
     padding: 20px 16px;
@@ -645,7 +645,6 @@ iframe.email-body {
     font-size: 18px;
     font-weight: 500;
     background: @panel-heading-bg;
-    border-top: 1px solid rgba(219, 219, 219, .5);
     border-top: 1px solid fade(@panel-border, 100%);
   }
 
@@ -663,9 +662,9 @@ iframe.email-body {
 .component.gu-mirror,
 .sms-action.gu-mirror {
   list-style: none;
-  cursor: grabbing !important;
   cursor: -moz-grabbing !important;
   cursor: -webkit-grabbing !important;
+  cursor: grabbing !important;
 
   &::before,
   &::after {

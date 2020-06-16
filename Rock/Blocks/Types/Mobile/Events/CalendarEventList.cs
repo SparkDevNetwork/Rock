@@ -110,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The event template default value.
             /// </summary>
-            public const string EventTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
+            public const string EventTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event-summary"">
     <StackLayout Spacing=""0"">
         <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
         {% if Item.EndDateTime == null %}
@@ -129,10 +129,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The day header template default value.
             /// </summary>
-            public const string DayHeaderTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-events-day"">
-    <Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" />
-</Frame>
-";
+            public const string DayHeaderTemplate = @"<Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" StyleClass=""calendar-events-day, h2"" />";
         }
 
         /// <summary>
@@ -199,7 +196,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             {
                 Audiences = GetAudiences().Select( a => new
                 {
-                    a.Id,
+                    a.Guid,
                     Name = a.Value,
                     Color = a.GetAttributeValue( "HighlightColor" )
                 } ),
@@ -235,6 +232,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             var properties = new Dictionary<string, string>
             {
                 { "Id", "Id" },
+                { "Guid", "Guid" },
                 { "Name", "Name" },
                 { "StartDateTime", "DateTime" },
                 { "EndDateTime", "EndDateTime" },
@@ -276,13 +274,6 @@ namespace Rock.Blocks.Types.Mobile.Events
                             m.EventItem.IsActive &&
                             m.EventItem.IsApproved );
 
-                // Filter by audiences
-                var audiences = GetAudiences().Select( a => a.Id ).ToList();
-                if ( audiences.Any() )
-                {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
-                }
-
                 // Get the occurrences
                 var occurrences = qry.ToList()
                     .SelectMany( a =>
@@ -295,14 +286,15 @@ namespace Rock.Blocks.Types.Mobile.Events
                             {
                                 Date = b,
                                 Duration = duration,
-                                AudienceIds = a.EventItem.EventItemAudiences.Select( c => c.DefinedValueId ).ToList(),
+                                AudienceGuids = a.EventItem.EventItemAudiences.Select( c => DefinedValueCache.Get( c.DefinedValueId )?.Guid ).Where( c => c.HasValue ).Select( c => c.Value ).ToList(),
                                 EventItemOccurrence = a
                             } );
                     } )
                     .Select( a => new
                     {
                         a.EventItemOccurrence,
-                        a.EventItemOccurrence.EventItem.Id,
+                        a.EventItemOccurrence.Guid,
+                        a.EventItemOccurrence.Id,
                         a.EventItemOccurrence.EventItem.Name,
                         DateTime = a.Date,
                         EndDateTime = a.Duration > 0 ? ( DateTime? ) a.Date.AddMinutes( a.Duration ) : null,
@@ -311,7 +303,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                         Campus = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         Location = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         LocationDescription = a.EventItemOccurrence.Location,
-                        Audiences = a.AudienceIds,
+                        Audiences = a.AudienceGuids,
                         a.EventItemOccurrence.EventItem.Description,
                         a.EventItemOccurrence.EventItem.Summary,
                         OccurrenceNote = a.EventItemOccurrence.Note.SanitizeHtml()

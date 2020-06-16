@@ -60,7 +60,7 @@ namespace Rock.Workflow.Action
 
             // Get the connection request
             ConnectionRequest request = null;
-            Guid connectionRequestGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid() ).AsGuid();
+            Guid connectionRequestGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid() ).AsGuid();
             request = new ConnectionRequestService( rockContext ).Get( connectionRequestGuid );
             if ( request == null )
             {
@@ -73,7 +73,7 @@ namespace Rock.Workflow.Action
             Guid? connectionStateAttributeGuid = GetAttributeValue( action, "ConnectionStateAttribute" ).AsGuidOrNull();
             if ( connectionStateAttributeGuid.HasValue )
             {
-                connectionState = action.GetWorklowAttributeValue( connectionStateAttributeGuid.Value ).ConvertToEnumOrNull<ConnectionState>();
+                connectionState = action.GetWorkflowAttributeValue( connectionStateAttributeGuid.Value ).ConvertToEnumOrNull<ConnectionState>();
             }
             if ( connectionState == null )
             {
@@ -93,7 +93,7 @@ namespace Rock.Workflow.Action
                 Guid? FollowUpDateAttributeGuid = GetAttributeValue( action, "FollowUpDateAttribute" ).AsGuidOrNull();
                 if ( FollowUpDateAttributeGuid.HasValue )
                 {
-                    followupDate = action.GetWorklowAttributeValue( FollowUpDateAttributeGuid.Value ).AsDateTime();
+                    followupDate = action.GetWorkflowAttributeValue( FollowUpDateAttributeGuid.Value ).AsDateTime();
                 }
                 if ( followupDate == null )
                 {

@@ -36,10 +36,21 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Lists all scheduled jobs." )]
 
-    [LinkedPage( "Detail Page" )]
-    [LinkedPage( "History Page", "The page to display group history." )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    [LinkedPage( "History Page",
+        Description = "The page to display group history.",
+        Key = AttributeKey.HistoryPage )]
+
     public partial class ScheduledJobList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string HistoryPage = "HistoryPage";
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -173,16 +184,7 @@ namespace RockWeb.Blocks.Administration
                 var lLastStatusMessageAsHtml = e.Row.FindControl( "lLastStatusMessageAsHtml" ) as Literal;
                 if ( lLastStatusMessageAsHtml != null )
                 {
-                    if ( serviceJob.LastStatusMessageAsHtml.Length > 255 )
-                    {
-                        // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
-                        // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
-                        lLastStatusMessageAsHtml.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", serviceJob.LastStatusMessageAsHtml );
-                    }
-                    else
-                    {
-                        lLastStatusMessageAsHtml.Text = serviceJob.LastStatusMessageAsHtml;
-                    }
+                    lLastStatusMessageAsHtml.Text = serviceJob.LastStatusMessageAsHtml;
                 }
             }
         }
@@ -194,7 +196,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ServiceJobId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ServiceJobId", 0 );
         }
 
         /// <summary>
@@ -204,7 +206,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ServiceJobId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ServiceJobId", e.RowKeyId );
         }
 
         /// <summary>
@@ -274,7 +276,7 @@ namespace RockWeb.Blocks.Administration
         {
             var pageParams = new Dictionary<string, string>();
             pageParams.Add( "ScheduledJobId", e.RowKeyId.ToString() );
-            string groupHistoryUrl = LinkedPageUrl( "HistoryPage", pageParams );
+            string groupHistoryUrl = LinkedPageUrl( AttributeKey.HistoryPage, pageParams );
             Response.Redirect( groupHistoryUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }

@@ -141,7 +141,7 @@ namespace Rock.Web
             {
                 if ( _browserUserAgent == null )
                 {
-                    _browserUserAgent = new BrowserUserAgent( _client.UserAgent.Family, _client.UserAgent.Major, _client.UserAgent.Minor, _client.UserAgent.Patch );
+                    _browserUserAgent = new BrowserUserAgent( _client.UA.Family, _client.UA.Major, _client.UA.Minor, _client.UA.Patch );
                 }
 
                 return _browserUserAgent;

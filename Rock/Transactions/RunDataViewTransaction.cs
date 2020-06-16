@@ -51,7 +51,7 @@ namespace Rock.Transactions
         /// <value>
         /// The time to run in ms.
         /// </value>
-        public int? TimeToRunMS { get; set; }
+        public int? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Gets or sets the persisted last run date.
@@ -62,12 +62,12 @@ namespace Rock.Transactions
         public DateTime? PersistedLastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// Gets or sets the persisted last run duration in milliseconds.
         /// </summary>
         /// <value>
-        /// The persisted last run duration in mulliseconds.
+        /// The persisted last run duration in milliseconds.
         /// </value>
-        public int? PersistedLastRunDuration { get; set; }
+        public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RunDataViewTransaction"/> class.
@@ -95,6 +95,13 @@ namespace Rock.Transactions
                 {
                     dataView.LastRunDateTime = LastRunDateTime;
                     dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
+
+                    var relatedDataViews = dataViewService.GetReferencedDataViews( DataViewId, rockContext );
+                    foreach ( var related in relatedDataViews )
+                    {
+                        related.LastRunDateTime = LastRunDateTime;
+                        related.RunCount = ( related.RunCount ?? 0 ) + 1;
+                    }
                 }
 
                 if ( PersistedLastRefreshDateTime != null )
@@ -102,17 +109,16 @@ namespace Rock.Transactions
                     dataView.PersistedLastRefreshDateTime = PersistedLastRefreshDateTime;
                 }
 
-                if ( PersistedLastRunDuration != null )
+                if ( PersistedLastRunDurationMilliseconds != null )
                 {
-                    dataView.PersistedLastRunDuration = PersistedLastRunDuration;
+                    dataView.PersistedLastRunDurationMilliseconds = PersistedLastRunDurationMilliseconds;
                 }
 
                 // We will only update the RunCount if we were given a TimeToRun value.
-                if ( TimeToRunMS != null )
+                if ( TimeToRunDurationMilliseconds != null )
                 {
-                    dataView.TimeToRunMS = TimeToRunMS;
+                    dataView.TimeToRunDurationMilliseconds = TimeToRunDurationMilliseconds;
                 }
-
                 rockContext.SaveChanges();
             }
         }

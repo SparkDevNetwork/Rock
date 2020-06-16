@@ -1,4 +1,21 @@
 {% comment %}
+    Redirect if item is expired
+{% endcomment %}
+{% assign itemId = Item.Id | AsInteger %}
+{% assign CurrentPersonCanEdit = itemId | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+{% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+
+{% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now or Item == null %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+{% comment %}
     Set item properties
 {% endcomment %}
 {% capture date %}{[ formatDate date:'{{ Item.PublishDateTime }}' ]}{% endcapture %}
@@ -44,12 +61,13 @@
     </style>
 {% endif %}
 
+
 {% comment %}
     Calculate prev/next entry links
 {% endcomment %}
 {% if itemsManuallyOrdered == 'true' %}
     {% assign currentSlug = 'Global' | PageParameter:'Slug' %}
-    {% assign itemIndex = parentItem.Children | Where:'Slug', currentSlug | Select:'Index' | First %}
+    {% assign itemIndex = parentItem.Children | Where:'Slug', currentSlug | Select:'Index' | First | Plus:1 %}
     {% assign prevIndex = itemIndex | Minus:2 %}
     {% assign nextIndex = itemIndex %}
 
@@ -118,7 +136,7 @@
             {% if itemsManuallyOrdered == 'true' %}
                 <div class="row flush-sides push-bottom xs-push-half-bottom">
                     <div class="col-xs-4 col-sm-4 col-md-4 hard">
-                        {% if itemIndex and itemIndex != 1 %}<a href="{{ parentItem.Children | Index:prevIndex | Property:'Slug' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
+                        {% if itemIndex and itemIndex != 0 %}<a href="{{ parentItem.Children | Index:prevIndex | Property:'Slug' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
                     </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
                         <p class="text-gray-light flush"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
                     </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">

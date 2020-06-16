@@ -144,6 +144,27 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a string representation of the object or a default value.
+        /// </summary>
+        /// <param name="obj">an object</param>
+        /// <param name="defaultValue"></param>
+        /// <returns>A string representation of the object, or the default value if the representation is null or whitespace.</returns>
+        public static string ToStringOrDefault( this object obj, string defaultValue )
+        {
+            if ( obj != null )
+            {
+                var stringValue = obj.ToString();
+
+                if ( !string.IsNullOrWhiteSpace( stringValue ) )
+                { 
+                    return stringValue;
+                }
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Gets the data annotation attribute from. http://stackoverflow.com/questions/7027613/how-to-retrieve-data-annotations-from-code-programmatically
         /// </summary>
         /// <typeparam name="T"></typeparam>

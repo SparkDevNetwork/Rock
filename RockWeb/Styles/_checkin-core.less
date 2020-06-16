@@ -25,8 +25,12 @@
 
 @checkin-keypad-width: 260px;
 
+@header-letter-spacing: -.03em;
+
 @font-size-base: 18px;
 @font-size-h1: 28px;
+
+@checkin-button-alttext-font-size: 20px;
 
 // 2. Bootstrap Overrides
 // -------------------------
@@ -48,16 +52,16 @@ select.form-control {
 
 // Fix to allow SVGs inside of buttons.
 .btn svg {
+  display: block;
   width: auto;
   height: 1em;
   fill: currentColor;
-  display: block;
 }
 
 h1,
 h2,
 h3 {
-  letter-spacing: -.03em;
+  letter-spacing: @header-letter-spacing;
 }
 
 h1 {
@@ -205,10 +209,7 @@ a.help {
 }
 
 // turn off configuration items
-#cms-admin-footer {
-  display: none;
-}
-
+#cms-admin-footer,
 .config-bar {
   display: none;
 }
@@ -254,7 +255,6 @@ body {
   .checkin-sub-title {
     margin-top: 12px;
     font-size: 24px;
-    font-weight: @subheader-font-weight;
     color: @subheader-text-color;
   }
 }
@@ -262,7 +262,7 @@ body {
 // button sub-text
 .btn .checkin-sub-title {
   margin-left: 20px;
-  font-size: 20px;
+  font-size: @checkin-button-alttext-font-size;
   font-weight: @checkin-button-alttext-weight;
   white-space: normal;
 }
@@ -283,11 +283,12 @@ body {
   padding: 0 0 @padding-base-vertical 0;
 }
 
-.checkin-search-actions{
+.checkin-search-actions {
   text-align: center;
   a {
+    width: 520px;
     max-width: 100%;
-    padding: 20px 200px;
+    padding: 20px;
     font-size: 48px;
     font-weight: @checkin-button-text-weight;
     line-height: 48px;
@@ -454,7 +455,7 @@ input.checkin-phone-entry {
   width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
@@ -463,13 +464,13 @@ input.namesearch {
   width: 360px;
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
 
 .checkin-phone-keypad {
-  margin: 0 auto 24px auto;
+  margin: 0 auto 24px;
 }
 
 // time select

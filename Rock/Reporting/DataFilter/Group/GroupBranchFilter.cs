@@ -42,9 +42,7 @@ namespace Rock.Reporting.DataFilter.Group
             EntireBranch = 0,
             DescendantsOnly = 1
         }
-
-        private RockDropDownList _CboIncludedGroups;
-        private GroupPicker _GpkParentGroup;
+        
 
         #region Properties
 
@@ -171,19 +169,19 @@ function()
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            _GpkParentGroup = new GroupPicker();
-            _GpkParentGroup.ID = filterControl.ID + "_0";
-            _GpkParentGroup.Label = "Parent Group";
-            filterControl.Controls.Add( _GpkParentGroup );
+            var gpParentGroup = new GroupPicker();
+            gpParentGroup.ID = filterControl.ID + "_0";
+            gpParentGroup.Label = "Parent Group";
+            filterControl.Controls.Add( gpParentGroup );
 
-            _CboIncludedGroups = new RockDropDownList();
-            _CboIncludedGroups.ID = filterControl.ID + "_1";
-            _CboIncludedGroups.Label = "Branch Type";
-            _CboIncludedGroups.Items.Add( new ListItem { Text = "Parent and Descendants", Value = IncludedGroupsSpecifier.EntireBranch.ToString(), Selected = true } );
-            _CboIncludedGroups.Items.Add( new ListItem { Text = "Descendants Only", Value = IncludedGroupsSpecifier.DescendantsOnly.ToString() } );
-            filterControl.Controls.Add( _CboIncludedGroups );
+            var ddlIncludedGroups = new RockDropDownList();
+            ddlIncludedGroups.ID = filterControl.ID + "_1";
+            ddlIncludedGroups.Label = "Branch Type";
+            ddlIncludedGroups.Items.Add( new ListItem { Text = "Parent and Descendants", Value = IncludedGroupsSpecifier.EntireBranch.ToString(), Selected = true } );
+            ddlIncludedGroups.Items.Add( new ListItem { Text = "Descendants Only", Value = IncludedGroupsSpecifier.DescendantsOnly.ToString() } );
+            filterControl.Controls.Add( ddlIncludedGroups );
 
-            return new Control[] { _GpkParentGroup, _CboIncludedGroups };
+            return new Control[] { gpParentGroup, ddlIncludedGroups };
         }
 
         /// <summary>

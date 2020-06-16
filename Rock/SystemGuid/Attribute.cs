@@ -456,6 +456,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Transport Attributes
+
+        /// <summary>
+        /// The communication transport SMTP server Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_TRANSPORT_SMTP_SERVER = "6CFFDF99-E93A-49B8-B440-0EF93878A51F";
+
+        #endregion
+
         #region DefinedType Attributes
 
         /// <summary>
@@ -476,6 +485,45 @@ namespace Rock.SystemGuid
         /// The defined value attribute for storing if a device type supports cameras.
         /// </summary>
         public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
+
+        #endregion
+
+        #region Country Attributes
+
+        /// <summary>
+        /// Country - Locality Label
+        /// </summary>
+        public const string COUNTRY_LOCALITY_LABEL = "1C234A6D-007F-4410-814E-13E9AE8654B4";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 1.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_1_REQUIREMENT = "8B7410F4-7EFB-4ABC-BFD0-B8A9A7ADB27D";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 2.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_2_REQUIREMENT = "0FCBA54C-0B88-45A8-9303-E9783F2A2D0E";
+
+        /// <summary>
+        /// Country Address Requirement Level for City.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_CITY_REQUIREMENT = "EE9B4454-ACBF-416F-8080-2885A3CD6CA6";
+
+        /// <summary>
+        /// Country Address Requirement Level for Locality.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LOCALITY_REQUIREMENT = "A0B0B033-9DA9-45F4-A593-B40EDCDB2D00";
+
+        /// <summary>
+        /// Country Address Requirement Level for State.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_STATE_REQUIREMENT = "E488AE1D-FC76-44FE-A48D-271E6DF44C24";
+
+        /// <summary>
+        /// Country Address Requirement Level for Postal Code.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_POSTCODE_REQUIREMENT = "0037453D-0D26-4F02-8AB3-6AD675D85AAE";
 
         #endregion
 
@@ -623,5 +671,55 @@ namespace Rock.SystemGuid
         /// The defined value log system settings
         /// </summary>
         public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
+
+        /// <summary>
+        /// The phone number lookup title
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP_TITLE = "7FD2383A-A2E8-4158-8E78-2E2E0C6CBA11";
+
+        /// <summary>
+        /// The phone number initial instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INITIAL_INSTRUCTIONS = "D9DFC4E4-A1F7-435C-8CF4-AD67CFA3F26E";
+
+        /// <summary>
+        /// The phone number verification instructions
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_INSTRUCTIONS = "B14CA36A-CC8F-4858-A2B8-AE0966EDEF2D";
+
+        /// <summary>
+        /// The phone number individual selection instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INDIVIDUAL_SELECTION_INSTRUCTIONS = "1DFA50D7-0819-4659-96DE-D25F80B880E5";
+
+        /// <summary>
+        /// The phone number not found message
+        /// </summary>
+        public const string PHONE_NUMBER_NOT_FOUND_MESSAGE = "F752712B-C2CA-4541-8347-A632652E0764";
+
+        /// <summary>
+        /// The phone number authentication level
+        /// </summary>
+        public const string PHONE_NUMBER_AUTHENTICATION_LEVEL = "92C72C91-8670-4B1B-B529-F744EEE38B5A";
+
+        /// <summary>
+        /// The phone number verification time limit
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_TIME_LIMIT = "4569E05C-DE8F-40D4-8DF7-4DE6A564FF6E";
+
+        /// <summary>
+        /// The phone number ip throttle limit
+        /// </summary>
+        public const string PHONE_NUMBER_IP_THROTTLE_LIMIT = "2D148814-418A-45A3-9A98-1498363759E7";
+
+        /// <summary>
+        /// The phone number SMS number
+        /// </summary>
+        public const string PHONE_NUMBER_SMS_NUMBER = "AE2979DF-EDE5-4389-ACBA-0FF7680BFE52";
+
+        /// <summary>
+        /// The phone number text message template
+        /// </summary>
+        public const string PHONE_NUMBER_TEXT_MESSAGE_TEMPLATE = "7F12E9B4-0CD1-42C8-AE68-457212B0B459";
     }
 }

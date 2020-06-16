@@ -299,6 +299,11 @@
                         <Rock:RockCheckBoxList ID="cblExampleHorizontal" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
                     </div>
 
+                    <a id="Rock List Box"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockListBox ID="lbExampleListBox" runat="server" Label="Rock:RockListBox" />
+                    </div>
+
                     <a id="RockRadioButtonList"></a>
                     <h2>Radio Button</h2>
                     <div runat="server" class="r-example">
@@ -495,6 +500,11 @@
                     <a id="FileUploader"></a>
                     <div runat="server" class="r-example">
                         <Rock:FileUploader ID="fuprExampleBinaryFile" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
+                    </div>
+
+                    <a id="FileUploaderLg"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FileUploader ID="fuprExampleUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="false" Label="Rock:FileUploader Large (BinaryFile mode)" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
                     </div>
 
                     <a id="FileUploaderContentFileMode"></a>
@@ -830,7 +840,7 @@
                     <a id="AttributeEditor"></a>
                     <h2 runat="server">Rock:AttributeEditor</h2>
                     <div runat="server" class="r-example">
-                        <asp:LinkButton ID="lbExample" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
                         <asp:Panel ID="pnlAttributeEditor" runat="server" Visible="false" CssClass="well">
                             <Rock:AttributeEditor ID="edtExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
                         </asp:Panel>

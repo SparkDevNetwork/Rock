@@ -448,8 +448,17 @@ namespace Rock.Data
                 }
             }
 
-            // set timeout to 5 minutes, just in case (the default is 30 seconds)
-            EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
+            // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
+            int minTimeout = 300;
+            if ( this.Database.CommandTimeout.HasValue && this.Database.CommandTimeout.Value > minTimeout )
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.CommandTimeout.Value;
+            }
+            else
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = minTimeout;
+            }
+
             EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
             EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
         }
@@ -468,8 +477,11 @@ namespace Rock.Data
             var currentDateTime = RockDateTime.Now;
             PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
             var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
-            rockExpressionVisitor.Visit( updateFactory );
-            int recordsUpdated = queryable.Update( updateFactory );
+            var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
+            int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
+            {
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+            } );
             return recordsUpdated;
         }
 

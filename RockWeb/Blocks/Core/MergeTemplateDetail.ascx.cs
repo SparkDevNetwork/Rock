@@ -42,9 +42,20 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for administrating a Merge Template" )]
 
-    [EnumField( "Merge Templates Ownership", "Set this to restrict if the merge template must be a Personal or Global merge template. Note: If the user has EDIT authorization to this block, both Global and Personal templates can be edited regardless of this setting.", typeof( MergeTemplateOwnership ), true, "Global" )]
+    [EnumField( "Merge Templates Ownership",
+        Description = "Set this to restrict if the merge template must be a Personal or Global merge template. Note: If the user has EDIT authorization to this block, both Global and Personal templates can be edited regardless of this setting.",
+        EnumSourceType = typeof( MergeTemplateOwnership ),
+        IsRequired = true,
+        DefaultValue = "Global",
+        Key = AttributeKey.MergeTemplatesOwnership )]
+
     public partial class MergeTemplateDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string MergeTemplatesOwnership = "MergeTemplatesOwnership";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -322,7 +333,7 @@ namespace RockWeb.Blocks.Core
                 pdAuditDetails.SetEntity( mergeTemplate, ResolveRockUrl( "~" ) );
             }
 
-            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
+            var mergeTemplateOwnership = this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
 
             if ( mergeTemplate == null )
             {
@@ -374,7 +385,7 @@ namespace RockWeb.Blocks.Core
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Visible = mergeTemplateService.CanDelete( mergeTemplate, out errorMessage );
-            
+
                 if ( mergeTemplate.Id > 0 )
                 {
                     ShowReadonlyDetails( mergeTemplate );
@@ -421,7 +432,7 @@ namespace RockWeb.Blocks.Core
 
             SetEditMode( true );
 
-            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
+            var mergeTemplateOwnership = this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
             if ( this.IsUserAuthorized( Authorization.EDIT ) )
             {
                 // If Authorized to EDIT, owner should be able to be changed, or converted to Global
@@ -570,10 +581,10 @@ namespace RockWeb.Blocks.Core
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
-            var getFileUrl = string.Format( 
-                "{0}GetFile.ashx?guid={1}", 
-                System.Web.VirtualPathUtility.ToAbsolute( "~" ), 
-                mergeTemplate.TemplateBinaryFile != null ? mergeTemplate.TemplateBinaryFile.Guid : (Guid?)null );
+            var getFileUrl = string.Format(
+                "{0}GetFile.ashx?guid={1}",
+                System.Web.VirtualPathUtility.ToAbsolute( "~" ),
+                mergeTemplate.TemplateBinaryFile != null ? mergeTemplate.TemplateBinaryFile.Guid : ( Guid? ) null );
 
             DescriptionList descriptionListCol1 = new DescriptionList()
                 .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", getFileUrl, mergeTemplate.TemplateBinaryFile.FileName ) )

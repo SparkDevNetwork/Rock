@@ -38,9 +38,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Shows a list of all attribute matrix templates" )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class AttributeMatrixTemplateList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -110,7 +117,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "AttributeMatrixTemplateId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "AttributeMatrixTemplateId", 0 );
         }
 
         /// <summary>
@@ -120,7 +127,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "AttributeMatrixTemplateId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "AttributeMatrixTemplateId", e.RowKeyId );
         }
 
         /// <summary>

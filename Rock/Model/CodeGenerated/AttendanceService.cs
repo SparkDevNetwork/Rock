@@ -88,9 +88,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attendance target, Attendance source )
         {
             target.Id = source.Id;
+            target.AttendanceCheckInSessionId = source.AttendanceCheckInSessionId;
             target.AttendanceCodeId = source.AttendanceCodeId;
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
+            target.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
             target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
@@ -100,6 +102,8 @@ namespace Rock.Model
             target.Note = source.Note;
             target.OccurrenceId = source.OccurrenceId;
             target.PersonAliasId = source.PersonAliasId;
+            target.PresentByPersonAliasId = source.PresentByPersonAliasId;
+            target.PresentDateTime = source.PresentDateTime;
             target.Processed = source.Processed;
             target.QualifierValueId = source.QualifierValueId;
             target.RequestedToAttend = source.RequestedToAttend;

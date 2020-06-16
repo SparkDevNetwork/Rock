@@ -86,6 +86,15 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Key = AttributeKeys.ExpiresAfterDays,
         Order = 1 )]
 
+    [BooleanField( "Show Header",
+        Description = "If enabled, a 'Add/Edit Prayer Request' header will be displayed.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Category = AttributeCategories.Features,
+        Key = AttributeKeys.ShowHeader,
+        Order = 2 )]
+
     [BooleanField( "Show Urgent Flag",
         Description = "If enabled, requestors will be able to flag prayer requests as urgent.",
         IsRequired = false,
@@ -93,7 +102,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowUrgentFlag,
-        Order = 2 )]
+        Order = 3 )]
 
     [BooleanField( "Show Public Display Flag",
         Description = "If enabled, requestors will be able set whether or not they want their request displayed on the public website.",
@@ -102,7 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowPublicDisplayFlag,
-        Order = 3 )]
+        Order = 4 )]
 
     [BooleanField( "Default To Public",
         Description = "If enabled, all prayers will be set to public by default.",
@@ -111,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.DefaultToPublic,
-        Order = 4 )]
+        Order = 5 )]
 
     [IntegerField( "Character Limit",
         Description = "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.",
@@ -119,7 +128,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         DefaultIntegerValue = 250,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.CharacterLimit,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Show Campus",
         Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
@@ -128,7 +137,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowCampus,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Require Campus",
         Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
@@ -137,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.RequireCampus,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField( "Require Last Name",
         Description = "Require that a last name be entered. First name is always required.",
@@ -146,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.RequireLastName,
-        Order = 8 )]
+        Order = 9 )]
 
     [BooleanField( "Enable Person Matching",
         Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
@@ -155,7 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.EnablePersonMatching,
-        Order = 9 )]
+        Order = 10 )]
 
     [CustomDropdownListField( "Completion Action",
         description: "What action to perform after saving the prayer request.",
@@ -193,7 +202,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// <summary>
             /// The request identifier
             /// </summary>
-            public const string RequestId = "RequestId";
+            public const string RequestGuid = "RequestGuid";
 
             /// <summary>
             /// The request
@@ -232,6 +241,11 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// The expires after days
             /// </summary>
             public const string ExpiresAfterDays = "ExpiresAfterDays";
+
+            /// <summary>
+            /// The show header
+            /// </summary>
+            public const string ShowHeader = "EnableHeader";
 
             /// <summary>
             /// The show urgent flag
@@ -362,6 +376,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// The expires after days.
         /// </value>
         protected int ExpiresAfterDays => GetAttributeValue( AttributeKeys.ExpiresAfterDays ).AsInteger();
+
+        /// <summary>
+        /// Gets a value indicating whether [show header].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show header]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowHeader => GetAttributeValue( AttributeKeys.ShowHeader ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether [show urgent flag].
@@ -505,17 +527,17 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
             using ( var rockContext = new RockContext() )
             {
-                int? requestId = RequestContext.GetPageParameter( PageParameterKeys.RequestId ).AsIntegerOrNull();
+                Guid? requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
                 PrayerRequest request = null;
 
-                if ( requestId.HasValue )
+                if ( requestGuid.HasValue )
                 {
                     if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
                         return "<Rock:NotificationBox HeaderText=\"Error\" Text=\"You are not authorized to edit prayer requests.\" NotificationType=\"Error\" />";
                     }
 
-                    request = new PrayerRequestService( rockContext ).Get( requestId.Value );
+                    request = new PrayerRequestService( rockContext ).Get( requestGuid.Value );
 
                     if ( request == null )
                     {
@@ -524,9 +546,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 }
 
                 content = $@"
-<StackLayout>
-    <Label Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" StyleClass=""heading1"" />
-    <BoxView Color=""#888"" HeightRequest=""1"" Margin=""0 0 12 0"" />
+<StackLayout StyleClass=""prayerdetail"">
+    ##HEADER##
 
     ##FIELDS##
     
@@ -546,6 +567,12 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     <Button StyleClass=""btn,btn-link"" Text=""Cancel"" ##CANCEL## />
 </StackLayout>";
+
+                if ( ShowHeader )
+                {
+                    content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />
+    <Rock:Divider />" );
+                }
 
                 fieldsContent = BuildCommonFields( request, parameters );
             }
@@ -601,15 +628,15 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             {
                 var items = CategoryCache.Get( ParentCategory.Value )
                     .Categories
-                    .Select( a => new KeyValuePair<string, string>( a.Id.ToString(), a.Name ) );
+                    .Select( a => new KeyValuePair<string, string>( a.Guid.ToString(), a.Name ) );
 
-                int? categoryId = request?.CategoryId;
-                if ( !categoryId.HasValue && DefaultCategory.HasValue )
+                var categoryGuid = request?.Category?.Guid;
+                if ( !categoryGuid.HasValue && DefaultCategory.HasValue )
                 {
-                    categoryId = CategoryCache.Get( DefaultCategory.Value ).Id;
+                    categoryGuid = CategoryCache.Get( DefaultCategory.Value ).Guid;
                 }
 
-                field = MobileHelper.GetDropDownFieldXaml( "category", "Category", categoryId.ToStringSafe(), true, items );
+                field = MobileHelper.GetDropDownFieldXaml( "category", "Category", categoryGuid.ToStringSafe(), true, items );
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "category", "SelectedValue" );
             }
@@ -646,11 +673,11 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 PrayerRequest prayerRequest;
-                var requestId = RequestContext.GetPageParameter( PageParameterKeys.RequestId ).AsIntegerOrNull();
+                var requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
 
-                if ( requestId.HasValue )
+                if ( requestGuid.HasValue )
                 {
-                    prayerRequest = prayerRequestService.Get( requestId.Value );
+                    prayerRequest = prayerRequestService.Get( requestGuid.Value );
 
                     if ( prayerRequest == null || !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
@@ -712,7 +739,16 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 if ( ShowCategory && parameters.ContainsKey( "category" ) )
                 {
-                    prayerRequest.CategoryId = ( ( string ) parameters["category"] ).AsIntegerOrNull();
+                    var categoryGuid = ( ( string ) parameters["category"] ).AsGuidOrNull();
+
+                    if ( categoryGuid.HasValue )
+                    {
+                        prayerRequest.CategoryId = CategoryCache.Get( categoryGuid.Value ).Id;
+                    }
+                    else if ( prayerRequest.Id > 0 )
+                    {
+                        prayerRequest.CategoryId = null;
+                    }
                 }
 
                 if ( ShowPublicDisplayFlag )

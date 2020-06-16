@@ -165,12 +165,12 @@ namespace Rock.Model
                 {
                     result = false;
 
-                    string criteria = GetWorklowAttributeValue( actionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+                    string criteria = GetWorkflowAttributeValue( actionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
                     string value = actionType.CriteriaValue;
 
                     if ( IsValueAnAttribute( value ) )
                     {
-                        value = GetWorklowAttributeValue( actionType.CriteriaValue.AsGuid() );
+                        value = GetWorkflowAttributeValue( actionType.CriteriaValue.AsGuid() );
                     }
 
                     return criteria.CompareTo( value, actionType.CriteriaComparisonType );
@@ -287,13 +287,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a worklow attribute value.
+        /// Gets a worklfow attribute value.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="formatted">if set to <c>true</c> [formatted].</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
+        public string GetWorkflowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
             var attribute = AttributeCache.Get( guid );
             if ( attribute != null && Activity != null )
@@ -324,6 +324,20 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a worklow attribute value.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="formatted">if set to <c>true</c> [formatted].</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use GetWorkflowAttributeValue instead (the one with the correct spelling)." )]
+        public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
+        {
+            return GetWorkflowAttributeValue( guid, formatted, condensed );
         }
 
         /// <summary>

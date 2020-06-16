@@ -545,10 +545,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();
@@ -628,6 +628,16 @@ namespace Rock.Storage.AssetStorage
             else if ( asset.Key.IsNullOrWhiteSpace() && asset.Name.IsNotNullOrWhiteSpace() )
             {
                 asset.Key = rootFolder + asset.Name;
+            }
+
+            if ( asset.Type == AssetType.Folder && !asset.Key.EndsWith( "/" ) )
+            {
+                asset.Key += "/";
+            }
+
+            if ( asset.Key == "/" )
+            {
+                asset.Key = "";
             }
 
             return asset.Key;
@@ -738,7 +748,12 @@ namespace Rock.Storage.AssetStorage
                         {
                             var directory = item as CloudBlobDirectory;
                             var responseAsset = TranslateDirectoryObjectToRockAsset( assetStorageProvider, directory );
-                            assets.Add( responseAsset );
+                            // Azure returns the current directory in the list along with its children.
+                            // We only want the children.
+                            if ( responseAsset.Key != $"{prefix}/" )
+                            {
+                                assets.Add( responseAsset );
+                            }
                         }
 
                         if ( item is CloudBlob && ( !assetTypeToList.HasValue || assetTypeToList == AssetType.File ) )

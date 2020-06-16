@@ -149,12 +149,24 @@ namespace Rock.Model
                 Type type = null;
                 if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
                 {
-                    type = Type.GetType( this.AssemblyName );
+                    try
+                    {
+                        type = Type.GetType( this.AssemblyName, false );
+                    }
+                    catch
+                    {
+                        /* 2020-05-22 MDP
+                         * GetType (string typeName, bool throwOnError) can throw exceptions even if throwOnError is false!
+                         * see https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype?view=netframework-4.5.2#System_Type_GetType_System_String_System_Boolean_
+
+                          so, if this happens, we'll ignore any error it returns in those cases too
+                         */
+                    }
                 }
 
-                if (type != null )
+                if ( type != null )
                 {
-                    return typeof( IRockIndexable ).IsAssignableFrom( type ); 
+                    return typeof( IRockIndexable ).IsAssignableFrom( type );
                 }
 
                 return false;
@@ -168,7 +180,7 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true ) ]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true )]
         public bool IsAnalyticSupported
         {
             get
@@ -219,7 +231,7 @@ namespace Rock.Model
 
                         if ( method != null )
                         {
-                            var indexModelType = (Type)method.Invoke( instance, null );
+                            var indexModelType = ( Type ) method.Invoke( instance, null );
                             return indexModelType;
                         }
                     }
@@ -332,7 +344,7 @@ namespace Rock.Model
 
                 if ( entity is Rock.Security.ISecured )
                 {
-                    Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entity;
+                    Rock.Security.ISecured iSecured = ( Rock.Security.ISecured ) entity;
                     return iSecured.IsAuthorized( action, person );
                 }
             }

@@ -45,7 +45,7 @@ namespace Rock.Field.Types
             return configKeys;
         }
 
-        private Dictionary<int, string> EnumValues { get; set; }
+        private Dictionary<int, string> _EnumValues { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldType{T}"/> class.
@@ -59,14 +59,55 @@ namespace Rock.Field.Types
         /// </summary>
         public EnumFieldType( T[] includedEnums )
         {
-            EnumValues = new Dictionary<int, string>();
+            SetAvailableValues( includedEnums, null );
+        }
+
+        /// <summary>
+        /// Set the enumeration values that are available for selection in this field.
+        /// </summary>
+        /// <param name="includedValues"></param>
+        protected void SetAvailableValues( IEnumerable<T> includedValues )
+        {
+            SetAvailableValues( includedValues, null );
+        }
+
+        /// <summary>
+        /// Set the enumeration values that are available for selection in this field.
+        /// </summary>
+        /// <param name="includedValues"></param>
+        protected void SetAvailableValues( Dictionary<T, string> includedValues )
+        {
+            _EnumValues = new Dictionary<int, string>();
+
             foreach ( var value in Enum.GetValues( typeof( T ) ) )
             {
-                if ( includedEnums == null || includedEnums.Contains( ( T ) value ) )
+                var key = ( T ) value;
+
+                if ( includedValues.ContainsKey( key ) )
                 {
-                    EnumValues.Add( ( int ) value, value.ToString().SplitCase() );
+                    _EnumValues.Add( ( int ) value, includedValues[key] );
                 }
             }
+        }
+
+        /// <summary>
+        /// Set the enumeration values that are available for selection in this field.
+        /// </summary>
+        /// <param name="includedValues"></param>
+        /// <param name="excludedValues"></param>
+        protected void SetAvailableValues( IEnumerable<T> includedValues, IEnumerable<T> excludedValues )
+        {
+            _EnumValues = new Dictionary<int, string>();
+
+            foreach ( var value in Enum.GetValues( typeof(T) ) )
+            {
+                if ( ( includedValues == null || includedValues.Contains( (T)value ) )
+                     && ( excludedValues == null  || !excludedValues.Contains( (T)value ) ) )
+                {
+                    _EnumValues.Add( ( int ) value, value.ToString().SplitCase() );
+                }
+            }
+
         }
 
         #region Configuration
@@ -141,9 +182,9 @@ namespace Rock.Field.Types
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             int? intValue = value.AsIntegerOrNull();
-            if ( intValue.HasValue && EnumValues.ContainsKey( intValue.Value ) )
+            if ( intValue.HasValue && _EnumValues.ContainsKey( intValue.Value ) )
             {
-                return EnumValues[intValue.Value];
+                return _EnumValues[intValue.Value];
             }
 
             return string.Empty;
@@ -185,7 +226,7 @@ namespace Rock.Field.Types
                     ( ( RockRadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
                 }
 
-                foreach ( var keyVal in EnumValues )
+                foreach ( var keyVal in _EnumValues )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
                 }
@@ -272,7 +313,7 @@ namespace Rock.Field.Types
             cbList.AddCssClass( "js-filter-control" );
             cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-            foreach ( var keyVal in EnumValues )
+            foreach ( var keyVal in _EnumValues )
             {
                 cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
             }
@@ -377,7 +418,7 @@ namespace Rock.Field.Types
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
-            return AddQuotes( EnumValues
+            return AddQuotes( _EnumValues
                 .Where( v => selectedValues.Contains( v.Key ) )
                 .Select( v => v.Value )
                 .ToList()
@@ -466,6 +507,42 @@ namespace Rock.Field.Types
             }
 
             return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Get a serialized representation of a value for this field type.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string GetSerializedValue( T value )
+        {
+            return ( ( int ) ( object ) value ).ToString();
+        }
+
+        /// <summary>
+        /// Get a value for this field type from a serialized representation, or return the specified default value.
+        /// </summary>
+        /// <param name="serialized"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public T GetDeserializedValue( string serialized, T defaultValue )
+        {
+            T enumValue;
+
+            var isValid = Enum.TryParse( serialized, out enumValue );
+
+            if ( isValid )
+            {
+                return enumValue;
+            }
+            else
+            {
+                return defaultValue;
+            }
         }
 
         #endregion

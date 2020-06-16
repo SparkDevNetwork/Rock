@@ -1,6 +1,6 @@
 {%- if ccid != empty -%}
 [
-    {% contentchannelitem dataview:'3552' where:'ContentChannelId == {{ ccid }}' sort:'StartDateTime desc' iterator:'items' -%}
+    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status != 3' limit:'10000' sort:'StartDateTime desc' iterator:'items' -%}
       {%- for item in items -%}
         {%- assign itemsManuallyOrdered = item.ContentChannel.ItemsManuallyOrdered -%}
         {%- assign childItemsManuallyOrdered = item.ContentChannel.ChildItemsManuallyOrdered -%}
@@ -54,95 +54,18 @@
           AND av.AttributeId = 86072
           AND av2.AttributeId IN (86070,86071)
         {%- endsql -%}
+
         {%- if childchannelid and childchannelid != empty -%}
-          {%- sql return:'children' -%}
-            SELECT
-              ROW_NUMBER() OVER (ORDER BY ccia.[Order]) 'Index',
-              cci.Id,
-              cci.ContentChannelId 'ChannelId',
-              cci.StartDateTime 'PublishDateTime',
-              cci.ExpireDateTime 'ExpireDateTime',
-              ccis.Slug,
-              pd.AccessKey 'Dataset'
-            FROM ContentChannelItemAssociation ccia
-            JOIN ContentChannelItem cci
-            ON ccia.ChildContentChannelItemId = cci.Id
-            JOIN ContentChannelItemSlug ccis
-            ON ccis.ContentChannelItemId = cci.Id
-            JOIN AttributeValue av
-            ON av.EntityId = cci.ContentChannelId
-            JOIN PersistedDataset pd
-            ON pd.Id = av.Value
-            WHERE ccia.ContentChannelItemId = {{ item.Id }}
-            AND cci.ContentChannelId = {{ childchannelid }}
-            AND av.AttributeId = 105665
-            {% if childItemsManuallyOrdered == 'true' %}
-              ORDER BY ccia.[Order]
-            {% else %}
-              ORDER BY cci.StartDateTime
-            {% endif %}
-          {%- endsql -%}
+          {% assign childchannelid = childchannelid | AsInteger %}
+          {% assign children = 'content_children' | PersistedDataset | Where:'Id', item.Id | Select:'Children' | First | Where:'ChannelId', childchannelid %}
         {%- endif -%}
+
         {%- if parentchannelid and parentchannelid != empty -%}
-          {%- sql return:'parents' -%}
-            SELECT
-              ROW_NUMBER() OVER (ORDER BY ccia.[Order]) 'Index',
-              cci.Id,
-              cci.ContentChannelId 'ChannelId',
-              cci.StartDateTime 'PublishDateTime',
-              cci.ExpireDateTime 'ExpireDateTime',
-              ccis.Slug,
-              pd.AccessKey 'Dataset'
-            FROM ContentChannelItemAssociation ccia
-            JOIN ContentChannelItem cci
-            ON ccia.ContentChannelItemId = cci.Id
-            JOIN ContentChannelItemSlug ccis
-            ON ccis.ContentChannelItemId = cci.Id
-            JOIN AttributeValue av
-            ON av.EntityId = cci.ContentChannelId
-            JOIN PersistedDataset pd
-            ON pd.Id = av.Value
-            WHERE ccia.ChildContentChannelItemId = {{ item.Id }}
-            AND cci.ContentChannelId = {{ parentchannelid }}
-            AND av.AttributeId = 105665
-            ORDER BY ccia.[Order]
-          {%- endsql -%}
+          {% assign parentchannelid = parentchannelid | AsInteger %}
+          {% assign parents = 'content_parents' | PersistedDataset | Where:'Id', item.Id | Select:'Parents' | First | Where:'ChannelId', parentchannelid %}
         {%- endif -%}
-        {%- sql return:'related_items' -%}
-          SELECT TOP 9
-              ROW_NUMBER() OVER (ORDER BY COUNT(*) desc, cci2.ModifiedDateTime desc) 'Index',
-              cci2.Id,
-              cci2.ContentChannelId 'ChannelId',
-              cci2.StartDateTime 'PublishDateTime',
-              cci2.ExpireDateTime,
-              (
-                  SELECT Slug
-                  FROM ContentChannelItemSlug ccis
-                  WHERE ccis.ContentChannelItemId = cci2.Id
-              ) 'Slug',
-              (
-                  SELECT pd.AccessKey
-                  FROM AttributeValue av
-                  JOIN PersistedDataset pd
-                  ON av.Value = pd.Id
-                  WHERE av.EntityId = cci2.ContentChannelId
-                  AND av.AttributeId = 105665
-              ) 'Dataset'
-          FROM ContentChannelItem cci
-          JOIN TaggedItem ti
-          ON ti.EntityGuid = convert(nvarchar(50), cci.Guid)
-          JOIN TaggedItem ti2
-          ON ti.TagId = ti2.TagId
-          JOIN ContentChannelItem cci2
-          ON ti2.EntityGuid = convert(nvarchar(50), cci2.Guid)
-          WHERE cci.Id = {{ item.Id }}
-          AND cci2.Id != {{ item.Id }}
-          AND cci2.Status = 2
-          AND cci2.StartDateTime <= GETDATE()
-          AND (cci2.ExpireDateTime is NULL OR cci2.ExpireDateTime > GETDATE())
-          GROUP BY cci2.Id, cci2.ModifiedDateTime, cci2.StartDateTime, cci2.ExpireDateTime, cci2.ContentChannelId
-          ORDER BY COUNT(*) desc, cci2.ModifiedDateTime desc
-        {%- endsql -%}
+
+        {% assign related_items = 'content_related' | PersistedDataset | Where:'Id', item.Id | Select:'Related' | First %}
         {%- assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Trim -%}
         {%- assign video = item | Attribute:'Video','RawValue' -%}
         {%- capture itemVideoImageLandscape -%}{[ getImageFromVideoId id:'{{ item | Attribute:"Video","RawValue" }}' resolution:'2000x1000' ]}{%- endcapture -%}
@@ -161,8 +84,15 @@
           {%- endif -%}
         {%- endcapture -%}{
         "Id": {{ item.Id }},
-        "Dataset": {{ dataset | ToJSON }},
+        "Title": {{ item.Title | Replace:"'","’" | ToJSON }},
+        "Slug": {{ item.PrimarySlug | ToJSON }},
         "Guid": {{ item.Guid | ToJSON }},
+        "Status": {{ item.Status | ToJSON }},
+        "Permalink": {{ permalink | Trim | ToJSON }},
+        "PublishDateTime": {{ item.StartDateTime | ToJSON }},
+        "ExpireDateTime": {{ item.ExpireDateTime | ToJSON }},
+        "ModifiedDateTime": {{ item.ModifiedDateTime | ToJSON }},
+        "Dataset": {{ dataset | ToJSON }},
         "ChannelId": {{ item.ContentChannel.Id }},
         "ChannelName": {{ item.ContentChannel.Name | ToJSON }},
         "ContentType": {% if category and category != empty -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | ToJSON }}{%- endif -%},
@@ -176,21 +106,14 @@
         "IsDateVisible": {{ item.ContentChannel | Attribute:'IsDateVisible' | ToJSON }},
         "InteractionChannelId": {{ interactionData | First | Property:'InteractionChannelId' | ToJSON }},
         "InteractionComponentId": {{ interactionData | First | Property:'InteractionComponentId' | ToJSON }},
-        "Title": {{ item.Title | Replace:"'","’" | ToJSON }},
-        "Slug": {{ item.PrimarySlug | ToJSON }},
-        "Status": {{ item.Status | ToJSON }},
-        "Permalink": {{ permalink | Trim | ToJSON }},
-        "PublishDateTime": {{ item.StartDateTime | ToJSON }},
-        "ExpireDateTime": {{ item.ExpireDateTime | ToJSON }},
-        "ModifiedDateTime": {{ item.ModifiedDateTime | ToJSON }},
         "Category": {{ category | ToJSON }},
         "Content": {{ item.Content | Replace:"'","’" | Escape | ToJSON }},
         "Departments": {{ item | Attribute:'Department' | ToJSON }},
-        "Subtitle": {{ item | Attribute:'Subtitle' | ToJSON }},
+        "Subtitle": {{ item | Attribute:'Subtitle' | Replace:"'","’" | ToJSON }},
         "Summary": {{ item | Attribute:'Summary' | Replace:"'","’" | Escape | ToJSON }},
         "Video": {{ video | ToJSON }},
-        "MetaTitle": {{ item | Attribute:'MetaTitle' | ToJSON }},
-        "MetaDescription": {{ item | Attribute:'MetaDescription' | ToJSON }},
+        "MetaTitle": {{ item | Attribute:'MetaTitle' | Replace:"'","’" | ToJSON }},
+        "MetaDescription": {{ item | Attribute:'MetaDescription' | Replace:"'","’" | ToJSON }},
         "StartDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'0' | WithFallback:'', null | ToJSON }},
         "EndDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'1' | ToJSON }},
         "ImageLandscape": {{ imageLandscape | StripNewlines | Trim | ToJSON }},

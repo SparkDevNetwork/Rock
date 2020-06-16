@@ -20,7 +20,6 @@
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <fieldset>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
@@ -77,6 +76,13 @@
                     <div class="panel-body">
 
                         <fieldset>
+                            <div class="text-right">
+                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlRunSince" /><Rock:BootstrapButton CssClass="label btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
+
+                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                            </div>
 
                             <div class="description">
                                 <asp:Literal ID="lDescription" runat="server"></asp:Literal>

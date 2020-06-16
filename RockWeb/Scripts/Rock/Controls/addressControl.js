@@ -12,29 +12,25 @@
             },
             clientValidate: function (validator, args) {
                 var $addressControl = $(validator).closest('.js-addressControl');
-                var street1 = $addressControl.find('.js-street1').val();
-                var city = $addressControl.find('.js-city').val();
-                var state = $addressControl.find('.js-state').val();
-
-                var required = $addressControl.attr('data-required') == 'true';
-                var itemLabelText = $addressControl.attr('data-itemlabel');
-
+                var $addressFieldControls = $addressControl.find('.js-address-field.required');
+                var addressControlLabelText = $addressControl.attr('data-itemlabel');
                 var isValid = true;
+                var invalidFieldList = [];
 
-                if (required) {
-                    // if required, then make sure that the date range has a start and/or end date (can't both be blank)
-                    if (street1.length == 0 || city.length == 0 || state.length == 0) {
-                        isValid = false;
-                        validator.errormessage = itemLabelText + ' is required';
+                $addressFieldControls.each(function (index, fieldControl) {
+                    var $fieldControl = $(fieldControl);
+                    if (typeof fieldControl == 'undefined' || $fieldControl.val().length > 0) {
+                        $fieldControl.parent('div.form-group').removeClass('has-error');
                     }
-                }
+                    else {
+                        $fieldControl.parent('div.form-group').addClass('has-error');
+                        invalidFieldList.push($fieldControl.attr('field-name'));
+                        isValid = false;
+                    }
+                });
 
-                var control = $addressControl;
-                if (isValid) {
-                    control.removeClass('has-error');
-                }
-                else {
-                    control.addClass('has-error');
+                if (!isValid) {
+                    validator.errormessage = addressControlLabelText + " field is required: " + invalidFieldList.join(", ");
                 }
 
                 args.IsValid = isValid;

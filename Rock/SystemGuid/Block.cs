@@ -75,5 +75,10 @@ namespace Rock.SystemGuid
         /// The log viewer
         /// </summary>
         public const string LOG_VIEWER = "BDEF9AA0-55FC-4A66-8938-2AB2E075521B";
+
+        /// <summary>
+        /// The phone number lookup
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP = "86BFD8F5-C55C-417C-B625-69AB84296637";        
     }
 }

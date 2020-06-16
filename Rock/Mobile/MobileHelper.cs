@@ -69,7 +69,7 @@ namespace Rock.Mobile
             //
             if ( validateApiKey )
             {
-                var appApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
+                var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
                 //
@@ -81,9 +81,11 @@ namespace Rock.Mobile
                 }
 
                 rockContext = rockContext ?? new Data.RockContext();
-                var userLogin = new UserLoginService( rockContext ).GetByApiKey( appApiKey ).FirstOrDefault();
 
-                if ( userLogin != null && userLogin.Id == additionalSettings.ApiKeyId )
+                // Get user login for the app and verify that it matches the request's key
+                var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
+
+                if ( appUserLogin != null && appUserLogin.ApiKey == requestApiKey )
                 {
                     return site;
                 }
@@ -256,6 +258,29 @@ namespace Rock.Mobile
                 .ToList();
 
             //
+            // Get all the defined values.
+            //
+            var definedTypeGuids = new[]
+            {
+                SystemGuid.DefinedType.LOCATION_COUNTRIES,
+                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE
+            };
+            var definedValues = new List<MobileDefinedValue>();
+            foreach ( var definedTypeGuid in definedTypeGuids )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeGuid );
+                definedValues.AddRange( definedType.DefinedValues
+                    .Select( a => new MobileDefinedValue
+                    {
+                        Guid = a.Guid,
+                        DefinedTypeGuid = a.DefinedType.Guid,
+                        Value = a.Value,
+                        Description = a.Description,
+                        Attributes = GetMobileAttributeValues( a, a.Attributes.Select( b => b.Value ) )
+                    } ) );
+            }
+
+            //
             // Build CSS Styles
             //
             var settings = additionalSettings.DownhillSettings;
@@ -279,6 +304,7 @@ namespace Rock.Mobile
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
+                DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
@@ -547,7 +573,7 @@ namespace Rock.Mobile
 
             if ( includeHeader )
             {
-                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"heading1\" />" );
+                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"h1\" />" );
                 sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
             }
 

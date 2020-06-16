@@ -170,6 +170,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+        private const string LAST_FORM_INDEX_KEY = "LastFormIndexKey";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
         private const string AUTO_APPLIED_DISCOUNT = "AutoAppliedDiscount";
@@ -298,6 +299,14 @@ namespace RockWeb.Blocks.Event
         /// The index of the current form.
         /// </value>
         private int CurrentFormIndex { get; set; }
+
+        /// <summary>
+        /// Used to keep track of the last form when clicking back from the Summary panel. This is needed because CurrentFormIndex gets set to 0 when there are no more forms.
+        /// </summary>
+        /// <value>
+        /// The last index of the form.
+        /// </value>
+        private int LastFormIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the step2 i frame URL.
@@ -675,6 +684,7 @@ namespace RockWeb.Blocks.Event
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
+            LastFormIndex = ViewState[LAST_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
             defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
             autoAppliedDiscount = ViewState[DEFAULT_PAYMENT_KEY] as bool? ?? false;
@@ -882,6 +892,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_PANEL_KEY] = CurrentPanel;
             ViewState[CURRENT_REGISTRANT_INDEX_KEY] = CurrentRegistrantIndex;
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
+            ViewState[LAST_FORM_INDEX_KEY] = LastFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
             ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
             ViewState[AUTO_APPLIED_DISCOUNT] = autoAppliedDiscount;
@@ -1318,7 +1329,17 @@ namespace RockWeb.Blocks.Event
             {
                 _saveNavigationHistory = true;
 
-                ShowRegistrationAttributesEnd( false );
+                if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+                {
+                    ShowRegistrationAttributesEnd( false );
+                }
+                else
+                {
+                    // Show the last registrant
+                    CurrentRegistrantIndex = RegistrationState.RegistrantCount - 1;
+                    CurrentFormIndex = LastFormIndex;
+                    ShowRegistrant( false, false );
+                }
             }
             else
             {
@@ -1465,6 +1486,7 @@ namespace RockWeb.Blocks.Event
         protected void ddlFamilyMembers_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetRegistrantFields( ddlFamilyMembers.SelectedValueAsInt() );
+            CreateRegistrantControls( true );
 
             decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
@@ -2670,6 +2692,11 @@ namespace RockWeb.Blocks.Event
                                 registrant.PersonAliasId = null;
                             }
                         }
+                        else if ( registrantInfo.PersonId.HasValue )
+                        {
+                            // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
+                            person = personService.Get( registrantInfo.PersonId.Value );
+                        }
                     }
                     else
                     {
@@ -3060,7 +3087,9 @@ namespace RockWeb.Blocks.Event
                     // Save the signed document
                     try
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue &&
+                            !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) &&
+                            registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
                         {
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
@@ -3075,6 +3104,8 @@ namespace RockWeb.Blocks.Event
                             documentService.Add( document );
                             rockContext.SaveChanges();
 
+                            registrantInfo.SignatureDocumentId = document.Id;
+
                             var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
                         }
@@ -3083,6 +3114,8 @@ namespace RockWeb.Blocks.Event
                     {
                         ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                     }
+
+                    registrantInfo.PersonId = person.Id;
                 }
 
                 rockContext.SaveChanges();
@@ -3385,6 +3418,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
+            if ( txtCreditCard.Text == "0000000000000000000" )
+            {
+                errorMessage = "No soup for you!";
+                return false;
+            }
+
             GatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
@@ -3875,6 +3914,7 @@ namespace RockWeb.Blocks.Event
                         if ( ( CurrentFormIndex >= FormCount && !SignInline ) || CurrentFormIndex >= FormCount + 1 )
                         {
                             CurrentRegistrantIndex++;
+                            LastFormIndex = CurrentFormIndex - 1;
                             CurrentFormIndex = 0;
                         }
                     }
@@ -3956,6 +3996,58 @@ namespace RockWeb.Blocks.Event
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Shows the family members panel if it should be shown. This should only be called by SetPanel()
+        /// </summary>
+        /// <returns></returns>
+        private void ShowFamilyMembersPanel()
+        {
+            // Hide the panel by default
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "none";
+
+            // Are we on the right panel and showing the info?
+            if ( pnlRegistrantFields.Visible == false )
+            {
+                return;
+            }
+
+            // Is the template loaded?
+            if ( RegistrationTemplate == null )
+            {
+                return;
+            }
+
+            // Are we supposed to show it ever?
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
+            {
+                return;
+            }
+
+            // Are there family members to choose from?
+            if ( ddlFamilyMembers.Items.Count == 0 )
+            {
+                return;
+            }
+
+            // Don't show if RegistrantsSameFamily is ask and there is no same family selection
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
+            {
+                if ( rblFamilyOptions.SelectedItem == null )
+                {
+                    return;
+                }
+
+                if ( rblFamilyOptions.SelectedItem.Text == "None of the above" )
+                {
+                    return;
+                }
+            }
+
+            // Show the pnlFamilyMembers panel if none of the above hide conditions are met.
+            // The RegistrantsSameFamily is yes or is ask and rboFamilyOptions has a valid selection
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "block";
         }
 
         /// <summary>
@@ -4075,7 +4167,6 @@ namespace RockWeb.Blocks.Event
 
                                 if ( familyMembers.Any() )
                                 {
-                                    ddlFamilyMembers.Visible = true;
                                     ddlFamilyMembers.Items.Add( new ListItem() );
 
                                     foreach ( var familyMember in familyMembers )
@@ -4087,8 +4178,6 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
                         }
-
-                        pnlFamilyMembers.Visible = ddlFamilyMembers.Items.Count > 0;
                     }
 
                     SetPanel( PanelIndex.PanelRegistrant );
@@ -4299,6 +4388,8 @@ namespace RockWeb.Blocks.Event
 
             lSummaryAndPaymentTitle.Text = ( CurrentPanel == PanelIndex.PanelSummary && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
             lPaymentInfoTitle.Text = CurrentPanel == PanelIndex.PanelSummary ? "<h4>Payment Method</h4>" : string.Empty;
+
+            ShowFamilyMembersPanel();
         }
 
         /// <summary>
@@ -4572,7 +4663,7 @@ namespace RockWeb.Blocks.Event
                 // so that current registrant can use the first registrant's value
                 RegistrantInfo registrant = null;
                 RegistrantInfo firstRegistrant = null;
-                var preselectCurrentPerson = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
+                //var preselectCurrentPerson = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
 
                 if ( RegistrationState != null && RegistrationState.RegistrantCount >= CurrentRegistrantIndex )
                 {
@@ -4647,7 +4738,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( AttributeKey.ShowFieldDescriptions ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( AttributeKey.ShowFieldDescriptions ).AsBoolean(), BlockValidationGroup, phRegistrantControls, DynamicControlPostbackMethod );
                     }
                 }
 
@@ -4672,6 +4763,18 @@ namespace RockWeb.Blocks.Event
             }
 
             divFees.Visible = phFees.Controls.Count > 0;
+        }
+
+        /// <summary>
+        /// Method to run for the dynamic control FieldVisibility.EditValueUpdated event.
+        /// This is to recreate the controls for filter conditions, so it is not used by
+        /// PersonFields.
+        /// </summary>
+        private void DynamicControlPostbackMethod()
+        {
+            CreateRegistrantControls( true );
+            ParseDynamicControls();
+            ShowFamilyMembersPanel();
         }
 
         /// <summary>
@@ -4735,7 +4838,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl, Action postbackMethod )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4760,7 +4863,9 @@ namespace RockWeb.Blocks.Event
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                    postbackMethod.Invoke();
                 };
+
 
                 parentControl.Controls.Add( fieldVisibilityWrapper );
 
@@ -4814,6 +4919,7 @@ namespace RockWeb.Blocks.Event
                     .OrderBy( f => f.Order ) )
                 {
                     object value = null;
+                    bool updateField = true;
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
@@ -4821,16 +4927,19 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        value = ParseAttributeField( field );
+                        value = ParseAttributeField( field, out updateField );
                     }
 
-                    if ( value != null )
+                    if ( updateField )
                     {
-                        registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
-                    }
-                    else
-                    {
-                        registrant.FieldValues.Remove( field.Id );
+                        if ( value != null )
+                        {
+                            registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
+                        }
+                        else
+                        {
+                            registrant.FieldValues.Remove( field.Id );
+                        }
                     }
                 }
 
@@ -4961,8 +5070,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object ParseAttributeField( RegistrationTemplateFormField field )
+        private object ParseAttributeField( RegistrationTemplateFormField field, out bool updateField )
         {
+            updateField = true;
+
             if ( field.AttributeId.HasValue )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
@@ -4971,7 +5082,15 @@ namespace RockWeb.Blocks.Event
                 Control control = phRegistrantControls.FindControl( fieldId );
                 if ( control != null )
                 {
-                    return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    if ( control.Visible )
+                    {
+                        return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    }
+
+                    // If the control is not visible we don't want to clear out the value.
+                    // So set updateField to false so the value is not set to null or empty
+                    updateField = false;
+                    return null;
                 }
             }
 
@@ -5036,8 +5155,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-
-            CreateRegistrantControls( true );
         }
 
         #endregion
@@ -5674,6 +5791,13 @@ namespace RockWeb.Blocks.Event
                     .Where( d => d.AutoApplyDiscount )
                     .OrderBy( d => d.Order )
                     .ToList();
+
+            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() )
+            {
+                // If we have a discount code already use it. This can happen if an exception during credit processing clears out the registration.
+                // In those cases we want to use the code already entered instead of auto applying one.
+                return false;
+            }
 
             foreach ( var discount in discounts )
             {

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -51,7 +52,13 @@ namespace Rock.Web.Cache
 
         #region Static Fields
 
-        private static ConcurrentDictionary<string, int> _interactionComponentLookup = new ConcurrentDictionary<string, int>();
+        private static ConcurrentDictionary<string, int> _interactionComponentLookupComponentIdByEntityId = new ConcurrentDictionary<string, int>();
+
+        #endregion
+
+        #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _interactionComponentIdLookupFromForeignKey = new ConcurrentDictionary<string, int>();
 
         #endregion
 
@@ -120,14 +127,23 @@ namespace Rock.Web.Cache
 
             var interactionComponent = entity as InteractionComponent;
             if ( interactionComponent == null )
+            {
                 return;
+            }
 
             Name = interactionComponent.Name;
             EntityId = interactionComponent.EntityId;
             InteractionChannelId = interactionComponent.InteractionChannelId;
-            var lookupKey = $"{InteractionChannelId}|{EntityId}";
+            var lookupKeyComponentIdByEntityId = $"{InteractionChannelId}|{EntityId}";
 
-            _interactionComponentLookup.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+            _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKeyComponentIdByEntityId, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+
+            if ( interactionComponent.ForeignKey.IsNotNullOrWhiteSpace() )
+            {
+
+                var lookupKeyFromForeignKey = $"{interactionComponent.ForeignKey}|interactionChannelId:{interactionComponent.InteractionChannelId}";
+                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKeyFromForeignKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+            }
         }
 
         /// <summary>
@@ -170,7 +186,7 @@ namespace Rock.Web.Cache
         {
             var lookupKey = $"{interactionChannelId}|{componentEntityId}";
 
-            if ( _interactionComponentLookup.TryGetValue( lookupKey, out int componentId ) )
+            if ( _interactionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
             {
                 return componentId;
             }
@@ -186,10 +202,57 @@ namespace Rock.Web.Cache
                 if ( interactionComponent != null )
                 {
                     interactionComponentId = Get( interactionComponent ).Id;
-                    _interactionComponentLookup.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
+                    _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
                 }
 
                 return interactionComponentId.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the component identifier by foreign key and ChannelId, and creates it if it doesn't exist.
+        /// If foreignKey is blank, this will throw a <seealso cref="ArgumentNullException" />
+        /// If creating a new InteractionComponent with this, componentName must be specified
+        /// </summary>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <param name="interactionChannelId">The interaction channel identifier.</param>
+        /// <param name="componentName">Name of the component.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetComponentIdByForeignKey</exception>
+        public static int GetComponentIdByForeignKeyAndChannelId( string foreignKey, int interactionChannelId, string componentName )
+        {
+            if ( foreignKey.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( "ForeignKey must be specified when using GetComponentIdByForeignKey" );
+            }
+
+            var lookupKey = $"{foreignKey}|interactionChannelId:{interactionChannelId}";
+
+            if ( _interactionComponentIdLookupFromForeignKey.TryGetValue( lookupKey, out int channelId ) )
+            {
+                return channelId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var interactionComponent = interactionComponentService.Queryable()
+                        .Where( a => a.ForeignKey == foreignKey && a.InteractionChannelId == interactionChannelId ).FirstOrDefault();
+
+                if ( interactionComponent == null )
+                {
+                    interactionComponent = new InteractionComponent();
+                    interactionComponent.Name = componentName;
+                    interactionComponent.ForeignKey = foreignKey;
+                    interactionComponent.InteractionChannelId = interactionChannelId;
+                    interactionComponentService.Add( interactionComponent );
+                    rockContext.SaveChanges();
+                }
+
+                var interactionComponentId = Get( interactionComponent ).Id;
+                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKey, interactionComponentId, ( k, v ) => interactionComponentId );
+
+                return interactionComponentId;
             }
         }
 

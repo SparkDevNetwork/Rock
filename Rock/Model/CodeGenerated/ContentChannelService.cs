@@ -51,10 +51,6 @@ namespace Rock.Model
         public bool CanDelete( ContentChannel item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring ContentChannelAssociation,ChildContentChannelId 
-            
-            // ignoring ContentChannelAssociation,ContentChannelId 
  
             if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
             {

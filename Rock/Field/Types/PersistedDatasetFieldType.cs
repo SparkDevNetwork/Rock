@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -107,6 +108,33 @@ namespace Rock.Field.Types
             }
 
             return ddlPersistedDataset;
+        }
+
+        /// <summary>
+        /// Gets the edit value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var ddlPersistedDataset = control as RockDropDownList;
+            return ddlPersistedDataset?.SelectedValue;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var ddlPersistedDataset = control as RockDropDownList;
+            if ( ddlPersistedDataset != null )
+            {
+                ddlPersistedDataset.SetValue( value );
+            }
         }
 
         /// <summary>

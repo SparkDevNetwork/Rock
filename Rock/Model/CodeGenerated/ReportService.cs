@@ -100,7 +100,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.QueryHint = source.QueryHint;
             target.RunCount = source.RunCount;
-            target.TimeToRunMS = source.TimeToRunMS;
+            target.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

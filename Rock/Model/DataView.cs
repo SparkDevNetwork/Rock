@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics;
 using System.Linq;
@@ -148,7 +150,7 @@ namespace Rock.Model
         /// The persisted last run duration in mulliseconds.
         /// </value>
         [DataMember]
-        public int? PersistedLastRunDuration { get; set; }
+        public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Gets or sets the last run date time.
@@ -175,8 +177,16 @@ namespace Rock.Model
         /// The time to run in ms.
         /// </value>
         [DataMember]
-        public double? TimeToRunMS { get; set; }
+        public double? TimeToRunDurationMilliseconds { get; set; }
 
+        /// <summary>
+        /// Gets or sets the datetime that the Run Count was last reset to 0.
+        /// </summary>
+        /// <value>
+        /// The run count last refresh date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RunCountLastRefreshDateTime { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -633,6 +643,43 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State != EntityState.Deleted )
+            {
+                if ( DataViewFilter != null )
+                {
+                    DataViewFilter.DataView = this;
+                    SetDataViewOnChildFilters( DataViewFilter.ChildFilters, this );
+                }
+            }
+
+            if ( entry.State == EntityState.Added )
+            {
+                RunCountLastRefreshDateTime = RockDateTime.Now;
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        private void SetDataViewOnChildFilters( ICollection<DataViewFilter> dataViewFilters, DataView dataView )
+        {
+            if ( dataViewFilters == null )
+            {
+                return;
+            }
+
+            foreach ( var filter in dataViewFilters )
+            {
+                filter.DataView = dataView;
+                SetDataViewOnChildFilters( filter.ChildFilters, dataView );
+            }
+        }
         #endregion
 
     }

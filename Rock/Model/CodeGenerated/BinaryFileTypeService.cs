@@ -112,7 +112,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFileType target, BinaryFileType source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.AllowCaching = source.AllowCaching;
+            #pragma warning restore 612, 618
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
+            target.CacheToServerFileSystem = source.CacheToServerFileSystem;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

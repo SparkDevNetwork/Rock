@@ -563,6 +563,7 @@ namespace Rock.Reporting
             {
                 filter.EntityTypeId = EntityTypeCache.Get( filterField.FilterEntityTypeName ).Id;
                 filter.Selection = filterField.GetSelection();
+                filter.RelatedDataViewId = filterField.GetRelatedDataViewId();
             }
 
             return filter;

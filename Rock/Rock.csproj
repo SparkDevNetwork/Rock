@@ -231,8 +231,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.7\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
@@ -304,8 +304,8 @@
     <Reference Include="Twilio, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Twilio.5.1.0\lib\net451\Twilio.dll</HintPath>
     </Reference>
-    <Reference Include="UAParser, Version=2.1.0.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
-      <HintPath>..\packages\UAParser.2.1.0.0\lib\net40-Client\UAParser.dll</HintPath>
+    <Reference Include="UAParser, Version=3.1.44.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
+      <HintPath>..\packages\UAParser.3.1.44\lib\net45\UAParser.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
@@ -469,7 +469,9 @@
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\StructuredContentView.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
@@ -481,27 +483,50 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSession.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
+    <Compile Include="Bulk\BulkImport\InteractionsImport.cs" />
+    <Compile Include="Bulk\BulkImport\InteractionImport.cs" />
+    <Compile Include="Communication\Transport\EmailSendResponse.cs" />
+    <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\SafeSenderResult.cs" />
+    <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
+    <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
     <Compile Include="Jobs\SendMessageResults.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
+    <Compile Include="Lava\LavaFileSystem.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
+    <Compile Include="Model\AttendanceCheckInSession.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Utility\RockSerializableList.cs" />
+    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Model\IdentityVerification.cs" />
+    <Compile Include="Model\IdentityVerificationCode.cs" />
+    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
+    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
+    <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
     <Compile Include="Plugin\HotFixes\116_MigrationRollupsFor10_3_4.cs" />
     <Compile Include="Plugin\HotFixes\115_RegistrationLinkage.cs" />
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
+    <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
     <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
@@ -512,17 +537,31 @@
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\127_MigrationRollupsFor10_4_0.cs" />
+    <Compile Include="Plugin\HotFixes\126_MigrationRollupsFor10_3_7.cs" />
+    <Compile Include="Plugin\HotFixes\125_MobileTemplateUpdatesPostAlpha.cs" />
+    <Compile Include="Plugin\HotFixes\123_MigrationRollupsFor10_3_6.cs" />
+    <Compile Include="Plugin\HotFixes\122_FixContentChannelItemChildItemsOrder.cs" />
+    <Compile Include="Plugin\HotFixes\121_MigrationRollupsFor10_3_5.cs" />
+    <Compile Include="Plugin\HotFixes\120_StructuredContentTools.cs" />
+    <Compile Include="Plugin\HotFixes\119_AddMobileGroupMemberListBlockTemplate.cs" />
+    <Compile Include="Plugin\HotFixes\124_AddGroupAttendanceDigestSystemCommunication.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
+    <Compile Include="Utility\Enums\RockCacheablityType.cs" />
+    <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Utility\Enums\IntervalTimeUnit.cs" />
+    <Compile Include="Utility\RockCacheability.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfig.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfigurationService.cs" />
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
+    <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
@@ -530,7 +569,9 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
+    <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -541,6 +582,7 @@
     <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\DataEntryRequirementLevelFieldType.cs" />
     <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
@@ -623,6 +665,7 @@
     <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="SystemGuid\SystemCommunication.cs" />
+    <Compile Include="SystemKey\CountryAttributeKey.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
     <Compile Include="Transactions\RunDataViewTransaction.cs" />
@@ -654,7 +697,6 @@
     <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
@@ -982,7 +1024,7 @@
     <Compile Include="Communication\RockMessage.cs" />
     <Compile Include="Communication\RockPushMessage.cs" />
     <Compile Include="Communication\RockSMSMessage.cs" />
-    <Compile Include="Communication\SMTPComponent.cs" />
+    <Compile Include="Communication\Transport\SMTPComponent.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\Firebase.cs" />
@@ -2633,6 +2675,7 @@
     <Compile Include="Workflow\Action\Groups\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
+    <Compile Include="Workflow\Action\People\AddPersonToFamily.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
@@ -2708,9 +2751,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt" />
-    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy_UpdateCheckInMergefieldDebugInfo.sql">
-      <DependentUpon>040_BusinessTransactionDetailLinks.cs</DependentUpon>
-    </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
     </Content>
@@ -2807,11 +2847,6 @@
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
     </Content>
-    <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
-    <Content Include="Scripts\jquery-1.12.4.js" />
-    <Content Include="Scripts\jquery-1.12.4.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
@@ -2827,7 +2862,6 @@
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".editorconfig" />
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
@@ -2922,7 +2956,7 @@ if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionD
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
