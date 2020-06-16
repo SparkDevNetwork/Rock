@@ -28,7 +28,7 @@ namespace Rock.Model
     public partial class FinancialPaymentDetailService
     {
         /// <summary>
-        /// Determines whether this instance can delete the specified item, optionally ignoring those lined Entities that have already been marked for deletion within the <see cref="DbContext"/>.
+        /// Determines whether this instance can delete the specified item, optionally ignoring those Entities that have already been marked for deletion within the <see cref="DbContext"/>.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="errorMessage">The error message.</param>
