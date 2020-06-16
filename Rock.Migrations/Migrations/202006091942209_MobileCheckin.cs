@@ -127,7 +127,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "FA4D15E6-4C85-4247-A374-5E592E711CFD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Location Progress <span class='tip tip-lava'></span>", "LocationProgress", "Location Progress <span class='tip tip-lava'></span>", @"", 4, @"Determining location...", "90D92D89-D470-4294-9E04-3EABC6E36AD6" );
 
             // Attribute for BlockType: Mobile Check-in Launcher:Welcome Back <span class='tip tip-lava'></span>
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "FA4D15E6-4C85-4247-A374-5E592E711CFD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Welcome Back <span class='tip tip-lava'></span>", "WelcomeBackTemplate", "Welcome Back <span class='tip tip-lava'></span>", @"", 5, @"Hi {{ CurrentPerson.NickName }}! Great to see to see you back. Select the check-in button to get started.", "31522B57-67DE-45AE-9126-372E1487FD14" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "FA4D15E6-4C85-4247-A374-5E592E711CFD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Welcome Back <span class='tip tip-lava'></span>", "WelcomeBackTemplate", "Welcome Back <span class='tip tip-lava'></span>", @"", 5, @"Hi {{ CurrentPerson.NickName }}! Great to see you back. Select the check-in button to get started.", "31522B57-67DE-45AE-9126-372E1487FD14" );
 
             // Attribute for BlockType: Mobile Check-in Launcher:No Services <span class='tip tip-lava'></span>
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "FA4D15E6-4C85-4247-A374-5E592E711CFD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "No Services <span class='tip tip-lava'></span>", "NoScheduledDevicesAvailableTemplate", "No Services <span class='tip tip-lava'></span>", @"", 6, @"Hi {{ CurrentPerson.NickName }}! There are currently no services ready for check-in at this time.", "7851BD1B-6050-4F3A-8618-A12C0BCB9698" );
@@ -175,7 +175,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "41F3637D-8F1A-4B32-9A4C-A12868B0122A", "90D92D89-D470-4294-9E04-3EABC6E36AD6", @"Determining location..." );
 
             // Block Attribute Value for Mobile Check-in Launcher ( Page: Mobile Check-in Launcher, Site: Rock Check-in )
-            RockMigrationHelper.AddBlockAttributeValue( "41F3637D-8F1A-4B32-9A4C-A12868B0122A", "31522B57-67DE-45AE-9126-372E1487FD14", @"Hi {{ CurrentPerson.NickName }}! Great to see to see you back. Select the check-in button to get started." );
+            RockMigrationHelper.AddBlockAttributeValue( "41F3637D-8F1A-4B32-9A4C-A12868B0122A", "31522B57-67DE-45AE-9126-372E1487FD14", @"Hi {{ CurrentPerson.NickName }}! Great to see you back. Select the check-in button to get started." );
 
             // Block Attribute Value for Mobile Check-in Launcher ( Page: Mobile Check-in Launcher, Site: Rock Check-in )
             RockMigrationHelper.AddBlockAttributeValue( "41F3637D-8F1A-4B32-9A4C-A12868B0122A", "7851BD1B-6050-4F3A-8618-A12C0BCB9698", @"Hi {{ CurrentPerson.NickName }}! There are currently no services ready for check-in at this time." );
