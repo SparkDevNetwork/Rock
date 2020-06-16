@@ -625,8 +625,9 @@ namespace RockWeb.Blocks.CheckIn
                         var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl();
                         if ( qrCodeImageUrl.IsNotNullOrWhiteSpace() )
                         {
-                            lCheckinQRCodeHtml.Text = string.Format( "<div class='qr-code-container text-center mt-3'><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code'></div>", qrCodeImageUrl );
+                            lCheckinQRCodeHtml.Text = string.Format( "<div class='qr-code-container text-center mt-3'><h6 class='mb-1'>Scan Code For Labels</h6><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code'></div>", qrCodeImageUrl );
                             lCheckinQRCodeHtml.Visible = true;
+                            bbtnCheckin.Text = "Check-in Additional Individuals";
                         }
                         else
                         {
