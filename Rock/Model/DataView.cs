@@ -485,6 +485,8 @@ namespace Rock.Model
                 usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( this.Id );
             }
 
+            DataViewService.AddRunDataViewTransaction( Id );
+
             if ( usePersistedValues )
             {
                 // If this is a persisted dataview, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
