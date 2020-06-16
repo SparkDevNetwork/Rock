@@ -379,10 +379,6 @@ namespace Rock.Reporting
                     gReport.DataBind();
                     stopwatch.Stop();
 
-                    if ( report.DataViewId.HasValue )
-                    {
-                        DataViewService.AddRunDataViewTransaction( report.DataViewId.Value );
-                    }
                     ReportService.AddRunReportTransaction( report.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                 }
                 catch ( Exception ex )
