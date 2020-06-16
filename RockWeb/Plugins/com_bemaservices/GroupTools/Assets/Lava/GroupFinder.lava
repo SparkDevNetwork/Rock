@@ -2,7 +2,104 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
 <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
+{% page where:'Guid == "86D1DB87-021E-49F3-A547-1E096667DF63"'%}
+  {% for page in pageItems %}
+    {% assign linkedPage = page %}
+  {% endfor %}
+{% endpage %}
 
+{% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
+{% assign campusIds = campusIdString | Split:',' %}
+{% capture selectedCampuses %}
+  {% if campusIdString != '' %}
+    {% campus where:'IsActive == true' %}
+      {% for campus in campusItems %}
+        {% assign idString = campus.Id | ToString %}
+        {% for campusId in campusIds %}
+          {% if campusId == idString %}
+            {{campus | ToJSON }},
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endcampus %}
+  {% else %}
+    {% assign person = CurrentPerson %}
+    {% if person != null %}
+      {% assign campus = person | Campus %}
+      {% if campus != empty %}
+        {{ campus | ToJSON }},
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endcapture %}
+
+{% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString %}
+{% assign meetingDays = meetingDayString | Split:',' %}
+{% capture selectedMeetingDays %}
+  {% if meetingDayString != '' %}
+    {% for meetingDay in meetingDays %}
+      {% if meetingDay == '0' %}
+        { value:0, text:'Sunday'},
+      {% endif %}
+      {% if meetingDay == '1' %}
+        { value:1, text:'Monday'},
+      {% endif %}
+      {% if meetingDay == '2' %}
+        { value:2, text:'Tuesday'},
+      {% endif %}
+      {% if meetingDay == '3' %}
+        { value:3, text:'Wednesday'},
+      {% endif %}
+      {% if meetingDay == '4' %}
+        { value:4, text:'Thursday'},
+      {% endif %}
+      {% if meetingDay == '5' %}
+        { value:5, text:'Friday'},
+      {% endif %}
+      {% if meetingDay == '6' %}
+        { value:6, text:'Saturday'},
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+
+{% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
+{% assign categoryIds = categoryIdString | Split:',' %}
+{% capture selectedCategories %}
+  {% if categoryIdString != '' %}
+    {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+          {% assign idString = definedValue.Id | ToString %}
+          {% for categoryId in categoryIds %}
+            {% if categoryId == idString %}
+              {{definedValue | ToJSON }},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  {% endif %}
+{% endcapture %}
+
+{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRangeIds' | ToString %}
+{% assign ageRangeIds = ageRangeIdString | Split:',' %}
+{% capture selectedAgeRanges %}
+  {% if ageRangeIdString != '' %}
+    {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+          {% assign idString = definedValue.Id | ToString %}
+          {% for ageRangeId in ageRangeIds %}
+            {% if ageRangeId == idString %}
+              {{definedValue | ToJSON }},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  {% endif %}
+{% endcapture %}
 <style>
 .sg-card {
     position: relative;
@@ -27,7 +124,7 @@
     height: calc(100% + 2px);
 }
 .sg-card .sg-card-meta {
-    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     width: 88px;
     color: #fff;
     padding: 16px 0;
@@ -199,7 +296,7 @@
                 <div class="sg-card-info m-b-1" :style="'color:' + group.Color+';'">{{group.Category}}</div>
                 <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.AgeRange}}</div>
               </div>
-              <a class="more-info-text" :href="'/page/611?Group=' + group.Guid" target="_blank">More Info</a>
+              <a class="more-info-text" :href="'/page/{% endraw%}{{linkedPage.Id}}{% raw %}?Group=' + group.Guid" target="_blank">More Info</a>
             </div>
           </div>
         {% endraw %}
@@ -208,95 +305,6 @@
 </div>
 
 <script>
-{% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
-{% assign campusIds = campusIdString | Split:',' %}
-{% capture selectedCampuses %}
-  {% if campusIdString != '' %}
-    {% campus where:'IsActive == true' %}
-      {% for campus in campusItems %}
-        {% assign idString = campus.Id | ToString %}
-        {% for campusId in campusIds %}
-          {% if campusId == idString %}
-            {{campus | ToJSON }},
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    {% endcampus %}
-  {% else %}
-    {% assign campus = CurrentPerson | Campus %}
-    {{ campus | ToJSON }},
-  {% endif %}
-{% endcapture %}
-
-{% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString %}
-{% assign meetingDays = meetingDayString | Split:',' %}
-{% capture selectedMeetingDays %}
-  {% if meetingDayString != '' %}
-    {% for meetingDay in meetingDays %}
-      {% if meetingDay == '0' %}
-        { value:0, text:'Sunday'},
-      {% endif %}
-      {% if meetingDay == '1' %}
-        { value:1, text:'Monday'},
-      {% endif %}
-      {% if meetingDay == '2' %}
-        { value:2, text:'Tuesday'},
-      {% endif %}
-      {% if meetingDay == '3' %}
-        { value:3, text:'Wednesday'},
-      {% endif %}
-      {% if meetingDay == '4' %}
-        { value:4, text:'Thursday'},
-      {% endif %}
-      {% if meetingDay == '5' %}
-        { value:5, text:'Friday'},
-      {% endif %}
-      {% if meetingDay == '6' %}
-        { value:6, text:'Saturday'},
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-{% endcapture %}
-
-{% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
-{% assign categoryIds = categoryIdString | Split:',' %}
-{% capture selectedCategories %}
-  {% if categoryIdString != '' %}
-    {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
-      {% for definedtype in definedtypeItems %}
-        {% for definedValue in definedtype.DefinedValues %}
-          {% assign idString = definedValue.Id | ToString %}
-          {% for categoryId in categoryIds %}
-            {% if categoryId == idString %}
-              {{definedValue | ToJSON }},
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
-      {% endfor %}
-    {% enddefinedtype %}
-  {% endif %}
-{% endcapture %}
-
-{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRangeIds' | ToString %}
-{% assign ageRangeIds = ageRangeIdString | Split:',' %}
-{% capture selectedAgeRanges %}
-  {% if ageRangeIdString != '' %}
-    {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
-      {% for definedtype in definedtypeItems %}
-        {% for definedValue in definedtype.DefinedValues %}
-          {% assign idString = definedValue.Id | ToString %}
-          {% for ageRangeId in ageRangeIds %}
-            {% if ageRangeId == idString %}
-              {{definedValue | ToJSON }},
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
-      {% endfor %}
-    {% enddefinedtype %}
-  {% endif %}
-{% endcapture %}
-
-
 var app = new Vue({
   el: '#app',
   components: {
@@ -366,14 +374,22 @@ var app = new Vue({
     },
     getGroupCount() {
       var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds=25'+ this.getFilterParameters();
-      axios.get(url)
+      axios.get(url, {
+        headers:{
+          'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
+        }
+      })
         .then(response => {
         this.groupCount =  response.data;
       })
     },
     addGroups() {
       var url = '/api/com_bemaservices/GroupTools/GetGroups?GroupTypeIds=25&Limit=' + this.limit + '&Offset=' + this.groups.length + this.getFilterParameters();
-      axios.get(url)
+      axios.get(url, {
+        headers:{
+          'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
+        }
+      })
         .then(response => {
           response.data.forEach((value, index) => {
               this.groups.push(value);

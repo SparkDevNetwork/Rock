@@ -1,0 +1,106 @@
+﻿<style>
+.sg-group-details {
+    box-shadow: 0px 1px 2px rgba(0,0,0,0.24);
+    background-color: #fff;
+    border: 1px solid #f4f4f4;
+    padding-left: 15px;
+    padding-right: 15px;
+
+    margin-top: 20px;
+    border-radius: 6px;
+    margin-bottom: 40px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+ .sg-name {
+    font-weight: bold;
+    font-size: 23px;
+    line-height: 32px;
+    margin: 2rem 0px 0px 0px;
+}
+
+  .sg-campus {
+    font-size: 16px;
+    color: #777779;
+}
+
+  .sg-description {
+    line-height: 28px;
+    font-size: 18px;
+    color: #404041;
+    margin: 10px 0px 15px 0px;
+}
+
+  .sg-interested-text {
+    text-align: center;
+    font-size: 28px;
+
+    color: #428bca;
+    font-weight: bold;
+}
+
+  .sg-sub-head {
+    font-size: 14px;
+    text-align: center;
+    color: #8a8a8c;
+    margin-bottom: 30px;
+}
+
+.table>tbody>tr>td {
+    border-top: none;
+    font-size: 16px;
+    padding: 8px 0px !important;
+}
+
+.btn-primary {
+    color: #fff;
+    height: 48px;
+    border-radius: 30px !important;
+    width: 75%;
+    margin-left: 12.5%;
+    font-size: 18px !important;
+    letter-spacing: -0.225px;
+    padding: 10px 0 0 0 !important;
+    margin-top: 3rem;
+}
+</style>
+
+{% assign group = Workflow | Attribute:'Group','Object' %}
+
+<div class="sg-group-details">
+  <div class="sg-name"> {{group.Name}} </div>
+  <div class="sg-campus"> {{group.Campus.Name}} </div>
+  <div class="sg-description"> {{group.Description}} </div>
+  <table class="sg-table table table-borderless">
+    <tbody>
+      <tr>
+        <td style="width: 50%">
+          <strong>Ages</strong> <br>
+          {{group | Attribute:'AgeRange'}}
+        </td>
+        <td style="width: 50%">
+          <strong>Type</strong> <br>
+          {{group | Attribute:'Category'}}
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 50%">
+          <strong>Schedule</strong> <br>
+          {{group.Schedule.FriendlyScheduleText}}
+        </td>
+        <td style="width: 50%">
+          <strong>Leaders</strong>
+            {% for member in group.Members %}
+              {% if member.GroupRole.IsLeader %}
+                <br>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
+              {% endif %}
+            {% endfor %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p id="sg-header" class="sg-interested-text">Interested in this {{group.GroupType.Name}}?</p>
+<p class=" sg-sub-head">
+    We’ll let the {{group.GroupType.Name}} leader know so they can follow up with more details.
+</p>

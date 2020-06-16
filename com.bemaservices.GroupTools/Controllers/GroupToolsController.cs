@@ -74,21 +74,22 @@ namespace com.bemaservices.GroupTools.Controllers
             {
                 var groupInfo = new GroupInformation();
                 groupInfo.Id = group.Id;
+                groupInfo.Guid = group.Guid;
                 groupInfo.GroupTypeId = group.GroupTypeId;
                 groupInfo.CampusId = group.CampusId;
                 groupInfo.Campus = group.CampusId.HasValue ? group.Campus.Name : "";
                 groupInfo.Name = group.Name;
                 groupInfo.Description = group.Description;
+                groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
-                var ageRangeGuid = group.GetAttributeValue( "AgeRange" ).AsGuidOrNull();
-                if ( ageRangeGuid != null )
+                var ageRangeGuidList = group.GetAttributeValue( "AgeRange" ).SplitDelimitedValues().AsGuidList();
+                if ( ageRangeGuidList.Any() )
                 {
-                    var ageRange = new DefinedValueService( new RockContext() ).Get( ageRangeGuid.Value );
-                    if ( ageRange != null )
+                    var ageRanges = new DefinedValueService( new RockContext() ).GetByGuids( ageRangeGuidList );
+                    if ( ageRanges.Any() )
                     {
-                        groupInfo.AgeRange = ageRange.Value;
-
+                        groupInfo.AgeRange = ageRanges.Select( ar => ar.Value ).JoinStrings( "," );
                     }
                 }
 
@@ -101,7 +102,6 @@ namespace com.bemaservices.GroupTools.Controllers
                         var category = categories.OrderBy( c => c.Order ).First();
                         category.LoadAttributes();
                         groupInfo.Category = category.Value;
-                        groupInfo.Color = "#428bca";
 
                         var colorString = category.GetAttributeValue( "Color" );
                         if ( colorString.IsNotNullOrWhiteSpace() )
@@ -265,6 +265,8 @@ namespace com.bemaservices.GroupTools.Controllers
     public class GroupInformation
     {
         public int Id { get; set; }
+
+        public Guid Guid { get; set; }
 
         public int GroupTypeId { get; set; }
 

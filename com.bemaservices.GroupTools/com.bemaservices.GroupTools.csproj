@@ -80,6 +80,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\GroupToolsController.cs" />
+    <Compile Include="Migrations\005_ControllerSecurity.cs" />
+    <Compile Include="Migrations\004_Pages.cs" />
+    <Compile Include="Migrations\003_Workflows.cs" />
+    <Compile Include="Migrations\002_Attributes.cs" />
+    <Compile Include="Migrations\001_DefinedTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
