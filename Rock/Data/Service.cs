@@ -116,7 +116,7 @@ namespace Rock.Data
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> Queryable( params EntityState[] statesToExclude )
-        { 
+        {
             /*
              * 2020-06-15 - JH
              *
@@ -124,14 +124,14 @@ namespace Rock.Data
              * Keep in mind that the Context might currently be referencing Entities of a different
              * type than the one this call is targeting, hence the implicit type cast check below.
              */
-            IList<int> excludedIds = statesToExclude?.Any() == false ?
-                new List<int>() :
-                Context.ChangeTracker
+            IList<int> excludedIds = statesToExclude?.Any() == true
+                ? Context.ChangeTracker
                     .Entries()
                     .Where( a => statesToExclude.Contains( a.State ) )
                     .Where( a => a.Entity as Entity<T> != null )
                     .Select( a => ( ( Entity<T> ) a.Entity ).Id )
-                    .ToList();
+                    .ToList()
+                : new List<int>();
 
             return _objectSet.Where( a => !excludedIds.Contains( a.Id ) );
         }
