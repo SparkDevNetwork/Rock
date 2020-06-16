@@ -93,7 +93,7 @@ namespace Rock.Jobs
                         // Capture and log the exception because we're not going to fail this job
                         // unless all the data views fail.
                         var errorMessage = $"An error occurred while trying to update persisted dataset '{name}' so it was skipped. Error: {ex.Message}";
-                        errors.Add( errorMessage );
+                        errors.Add( string.Format( @"{0} failed", name ) );
                         var ex2 = new Exception( errorMessage, ex );
                         exceptions.Add( ex2 );
                         ExceptionLogService.LogException( ex2, null );
@@ -105,28 +105,22 @@ namespace Rock.Jobs
             int notUpdatedCount = updatedDatasetTotalCount - updatedDatasetCount;
 
             // Format the result message
-            results.AppendLine( $"Updated {updatedDatasetCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )}." );
-            if (notUpdatedCount > 0)
+            results.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDatasetCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )}" );
+            if ( notUpdatedCount > 0 )
             {
-                results.AppendLine( $"Skipped {notUpdatedCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )} that are already up-to-date or inactive." );
+                results.AppendLine( $"<i class='fa fa-circle text-success'></i> Skipped {notUpdatedCount} {"up-to-date/inactive dataset".PluralizeIf( updatedDatasetCount != 1 )}" );
             }
+            foreach ( var error in errors )
+            {
+                results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
+            }
+
             context.Result = results.ToString();
 
-            if ( errors.Any() )
+            if ( exceptions.Any() )
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-                sb.Append( "Errors: " );
-                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                string errorMessage = sb.ToString();
-                context.Result += errorMessage;
-                // We're not going to throw an aggregate exception unless there were no successes.
-                // Otherwise the status message does not show any of the success messages in
-                // the last status message.
-                if ( updatedDatasetCount == 0 )
-                {
-                    throw new AggregateException( exceptions.ToArray() );
-                }
+                var exceptionList = new AggregateException( "One or more exceptions occurred in UpdatePersistedDatasets.", exceptions );
+                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", exceptionList );
             }
         }
     }
