@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -23,6 +24,7 @@ using System.Reflection;
 using System.Web;
 using System.Web.Http;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Model;
@@ -128,9 +130,24 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
         [Route( "api/blocks/action/{pageIdentifier}/{blockIdentifier}/{actionName}" )]
-        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
+        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [NakedBody] string parameters )
         {
-            return ProcessAction( Request.Method.ToString(), pageIdentifier, blockIdentifier, actionName, parameters );
+            //
+            // We have to manually parse the JSON data, otherwise any strings
+            // that look like dates get converted to Date objects. This causes
+            // problems because then when we later stuff that Date object into
+            // an actual string, the format has been changed. This happens, for
+            // example, with Attribute Values.
+            //
+            using ( var stringReader = new StringReader( parameters ) )
+            {
+                using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
+                {
+                    var parameterToken = JToken.ReadFrom( jsonReader );
+
+                    return ProcessAction( Request.Method.ToString(), pageIdentifier, blockIdentifier, actionName, parameterToken );
+                }
+            }
         }
 
         /// <summary>
