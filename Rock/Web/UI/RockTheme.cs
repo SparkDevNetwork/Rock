@@ -32,7 +32,7 @@ namespace Rock.Web.UI
     public class RockTheme
     {
         static private string _themeDirectory = HttpRuntime.AppDomainAppPath + "Themes";
-        
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -85,11 +85,11 @@ namespace Rock.Web.UI
         /// Initializes a new instance of the <see cref="RockTheme"/> class.
         /// </summary>
         /// <param name="themeName">Name of the theme.</param>
-        public RockTheme(string themeName )
+        public RockTheme( string themeName )
         {
             string themePath = _themeDirectory + @"\" + themeName;
 
-            if (Directory.Exists( themePath ) )
+            if ( Directory.Exists( themePath ) )
             {
                 DirectoryInfo themeDirectory = new DirectoryInfo( themePath );
                 this.Name = themeDirectory.Name;
@@ -104,7 +104,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Compiles this instance.
         /// </summary>
-        public bool Compile(out string messages)
+        public bool Compile( out string messages )
         {
             messages = string.Empty;
             bool compiledSuccessfully = true;
@@ -121,51 +121,54 @@ namespace Rock.Web.UI
                     DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
                     dotLessConfiguration.MinifyOutput = true;
                     dotLessConfiguration.DisableVariableRedefines = true;
-                    //dotLessConfiguration.RootPath = themeDirectory.FullName;
                     dotLessConfiguration.Logger = typeof( DotlessLogger );
                     dotLessConfiguration.LogLevel = LogLevel.Warn;
 
-                    var origDirectory = Directory.GetCurrentDirectory();
-                    try
+
+                    if ( files != null )
                     {
-                        Directory.SetCurrentDirectory( themeDirectory.FullName );
-
-                        if ( files != null )
+                        if ( this.AllowsCompile )
                         {
-                            if ( this.AllowsCompile )
+                            // don't compile files that start with an underscore
+                            foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
                             {
-                                // don't compile files that start with an underscore
-                                foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
+
+                                ILessEngine lessEngine = new EngineFactory( dotLessConfiguration ).GetEngine( new AspNetContainerFactory() );
+
+                                /*  2020-06-17 MP
+                                    Explicitly set CurrentDirectory option on lessEngine so that it doesn't have to use Directory.CurrentDirectory. See https://github.com/dotless/dotless/commit/9fe520c898e9ca29568bf31a3065e6ad228c57f2#diff-bb5d989ac1ea2e78eb439b537d0f9aabR261
+
+                                    If Directory.CurrentDirectory is used, the Directory.CurrencyDirectory might get set to a different theme directory during compile if there are multiple compiles
+                                    happening at the same time. For example, if RockWeb restarts, and Themes are still compiling, the new RockWeb start starts to compile them before the previous compiles are done.
+
+                                    Using LessEngine.CurrentDirectory fixes the issue where a less file couldn't be found (or an incorrect less file was used) due to more than one compile happening that the same time.
+                                    Now that we create the lessEngine ourselves (see https://github.com/SparkDevNetwork/Rock/commit/9e7d1079852cb0321c55335b8b50a4374590a9e8#diff-42d846b5413bc569b1b76b5f844cca13R143),
+                                    we can take advantage of the lessEngine.CurrentDirectory feature.
+                                */
+
+                                lessEngine.CurrentDirectory = themeDirectory.FullName;
+
+                                string cssSource = lessEngine.TransformToCss( File.ReadAllText( file.FullName ), null );
+
+                                // Check for compile errors
+                                if ( lessEngine.LastTransformationSuccessful )
                                 {
+                                    File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+                                }
+                                else
+                                {
+                                    messages += "A compile error occurred on " + file.Name;
+                                    compiledSuccessfully = false;
 
-                                    ILessEngine lessEngine = new EngineFactory( dotLessConfiguration ).GetEngine( new AspNetContainerFactory() );
-
-                                    string cssSource = lessEngine.TransformToCss( File.ReadAllText( file.FullName ), null );
-
-                                    // Check for compile errors
-                                    if ( lessEngine.LastTransformationSuccessful )
+                                    // Try to get the logger instance fron the underlying engine
+                                    var loggerInstance = ( ( ( lessEngine as ParameterDecorator )?.Underlying as CacheDecorator )?.Underlying as LessEngine )?.Logger as DotlessLogger;
+                                    if ( loggerInstance != null )
                                     {
-                                        File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
-                                    }
-                                    else
-                                    {
-                                        messages += "A compile error occurred on " + file.Name;
-                                        compiledSuccessfully = false;
-
-                                        // Try to get the logger instance fron the underlying engine
-                                        var loggerInstance = ( ( ( lessEngine as ParameterDecorator )?.Underlying as CacheDecorator )?.Underlying as LessEngine )?.Logger as DotlessLogger;
-                                        if ( loggerInstance != null )
-                                        {
-                                            messages += "\n" + string.Join( "\n", loggerInstance.LogLines ) + "\n";
-                                        }
+                                        messages += "\n" + string.Join( "\n", loggerInstance.LogLines ) + "\n";
                                     }
                                 }
                             }
                         }
-                    }
-                    finally
-                    {
-                        Directory.SetCurrentDirectory( origDirectory );
                     }
                 }
             }
@@ -183,7 +186,7 @@ namespace Rock.Web.UI
         /// Compiles this instance.
         /// </summary>
         /// <returns></returns>
-        public bool Compile( )
+        public bool Compile()
         {
             string messages = string.Empty;
             return Compile( out messages );
@@ -194,12 +197,15 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="messages">The messages.</param>
         /// <returns></returns>
-        public static bool CompileAll(out string messages )
+        public static bool CompileAll( out string messages )
         {
             messages = string.Empty;
             bool allCompiled = true;
 
-            foreach(var theme in GetThemes() )
+            // compile the Rock theme first
+            var allThemes = GetThemes().OrderByDescending( a => a.Name == "Rock" ).ToList();
+
+            foreach ( var theme in allThemes )
             {
                 string themeMessage = string.Empty;
                 bool themeSuccess = theme.Compile( out themeMessage );
@@ -247,7 +253,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Clones the theme.
         /// </summary>
-        public static bool CloneTheme(string sourceTheme, string targetTheme, out string messages)
+        public static bool CloneTheme( string sourceTheme, string targetTheme, out string messages )
         {
             messages = string.Empty;
             bool resultSucess = true;
@@ -266,7 +272,7 @@ namespace Rock.Web.UI
 
                     // delete the .system file if it exists
                     string systemFile = targetFullPath + @"\.system";
-                    if (File.Exists( systemFile ) )
+                    if ( File.Exists( systemFile ) )
                     {
                         File.Delete( systemFile );
                     }
@@ -282,7 +288,7 @@ namespace Rock.Web.UI
                 resultSucess = false;
                 messages = "The target theme name already exists.";
             }
-            
+
             return resultSucess;
         }
 
@@ -304,7 +310,7 @@ namespace Rock.Web.UI
         /// <param name="themeName">Name of the theme.</param>
         /// <param name="messages">The messages.</param>
         /// <returns></returns>
-        public static bool DeleteTheme(string themeName, out string messages )
+        public static bool DeleteTheme( string themeName, out string messages )
         {
             messages = string.Empty;
             bool resultSucess = true;
@@ -322,7 +328,7 @@ namespace Rock.Web.UI
                     resultSucess = false;
                     messages = ex.Message;
                 }
-            } 
+            }
             else
             {
                 resultSucess = false;
@@ -348,9 +354,9 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="themeName">Name of the theme.</param>
         /// <returns></returns>
-        public static string CleanThemeName(string themeName )
+        public static string CleanThemeName( string themeName )
         {
-            return Path.GetInvalidFileNameChars().Aggregate( themeName, ( current, c ) => current.Replace( c.ToString(), string.Empty ) ).Replace(" ", "");
+            return Path.GetInvalidFileNameChars().Aggregate( themeName, ( current, c ) => current.Replace( c.ToString(), string.Empty ) ).Replace( " ", "" );
         }
 
         /// <summary>
@@ -378,12 +384,12 @@ namespace Rock.Web.UI
                 CopyAll( diSourceSubDir, nextTargetSubDir );
             }
         }
-        
+
         private class DotlessLogger : Logger
         {
             public List<string> LogLines = new List<string>();
 
-            public DotlessLogger( LogLevel level ): base( level ) { }
+            public DotlessLogger( LogLevel level ) : base( level ) { }
 
             protected override void Log( string message )
             {
