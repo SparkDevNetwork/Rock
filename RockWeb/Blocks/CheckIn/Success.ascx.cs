@@ -223,9 +223,11 @@ namespace RockWeb.Blocks.CheckIn
                             if ( attendanceSessionGuidsCookie == null )
                             {
                                 attendanceSessionGuidsCookie = new HttpCookie( CheckInCookieKey.AttendanceSessionGuids );
-                                attendanceSessionGuidsCookie.Expires = RockDateTime.Now.AddHours( 8 );
                                 attendanceSessionGuidsCookie.Value = string.Empty;
                             }
+
+                            // set (or reset) the expiration to be 8 hours from the current time)
+                            attendanceSessionGuidsCookie.Expires = RockDateTime.Now.AddHours( 8 );
 
                             var attendanceSessionGuids = attendanceSessionGuidsCookie.Value.Split( ',' ).AsGuidList();
                             if ( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.HasValue )

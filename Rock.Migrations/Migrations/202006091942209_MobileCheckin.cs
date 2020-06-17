@@ -73,7 +73,9 @@ namespace Rock.Migrations
         {
             // Add Page Mobile Check-in Launcher to Site:Rock Check-in
             RockMigrationHelper.AddPage( true, "EBAA5140-4B8F-44B8-B1E8-C73B654E4B22", "66FA0143-F04C-4447-A67A-2A10A6BB1A2B", "Mobile Check-in Launcher", "", "2D0CD3CA-E952-4A63-B968-94833F95B389", "" );
-            Sql( "UPDATE [Page] set PageTitle = 'Mobile Check-in', InternalName = 'Mobile Check-in Launcher', BrowserTitle = 'Mobile Check-in' where [Guid] ='2D0CD3CA-E952-4A63-B968-94833F95B389'" );
+
+            // Update Page Titles and set RequiresEncryption to true
+            Sql( "UPDATE [Page] set PageTitle = 'Mobile Check-in', InternalName = 'Mobile Check-in Launcher', BrowserTitle = 'Mobile Check-in', RequiresEncryption = 1 where [Guid] ='2D0CD3CA-E952-4A63-B968-94833F95B389'" );
 
             // Add Page Route for Mobile Check-in Launcher
             RockMigrationHelper.AddPageRoute( "2D0CD3CA-E952-4A63-B968-94833F95B389", "mobilecheckin", "DE20BBFD-5097-4E8A-8866-C073AB14E6F3" );

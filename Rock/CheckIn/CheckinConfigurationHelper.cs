@@ -59,8 +59,6 @@ namespace Rock.CheckIn
                 throw new ArgumentNullException( "LocalDeviceConfiguration with a valid KioskId and Checkin Type is required" );
             }
 
-            CheckIn.CheckinType checkinType = new Rock.CheckIn.CheckinType( localDeviceConfiguration.CurrentCheckinTypeId.Value );
-
             var kiosk = KioskDevice.Get( localDeviceConfiguration.CurrentKioskId.Value, localDeviceConfiguration.CurrentGroupTypeIds );
 
             DateTime nextActiveDateTime = kiosk.FilteredGroupTypes( localDeviceConfiguration.CurrentGroupTypeIds ).Min( g => ( DateTime? ) g.NextActiveTime ) ?? DateTime.MaxValue;
@@ -68,9 +66,13 @@ namespace Rock.CheckIn
 
             bool isMobileAndExpired = CheckinConfigurationHelper.IsMobileAndExpiredDevice( httpRequest );
 
-            CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( kiosk, localDeviceConfiguration.CurrentGroupTypeIds, checkinType );
+            CheckInState checkInState = new CheckInState( localDeviceConfiguration );
+
+            CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( checkInState );
 
             var rockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionFullName();
+
+            CheckIn.CheckinType checkinType = new Rock.CheckIn.CheckinType( localDeviceConfiguration.CurrentCheckinTypeId.Value );
 
             var configurationData = new
             {
@@ -104,14 +106,14 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kiosk">The kiosk.</param>
         /// <param name="configuredGroupTypeIds">The configured group type ids.</param>
-        /// <param name="checkInType">Type of the check in.</param>
+        /// <param name="checkInState">State of the check in.</param>
         /// <returns>
         ///   <c>true</c> if [is temporarily closed] [the specified kiosk]; otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsTemporarilyClosed( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckinType checkInType )
+        private static bool IsTemporarilyClosed( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckInState checkInState )
         {
-            bool isTemporarilyClosed = ( !kiosk.HasLocations( configuredGroupTypeIds ) && !checkInType.AllowCheckout )
-                    || ( checkInType.AllowCheckout && !kiosk.HasActiveCheckOutLocations( configuredGroupTypeIds ) );
+            bool isTemporarilyClosed = ( !kiosk.HasLocations( configuredGroupTypeIds ) && !checkInState.AllowCheckout )
+                    || ( checkInState.AllowCheckout && !kiosk.HasActiveCheckOutLocations( configuredGroupTypeIds ) );
 
             return isTemporarilyClosed;
         }
@@ -121,16 +123,16 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kiosk">The kiosk.</param>
         /// <param name="configuredGroupTypeIds">The configured group type ids.</param>
-        /// <param name="checkInType">Type of the check in.</param>
+        /// <param name="checkInState">State of the check in.</param>
         /// <returns>
         ///   <c>true</c> if the specified kiosk is closed; otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsClosed( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckinType checkInType )
+        private static bool IsClosed( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckInState checkInState )
         {
             // Closed if there are no active locations and check-out is not allowed, or if check -out is allowed but there
             // are no active check-out locations.
-            bool isClosed = ( !kiosk.HasActiveLocations( configuredGroupTypeIds ) && !checkInType.AllowCheckout )
-                    || ( checkInType.AllowCheckout && !kiosk.HasActiveCheckOutLocations( configuredGroupTypeIds ) );
+            bool isClosed = ( !kiosk.HasActiveLocations( configuredGroupTypeIds ) && !checkInState.AllowCheckout )
+                    || ( checkInState.AllowCheckout && !kiosk.HasActiveCheckOutLocations( configuredGroupTypeIds ) );
 
             return isClosed;
         }
@@ -142,8 +144,24 @@ namespace Rock.CheckIn
         /// <param name="configuredGroupTypeIds">The configured group type ids.</param>
         /// <param name="checkInType">Type of the check in.</param>
         /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use other GetCheckinStatus" )]
         public static CheckinStatus GetCheckinStatus( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckinType checkInType )
         {
+            var checkinState = new CheckInState( kiosk.Device?.Id ?? 0, checkInType.Id, configuredGroupTypeIds );
+            return GetCheckinStatus( checkinState );
+        }
+
+        /// <summary>
+        /// Gets the checkin status.
+        /// </summary>
+        /// <param name="checkInState">State of the check in.</param>
+        /// <returns></returns>
+        public static CheckinStatus GetCheckinStatus( CheckInState checkInState )
+        {
+            KioskDevice kiosk = checkInState.Kiosk;
+            List<int> configuredGroupTypeIds = checkInState.ConfiguredGroupTypes;
+
             bool hasGroupTypes = kiosk.FilteredGroupTypes( configuredGroupTypeIds ).Any();
 
             if ( !hasGroupTypes )
@@ -151,11 +169,11 @@ namespace Rock.CheckIn
                 return CheckinStatus.Inactive;
             }
 
-            if ( IsTemporarilyClosed( kiosk, configuredGroupTypeIds, checkInType ) )
+            if ( IsTemporarilyClosed( kiosk, configuredGroupTypeIds, checkInState ) )
             {
                 return CheckinStatus.TemporarilyClosed;
             }
-            else if ( IsClosed( kiosk, configuredGroupTypeIds, checkInType ) )
+            else if ( IsClosed( kiosk, configuredGroupTypeIds, checkInState ) )
             {
                 return CheckinStatus.Closed;
             }
@@ -224,8 +242,8 @@ namespace Rock.CheckIn
         public static readonly string RockHasLocationApproval = "Checkin.RockHasLocationApproval";
 
         /// <summary>
-        /// A cookie that stores the AttendanceSession Guid(s) (Encrypted??) that have been used
-        /// This cookie should expire ???? TODO
+        /// A cookie that stores the AttendanceSession Guid(s) that have been used by the local device
+        /// This cookie should expire 8 hours after last use
         /// </summary>
         public static readonly string AttendanceSessionGuids = "Checkin.AttendanceSessionGuids";
     }
