@@ -297,9 +297,9 @@
     <Compile Include="Migrations\202006091942209_MobileCheckin.Designer.cs">
       <DependentUpon>202006091942209_MobileCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202006101237397_AddPushFieldsToComminicationTables.cs" />
-    <Compile Include="Migrations\202006101237397_AddPushFieldsToComminicationTables.Designer.cs">
-      <DependentUpon>202006101237397_AddPushFieldsToComminicationTables.cs</DependentUpon>
+    <Compile Include="Migrations\202006101237397_AddPushFieldsToCommunicationTables.cs" />
+    <Compile Include="Migrations\202006101237397_AddPushFieldsToCommunicationTables.Designer.cs">
+      <DependentUpon>202006101237397_AddPushFieldsToCommunicationTables.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202006150730556_AddEnablePresence.cs" />
     <Compile Include="Migrations\202006150730556_AddEnablePresence.Designer.cs">
@@ -1464,8 +1464,8 @@
     <EmbeddedResource Include="Migrations\202006091942209_MobileCheckin.resx">
       <DependentUpon>202006091942209_MobileCheckin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202006101237397_AddPushFieldsToComminicationTables.resx">
-      <DependentUpon>202006101237397_AddPushFieldsToComminicationTables.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202006101237397_AddPushFieldsToCommunicationTables.resx">
+      <DependentUpon>202006101237397_AddPushFieldsToCommunicationTables.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202006150730556_AddEnablePresence.resx">
       <DependentUpon>202006150730556_AddEnablePresence.cs</DependentUpon>
