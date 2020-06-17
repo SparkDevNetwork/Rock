@@ -40,13 +40,31 @@ body {
   }
 }
 
-select option {
-  background: var(--input-bg);
+.modal-content.rock-modal .modal-body, .rock-modal .modal-content .modal-body,
+.control-label {
+  color: @dark-text-color;
+}
+
+.modal-content.rock-modal .modal-header, .rock-modal .modal-content .modal-header,
+.modal-content.rock-modal, .rock-modal .modal-content,
+.bootbox .modal-content,
+.modal {
+  background: @dark-checkin-footer-background;
+  color: @dark-text-color;
+}
+
+select.form-control,
+select.form-control option {
+  background-color: var(--input-bg) !important;
 }
 
 a,
 .btn-link {
   color: @dark-link-color;
+
+  &:hover {
+    color: fade(@dark-link-color, 90%);
+  }
 }
 
 h1,
