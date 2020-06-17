@@ -636,7 +636,7 @@ namespace RockWeb.Blocks.CheckIn
                 default:
                     {
                         lMessage.Text = GetMessageText( AttributeKey.WelcomeBackTemplate );
-                        var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl();
+                        var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl( Request.Cookies[CheckInCookieKey.AttendanceSessionGuids] );
                         if ( qrCodeImageUrl.IsNotNullOrWhiteSpace() )
                         {
                             lCheckinQRCodeHtml.Text = string.Format( "<h6 class='text-center mt-4 mb-1'>Scan Code For Labels</h6><div class='qr-code-container'><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code' width='500' height='500'></div>", qrCodeImageUrl );
