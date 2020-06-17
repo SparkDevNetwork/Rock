@@ -144,15 +144,8 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ShowDetail()
         {
-            // just in case the device config home page override got set (from the MobileLauncher Block)
-            // un-override it
-            LocalDeviceConfig.HomePageOverride = null;
-
-            // just in case the device config DisableIdleRedirect got set (from the MobileLauncher Block) make sure the IdleRedirect mode is enabled
-            LocalDeviceConfig.DisableIdleRedirect = false;
-
-            // just in case the device config GenerateQRCodeForAttendanceSessions got set (from the MobileLauncher Block), turn off the QR Code option
-            LocalDeviceConfig.GenerateQRCodeForAttendanceSessions = false;
+            // just in case the local device config had some overrides (from the MobileLauncher Block)
+            LocalDeviceConfig.ClearOverrides();
 
             SaveState();
 

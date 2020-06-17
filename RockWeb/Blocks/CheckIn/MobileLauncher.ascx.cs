@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.CheckIn
         "Welcome Back <span class='tip tip-lava'></span>",
         Key = AttributeKey.WelcomeBackTemplate,
         Category = "Text",
-        DefaultValue = "Hi {{ CurrentPerson.NickName }}! Great to see to see you back. Select the check-in button to get started.",
+        DefaultValue = "Hi {{ CurrentPerson.NickName }}! Great to see you back. Select the check-in button to get started.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.CheckIn
         "No Devices Found <span class='tip tip-lava'></span>",
         Key = AttributeKey.NoDevicesFoundTemplate,
         Category = "Text",
-        DefaultValue = "Hi {{ CurrentPerson.NickName }}! You are not currently close enough to check-in. Please try again once you're closer to the campus.",
+        DefaultValue = "Hi {{ CurrentPerson.NickName }}! Currently, you're not close enough to check in. Please try again once you're closer to the campus.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -184,9 +184,9 @@ namespace RockWeb.Blocks.CheckIn
 
     [CodeEditorField( "No People Message",
         Key = AttributeKey.NoPeopleMessage,
-        Description = "Text to display when there is not anyone in the family that can check-in",
+        Description = "Text to display when there is not anyone in the family that can check in",
         IsRequired = false,
-        DefaultValue = "Sorry, no one in your family is eligible to check-in at this location.",
+        DefaultValue = "Sorry, no one in your family is eligible to check in at this location.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Category = "Text",
@@ -432,6 +432,17 @@ namespace RockWeb.Blocks.CheckIn
 
             // override the HomePage block setting to the mobile home page
             LocalDeviceConfig.HomePageOverride = this.PageCache.Guid;
+            LocalDeviceConfig.BlockedPageIds = null;
+
+            LocalDeviceConfig.AllowCheckout = false;
+
+            var blockedPageIds = new List<int?>();
+            blockedPageIds.Add( PageCache.GetId( Rock.SystemGuid.Page.CHECKIN_ADMIN.AsGuid() ) );
+            blockedPageIds.Add( PageCache.GetId( Rock.SystemGuid.Page.CHECKIN_WELCOME.AsGuid() ) );
+            blockedPageIds.Add( PageCache.GetId( Rock.SystemGuid.Page.CHECKIN_SEARCH.AsGuid() ) );
+            blockedPageIds.Add( PageCache.GetId( Rock.SystemGuid.Page.CHECKIN_FAMILY_SELECT.AsGuid() ) );
+
+            LocalDeviceConfig.BlockedPageIds = blockedPageIds.Where( a => a.HasValue ).Select( a => a.Value ).ToArray();
 
             // turn off the idle redirect blocks since we don't a person's mobile device to do that
             LocalDeviceConfig.DisableIdleRedirect = true;
@@ -556,16 +567,19 @@ namespace RockWeb.Blocks.CheckIn
 
             // device found for mobile person's location
             LocalDeviceConfig.CurrentKioskId = device.Id;
+            LocalDeviceConfig.AllowCheckout = false;
+
             LocalDeviceConfig.SaveToCookie( this.Page );
 
             // create new checkin state since we are starting a new checkin sessions
             this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
+
             SaveState();
 
             CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.CheckinStatus.Closed;
             if ( CurrentCheckInState.Kiosk != null )
             {
-                checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState.Kiosk, CurrentCheckInState.ConfiguredGroupTypes, CurrentCheckInState.CheckInType );
+                checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState );
             }
 
             RefreshCheckinStatusInformation( checkinStatus );
@@ -867,7 +881,7 @@ namespace RockWeb.Blocks.CheckIn
             UpdateConfigurationFromBlockSettings();
 
             // checkin status might have changed after the Checkin Button was displayed, so make sure the kiosk is still active
-            var checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState.Kiosk, CurrentCheckInState.ConfiguredGroupTypes, CurrentCheckInState.CheckInType );
+            var checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState );
             if ( checkinStatus != CheckinConfigurationHelper.CheckinStatus.Active )
             {
                 RefreshCheckinStatusInformation( checkinStatus );
@@ -943,9 +957,9 @@ namespace RockWeb.Blocks.CheckIn
                     )
                     &&
                     (
-                        !CurrentCheckInState.CheckInType.AllowCheckout ||
+                        !CurrentCheckInState.AllowCheckout ||
                         (
-                            CurrentCheckInState.CheckInType.AllowCheckout &&
+                            CurrentCheckInState.AllowCheckout &&
                             CurrentCheckInState.CheckIn.Families.All( f => f.CheckOutPeople.Count == 0 )
                         )
                     );

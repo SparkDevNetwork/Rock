@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         // Find all of the attendance records for this person for any of the check-in types that are currently available for this kiosk and person
                         var groupTypeIds = person.GroupTypes.Select( t => t.GroupType.Id ).ToList();
-                        if ( checkInState.CheckInType.AllowCheckout )
+                        if ( checkInState.AllowCheckout )
                         {
                             groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
                         }
@@ -104,7 +104,7 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             // Determine who from the family can check-out and add them to the
                             // family's CheckOutPeople collection.
-                            if ( checkInState.CheckInType.AllowCheckout )
+                            if ( checkInState.AllowCheckout )
                             {
                                 var todaysAttendance = personAttendance.Where( a => a.StartDateTime > DateTime.Today ).ToList();
                                 foreach ( var kioskGroupType in checkInState.Kiosk.ActiveForCheckOutGroupTypes( checkInState.ConfiguredGroupTypes ) )

@@ -259,11 +259,11 @@ namespace Rock.CheckIn
                 {
                     return false;
                 }
-                else if ( !CurrentCheckInType.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
+                else if ( !CurrentCheckInState.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return false;
                 }
-                else if ( CurrentCheckInType.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
+                else if ( CurrentCheckInState.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return true;
                 }
@@ -610,6 +610,14 @@ namespace Rock.CheckIn
         /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
         protected virtual void NavigateToNextPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
+            bool pageIsBlocked = IsPageBlocked( GetAttributeValue( AttributeKey.NextPage ), queryParams );
+
+            if ( pageIsBlocked )
+            {
+                NavigateToHomePage();
+                return;
+            }
+
             queryParams = CheckForOverride( queryParams );
 
             if ( validateSelectionRequired )
@@ -664,6 +672,14 @@ namespace Rock.CheckIn
         /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
         protected virtual void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
+            bool pageIsBlocked = IsPageBlocked( GetAttributeValue( AttributeKey.PreviousPage ), queryParams );
+
+            if ( pageIsBlocked )
+            {
+                NavigateToHomePage();
+                return;
+            }
+
             if ( validateSelectionRequired )
             {
                 var nextBlock = GetCheckInBlock( AttributeKey.PreviousPage );
@@ -676,6 +692,35 @@ namespace Rock.CheckIn
             {
                 NavigateToLinkedPage( AttributeKey.PreviousPage, queryParams );
             }
+        }
+
+        /// <summary>
+        /// Returns true of the
+        /// </summary>
+        /// <param name="pageAttributeKey">The page attribute key.</param>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <returns>
+        ///   <c>true</c> if [is page blocked] [the specified query parameters]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsPageBlocked( string pageAttributeKey, Dictionary<string, string> queryParams )
+        {
+            if ( LocalDeviceConfig.BlockedPageIds?.Any() == true )
+            {
+                var previousPagePageReference = new PageReference( pageAttributeKey, queryParams );
+                if ( previousPagePageReference != null )
+                {
+                    // make sure we don't end up in an infinite loop
+                    if ( previousPagePageReference.PageId != this.CurrentPageReference?.PageId )
+                    {
+                        if ( LocalDeviceConfig.BlockedPageIds.Contains( previousPagePageReference.PageId ) )
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -827,7 +872,7 @@ namespace Rock.CheckIn
 
             if ( CurrentCheckInState == null && this.LocalDeviceConfig.CurrentKioskId.HasValue )
             {
-                CurrentCheckInState = new CheckInState( this.LocalDeviceConfig.CurrentKioskId.Value, this.LocalDeviceConfig.CurrentCheckinTypeId, this.LocalDeviceConfig.CurrentGroupTypeIds );
+                CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
             }
         }
 
