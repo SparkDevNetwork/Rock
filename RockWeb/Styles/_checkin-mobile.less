@@ -4,6 +4,19 @@
 */
 
 @media (max-width: @screen-xs-max) {
+
+
+  .body-content {
+    position: inherit;
+    height: ~"calc(100vh - 200px)";
+
+    // Unset 100vh in iOS
+    @supports (-webkit-touch-callout: none) {
+      height: unset;
+      min-height: -webkit-fill-available;
+    }
+  }
+
   .container {
     padding: 0;
   }
@@ -51,8 +64,15 @@
     }
   }
 
+  .checkin-error:empty {
+    display: none;
+  }
+
   .checkin-footer {
+    display: block;
     padding: 0;
+    z-index: 1000;
+
     .checkin-actions {
       display: -ms-flexbox;
       display: flex;
