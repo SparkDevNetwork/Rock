@@ -15,14 +15,14 @@
 // </copyright>
 //
 namespace Rock.Migrations
-{
+{ 
     using System;
     using System.Data.Entity.Migrations;
 
     /// <summary>
     /// Adds the push fields to the communication tables.
     /// </summary>
-    public partial class AddPushFieldsToComminicationTables : Rock.Migrations.RockMigration
+    public partial class AddPushFieldsToCommunicationTables : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
