@@ -74,7 +74,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/checkin/printsessionlabels" )]
         public PrintSessionLabelsResponse PrintSessionLabels([FromUri] string session, [FromUri] int? kioskId = null )
         {
-            List<Guid> sessionGuids;
+            List<Guid?> sessionGuids;
 
             //
             // The session data is a comma separated list of Guid values.
@@ -93,20 +93,9 @@ namespace Rock.Rest.Controllers
                         {
                             return guid.Value;
                         }
+                        
+                        return GuidHelper.FromShortStringOrNull( a );
 
-                        //
-                        // When the session Guids come from the check-in app, they are
-                        // encoded in base64 and have the extra '=' characters truncated,
-                        // add them back in if we need to and then try to parse as a
-                        // base64 encoded Guid.
-                        //
-                        var extra = a.Length % 3;
-                        if ( extra > 0 )
-                        {
-                            a += new string( '=', 3 - extra );
-                        }
-
-                        return new Guid( Convert.FromBase64String( a ) );
                     } )
                     .ToList();
             }
@@ -199,11 +188,20 @@ namespace Rock.Rest.Controllers
                 if ( response.Labels.Any() )
                 {
                     var urlRoot = Request.RequestUri.GetLeftPart( UriPartial.Authority );
+
                     if ( Request.Headers.Contains( "X-Forwarded-Proto" ) && Request.Headers.Contains( "X-Forwarded-Host" ) )
                     {
                         urlRoot = $"{Request.Headers.GetValues( "X-Forwarded-Proto" ).First()}://{Request.Headers.GetValues( "X-Forwarded-Host" ).First()}";
                     }
-
+#if DEBUG
+                    // This is extremely useful when debugging with ngrok and an iPad on the local network.
+                    // X-Original-Host will contain the name of your ngrok hostname, therefore the labels will
+                    // get a LabelFile url that will actually work with that iPad.
+                    if ( Request.Headers.Contains( "X-Forwarded-Proto" ) && Request.Headers.Contains( "X-Original-Host" ) )
+                    {
+                        urlRoot = $"{Request.Headers.GetValues( "X-Forwarded-Proto" ).First()}://{Request.Headers.GetValues( "X-Original-Host" ).First()}";
+                    }
+#endif
                     response.Labels.ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
                 }
 
