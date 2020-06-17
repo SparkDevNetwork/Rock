@@ -877,13 +877,13 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the URL for the QRCode for the current AttendanceSession(s) that are in the <seealso cref="CheckInCookieKey.AttendanceSessionGuids"/> cookie.
+        /// Gets the URL for the QRCode for the current AttendanceSession(s) that are in the <seealso cref="CheckInCookieKey.AttendanceSessionGuids" /> cookie.
         /// </summary>
+        /// <param name="attendanceSessionGuidsCookie">The attendance session guids cookie.</param>
         /// <returns></returns>
-        public string GetAttendanceSessionsQrCodeImageUrl()
+        public string GetAttendanceSessionsQrCodeImageUrl( HttpCookie attendanceSessionGuidsCookie )
         {
-            HttpCookie attendanceSessionGuidsCookie = Request.Cookies[CheckInCookieKey.AttendanceSessionGuids];
-            if ( attendanceSessionGuidsCookie == null )
+            if ( attendanceSessionGuidsCookie == null || attendanceSessionGuidsCookie.Value.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
