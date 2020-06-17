@@ -31,6 +31,31 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AttributeValuesContainer : CompositeControl, IHasValidationGroup, INamingContainer
     {
+        #region ViewStateKeys
+
+        private static class ViewStateKey
+        {
+            public const string IncludedAttributeIds = "IncludedAttributeIds";
+            public const string RequiredAttributeIds = "RequiredAttributeIds";
+            public const string ExcludedAttributeIds = "ExcludedAttributeIds";
+            public const string ValidationGroup = "ValidationGroup";
+            public const string SuppressOrderingWithinCategory = "SuppressOrderingWithinCategory";
+            public const string ShowCategoryLabel = "ShowCategoryLabel";
+            public const string IncludedCategoryNames = "IncludedCategoryNames";
+            public const string ExcludedCategoryNames = "ExcludedCategoryNames";
+            public const string NumberOfColumns = "NumberOfColumns";
+            public const string LimitToShowInGridAttributes = "LimitToShowInGridAttributes";
+            public const string DisplayAsTabs = "DisplayAsTabs";
+            public const string ShowPrePostHtml = "ShowPrePostHtml";
+            public const string _entityId = "_entityId";
+            public const string _entityTypeId = "_entityTypeId";
+            public const string _displayModeAttributeIdValuesState = "_displayModeAttributeIdValuesState";
+            public const string _editModeAttributeIdsState = "_editModeAttributeIdsState";
+        }
+
+        #endregion ViewStateKeys
+
+
         #region Controls
 
         /// <summary>
@@ -69,8 +94,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState["ValidationGroup"] as string ?? this.RockBlock()?.BlockValidationGroup;
-            set => ViewState["ValidationGroup"] = value;
+            get => ViewState[ViewStateKey.ValidationGroup] as string ?? this.RockBlock()?.BlockValidationGroup;
+            set => ViewState[ViewStateKey.ValidationGroup] = value;
         }
 
         /// <summary>
@@ -84,8 +109,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool SuppressOrderingWithinCategory
         {
-            get => ViewState["SuppressOrderingWithinCategory"] as bool? ?? false;
-            set => ViewState["SuppressOrderingWithinCategory"] = value;
+            get => ViewState[ViewStateKey.SuppressOrderingWithinCategory] as bool? ?? false;
+            set => ViewState[ViewStateKey.SuppressOrderingWithinCategory] = value;
         }
 
         /// <summary>
@@ -96,8 +121,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] IncludedAttributes
         {
-            get => ViewState["IncludedAttributes"] as AttributeCache[];
-            set => ViewState["IncludedAttributes"] = value;
+            get => ( ViewState[ViewStateKey.IncludedAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray();
+            set => ViewState[ViewStateKey.IncludedAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
 
         /// <summary>
@@ -108,8 +133,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] RequiredAttributes
         {
-            get => ViewState["RequiredAttributes"] as AttributeCache[];
-            set => ViewState["RequiredAttributes"] = value;
+            get => (ViewState[ViewStateKey.RequiredAttributeIds] as int[] )?.Select(a => AttributeCache.Get(a ) ).ToArray();
+            set => ViewState[ViewStateKey.RequiredAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
         
         /// <summary>
@@ -120,8 +145,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] ExcludedAttributes
         {
-            get => ViewState["ExcludedAttributes"] as AttributeCache[] ?? new AttributeCache[0];
-            set => ViewState["ExcludedAttributes"] = value;
+            get => (ViewState[ViewStateKey.ExcludedAttributeIds] as int[] )?.Select(a => AttributeCache.Get(a ) ).ToArray() ?? new AttributeCache[0];
+            set => ViewState[ViewStateKey.ExcludedAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
 
         /// <summary>
@@ -132,8 +157,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowCategoryLabel
         {
-            get => ViewState["ShowCategoryLabel"] as bool? ?? true;
-            set => ViewState["ShowCategoryLabel"] = value;
+            get => ViewState[ViewStateKey.ShowCategoryLabel] as bool? ?? true;
+            set => ViewState[ViewStateKey.ShowCategoryLabel] = value;
         }
 
         /// <summary>
@@ -144,8 +169,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string[] IncludedCategoryNames
         {
-            get => ViewState["IncludedCategoryNames"] as string[];
-            set => ViewState["IncludedCategoryNames"] = value;
+            get => ViewState[ViewStateKey.IncludedCategoryNames] as string[];
+            set => ViewState[ViewStateKey.IncludedCategoryNames] = value;
         }
 
         /// <summary>
@@ -156,8 +181,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string[] ExcludedCategoryNames
         {
-            get => ViewState["ExcludedCategoryNames"] as string[];
-            set => ViewState["ExcludedCategoryNames"] = value;
+            get => ViewState[ViewStateKey.ExcludedCategoryNames] as string[];
+            set => ViewState[ViewStateKey.ExcludedCategoryNames] = value;
         }
 
         /// <summary>
@@ -168,8 +193,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? NumberOfColumns
         {
-            get => ViewState["NumberOfColumns"] as int?;
-            set => ViewState["NumberOfColumns"] = value;
+            get => ViewState[ViewStateKey.NumberOfColumns] as int?;
+            set => ViewState[ViewStateKey.NumberOfColumns] = value;
         }
 
         /// <summary>
@@ -180,8 +205,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool LimitToShowInGridAttributes
         {
-            get => ViewState["LimitToShowInGridAttributes"] as bool? ?? false;
-            set => ViewState["LimitToShowInGridAttributes"] = value;
+            get => ViewState[ViewStateKey.LimitToShowInGridAttributes] as bool? ?? false;
+            set => ViewState[ViewStateKey.LimitToShowInGridAttributes] = value;
         }
 
         /// <summary>
@@ -192,8 +217,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool DisplayAsTabs
         {
-            get => ViewState["DisplayAsTabs"] as bool? ?? false;
-            set => ViewState["DisplayAsTabs"] = value;
+            get => ViewState[ViewStateKey.DisplayAsTabs] as bool? ?? false;
+            set => ViewState[ViewStateKey.DisplayAsTabs] = value;
         }
 
         /// <summary>
@@ -204,8 +229,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowPrePostHtml
         {
-            get => ViewState["ShowPrePostHtml"] as bool? ?? true;
-            set => ViewState["ShowPrePostHtml"] = value;
+            get => ViewState[ViewStateKey.ShowPrePostHtml] as bool? ?? true;
+            set => ViewState[ViewStateKey.ShowPrePostHtml] = value;
         }
 
         #endregion Properties
@@ -232,10 +257,10 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            this._entityId = ViewState["_entityId"] as int?;
-            this._entityTypeId = ViewState["_entityTypeId"] as int?;
-            this._displayModeAttributeIdValuesState = ( ViewState["_displayModeAttributeIdValuesState"] as string ).FromJsonOrNull<Dictionary<int, string>>();
-            this._editModeAttributeIdsState = ( ViewState["_editModeAttributeIdsState"] as string ).FromJsonOrNull<List<int>>();
+            this._entityId = ViewState[ViewStateKey._entityId] as int?;
+            this._entityTypeId = ViewState[ViewStateKey._entityTypeId] as int?;
+            this._displayModeAttributeIdValuesState = ( ViewState[ViewStateKey._displayModeAttributeIdValuesState] as string ).FromJsonOrNull<Dictionary<int, string>>();
+            this._editModeAttributeIdsState = ( ViewState[ViewStateKey._editModeAttributeIdsState] as string ).FromJsonOrNull<List<int>>();
 
             if ( _entityId.HasValue && _entityTypeId.HasValue )
             {
@@ -275,10 +300,10 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["_entityId"] = this._entityId;
-            ViewState["_entityTypeId"] = this._entityTypeId;
-            ViewState["_displayModeAttributeIdValuesState"] = this._displayModeAttributeIdValuesState.ToJson();
-            ViewState["_editModeAttributeIdsState"] = this._editModeAttributeIdsState.ToJson();
+            ViewState[ViewStateKey._entityId] = this._entityId;
+            ViewState[ViewStateKey._entityTypeId] = this._entityTypeId;
+            ViewState[ViewStateKey._displayModeAttributeIdValuesState] = this._displayModeAttributeIdValuesState.ToJson();
+            ViewState[ViewStateKey._editModeAttributeIdsState] = this._editModeAttributeIdsState.ToJson();
 
             return base.SaveViewState();
         }
