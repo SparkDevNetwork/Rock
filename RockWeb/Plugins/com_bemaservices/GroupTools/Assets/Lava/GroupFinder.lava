@@ -101,24 +101,6 @@
   {% endif %}
 {% endcapture %}
 
-{% assign lifeStageIdString = 'Global' | PageParameter:'LifeStageIds' | ToString %}
-{% assign lifeStageIds = lifeStageIdString | Split:',' %}
-{% capture selectedLifeStages %}
-  {% if lifeStageIdString != '' %}
-    {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
-      {% for definedtype in definedtypeItems %}
-        {% for definedValue in definedtype.DefinedValues %}
-          {% assign idString = definedValue.Id | ToString %}
-          {% for lifeStageId in lifeStageIds %}
-            {% if lifeStageId == idString %}
-              {{definedValue | ToJSON }},
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
-      {% endfor %}
-    {% enddefinedtype %}
-  {% endif %}
-{% endcapture %}
 <style>
 .sg-card {
     position: relative;
@@ -283,11 +265,9 @@
 
     <div class="col-md-3">
       <div class="form-group">
-        <label class="control-label">Life Stage</label>
+        <label class="control-label">Age</label>
         <div class="control-wrapper">
-          <multiselect v-model="lifeStageValues" :options="lifeStageOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Value" track-by="Value" :preselect-first="false" @input="lifeStageFilterChange()">
-            <template slot="selection" slot-scope="{ lifeStageValues, search, isOpen }"><span class="multiselect__single" v-if="lifeStageValues.length &amp;&amp; !isOpen">{{ lifeStageValues.length }} options selected</span></template>
-          </multiselect>
+          <input v-model="age" @input="ageFilterChange()" placeholder="edit me">
         </div>
       </div>
     </div>
@@ -333,12 +313,9 @@ var app = new Vue({
     return {
       bottom: false,
       groups: [],
-      campusId: "",
-      meetingDay:"",
-      categoryId: "",
-      lifeStage: "",
       limit: 10,
       groupCount: 0,
+      age: "{{'Global' | PageParameter:'Age' | ToString | AsInteger}}",
       meetingDayValues: [{{selectedMeetingDays | ReplaceLast:',','' }}],
       meetingDayOptions: [
                       { value:0, text:'Sunday'},
@@ -355,12 +332,6 @@ var app = new Vue({
             {% endcampus %},
       categoryValues: [{{selectedCategories | ReplaceLast:',','' }}],
       categoryOptions: {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
-              {% for definedtype in definedtypeItems %}
-                {{definedtype.DefinedValues | ToJSON}}
-              {% endfor %}
-            {% enddefinedtype %},
-      lifeStageValues: [{{selectedLifeStages| ReplaceLast:',','' }}],
-      lifeStageOptions: {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
               {% for definedtype in definedtypeItems %}
                 {{definedtype.DefinedValues | ToJSON}}
               {% endfor %}
@@ -400,6 +371,7 @@ var app = new Vue({
       })
         .then(response => {
         this.groupCount =  response.data;
+        this.addGroups
       })
     },
     addGroups() {
@@ -441,16 +413,8 @@ var app = new Vue({
       this.insertParam("CategoryIds", categoryIdsString);
       this.filterChange();
     },
-    lifeStageFilterChange(){
-      var lifeStageIdsString = "";
-      this.lifeStageValues.forEach(function(lifeStageValue){
-        lifeStageIdsString += lifeStageValue.Id + ",";
-      });
-      if(lifeStageIdsString != ""){
-        lifeStageIdsString = lifeStageIdsString.slice(0,-1);
-      }
-
-      this.insertParam("LifeStageIds", lifeStageIdsString);
+    ageFilterChange(){
+      this.insertParam("Age", this.age);
       this.filterChange();
     },
     campusFilterChange(){
@@ -510,12 +474,10 @@ var app = new Vue({
         url += '&CategoryIds='+categoryIdsString.slice(0,-1);
       }
 
-      var lifeStageIdsString = "";
-      this.lifeStageValues.forEach(function(lifeStageValue){
-        lifeStageIdsString += lifeStageValue.Id + ",";
-      });
-      if(lifeStageIdsString != ""){
-        url += '&LifeStageIds='+lifeStageIdsString.slice(0,-1);
+      var ageString = "";
+      ageString = this.age;
+      if(ageString != ""){
+        url += '&Age='+ageString;
       }
       return url;
     }

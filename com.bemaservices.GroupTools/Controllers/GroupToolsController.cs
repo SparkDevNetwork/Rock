@@ -40,22 +40,9 @@ namespace com.bemaservices.GroupTools.Controllers
         public GroupToolsController() : base( new Rock.Model.GroupService( new Rock.Data.RockContext() ) ) { }
     }
 
-    /// <summary>
-    /// The controller class for the GroupTools
-    /// </summary>
     public partial class GroupToolsController
     {
-        /// <summary>
-        /// Gets the children.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="rootLocationId">The root location identifier.</param>
-        /// <param name="reservationId">The reservation identifier.</param>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <param name="setupTime">The setup time.</param>
-        /// <param name="cleanupTime">The cleanup time.</param>
-        /// <param name="attendeeCount">The attendee count.</param>
-        /// <returns></returns>
+    
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/com_bemaservices/GroupTools/GetGroups" )]
         public IQueryable<GroupInformation> GetGroups(
@@ -63,11 +50,11 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string lifeStageIds = "",
+            string age = "",
             int? offset = null,
             int? limit = null )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, lifeStageIds );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age );
 
             var groupInfoList = new List<GroupInformation>();
             foreach ( var group in qry.ToList() )
@@ -83,14 +70,29 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
-                var lifeStageGuidList = group.GetAttributeValue( "LifeStage" ).SplitDelimitedValues().AsGuidList();
-                if ( lifeStageGuidList.Any() )
+                var maximumAge = group.GetAttributeValue( "MaximumAge" ).AsIntegerOrNull();
+                var minimumAge = group.GetAttributeValue( "MinimumAge" ).AsIntegerOrNull();
+                if ( minimumAge.HasValue || maximumAge.HasValue )
                 {
-                    var lifeStages = new DefinedValueService( new RockContext() ).GetByGuids( lifeStageGuidList );
-                    if ( lifeStages.Any() )
+                    if ( !minimumAge.HasValue )
                     {
-                        groupInfo.LifeStage = lifeStages.Select( ar => ar.Value ).JoinStrings( "," );
+                        groupInfo.LifeStage = String.Format( "{0} & Under", maximumAge.Value );
                     }
+                    else
+                    {
+                        if ( !maximumAge.HasValue )
+                        {
+                            groupInfo.LifeStage = String.Format( "{0} & Up", minimumAge.Value );
+                        }
+                        else
+                        {
+                            groupInfo.LifeStage = String.Format( "{0} - {1}", minimumAge.Value, maximumAge.Value );
+                        }
+                    }
+                }
+                else
+                {
+                    groupInfo.LifeStage = "";
                 }
 
                 var categoryGuids = group.GetAttributeValue( "Category" ).SplitDelimitedValues().AsGuidList();
@@ -190,7 +192,7 @@ namespace com.bemaservices.GroupTools.Controllers
             return groupInfoQry;
         }
 
-        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string lifeStageIds )
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age )
         {
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
@@ -200,7 +202,6 @@ namespace com.bemaservices.GroupTools.Controllers
             var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
             var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
             var categoryIdList = categoryIds.SplitDelimitedValues().AsIntegerList();
-            var lifeStageIdList = lifeStageIds.SplitDelimitedValues().AsIntegerList();
 
             if ( groupTypeIdList.Any() )
             {
@@ -223,25 +224,37 @@ namespace com.bemaservices.GroupTools.Controllers
                 qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "Category" && categoryList.Any( c => av.Value.Contains( c ) ) );
             }
 
-            if ( lifeStageIdList.Any() )
+            var ageInt = age.AsIntegerOrNull();
+            if ( ageInt.HasValue )
             {
-                var lifeStageList = new DefinedValueService( rockContext ).GetByIds( lifeStageIdList ).Select( c => c.Guid.ToString() ).ToList();
-                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "LifeStage" && lifeStageList.Any( c => av.Value.Contains( c ) ) );
+                int entityTypeId = EntityTypeCache.GetId( typeof( Group ) ) ?? 0;
+
+                var excludedMinimumAgeIds = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                    .Where( a => a.Attribute.Key == "MinimumAge" )
+                    .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                    .Where( a => a.ValueAsNumeric.HasValue && a.ValueAsNumeric > ageInt.Value )
+                    .Select( a => a.EntityId );
+
+                var excludedMaximumAgeIds = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                    .Where( a => a.Attribute.Key == "MaximumAge" )
+                    .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                    .Where( a => a.ValueAsNumeric.HasValue && a.ValueAsNumeric < ageInt.Value )
+                    .Select( a => a.EntityId );
+
+                qry = qry.Where( g => !excludedMaximumAgeIds.Contains( g.Id ) && !excludedMinimumAgeIds.Contains( g.Id ) );
             }
 
             return qry;
         }
 
         /// <summary>
-        /// Gets the children.
+        /// Gets the group count.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="rootLocationId">The root location identifier.</param>
-        /// <param name="reservationId">The reservation identifier.</param>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <param name="setupTime">The setup time.</param>
-        /// <param name="cleanupTime">The cleanup time.</param>
-        /// <param name="attendeeCount">The attendee count.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="meetingDays">The meeting days.</param>
+        /// <param name="categoryIds">The category ids.</param>
+        /// <param name="lifeStageIds">The life stage ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/com_bemaservices/GroupTools/GetGroupCount" )]
@@ -250,9 +263,9 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string lifeStageIds = "" )
+            string age = "" )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, lifeStageIds );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age );
 
             return qry.Count();
         }
