@@ -205,17 +205,17 @@ namespace Rock.Jobs
                                     groupMemberContext.SaveChanges();
 
                                     // If the Group has an exit email, and person has an email address, send them the exit email
-                                    if ( sync.ExitSystemEmail != null )
+                                    if ( sync.ExitSystemCommunication != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( targetPerson.PersonId );
-                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        if ( person.CanReceiveEmail( false ) )
                                         {
                                             // Send the exit email
                                             var mergeFields = new Dictionary<string, object>();
                                             mergeFields.Add( "Group", sync.Group );
                                             mergeFields.Add( "Person", person );
-                                            var emailMessage = new RockEmailMessage( sync.ExitSystemEmail );
-                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            var emailMessage = new RockEmailMessage( sync.ExitSystemCommunication );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                             var emailErrors = new List<string>();
                                             emailMessage.Send( out emailErrors );
                                             errors.AddRange( emailErrors );
@@ -317,10 +317,10 @@ namespace Rock.Jobs
                                     }
 
                                     // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
-                                    if ( sync.WelcomeSystemEmail != null )
+                                    if ( sync.WelcomeSystemCommunication != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        if ( person.CanReceiveEmail( false ) )
                                         {
                                             // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
                                             // account, add one for them.
@@ -350,8 +350,8 @@ namespace Rock.Jobs
                                             mergeFields.Add( "Person", person );
                                             mergeFields.Add( "NewPassword", newPassword );
                                             mergeFields.Add( "CreateLogin", createLogin );
-                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemEmail );
-                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                             var emailErrors = new List<string>();
                                             emailMessage.Send( out emailErrors );
                                             errors.AddRange( emailErrors );

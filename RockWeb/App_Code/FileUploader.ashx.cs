@@ -57,7 +57,7 @@ namespace RockWeb
             if ( !context.User.Identity.IsAuthenticated )
             {
                 // If not, see if there's a valid token
-                string authToken = context.Request.Headers["Authorization-Token"];
+                string authToken = context.Request.Headers[Rock.Rest.HeaderTokens.AuthorizationToken];
                 if ( string.IsNullOrWhiteSpace( authToken ) )
                 {
                     authToken = context.Request.Params["apikey"];
@@ -336,7 +336,18 @@ namespace RockWeb
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileSize = uploadedFile.ContentLength;
-            binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+
+            /*
+             * 2020-02-11 BJW
+             *
+             * The ReplaceSpecialCharacters extension call was added to remove characters that are outside the legal character range.
+             * For example, if a file is moved from a Linux system, it might have a colon that manifests as a char with int value
+             * in the thousands range (far outside typical character range. This causes unpredictable behavior with the various file
+             * storage providers (GCP might handle it differently than the database storage provider). In order to add consistency
+             * we simply replace any of these characters with an underscore. This includes spaces, which are normal, but are security
+             * risks if they fall in certain parts of the filename.
+             */
+            binaryFile.FileName = Path.GetFileName( uploadedFile.FileName.ReplaceSpecialCharacters( "_" ) );
 
             if ( _mimeTypeRemap.ContainsKey( binaryFile.MimeType ) )
             {

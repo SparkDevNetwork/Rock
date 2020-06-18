@@ -9,7 +9,7 @@
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-        <asp:Panel ID="pnlDetails" runat="server" CssClass="row">
+        <asp:Panel id="pnlDetails" runat="server" CssClass="row">
 
             <!-- BEMA.FE3.Start -->
             <asp:Panel ID="pnlBemaFilters" runat="server" Visible="false">

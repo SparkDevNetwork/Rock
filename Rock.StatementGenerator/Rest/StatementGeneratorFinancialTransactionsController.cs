@@ -405,7 +405,7 @@ namespace Rock.StatementGenerator.Rest
 
                 foreach ( var financialTransaction in financialTransactionsList )
                 {
-                    if ( options.TransactionAccountIds != null)
+                    if ( options.TransactionAccountIds != null )
                     {
                         // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
                         financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => options.TransactionAccountIds.Contains( a.AccountId ) ).ToList();
@@ -549,7 +549,7 @@ namespace Rock.StatementGenerator.Rest
                 var transactionListNonCash = transactionDetailListNonCash.GroupBy( a => a.Transaction ).Select( a => a.Key ).ToList();
                 mergeFields.Add( "Transactions", transactionListCash );
                 mergeFields.Add( "TransactionsNonCash", transactionListNonCash );
-                
+
                 // Add the standard TransactionDetails and TransactionDetailsNonCash that the default Rock templates use
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
                 mergeFields.Add( "TransactionDetailsNonCash", transactionDetailListNonCash );
@@ -753,7 +753,7 @@ namespace Rock.StatementGenerator.Rest
             {
                 throw new Exception( string.Format( "The person with ID {0} could not be found", personId ) );
             }
-            if (!person.PrimaryFamilyId.HasValue)
+            if ( !person.PrimaryFamilyId.HasValue )
             {
                 throw new Exception( string.Format( "The person with ID {0} does not have a primary family ID", personId ) );
             }
@@ -761,9 +761,10 @@ namespace Rock.StatementGenerator.Rest
             // Build the options for the generator
             var options = new StatementGeneratorOptions
             {
-                EndDate = endDate,                
+                EndDate = endDate,
                 LayoutDefinedValueGuid = templateValue.Guid,
-                StartDate = startDate
+                StartDate = startDate,
+                ExcludeOptedOutIndividuals = false
             };
 
             // Get the generator result

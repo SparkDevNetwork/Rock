@@ -78,10 +78,21 @@
     <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
     <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
     <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
-    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />    
+    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
     <None Include="Migrations\006_AlternateBusinessList.cs.exclude" />
     <None Include="Migrations\007_PersonAuthorizedOnPage.cs.exclude" />
     <None Include="Migrations\008_LargeDonations.cs.exclude" />
+    <None Include="Migrations\009_DuplicateContentChannelItemSlugs.cs.exclude" />
+    <None Include="Migrations\010_DuplicateEmails.cs.exclude" />
+    <None Include="Migrations\011_PledgeProgressReport.cs.exclude" />
+    <None Include="Migrations\012_ConnectionRequestsChart.cs.exclude" />
+    <None Include="Migrations\013_BaptismOverTimeChart.cs.exclude" />
+    <None Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs.exclude" />
+    <None Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs.exclude" />
+    <None Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs.exclude" />
+    <None Include="Migrations\017_FamilyCampusNotLastTransaction.cs.exclude" />
+    <None Include="Migrations\018_GivingByFinancialAccount.cs.exclude" />
+
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -153,14 +164,14 @@
     <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
   </Target>
   <Target Name="UpdateAssemblyVersion" Condition="'$(Configuration)' == 'Release'">
-    <!-- 
-    	When creating a new version of this project, update the Build number 
+    <!--
+    	When creating a new version of this project, update the Build number
     	(and Major and Minor if needed) in the .version file to be the correct version.
     	The revision number will always be automatic.
     -->
-    <!-- 
+    <!--
       We'll increment the version number only during the "BeforeBuild" and then use this
-      new version number during the "AfterBuild" step for the zip and plugin packaging. 
+      new version number during the "AfterBuild" step for the zip and plugin packaging.
     -->
     <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment">
       <Output TaskParameter="Major" PropertyName="Major" />

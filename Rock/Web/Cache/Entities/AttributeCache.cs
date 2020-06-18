@@ -205,7 +205,7 @@ namespace Rock.Web.Cache
         public bool IsAnalyticHistory { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attribute is active.
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
@@ -240,6 +240,21 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string  AbbreviatedName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; private set; }
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
@@ -405,6 +420,8 @@ namespace Rock.Web.Cache
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
             AbbreviatedName = attribute.AbbreviatedName;
+            ShowOnBulk = attribute.ShowOnBulk;
+            IsPublic = attribute.IsPublic;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )

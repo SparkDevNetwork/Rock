@@ -149,6 +149,23 @@ namespace Rock.Model
         [DataMember]
         public int? InitiatorPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// The Entity Id.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Type Id.
+        /// </summary>
+        /// <value>
+        /// The Entity Type Id.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
         #endregion
 
         #region Virtual Properties

@@ -69,7 +69,7 @@ namespace Rock.Migrations
 
 <p>&nbsp;</p>
 {{ 'Global' | Attribute:'EmailFooter' }}
-", Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION );
+", Rock.SystemGuid.SystemCommunication.ATTENDANCE_NOTIFICATION );
 
             Sql( @"
 INSERT INTO [dbo].[Schedule]

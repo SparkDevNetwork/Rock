@@ -44,6 +44,16 @@ namespace Rock.SystemGuid
         public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
 
         /// <summary>
+        /// GUID for the Campus Status
+        /// </summary>
+        public const string CAMPUS_STATUS = "840CDA6D-6E81-4EB7-B325-BE708990CCE9";
+
+        /// <summary>
+        /// GUID for the Campus Type
+        /// </summary>
+        public const string CAMPUS_TYPE = "8C2260A8-6130-414A-BD32-22743FEAB256";
+
+        /// <summary>
         /// The types of static color swatches supported
         /// </summary>
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
@@ -165,9 +175,19 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// The grouptype inactive reason
+        /// </summary>
+        public const string GROUPTYPE_INACTIVE_REASONS = "EB5D9839-F770-4E22-8B56-0B09397307D9";
+
+        /// <summary>
         /// Guid for the types of interaction service.
         /// </summary>
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
+
+        /// <summary>
+        /// Guid for the JSON Web Token Configuration
+        /// </summary>
+        public const string JWT_CONFIGURATION = "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7";
 
         /// <summary>
         /// Guid for Default link list
@@ -297,6 +317,16 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
+        /// Template Block
+        /// </summary>
+        public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
+
+        /// <summary>
+        /// Template
+        /// </summary>
+        public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
+
+        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
@@ -337,6 +367,11 @@ namespace Rock.SystemGuid
 		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
 
         /// <summary>
+        /// Guid for Structured Content Editor Tools
+        /// </summary>
+        public const string STRUCTURED_CONTENT_EDITOR_TOOLS = "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA";
+
+        /// <summary>
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
@@ -360,5 +395,10 @@ namespace Rock.SystemGuid
         /// Used to store various liquid templates for features in Rock.
         /// </summary>
         public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
+
+        /// <summary>
+        /// The group RSVP decline reason.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON = "1E339D24-3DF3-4628-91C3-DA9300D21ACE";
     }
 }

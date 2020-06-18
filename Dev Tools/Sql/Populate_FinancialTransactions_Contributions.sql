@@ -2,9 +2,9 @@ set nocount on
 
 /* Change these settings to your liking*/
 declare
-	@yearsBack int = 10,
-	@maxPersonCount INT = 40000, /* limit to first X persons in the database */ 
-	@maxTransactionCount int = 200000, 
+	@yearsBack int = 1,
+	@maxPersonCount INT = 40000, /* limit to first X persons in the database (Handy for testing Statement Generator) */ 
+	@maxTransactionCount int = 500000, 
 	@maxBatchNumber INT = 1000
 
 declare
@@ -67,6 +67,22 @@ BEGIN
 	SET @BatchDate = DATEADD(day, - 1, @BatchDate)
 END
 
+IF CURSOR_STATUS('global','personAliasIdCursor')>=-1
+BEGIN
+    DEALLOCATE personAliasIdCursor;
+END
+
+-- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
+declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select top( @maxPersonCount ) Id from PersonAlias order by newid();
+open personAliasIdCursor;
+
+IF CURSOR_STATUS('global','batchIdCursor')>=-1
+BEGIN
+    DEALLOCATE batchIdCursor;
+END
+
+declare batchIdCursor cursor LOCAL FAST_FORWARD for select top( @maxBatchNumber ) Id from FinancialBatch order by newid();
+open batchIdCursor;
 
 begin transaction
 
@@ -83,32 +99,47 @@ declare
 while @transactionCounter < @maxTransactionCount
     begin
         set @transactionAmount = ROUND(rand() * 5000, 2);
+
+        fetch next from personAliasIdCursor into @authorizedPersonAliasId;
+
+		if (@@FETCH_STATUS != 0) begin
+		   close personAliasIdCursor;
+		   open personAliasIdCursor;
+		   fetch next from personAliasIdCursor into @authorizedPersonAliasId;
+		end
+
         set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
-        set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
-        while @authorizedPersonAliasId is null
-        begin
-          -- Try again just in case we didn't get anybody
-          set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
-        end
 
-        set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID())
-
-        --set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
         set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
 
 		insert into FinancialPaymentDetail ( CurrencyTypeValueId, CreditCardTypeValueId, [Guid] ) values (@currencyTypeCash, @creditCardTypeVisa, NEWID());
 		set @financialPaymentDetailId = SCOPE_IDENTITY()
 
-	   set @BatchId = null
-	   while @BatchId is null
-	   begin
-		  set @BatchId = (select top 1 id from FinancialBatch where Id = round(rand()*@MaxBatchId, 0))
-	   end
+        if (@transactionCounter % 100 = 0 )
+        begin
+            set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID())
+        end
+
+        if (@transactionCounter % 17 = 0 )
+        begin
+          set @accountId = (select top 1 id from FinancialAccount order by NEWID());
+        end
+
+        if (@transactionCounter % 50 = 0 )
+        begin
+            fetch next from batchIdCursor into @BatchId;
+		    if (@@FETCH_STATUS != 0) begin
+		       close batchIdCursor;
+		       open batchIdCursor;
+		       fetch next from batchIdCursor into @BatchId;
+		    end
+        end
 
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonAliasId]
                    ,[BatchId]
                    ,[TransactionDateTime]
+                   ,[SundayDate]
                    ,[TransactionCode]
                    ,[Summary]
                    ,[TransactionTypeValueId]
@@ -122,6 +153,7 @@ while @transactionCounter < @maxTransactionCount
                    (@authorizedPersonAliasId
                    ,@batchId
                    ,@transactionDateTime
+                   ,dbo.ufnUtility_GetSundayDate(@transactionDateTime)
                    ,null
                    ,@transactionNote
                    ,@transactionTypeValueId
@@ -133,12 +165,6 @@ while @transactionCounter < @maxTransactionCount
                    ,NEWID()
         )
         set @transactionId = SCOPE_IDENTITY()
-
-        set @accountId = null
-	   while @accountId is null
-	   begin
-		  set @accountId = (select top 1 id from FinancialAccount where Id = round(rand()*@MaxAccountId, 0))
-	   end
  
         -- For contributions, we just need to put in the AccountId (entitytype/entityid would be null)
         INSERT INTO [dbo].[FinancialTransactionDetail]
@@ -160,7 +186,7 @@ while @transactionCounter < @maxTransactionCount
 
         set @transactionCounter += 1;
         set @transactionDateTime = DATEADD(ss, (86000*@daysBack/@maxTransactionCount), @transactionDateTime);
-		if (@transactionCounter % 1000 = 0)
+		if (@transactionCounter % 10000 = 0)
 		begin
 			print @transactionCounter
 		end
@@ -168,6 +194,10 @@ while @transactionCounter < @maxTransactionCount
 
 commit transaction
 
+close personAliasIdCursor;
+close batchIdCursor;
+
 end;
 
 
+select count(*) from FinancialTransaction

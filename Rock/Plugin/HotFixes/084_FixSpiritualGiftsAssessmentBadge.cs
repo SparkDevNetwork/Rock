@@ -27,15 +27,15 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( $@"UPDATE [dbo].[AssessmentType]
-SET [BadgeSummaryLava] = '{{% assign gifts = Person | Attribute:''core_DominantGifts'' %}}
-{{% if gifts contains '','' %}}
-  {{% assign gifts = Person | Attribute:''core_DominantGifts'',''Object'' %}}
-  {{{{ gifts | Map:''Value'' | Join:'', '' | ReplaceLast:'','','' and'' }}}}
-{{% else %}}
-  {{{{ gifts }}}}
-{{% endif %}}'
-WHERE [Guid] = '{Rock.SystemGuid.AssessmentType.GIFTS}'" );
+//            Sql( $@"UPDATE [dbo].[AssessmentType]
+//SET [BadgeSummaryLava] = '{{% assign gifts = Person | Attribute:''core_DominantGifts'' %}}
+//{{% if gifts contains '','' %}}
+//  {{% assign gifts = Person | Attribute:''core_DominantGifts'',''Object'' %}}
+//  {{{{ gifts | Map:''Value'' | Join:'', '' | ReplaceLast:'','','' and'' }}}}
+//{{% else %}}
+//  {{{{ gifts }}}}
+//{{% endif %}}'
+//WHERE [Guid] = '{Rock.SystemGuid.AssessmentType.GIFTS}'" );
         }
 
         /// <summary>

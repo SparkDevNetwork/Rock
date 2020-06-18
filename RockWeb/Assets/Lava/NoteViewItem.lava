@@ -5,7 +5,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- assign viewableChildNotesCount = note.ViewableDescendentsCount -%}
 {%- if note.IsAlert -%}
     {%- assign wrapperClass = 'is-alert' -%}
-{%- elsif note.IsPrivateNote -%}
+{%- elseif note.IsPrivateNote -%}
     {%- assign wrapperClass = 'is-personal' -%}
 {%- else -%}
     {%- assign wrapperClass = '' -%}
@@ -128,7 +128,11 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                                 <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                             {%- endif -%}
                             {%- if canEdit -%}
-                            <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
+                            {%- assign isPrivateVisible = 0  -%}
+                            {%- if CurrentPerson.Id == note.CreatedByPersonId -%}
+                            {%- assign isPrivateVisible = 1 -%}
+                            {%- endif -%}
+                            <li><button type="button" class="dropdown-item btn-link js-editnote" data-isprivatevisible="{{ isPrivateVisible }}">Edit</button></li>
                             {% endif %}
                             {%- if allowsWatching and note.ApprovalStatus != "Denied" -%}
                                 <li>

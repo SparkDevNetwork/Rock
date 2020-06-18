@@ -94,8 +94,12 @@ namespace Rock.Jobs
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                    scheduler.ScheduleJob( jobDetail, jobTrigger );
-                    jobsScheduleUpdated++;
+                    // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
+                    if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
+                    {
+                        scheduler.ScheduleJob( jobDetail, jobTrigger );
+                        jobsScheduleUpdated++;
+                    }
 
                     if ( job.LastStatus == errorSchedulingStatus )
                     {

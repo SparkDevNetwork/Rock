@@ -143,6 +143,26 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background color of each tag
+        /// </summary>
+        /// <value>
+        /// The color of the tag.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string BackgroundColor { get; set; } = "#e0e0e0";
+
         #endregion
 
         #region Virtual Properties

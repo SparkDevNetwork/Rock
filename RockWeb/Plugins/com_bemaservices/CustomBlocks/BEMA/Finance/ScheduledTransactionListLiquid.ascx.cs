@@ -29,7 +29,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block( v9.4.1)
+ * BEMA Modified Core Block( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:
@@ -104,8 +104,10 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         IsRequired = false,
         Order = 10 )]
 
+	/* BEMA.FE1.Start */
     [BooleanField( "Show Event Registration Payments", "Whether Event Registration Payments should be displayed or not.", true, "", 11, BemaAttributeKeys.ShowEventRegistrationPayments )]
-
+	/* BEMA.FE1.End */
+	
     public partial class ScheduledTransactionListLiquid : RockBlock
     {
         /* BEMA.Start */
@@ -118,7 +120,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string Template = "Template";
             public const string ScheduledTransactionEditPage = "ScheduledTransactionEditPage";

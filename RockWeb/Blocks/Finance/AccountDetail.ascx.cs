@@ -381,7 +381,6 @@ namespace RockWeb.Blocks.Finance
             dvpAccountType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ).Id;
 
             cpCampus.Campuses = CampusCache.All();
-            cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 
         #endregion

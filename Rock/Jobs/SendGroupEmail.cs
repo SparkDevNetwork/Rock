@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// <summary>
     /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group.
     /// </summary>
-    [SystemEmailField( "System Email", "The email template that will be sent.", true, "" )]
+    [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
     [GroupField( "Group", "The group the email will be sent to." )]
     [BooleanField( "Send To Descendant Groups", "Determines if the email will be sent to descendant groups." )]
     [DisallowConcurrentExecution]
@@ -64,7 +64,7 @@ namespace Rock.Jobs
                 List<int> groupIds = new List<int>();
                 GetGroupIds( groupIds, sendToDescendants, group );
 
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
 
                 var groupMemberList = new GroupMemberService( rockContext ).Queryable().Where( gm =>
                     groupIds.Contains( gm.GroupId ) &&
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 
-                    recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
+                    recipients.Add( new RockEmailMessageRecipient( groupMember.Person, mergeFields ) );
                 }
 
                 var errors = new List<string>();

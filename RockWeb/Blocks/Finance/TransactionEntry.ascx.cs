@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 11, "DisplayEmail" )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 12 )]
-    [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 13, "ConfirmAccountTemplate" )]
+    [SystemCommunicationField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 13, "ConfirmAccountTemplate" )]
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
     // Text Options
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 25 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 26 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 27 )]
-    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 28 )]
+    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 28 )]
     [CodeEditorField( "Payment Comment", @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>. Merge fields include: <pre>CurrentPerson: {},
 PageParameters {},
 TransactionDateTime: '8/29/2016',
@@ -927,7 +927,7 @@ TransactionAccountDetails: [
                                 mergeFields.Add( "User", user );
 
                                 var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
-                                emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = false;
@@ -2601,6 +2601,12 @@ TransactionAccountDetails: [
             bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
             Person person = GetPerson( !givingAsBusiness );
 
+            // Add contact person if giving as a business and current person is unknow
+            if ( person == null && givingAsBusiness )
+            {
+                person = GetBusinessContact();
+            }
+
             if ( person == null )
             {
                 errorMessage = "There was a problem creating the person information";
@@ -2899,13 +2905,8 @@ TransactionAccountDetails: [
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            }            
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
-            transaction.BatchId = batch.Id;
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2925,7 +2926,7 @@ TransactionAccountDetails: [
             {
                 rockContext.SaveChanges();
             }
-
+            
             transaction.BatchId = batch.Id;
 
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -2933,6 +2934,9 @@ TransactionAccountDetails: [
 
             rockContext.SaveChanges();
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,

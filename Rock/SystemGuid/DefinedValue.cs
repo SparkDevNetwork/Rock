@@ -21,6 +21,54 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Block Template
+
+        /// <summary>
+        /// The block template for the mobile group member list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
+
+        /// <summary>
+        /// The block template for the mobile group member view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW = "09053C7C-9374-4489-8A7B-71F02E3E7D89";
+
+        /// <summary>
+        /// The block template for the mobile group view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
+        #endregion
+
+        #region Campus
+
+        /// <summary>
+        /// The campus status pending
+        /// </summary>
+        public const string CAMPUS_STATUS_PENDING = "008209F5-144E-4282-92C3-944A4AC78700";
+
+        /// <summary>
+        /// The campus status open
+        /// </summary>
+        public const string CAMPUS_STATUS_OPEN = "10696FD8-D0C7-486F-B736-5FB3F5D69F1A";
+
+        /// <summary>
+        /// The campus status closed
+        /// </summary>
+        public const string CAMPUS_STATUS_CLOSED = "99D2C9CB-B6DC-49C1-B626-B76BD398B63A";
+
+        /// <summary>
+        /// The campus type physical
+        /// </summary>
+        public const string CAMPUS_TYPE_PHYSICAL = "5A61507B-79CB-4DA2-AF43-6F82260203B3";
+
+        /// <summary>
+        /// The campus type online
+        /// </summary>
+        public const string CAMPUS_TYPE_ONLINE = "10101010-2DB4-4C95-B07D-C400E412289B";
+
+        #endregion Campus
+
         #region Communication Medium Type
 
         /// <summary>
@@ -172,6 +220,12 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
 
+        /// <summary>
+        /// A Transaction Type of Receipt
+        /// NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot
+        /// </summary>
+        public const string TRANSACTION_TYPE_RECEIPT = "F57AAF36-F208-4A85-A078-E2B1F91798EB";
+
         #endregion
 
         #region Financial Source
@@ -216,7 +270,7 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
         /// <summary>
-        /// Work Record Type
+        /// Work location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
@@ -229,6 +283,12 @@ namespace Rock.SystemGuid
         /// Meeting Location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
+
+        /// <summary>
+        /// Some other type of Group Location
+        /// NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slinghshot.
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_OTHER = "D49965C7-5254-4D2D-BC77-F390375F0C44";
 
         #endregion
 
@@ -243,6 +303,35 @@ namespace Rock.SystemGuid
         /// Group Type Purpose of Check-in Filter
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
+
+        #endregion
+
+        #region Group RSVP
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Illness.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_ILLNESS = "15B4124E-9717-4161-9974-86C4925053E3";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Vacation.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_VACATION = "759E0745-727B-493D-A44C-3A042A11B761";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Schedule Conflict.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_SCHEDULE_CONFLICT = "D5989FA4-2CE0-4427-83E4-E43F30045B43";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Childcare Not Available.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_CHILDCARE = "0E728945-3D74-4E03-9799-0CF5EE8D6B3D";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Other.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_OTHER = "1634AC71-0054-4F3C-A76D-A75A48E6BA56";
 
         #endregion
 
@@ -283,9 +372,14 @@ namespace Rock.SystemGuid
         public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
 
         /// <summary>
-        /// Twice a month
+        /// Twice a month on the 1st and 15th
         /// </summary>
         public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
+
+        /// <summary>
+        /// A Frequency of First and Fifteenth
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH = "C752403C-0F88-45CD-B574-069355C01D77";
 
         /// <summary>
         /// Monthly
@@ -426,6 +520,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
 
+        /// <summary>
+        /// NamelessPerson Record Type
+        /// </summary>
+        public const string PERSON_RECORD_TYPE_NAMELESS = "721300ED-1267-4DA0-B4F2-6C6B5B17B1C5";
+
         #endregion
 
         #region Person Connection Status
@@ -497,6 +596,15 @@ namespace Rock.SystemGuid
         /// Android platform
         /// </summary>       
         public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
+
+        #endregion
+
+        #region Structure Content Editor
+
+        /// <summary>
+        /// Default Structure Content Editor
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
 
         #endregion
 

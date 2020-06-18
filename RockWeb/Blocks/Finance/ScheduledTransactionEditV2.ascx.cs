@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.Finance
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
-        Description = "The accounts to display. By default all active accounts with a Public Name will be displayed. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
         Category = AttributeCategory.None,
         Order = 3 )]
 
@@ -256,7 +257,7 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string EnableACH = "EnableACH";
 
@@ -318,10 +319,8 @@ mission. We are so grateful for your commitment.</p>
 
             if ( scheduledTransaction == null )
             {
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Title = "Invalid Scheduled Transaction";
-                nbMessage.Text = "The scheduled transaction you've selected either does not exist or is not valid.";
-
+                // NOTE: Also verified in ShowDetails()
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Scheduled Transaction not found." );
                 return;
             }
 
@@ -335,6 +334,13 @@ mission. We are so grateful for your commitment.</p>
 
             bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
             bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+
+            if ( enableACH == false && enableCreditCard == false )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Enable ACH and/or Enable Credit Card needs to be enabled." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
 
             _hostedPaymentInfoControl = financialGatewayComponent.GetHostedPaymentInfoControl( financialGateway, "_hostedPaymentInfoControl", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
             phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
@@ -406,7 +412,7 @@ mission. We are so grateful for your commitment.</p>
                 return null;
             }
 
-            FinancialScheduledTransaction scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
+            FinancialScheduledTransaction scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionId.Value, i => i.AuthorizedPersonAlias.Person );
 
             if ( scheduledTransaction != null )
             {
@@ -421,17 +427,21 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void ShowDetails()
         {
-            var scheduledTransaction = this.GetFinancialScheduledTransaction( new RockContext() );
+            var rockContext = new RockContext();
+            var scheduledTransaction = this.GetFinancialScheduledTransaction( rockContext );
 
             if ( scheduledTransaction == null )
             {
-                // todo: show a warning
+                // Note: Also verified in OnInit
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Scheduled Transaction not found." );
                 return;
             }
 
             hfScheduledTransactionId.Value = scheduledTransaction.Id.ToString();
 
-            var accountAmounts = scheduledTransaction.ScheduledTransactionDetails.Select( a => new CampusAccountAmountPicker.AccountIdAmount( a.AccountId, a.Amount ) ).ToArray();
+            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+
+            CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = scheduledTransaction.ScheduledTransactionDetails.Select( a => new CampusAccountAmountPicker.AccountIdAmount( a.AccountId, a.Amount ) ).ToArray();
 
             // if the scheduledTransaction already has Multiple Account, enabled multi account mode. Otherwise, only enabled multi account based on the block setting.
             var hasMultipleAccounts = accountAmounts.Length > 1;
@@ -448,7 +458,20 @@ mission. We are so grateful for your commitment.</p>
 
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
 
+            caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
+
+            if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
+
             caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
+
+            var targetPerson = scheduledTransaction.AuthorizedPersonAlias.Person;
+
+            SetAccountPickerCampus( targetPerson );
 
             int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
 
@@ -464,6 +487,14 @@ mission. We are so grateful for your commitment.</p>
             BindPersonSavedAccounts();
 
             dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
+
+            // NOTE: Depending on the Gateway, the earliest date could be more than 1-2+ days in the future
+            var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
+
+            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate.Value < earliestScheduledStartDate )
+            {
+                dtpStartDate.SelectedDate = earliestScheduledStartDate;
+            }
 
             var person = scheduledTransaction.AuthorizedPersonAlias.Person;
 
@@ -481,6 +512,48 @@ mission. We are so grateful for your commitment.</p>
             }
 
             acBillingAddress.SetValues( billingLocation );
+        }
+
+        /// <summary>
+        /// Shows the configuration message.
+        /// </summary>
+        /// <param name="notificationBoxType">Type of the notification box.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="message">The message.</param>
+        private void ShowConfigurationMessage( NotificationBoxType notificationBoxType, string title, string message )
+        {
+            nbConfigurationNotification.NotificationBoxType = notificationBoxType;
+            nbConfigurationNotification.Title = title;
+            nbConfigurationNotification.Text = message;
+
+            nbConfigurationNotification.Visible = true;
+        }
+
+        /// <summary>
+        /// Hides the configuration message.
+        /// </summary>
+        private void HideConfigurationMessage()
+        {
+            nbConfigurationNotification.Visible = false;
+        }
+
+        /// <summary>
+        /// Sets the account picker campus from person
+        /// </summary>
+        private void SetAccountPickerCampus( Person person )
+        {
+            int? defaultCampusId = null;
+
+            if ( person != null )
+            {
+                var personCampus = person.GetCampus();
+                if ( personCampus != null )
+                {
+                    defaultCampusId = personCampus.Id;
+                }
+            }
+
+            caapPromptForAccountAmounts.CampusId = defaultCampusId;
         }
 
         /// <summary>
@@ -571,6 +644,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( rockContext );
             int scheduledTransactionId = hfScheduledTransactionId.Value.AsInteger();
             var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
 
@@ -639,11 +713,12 @@ mission. We are so grateful for your commitment.</p>
             financialScheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( referencePaymentInfo, financialGatewayComponent as GatewayComponent, rockContext );
 
             var selectedAccountIds = selectedAccountAmounts.Select( a => a.AccountId ).ToArray();
-            var deletedTransactionDetails = financialScheduledTransaction.ScheduledTransactionDetails.ToList().Where( a => selectedAccountIds.Contains( a.AccountId ) ).ToList();
+            var deletedTransactionDetails = financialScheduledTransaction.ScheduledTransactionDetails.ToList().Where( a => !selectedAccountIds.Contains( a.AccountId ) ).ToList();
 
             foreach ( var deletedTransactionDetail in deletedTransactionDetails )
             {
                 financialScheduledTransaction.ScheduledTransactionDetails.Remove( deletedTransactionDetail );
+                financialScheduledTransactionDetailService.Delete( deletedTransactionDetail );
             }
 
             foreach ( var selectedAccountAmount in selectedAccountAmounts )

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -92,6 +93,17 @@ namespace Rock.Model
         /// The invite system email identifier.
         /// </value>
         [DataMember]
+        public int? InviteSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the invite system email identifier.
+        /// </summary>
+        /// <value>
+        /// The invite system email identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use InviteSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? InviteSystemEmailId { get; set; }
 
         #endregion
@@ -117,13 +129,24 @@ namespace Rock.Model
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the binary file.
+        /// Gets or sets the system email to use when a person is invited to sign a document.
         /// </summary>
         /// <value>
-        /// The type of the binary file.
+        /// The system email.
         /// </value>
         [DataMember]
+        [Obsolete( "Use InviteSystemCommunication instead." )]
+        [RockObsolete( "1.10" )]
         public virtual SystemEmail InviteSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use when a person is invited to sign a document.
+        /// </summary>
+        /// <value>
+        /// The system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication InviteSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets the documents.
@@ -172,7 +195,11 @@ namespace Rock.Model
         {
             this.HasOptional( t => t.BinaryFileType ).WithMany().HasForeignKey( t => t.BinaryFileTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProviderEntityType ).WithMany().HasForeignKey( t => t.ProviderEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.InviteSystemCommunication ).WithMany().HasForeignKey( t => t.InviteSystemCommunicationId ).WillCascadeOnDelete( false );
+
+#pragma warning disable CS0618 // Type or member is obsolete
             this.HasOptional( t => t.InviteSystemEmail ).WithMany().HasForeignKey( t => t.InviteSystemEmailId ).WillCascadeOnDelete( false );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 

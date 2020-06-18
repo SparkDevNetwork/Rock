@@ -25,7 +25,7 @@ using Rock.CheckIn;
 using Rock.Web.Cache;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:

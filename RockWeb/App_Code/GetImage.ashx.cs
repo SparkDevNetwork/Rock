@@ -44,6 +44,8 @@ namespace RockWeb
             {
                 context.Response.Clear();
 
+                context.RewritePath( context.Server.HtmlDecode( context.Request.Url.PathAndQuery ) );
+
                 // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file (if isBinaryFile not specified, assume it is a BinaryFile)
                 bool isBinaryFile = ( context.Request.QueryString["isBinaryFile"] ?? "T" ).AsBoolean();
 

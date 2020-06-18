@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
+    [SystemCommunicationField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemCommunication.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     [BooleanField( "Allow Sorting", "Should the block allow sorting the Member's list by First Name or Last Name?", true, "", 13 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
@@ -1050,6 +1050,7 @@ cbDidNotMeet.ClientID );
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
                                     attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
+                                    attendance.DidAttend = attendee.Attended;
 
                                     // Check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;
@@ -1062,17 +1063,16 @@ cbDidNotMeet.ClientID );
                                     occurrence.Attendees.Add( attendance );
                                 }
                             }
-
-                            if ( attendance != null )
+                            else
                             {
+                                // Otherwise, only record that they attended -- don't change their attendance startDateTime 
                                 attendance.DidAttend = attendee.Attended;
-                                attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
                             }
                         }
                     }
                 }
 
-                rockContext.SaveChanges();
+                rockContext.SaveChanges();                
 
                 if ( occurrence.LocationId.HasValue )
                 {
@@ -1122,7 +1122,7 @@ cbDidNotMeet.ClientID );
                 mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
-                List<string> recipients = new List<string>();
+                List<Person> recipients = new List<Person>();
 
                 var notificationOptions = GetAttributeValue( "SendSummaryEmailTo" ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SendSummaryEmailType>() ).ToList();
                 foreach ( var notificationOption in notificationOptions )
@@ -1143,7 +1143,7 @@ cbDidNotMeet.ClientID );
                                 .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
                                 .Where( m => m.GroupRole.IsLeader );
 
-                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                             break;
 
                         case SendSummaryEmailType.AllGroupMembers:
@@ -1154,13 +1154,13 @@ cbDidNotMeet.ClientID );
                                 .Where( m => m.IsArchived == false )
                                 .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
 
-                            recipients.AddRange( allGroupMembers.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            recipients.AddRange( allGroupMembers.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                             break;
 
                         case SendSummaryEmailType.GroupAdministrator:
                             if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
                             {
-                                recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
+                                recipients.Add( _group.GroupAdministratorPersonAlias.Person );
                             }
 
                             break;
@@ -1176,7 +1176,7 @@ cbDidNotMeet.ClientID );
                                     .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
                                     .Where( m => m.GroupRole.IsLeader );
 
-                                    recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                    recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                                 }
 
                             break;
@@ -1184,7 +1184,7 @@ cbDidNotMeet.ClientID );
                         case SendSummaryEmailType.IndividualEnteringAttendance:
                             if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
                             {
-                                recipients.Add( this.CurrentPerson.Email );
+                                recipients.Add( this.CurrentPerson );
                             }
 
                             break;
@@ -1194,10 +1194,10 @@ cbDidNotMeet.ClientID );
                     }
                 }
 
-                foreach ( var recipient in recipients.Distinct( StringComparer.CurrentCultureIgnoreCase ) )
+                foreach ( var recipient in recipients )
                 {
                     var emailMessage = new RockEmailMessage( GetAttributeValue( "AttendanceEmailTemplate" ).AsGuid() );
-                    emailMessage.AddRecipient( new RecipientData( recipient, mergeObjects ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeObjects ) );
                     emailMessage.CreateCommunicationRecord = false;
                     emailMessage.Send();
                 }

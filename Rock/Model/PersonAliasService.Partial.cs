@@ -28,9 +28,9 @@ namespace Rock.Model
     public partial class PersonAliasService
     {
         /// <summary>
-        /// Gets the specified identifier.
+        /// Gets the PersonAlias with the id value
         /// </summary>
-        /// <param name="id">The identifier.</param>
+        /// <param name="id">id</param>
         /// <returns></returns>
         public override PersonAlias Get( int id )
         {
@@ -38,9 +38,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified unique identifier.
+        /// Gets the PersonAlias with the Guid value
         /// </summary>
-        /// <param name="guid">The unique identifier.</param>
+        /// <param name="guid">The GUID.</param>
         /// <returns></returns>
         public override PersonAlias Get( Guid guid )
         {
@@ -48,39 +48,33 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary alias.
+        /// Gets the primary alias for the specified personId
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         public virtual PersonAlias GetPrimaryAlias( int personId )
         {
-            return Queryable( "Person" )
-                .FirstOrDefault( a => a.PersonId == personId && a.AliasPersonId == personId );
+            return this.GetPrimaryAliasQuery().Include( a => a.Person ).Where( a => a.PersonId == personId ).FirstOrDefault();
         }
 
         /// <summary>
-        /// Gets the primary alias identifier.
+        /// Gets the primary alias id for the specified personId
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         public virtual int? GetPrimaryAliasId( int personId )
         {
-            return this.Queryable().Where( a => a.PersonId == personId && a.AliasPersonId == personId ).Select( a => a.Id ).FirstOrDefault();
+            return this.GetPrimaryAliasQuery().Where( a => a.PersonId == personId ).Select( a => ( int? ) a.Id ).FirstOrDefault();
         }
 
         /// <summary>
-        /// Gets the person identifier.
+        /// Gets the person identifier for the specified PersonAliasId
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <returns></returns>
         public virtual int? GetPersonId( int personAliasId )
         {
-            var personAlias = Get( personAliasId );
-            if ( personAlias != null )
-            {
-                return personAlias.PersonId;
-            }
-            return null;
+            return this.GetSelect( personAliasId, s => s.PersonId );
         }
 
         /// <summary>
@@ -121,9 +115,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by alias unique identifier.
+        /// Gets the PersonAlias for the person record that has the specified <see cref="Guid"/> value (The Person.Guid, not the PersonAlias.Guid)
         /// </summary>
-        /// <param name="aliasPersonGuid">The alias person unique identifier.</param>
+        /// <param name="aliasPersonGuid">The GUID value of the Person Record</param>
         /// <returns></returns>
         public virtual PersonAlias GetByAliasGuid( Guid aliasPersonGuid )
         {
@@ -204,7 +198,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person.
+        /// Gets the person from the specified PersonAlias.Guid
         /// </summary>
         /// <param name="personAliasGuid">The person alias unique identifier.</param>
         /// <returns></returns>
@@ -217,7 +211,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person.
+        /// Gets the person from the specified PersonAlias.Id
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <returns></returns>
@@ -230,7 +224,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person.
+        /// Gets the person from the specified PersonAlias.Id, but doesn't include it in change tracking
+        /// Use this if you aren't going to make any changes to the person record
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <returns></returns>
@@ -241,6 +236,15 @@ namespace Rock.Model
                 .Select( a => a.Person )
                 .AsNoTracking()
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Returns a Queryable of Primary Person Aliases
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<PersonAlias> GetPrimaryAliasQuery()
+        {
+            return this.Queryable().Where( a => a.PersonId == a.AliasPersonId );
         }
     }
 }

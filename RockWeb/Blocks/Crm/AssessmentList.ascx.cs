@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rockweb.Blocks.Crm
 {
     /// <summary>
-    /// Lists all avalable assesments for the individual.
+    /// Lists all available assessments for the individual.
     /// </summary>
     [DisplayName( "Assessment List" )]
     [Category( "CRM" )]
@@ -71,13 +71,12 @@ namespace Rockweb.Blocks.Crm
         IsRequired = true,
         DefaultValue = lavaTemplateDefaultValue,
         Order = 3)]
-
     #endregion Block Attributes
 
     public partial class AssessmentList : Rock.Web.UI.RockBlock
     {
-        #region Atrribute Keys
-        protected static class AttributeKey
+        #region Attribute Keys
+        private static class AttributeKey
         {
 
             /// <summary>
@@ -100,7 +99,7 @@ namespace Rockweb.Blocks.Crm
             /// </summary>
             public const string LavaTemplate = "LavaTemplate";
         }
-        #endregion Atrribute Keys
+        #endregion Attribute Keys
 
         #region constants
 
@@ -198,7 +197,7 @@ namespace Rockweb.Blocks.Crm
             AssessmentTypeService assessmentTypeService = new AssessmentTypeService( rockContext );
             var allAssessmentsOfEachType = assessmentTypeService.Queryable().AsNoTracking()
                 .Where( x => x.IsActive == true )
-                .Select( t => new AssessmentTypeListItem 
+                .Select( t => new AssessmentTypeListItem
                 {
                     Title = t.Title,
                     AssessmentPath = t.AssessmentPath,
@@ -216,17 +215,17 @@ namespace Rockweb.Blocks.Crm
                                 Status = a.Status,
                                 Requester = a.RequesterPersonAlias.Person.NickName + " " + a.RequesterPersonAlias.Person.LastName
                             } )
-                            .OrderBy( x => x.Status )
+                            .OrderByDescending( x => x.RequestedDate )
                             .ThenByDescending( x => x.CompletedDate )
                             .FirstOrDefault(),
-                    
+
                     }
                 )
                 // order by requested then by pending, completed, then by available to take
                 .OrderByDescending( x => x.LastRequestObject.Status )
                 .ThenBy( x => x.LastRequestObject )
                 .ToList();
-            
+
             // Checks current request types to use against the settings
             bool areThereAnyPendingRequests = false;
             bool areThereAnyRequests = false;
@@ -241,12 +240,11 @@ namespace Rockweb.Blocks.Crm
                 }
                 else if ( item.LastRequestObject.Status == AssessmentRequestStatus.Complete )
                 {
-                    if ( item.LastRequestObject.CompletedDate.HasValue && item.LastRequestObject.CompletedDate.Value.AddDays( item.MinDaysToRetake ) <= RockDateTime.Now )
+                    if ( item.LastRequestObject.CompletedDate.HasValue &&
+                        item.LastRequestObject.CompletedDate.Value.AddDays( item.MinDaysToRetake ) <= RockDateTime.Now &&
+                        !item.RequiresRequest )
                     {
-                        if ( IsBlockConfiguredToAllowRetakes( item ) )
-                        {
-                            item.AssessmentRetakeLinkButton = "<a href='" + item.AssessmentPath + "?AssessmentId=0'>Retake Assessment</a>";
-                        }
+                        item.AssessmentRetakeLinkButton = string.Format("<a href='{0}?AssessmentId=0'>Retake Assessment</a>", item.AssessmentPath );
                     }
                 }
             }
@@ -276,11 +274,11 @@ namespace Rockweb.Blocks.Crm
                 else
                 {
                     // ...Otherwise show any allowed, requested or completed requests.
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
+                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
                     var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
                         .Where( x => x.RequiresRequest != true
                             || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
-                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null ) 
+                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
                         );
 
                     mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
@@ -288,60 +286,6 @@ namespace Rockweb.Blocks.Crm
 
                 lAssessments.Text = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
             }
-        }
-
-        /// <summary>
-        /// Determines whether [is block configured to allow retakes] [the specified assessment type list item].
-        /// </summary>
-        /// <param name="assessmentTypeListItem">The assessment type list item.</param>
-        /// <returns>
-        ///   <c>true</c> if [is block configured to allow retakes] [the specified assessment type list item]; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsBlockConfiguredToAllowRetakes( AssessmentTypeListItem assessmentTypeListItem )
-        {
-            string domain = System.Web.HttpContext.Current.Request.Url.GetLeftPart( UriPartial.Authority ).Replace( "https://", string.Empty ).Replace( "http://", string.Empty );
-            string route = assessmentTypeListItem.AssessmentPath.Replace( "/", string.Empty );
-
-            var rockContext = new RockContext();
-            var pageRouteService = new PageRouteService( rockContext );
-            var pageId = pageRouteService
-                .Queryable()
-                .Where( r => r.Route == route )
-                .Where( r => r.Page.Layout.Site.SiteDomains.Select( d => d.Domain == domain ).FirstOrDefault() )
-                .Select( r => r.PageId )
-                .FirstOrDefault();
-
-            Guid blockTypeGuid = Guid.Empty;
-            switch ( route )
-            {
-                case "ConflictProfile":
-                    blockTypeGuid = Rock.SystemGuid.BlockType.CONFLICT_PROFILE.AsGuid();
-                    break;
-                case "EQ":
-                    blockTypeGuid = Rock.SystemGuid.BlockType.EQ_INVENTORY.AsGuid();
-                    break;
-                case "Motivators":
-                    blockTypeGuid = Rock.SystemGuid.BlockType.MOTIVATORS.AsGuid();
-                    break;
-                case "SpiritualGifts":
-                    blockTypeGuid = Rock.SystemGuid.BlockType.GIFTS_ASSESSMENT.AsGuid();
-                    break;
-                case "DISC":
-                    blockTypeGuid = Rock.SystemGuid.BlockType.DISC.AsGuid();
-                    break;
-            }
-
-            int? blockTypeId = BlockTypeCache.GetId( blockTypeGuid );
-            var blockService = new BlockService( rockContext );
-            var block = blockTypeGuid != Guid.Empty ? blockService.GetByPageAndBlockType( pageId, blockTypeId.Value ).FirstOrDefault() : null;
-
-            if ( block != null )
-            {
-                block.LoadAttributes();
-                return block.GetAttributeValue( "AllowRetakes" ).AsBooleanOrNull() ?? true;
-            }
-
-            return true;
         }
 
         public class LastAssessmentTaken : DotLiquid.Drop

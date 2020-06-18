@@ -15,15 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -58,8 +61,12 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected Person TargetPerson { get; private set; }
 
+        protected List<AttributeCache> AvailableAttributes { get; set; }
+
         #endregion
-        
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -81,12 +88,6 @@ namespace RockWeb.Blocks.Finance
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPledges.Actions.ShowAdd = canAddEditDelete && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
             gPledges.IsDeleteEnabled = canAddEditDelete;
-
-            AddAttributeColumns();
-
-            var deleteField = new DeleteField();
-            gPledges.Columns.Add( deleteField );
-            deleteField.Click += gPledges_Delete;
 
             if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() )
             {
@@ -130,23 +131,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        private void GPledges_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var pledge = (FinancialPledge)e.Row.DataItem;
-                if (pledge.StartDate == DateTime.MinValue )
-                {
-                    var cell = e.Row.Cells[4].Text = string.Empty;
-                }
-
-                if ( pledge.EndDate.ToShortDateString() == DateTime.MaxValue.ToShortDateString() )
-                {
-                    var cell = e.Row.Cells[5].Text = string.Empty;
-                }
-            }
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -161,6 +145,9 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
+
+                    BindAttributes();
+                    AddDynamicControls();
                     BindFilter();
                     BindGrid();
                 }
@@ -168,6 +155,56 @@ namespace RockWeb.Blocks.Finance
 
             base.OnLoad( e );
         }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
+        }
+
+        #endregion
+
+        #region Events
+
+        private void GPledges_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var pledge = ( FinancialPledge ) e.Row.DataItem;
+                if ( pledge.StartDate == DateTime.MinValue )
+                {
+                    var cell = e.Row.Cells[4].Text = string.Empty;
+                }
+
+                if ( pledge.EndDate.ToShortDateString() == DateTime.MaxValue.ToShortDateString() )
+                {
+                    var cell = e.Row.Cells[5].Text = string.Empty;
+                }
+            }
+        }
+
+        #endregion
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
@@ -273,6 +310,24 @@ namespace RockWeb.Blocks.Finance
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gfPledges_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            if ( AvailableAttributes != null )
+            {
+                var attribute = AvailableAttributes.FirstOrDefault( a => "Attribute_" + a.Key == e.Key );
+                if ( attribute != null )
+                {
+                    try
+                    {
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
+                    }
+                    catch
+                    {
+                        // intentionally ignore
+                    }
+                }
+            }
+
             switch ( e.Key )
             {
                 case "Date Range":
@@ -357,6 +412,25 @@ namespace RockWeb.Blocks.Finance
             gfPledges.SaveUserPreference( "Last Modified", drpLastModifiedDates.DelimitedValues );
             gfPledges.SaveUserPreference( "Person", ppFilterPerson.PersonId.ToString() );
             gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            gfPledges.SaveUserPreference( "Attribute_" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                }
+            }
             BindGrid();
         }
 
@@ -436,6 +510,16 @@ namespace RockWeb.Blocks.Finance
                 pledges = pledges.Where( p => !(p.StartDate > filterEndDate) && !(p.EndDate < filterStartDate) );
             }
 
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    pledges = attribute.FieldType.Field.ApplyAttributeQueryFilter( pledges, filterControl, attribute, pledgeService, Rock.Reporting.FilterMode.SimpleFilter );
+                }
+            }
+
             // Last Modified
             DateRange filterModifiedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( gfPledges.GetUserPreference( "Last Modified" ) );
             var filterModifiedStartDate = filterModifiedDateRange.Start ?? DateTime.MinValue;
@@ -476,43 +560,102 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Adds columns for any Pledge attributes marked as Show In Grid
+        /// Adds filters and columns for any Pledge attributes marked as Show In Grid
         /// </summary>
-        protected void AddAttributeColumns()
+        protected void AddDynamicControls()
         {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
             // Remove attribute columns
             foreach ( var column in gPledges.Columns.OfType<AttributeField>().ToList() )
             {
                 gPledges.Columns.Remove( column );
             }
 
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = ( IRockControl ) control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = gfPledges.GetUserPreference( "Attribute_" + attribute.Key );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+
+                    bool columnExists = gPledges.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gPledges.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            var deleteField = new DeleteField();
+            gPledges.Columns.Add( deleteField );
+            deleteField.Click += gPledges_Delete;
+
+        }
+
+
+        /// <summary>
+        /// Binds the attributes
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+
             int entityTypeId = new FinancialPledge().TypeId;
-            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn
-                   )
+                    a.IsGridColumn )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                string dataFieldExpression = attribute.Key;
-                bool columnExists = gPledges.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                if ( !columnExists )
-                {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = dataFieldExpression;
-                    boundField.AttributeId = attribute.Id;
-                    boundField.HeaderText = attribute.Name;
-
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
-                    if ( attributeCache != null )
-                    {
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                    }
-
-                    gPledges.Columns.Add( boundField );
-                }
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
+
         }
 
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
@@ -523,6 +666,8 @@ namespace RockWeb.Blocks.Finance
         {
             pnlContent.Visible = visible;
         }
+
+        #endregion
 
         /// <summary>
         /// 

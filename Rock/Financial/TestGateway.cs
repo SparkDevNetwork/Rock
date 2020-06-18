@@ -72,7 +72,8 @@ namespace Rock.Financial
 
             return new Payment
             {
-                TransactionCode = transaction.TransactionCode
+                TransactionCode = transaction.TransactionCode,
+                Amount = paymentInfo.Amount
             };
         }
 

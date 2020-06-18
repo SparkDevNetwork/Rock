@@ -1,0 +1,138 @@
+﻿{% assign registrationInstanceId = 'Global' | PageParameter:'RegistrationInstanceId' | AsInteger %}
+{% registrationinstance id:'{{registrationInstanceId}}' %}
+	{% assign slotFieldAttributeKey = registrationinstance | Attribute:'RegistrationSlotsField' %} {% comment %} Change this to your system's attribute key {% endcomment %}
+	{% assign slotAttributeKey = 'RegistrationSlots' %} {% comment %} Change this to your system's attribute key {% endcomment %}
+	{% if slotFieldAttributeKey != '' and slotAttributeKey != '' %}
+        {% sql %}
+            Declare @RegistrationTemplateId int = {{registrationinstance.RegistrationTemplateId}};
+            Declare @RegistrationInstanceId int = {{registrationinstance.Id}};
+            Declare @SlotFieldAttributeKey nvarchar(max) = '{{slotFieldAttributeKey}}';
+            Declare @SlotsAttributeKey nvarchar(max) = '{{slotAttributeKey}}';
+            Declare @FormAttributeId int =  ( Select top 1 a.Id
+                                                From Attribute a
+                                                Join RegistrationTemplateFormField rtff on rtff.AttributeId = a.Id
+                                                Join RegistrationTemplateForm rtf on rtf.Id = rtff.RegistrationTemplateFormId
+                                                Join RegistrationTemplate rt on rt.Id = rtf.RegistrationTemplateId
+                                                Where rt.Id = @RegistrationTemplateId
+                                                and a.[Key] = @SlotFieldAttributeKey );
+            Declare @SlotAttributeId int = ( Select top 1 a.Id
+                                                From Attribute a
+												Join EntityType et on a.EntityTypeId = et.Id and et.FriendlyName = 'Registration Instance'
+                                                Where a.[Key] = @SlotsAttributeKey );
+            Declare @Table1 table(
+                Value nvarchar(max)
+            )
+            Insert into @Table1
+            Select *
+            From STRING_SPLIT( 
+                (Select top 1 Value From AttributeValue Where AttributeId = @SlotAttributeId and EntityId = @RegistrationInstanceId) , '|' 
+                )
+        
+            Declare @FieldType nvarchar(max) = (
+			Select top 1 ft.Name 
+			From Attribute a
+			Join FieldType ft on a.FieldTypeId = ft.Id
+			Where a.Id = @FormAttributeId)
+        
+		If (@FieldType = 'Defined Value')
+		Begin 
+			Declare @UseDescription nvarchar(max) = (
+			Select top 1 aq.Value
+			From AttributeQualifier aq
+			Where aq.AttributeId = @FormAttributeId
+			And aq.[Key] = 'displaydescription')
+			
+            Select t1.SlotName,
+                    RegistrationSlots,
+                    Case When RegistrantCounts is null then 0 else RegistrantCounts end as RegistrantCount
+            From (
+				Select case when @UseDescription = 'True' then dv.Description+' (ID: '+convert(nvarchar(max),dv.Id)+')' else dv.Value+' (ID: '+convert(nvarchar(max),dv.Id)+')' end as SlotName,
+						dv.Id as ValueId,
+						dv.Guid as ValueGuid,
+						RegistrationSlots
+				From (
+					Select  rtrim(left(Value, CHARINDEX('^', Value) - 1)) as DefinedValueId,
+							RIGHT(Value,CHARINDEX('^',REVERSE(Value))-1) as RegistrationSlots
+					From @Table1
+					)t2
+				Join DefinedValue dv on dv.Id = t2.DefinedValueId
+                ) t1
+            Left Join (
+                Select av.Value as SlotName, Count(0) as RegistrantCounts
+                From RegistrationRegistrant rr
+                Join Registration r on r.Id = rr.RegistrationId and r.RegistrationInstanceId = @RegistrationInstanceId
+                Join AttributeValue av on av.EntityId = rr.Id and av.AttributeId = @FormAttributeId
+                Where rr.OnWaitList != 1
+                Group By av.Value
+                ) t3 on t3.SlotName = convert(nvarchar(max),t1.ValueGuid)
+		End
+		Else
+		Begin
+			Select t1.SlotName,
+                    RegistrationSlots,
+                    Case When RegistrantCounts is null then 0 else RegistrantCounts end as RegistrantCount
+            From (
+                Select  rtrim(left(Value, CHARINDEX('^', Value) - 1)) as SlotName,
+                        RIGHT(Value,CHARINDEX('^',REVERSE(Value))-1) as RegistrationSlots
+                From @Table1
+                ) t1
+            Left Join (
+                Select av.Value as SlotName, Count(0) as RegistrantCounts
+                From RegistrationRegistrant rr
+                Join Registration r on r.Id = rr.RegistrationId and r.RegistrationInstanceId = @RegistrationInstanceId
+                Join AttributeValue av on av.EntityId = rr.Id and av.AttributeId = @FormAttributeId
+                Where rr.OnWaitList != 1
+                Group By av.Value
+                ) t2 on t2.SlotName = t1.SlotName
+		End
+				
+        
+        {% endsql %}
+        <div id='vbsSlotDiv' class='panel panel-block'>
+            <div class="panel-heading panel-follow clearfix">
+                <h1 class="panel-title">
+                    Registration Slots
+                </h1>
+            </div>
+            <div class="panel-body">
+                <div class='row'>
+                    <div class='col-md-3'>
+                        <b>Range</b>
+                    </div>
+                    <div class='col-md-3'>
+                    <b> Total Slots</b>
+                    </div>
+                    <div class='col-md-3'>
+                        <b>Current Registrant Count</b>
+                    </div>
+                    <div class='col-md-3'>
+                        <b>Slots Remaining</b>
+                    </div>
+                </div>
+                
+            {% for item in results %}
+                    {% assign availableSlots = item.RegistrationSlots | Minus: item.RegistrantCount %}
+                    <div class='row'>
+                        <div class='col-md-3'>
+                            <b>{{item.SlotName}}</b>
+                        </div>
+                        <div class='col-md-3'>
+                            {{item.RegistrationSlots}}
+                        </div>
+                        <div class='col-md-3'>
+                            {{item.RegistrantCount}}
+                        </div>
+                        <div class='col-md-3'>
+                        {{availableSlots}}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+        $( document ).ready(function() {
+            $("[id$='pnlTabs']").prepend($( "#vbsSlotDiv" ));
+        });
+        </script>
+	{% endif %}
+{% endregistrationinstance %}

@@ -376,6 +376,33 @@ namespace Rock.Web.Cache
 
 
         /// <summary>
+        /// Indicates whether RSVP functionality should be enabled for this group.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool EnableRSVP { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
         /// </summary>
         /// <value>
@@ -391,7 +418,18 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the communication template to use when sending a schedule reminder
@@ -400,7 +438,18 @@ namespace Rock.Web.Cache
         /// The schedule reminder communication template identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
@@ -466,6 +515,16 @@ namespace Rock.Web.Cache
         public bool EnableGroupTag { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether [allow any child group type].
+        /// Use this along with <seealso cref="ChildGroupTypes"/> to determine if a child group can have a parent group of this group type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; private set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -484,24 +543,22 @@ namespace Rock.Web.Cache
                         {
                             using ( var rockContext = new RockContext() )
                             {
-                                Roles = new List<GroupTypeRoleCache>();
+                                _roles = new List<GroupTypeRoleCache>();
                                 new GroupTypeRoleService( rockContext )
                                     .Queryable().AsNoTracking()
                                     .Where( r => r.GroupTypeId == Id )
                                     .OrderBy( r => r.Order )
                                     .ToList()
-                                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                                    .ForEach( r => _roles.Add( new GroupTypeRoleCache( r ) ) );
                             }
                         }
                     }
                 }
+
                 return _roles;
             }
-            private set
-            {
-                _roles = value;
-            }
         }
+
         private List<GroupTypeRoleCache> _roles = null;
 
         /// <summary>
@@ -545,7 +602,8 @@ namespace Rock.Web.Cache
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
-        /// Gets the child group types.
+        /// Gets the group types that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
@@ -734,13 +792,21 @@ namespace Rock.Web.Cache
             ShowAdministrator = groupType.ShowAdministrator;
             EnableGroupTag = groupType.EnableGroupTag;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
+            EnableRSVP = groupType.EnableRSVP;
+            RSVPReminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
+            RSVPReminderOffsetDays = groupType.RSVPReminderOffsetDays;
             IsSchedulingEnabled = groupType.IsSchedulingEnabled;
-            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
-            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+            ScheduleConfirmationSystemCommunicationId = groupType.ScheduleConfirmationSystemCommunicationId;
+            ScheduleReminderSystemCommunicationId = groupType.ScheduleReminderSystemCommunicationId;
             ScheduleCancellationWorkflowTypeId = groupType.ScheduleCancellationWorkflowTypeId;
             ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
+            AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
+#pragma warning disable CS0618 // Type or member is obsolete
+            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
+            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

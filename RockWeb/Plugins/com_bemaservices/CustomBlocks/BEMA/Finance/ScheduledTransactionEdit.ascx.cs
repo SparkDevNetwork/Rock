@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 /*
- * BEMA Modified Core Block( v9.4.1)
+ * BEMA Modified Core Block( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:
@@ -896,16 +896,11 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             string howOften = DefinedValueCache.Get( btnFrequency.SelectedValueAsId().Value ).Value;
-            DateTime when = DateTime.MinValue;
 
             // Make sure a repeating payment starts in the future
-            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
+            if ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate <= RockDateTime.Today )
             {
-                when = dtpStartDate.SelectedDate.Value;
-            }
-            else
-            {
-                errorMessages.Add( "Make sure the Next  Gift date is in the future (after today)" );
+                errorMessages.Add( "Make sure the Next Gift date is in the future (after today)" );
             }
 
             /* BEMA.FE1.Start */
@@ -1032,8 +1027,6 @@ achieve our mission.  We are so grateful for your commitment.
                     tdAccountNumber.Visible = true;
                     tdAccountNumber.Description = paymentInfo.MaskedNumber;
                 }
-
-                tdWhen.Description = string.Format( "{0} starting on {1}", howOften, when.ToShortDateString() );
             }
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
@@ -1108,14 +1101,9 @@ achieve our mission.  We are so grateful for your commitment.
                 // Get the payment schedule
                 scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
 
-                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
-                {
-                    scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
-                }
-                else
-                {
-                    scheduledTransaction.StartDate = DateTime.MinValue;
-                }
+                // ProcessPaymentInfo ensures that dtpStartDate.SelectedDate has a value and is after today
+                scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                scheduledTransaction.NextPaymentDate = Gateway.CalculateNextPaymentDate( scheduledTransaction, null );
 
                 /* BEMA.FE1.Start */
                 if ( dtpEndDate.SelectedDate.HasValue )
@@ -1128,15 +1116,11 @@ achieve our mission.  We are so grateful for your commitment.
                 }
                 /* BEMA.FE1.End */
 
-
                 PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                 if ( paymentInfo == null )
                 {
                     errorMessage = "There was a problem creating the payment information";
                     return false;
-                }
-                else
-                {
                 }
 
                 // If transaction is not active, attempt to re-activate it first

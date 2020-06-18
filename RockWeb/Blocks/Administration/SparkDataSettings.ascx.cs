@@ -40,8 +40,6 @@ namespace RockWeb.Blocks.Administration
     {
         #region private variables
 
-        private RockContext _rockContext = new RockContext();
-
         private SparkDataConfig _sparkDataConfig = new SparkDataConfig();
 
         #endregion

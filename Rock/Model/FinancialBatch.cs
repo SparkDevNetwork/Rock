@@ -116,14 +116,16 @@ namespace Rock.Model
         public string AccountingSystemCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the control amount. This should match the total value of all <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
-        /// included in the batch.
+        /// Gets or sets the control amount. This should match the total value of all
+        /// <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in the batch.
+        /// Use <see cref="FinancialBatchService.IncrementControlAmount"/> if you are incrementing the control amount
+        /// based on a transaction amount.
         /// </summary>
         /// <value>
         /// A <see cref="System.Decimal"/> representing the control amount of the batch.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal ControlAmount { get; set; }
 
         /// <summary>

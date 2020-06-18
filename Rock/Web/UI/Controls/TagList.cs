@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:TagList runat=server></{0}:TagList>" )]
     public class TagList : TextBox
@@ -155,7 +155,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets a value indicating whether tags should not be created immediately.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if true, tags will not be created as they are entered by user.  
+        ///   <c>true</c> if true, tags will not be created as they are entered by user.
         ///   Instead the SaveTagValues() method will need to be called to save the tags
         /// </value>
         public bool DelaySave
@@ -165,15 +165,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Obsolete: Use ShowInactiveTags instead.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
+        /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use ShowInactiveTags instead." )]
+        public bool ShowInActiveTags
+        {
+            get { return ShowInactiveTags; }
+            set { ShowInactiveTags = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether Inactive tags should be displayed
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [Show InActive Tags]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowInActiveTags
+        public bool ShowInactiveTags
         {
-            get { return ViewState["ShowInActiveTags"] as bool? ?? false; }
-            set { ViewState["ShowInActiveTags"] = value; }
+            get { return ViewState["ShowInactiveTags"] as bool? ?? false; }
+            set { ViewState["ShowInactiveTags"] = value; }
         }
 
         #endregion
@@ -236,7 +250,7 @@ Rock.controls.tagList.initialize({{
                     ( !AllowNewTags ).ToString().ToLower(),
                     DelaySave.ToString().ToLower(),
                     CategoryGuid.HasValue ? CategoryGuid.Value.ToString() : "",
-                    this.ShowInActiveTags.ToString().ToLower() );
+                    this.ShowInactiveTags.ToString().ToLower() );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }
@@ -251,37 +265,42 @@ Rock.controls.tagList.initialize({{
         /// <param name="currentPersonId">The current person identifier.</param>
         public void GetTagValues( int? currentPersonId )
         {
-            var sb = new StringBuilder();
+            var serializedTags = new List<string>();
 
             using ( var rockContext = new RockContext() )
             {
-                var service = new TaggedItemService( rockContext );
-                var qry = service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
-                    .Where( c => c.Tag.IsActive || ( ShowInActiveTags ) );
-
-                var itemList = qry
-                    .Select( a => a.Tag )
-                    .OrderBy( a => a.Name ).AsNoTracking().ToList();
+                var taggedItemService = new TaggedItemService( rockContext );
+                var itemList = taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInactiveTags )
+                    .Where( ti => ShowInactiveTags || ti.Tag.IsActive )
+                    .Select( ti => ti.Tag )
+                    .Include( t => t.OwnerPersonAlias )
+                    .OrderBy( t => t.Name )
+                    .AsNoTracking()
+                    .ToList();
 
                 var person = GetCurrentPerson();
 
                 foreach ( var item in itemList )
                 {
-                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    if ( !item.IsAuthorized( Authorization.VIEW, person ) )
                     {
-                        if ( sb.Length > 0 )
-                            sb.Append( ',' );
-                        sb.Append( item.Name );
-                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias?.PersonId == currentPersonId.Value )
-                            sb.Append( "^personal" );
+                        continue;
                     }
+
+                    var isPersonal = currentPersonId.HasValue && item.OwnerPersonAlias?.PersonId == currentPersonId.Value;
+                    var tagCssClass = isPersonal ? "personal" : string.Empty;
+                    var serializedTag = SerializeTag( item.Name, tagCssClass, item.IconCssClass, item.BackgroundColor );
+                    serializedTags.Add( serializedTag );
                 }
             }
 
-            this.Text = sb.ToString();
+            Text = serializedTags.JoinStrings( "," );
         }
 
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <returns></returns>
         private Person GetCurrentPerson()
         {
             var rockPage = this.Page as RockPage;
@@ -314,7 +333,7 @@ Rock.controls.tagList.initialize({{
 
                 // Get the existing tagged items for this entity
                 var existingTaggedItems = new List<TaggedItem>();
-                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags ) )
+                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInactiveTags ) )
                 {
                     if ( taggedItem.IsAuthorized( Authorization.VIEW, person ) )
                     {
@@ -324,16 +343,18 @@ Rock.controls.tagList.initialize({{
 
                 // Get tag values after user edit
                 var currentTags = new List<Tag>();
-                foreach ( var value in this.Text.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( var serializedTag in Text.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
-                    string tagName = value;
-                    if ( tagName.Contains( '^' ) )
+                    var tagName = GetNameFromSerializedTag( serializedTag );
+
+                    if ( tagName.IsNullOrWhiteSpace() )
                     {
-                        tagName = tagName.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )[0];
+                        continue;
                     }
 
                     // Only if this is a new tag, create it
-                    Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
+                    var tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInactiveTags );
+
                     if ( personAlias != null && tag == null )
                     {
                         tag = new Tag();
@@ -391,5 +412,41 @@ Rock.controls.tagList.initialize({{
         }
 
         #endregion
+
+        #region Tag Serialization
+
+        /// <summary>
+        /// Serializes the tag into a format that can be read by this control and in the jquery.tagsinput.js file.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="tagCssClass">The tag CSS class.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="backgroundColor">Color of the background.</param>
+        /// <returns></returns>
+        private string SerializeTag( string name, string tagCssClass, string iconCssClass, string backgroundColor )
+        {
+            // It is important that the name be the first value because older code had the name first and then maybe the tagCssClass
+            return $"{name}^{tagCssClass}^{iconCssClass}^{backgroundColor}";
+        }
+
+        /// <summary>
+        /// Gets the name from the serialized tag.
+        /// </summary>
+        /// <param name="serializedTag">The serialized tag.</param>
+        /// <returns></returns>
+        private string GetNameFromSerializedTag( string serializedTag )
+        {
+            if ( serializedTag.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var parts = serializedTag.Split( '^' );
+
+            // The name is the first value
+            return parts?.FirstOrDefault();
+        }
+
+        #endregion Tag Serialization
     }
 }

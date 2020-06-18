@@ -27,7 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class CampusesFieldType : SelectFromListFieldType
+    public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType
     {
         // internal configuration values needed since it is not passed to ListSource
         private Dictionary<string, ConfigurationValue> _configurationValues = null;
@@ -164,6 +164,21 @@ namespace Rock.Field.Types
 
                 return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
             }
+        }
+
+        /// <summary>
+        /// Gets the cached entities as a list.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var guids = value.SplitDelimitedValues().AsGuidList();
+            var result = new List<IEntityCache>();
+
+            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
+
+            return result;
         }
     }
 }

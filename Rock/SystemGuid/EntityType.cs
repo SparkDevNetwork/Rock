@@ -32,7 +32,17 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
-        /// The benevolenc e_ request
+        /// The pin authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Badge entity
+        /// </summary>
+        public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
+
+        /// <summary>
+        /// The benevolence request
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
@@ -40,6 +50,11 @@ namespace Rock.SystemGuid
         /// The Block entity type
         /// </summary>
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
+
+        /// <summary>
+        /// The campus
+        /// </summary>
+        public const string CAMPUS = "00096BED-9587-415E-8AD4-4E076AE8FBF0";
 
         /// <summary>
         /// The checkr provider
@@ -183,6 +198,46 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Content
+        /// </summary>
+        public const string MOBILE_CONTENT_BLOCK_TYPE = "B9ADB0A5-62B0-4D74-BDFF-1AA959788602";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemList
+        /// </summary>
+        public const string MOBILE_CONTENT_CHANNEL_ITEM_LIST_BLOCK_TYPE = "6DBF59D6-EB40-43C8-8859-F38254EC3F6D";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemView
+        /// </summary>
+        public const string MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE = "44A8B647-E0A7-42E7-9A75-276310F7E7BB";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.LavaItemList
+        /// </summary>
+        public const string MOBILE_LAVA_ITEM_LIST_BLOCK_TYPE = "60AD6D70-8A2A-4CC1-97D5-199300AF77EE";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Login
+        /// </summary>
+        public const string MOBILE_LOGIN_BLOCK_TYPE = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails
+        /// </summary>
+        public const string MOBILE_PROFILE_DETAILS_BLOCK_TYPE = "A1ED4948-0778-4E13-B434-E97795DDB68B";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Register
+        /// </summary>
+        public const string MOBILE_REGISTER_BLOCK_TYPE = "4459357F-E422-45D1-855D-C4681101F848";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.WorkflowEntry
+        /// </summary>
+        public const string MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE = "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
@@ -248,6 +303,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
 
         /// <summary>
+        /// The guid for the system communication entity
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
+
+        /// <summary>
         /// The guid for the filesystem storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
@@ -258,8 +318,23 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
 
         /// <summary>
+        /// The guid for the Rock.Model.WorkflowType entity
+        /// </summary>
+        public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
+
+        /// <summary>
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+
+        /// <summary>
+        /// The guid for the Step entity type
+        /// </summary>
+        public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
+
+        /// <summary>
+        /// The guid for the Step program entity
+        /// </summary>
+        public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
     }
 }

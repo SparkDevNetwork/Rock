@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
                 tag.TaggedItems.Add( taggedItem );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, tag.Id );
@@ -111,6 +111,9 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
+            // Deserialize the tag properties
+            // This logic needs to sync with C# code in TagList.SerializeTag:
+            // $"{name}^{tagCssClass}^{iconCssClass}^{backgroundColor}";
             if ( name.Contains( '^' ) )
             {
                 name = name.Split( '^' )[0];

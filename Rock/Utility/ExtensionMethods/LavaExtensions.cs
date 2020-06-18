@@ -38,6 +38,21 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes the <see cref="ExtensionMethods"/> class.
+        /// </summary>
+        static ExtensionMethods()
+        {
+            //
+            // Register any 3rd party library classes that are safe to use.
+            //
+            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
+        }
+
+        #endregion
+
         #region Lava Extensions
 
         /// <summary>

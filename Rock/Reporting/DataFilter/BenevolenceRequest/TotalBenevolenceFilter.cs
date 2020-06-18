@@ -174,8 +174,6 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
-
-            RegisterFilterCompareChangeScript(filterControl);
         }
 
         /// <summary>

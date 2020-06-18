@@ -655,12 +655,7 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
-                if ( _pnbMobile.Required && !_pnbMobile.IsValid )
-                {
-                    return false;
-                }
-
-                if ( _pnbMobile.Text.IsNotNullOrWhiteSpace() && !_pnbMobile.IsValid )
+                if ( !_pnbMobile.IsValid )
                 {
                     return false;
                 }
@@ -777,6 +772,7 @@ namespace Rock.Web.UI.Controls
 
             _pnbMobile.CssClass = "form-control";
             _pnbMobile.Label = "Mobile Phone";
+            _pnbMobile.RequiredErrorMessage = "A valid phone number is required for all children.";
 
             _ebEmail.Label = "Email Address";
 

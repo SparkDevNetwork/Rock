@@ -19,9 +19,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -205,6 +207,39 @@ namespace Rock.Model
         #endregion
 
         #region overrides
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the ConnectionTypes specified that
+        /// match the entityTypeQualifierColumn and the ConnectionRequest Ids.
+        /// </summary>
+        /// <param name="rockContext">The database context to operate in.</param>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
+        {
+            var attributes = new List<AttributeCache>();
+            //
+            // Walk each group type and generate a list of matching attributes.
+            //
+            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
+            {
+                // group type ids exist and qualifier is for a group type id
+                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+                {
+                    int groupTypeIdValue = int.MinValue;
+                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) &&  this.Id == groupTypeIdValue )
+                    {
+                        foreach ( int attributeId in entityAttributes.AttributeIds )
+                        {
+                            attributes.Add( AttributeCache.Get( attributeId ) );
+                        }
+                    }
+                }
+            }
+
+            return attributes.OrderBy( a => a.Order ).ToList();
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

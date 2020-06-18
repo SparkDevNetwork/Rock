@@ -44,8 +44,6 @@
 .zone-configuration-bar {
   position: absolute;
   left: 24px;
-  display: inline-block;
-  float: left;
   margin-right: -999em;
   margin-left: 6px;
   overflow: hidden;
@@ -102,11 +100,10 @@
   }
 }
 
+.zone-configuration-bar,
 .block-configuration-bar {
   position: absolute;
   left: 24px;
-  display: inline-block;
-  float: left;
   margin-right: -999em;
   margin-left: 6px;
   overflow: hidden;
@@ -115,20 +112,20 @@
   div {
     display: inline;
   }
+
+  span {
+    display: block;
+    float: left;
+    padding-right: 20px;
+    margin-top: 3px;
+    font-size: 10px;
+  }
 }
 
 .block-configuration-bar .btn {
   margin-right: 12px;
   color: @adminbar-text-color;
   text-shadow: none;
-}
-
-.block-configuration-bar span {
-  display: block;
-  float: left;
-  padding-right: 20px;
-  margin-top: 3px;
-  font-size: 10px;
 }
 
 

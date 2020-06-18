@@ -174,8 +174,6 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
-
-            RegisterFilterCompareChangeScript( filterControl );
         }
 
         /// <summary>

@@ -308,25 +308,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Updates the cache hit miss.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="hit">if set to <c>true</c> [hit].</param>
-        private void UpdateCacheHitMiss( string key, bool hit )
-        {
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext != null && httpContext.Items.Contains( "Cache_Hits" ) )
-            {
-                var cacheHits = httpContext.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
-                if ( cacheHits != null )
-                {
-                    cacheHits.AddOrIgnore( key, hit );
-                }
-            }
-        }
-
-
-        /// <summary>
         /// Gets or sets a value in the cache by using the default indexer property for an instance of the <see cref="T:System.Runtime.Caching.MemoryCache" /> class.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -341,7 +322,6 @@ namespace Rock.Web.Cache
                 }
 
                 object obj = base[key];
-                UpdateCacheHitMiss( key, obj != null );
                 return obj;
             }
             set
@@ -367,7 +347,6 @@ namespace Rock.Web.Cache
                 return null;
             }
 
-            UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, policy, regionName );
         }
 
@@ -388,7 +367,6 @@ namespace Rock.Web.Cache
                 return null;
             }
 
-            UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
         }
 
@@ -408,7 +386,6 @@ namespace Rock.Web.Cache
             }
 
             object obj = base.Get( key, regionName );
-            UpdateCacheHitMiss( key, obj != null );
             return obj;
         }
 

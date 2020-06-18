@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -26,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Communication POCO Service class
     /// </summary>
-    public partial class CommunicationService 
+    public partial class CommunicationService
     {
 
         /// <summary>
@@ -98,19 +98,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the email communication.
+        /// Creates the email communication 
         /// </summary>
-        /// <param name="recipientEmails">The recipient emails.</param>
+        /// <param name="recipientEmails">A list of email addresses to use for finding which people to send the email to</param>
         /// <param name="fromName">From name.</param>
         /// <param name="fromAddress">From address.</param>
         /// <param name="replyTo">The reply to.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="message">The message.</param>
-        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>\
+        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
         /// <param name="sendDateTime">The send date time.</param>
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the CreateEmailCommunication method that takes List<RockEmailMessageRecipient> as a parameter instead." )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -122,14 +124,65 @@ namespace Rock.Model
             bool bulkCommunication,
             DateTime? sendDateTime,
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
-            int? senderPersonAliasId = null)
+            int? senderPersonAliasId = null )
         {
-            var recipients = new PersonService( (RockContext)Context )
+            var recipients = new PersonService( ( RockContext ) Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
+                .Select( a => new RockEmailMessageRecipient( a, null ) )
                 .ToList();
 
-            if (!recipients.Any()) return null;
+            return this.CreateEmailCommunication( recipients, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+        }
+
+        /// <summary>
+        /// Creates the email communication
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="fromAddress">From address.</param>
+        /// <param name="replyTo">The reply to.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
+        /// <param name="sendDateTime">The send date time.</param>
+        /// <param name="recipientStatus">The recipient status.</param>
+        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
+        /// <returns></returns>
+        public Communication CreateEmailCommunication
+        (
+            List<RockEmailMessageRecipient> recipients,
+            string fromName,
+            string fromAddress,
+            string replyTo,
+            string subject,
+            string message,
+            bool bulkCommunication,
+            DateTime? sendDateTime,
+            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
+            int? senderPersonAliasId = null )
+        {
+            var recipientsWithPersonIds = recipients.Where( a => a.PersonId.HasValue ).Select( a => a.PersonId ).ToList();
+            var recipientEmailsUnknownPersons = recipients.Where( a => a.PersonId == null ).Select( a => a.EmailAddress );
+
+            var recipientPersonList = new PersonService( ( RockContext ) Context )
+                .Queryable()
+                .Where( p => recipientsWithPersonIds.Contains( p.Id ) )
+                .ToList();
+
+            if ( !recipientPersonList.Any() && recipientEmailsUnknownPersons.Any( a => a != null ) )
+            {
+                // For backwards compatibility, if no PersonIds where specified, but there are recipients that are only specified by EmailAddress, take a guess at the personIds by looking for matching email addresses
+                recipientPersonList = new PersonService( ( RockContext ) Context )
+                .Queryable()
+                .Where( p => recipientEmailsUnknownPersons.Contains( p.Email ) )
+                .ToList();
+            }
+
+            if ( !recipientPersonList.Any() )
+            {
+                return null;
+            }
 
             var communication = new Communication
             {
@@ -137,6 +190,7 @@ namespace Rock.Model
                 Status = CommunicationStatus.Approved,
                 SenderPersonAliasId = senderPersonAliasId
             };
+
             communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
             communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
             communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
@@ -148,10 +202,11 @@ namespace Rock.Model
             Add( communication );
 
             // add each person as a recipient to the communication
-            foreach ( var person in recipients )
+            foreach ( var person in recipientPersonList )
             {
                 var personAliasId = person.PrimaryAliasId;
-                if (!personAliasId.HasValue) continue;
+                if ( !personAliasId.HasValue )
+                    continue;
 
                 var communicationRecipient = new CommunicationRecipient
                 {
@@ -169,7 +224,7 @@ namespace Rock.Model
         /// <summary>
         /// Creates an SMS communication with a CommunicationRecipient and adds it to the context.
         /// </summary>
-        /// <param name="fromPerson">From person. If null the name for the communication will be From: unknown person.</param>
+        /// <param name="fromPerson">the Sender for the communication (For the communication.SenderPersonAlias). If null the name for the communication will be From: unknown person.</param>
         /// <param name="toPersonAliasId">To person alias identifier. If null the CommunicationRecipient is not created</param>
         /// <param name="message">The message.</param>
         /// <param name="fromPhone">From phone.</param>
@@ -189,7 +244,10 @@ namespace Rock.Model
             var communication = new Rock.Model.Communication();
             communication.Name = communicationName;
             communication.CommunicationType = CommunicationType.SMS;
+
+            // NOTE: if this communication was created from a mobile device, fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
             communication.SenderPersonAliasId = fromPerson?.PrimaryAliasId;
+
             communication.IsBulkCommunication = false;
             communication.Status = CommunicationStatus.Approved;
             communication.SMSMessage = message;
@@ -231,7 +289,7 @@ namespace Rock.Model
             //   - OR - FutureSendDateTime IS set (scheduled), and the FutureSendDateTime is Now (or within the expiration window)
 
             // Limit to communications that haven't been sent yet
-            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue);
+            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue );
 
             var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
                 .Queryable()
@@ -269,6 +327,41 @@ namespace Rock.Model
 
             return queuedQry;
         }
-
     }
+
+    #region Extension Methods
+
+    public static partial class CommunicationExtensionMethods
+    {
+        /// <summary>
+        /// Communications that were not recently approved within since the given cutoffTime.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="cutoffTime">The cutoff time.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> NotRecentlyApproved( this IQueryable<Communication> communications, DateTime cutoffTime )
+        {
+            // Make sure communication wasn't just recently approved
+            return communications.Where( c => !c.ReviewedDateTime.HasValue || c.ReviewedDateTime.Value < cutoffTime );
+        }
+
+        /// <summary>
+        /// Communications that were, if scheduled, are within the given window.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="startWindow">The start window.</param>
+        /// <param name="endWindow">The end window.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> IfScheduledAreInWindow( this IQueryable<Communication> communications, DateTime startWindow, DateTime endWindow )
+        {
+            return communications.Where( c =>
+                (
+                    !c.FutureSendDateTime.HasValue ||
+                    ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= startWindow && c.FutureSendDateTime.Value <= endWindow )
+                )
+            );
+        }
+    }
+
+    #endregion
 }

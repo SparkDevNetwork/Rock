@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Crm
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
 
                     lClientIcon.Text = string.Format(
-                        "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
+                        "<div class='pageviewsession-client pull-right'><div class='pull-left margin-r-sm'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
                         session.PageViewSession.DeviceType.Application,
                         session.PageViewSession.DeviceType.OperatingSystem,
                         icon );
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         /// <summary>
-        /// Special class just for this block 
+        /// Special class just for this block
         /// </summary>
         public class WebSession
         {

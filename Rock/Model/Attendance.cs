@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -171,7 +171,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? DidAttend { get; set; }
+        public bool? DidAttend { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the processed.
@@ -656,6 +656,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
+            _isDeleted = entry.State == EntityState.Deleted;
             bool previousDidAttendValue;
 
             bool previouslyDeclined;
@@ -689,6 +690,7 @@ namespace Rock.Model
         }
 
         private bool _declinedScheduledAttendance = false;
+        private bool _isDeleted = false;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -699,6 +701,12 @@ namespace Rock.Model
             if ( _declinedScheduledAttendance )
             {
                 new GroupScheduleCancellationTransaction( this ).Enqueue();
+            }
+
+            if ( !_isDeleted )
+            {
+                // The data context save operation doesn't need to wait for this to complete
+                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this ) );
             }
 
             base.PostSaveChanges( dbContext );

@@ -59,7 +59,16 @@ namespace Rock.Rest.Controllers
                 return ControllerContext.Request.CreateResponse( HttpStatusCode.Conflict, "The username already exists." );
             }
 
+            // Store current value, as SetPassword() will always set this to false.
+            bool? passwordChangeRequired = value.IsPasswordChangeRequired;
+
             SetPasswordFromRest( value );
+
+            if ( passwordChangeRequired != null )
+            {
+                value.IsPasswordChangeRequired = passwordChangeRequired;
+            }
+
             return base.Post( value );
         }
 
@@ -72,7 +81,16 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public override void Put( int id, UserLogin value )
         {
+            // Store current value, as SetPassword() will always set this to false.
+            bool? passwordChangeRequired = value.IsPasswordChangeRequired;
+
             SetPasswordFromRest( value );
+
+            if ( passwordChangeRequired != null )
+            {
+                value.IsPasswordChangeRequired = passwordChangeRequired;
+            }
+
             base.Put( id, value );
         }
 

@@ -36,8 +36,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [SystemEmailField( "Note Watch Notification Email", "", defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.NOTEWATCH_NOTIFICATION, required: false, order: 1 )]
-    [SystemEmailField( "Note Approval Notification Email", "", defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
+    [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
+    [SystemCommunicationField( "Note Approval Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
     [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
     public class SendNoteNotifications : IJob
     {
@@ -267,7 +267,7 @@ namespace Rock.Jobs
                 }
 
                 // send approval emails
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
                 foreach ( var approverNotesToApprove in approverNotesToApproveList )
                 {
                     Person approverPerson = approverNotesToApprove.Key;
@@ -277,7 +277,7 @@ namespace Rock.Jobs
                         var mergeFields = new Dictionary<string, object>( _defaultMergeFields );
                         mergeFields.Add( "ApproverPerson", approverPerson );
                         mergeFields.Add( "NoteList", noteList );
-                        recipients.Add( new RecipientData( approverPerson.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( approverPerson, mergeFields ) );
                     }
 
                     if ( _noteApprovalNotificationEmailGuid.HasValue )
@@ -356,7 +356,7 @@ namespace Rock.Jobs
 
                     foreach ( var personNotificationDigest in personNotificationDigestList )
                     {
-                        var recipients = new List<RecipientData>();
+                        var recipients = new List<RockEmailMessageRecipient>();
                         Person personToNotify = personNotificationDigest.Value.Person;
                         List<Note> noteList = personNotificationDigest.Value.Select( a => a.Note ).OrderBy( a => a.EditedDateTime ).ToList();
 
@@ -368,7 +368,7 @@ namespace Rock.Jobs
                             var mergeFields = new Dictionary<string, object>( _defaultMergeFields );
                             mergeFields.Add( "Person", personToNotify );
                             mergeFields.Add( "NoteList", noteList );
-                            recipients.Add( new RecipientData( personToNotify.Email, mergeFields ) );    
+                            recipients.Add( new RockEmailMessageRecipient( personToNotify, mergeFields ) );    
                         }
 
                         if ( _noteWatchNotificationEmailGuid.HasValue )

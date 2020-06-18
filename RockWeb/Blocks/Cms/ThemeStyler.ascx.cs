@@ -502,7 +502,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                             colorPicker.Text = overrides[variableKey];
 
                                             // add restore logic
-                                            overrideControl.Text = string.Format( "<i class='fa fa-times margin-l-sm js-color-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
+                                            overrideControl.Text = string.Format( "<i class='fa fa-times js-color-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {
@@ -515,7 +515,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                         }
 
                                         colorPicker.RequiredFieldValidator = null;
-                                        colorPicker.FormGroupCssClass = "pull-left";
+                                        colorPicker.FormGroupCssClass = "clearable-input";
 
                                         Literal beginWrapper = new Literal();
                                         beginWrapper.Text = "<div class='clearfix'>";

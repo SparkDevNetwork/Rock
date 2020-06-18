@@ -76,7 +76,7 @@
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                         <%# Eval( "Name" ) %>
                                         <div class="pull-right">
-                                            <i class="fa fa-arrow-alt-circle-right<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
+                                            <i class="fa fa-arrow-alt-circle-down<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
                                             <i class="fa fa-bars reorder js-reorder"></i>
                                             <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
                                         </div>
@@ -100,7 +100,7 @@
 
                                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
-                                
+
                                 <div class="row form-row">
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />

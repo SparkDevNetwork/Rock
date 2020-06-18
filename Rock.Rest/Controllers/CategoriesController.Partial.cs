@@ -34,6 +34,48 @@ namespace Rock.Rest.Controllers
     public partial class CategoriesController
     {
         /// <summary>
+        /// For use specifically with metrics.  Gets the children and substitutes the Metric.Id instead of the MetricCategory.Id.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Categories/GetMetricChildren/{id}" )]
+        public IQueryable<CategoryItem> GetMetricChildren( int id, string includedCategoryIds = "" )
+        {
+            // Get list of categorized MetricCategory objects from GetChildren().
+            var metricCategories = GetChildren(
+                    id: id,
+                    rootCategoryId: 0,
+                    getCategorizedItems: true,
+                    entityTypeId: EntityTypeCache.Get<MetricCategory>().Id,
+                    includedCategoryIds: includedCategoryIds
+                ).ToList();
+
+            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var convertedMetrics = new List<CategoryItem>();
+
+            // Translate from MetricCategory to Metric.
+            foreach ( var categoryItem in metricCategories )
+            {
+                if ( !categoryItem.IsCategory )
+                {
+                    // Load the MetricCategory.
+                    var metricCategory = metricCategoryService.Get( categoryItem.Id.AsInteger() );
+                    if ( metricCategory != null )
+                    {
+                        // Swap the Id to the Metric Id (instead of MetricCategory.Id).
+                        categoryItem.Id = metricCategory.MetricId.ToString();
+                    }
+                }
+
+                convertedMetrics.Add( categoryItem );
+            }
+
+            return convertedMetrics.AsQueryable();
+        }
+
+        /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>

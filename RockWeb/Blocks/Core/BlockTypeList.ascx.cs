@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -23,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -33,7 +35,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the block types registered in Rock." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class BlockTypeList : RockBlock, ICustomGridColumns
     {
 
@@ -96,7 +98,7 @@ namespace RockWeb.Blocks.Core
         {
             gfSettings.SaveUserPreference( "Name", tbNameFilter.Text );
             gfSettings.SaveUserPreference( "Path", tbPathFilter.Text );
-            gfSettings.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue);
+            gfSettings.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
             gfSettings.SaveUserPreference( "Exclude System", cbExcludeSystem.Checked ? "Yes" : string.Empty );
             BindGrid();
         }
@@ -164,16 +166,29 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
-            if ( e.Row.DataItem != null )
+            BlockTypeInfoRow blockTypeInfoRow = e.Row.DataItem as BlockTypeInfoRow;
+            if ( blockTypeInfoRow != null )
             {
-                string blockPath = Request.MapPath( e.Row.DataItem.GetPropertyValue( "Path" ) as string );
-                if ( !System.IO.File.Exists( blockPath ) )
+                if ( blockTypeInfoRow.Path.IsNotNullOrWhiteSpace() )
+                { 
+                    string blockPath = Request.MapPath( blockTypeInfoRow.Path );
+                    if ( !System.IO.File.Exists( blockPath ) )
+                    {
+                        e.Row.Cells[4].Text = "<span class='label label-danger'>Missing</span>";
+                    }
+                    else
+                    {
+                        e.Row.Cells[4].Text = "<span class='label label-success'>Found</span>";
+                    }
+                }
+                else if ( blockTypeInfoRow.EntityTypeId.HasValue )
                 {
-                    e.Row.Cells[4].Text = "<span class='label label-danger'>Missing</span>";
+                    var entityType = EntityTypeCache.Get( blockTypeInfoRow.EntityTypeId.Value );
+                    e.Row.Cells[4].Text = string.Format( "<span class='label label-info'>{0}</span>", entityType.Name );
                 }
                 else
                 {
-                    e.Row.Cells[4].Text = "<span class='label label-success'>Found</span>";
+                    e.Row.Cells[4].Text = "<span class='label label-danger'>Unknown</span>";
                 }
             }
         }
@@ -188,7 +203,7 @@ namespace RockWeb.Blocks.Core
             BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, true );
             BindGrid();
         }
-        
+
         #endregion
 
         #region Methods
@@ -198,10 +213,10 @@ namespace RockWeb.Blocks.Core
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( string.Empty );
             foreach ( string category in new BlockTypeService( new RockContext() ).Queryable()
-                .Where( b => b.Category != null && b.Category != "")
-                .OrderBy( b=> b.Category)
-                .Select( b => b.Category)
-                .Distinct())
+                .Where( b => b.Category != null && b.Category != "" )
+                .OrderBy( b => b.Category )
+                .Select( b => b.Category )
+                .Distinct() )
             {
                 ddlCategoryFilter.Items.Add( category );
             }
@@ -215,10 +230,10 @@ namespace RockWeb.Blocks.Core
             BlockTypeService blockTypeService = new BlockTypeService( new RockContext() );
             SortProperty sortProperty = gBlockTypes.SortProperty;
 
-            var blockTypes = blockTypeService.Queryable();
+            var blockTypes = blockTypeService.Queryable().AsNoTracking();
 
             // Exclude system blocks if checked.
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference("Exclude System") ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Exclude System" ) ) )
             {
                 blockTypes = blockTypes.Where( b => b.IsSystem == false );
             }
@@ -238,21 +253,22 @@ namespace RockWeb.Blocks.Core
             }
 
             string category = gfSettings.GetUserPreference( "Category" );
-            if (!string.IsNullOrWhiteSpace(category))
+            if ( !string.IsNullOrWhiteSpace( category ) )
             {
                 blockTypes = blockTypes.Where( b => b.Category == category );
             }
 
             var selectQry = blockTypes.Select( a =>
-                new
+                new BlockTypeInfoRow
                 {
-                    a.Id,
-                    a.Name,
-                    a.Category,
-                    a.Description,
-                    a.Path,
+                    Id = a.Id,
+                    Name = a.Name,
+                    Category = a.Category,
+                    Description = a.Description,
+                    Path = a.Path,
+                    EntityTypeId = a.EntityTypeId,
                     BlocksCount = a.Blocks.Count(),
-                    a.IsSystem
+                    IsSystem = a.IsSystem
                 } );
 
             if ( sortProperty != null )
@@ -283,7 +299,26 @@ namespace RockWeb.Blocks.Core
             gBlockTypes.DataBind();
         }
 
+        public class BlockTypeInfoRow : RockDynamic
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string Category { get; set; }
+
+            public string Description { get; set; }
+
+            public string Path { get; set; }
+
+            public int BlocksCount { get; set; }
+
+            public bool IsSystem { get; set; }
+
+            public int? EntityTypeId { get; internal set; }
+        }
+
         #endregion
 
-}
+    }
 }

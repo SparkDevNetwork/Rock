@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Cms
 
     public partial class PublicProfileEdit : RockBlock
     {
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DefaultConnectionStatus = "DefaultConnectionStatus";
             public const string DisableNameEdit = "DisableNameEdit";
@@ -252,6 +252,15 @@ namespace RockWeb.Blocks.Cms
                 _RequiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
             rContactInfo.ItemDataBound += rContactInfo_ItemDataBound;
+
+            string smsScript = @"
+    $('.js-sms-number').click(function () {
+        if ($(this).is(':checked')) {
+            $('.js-sms-number').not($(this)).prop('checked', false);
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
         }
 
         /// <summary>
@@ -725,8 +734,9 @@ namespace RockWeb.Blocks.Cms
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
                     // update campus
-                    bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                    if ( showCampus )
+                   // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                   // Even if the block is set to show the picker it will not be visible if there is only one campus so use the Visible prop instead of the attribute value here.
+                    if ( cpCampus.Visible ) 
                     {
                         var primaryFamily = person.GetFamily( rockContext );
                         if ( primaryFamily.CampusId != cpCampus.SelectedCampusId )
@@ -1230,7 +1240,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             _IsEditRecordAdult = false;
                             tbEmail.Required = false;
-                            // don't display campus selector to children.
+                            // don't display campus selector to children. Rated PG.
                             cpCampus.Visible = false;
 
                             if ( person.GraduationYear.HasValue )
@@ -1273,7 +1283,16 @@ namespace RockWeb.Blocks.Cms
                             if ( showCampus )
                             {
                                 cpCampus.Campuses = CampusCache.All( false );
-                                cpCampus.SetValue( person.GetCampus() );
+
+                                // Use the current person's campus if this a new person
+                                if ( personGuid == Guid.Empty )
+                                {
+                                    cpCampus.SetValue( CurrentPerson.PrimaryCampus );
+                                }
+                                else
+                                {
+                                    cpCampus.SetValue( person.GetCampus() );
+                                }
                             }
                         }
                         tbEmail.Text = person.Email;

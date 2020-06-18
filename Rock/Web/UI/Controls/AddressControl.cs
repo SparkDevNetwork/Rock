@@ -649,6 +649,7 @@ namespace Rock.Web.UI.Controls
             string defaultState = GetDefaultState();
 
             BindCountries();
+            _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
             _ddlState.SetValue( defaultState );
@@ -933,14 +934,7 @@ namespace Rock.Web.UI.Controls
             bool? showCountry = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
             _ddlCountry.Visible = showCountry.HasValue && showCountry.Value;
 
-            if ( !string.IsNullOrWhiteSpace( currentValue ) )
-            {
-                _ddlCountry.SetValue( currentValue );
-            }
-            else
-            {
-                _ddlCountry.SetValue( defaultCountryCode );
-            }
+            _ddlCountry.SetValue( string.IsNullOrWhiteSpace( currentValue ) ? defaultCountryCode : currentValue );
         }
 
         /// <summary>

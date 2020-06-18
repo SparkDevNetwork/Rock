@@ -55,13 +55,13 @@ namespace RockWeb.Blocks.GroupScheduling
     {
         #region Fields
 
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ParentGroup = "ParentGroup";
             public const string FutureWeeksToShow = "FutureWeeksToShow";
         }
 
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
             public const string GroupIds = "GroupIds";
             public const string FutureWeeksToShow = "FutureWeeksToShow";

@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to update Group Members' Group Requirement statuses for requirements that are calculated from SQL or Dataview
+    /// Job to update Group Members' Group Requirement statuses for requirements that are calculated from SQL or DataView
     /// </summary>
     [DisallowConcurrentExecution]
     public class CalculateGroupRequirements : IJob
@@ -64,10 +64,29 @@ namespace Rock.Jobs
             var calculationExceptions = new List<Exception>();
             List<int> groupRequirementsCalculatedPersonIds = new List<int>();
 
-            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
+            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).Include( a => a.GroupRequirementType.DataView ).Include( a => a.GroupRequirementType.WarningDataView ).AsNoTracking().ToList() )
             {
-                foreach ( var group in groupService.Queryable().Where( g => ( groupRequirement.GroupId.HasValue && g.Id == groupRequirement.GroupId ) || ( groupRequirement.GroupTypeId.HasValue && g.GroupTypeId == groupRequirement.GroupTypeId ) ) )
+                // Only calculate group requirements for Active groups (if an inactive group becomes active again, this job will take care of re-calculating the requirements again)
+                var groupQuery = groupService.Queryable().Where( a => a.IsActive );
+                if ( groupRequirement.GroupId.HasValue )
                 {
+                    groupQuery = groupQuery.Where( g => g.Id == groupRequirement.GroupId );
+                }
+                else if ( groupRequirement.GroupTypeId.HasValue )
+                {
+                    groupQuery = groupQuery.Where( g => g.GroupTypeId == groupRequirement.GroupTypeId );
+                }
+                else
+                {
+                    // shouldn't happen, but Group Requirement doesn't have a groupId or a GroupTypeId
+                    break;
+                }
+
+                var groupList = groupQuery.Select( a => new { a.Id, a.Name } ).ToList();
+                var groupCount = groupList.Count();
+                foreach ( var group in groupList )
+                {
+                    context.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {group.Name}" );
                     try
                     {
                         var currentDateTime = RockDateTime.Now;
@@ -75,7 +94,7 @@ namespace Rock.Jobs
 
                         if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
                         {
-                            // Expirable: don't recalculate members that already met the requirement within the expiredays (unless they are flagged with a warning)
+                            // Group requirement can expire: don't recalculate members that already met the requirement within the expire days (unless they are flagged with a warning)
                             var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
                         }
@@ -85,17 +104,44 @@ namespace Rock.Jobs
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                         }
 
-                        var groupMemberQry = groupMemberService.Queryable().Where( a => ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId ) || ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId ) && a.GroupId == group.Id ).AsNoTracking();
+                        var groupMemberQry = groupMemberService.Queryable();
+
+                        if ( groupRequirement.GroupId.HasValue )
+                        {
+                            groupMemberQry = groupMemberQry.Where( g => g.GroupId == groupRequirement.GroupId );
+                        }
+                        else if ( groupRequirement.GroupTypeId.HasValue )
+                        {
+                            groupMemberQry = groupMemberQry.Where( g => ( g.Group.GroupTypeId == groupRequirement.GroupTypeId ) && g.GroupId == group.Id );
+                        }
+                        else
+                        {
+                            // shouldn't happen, but Group Requirement doesn't have a groupId or a GroupTypeId
+                            break;
+                        }
+
+
                         var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
+
                         var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, group.Id, groupRequirement.GroupRoleId ).ToList();
+
                         groupRequirementsCalculatedPersonIds.AddRange( results.Select( a => a.PersonId ).Distinct() );
                         foreach ( var result in results )
                         {
-                            // use a fresh rockContext per Update so that ChangeTracker doesn't get bogged down
-                            var rockContextUpdate = new RockContext();
-                            groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
-                            rockContextUpdate.SaveChanges();
+                            try
+                            {
+                                // use a fresh rockContext per result so that ChangeTracker doesn't get bogged down
+                                using ( var rockContextUpdate = new RockContext() )
+                                {
+                                    groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
+                                    rockContextUpdate.SaveChanges();
+                                }
+                            }
+                            catch ( Exception ex )
+                            {
+                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id { result.PersonId }" , ex ) );
+                            }
                         }
                     }
                     catch ( Exception ex )
@@ -105,7 +151,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = $"{groupRequirementQry.Count()} group member requirements re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} people";
+            context.UpdateLastStatusMessage( $"{groupRequirementQry.Count()} group member requirements re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} people" );
 
             if ( calculationExceptions.Any() )
             {

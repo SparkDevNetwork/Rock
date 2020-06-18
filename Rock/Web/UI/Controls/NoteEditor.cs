@@ -684,6 +684,7 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                 }
 
+                bool isNew = false;
                 if ( note == null )
                 {
                     note = new Note();
@@ -691,6 +692,7 @@ namespace Rock.Web.UI.Controls
                     note.EntityId = EntityId;
                     note.ParentNoteId = _hfParentNoteId.Value.AsIntegerOrNull();
                     service.Add( note );
+                    isNew = true;
                 }
                 else
                 {
@@ -700,6 +702,11 @@ namespace Rock.Web.UI.Controls
                         _mdEditWarning.Show( "Not authorized to edit note", ModalAlertType.Warning );
                         return;
                     }
+                }
+
+                if ( isNew || ( note.CreatedByPersonId.HasValue && currentPerson.Id == note.CreatedByPersonId ) )
+                {
+                    note.IsPrivateNote = IsPrivate;
                 }
 
                 if ( _hfHasUnselectableNoteType.Value.AsBoolean() && note.NoteTypeId > 0 && note.Id > 0 )
@@ -727,7 +734,6 @@ namespace Rock.Web.UI.Controls
 
                 note.Text = Text;
                 note.IsAlert = IsAlert;
-                note.IsPrivateNote = IsPrivate;
 
                 if ( NoteOptions.ShowCreateDateInput )
                 {

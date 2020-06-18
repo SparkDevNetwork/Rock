@@ -78,6 +78,11 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
     [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
+        protected static class AuthorizationMisc
+        {
+            public const string VIEW_LIST = "ViewList";
+        }
+
         #region Properties
 
         private List<Attribute> AttributesState { get; set; }
@@ -790,7 +795,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             workflowActionType.WorkflowForm = new WorkflowActionForm();
                         }
 
-                        workflowActionType.WorkflowForm.NotificationSystemEmailId = editorWorkflowActionType.WorkflowForm.NotificationSystemEmailId;
+                        workflowActionType.WorkflowForm.NotificationSystemCommunicationId = editorWorkflowActionType.WorkflowForm.NotificationSystemCommunicationId;
                         workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
                         workflowActionType.WorkflowForm.AllowNotes = editorWorkflowActionType.WorkflowForm.AllowNotes;
                         workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
@@ -1289,8 +1294,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
+
+            bool hasAdministrate = workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            bool isBlockEditor = IsUserAuthorized( Authorization.EDIT );
+
             // User must have 'Edit' rights to block, or 'Administrate' rights to workflow type
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !( isBlockEditor || workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || hasAdministrate ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
@@ -1299,14 +1308,33 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             if ( workflowType.IsSystem )
             {
-                readOnly = true;
+                readOnly = true; 
                 nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( WorkflowType.FriendlyTypeName );
+            }
+
+            // ViewList authorization is also used by WorkflowNavigation and WorkflowList
+            if ( !workflowType.IsAuthorized( AuthorizationMisc.VIEW_LIST, CurrentPerson ) )
+            {
+                lbManage.Enabled = false;
+            }
+
+            if ( !hasAdministrate )
+            {
+                btnSecurity.Visible = false;
+            }
+
+            // Only block editors can see the copy button. Otherwise Rock.Security.Authorization.AllowPerson()
+            // would be needed upon save (adding) if someone else created a 'copy' of a workflow.
+            if ( !isBlockEditor )
+            {
+                btnCopy.Visible = false;
             }
 
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 btnSecurity.Visible = false;
                 ShowReadonlyDetails( workflowType );
             }

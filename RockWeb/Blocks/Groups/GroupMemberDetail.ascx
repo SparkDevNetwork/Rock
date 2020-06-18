@@ -58,6 +58,10 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference">
+                                <asp:ListItem Text="Email" Value="1" />
+                                <asp:ListItem Text="SMS" Value="2" />
+                            </Rock:RockRadioButtonList>
                             <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registration">
                                 <ul class="list-unstyled">
                                     <asp:Repeater ID="rptLinkedRegistrations" runat="server">
@@ -121,6 +125,7 @@
                             <div class="actions">
                                 <asp:LinkButton ID="btnRestoreArchivedGroupMember" runat="server" CssClass="btn btn-primary" Text="Restore" OnClick="btnRestoreArchivedGroupMember_Click" />
                                 <asp:LinkButton ID="btnDontRestoreArchiveGroupmember" runat="server" CssClass="btn btn-default" Text="Don't Restore" OnClick="btnDontRestoreArchiveGroupmember_Click" />
+                                <asp:LinkButton ID="btnCancelRestore" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelRestore_Click" />
                             </div>
                         </Content>
                     </Rock:ModalDialog>

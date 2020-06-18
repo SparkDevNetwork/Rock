@@ -33,7 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -68,14 +68,14 @@ namespace Rock.Plugins.com_bemaservices.Finance
 </p>
 " )]
 
-    [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
+    [SystemCommunicationField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
 
     /* BEMA.FE1.Start */
     [BooleanField(
         "Enable Attribute Values",
         Description = "Whether Attribute Values should be available for display / editing.",
-        Key = AttributeKey.EnableAttributeValues,
+        Key = BemaAttributeKey.EnableAttributeValues,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -85,11 +85,10 @@ namespace Rock.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string EnableAttributeValues = "EnableAttributeValues";
         }
-
         #endregion
         /* BEMA.End */
 
@@ -122,7 +121,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
             {
                 var pledgeId = PageParameter( "pledgeId" ).AsInteger();
                 var financialPledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
@@ -139,7 +138,6 @@ namespace Rock.Plugins.com_bemaservices.Finance
                     Helper.AddEditControls( string.Empty, attributes.OrderBy( a => a.Value.Order ).Select( a => a.Key ).ToList(),
                         financialPledge, phAttributes, BlockValidationGroup, true, new List<string>());
                 }
-                //Helper.AddEditControls( financialPledge, phAttributes, true, BlockValidationGroup );
             }
             /* BEMA.FE1.End */
 
@@ -219,7 +217,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             if ( financialPledge.IsValid )
             {
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
                 {
                     financialPledge.LoadAttributes( rockContext );
                     Rock.Attribute.Helper.GetEditValues( phAttributes, financialPledge );
@@ -231,7 +229,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 rockContext.SaveChanges();
 
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
                 {
                     financialPledge.SaveAttributeValues( rockContext );
                 }
@@ -264,7 +262,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 if ( confirmationEmailTemplateGuid.HasValue )
                 {
                     var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
-                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                     emailMessage.AppRoot = ResolveRockUrl( "~/" );
                     emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                     emailMessage.Send();

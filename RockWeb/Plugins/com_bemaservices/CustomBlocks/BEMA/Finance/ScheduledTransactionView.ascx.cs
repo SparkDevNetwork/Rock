@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 
 
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -72,14 +72,15 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [BooleanField(
         "Display Cancelation Reason Entry",
-        Key = AttributeKey.DisplayCancelationReasonEnabled,
+        Key = BemaAttributeKey.DisplayCancelationReasonEnabled,
         Description = "If Enabled, a reason for Cancelation must be entered.",
         DefaultBooleanValue = false,
         Category = "BEMA Additional Features",
         Order = 0 )]
+		
     [AttributeField(
         "Reason For Cancelation Attribute",
-        Key = AttributeKey.CancelationReasonAttribute,
+        Key = BemaAttributeKey.CancelationReasonAttribute,
         Description = "The Attribute that stores the Reason for Cancelation",
         EntityTypeGuid = "76824E8A-CCC4-4085-84D9-8AF8C0807E20", // Financial Schedule Transaction
         AllowMultiple = false,
@@ -92,7 +93,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE2.Start */
     [BooleanField(
         "Display Linkages",
-        Key = AttributeKey.DisplayLinkagesEnabled,
+        Key = BemaAttributeKey.DisplayLinkagesEnabled,
         Description = "If Enabled, linkages to other entities will be displayed.",
         DefaultBooleanValue = false,
         Category = "BEMA Additional Features",
@@ -101,24 +102,29 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
     public partial class ScheduledTransactionView : RockBlock
     {
+        #region BEMA Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class BemaAttributeKey
+        {
+            public const string DisplayCancelationReasonEnabled = "DisplayCancelationReasonEnabled";
+            public const string CancelationReasonAttribute = "CancelationReasonAttribute";
+            public const string DisplayLinkagesEnabled = "DisplayLinkagesEnabled";
+        }
+
+        #endregion BEMA Attribute Keys
+		
         #region Attribute Keys
 
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string UpdatePageUnhosted = "UpdatePage";
             public const string UpdatePageHosted = "UpdatePageHosted";
-
-            /* BEMA.FE1.Start */
-            public const string DisplayCancelationReasonEnabled = "DisplayCancelationReasonEnabled";
-            public const string CancelationReasonAttribute = "CancelationReasonAttribute";
-            /* BEMA.FE1.End */
-
-            /* BEMA.FE2.Start */
-            public const string DisplayLinkagesEnabled = "DisplayLinkagesEnabled";
-            /* BEMA.FE2.End */
         }
 
         #endregion Attribute Keys
@@ -135,7 +141,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         #region ViewStateKeys
 
-        protected static class ViewStateKey
+        private static class ViewStateKey
         {
             public const string TransactionDetailsState = "TransactionDetailsState";
         }
@@ -229,7 +235,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             /* BEMA.FE1.Start */
             string script = string.Empty;
-            if ( GetAttributeValue( AttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
             {
                 script = string.Format( @"
                     function clearActiveDialog() {{
@@ -357,9 +363,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         protected void btnCancelSchedule_Click( object sender, EventArgs e )
         {
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
             {
-                if ( GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
+                if ( GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
                 {
                     mdCancelSchedule.Show();
                 }
@@ -407,7 +413,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                         }
                     }
                 }
+			/* BEMA.FE1.Start */	
             }
+			/* BEMA.FE1.End */
         }
 
         /// <summary>
@@ -450,12 +458,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
 
                     /* BEMA.FE1.Start */
-                    if ( GetAttributeValue( AttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
+                    if ( GetAttributeValue( BemaAttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
                     {
-                        if ( GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
+                        if ( GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
                         {
                             financialScheduledTransaction.LoadAttributes();
-                            var attributeGuid = GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuid();
+                            var attributeGuid = GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuid();
                             var attribute = AttributeCache.Get( attributeGuid );
                             financialScheduledTransaction.SetAttributeValue( attribute.Key, "" );
                             financialScheduledTransaction.SaveAttributeValue( attribute.Key, rockContext );
@@ -833,7 +841,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             btnReactivateSchedule.Visible = !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
 
             /* BEMA.FE2.Start */
-            if ( GetAttributeValue( AttributeKey.DisplayLinkagesEnabled ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.DisplayLinkagesEnabled ).AsBoolean() )
             {
                 if ( financialScheduledTransaction.ScheduledTransactionDetails.Where( x => x.EntityId != null && x.EntityId > 0 ).Any() )
                 {
@@ -854,12 +862,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             /* BEMA.FE2.End */
 
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.DisplayCancelationReasonEnabled ).AsBoolean() )
             {
-                if ( GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
+                if ( GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
                 {
                     financialScheduledTransaction.LoadAttributes();
-                    var attributeGuid = GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuid();
+                    var attributeGuid = GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuid();
                     var attribute = AttributeCache.Get( attributeGuid );
                     var attributeValue = financialScheduledTransaction.GetAttributeValue( attribute.Key );
                     if ( !string.IsNullOrEmpty( attributeValue ) )
@@ -1082,10 +1090,10 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
 
                     // Updating Cancelation Reason Attribute
-                    if ( GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
+                    if ( GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuidOrNull() != null )
                     {
                         txn.LoadAttributes();
-                        var attributeGuid = GetAttributeValue( AttributeKey.CancelationReasonAttribute ).AsGuid();
+                        var attributeGuid = GetAttributeValue( BemaAttributeKey.CancelationReasonAttribute ).AsGuid();
                         var attribute = AttributeCache.Get( attributeGuid );
                         txn.SetAttributeValue( attribute.Key, tbCancelReason.Text );
                         txn.SaveAttributeValue( attribute.Key, rockContext );

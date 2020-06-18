@@ -112,6 +112,9 @@ namespace Rock.Client
         public string Summary { get; set; }
 
         /// <summary />
+        public DateTime? SundayDate { get; set; }
+
+        /// <summary />
         public string TransactionCode { get; set; }
 
         /// <summary />
@@ -178,6 +181,7 @@ namespace Rock.Client
             this.Status = source.Status;
             this.StatusMessage = source.StatusMessage;
             this.Summary = source.Summary;
+            this.SundayDate = source.SundayDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionDateTime = source.TransactionDateTime;
             this.TransactionTypeValueId = source.TransactionTypeValueId;
@@ -213,9 +217,6 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue SourceTypeValue { get; set; }
-
-        /// <summary />
-        public DateTime? SundayDate { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }

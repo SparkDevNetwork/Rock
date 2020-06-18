@@ -14,43 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
+using System;
 
 namespace Rock.PersonProfile
 {
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class HighlightLabelBadge : BadgeComponent
+    [RockObsolete( "1.10" )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    public abstract class HighlightLabelBadge : Rock.Badge.HighlightLabelBadge
     {
-        /// <summary>
-        /// Gets the badge label
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public virtual HighlightLabel GetLabel( Person person )
-        {
-            return new HighlightLabel();
-        }
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
-        {
-            if ( Person != null )
-            {
-                var label = GetLabel( Person );
-                if ( label != null )
-                {
-                    label.RenderControl( writer );
-                }
-            }
-        }
     }
-
 }

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -247,7 +248,7 @@ namespace Rock.Web.UI
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
                     {
-                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                        Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     }
                 }
 
@@ -266,7 +267,7 @@ namespace Rock.Web.UI
 
                 if ( _CurrentUser != null )
                 {
-                    Context.Items.Add( "CurrentUser", _CurrentUser );
+                    Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     CurrentPerson = _CurrentUser.Person;
                 }
                 else
@@ -310,7 +311,7 @@ namespace Rock.Web.UI
                 _currentPerson = value;
                 if ( _currentPerson != null )
                 {
-                    Context.Items.Add( "CurrentPerson", value );
+                    Context.AddOrReplaceItem( "CurrentPerson", value );
                 }
 
                 _currentPersonAlias = null;
@@ -1168,8 +1169,35 @@ namespace Rock.Web.UI
                             {
                                 try
                                 {
-                                    control = TemplateControl.LoadControl( block.BlockType.Path );
-                                    control.ClientIDMode = ClientIDMode.AutoID;
+                                    if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
+                                    {
+                                        control = TemplateControl.LoadControl( block.BlockType.Path );
+                                        control.ClientIDMode = ClientIDMode.AutoID;
+                                    }
+                                    else if ( block.BlockType.EntityTypeId.HasValue )
+                                    {
+                                        var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
+
+                                        if ( blockEntity is Rock.Blocks.IRockBlockType rockBlockEntity )
+                                        {
+                                            var wrapper = new RockBlockTypeWrapper
+                                            {
+                                                Page = this,
+                                                Block = rockBlockEntity
+                                            };
+
+                                            wrapper.InitializeAsUserControl( this );
+                                            wrapper.AppRelativeTemplateSourceDirectory = "~";
+
+                                            control = wrapper;
+                                            control.ClientIDMode = ClientIDMode.AutoID;
+                                        }
+                                    }
+
+                                    if ( control == null )
+                                    {
+                                        throw new Exception( "Cannot instantiate unknown block type" );
+                                    }
                                 }
                                 catch ( Exception ex )
                                 {
@@ -1224,6 +1252,12 @@ namespace Rock.Web.UI
                                     // If the blocktype's security actions have not yet been loaded, load them now
                                     block.BlockType.SetSecurityActions( blockControl );
                                 }
+
+                                if ( control is RockBlockTypeWrapper wrapper )
+                                {
+                                    // If the blocktype's security actions have not yet been loaded, load them now
+                                    block.BlockType.SetSecurityActions( wrapper.Block.GetType() );
+                                }
                             }
 
                             zone.Controls.Add( control );
@@ -1273,6 +1307,7 @@ namespace Rock.Web.UI
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
+                        adminFooter.AddCssClass( "js-cms-admin-footer" );
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
@@ -1305,9 +1340,9 @@ namespace Rock.Web.UI
                         {
                             HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aBlockConfig );
-                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config js-block-config" );
                             aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
                             iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
@@ -1320,9 +1355,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aPageProperties );
                             aPageProperties.ID = "aPageProperties";
                             aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aPageProperties.Attributes.Add( "class", "btn properties" );
+                            aPageProperties.Attributes.Add( "class", "btn properties js-page-properties" );
                             aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                            aPageProperties.Attributes.Add( "Title", "Page Properties" );
+                            aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
@@ -1335,9 +1370,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aChildPages );
                             aChildPages.ID = "aChildPages";
                             aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aChildPages.Attributes.Add( "class", "btn page-child-pages" );
+                            aChildPages.Attributes.Add( "class", "btn page-child-pages js-page-child-pages" );
                             aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
-                            aChildPages.Attributes.Add( "Title", "Child Pages" );
+                            aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
                             iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
@@ -1345,9 +1380,9 @@ namespace Rock.Web.UI
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aPageZones );
-                            aPageZones.Attributes.Add( "class", "btn page-zones" );
+                            aPageZones.Attributes.Add( "class", "btn page-zones js-page-zones" );
                             aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
-                            aPageZones.Attributes.Add( "Title", "Page Zones" );
+                            aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
                             iPageZones.Attributes.Add( "class", "fa fa-columns" );
@@ -1365,7 +1400,7 @@ namespace Rock.Web.UI
                             aPageSecurity.Controls.Add( iPageSecurity );
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
-                            // ShorLink Properties
+                            // ShortLink Properties
                             HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aShortLink );
                             aShortLink.ID = "aShortLink";
@@ -1488,8 +1523,9 @@ namespace Rock.Web.UI
                             {
                                 using ( var rockContext = new RockContext() )
                                 {
-                                    string blockTypePath = BlockTypeCache.Get( blockTypeId ).Path;
-                                    var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( blockTypePath );
+                                    var blockTypeCache = BlockTypeCache.Get( blockTypeId );
+                                    Type blockCompiledType = blockTypeCache.GetCompiledType();
+
                                     bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
                                     BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
                                 }
@@ -1688,18 +1724,6 @@ namespace Rock.Web.UI
             if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                double hitPercent = 0D;
-
-                if ( Context.Items.Contains( "Cache_Hits" ) )
-                {
-                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
-                    if ( cacheHits != null )
-                    {
-                        int hits = cacheHits.Where( c => c.Value ).Count();
-                        int total = cacheHits.Count();
-                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
-                    }
-                }
 
                 var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
 
@@ -1710,8 +1734,7 @@ namespace Rock.Web.UI
                     this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
-                phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-md'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                phLoadStats.Controls.Add( new LiteralControl( $"<span>Page Load Time: {tsDuration.TotalSeconds:N2}s </span><span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>" ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
@@ -1818,6 +1841,15 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Adds a new Html literal link that will be added to the page header prior to the page being rendered.
+        /// </summary>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.WebControls.Literal"/>.</param>
+        private void AddHtmlLink( Literal htmlLink )
+        {
+            RockPage.AddHtmlLink( this, htmlLink );
+        }
+
+        /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered.
         /// </summary>
         /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/>.</param>
@@ -1876,13 +1908,13 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public void AddIconLink( int binaryFileId, int size, string rel = "apple-touch-icon-precomposed" )
         {
-            HtmlLink favIcon = new HtmlLink();
-            favIcon.Attributes.Add( "rel", rel );
-            favIcon.Attributes.Add( "sizes", $"{size}x{size}" );
-            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" ) );
+            Literal favIcon = new Literal();
+            favIcon.Mode = LiteralMode.PassThrough;
+            var url = ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" );
+            favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
+
             AddHtmlLink( favIcon );
         }
-
 
         #endregion
 
@@ -2045,7 +2077,17 @@ Sys.Application.add_load(function () {
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
                             keyModel.Entity = new PersonService( new RockContext() )
-                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases", true, true )
+                                .Queryable( true, true )
+                                .Include( p => p.MaritalStatusValue)
+                                .Include( p => p.ConnectionStatusValue )
+                                .Include( p => p.RecordStatusValue )
+                                .Include( p => p.RecordStatusReasonValue )
+                                .Include( p => p.RecordTypeValue )
+                                .Include( p => p.SuffixValue )
+                                .Include( p => p.TitleValue )
+                                .Include( p => p.GivingGroup )
+                                .Include( p => p.Photo )
+                                .Include( p => p.Aliases )
                                 .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
@@ -2630,7 +2672,7 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                if ( !HtmlMetaExists( page, htmlMeta ) )
+                if ( !ReplaceExistingHtmlMeta( page, htmlMeta ) )
                 {
                     // Find last meta element
                     int index = 0;
@@ -2658,12 +2700,13 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Returns a flag indicating if a meta tag exists on the page.
+        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
+        /// Returns <c>true</c> if the meta tag already exists and was replaced.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool HtmlMetaExists( Page page, HtmlMeta newMeta )
+        private static bool ReplaceExistingHtmlMeta( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -2676,19 +2719,47 @@ Sys.Application.add_load(function () {
                         HtmlMeta existingMeta = (HtmlMeta)control;
 
                         bool sameAttributes = true;
+                        bool hasContentAttribute_NewMeta = false;
+                        bool hasContentAttribute_ExistingMeta = ( existingMeta.Attributes["Content"] != null );
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
-                            if ( existingMeta.Attributes[attributeKey] == null ||
-                                existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
+                            if ( attributeKey.ToLower() == "content" )
                             {
-                                sameAttributes = false;
-                                break;
+                                hasContentAttribute_NewMeta = true;
+                            }
+                            else
+                            { 
+                                if ( existingMeta.Attributes[attributeKey] == null ||
+                                    existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
+                                {
+                                    sameAttributes = false;
+                                    break;
+                                }
                             }
                         }
 
                         if ( sameAttributes )
                         {
+                            if ( hasContentAttribute_NewMeta )
+                            {
+                                if ( hasContentAttribute_ExistingMeta )
+                                {
+                                    existingMeta.Attributes["Content"] = newMeta.Attributes["Content"];
+                                }
+                                else
+                                {
+                                    existingMeta.Attributes.Add( "Content", newMeta.Attributes["Content"] );
+                                }
+                            }
+                            else
+                            {
+                                if ( hasContentAttribute_ExistingMeta )
+                                {
+                                    existingMeta.Attributes.Remove( "Content" );
+                                }
+                            }
+
                             existsAlready = true;
                             break;
                         }
@@ -2700,7 +2771,52 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Adds a new Html link that will be added to the page header prior to the page being rendered
+        /// Adds a new Html link Literal that will be added to the page header prior to the page being rendered.
+        /// NOTE: This method differs from the other AddHtmlLink because a literal whose Mode
+        /// is set to PassThrough will not have its parameters/attributes encoded (the ampersande char changed to &amp;).
+        /// </summary>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.WebControls.Literal"/> to add to the page.</param>
+        /// <param name="contentPlaceHolderId">A <see cref="System.String"/> representing the Id of the content placeholder to add the link to.</param>
+        private static void AddHtmlLink( Page page, Literal htmlLink, string contentPlaceHolderId = "" )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                if ( !HtmlLinkExists( header, htmlLink ) )
+                {
+                    bool inserted = false;
+
+                    if ( !string.IsNullOrWhiteSpace( contentPlaceHolderId ) )
+                    {
+                        for ( int i = 0; i < header.Controls.Count; i++ )
+                        {
+                            if ( header.Controls[i] is ContentPlaceHolder )
+                            {
+                                var ph = ( ContentPlaceHolder ) header.Controls[i];
+                                if ( ph.ID == contentPlaceHolderId )
+                                {
+                                    ph.Controls.Add( new LiteralControl( "\n\t" ) );
+                                    ph.Controls.Add( htmlLink );
+
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ( !inserted )
+                    {
+                        header.Controls.Add( new LiteralControl( "\n\t" ) );
+                        header.Controls.Add( htmlLink );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a new Html link that will be added to the page header prior to the page being rendered.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to add to the page.</param>
@@ -2738,9 +2854,46 @@ Sys.Application.add_load(function () {
                         header.Controls.Add( new LiteralControl( "\n\t" ) );
                         header.Controls.Add( htmlLink );
                     }
-
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.Boolean"/> flag indicating if a specified parent control contains the specified HtmlLink literal.
+        /// </summary>
+        /// <param name="parentControl">The <see cref="System.Web.UI.Control"/> to search for the HtmlLink.</param>
+        /// <param name="newLink">The <see cref="System.Web.UI.WebControls.Literal"/> to search for.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
+        private static bool HtmlLinkExists( Control parentControl, Literal newLink )
+        {
+            bool existsAlready = false;
+
+            if ( parentControl != null )
+            {
+                foreach ( Control control in parentControl.Controls )
+                {
+                    if ( control is ContentPlaceHolder )
+                    {
+                        if ( HtmlLinkExists( control, newLink ) )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                    else if ( control is Literal )
+                    {
+                        Literal existingLink = ( Literal ) control;
+
+                        if ( newLink.Text == existingLink.Text )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return existsAlready;
         }
 
         /// <summary>
@@ -2748,7 +2901,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <param name="parentControl">The <see cref="System.Web.UI.Control"/> to search for the HtmlLink.</param>
         /// <param name="newLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to search for.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
         private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
         {
             bool existsAlready = false;
@@ -3053,7 +3206,7 @@ Sys.Application.add_load(function () {
         {
             foreach ( var rockBlock in RockBlocks )
             {
-                if ( rockBlock.BlockCache.BlockType.Path.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) )
+                if ( rockBlock.BlockCache.BlockType.Path?.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) ?? false )
                 {
                     OnBlockUpdated( rockBlock.BlockId );
                 }

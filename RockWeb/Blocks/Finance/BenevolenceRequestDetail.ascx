@@ -29,7 +29,7 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:DefinedValuePicker ID="dvpRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValue" />
+                            <Rock:DefinedValuePicker ID="dvpRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
                         </div>
                     </div>
                 </div>

@@ -1,10 +1,8 @@
 set nocount on
 DECLARE @crlf varchar(2) = char(13) + char(10)
 
-BEGIN
-
 -- specify the Id of the ServiceJob to create a migration for
-DECLARE @JobId int = 39
+DECLARE @JobId int = 7
 
 IF OBJECT_ID('tempdb..#codeTable') IS NOT NULL
     DROP TABLE #codeTable
@@ -53,27 +51,29 @@ create table #codeTable (
     SELECT @crlf
 
     -- Add the service job attributes
+	--AddOrUpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn
+	--, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
     INSERT INTO #codeTable
-    SELECT 
-        '            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "'+ 
-        CONVERT(nvarchar(50), ft.[Guid])+ '", "'+
-		'Class", '+
-		'"'+ a.[EntityTypeQualifierValue] + '", "' +
-		a.[Name] + '", "'+  
-        ISNULL(a.[Description],'')+ '", '+ 
-        CONVERT(varchar, a.[Order])+ ', @"'+ 
-		ISNULL(a.[DefaultValue],'')+ '", "'+
-        CONVERT(nvarchar(50), a.[Guid])+ '", "' +
-		a.[Key]+ '" );' +
-        @crlf
-    FROM [Attribute] a
+    SELECT
+		  '            // Attribute: ' + [a].[EntityTypeQualifierValue] + ': ' + [a].[Name] + @crlf
+		+ '            RockMigrationHelper.AddOrUpdateEntityAttribute( '
+		+ '"Rock.Model.ServiceJob", '										-- EntityTypeName
+		+ '"' + CONVERT(NVARCHAR(50), [ft].[Guid]) + '", '					-- FieldType.Guid
+		+ '"Class", '														-- Attribute.EntityTypeQualifierColumn
+		+ '"' + [a].[EntityTypeQualifierValue] + '", '						-- Attribute.EntityTypeQualifierValue
+		+ '"' + [a].[Name] + '", '						  					-- Attribute.Name
+		+ '"' + ISNULL([a].[AbbreviatedName], '') + '", '					-- Attribute.AbbreviatedName
+		+ '@"'+ ISNULL(REPLACE([a].[Description], '"', '""'),'') + '", '	-- Attribute.Description
+		+ CONVERT(VARCHAR, [a].[Order])+ ', '								-- Attribute.Order
+		+ '@"'+ ISNULL(REPLACE([a].[DefaultValue], '"', '""'),'') + '", '	-- Attribute.DefaultValue
+		+ '"' + CONVERT(NVARCHAR(50), [a].[Guid])+ '", '					-- Attribute.Guid
+		+ '"' + [a].[Key] + '" );'											-- Attribute.Key
+		+ @crlf
+	FROM [Attribute] a
 	JOIN [EntityType] e ON e.[Id] = a.[EntityTypeId]
-    JOIN [FieldType] [ft] ON [ft].[Id] = [a].[FieldTypeId]
-    WHERE a.[EntityTypeQualifierColumn] = 'Class'
-	AND a.[EntityTypeQualifierValue] in
-	(
-		SELECT [Class] FROM [ServiceJob] [p] WHERE [p].[Id] = @JobId
-	)
+	JOIN [FieldType] [ft] ON [ft].[Id] = [a].[FieldTypeId]
+	WHERE a.[EntityTypeQualifierColumn] = 'Class'
+		AND a.[EntityTypeQualifierValue] in (SELECT [Class] FROM [ServiceJob] [p] WHERE [p].[Id] = @JobId)
 	ORDER BY a.[Order]
 
 	-- Add the job attribute values
@@ -144,6 +144,4 @@ create table #codeTable (
     ORDER BY [Id]
 
 IF OBJECT_ID('tempdb..#codeTable') IS NOT NULL
-    DROP TABLE #codeTable
-
-END
+    BEGIN DROP TABLE #codeTable END

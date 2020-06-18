@@ -1286,12 +1286,17 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.ScheduledTransaction != null )
                 {
+                    var text = txn.ScheduledTransaction.GatewayScheduleId.IsNullOrWhiteSpace() ?
+                        txn.ScheduledTransactionId.ToString() :
+                        txn.ScheduledTransaction.GatewayScheduleId;
+
                     var qryParam = new Dictionary<string, string>();
                     qryParam.Add( "ScheduledTransactionId", txn.ScheduledTransaction.Id.ToString() );
                     string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
+
                     detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
-                        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
-                        txn.ScheduledTransaction.GatewayScheduleId );
+                        string.Format( "<a href='{0}'>{1}</a>", url, text ) :
+                        text );
                 }
 
                 if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValue != null )
@@ -1303,7 +1308,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         // Credit Card
                         paymentMethodDetails.Add( "Type", currencyType.Value + ( txn.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + txn.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty ) );
-                        paymentMethodDetails.Add( "Name on Card", txn.FinancialPaymentDetail.NameOnCard.Trim() );
+                        paymentMethodDetails.Add( "Name on Card", txn.FinancialPaymentDetail.NameOnCard.ToStringSafe().Trim() );
                         paymentMethodDetails.Add( "Account Number", txn.FinancialPaymentDetail.AccountNumberMasked );
                         paymentMethodDetails.Add( "Expires", txn.FinancialPaymentDetail.ExpirationDate );
                     }
@@ -1717,12 +1722,14 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn.Batch != null )
             {
-                hlBatchId.Visible = true;
-                hlBatchId.Text = string.Format( "Batch #{0}", txn.BatchId );
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "batchId", txn.BatchId.ToString() );
+                lBatchId.Text = string.Format( "<div class='label label-info'><a href='{1}'>Batch #{0}</a></div>", txn.BatchId, LinkedPageUrl( "BatchDetailPage", qryParams ) );
+                lBatchId.Visible = true;
             }
             else
             {
-                hlBatchId.Visible = false;
+                lBatchId.Visible = false;
             }
         }
 

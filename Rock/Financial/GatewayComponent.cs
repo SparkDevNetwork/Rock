@@ -374,7 +374,7 @@ namespace Rock.Financial
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="lastTransactionDate">The last transaction date.</param>
         /// <returns></returns>
-        protected DateTime? CalculateNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        public DateTime? CalculateNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
         {
             // If scheduled transaction is null, just return null
             if ( scheduledTransaction == null )

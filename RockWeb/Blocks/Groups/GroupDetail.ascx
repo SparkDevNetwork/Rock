@@ -39,6 +39,8 @@
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
 
+                <div class="panel-badges" id="divBadgeContainer" runat="server"><Rock:BadgeListControl ID="blBadgeList" runat="server" /></div>
+
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
@@ -51,14 +53,37 @@
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
-                        <div class="row">
+                        <div class="row" style="display:flex; align-items:center;">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
-                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" Style="display: none" />
+                            </div>
+                            <div class="col-md-3">
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
+                            </div>
+                        </div>
+
+                        <div class="row js-inactivateoptions">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactive Reason ddl this isn't a defined value picker since the values can be filtered by group type --%>
+                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Visible="false" Label="Inactive Reason" />
+                            </div>
+                        </div>
+
+                        <div class="row js-inactivateoptions">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactive note multi line --%>
+                                <Rock:DataTextBox ID="tbInactiveNote" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="InactiveReasonNote" TextMode="MultiLine" Rows="4" Visible="false" Label="Inactive Note" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactivate child groups checkbox --%>
+                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="js-inactivatechildgroups" Style="display: none" />
+                                <Rock:HiddenFieldWithClass ID="hfHasChildGroups" runat="server" CssClass="js-haschildgroups" />
                             </div>
                         </div>
 
@@ -80,7 +105,7 @@
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
-                                    <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
+                                    <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" Visible="false" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
                                     <Rock:PersonPicker ID="ppAdministrator" runat="server" />
                                 </div>
@@ -88,6 +113,20 @@
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <%-- RSVP Settings --%>
+                        <Rock:PanelWidget ID="wpRsvp" runat="server" Title="RSVP">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlRsvpReminderSystemCommunication" runat="server" Label="RSVP Reminder System Communication"
+                                        Help="The System Communication that should be sent to remind group members to RSVP for group events." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RangeSlider ID="rsRsvpReminderOffsetDays" runat="server" Label="RSVP Reminder Offset Days" MinValue="0" MaxValue="30" SelectedValue="1"
+                                        Help="The number of days prior to a group event occurrence to send the RSVP reminder." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -251,10 +290,10 @@
                     </div>
 
                     <fieldset id="fieldsetViewDetails" runat="server">
-
                         <div class="taglist">
                             <Rock:TagList ID="taglGroupTags" runat="server" CssClass="clearfix" />
                         </div>
+
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
                         <div class="actions">
@@ -263,6 +302,7 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                <asp:HyperLink ID="hlGroupRSVP" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group RSVP"><i class="fa fa-user-check"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupScheduler" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Scheduler"><i class="fa fa-calendar-alt"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="fa fa-history"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Fundraising"><i class="fa fa-line-chart"></i></asp:HyperLink>
@@ -406,10 +446,10 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlWelcomeCommunication" runat="server" Label="Welcome Communication" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlExitCommunication" runat="server" Label="Exit Communication" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
                     </div>
                 </div>
                 <div class="row">
@@ -461,7 +501,6 @@
 
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {
-
                     var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
                     if ($(activeCheckbox).is(':checked')) {
                         $inactiveLabel.hide();
@@ -470,12 +509,22 @@
                         $inactiveLabel.show();
                     }
 
-                    // if isactive was toggled from Active to Inactive, show the inactivate child groups checkbox
+                    // if isactive was toggled from Active to Inactive and the group has child groups, show the inactivate child groups checkbox
+                    var hasChildren = $('.js-haschildgroups').val();
+                    var rfvId = "<%= ddlInactiveReason.ClientID %>" + "_rfv";
+
                     if ($(activeCheckbox).is(':checked')) {
+                        $('.js-inactivateoptions').hide();
                         $('.js-inactivatechildgroups').hide();
+                        enableRequiredField(rfvId, false);
                     }
                     else {
-                        $('.js-inactivatechildgroups').show();
+                        $('.js-inactivateoptions').show();
+                        enableRequiredField(rfvId, true);
+
+                        if (hasChildren === "true") {
+                            $('.js-inactivatechildgroups').show();
+                        }
                     }
                 }
 
@@ -486,6 +535,19 @@
                     }
                     else {
                         $privateLabel.show();
+                    }
+                }
+
+                function enableRequiredField(validatorId, enable) {
+                    var jqObj = $('#' + validatorId);
+                    if (jqObj != null) {
+                        var domObj = jqObj.get(0);
+                        if (domObj != null) {
+                            console.log( validatorId + ': found');
+                            ValidatorEnable(domObj, enable);
+                        } else {
+                            console.log( validatorId + ': NOT found');
+                        }
                     }
                 }
 

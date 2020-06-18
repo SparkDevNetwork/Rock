@@ -13,7 +13,7 @@ The goal of this project is to be a permanent place to store tests that require 
 ![test settings file selection](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings-fileselection.png "found in the Rock.Tests.Integration project")
 
 
-## MS Unit Test vs XUnit
+## MS Unit Test (vs XUnit)
 
 This project uses the [Microsoft unit test framework (aka MS Test)](https://docs.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code).  You can read more about it in their [Walkthrough](https://docs.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code) but it's pretty simple.  You create test classes decorated with `[TestClass]` and individual unit test methods decorated with `[TestMethod]`.
 
@@ -39,12 +39,24 @@ namespace Rock.Tests.Integration.Model
 }
 ```
 
-> NOTE: The existing `Rock.Tests` project is an XUnit type project, but it may be converted over to MS Test. 
+> NOTE: The existing `Rock.Tests` project is an XUnit type project, but it will be converted to MS Test. 
+
+## MSTest LifeCycle
+
+The following decorators can give you more control over setup and cleanup for your test suite:
+
+* [AssemblyInitialize] - called once before running the tests of the assembly. 
+* [AssemblyCleanup] - called after all tests of the assembly are executed.
+* [ClassInitialize] - called once before running the tests of the class.
+* [ClassCleanup] - called after all tests from all classes finish.
+* [TestInitialize] - called before running each test of the class. 
+* [TestCleanup] - called after running each test of the class.
+ 
 
 ## Running a Test
 To run or debug a test, simply right-click the class name and choose `Run Tests` or `Debug Tests` -- but you should probably set a breakpoint in your test if you're going to select Debug Tests.  Alternatively you can choose the Test > Windows > Test Explorer from the menu to run tests a bit easier.
 
-## Conversion Game Plan
+## Side Note: Conversion Game Plan
 Any tests that require a database will need to be moved from the existing `Rock.Tests` project into the proper class in this project.   So, tests like this...
 
 ```csharp
@@ -72,15 +84,3 @@ Any tests that require a database will need to be moved from the existing `Rock.
             Assert.IsTrue( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
         }
    ```
-
-## MSTest LifeCycle
-
-The following decorators can give you more control over setup and cleanup for your test suite:
-
-* [AssemblyInitialize] - called once before running the tests of the assembly. 
-* [AssemblyCleanup] - called after all tests of the assembly are executed.
-* [ClassInitialize] - called once before running the tests of the class.
-* [ClassCleanup] - called after all tests from all classes finish.
-* [TestInitialize] - called before running each test of the class. 
-* [TestCleanup] - called after running each test of the class.
- 

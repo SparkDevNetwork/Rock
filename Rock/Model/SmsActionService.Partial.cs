@@ -127,7 +127,7 @@ namespace Rock.Model
             }
 
             var context = HttpContext.Current;
-            var wrappedException = new Exception( "An exception occured in the SmsAction pipeline. See the inner exception.", exception );
+            var wrappedException = new Exception( "An exception occurred in the SmsAction pipeline. See the inner exception.", exception );
             ExceptionLogService.LogException( wrappedException, context );
         }
 
@@ -143,7 +143,7 @@ namespace Rock.Model
             }
 
             var context = HttpContext.Current;
-            var exception = new Exception( string.Format( "An error occured in the SmsAction pipeline: {0}", errorMessage ) );
+            var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
             ExceptionLogService.LogException( exception, context );
         }
     }

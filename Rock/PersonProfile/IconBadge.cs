@@ -14,50 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Web.UI;
-
-using Rock.Model;
-using Rock.Web.Cache;
+using System;
 
 namespace Rock.PersonProfile
 {
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class IconBadge : BadgeComponent
+    [RockObsolete( "1.10" )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    public abstract class IconBadge : Rock.Badge.IconBadge
     {
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        public abstract string GetToolTipText(Person person);
-
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        public abstract string GetIconPath( Person person );
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
-        {
-            if ( Person != null )
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "badge" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Title, GetToolTipText( Person ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Src, GetIconPath( Person ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Img );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
-        }
     }
-
 }

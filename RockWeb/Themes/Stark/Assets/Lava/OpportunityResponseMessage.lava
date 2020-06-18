@@ -2,6 +2,6 @@
 	<strong>
 	Congratulations!
 	</strong>
-	</br>
+	<br>
 	Your request to serve on the {{ Opportunity.PublicName }} team has been submitted.
 </div>

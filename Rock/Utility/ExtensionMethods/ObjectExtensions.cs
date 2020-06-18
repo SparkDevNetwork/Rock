@@ -140,7 +140,7 @@ namespace Rock
             {
                 return obj.ToString();
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         /// <summary>

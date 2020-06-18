@@ -235,14 +235,14 @@ namespace Rock.Model
             errors = new List<string>();
             if ( document != null &&
                 document.SignatureDocumentTemplate != null && 
-                document.SignatureDocumentTemplate.InviteSystemEmailId.HasValue &&
+                document.SignatureDocumentTemplate.InviteSystemCommunicationId.HasValue &&
                 person != null &&
                 !string.IsNullOrWhiteSpace( person.Email ) )
             {
                 string inviteLink = component.GetInviteLink( document, person, out errors );
                 if ( !errors.Any() )
                 {
-                    var systemEmail = new SystemEmailService( rockContext ).Get( document.SignatureDocumentTemplate.InviteSystemEmailId.Value );
+                    var systemEmail = new SystemCommunicationService( rockContext ).Get( document.SignatureDocumentTemplate.InviteSystemCommunicationId.Value );
                     if ( systemEmail != null )
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
@@ -250,7 +250,7 @@ namespace Rock.Model
                         mergeFields.Add( "InviteLink", inviteLink );
 
                         var emailMessage = new RockEmailMessage( systemEmail );
-                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                         emailMessage.Send();
                     }
                 }

@@ -298,7 +298,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
@@ -317,7 +317,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
@@ -1908,6 +1908,14 @@ namespace Rock.Model
             public string Caption { get; set; }
 
             /// <summary>
+            /// Gets or sets the date on which the change occurred.
+            /// </summary>
+            /// <value>
+            /// The effective date of the change.
+            /// </value>
+            public DateTime? ChangedDateTime { get; set; }
+
+            /// <summary>
             /// Gets or sets the summary.
             /// </summary>
             /// <value>
@@ -2002,6 +2010,17 @@ namespace Rock.Model
             }
 
             /// <summary>
+            /// Sets the date on which the change occurred.
+            /// </summary>
+            /// <param name="changeDate">The date on which the change occurred.</param>
+            /// <returns></returns>
+            public HistoryChange SetDateOfChange( DateTime changeDate )
+            {
+                this.ChangedDateTime = changeDate;
+                return this;
+            }
+
+            /// <summary>
             /// Returns a <see cref="System.String" /> that represents this instance.
             /// </summary>
             /// <returns>
@@ -2031,6 +2050,9 @@ namespace Rock.Model
 #pragma warning disable 612, 618
                 history.Summary = this.Summary;
 #pragma warning restore 612, 618
+
+                // TODO: The effective date of the change should be stored in a separate field to preserve the audit trail.
+                history.CreatedDateTime = this.ChangedDateTime;
 
                 history.Verb = this.Verb;
                 history.ChangeType = this.ChangeType;

@@ -37,7 +37,7 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GlobalAttributesCache : ItemCache<GlobalAttributesCache>
     {
-        #region Contants
+        #region Constants
 
         /// <summary>
         /// This setting is the guid for the organization's location record.
@@ -122,14 +122,6 @@ namespace Rock.Web.Cache
                 }
 
                 return attributes;
-            }
-
-            set
-            {
-                lock ( _obj )
-                {
-                    _attributeIds = value?.Select( a => a.Id ).ToList();
-                }
             }
         }
         private List<int> _attributeIds;
@@ -661,7 +653,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
-        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.Legacy;
+        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled

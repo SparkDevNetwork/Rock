@@ -13,8 +13,6 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
-
-
 .input-xs {
   .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
 }
@@ -129,8 +127,10 @@ a.aspNetDisabled {
         .make-sm-column(2);
 
         @media (min-width: @screen-sm-min) {
-          padding-top: 7px;
-          margin-bottom: 0;
+          padding-top: @padding-base-vertical + 1px;
+          padding-bottom: @padding-base-vertical + 1px;
+          margin-bottom: 0; // Override the `<label>/<legend>` default
+          line-height: @line-height-base;
           text-align: right;
         }
       }
@@ -178,19 +178,17 @@ a.aspNetDisabled {
     .form-group {
       display: -ms-flexbox;
       display: flex;
-      -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
       margin-right: -15px;
       margin-left: -15px;
-      -ms-flex-pack: end!important;
-      justify-content: flex-end!important;
 
-      label {
-        -ms-flex: 0 0 auto;
-        flex: 0 0 auto;
+      .control-label {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
         width: auto;
-        max-width: 100%;
         min-width: 180px;
+        max-width: 100%;
       }
       .control-wrapper {
         -ms-flex: 0 0 auto;

@@ -29,9 +29,9 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
- * 
+ *
  * Additional Features:
  * - FE1) Added Ability to launch a workflow when a benevolence request is saved
  * - FE2) Added Ability to set how many files can be attached to the request
@@ -146,7 +146,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         #endregion
         /* BEMA.End */
 
-        #region Fields 
+        #region Fields
 
         private Guid? _caseWorkerGroupGuid = null;
 
@@ -680,7 +680,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 Person person = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value );
                 if ( person != null )
                 {
-                    // Make sure that the FirstName box gets either FirstName or NickName of person. 
+                    // Make sure that the FirstName box gets either FirstName or NickName of person.
                     if ( !string.IsNullOrWhiteSpace( person.FirstName ) )
                     {
                         dtbFirstName.Text = person.FirstName;

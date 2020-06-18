@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string Template = "Template";
             public const string ScheduledTransactionEditPage = "ScheduledTransactionEditPage";

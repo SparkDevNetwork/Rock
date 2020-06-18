@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? DeviceId { get; set; }
 
         /// <summary />
-        public bool? DidAttend { get; set; }
+        public bool? DidAttend { get; set; } = true;
 
         /// <summary />
         // Made Obsolete in Rock "1.8"

@@ -121,7 +121,7 @@ namespace Rock.Model
         public TagType TagType { get; set; }
 
         /// <summary>
-        /// Gets or sets the enabled lava commands.
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
         /// </summary>
         /// <value>
         /// The enabled lava commands.

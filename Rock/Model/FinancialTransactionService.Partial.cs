@@ -120,6 +120,8 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialTransaction ProcessRefund( FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             // Validate parameters
             if ( transaction == null )
             {
@@ -264,8 +266,6 @@ namespace Rock.Model
                 timespan = transaction.FinancialGateway.GetBatchTimeOffset();
             }
             var batch = batchService.GetByNameAndDate( batchName, refundTransaction.TransactionDateTime.Value, timespan );
-            decimal controlAmount = batch.ControlAmount + refundTransaction.TotalAmount;
-            batch.ControlAmount = controlAmount;
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
             if ( batch.Id == 0)
@@ -275,8 +275,11 @@ namespace Rock.Model
 
             refundTransaction.BatchId = batch.Id;
             Add( refundTransaction );
+            rockContext.SaveChanges();
 
-            errorMessage = string.Empty;
+            batchService.IncrementControlAmount( batch.Id, refundTransaction.TotalAmount, null );
+            rockContext.SaveChanges();
+
             return refundTransaction;
         }
 

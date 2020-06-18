@@ -127,6 +127,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CameraBarcodeConfiguration
+    {
+        Off = 0x0,
+        Available = 0x1,
+        AlwaysOn = 0x2,
+        Passive = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,
@@ -478,6 +488,20 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum PersistedDatasetDataFormat
+    {
+        JSON = 0x0,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersistedDatasetScriptType
+    {
+        Lava = 0x0,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersonAliasType
     {
         FromPersonAlias = 0x0,
@@ -719,6 +743,28 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum StreakOccurrenceFrequency
+    {
+        Daily = 0x0,
+        Weekly = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum StreakStructureType
+    {
+        AnyAttendance = 0x0,
+        Group = 0x1,
+        GroupType = 0x2,
+        GroupTypePurpose = 0x3,
+        CheckInConfig = 0x4,
+        InteractionChannel = 0x5,
+        InteractionComponent = 0x6,
+        InteractionMedium = 0x7,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum TagType
     {
         Inline = 0x1,
@@ -745,12 +791,29 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ViewMode
+    {
+        Cards = 0x0,
+        Grid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
         Workflow = 0x1,
         Activity = 0x2,
         Action = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerCondition
+    {
+        StatusChanged = 0x0,
+        Manual = 0x1,
+        IsComplete = 0x2,
     }
 
     /// <summary>

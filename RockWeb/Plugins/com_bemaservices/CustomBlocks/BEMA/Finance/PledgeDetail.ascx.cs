@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -51,7 +51,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [BooleanField(
         "Show Add then New Button?",
-        Key = AttributeKey.ShowAddThenNewButton,
+        Key = BemaAttributeKey.ShowAddThenNewButton,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -60,7 +60,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     /* BEMA.UI1.Start */
     [TextField(
         "Person Picker CSS Override",
-        Key = AttributeKey.PersonPickerCssOverride,
+        Key = BemaAttributeKey.PersonPickerCssOverride,
         Description = "This attribute will override the person picker's css with whatever class is specified here.",
         IsRequired = false,
         DefaultValue = "",
@@ -71,7 +71,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     /* BEMA.UI2.Start */
     [BooleanField(
         "Are accounts limited to active accounts?",
-        Key = AttributeKey.IsPickerLimitedToActiveAccounts,
+        Key = BemaAttributeKey.IsPickerLimitedToActiveAccounts,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -80,7 +80,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string ShowAddThenNewButton = "ShowAddThenNewButton";
             public const string PersonPickerCssOverride = "PersonPickerCssOverride";
@@ -91,9 +91,9 @@ namespace Rock.Plugins.com_bemaservices.Finance
         /* BEMA.End */
 
         #region Properties
-        //BEMA Custom Code Start: Added SaveNew Button
+        /* BEMA.FE1.Start */
         private Control _focusControl = null;
-        //BEMA Custom Code End
+        /* BEMA.FE1.End */
         #endregion
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -112,7 +112,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.UI1.Start */
-            var personPickerClass = GetAttributeValue( AttributeKey.PersonPickerCssOverride );
+            var personPickerClass = GetAttributeValue( BemaAttributeKey.PersonPickerCssOverride );
             if ( personPickerClass.IsNotNullOrWhiteSpace() )
             {
                 ppPerson.CssClass = personPickerClass;
@@ -120,7 +120,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             /* BEMA.UI1.End */
 
             /* BEMA.UI2.Start */
-            var areInactiveAccountsHidden = GetAttributeValue( AttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
+            var areInactiveAccountsHidden = GetAttributeValue( BemaAttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
             if ( areInactiveAccountsHidden )
             {
                 apAccount.DisplayActiveOnly = true;
@@ -135,7 +135,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 pledge = new FinancialPledge();
 
                 /* BEMA.FE1.Start */
-                btnSaveNew.Visible = GetAttributeValue( AttributeKey.ShowAddThenNewButton ).AsBoolean();
+                btnSaveNew.Visible = GetAttributeValue( BemaAttributeKey.ShowAddThenNewButton ).AsBoolean();
                 /* BEMA.FE1.End */
             }
             pledge.LoadAttributes();

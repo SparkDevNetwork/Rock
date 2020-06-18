@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
@@ -172,6 +173,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the category header/label should be displayed as tabs
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display as tabs]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayAsTabs
+        {
+            get => ViewState["DisplayAsTabs"] as bool? ?? false;
+            set => ViewState["DisplayAsTabs"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
         /// </summary>
         /// <value>
@@ -286,6 +299,24 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
+        /// Adds the edit controls (and set the edit values) while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddEditControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddEditControls( item, true );
+        }
+
+        /// <summary>
         /// Adds the edit controls (and set the edit values)
         /// </summary>
         /// <param name="item">The item.</param>
@@ -341,7 +372,7 @@ namespace Rock.Web.UI.Controls
             {
                 List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
 
-                foreach ( var attributeCategory in attributeCategories )
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
                     IEnumerable<AttributeCache> attributes = GetFilteredAttributesForCategory( attributeCategory );
 
@@ -447,6 +478,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Adds the display controls while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddDisplayControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddDisplayControls( item );
+        }
+
+        /// <summary>
         /// Adds the display controls.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -467,7 +516,7 @@ namespace Rock.Web.UI.Controls
                 item.LoadAttributes();
             }
 
-            _displayModeAttributeIdValuesState = new Dictionary<int, string>();
+            _displayModeAttributeIdValuesState = item.AttributeValues.ToDictionary( k => k.Value.AttributeId, v => v.Value.Value );
 
             List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
 
@@ -477,9 +526,83 @@ namespace Rock.Web.UI.Controls
             }
 
             // only show heading labels if ShowCategoryLabel and there is at least attribute to show
-            bool showHeadingLabels = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
+            bool showCategoryLabel = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
 
-            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, null, showHeadingLabels );
+            // only show heading labels if ShowCategoryLabel and there is at least one attribute with category name
+            bool displayAsTabs = this.DisplayAsTabs & attributeCategories.Where( a => a.CategoryName.IsNotNullOrWhiteSpace() ).SelectMany( a => a.Attributes ).Any();
+
+            var exclude = ( ExcludedAttributes != null && ExcludedAttributes.Count() != 0 ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
+
+            if ( displayAsTabs )
+            {
+                HtmlGenericControl tabs = new HtmlGenericControl( "ul" );
+                tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
+                _phAttributes.Controls.Add( tabs );
+
+                HtmlGenericControl tabContent = new HtmlGenericControl( "div" );
+                tabContent.AddCssClass( "tab-content" );
+                _phAttributes.Controls.Add( tabContent );
+
+                int tabIndex = 0;
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
+                {
+                    string categoryName = "Attributes";
+                    string id = "Attributes";
+                    if ( attributeCategory.Category != null )
+                    {
+                        categoryName = attributeCategory.Category.Name.Trim();
+                        id = attributeCategory.Category.Id.ToString();
+                    }
+
+                    HtmlGenericControl parentControl = new HtmlGenericControl( "div" );
+                    parentControl.ID = id;
+                    parentControl.AddCssClass( "tab-pane fade in" );
+                    tabContent.Controls.Add( parentControl );
+                    var tabClientId = parentControl.ClientID;
+
+                    #region tabs
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    HtmlGenericControl a = new HtmlGenericControl( "a" );
+                    a.Attributes.Add( "data-toggle", "tab" );
+                    a.Attributes.Add( "href", "#" + tabClientId );
+
+                    a.InnerText = categoryName;
+                    li.Controls.Add( a );
+                    tabs.Controls.Add( li );
+                    #endregion tabs
+
+                    if ( tabIndex == 0 )
+                    {
+                        parentControl.AddCssClass( "active" );
+                        li.AddCssClass( "active" );
+                    }
+
+                    tabIndex++;
+
+                    Rock.Attribute.Helper.AddDisplayControls( item, new List<AttributeCategory>() { attributeCategory }, parentControl, exclude, false );
+                }
+
+            }
+            else
+            {
+                AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
+                {
+                    ExcludedAttributes = this.ExcludedAttributes.ToList(),
+                    NumberOfColumns = this.NumberOfColumns,
+                    ShowCategoryLabel = showCategoryLabel
+                };
+
+                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, attributeAddDisplayControlsOptions );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attributes that ended up getting displayed as a result of AddDisplayControls
+        /// </summary>
+        /// <returns></returns>
+        public List<AttributeCache> GetDisplayedAttributes()
+        {
+            return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes ); ;
         }
 
         #endregion Methods

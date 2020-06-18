@@ -94,6 +94,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Value = source.Value;
+            target.ValueAsNumeric = source.ValueAsNumeric;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

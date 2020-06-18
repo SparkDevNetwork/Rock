@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Finance
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
-        Description = "The accounts to display. By default all active accounts with a Public Name will be displayed. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
         Category = AttributeCategory.None,
         Order = 5 )]
 
@@ -251,15 +251,16 @@ namespace RockWeb.Blocks.Finance
 
     #region Email Templates
 
-    [SystemEmailField( "Confirm Account Email Template",
+    [SystemCommunicationField(
+        "Confirm Account Email Template",
         Key = AttributeKey.ConfirmAccountEmailTemplate,
         Description = "The Email Template to use when confirming a new account",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Category = AttributeCategory.EmailTemplates,
         Order = 1 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipt.",
@@ -426,7 +427,7 @@ mission. We are so grateful for your commitment.</p>
     <dt>Confirmation Code</dt>
     <dd>{{ Transaction.TransactionCode }}</dd>
     <dd></dd>
-    
+
     <dt>Name</dt>
     <dd>{{ Person.FullName }}</dd>
     <dd></dd>
@@ -437,10 +438,10 @@ mission. We are so grateful for your commitment.</p>
 <dl class='dl-horizontal'>
     {% for transactionDetail in transactionDetails %}
         <dt>{{ transactionDetail.Account.PublicName }}</dt>
-        <dd>{{ transactionDetail.Amount }}</dd>
+        <dd>{{ transactionDetail.Amount | FormatAsCurrency }}</dd>
     {% endfor %}
     <dd></dd>
-    
+
     <dt>Payment Method</dt>
     <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
 
@@ -451,7 +452,7 @@ mission. We are so grateful for your commitment.</p>
 
     <dt>When<dt>
     <dd>
-    
+
     {% if Transaction.TransactionFrequencyValue %}
         {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
     {% else %}
@@ -470,7 +471,7 @@ mission. We are so grateful for your commitment.</p>
             <div class='panel-heading'>
                 <span class='panel-title h1'>
                     <i class='fa fa-calendar'></i>
-                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}                              
+                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}
                 </span>
 
                 <span class='js-scheduled-totalamount scheduled-totalamount margin-l-md'>
@@ -495,7 +496,7 @@ mission. We are so grateful for your commitment.</p>
                             </span>
                         </div>
                     {% endfor %}
-                        
+
                     <br />
                     <span class='scheduled-transaction-payment-detail'>
                         {% assign financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail %}
@@ -507,7 +508,7 @@ mission. We are so grateful for your commitment.</p>
                         {% endif %}
                     </span>
                     <br />
-                    
+
                     {% if scheduledTransaction.NextPaymentDate != null %}
                         Next Gift: {{ scheduledTransaction.NextPaymentDate | Date:'sd' }}.
                     {% endif %}
@@ -517,10 +518,10 @@ mission. We are so grateful for your commitment.</p>
                         {% if LinkedPages.ScheduledTransactionEditPage != '' %}
                             <a href='{{ LinkedPages.ScheduledTransactionEditPage }}?ScheduledTransactionId={{ scheduledTransaction.Id }}'>Edit</a>
                         {% endif %}
-                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>                    
+                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>
                     </div>
                 </div>
-            </div>                
+            </div>
         </div>
     </div>
 {% endfor %}
@@ -587,7 +588,7 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string AccountsToDisplay = "AccountsToDisplay";
 
@@ -672,20 +673,14 @@ mission. We are so grateful for your commitment.</p>
 
         #region Attribute Categories
 
-        protected static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string None = "";
-
             public const string ScheduleGifts = "Scheduled Gifts";
-
             public const string PaymentComments = "Payment Comments";
-
             public const string TextOptions = "Text Options";
-
             public const string Advanced = "Advanced";
-
             public const string EmailTemplates = "Email Templates";
-
             public const string PersonOptions = "Person Options";
         }
 
@@ -693,7 +688,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region PageParameterKeys
 
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string Person = "Person";
 
@@ -718,7 +713,7 @@ mission. We are so grateful for your commitment.</p>
         #region enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum EntryStep
         {
@@ -1358,7 +1353,7 @@ mission. We are so grateful for your commitment.</p>
                 mergeFields.Add( "User", userLogin );
 
                 var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountEmailTemplate ).AsGuid() );
-                emailMessage.AddRecipient( new RecipientData( targetPerson.Email, mergeFields ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( targetPerson, mergeFields ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = false;
@@ -1541,7 +1536,6 @@ mission. We are so grateful for your commitment.</p>
             if ( enableACH == false && enableCreditCard == false )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Enable ACH and/or Enable Credit Card needs to be enabled." );
-                ;
                 pnlTransactionEntry.Visible = false;
                 return;
             }
@@ -2085,6 +2079,7 @@ mission. We are so grateful for your commitment.</p>
 
             // Only show the SavedAccount picker if there are saved accounts. If there aren't any (or if they choose 'Use a different payment method'), a later step will prompt them to enter Payment Info (CC/ACH fields)
             ddlPersonSavedAccount.Visible = personSavedAccountList.Any();
+            pnlSavedAccounts.Visible = personSavedAccountList.Any();
 
             ddlPersonSavedAccount.Items.Clear();
             foreach ( var personSavedAccount in personSavedAccountList )
@@ -2476,7 +2471,7 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                paymentInfo.Comment1 = paymentComment; 
+                paymentInfo.Comment1 = paymentComment;
             }
 
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
@@ -2623,10 +2618,6 @@ mission. We are so grateful for your commitment.</p>
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
             }
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( AttributeKey.AllowedTransactionAttributesFromURL ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2652,8 +2643,10 @@ mission. We are so grateful for your commitment.</p>
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
             financialTransactionService.Add( transaction );
             rockContext.SaveChanges();
-
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,

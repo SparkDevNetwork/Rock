@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
     [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 5 )]
-    [BooleanField("Require Campus", "Require that a campus be selected", false, "", 6 )]
+    [BooleanField("Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "", 6 )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -372,7 +372,12 @@ namespace RockWeb.Blocks.Prayer
             {
                 descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", email ) );
             }
-            descriptionList.Add( "Campus", prayerRequest.Campus );
+
+            if ( CampusCache.All( false ).Count > 1 )
+            {
+                descriptionList.Add( "Campus", prayerRequest.Campus );
+            }
+
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
@@ -415,6 +420,7 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
+            cpCampus.Items.Clear();
             cpCampus.SelectedCampusId = prayerRequest.CampusId;
 
             pnlDetails.Visible = true;

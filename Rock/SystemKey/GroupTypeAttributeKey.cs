@@ -98,6 +98,16 @@ namespace Rock.SystemKey
         /// </summary>
         public const string CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS = "core_checkin_registration_DefaultPersonConnectionStatus";
 
+        /// <summary>
+        /// Set the phone number as SMS enabled by default
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DEFAULTSMSENABLED = "core_checkin_registration_DefaultSmsEnabled";
+
+        /// <summary>
+        /// Show or hide the control to set SMS Enabled
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYSMSBUTTON = "core_checkin_registration_DisplaySmsButton";
+
         #endregion Registration Specific
 
         #region Display
@@ -118,5 +128,10 @@ namespace Rock.SystemKey
         public const string CHECKIN_SUCCESS_LAVA_TEMPLATE = "core_checkin_SuccessLavaTemplate";
 
         #endregion Display
+
+        /// <summary>
+        /// Attribute key to filter the the GroupTypes available for the defined values of the "Inactive Group Reasons" defined type
+        /// </summary>
+        public const string INACTIVE_REASONS_GROUPTYPE_FILTER = "core_InactiveReasonsGroupTypeFilter";
     }
 }

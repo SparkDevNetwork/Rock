@@ -27,7 +27,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateRestSecurity();
+            //UpdateRestSecurity();
         }
 
         /// <summary>
@@ -44,9 +44,18 @@ namespace Rock.Plugin.HotFixes
         private void UpdateRestSecurity()
         {
             Sql( @"
-                IF NOT EXISTS (SELECT [Id] FROM [RestController] WHERE [ClassName] = 'Rock.Rest.Controllers.PeopleController')                 BEGIN                    INSERT INTO [RestController] ( [Name], [ClassName], [Guid] )                    VALUES ( 'People', 'Rock.Rest.Controllers.PeopleController', NEWID() )                END
+                IF NOT EXISTS (SELECT [Id] FROM [RestController] WHERE [ClassName] = 'Rock.Rest.Controllers.PeopleController') 
+                BEGIN
+                    INSERT INTO [RestController] ( [Name], [ClassName], [Guid] )
+                    VALUES ( 'People', 'Rock.Rest.Controllers.PeopleController', NEWID() )
+                END
 
-                IF NOT EXISTS (SELECT [Id] FROM [RestAction] WHERE [ApiId] = 'GETapi/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}')                BEGIN                    INSERT INTO [RestAction] ( [ControllerId], [Method], [ApiId], [Path], [Guid] )                    SELECT [Id], 'GET', 'GETapi/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}', 'api/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}', NEWID()                    FROM [RestController] WHERE [ClassName] = 'Rock.Rest.Controllers.PeopleController'                END
+                IF NOT EXISTS (SELECT [Id] FROM [RestAction] WHERE [ApiId] = 'GETapi/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}')
+                BEGIN
+                    INSERT INTO [RestAction] ( [ControllerId], [Method], [ApiId], [Path], [Guid] )
+                    SELECT [Id], 'GET', 'GETapi/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}', 'api/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}', NEWID()
+                    FROM [RestController] WHERE [ClassName] = 'Rock.Rest.Controllers.PeopleController'
+                END
 
                 DECLARE @RestActionEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D')
                 DECLARE @GetImpersonationParameterRestActionId INT = (SELECT [Id] FROM [RestAction] WHERE [ApiId] = 'GETapi/People/GetImpersonationParameter?personId={personId}&expireDateTime={expireDateTime}&usageLimit={usageLimit}&pageId={pageId}')
@@ -55,7 +64,12 @@ namespace Rock.Plugin.HotFixes
                 -- There is already user defined security on this don't change it.
                 IF NOT EXISTS(SELECT * FROM Auth WHERE EntityTypeId = @RestActionEntityTypeId AND EntityId = @GetImpersonationParameterRestActionId)
                 BEGIN
-                    INSERT INTO [Auth] ([EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid])                    VALUES                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 0, 'View', 'A', 0, @RockAdminSecurityGroupId, '28261071-2ACB-4C7A-AA14-CAC9F6F18105'),                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 0, 'Edit', 'A', 0, @RockAdminSecurityGroupId, '648C68AE-F470-4A61-A36F-A90F21A17EA5'),                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 1, 'View', 'D', 1, NULL, 'C379B102-55A9-4E05-AC2A-49D4120611A4'),                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 1, 'Edit', 'D', 1, NULL, 'B5FF3548-5BBA-49B8-950A-A9FCED82C019')
+                    INSERT INTO [Auth] ([EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid])
+                    VALUES
+                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 0, 'View', 'A', 0, @RockAdminSecurityGroupId, '28261071-2ACB-4C7A-AA14-CAC9F6F18105'),
+                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 0, 'Edit', 'A', 0, @RockAdminSecurityGroupId, '648C68AE-F470-4A61-A36F-A90F21A17EA5'),
+                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 1, 'View', 'D', 1, NULL, 'C379B102-55A9-4E05-AC2A-49D4120611A4'),
+                        (@RestActionEntityTypeId, @GetImpersonationParameterRestActionId, 1, 'Edit', 'D', 1, NULL, 'B5FF3548-5BBA-49B8-950A-A9FCED82C019')
                 END" );
         }
     }

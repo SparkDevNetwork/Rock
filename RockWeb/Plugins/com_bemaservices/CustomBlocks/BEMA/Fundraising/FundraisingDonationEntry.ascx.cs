@@ -31,13 +31,13 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
  * - FE1) Added ability to use a group member attribute value for the group member name
  */
-namespace RockWeb.Blocks.Fundraising
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Fundraising
 {
     [DisplayName( "Fundraising Donation Entry" )]
     [Category( "BEMA Services > Fundraising" )]
@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Fundraising
         Category = "BEMA Additional Features" )]
     // SUCH Value = 'SupportDisplayName'
     /* BEMA.UI1.End */
+	
     public partial class FundraisingDonationEntry : RockBlock
     {
         /* BEMA.Start */
@@ -145,13 +146,13 @@ namespace RockWeb.Blocks.Fundraising
                 //
                 if ( GetAttributeValue( "AllowAutomaticSelection" ).AsBoolean( false ) && groupMember == null )
                 {
-                    var members = group.Members.Where( m => m.GroupRole.Guid == "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid() ).ToList();
+                    var members = group.Members.Where( m => ! m.GroupRole.IsLeader ).ToList();
                     if ( members.Count == 1 && members[0].GroupMemberStatus == GroupMemberStatus.Active )
                     {
                         group.LoadAttributes( rockContext );
                         if ( string.IsNullOrWhiteSpace( group.GetAttributeValue( "RegistrationInstance" ) ) )
                         {
-                            groupMember = group.Members.First();
+                            groupMember = members.First();
                         }
                     }
                 }
@@ -176,7 +177,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( baseGroup != null )
             {
                 groupIds.Add( baseGroup.Id );
-                groupIds.AddRange( service.GetAllDescendents( baseGroup.Id ).Select( g => g.Id ) );
+                groupIds.AddRange( service.GetAllDescendentGroupIds( baseGroup.Id, false ) );
             }
 
             return groupIds;
@@ -189,10 +190,11 @@ namespace RockWeb.Blocks.Fundraising
         protected void PopulateGroupDropDown()
         {
             var rockContext = new RockContext();
-            Guid groupTypeFundraisingOpportunity = "4BE7FC44-332D-40A8-978E-47B7035D7A0C".AsGuid();
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+
             Guid? rootGroup = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
 
-            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.Guid == groupTypeFundraisingOpportunity && a.IsActive && a.Members.Any() );
+            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => ( a.GroupTypeId == groupTypeIdFundraising || a.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) && a.IsActive && a.Members.Any() );
 
             if ( rootGroup.HasValue )
             {
@@ -253,9 +255,6 @@ namespace RockWeb.Blocks.Fundraising
                     // only include participants that have not disabled public contribution requests
                     if ( !groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() )
                     {
-
-
-
                         var listItem = new ListItem();
                         listItem.Value = groupMember.Id.ToString();
                         if ( showOnlyFirstName )
@@ -279,8 +278,6 @@ namespace RockWeb.Blocks.Fundraising
                             /* BEMA.FE1.End */
 
                         }
-
-
 
                         ddlParticipant.Items.Add( listItem );
                     }
@@ -320,7 +317,7 @@ namespace RockWeb.Blocks.Fundraising
                         var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                                     .Where( d => d.EntityTypeId == entityTypeIdGroupMember
                                             && d.EntityId == groupMemberId )
-                                    .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+                                    .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
 
                         var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                         if ( !individualFundraisingGoal.HasValue )

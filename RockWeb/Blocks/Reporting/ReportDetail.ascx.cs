@@ -1165,7 +1165,7 @@ namespace RockWeb.Blocks.Reporting
             SetEditMode( false );
             hfReportId.SetValue( report.Id );
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
-            lReportDescription.Text = report.Description;
+            lReportDescription.Text = report.Description.ConvertMarkdownToHtml();
 
             if ( report.DataView != null )
             {

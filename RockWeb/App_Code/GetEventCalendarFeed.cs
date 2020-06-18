@@ -23,12 +23,14 @@ using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 
+using RestSharp.Extensions;
+
 using System.Globalization;
-using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -115,14 +117,19 @@ namespace RockWeb
             {
                 foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
                 {
+                    if ( occurrence.Schedule == null )
+                    {
+                        continue;
+                    }
+
                     iCalendarSerializer serializer = new iCalendarSerializer();
-                    iCalendarCollection ical = ( iCalendarCollection ) serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+                    iCalendarCollection ical = (iCalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
 
                     foreach ( var icalEvent in ical[0].Events )
                     {
                         // We get all of the schedule info from Schedule.iCalendarContent
                         Event ievent = icalEvent.Copy<Event>();
-                        
+
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
 
@@ -135,7 +142,13 @@ namespace RockWeb
                         // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
                         if ( interactionDeviceType != "Outlook" )
                         {
-                            ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
+                            ievent.Description = description.ConvertBrToCrLf()
+                                                                .Replace( "</P>", "" )
+                                                                .Replace( "</p>", "" )
+                                                                .Replace( "<P>", Environment.NewLine )
+                                                                .Replace( "<p>", Environment.NewLine )
+                                                                .Replace( "&nbsp;", " " )
+                                                                .SanitizeHtml();
                         }
 
                         // HTML version of the description for outlook
@@ -146,7 +159,15 @@ namespace RockWeb
 
                         if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
                         {
-                            ievent.Url = new Uri( eventItem.DetailsUrl );
+                            Uri result;
+                            if ( Uri.TryCreate( eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
+                            else if ( Uri.TryCreate( "http://" + eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
                         }
 
                         // add contact info if it exists
@@ -170,7 +191,7 @@ namespace RockWeb
                         {
                             ievent.Categories.Add( a.DefinedValue.Value );
                         }
-                        
+
                         //// No attachments for now.
                         ////if ( eventItem.PhotoId != null )
                         ////{
@@ -234,7 +255,7 @@ namespace RockWeb
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate >= calendarProps.StartDate && o.Schedule.EffectiveEndDate <= calendarProps.EndDate ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
@@ -417,7 +438,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _startDate != null ? (DateTime) _startDate : DateTime.Now.Date;
+                    return _startDate ?? DateTime.Now.AddMonths( -3 ).Date;
                 }
 
                 set
@@ -436,7 +457,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _endDate != null ? (DateTime) _endDate : DateTime.Now.AddMonths( 2 ).Date;
+                    return _endDate ?? DateTime.Now.AddMonths( 12 ).Date;
                 }
 
                 set

@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
     [Description( "Displays the details of the given care item for editing." )]
 
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, order: 0 )]
-    [PersonBadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
+    [BadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
     public partial class CareItemDetail : PersonBlock, IDetailBlock, ICustomGridColumns
     {
         #region Properties
@@ -136,10 +136,10 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = PersonBadgeCache.Get( guid );
+                        var personBadge = BadgeCache.Get( guid );
                         if ( personBadge != null )
                         {
-                            blStatus.PersonBadges.Add( personBadge );
+                            blStatus.BadgeTypes.Add( personBadge );
                         }
                     }
                 }

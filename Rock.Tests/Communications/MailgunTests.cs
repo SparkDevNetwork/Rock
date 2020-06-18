@@ -30,7 +30,7 @@ namespace Rock.Tests.Communications
                 Attachments = new List<BinaryFile>() { binaryFileService.Get( 10 ) }
             };
 
-            rockEmailMessage.AddRecipient( "ethan@sparkdevnetwork.org" );
+            rockEmailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( "ethan@sparkdevnetwork.org", null ) );
 
             var mailgunHttp = new MailgunHttp();
             mailgunHttp.Send( rockEmailMessage, 0, null, out errorMessages );

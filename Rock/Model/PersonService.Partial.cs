@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
@@ -41,14 +42,14 @@ namespace Rock.Model
         private const int MATCH_SCORE_CUTOFF = 35;
 
         /// <summary>
-        /// Gets the specified unique identifier.
+        /// Gets the Person with the Guid value
         /// </summary>
-        /// <param name="guid">The unique identifier.</param>
+        /// <param name="guid">The GUID.</param>
         /// <returns></returns>
         public override Person Get( Guid guid )
         {
             // if a specific person Guid is specified, get the person record even if IsDeceased or IsBusiness
-            return this.Queryable( true, true ).FirstOrDefault( a => a.Guid == guid );
+            return base.Queryable().FirstOrDefault( a => a.Guid == guid );
         }
 
         /// <summary>
@@ -59,16 +60,16 @@ namespace Rock.Model
         public override Person Get( int id )
         {
             // if a specific person Id is specified, get the person record even if IsDeceased or IsBusiness
-            return this.Queryable( true, true ).FirstOrDefault( a => a.Id == id );
+            return base.Queryable().FirstOrDefault( a => a.Id == id );
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities (not including Deceased or Nameless records)
         /// </summary>
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities.</returns>
         public override IQueryable<Person> Queryable()
         {
-            return Queryable( false );
+            return Queryable( new PersonQueryOptions() );
         }
 
         /// <summary>
@@ -82,7 +83,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( bool includeDeceased, bool includeBusinesses = true )
         {
-            return Queryable( null, includeDeceased, includeBusinesses );
+            return Queryable( new PersonQueryOptions() { IncludeDeceased = includeDeceased, IncludeBusinesses = includeBusinesses } );
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading.</returns>
         public override IQueryable<Person> Queryable( string includes )
         {
-            return Queryable( includes, false, true );
+            return Queryable( includes, new PersonQueryOptions() );
         }
 
         /// <summary>
@@ -108,18 +109,121 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( string includes, bool includeDeceased, bool includeBusinesses = true )
         {
+            return this.Queryable( includes, new PersonQueryOptions() { IncludeDeceased = includeDeceased, IncludeBusinesses = includeBusinesses } );
+        }
+
+        /// <summary>
+        /// Options that can be configured when using some of the PersonService.Queryable(..) methods
+        /// </summary>
+        public class PersonQueryOptions
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether deceased people should be included (default is false)
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include deceased]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeDeceased { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether regular person records should be included (default is true)
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include persons]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludePersons { get; set; } = true;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether business person records should be included (default is true)
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include businesses]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeBusinesses { get; set; } = true;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether Nameless person records should be included (default is false)
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include nameless]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeNameless { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether RestUser person records should be included (default is true)
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include rest users]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeRestUsers { get; set; } = true;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities 
+        /// using the options specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
+        /// </summary>
+        /// <param name="personQueryOptions">The person query options.</param>
+        /// <returns></returns>
+        public IQueryable<Person> Queryable( PersonQueryOptions personQueryOptions )
+        {
+            return this.Queryable( null, personQueryOptions );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter.
+        /// using the option specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
+        /// </summary>
+        /// <param name="includes">The includes.</param>
+        /// <param name="personQueryOptions">The person query options.</param>
+        /// <returns></returns>
+        private IQueryable<Person> Queryable( string includes, PersonQueryOptions personQueryOptions )
+        {
             var qry = base.Queryable( includes );
-            if ( !includeBusinesses )
+            List<int> excludedPersonRecordTypeIds = new List<int>();
+
+            personQueryOptions = personQueryOptions ?? new PersonQueryOptions();
+
+            if ( personQueryOptions.IncludePersons == false )
             {
-                var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
-                if ( definedValueBusinessType != null )
+                int? recordTypePersonId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+                if ( recordTypePersonId.HasValue )
                 {
-                    int recordTypeBusiness = definedValueBusinessType.Id;
-                    qry = qry.Where( p => p.RecordTypeValueId != recordTypeBusiness );
+                    excludedPersonRecordTypeIds.Add( recordTypePersonId.Value );
                 }
             }
 
-            if ( !includeDeceased )
+            if ( personQueryOptions.IncludeBusinesses == false )
+            {
+                int? recordTypeBusinessId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+                if ( recordTypeBusinessId.HasValue )
+                {
+                    excludedPersonRecordTypeIds.Add( recordTypeBusinessId.Value );
+                }
+            }
+
+            if ( personQueryOptions.IncludeNameless == false )
+            {
+                int? recordTypeNamelessId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+                if ( recordTypeNamelessId.HasValue )
+                {
+                    excludedPersonRecordTypeIds.Add( recordTypeNamelessId.Value );
+                }
+            }
+
+            if ( excludedPersonRecordTypeIds.Any() )
+            {
+                if ( excludedPersonRecordTypeIds.Count == 1 )
+                {
+                    var excludedPersonRecordTypeId = excludedPersonRecordTypeIds[0];
+                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && excludedPersonRecordTypeId != a.RecordTypeValueId.Value );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && !excludedPersonRecordTypeIds.Contains( a.RecordTypeValueId.Value ) );
+                }
+            }
+
+            if ( personQueryOptions.IncludeDeceased == false )
             {
                 qry = qry.Where( p => p.IsDeceased == false );
             }
@@ -2119,15 +2223,180 @@ namespace Rock.Model
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter" )]
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
         {
-            int numberTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-            return Queryable()
-                .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber ) )
-                .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.IsMessagingEnabled ) )
-                .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.NumberTypeValueId == numberTypeValueId ) )
-                .ThenBy( p => p.Id )
+            return GetPersonFromMobilePhoneNumber( phoneNumber, false );
+        }
+
+        /// <summary>
+        /// Get the person associated with the phone number. Filter to any matching phone number, regardless
+        /// of type. Then order by those with a matching number and SMS enabled; then further order
+        /// by matching number with type == mobile; finally order by person Id to get the oldest
+        /// person in the case of duplicate records. If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = true, a
+        /// Nameless person record will created which can later be matched to a person
+        /// </summary>
+        /// <param name="phoneNumber">The phone number.</param>
+        /// <param name="createNamelessPersonIfNotFound">if set to <c>true</c> [create nameless person if not found].</param>
+        /// <returns></returns>
+        public Person GetPersonFromMobilePhoneNumber( string phoneNumber, bool createNamelessPersonIfNotFound )
+        {
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            // cleanup phone
+            phoneNumber = PhoneNumber.CleanNumber( phoneNumber );
+
+            // Just in case PhoneNUmber.CountryCode is NULL, also check if there is a matching phone number that doesn't have a country code
+            string fromPhoneNoCountryCode = phoneNumber;
+            if ( phoneNumber.Length > 10 )
+            {
+                fromPhoneNoCountryCode = phoneNumber.Right( 10 );
+            }
+
+            // order so that non-nameless person with an SMS number with messaging enabled are listed first
+            // then sort by the oldest person record in case there are multiple people with the same number
+
+            var person = new PhoneNumberService( this.Context as RockContext ).Queryable()
+                .Where( pn => ( pn.CountryCode + pn.Number ) == phoneNumber || pn.Number == fromPhoneNoCountryCode )
+                .OrderByDescending( pn => pn.IsMessagingEnabled )
+                .ThenByDescending( pn => pn.NumberTypeValueId == numberTypeMobileValueId )
+                .ThenByDescending( p => p.Person.RecordTypeValueId != recordTypeValueIdNameless )
+                .ThenBy( pn => pn.PersonId )
+                .Select( a => a.Person )
                 .FirstOrDefault();
+
+            if ( createNamelessPersonIfNotFound && person == null )
+            {
+                using ( var nameLessPersonRockContext = new RockContext() )
+                {
+                    var smsPhoneNumber = new PhoneNumber();
+                    smsPhoneNumber.NumberTypeValueId = numberTypeMobileValueId;
+                    smsPhoneNumber.Number = phoneNumber;
+                    smsPhoneNumber.IsMessagingEnabled = true;
+
+                    person = new Person();
+                    person.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+                    person.PhoneNumbers.Add( smsPhoneNumber );
+                    new PersonService( nameLessPersonRockContext ).Add( person );
+                    nameLessPersonRockContext.SaveChanges();
+
+                    person = this.Get( person.Id );
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
+        /// Merges the nameless person <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/> to existing person and saves changes to the database
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="existingPerson">The existing person.</param>
+        public void MergeNamelessPersonToExistingPerson( Person namelessPerson, Person existingPerson )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            var existingPersonMobilePhoneNumber = existingPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
+            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+
+            if ( existingPersonMobilePhoneNumber == null )
+            {
+                // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+                existingPersonMobilePhoneNumber = new PhoneNumber
+                {
+                    NumberTypeValueId = mobilePhoneTypeId,
+                    IsMessagingEnabled = true,
+                    Number = namelessPersonMobilePhoneNumberNumber
+                };
+
+                existingPerson.PhoneNumbers.Add( existingPersonMobilePhoneNumber );
+            }
+            else
+            {
+                // A person should only have one Mobile Phone Number, and no more than one phone with Messaging enabled. (Rock enforces that in the Person Profile UI)
+                // So, if they already have a Messaging Enabled Mobile Number, change it to the new linked number
+                existingPersonMobilePhoneNumber.Number = namelessPersonMobilePhoneNumberNumber;
+                existingPersonMobilePhoneNumber.IsMessagingEnabled = true;
+            }
+
+            // ensure they only have one SMS Number
+            var otherSMSPhones = existingPerson.PhoneNumbers.Where( a => a != existingPersonMobilePhoneNumber && a.IsMessagingEnabled == true ).ToList();
+            foreach ( var otherSMSPhone in otherSMSPhones )
+            {
+                otherSMSPhone.IsMessagingEnabled = false;
+            }
+
+            this.Context.SaveChanges();
+
+            DoNamelessPersonToOtherPersonMerge( namelessPerson, existingPerson );
+        }
+
+        /// <summary>
+        /// Merges the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS" />) to new person (and new Family) and saves changes to the database
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="newPerson">The new person.</param>
+        /// <param name="newPersonGroupRoleId">The new person group role identifier.</param>
+        public void MergeNamelessPersonToNewPerson( Person namelessPerson, Person newPerson, int newPersonGroupRoleId )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            newPerson.PhoneNumbers = new List<PhoneNumber>();
+
+            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+
+            // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+            var newPersonMobilePhoneNumber = new PhoneNumber
+            {
+                NumberTypeValueId = mobilePhoneTypeId,
+                IsMessagingEnabled = true,
+                Number = namelessPersonMobilePhoneNumberNumber
+            };
+
+            newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+
+            var groupMember = new GroupMember();
+            groupMember.GroupRoleId = newPersonGroupRoleId;
+            groupMember.Person = newPerson;
+
+            var groupMembers = new List<GroupMember>();
+            groupMembers.Add( groupMember );
+
+            var rockContext = this.Context as RockContext;
+
+            Group group = GroupService.SaveNewFamily( rockContext, groupMembers, null, true );
+
+            DoNamelessPersonToOtherPersonMerge( namelessPerson, newPerson );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Does the actual merge of the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/>) to a target person.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="targetPerson">The target person.</param>
+        private void DoNamelessPersonToOtherPersonMerge( Person namelessPerson, Person targetPerson )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            var namelessPersonMobilePhoneNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
+            var phoneNumberService = new PhoneNumberService( this.Context as RockContext );
+
+            if ( namelessPersonMobilePhoneNumber != null )
+            {
+                phoneNumberService.Delete( namelessPersonMobilePhoneNumber );
+            }
+
+            this.Context.SaveChanges();
+
+            // Run merge proc to merge all associated data
+            var parms = new Dictionary<string, object>();
+            parms.Add( "OldId", namelessPerson.Id );
+            parms.Add( "NewId", targetPerson.Id );
+            DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
         }
 
         #endregion
@@ -2221,6 +2490,7 @@ namespace Rock.Model
         /// <summary>
         /// Special override of Entity.GetByUrlEncodedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// NOTE: You might want to use GetByImpersonationToken instead to prevent a token from being used that was limited to a specific page
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="encodedKey">The encoded key.</param>
         /// <returns></returns>
@@ -2231,6 +2501,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="impersonationToken">The impersonation token.</param>
         /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
@@ -2244,6 +2515,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the Person by impersonation token but does not validate against token properties (e.g. expiration)
         /// Use this method if needing to get the person from a token that may be expired.
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
@@ -2258,7 +2530,7 @@ namespace Rock.Model
                     if ( personToken.PersonAlias != null )
                     {
                         // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
-                        return this.Get( personToken.PersonAlias.PersonId );
+                        return this.GetInclude( personToken.PersonAlias.PersonId, p => p.Aliases );
                     }
                 }
             }
@@ -2344,8 +2616,8 @@ namespace Rock.Model
 
                     if ( personToken.PersonAlias != null )
                     {
-                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
-                        return this.Get( personToken.PersonAlias.PersonId );
+                        // re-fetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.GetInclude( personToken.PersonAlias.PersonId, p => p.Aliases );
                     }
                 }
             }
@@ -2521,7 +2793,7 @@ namespace Rock.Model
                 return null;
             }
             return GetFamilyMembers( family, person.Id, true )
-                .Where( m => ! m.Person.IsDeceased )
+                .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
@@ -2639,6 +2911,90 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Configures the text to give settings including the person's preferred target financial account and default source saved account.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="contributionFinancialAccountId">The contribution financial account identifier.</param>
+        /// <param name="financialPersonSavedAccountId">The financial person saved account identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public bool ConfigureTextToGive( int personId, int? contributionFinancialAccountId, int? financialPersonSavedAccountId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            // Validate the person
+            var person = Get( personId );
+
+            if ( person == null )
+            {
+                errorMessage = "The person ID is not valid";
+                return false;
+            }
+
+            // Load the person's saved accounts
+            var rockContext = Context as RockContext;
+            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personsSavedAccounts = savedAccountService.Queryable()
+                .Include( sa => sa.PersonAlias )
+                .Where( sa => sa.PersonAlias.PersonId == personId )
+                .ToList();
+
+            // Loop through each saved account. Set default to false unless the args dictate that it is the default
+            var foundDefaultAccount = false;
+
+            foreach ( var savedAccount in personsSavedAccounts )
+            {
+                if ( !foundDefaultAccount && savedAccount.Id == financialPersonSavedAccountId )
+                {
+                    savedAccount.IsDefault = true;
+                    foundDefaultAccount = true;
+                }
+                else
+                {
+                    savedAccount.IsDefault = false;
+                }
+            }
+
+            // If the args specified an account to be default but it was not found, then return an error
+            if ( financialPersonSavedAccountId.HasValue && !foundDefaultAccount )
+            {
+                errorMessage = "The saved account ID is not valid";
+                return false;
+            }
+
+            // Validate the account if it is being set
+            if ( contributionFinancialAccountId.HasValue )
+            {
+                var accountService = new FinancialAccountService( rockContext );
+                var account = accountService.Get( contributionFinancialAccountId.Value );
+
+                if ( account == null )
+                {
+                    errorMessage = "The financial account ID is not valid";
+                    return false;
+                }
+
+                if ( !account.IsActive )
+                {
+                    errorMessage = "The financial account is not active";
+                    return false;
+                }
+
+                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
+                {
+                    errorMessage = "The financial account is not public";
+                    return false;
+                }
+            }
+
+            // Set the person's contribution account ID
+            person.ContributionFinancialAccountId = contributionFinancialAccountId;
+
+            // Success
+            return true;
+        }
+
         #endregion
 
         #region Person Group Methods
@@ -2735,16 +3091,20 @@ namespace Rock.Model
                 UPDATE Person
                     SET [BirthDate] = (
 		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
 			                    END
 		                    )
                     FROM Person
-                    WHERE IsDeceased = 0
+                    WHERE [BirthDate] != (
+		                    CASE 
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    AND IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();
@@ -2863,7 +3223,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to group.
+        /// Adds the person to group and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>
@@ -3102,6 +3462,17 @@ namespace Rock.Model
         #endregion
 
         #region User Preferences
+
+        /// <summary>
+        /// Gets the prefix for a user preference key that includes the block id so that it specific to the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns></returns>
+        public static string GetBlockUserPreferenceKeyPrefix( int blockId )
+        {
+            return $"block-{blockId}-";
+        }
+
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
@@ -3481,7 +3852,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static bool UpdatePrimaryFamily( int personId, RockContext rockContext )
         {
-            int recordsUpdated = UpdatePersonsPrimaryFamily( personId, rockContext );
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, personId: personId );
             return recordsUpdated != 0;
         }
 
@@ -3492,33 +3863,60 @@ namespace Rock.Model
         /// <returns></returns>
         public static int UpdatePrimaryFamilyAll( RockContext rockContext )
         {
-            return UpdatePersonsPrimaryFamily( null, rockContext );
+            return UpdatePersonsPrimaryFamily( rockContext );
         }
 
         /// <summary>
-        /// Updates the person primary family for the specified person, or for all persons in the database if personId is null
+        /// Ensures the PrimaryFamily and PrimaryCampus are correct for the people in the specified group.
         /// </summary>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier, usually a reference to a Family.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static int UpdatePersonsPrimaryFamily( int? personId, RockContext rockContext )
+        public static bool UpdatePrimaryFamilyByGroup( int groupId, RockContext rockContext )
         {
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, groupId: groupId );
+
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Updates the primary family and campus for the specified person or group members, or for all persons in the database if no parameters are specified.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentException">Specified parameters are ambiguous.</exception>
+        private static int UpdatePersonsPrimaryFamily( RockContext rockContext, int? personId = null, int? groupId = null )
+        {
+            // Verify only one of the optional parameters is specified.
+            if ( personId.HasValue
+                 && groupId.HasValue )
+            {
+                throw new ArgumentException( "Specified parameters are ambiguous." );
+            }
+
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family on each Person record matches the Calculated Primary Family
+            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family and Campus on each Person record matches the Calculated Primary Family and Campus.
             var sqlUpdateBuilder = new StringBuilder();
             sqlUpdateBuilder.Append( $@"
 UPDATE x
 SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+    ,x.PrimaryCampusId = x.CalculatedPrimaryCampusId
 FROM (
     SELECT p.Id
         ,p.NickName
         ,p.LastName
         ,p.PrimaryFamilyId
+        ,p.PrimaryCampusId
         ,pf.CalculatedPrimaryFamilyId
+        ,pf.CalculatedPrimaryCampusId
     FROM Person p
     OUTER APPLY (
-        SELECT TOP 1 g.Id [CalculatedPrimaryFamilyId]
+        SELECT TOP 1
+            g.Id [CalculatedPrimaryFamilyId]
+            ,g.CampusId [CalculatedPrimaryCampusId]
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
@@ -3527,13 +3925,17 @@ FROM (
             ,gm.GroupId
         ) pf
     WHERE (
-            p.PrimaryFamilyId IS NULL
-            OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
+            (ISNULL(p.PrimaryFamilyId, 0) != ISNULL(pf.CalculatedPrimaryFamilyId, 0))
+            OR (ISNULL(p.PrimaryCampusId, 0) != ISNULL(pf.CalculatedPrimaryCampusId, 0))
             )" );
 
             if ( personId.HasValue )
             {
                 sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+            else if ( groupId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id IN ( SELECT p1.Id FROM Person p1 INNER JOIN GroupMember gm2 ON p1.Id = gm2.PersonId WHERE gm2.GroupId = @groupId ) ) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );
@@ -3541,6 +3943,10 @@ FROM (
             if ( personId.HasValue )
             {
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else if ( groupId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@groupId", groupId.Value ) );
             }
             else
             {
@@ -3568,6 +3974,31 @@ FROM (
         public static int UpdateGivingLeaderIdAll( RockContext rockContext )
         {
             return UpdatePersonGivingLeaderId( null, rockContext );
+        }
+
+        /// <summary>
+        /// Ensures the GivingId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingIdAll( RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET GivingId = (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)
+WHERE GivingId IS NULL OR GivingId != (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)" );
         }
 
         /// <summary>

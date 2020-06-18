@@ -42,8 +42,8 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Legacy 685 Record Status Attribute", "", false, false, key: "LegacyStatus" )]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status For New Members", "The Connection Status that will be used for all new Family Members")]
-    [ConnectionStatusField("Connection Status For New Members", "This connection status will be used for all new Family Members", true)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status For New Members", "The Connection Status that will be used for all new Family Members" )]
+    [ConnectionStatusField( "Connection Status For New Members", "This connection status will be used for all new Family Members", true, "", "" )]
     [BooleanField( "UseCurrentPerson", "Whether the block should use the current person to generate family members" )]
     public partial class FamilyMembers : RockBlock
     {
@@ -294,7 +294,7 @@ namespace RockWeb.Plugins.org_hfbc.Legacy685
                             if ( connectionStatusGuid != null )
                             {
                                 DefinedValueCache dvConnectionStatus = DefinedValueCache.Read( connectionStatusGuid.Value );
-                                if( dvConnectionStatus != null )
+                                if ( dvConnectionStatus != null )
                                 {
                                     groupMember.Person.ConnectionStatusValueId = dvConnectionStatus.Id;
                                 }

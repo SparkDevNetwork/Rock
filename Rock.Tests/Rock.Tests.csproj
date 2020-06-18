@@ -29,6 +29,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +38,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
@@ -99,9 +101,12 @@
     <Compile Include="Communications\MailgunTests.cs" />
     <Compile Include="Rock\Lava\RockFiltersTests.cs" />
     <Compile Include="Rock\Lava\LegacyLavaUpdaterTest.cs" />
+    <Compile Include="Rock\Lava\ShortcodeTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
+    <Compile Include="Rock\Model\StreakTypeServiceTests.cs" />
+    <Compile Include="Rock\Model\ScheduleCheckInTests.cs" />
     <Compile Include="Rock\Model\HtmlContentTests.cs" />
     <Compile Include="Rock\Model\DeviceTests.cs" />
     <Compile Include="Rock\Model\PageContextTests.cs" />

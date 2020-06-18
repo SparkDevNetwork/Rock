@@ -31,7 +31,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -47,38 +47,192 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     [Category( "BEMA Services > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [PersonBadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
-    [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
-    [CodeEditorField( "Additional Custom Actions", @"
+    [BadgesField(
+        "Badges",
+        Key = AttributeKey.Badges,
+        Description = "The label badges to display in this block.",
+        IsRequired = false,
+        Order = 0 )]
+
+    [WorkflowTypeField(
+        "Workflow Actions",
+        Key = AttributeKey.WorkflowActions,
+        Description = "The workflows to make available as actions.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 1 )]
+
+    [CodeEditorField(
+        "Additional Custom Actions",
+        Key = AttributeKey.AdditionalCustomActions,
+        Description = @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
 <pre>
     &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
-</pre>
-", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
-    [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
-    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, "", "", 4 )]
-    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
-    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
-    [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7 )]
-    [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
-        Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 8, "CustomContent" )]
-    [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 9 )]
-    [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
-    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
-    [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
-    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false,
-        "Rock.Model.Tag", "", "", false, "", "", 13 )]
-    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
-    [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
-    [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
+</pre>",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
+        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        Order = 2 )]
+
+    [BooleanField(
+        "Enable Impersonation",
+        Key = AttributeKey.EnableImpersonation,
+        Description = "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Impersonation Start Page",
+        Key = AttributeKey.ImpersonationStartPage,
+        Description = "The page to navigate to after clicking the Impersonate action.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [LinkedPage(
+        "Business Detail Page",
+        Key = AttributeKey.BusinessDetailPage,
+        Description = "The page to redirect user to if a business is requested.",
+        IsRequired = false,
+        Order = 5 )]
+
+    [LinkedPage(
+        "Nameless Person Detail Page",
+        Key = AttributeKey.NamelessPersonDetailPage,
+        Description = "The page to redirect user to if the person record is a Nameless Person record type.",
+        IsRequired = false,
+        Order = 6 )]
+
+    [BooleanField( "Display Country Code",
+        Key = AttributeKey.DisplayCountryCode,
+        Description = "When enabled prepends the country code to all phone numbers.",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
+    [BooleanField( "Display Middle Name",
+        Key = AttributeKey.DisplayMiddleName,
+        Description = "Display the middle name of the person.",
+        DefaultBooleanValue = false,
+        Order = 8 )]
+
+    [CodeEditorField( "Custom Content",
+        Key = AttributeKey.CustomContent,
+        Description = "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        Order = 9 )]
+
+    [BooleanField( "Allow Following",
+        Key = AttributeKey.AllowFollowing,
+        Description = "Should people be able to follow a person by selecting the star on the person's photo?",
+        DefaultBooleanValue = true,
+        Order = 10 )]
+
+    [BooleanField( "Display Tags",
+        Key = AttributeKey.DisplayTags,
+        Description = "Should tags be displayed?",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+
+    [BooleanField( "Display Graduation",
+        Key = AttributeKey.DisplayGraduation,
+        Description = "Should the Grade/Graduation be displayed?",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField( "Display Anniversary Date",
+        Key = AttributeKey.DisplayAnniversaryDate,
+        Description = "Should the Anniversary Date be displayed?",
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [CategoryField( "Tag Category",
+        Key = AttributeKey.TagCategory,
+        Description = "Optional category to limit the tags to. If specified all new personal tags will be added with this category.",
+        AllowMultiple = false,
+        EntityType = typeof( Rock.Model.Tag ),
+        IsRequired = false,
+        Order = 14 )]
+
+    [AttributeCategoryField( "Social Media Category",
+        Key = AttributeKey.SocialMediaCategory,
+        Description = "The Attribute Category to display attributes from.",
+        AllowMultiple = false,
+        EntityType = typeof( Rock.Model.Person ),
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL,
+        Order = 15 )]
+
+    [BooleanField( "Enable Call Origination",
+        Key = AttributeKey.EnableCallOrigination,
+        Description = "Should click-to-call links be added to phone numbers.",
+        DefaultBooleanValue = true,
+        Order = 16 )]
+
+    [LinkedPage( "Communication Page",
+        Key = AttributeKey.CommunicationPage,
+        Description = "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 17 )]
 
     /* BEMA.FE1.Start */
-    [LinkedPage( "Edit Person Page", "The page to navigate to when the Edit button is clicked. Leave this blank to use the default.", false, "", "", 16 )]
+    [LinkedPage( "Edit Person Page",
+        Key = BemaAttributeKey.EditPersonPage,
+        Description = "The page to navigate to when the Edit button is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 18 )]
     /* BEMA.FE1.End */
+
     public partial class Bio : PersonBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class AttributeKey
+        {
+            public const string Badges = "Badges";
+            public const string WorkflowActions = "WorkflowActions";
+            public const string AdditionalCustomActions = "Actions";
+            public const string EnableImpersonation = "EnableImpersonation";
+            public const string ImpersonationStartPage = "ImpersonationStartPage";
+            public const string BusinessDetailPage = "BusinessDetailPage";
+            public const string NamelessPersonDetailPage = "NamelessPersonDetailPage";
+            public const string DisplayCountryCode = "DisplayCountryCode";
+            public const string DisplayMiddleName = "DisplayMiddleName";
+            public const string CustomContent = "CustomContent";
+            public const string AllowFollowing = "AllowFollowing";
+            public const string DisplayTags = "DisplayTags";
+            public const string DisplayGraduation = "DisplayGraduation";
+            public const string DisplayAnniversaryDate = "DisplayAnniversaryDate";
+            public const string TagCategory = "TagCategory";
+            public const string SocialMediaCategory = "SocialMediaCategory";
+            public const string EnableCallOrigination = "EnableCallOrigination";
+            public const string CommunicationPage = "CommunicationPage";
+        }
+
+        protected static class PageParameterKey
+        {
+            public const string PersonId = "PersonId";
+            public const string BusinessId = "BusinessId";
+            public const string NamelessPersonId = "NamelessPersonId";
+        }
+
+        /* BEMA.Start */
+        protected static class BemaAttributeKey
+        {
+            public const string EditPersonPage = "EditPersonPage";
+        }
+        /* BEMA.End */
+
+        #endregion Attribute Keys
+
 
         #region Fields
 
@@ -108,52 +262,78 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( pnlContent );
 
-            if ( Person != null )
+            if ( Person == null )
             {
-                pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
+                return;
+            }
 
-                // Record Type - this is always "business". it will never change.
-                if ( Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+            // If this is the empty person, check for an old Alias record and if found, redirect permanent to it instead.
+            if ( Person.Id == 0 )
+            {
+                //referring to aliasPersonId as person might be merged
+                var personId = this.PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+                if ( personId.HasValue )
                 {
-                    var parms = new Dictionary<string, string>();
-                    parms.Add( "businessId", Person.Id.ToString() );
-                    NavigateToLinkedPage( "BusinessDetailPage", parms );
-                }
-
-                if ( Person.IsDeceased )
-                {
-                    divBio.AddCssClass( "deceased" );
-                }
-
-                // Set the browser page title to include person's name
-                RockPage.BrowserTitle = Person.FullName;
-
-                string badgeList = GetAttributeValue( "Badges" );
-                if ( !string.IsNullOrWhiteSpace( badgeList ) )
-                {
-                    foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
+                    if ( personAlias != null )
                     {
-                        Guid guid = badgeGuid.AsGuid();
-                        if ( guid != Guid.Empty )
+                        var pageReference = RockPage.PageReference;
+                        pageReference.Parameters.AddOrReplace( PageParameterKey.PersonId, personAlias.PersonId.ToString() );
+                        Response.RedirectPermanent( pageReference.BuildUrl(), false );
+                    }
+                }
+            }
+
+            pnlFollow.Visible = GetAttributeValue( AttributeKey.AllowFollowing ).AsBoolean();
+
+            // Record Type - this is always "business". it will never change.
+            if ( Person.IsBusiness() )
+            {
+                var parms = new Dictionary<string, string>();
+                parms.Add( PageParameterKey.BusinessId, Person.Id.ToString() );
+                NavigateToLinkedPage( AttributeKey.BusinessDetailPage, parms );
+            }
+            else if ( Person.IsNameless() )
+            {
+                var parms = new Dictionary<string, string>();
+                parms.Add( PageParameterKey.NamelessPersonId, Person.Id.ToString() );
+                NavigateToLinkedPage( AttributeKey.NamelessPersonDetailPage, parms );
+            }
+
+            if ( Person.IsDeceased )
+            {
+                divBio.AddCssClass( "deceased" );
+            }
+
+            // Set the browser page title to include person's name
+            RockPage.BrowserTitle = Person.FullName;
+
+            string badgeList = GetAttributeValue( AttributeKey.Badges );
+            if ( !string.IsNullOrWhiteSpace( badgeList ) )
+            {
+                foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                {
+                    Guid guid = badgeGuid.AsGuid();
+                    if ( guid != Guid.Empty )
+                    {
+                        var badge = BadgeCache.Get( guid );
+                        if ( badge != null )
                         {
-                            var personBadge = PersonBadgeCache.Get( guid );
-                            if ( personBadge != null )
-                            {
-                                blStatus.PersonBadges.Add( personBadge );
-                            }
+                            blStatus.BadgeTypes.Add( badge );
                         }
                     }
                 }
+            }
 
-                lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-                // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
-                bool enableImpersonation = this.GetAttributeValue( "EnableImpersonation" ).AsBoolean();
-                lbImpersonate.Visible = false;
-                if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
-                {
-                    lbImpersonate.Visible = true;
-                }
+            // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
+            bool enableImpersonation = this.GetAttributeValue( AttributeKey.EnableImpersonation ).AsBoolean();
+            lbImpersonate.Visible = false;
+            if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+            {
+                lbImpersonate.Visible = true;
             }
         }
 
@@ -167,142 +347,149 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( !Page.IsPostBack )
             {
-                if ( Person != null && Person.Id != 0 )
-                {
-                    SetPersonName();
-
-                    // Setup Image
-                    string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( Person, 200, 200 );
-                    if ( Person.PhotoId.HasValue )
-                    {
-                        lImage.Text = string.Format( "<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag );
-                    }
-                    else
-                    {
-                        lImage.Text = imgTag;
-                    }
-
-                    if ( GetAttributeValue( "AllowFollowing" ).AsBoolean() )
-                    {
-                        FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
-                    }
-
-                    hlVCard.NavigateUrl = ResolveUrl( string.Format( "~/api/People/VCard/{0}", Person.Guid ) );
-
-                    var socialCategoryGuid = GetAttributeValue( "SocialMediaCategory" ).AsGuidOrNull();
-                    if ( socialCategoryGuid.HasValue )
-                    {
-                        var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
-                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
-
-                        rptSocial.DataSource = result
-                            .Where( r =>
-                                r.Value != null &&
-                                r.Value.Value != string.Empty &&
-                                r.QualifierValues != null &&
-                                r.QualifierValues.ContainsKey( NAME_KEY ) &&
-                                r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
-                                r.QualifierValues.ContainsKey( COLOR_KEY ) )
-                            .OrderBy( r => r.Attribute.Order )
-                            .Select( r => new
-                            {
-                                url = r.Value.Value,
-                                name = r.QualifierValues[NAME_KEY].Value,
-                                icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
-                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
-                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
-                                color = r.Attribute.QualifierValues[COLOR_KEY].Value,
-                            } )
-                            .ToList();
-                        rptSocial.DataBind();
-                    }
-
-                    if ( Person.BirthDate.HasValue )
-                    {
-                        var formattedAge = Person.FormatAge();
-                        if ( formattedAge.IsNotNullOrWhiteSpace() )
-                        {
-                            formattedAge += " old";
-                        }
-
-                        lAge.Text = string.Format( "<dd>{0} <small>({1})</small></dd>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
-                    }
-
-                    lGender.Text = string.Format( "<dd>{0}</dd>", Person.Gender.ToString() );
-
-                    if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
-                    {
-                        if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
-                        {
-                            lGraduation.Text = string.Format(
-                                "<dd><small>{0} {1}</small></dd>",
-                                Person.HasGraduated.Value ? "Graduated " : "Graduates ",
-                                Person.GraduationYear.Value );
-                        }
-                        lGrade.Text = Person.GradeFormatted;
-                    }
-
-                    if ( Person.AnniversaryDate.HasValue && GetAttributeValue( "DisplayAnniversaryDate" ).AsBoolean() )
-                    {
-                        lMaritalStatus.Text = string.Format( "<dd>{0}", Person.MaritalStatusValueId.DefinedValue() );
-                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small></dd>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
-                    }
-                    else
-                    {
-                        if ( Person.MaritalStatusValueId.HasValue )
-                        {
-                            lMaritalStatus.Text = string.Format( "<dd>{0}</dd>", Person.MaritalStatusValueId.DefinedValue() );
-                        }
-                    }
-
-
-                    if ( Person.PhoneNumbers != null )
-                    {
-                        rptPhones.DataSource = Person.PhoneNumbers.ToList();
-                        rptPhones.DataBind();
-                    }
-
-                    var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
-                    Rock.Web.PageReference communicationPageReference;
-                    if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
-                    {
-                        communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
-                    }
-                    else
-                    {
-                        communicationPageReference = null;
-                    }
-
-                    lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
-
-                    if ( GetAttributeValue( "DisplayTags" ).AsBoolean( true ) )
-                    {
-                        taglPersonTags.Visible = true;
-                        taglPersonTags.EntityTypeId = Person.TypeId;
-                        taglPersonTags.EntityGuid = Person.Guid;
-                        taglPersonTags.CategoryGuid = GetAttributeValue( "TagCategory" ).AsGuidOrNull();
-                        taglPersonTags.GetTagValues( CurrentPersonId );
-                    }
-                    else
-                    {
-                        taglPersonTags.Visible = false;
-                    }
-
-                    CreateActionMenu();
-
-                    string customContent = GetAttributeValue( "CustomContent" );
-                    if ( !string.IsNullOrWhiteSpace( customContent ) )
-                    {
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-                        string resolvedContent = customContent.ResolveMergeFields( mergeFields );
-                        phCustomContent.Controls.Add( new LiteralControl( resolvedContent ) );
-                    }
-
-                }
-                else
+                // dont' show if there isn't a person, or if it is a 'Nameless" person record type
+                if ( Person == null || Person.Id == 0 || Person.RecordTypeValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ) )
                 {
                     nbInvalidPerson.Visible = true;
                     pnlContent.Visible = false;
+                    return;
+                }
+
+                SetPersonName();
+
+                // Setup Image
+                string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( Person, 200, 200 );
+                if ( Person.PhotoId.HasValue )
+                {
+                    lImage.Text = string.Format( "<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag );
+                }
+                else
+                {
+                    lImage.Text = imgTag;
+                }
+
+                if ( GetAttributeValue( AttributeKey.AllowFollowing ).AsBoolean() )
+                {
+                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
+                }
+
+                hlVCard.NavigateUrl = ResolveUrl( string.Format( "~/api/People/VCard/{0}", Person.Guid ) );
+
+                var socialCategoryGuid = GetAttributeValue( AttributeKey.SocialMediaCategory ).AsGuidOrNull();
+                if ( socialCategoryGuid.HasValue )
+                {
+                    var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
+                    var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
+
+                    rptSocial.DataSource = result
+                        .Where( r =>
+                            r.Value != null &&
+                            r.Value.Value != string.Empty &&
+                            r.QualifierValues != null &&
+                            r.QualifierValues.ContainsKey( NAME_KEY ) &&
+                            r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
+                            r.QualifierValues.ContainsKey( COLOR_KEY ) )
+                        .OrderBy( r => r.Attribute.Order )
+                        .Select( r => new
+                        {
+                            url = r.Value.Value,
+                            name = r.QualifierValues[NAME_KEY].Value,
+                            icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
+                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                            color = r.Attribute.QualifierValues[COLOR_KEY].Value,
+                        } )
+                        .ToList();
+                    rptSocial.DataBind();
+                }
+
+                if ( Person.BirthDate.HasValue )
+                {
+                    var formattedAge = Person.FormatAge();
+                    if ( formattedAge.IsNotNullOrWhiteSpace() )
+                    {
+                        formattedAge += " old";
+                    }
+
+                    lAge.Text = string.Format( "<dd>{0} <small>({1})</small></dd>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
+                }
+
+                lGender.Text = string.Format( "<dd>{0}</dd>", Person.Gender.ToString() );
+
+                if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
+                {
+                    if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
+                    {
+                        lGraduation.Text = string.Format(
+                            "<dd><small>{0} {1}</small></dd>",
+                            Person.HasGraduated.Value ? "Graduated " : "Graduates ",
+                            Person.GraduationYear.Value );
+                    }
+                    lGrade.Text = Person.GradeFormatted;
+                }
+
+                if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
+                {
+                    lMaritalStatus.Text = string.Format( "<dd>{0}", Person.MaritalStatusValueId.DefinedValue() );
+                    lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small></dd>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                }
+                else
+                {
+                    if ( Person.MaritalStatusValueId.HasValue )
+                    {
+                        lMaritalStatus.Text = string.Format( "<dd>{0}</dd>", Person.MaritalStatusValueId.DefinedValue() );
+                    }
+                }
+
+
+                if ( Person.PhoneNumbers != null )
+                {
+                    var phoneNumbers = Person.PhoneNumbers.AsEnumerable();
+                    var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                    if ( phoneNumberTypes.DefinedValues.Any() )
+                    {
+                        var phoneNumberTypeIds = phoneNumberTypes.DefinedValues.Select( a => a.Id ).ToList();
+                        phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
+                    }
+
+                    rptPhones.DataSource = phoneNumbers;
+                    rptPhones.DataBind();
+                }
+
+                var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.CommunicationPage );
+                Rock.Web.PageReference communicationPageReference;
+                if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+                {
+                    communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                }
+                else
+                {
+                    communicationPageReference = null;
+                }
+
+                lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
+
+                if ( GetAttributeValue( AttributeKey.DisplayTags ).AsBoolean( true ) )
+                {
+                    taglPersonTags.Visible = true;
+                    taglPersonTags.EntityTypeId = Person.TypeId;
+                    taglPersonTags.EntityGuid = Person.Guid;
+                    taglPersonTags.CategoryGuid = GetAttributeValue( AttributeKey.TagCategory ).AsGuidOrNull();
+                    taglPersonTags.GetTagValues( CurrentPersonId );
+                }
+                else
+                {
+                    taglPersonTags.Visible = false;
+                }
+
+                CreateActionMenu();
+
+                string customContent = GetAttributeValue( AttributeKey.CustomContent );
+                if ( !string.IsNullOrWhiteSpace( customContent ) )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+                    string resolvedContent = customContent.ResolveMergeFields( mergeFields );
+                    phCustomContent.Controls.Add( new LiteralControl( resolvedContent ) );
                 }
             }
         }
@@ -312,7 +499,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             StringBuilder sbActions = new StringBuilder();
 
             // First list the actions manually entered as html in the block settting
-            var actions = GetAttributeValue( "Actions" );
+            var actions = GetAttributeValue( AttributeKey.AdditionalCustomActions );
             if ( !string.IsNullOrWhiteSpace( actions ) )
             {
                 string appRoot = ResolveRockUrl( "~/" );
@@ -329,7 +516,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             // Next list the workflow actions selected in the picker
-            var workflowActions = GetAttributeValue( "WorkflowActions" );
+            var workflowActions = GetAttributeValue( AttributeKey.WorkflowActions );
             if ( !string.IsNullOrWhiteSpace( workflowActions ) )
             {
                 List<WorkflowType> workflowTypes = new List<WorkflowType>();
@@ -409,7 +596,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
             else
             {
-                if ( GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace( Person.MiddleName ) )
+                if ( GetAttributeValue( AttributeKey.DisplayMiddleName ).AsBoolean() && !String.IsNullOrWhiteSpace( Person.MiddleName ) )
                 {
                     nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
                 }
@@ -485,11 +672,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( Person != null )
             {
                 /* BEMA.FE1.Start */
-                if ( !string.IsNullOrEmpty( this.GetAttributeValue( "EditPersonPage" ) ) )
+                if ( !string.IsNullOrEmpty( this.GetAttributeValue( BemaAttributeKey.EditPersonPage ) ) )
                 {
                     var parms = new Dictionary<string, string>();
                     parms.Add( "PersonId", Person.Id.ToString() );
-                    NavigateToLinkedPage( "EditPersonPage", parms );
+                    NavigateToLinkedPage( BemaAttributeKey.EditPersonPage, parms );
                 }
                 else
                 {
@@ -517,9 +704,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "rckipid", impersonationToken );
-                    if ( !string.IsNullOrEmpty( this.GetAttributeValue( "ImpersonationStartPage" ) ) )
+                    if ( !string.IsNullOrEmpty( this.GetAttributeValue( AttributeKey.ImpersonationStartPage ) ) )
                     {
-                        NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                        NavigateToLinkedPage( AttributeKey.ImpersonationStartPage, qryParams );
                     }
                     else
                     {
@@ -543,7 +730,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <returns></returns>
         protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
-            var originationEnabled = GetAttributeValue( "EnableCallOrigination" ).AsBoolean();
+            var originationEnabled = GetAttributeValue( AttributeKey.EnableCallOrigination ).AsBoolean();
 
             string formattedNumber = "Unlisted";
 
@@ -552,7 +739,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( !unlisted )
             {
-                if ( GetAttributeValue( "DisplayCountryCode" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayCountryCode ).AsBoolean() )
                 {
                     formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
                 }
@@ -584,7 +771,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( smsEnabled )
                 {
-                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", phoneMarkup, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1} <span class='label label-success' title='SMS Enabled' data-toggle='tooptip' data-placement='top'><i class='fa fa-sms'></i></span></small>", phoneMarkup, phoneType.Value );
                 }
                 else
                 {

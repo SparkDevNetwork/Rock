@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -22,7 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a defined value from a particular pre-configured defined type
     /// </summary>
     public class DefinedValuePicker : RockDropDownList, IDefinedValuePicker
     {
@@ -89,7 +90,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.SelectedDefinedValuesId.FirstOrDefault();
+                if ( this.SelectedDefinedValuesId?.Any() == true )
+                {
+                    return this.SelectedDefinedValuesId.FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             set
@@ -100,13 +108,13 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    this.SelectedDefinedValuesId = null;
+                    this.SelectedDefinedValuesId = new int[0];
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the selected defined value Ids
+        /// Gets or sets the selected defined values identifier.
         /// </summary>
         /// <value>
         /// The selected defined values identifier.
@@ -130,7 +138,10 @@ namespace Rock.Web.UI.Controls
                     item.Selected = false;
                 }
 
-                foreach ( int selectedValue in value )
+                // treat a value of null as nothing selected
+                var setValue = value ?? new int[0];
+
+                foreach ( int selectedValue in setValue )
                 {
                     var item = this.Items.FindByValue( selectedValue.ToString() );
                     if ( item != null )
@@ -245,11 +256,11 @@ namespace Rock.Web.UI.Controls
         bool IncludeInactive { get; set; }
 
         /// <summary>
-        /// Gets or sets the selected defined values identifier.
+        /// Gets or sets the selected list of Defined Value Ids
         /// </summary>
         /// <value>
         /// The selected defined values identifier.
         /// </value>
-        int[] SelectedDefinedValuesId { get; set;  }
+        int[] SelectedDefinedValuesId { get; set; }
     }
 }

@@ -41,7 +41,6 @@ namespace Rock.Transactions
         private string _userAgent;
         private string _url;
         private string _ipAddress;
-        private int? _currentPersonAliasId;
         private DateTime _interactionDateTime;
 
         /// <summary>
@@ -64,6 +63,14 @@ namespace Rock.Transactions
         ///   <c>true</c> if [log crawlers]; otherwise, <c>false</c>.
         /// </value>
         public bool LogCrawlers { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the current person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The current person alias identifier.
+        /// </value>
+        public int? CurrentPersonAliasId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Transactions.InteractionTransaction"/> class.
@@ -145,13 +152,12 @@ namespace Rock.Transactions
                 // intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available)
             }
 
-            if ( rockPage == null || request == null )
+            if ( request == null )
             {
                 _logInteraction = false;
                 return;
             }
 
-            _browserSessionId = rockPage.Session["RockSessionID"]?.ToString().AsGuidOrNull();
             _userAgent = request.UserAgent;
             _url = request.Url.ToString();
             try
@@ -163,25 +169,29 @@ namespace Rock.Transactions
                 _ipAddress = "";
             }
 
-            _currentPersonAliasId = rockPage.CurrentPersonAliasId;
-
-            var title = string.Empty;
-            if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )
+            if ( rockPage != null )
             {
-                title = rockPage.BrowserTitle;
-            }
-            else
-            {
-                title = rockPage.PageTitle;
-            }
+                _browserSessionId = rockPage.Session["RockSessionID"]?.ToString().AsGuidOrNull();
+                CurrentPersonAliasId = rockPage.CurrentPersonAliasId;
 
-            // remove site name from browser title
-            if ( title?.Contains( "|" ) == true)
-            {
-                title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
-            }
+                var title = string.Empty;
+                if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )
+                {
+                    title = rockPage.BrowserTitle;
+                }
+                else
+                {
+                    title = rockPage.PageTitle;
+                }
 
-            InteractionSummary = title;
+                // remove site name from browser title
+                if ( title?.Contains( "|" ) == true )
+                {
+                    title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
+                }
+
+                InteractionSummary = title;
+            }
 
             _interactionDateTime = RockDateTime.Now;
         }
@@ -191,7 +201,7 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            if ( !this._logInteraction )
+            if ( !this._logInteraction || InteractionSummary.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -243,7 +253,7 @@ namespace Rock.Transactions
                 interaction.Operation = "View";
                 interaction.InteractionSummary = InteractionSummary;
                 interaction.InteractionData = _url;
-                interaction.PersonAliasId = _currentPersonAliasId;
+                interaction.PersonAliasId = CurrentPersonAliasId;
                 interaction.InteractionDateTime = RockDateTime.Now;
                 interactionService.Add( interaction );
                 rockContext.SaveChanges();

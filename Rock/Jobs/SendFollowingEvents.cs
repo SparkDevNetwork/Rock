@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Determines if any events have occurred for the enitities that a person follows, and if so notifies them
     /// </summary>
-    [SystemEmailField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
+    [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
     [DisallowConcurrentExecution]
     public class SendFollowingEvents : IJob
@@ -330,7 +330,7 @@ namespace Rock.Jobs
                                         mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
 
                                         var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                         var errors = new List<string>(); 
                                         emailMessage.Send(out errors);
                                         exceptionMsgs.AddRange( errors );

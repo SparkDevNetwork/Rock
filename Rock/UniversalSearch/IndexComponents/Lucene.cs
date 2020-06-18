@@ -43,6 +43,7 @@ using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
+using Document = Lucene.Net.Documents.Document;
 
 namespace Rock.UniversalSearch.IndexComponents
 {

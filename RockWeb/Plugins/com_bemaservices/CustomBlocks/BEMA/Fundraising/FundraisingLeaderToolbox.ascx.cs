@@ -31,7 +31,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -95,6 +95,7 @@ namespace RockWeb.Plugins.com_bemaservices.Fundraising
 
         #endregion
         /* BEMA.End */
+		
         #region Base Control Methods
 
         /// <summary>

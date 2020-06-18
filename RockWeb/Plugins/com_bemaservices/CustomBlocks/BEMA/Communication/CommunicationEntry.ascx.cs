@@ -35,7 +35,7 @@ using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -52,28 +52,109 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0 )]
-    [ComponentsField( "Rock.Communication.MediumContainer, Rock", "Mediums", "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).", false, "", "", 1 )]
-    [CommunicationTemplateField( "Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)", false, "", "", 2 )]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 3 )]
-    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 4 )]
-    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 5 )]
-    [CustomDropdownListField( "Mode", "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6 )]
-    [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
-    [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
-    [BooleanField( "Simple Communications Are Bulk", "Should simple mode communications be sent as a bulk communication?", true, order: 10, key: "IsBulk" )]
+    [BooleanField( "Enable Lava",
+        Key = AttributeKey.EnableLava,
+        Description = "Remove the lava syntax from the message without resolving it.",
+        DefaultBooleanValue = false,
+        IsRequired = true,
+        Order = 0 )]
+    [LavaCommandsField( "Enabled Lava Commands",
+        Key = AttributeKey.EnabledLavaCommands,
+        Description = "The Lava commands that should be enabled for this HTML block if Enable Lava is checked.",
+        IsRequired = false,
+        Order = 1 )]
+    [ComponentsField( "Rock.Communication.MediumContainer, Rock",
+        Name = "Mediums",
+        Key = AttributeKey.Mediums,
+        Description = "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).",
+        IsRequired = false,
+        Order = 1 )]
+    [CommunicationTemplateField( "Default Template",
+        Key = AttributeKey.DefaultTemplate,
+        Description = "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)",
+        IsRequired = false,
+        Order = 2 )]
+    [IntegerField( "Maximum Recipients",
+        Key = AttributeKey.MaximumRecipients,
+        Description = "The maximum number of recipients allowed before communication will need to be approved",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 3 )]
+    [IntegerField( "Display Count",
+        Key = AttributeKey.DisplayCount,
+        Description = "The initial number of recipients to display prior to expanding list",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 4 )]
+    [BooleanField( "Send When Approved",
+        Key = AttributeKey.SendWhenApproved,
+        Description = "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+    [CustomDropdownListField( "Mode",
+        "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).",
+        "Full,Simple",
+        Key = AttributeKey.Mode,
+        IsRequired = true,
+        DefaultValue = "Full",
+        Order = 6 )]
+    [BooleanField( "Allow CC/Bcc",
+        Key = AttributeKey.AllowCcBcc,
+        Description = "Allow CC and Bcc addresses to be entered for email communications?",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+    [BooleanField( "Show Attachment Uploader",
+        Key = AttributeKey.ShowAttachmentUploader,
+        Description = "Should the attachment uploader be shown for email communications.",
+        DefaultBooleanValue = true,
+        Order = 8 )]
+    [DefinedValueField( "Allowed SMS Numbers",
+        Key = AttributeKey.AllowedSMSNumbers,
+        Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included).",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
+        AllowMultiple = true,
+        Order = 9 )]
+    [BooleanField( "Simple Communications Are Bulk",
+        Key = AttributeKey.SendSimpleAsBulk,
+        Description = "Should simple mode communications be sent as a bulk communication?",
+        DefaultBooleanValue = true,
+        Order = 10 )]
     [BinaryFileTypeField( "Attachment Binary File Type",
-        description: "The FileType to use for files that are attached to an sms or email communication",
-        required: true,
-        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        order: 11,
-        key: "AttachmentBinaryFileType" )]
+        Key = AttributeKey.AttachmentBinaryFileType,
+        Description = "The FileType to use for files that are attached to an sms or email communication",
+        IsRequired = true,
+        DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
+        Order = 11 )]
+    [BooleanField( "Default As Bulk",
+        Key = AttributeKey.DefaultAsBulk,
+        Description = "Should new entries be flagged as bulk communication by default?",
+        DefaultBooleanValue = false,
+        Order = 12 )]
+    [TextField( "Document Root Folder",
+        Key = AttributeKey.DocumentRootFolder,
+        Description = "The folder to use as the root when browsing or uploading documents.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Category = "HTML Editor Settings",
+        Order = 0 )]
+    [TextField( "Image Root Folder",
+        Key = AttributeKey.ImageRootFolder,
+        Description = "The folder to use as the root when browsing or uploading images.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Category = "HTML Editor Settings",
+        Order = 1 )]
+    [BooleanField( "User Specific Folders",
+        Key = AttributeKey.UserSpecificFolders,
+        Description = "Should the root folders be specific to current user?",
+        DefaultBooleanValue = false,
+        Category = "HTML Editor Settings",
+        Order = 2 )]
 
-    [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
-    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
-    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 2, Category = "HTML Editor Settings" )]
+    /* BEMA.FE1.Start */
     [BooleanField( "Is Reply To Autofilled", "Should the Reply To field be autofilled with the user's email?", false, "", 11, BemaAttributeKey.IsReplyToAutofilled )]
+    /* BEMA.FE1.End */
 
     public partial class CommunicationEntry : RockBlock
     {
@@ -86,6 +167,35 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
         #endregion
         /* BEMA.End */
+
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DisplayCount = "DisplayCount";
+            public const string AllowCcBcc = "AllowCcBcc";
+            public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string MaximumRecipients = "MaximumRecipients";
+            public const string SendWhenApproved = "SendWhenApproved";
+            public const string AllowedSMSNumbers = "AllowedSMSNumbers";
+            public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
+            public const string SendSimpleAsBulk = "IsBulk";
+            public const string ImageRootFolder = "ImageRootFolder";
+            public const string DocumentRootFolder = "DocumentRootFolder";
+            public const string Mode = "Mode";
+            public const string UserSpecificFolders = "UserSpecificFolders";
+            public const string DefaultAsBulk = "DefaultAsBulk";
+            public const string ShowAttachmentUploader = "ShowAttachmentUploader";
+            public const string Mediums = "Mediums";
+            public const string DefaultTemplate = "DefaultTemplate";
+            public const string EnableLava = "EnableLava";
+        }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -240,7 +350,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
 
-            string mode = GetAttributeValue( "Mode" );
+            string mode = GetAttributeValue( AttributeKey.Mode );
             _fullMode = string.IsNullOrWhiteSpace( mode ) || mode != "Simple";
             ppAddPerson.Visible = _fullMode;
             cbBulk.Visible = _fullMode;
@@ -563,7 +673,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                         testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
 
-                        testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                        testCommunication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
                         testCommunication.ForeignGuid = null;
                         testCommunication.ForeignId = null;
                         testCommunication.ForeignKey = null;
@@ -689,6 +799,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
+                            communication.CreatedDateTime = RockDateTime.Now;
 
                             if ( communication.FutureSendDateTime.HasValue &&
                                 communication.FutureSendDateTime > RockDateTime.Now )
@@ -715,7 +826,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                         if ( communication.Status == CommunicationStatus.Approved &&
                             ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
                         {
-                            if ( GetAttributeValue( "SendWhenApproved" ).AsBoolean() )
+                            if ( GetAttributeValue( AttributeKey.SendWhenApproved ).AsBoolean() )
                             {
                                 var transaction = new Rock.Transactions.SendCommunicationTransaction();
                                 transaction.CommunicationId = communication.Id;
@@ -822,7 +933,9 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
-                communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
+
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
                 int? personId = PageParameter( "Person" ).AsIntegerOrNull();
@@ -850,9 +963,9 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
             var template = communication.CommunicationTemplate;
 
-            if ( template == null && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultTemplate" ) ) )
+            if ( template == null && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DefaultTemplate ) ) )
             {
-                template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "DefaultTemplate" ).AsGuid() );
+                template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( AttributeKey.DefaultTemplate ).AsGuid() );
             }
 
             // If a template guid was passed in, it overrides any default template.
@@ -886,7 +999,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
             if ( !_fullMode )
             {
-                cbBulk.Checked = GetAttributeValue( "IsBulk" ).AsBoolean();
+                cbBulk.Checked = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
             }
 
             MediumControl control = LoadMediumControl( true );
@@ -904,7 +1017,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         private void BindMediums()
         {
             var selectedGuids = new List<Guid>();
-            GetAttributeValue( "Mediums" ).SplitDelimitedValues()
+            GetAttributeValue( AttributeKey.Mediums ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
 
@@ -985,7 +1098,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
             if ( !ShowAllRecipients )
             {
-                int.TryParse( GetAttributeValue( "DisplayCount" ), out displayCount );
+                int.TryParse( GetAttributeValue( AttributeKey.DisplayCount ), out displayCount );
             }
 
             if ( displayCount > 0 && displayCount < Recipients.Count )
@@ -1058,11 +1171,11 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                 var mediumControl = component.GetControl( !_fullMode );
                 if ( mediumControl is Rock.Web.UI.Controls.Communication.Email )
                 {
-                    ( (Rock.Web.UI.Controls.Communication.Email)mediumControl ).AllowCcBcc = GetAttributeValue( "AllowCcBcc" ).AsBoolean();
+                    ( (Rock.Web.UI.Controls.Communication.Email)mediumControl ).AllowCcBcc = GetAttributeValue( AttributeKey.AllowCcBcc ).AsBoolean();
                 }
                 else if ( mediumControl is Rock.Web.UI.Controls.Communication.Sms )
                 {
-                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
+                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
                 }
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
@@ -1072,7 +1185,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
                 if ( fupEmailAttachments != null )
                 {
-                    if ( !GetAttributeValue( "ShowAttachmentUploader" ).AsBoolean() )
+                    if ( !GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean() )
                     {
                         if ( fupEmailAttachments != null )
                         {
@@ -1081,7 +1194,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                     }
                     else
                     {
-                        fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                        fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
                     }
                 }
                 // if this is an email with an HTML control and there are block settings to provide updated content directories set them
@@ -1091,19 +1204,19 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
                     if ( htmlControl != null )
                     {
-                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhiteSpace() )
+                        if ( GetAttributeValue( AttributeKey.DocumentRootFolder ).IsNotNullOrWhiteSpace() )
                         {
-                            htmlControl.DocumentFolderRoot = GetAttributeValue( "DocumentRootFolder" );
+                            htmlControl.DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder );
                         }
 
-                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhiteSpace() )
+                        if ( GetAttributeValue( AttributeKey.ImageRootFolder ).IsNotNullOrWhiteSpace() )
                         {
-                            htmlControl.ImageFolderRoot = GetAttributeValue( "ImageRootFolder" );
+                            htmlControl.ImageFolderRoot = GetAttributeValue( AttributeKey.ImageRootFolder );
                         }
 
-                        if ( GetAttributeValue( "UserSpecificFolders" ).AsBooleanOrNull().HasValue )
+                        if ( GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBooleanOrNull().HasValue )
                         {
-                            htmlControl.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
+                            htmlControl.UserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean();
                         }
                     }
                 }
@@ -1270,7 +1383,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         private bool CheckApprovalRequired( int numberOfRecipients )
         {
             int maxRecipients = int.MaxValue;
-            int.TryParse( GetAttributeValue( "MaximumRecipients" ), out maxRecipients );
+            int.TryParse( GetAttributeValue( AttributeKey.MaximumRecipients ), out maxRecipients );
             bool approvalRequired = numberOfRecipients > maxRecipients;
 
             if ( _editingApproved )
@@ -1333,7 +1446,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                 communicationService.Add( communication );
             }
 
-            communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+            communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
             if ( qryRecipients == null )
             {
@@ -1395,6 +1508,18 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             else
             {
                 communication.FutureSendDateTime = null;
+            }
+
+            // If we are not allowing lava then remove the syntax
+            if ( !GetAttributeValue( AttributeKey.EnableLava ).AsBooleanOrNull() ?? false )
+            {
+                communication.Message = communication.Message.SanitizeLava();
+                communication.Subject = communication.Subject.SanitizeLava();
+                communication.BCCEmails = communication.BCCEmails.SanitizeLava();
+                communication.CCEmails = communication.CCEmails.SanitizeLava();
+                communication.FromEmail = communication.FromEmail.SanitizeLava();
+                communication.FromName = communication.FromName.SanitizeLava();
+                communication.ReplyToEmail = communication.ReplyToEmail.SanitizeLava();
             }
 
             return communication;

@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -381,13 +382,9 @@ namespace Rock.Reporting.DataFilter.Person
                         if ( cbChildGroupsPlusDescendants.Checked )
                         {
                             // get all children and descendants of the selected group(s)
-                            var descendants = groupService.GetAllDescendents( groupId );
-                            if ( !cbIncludeInactiveGroups.Checked )
-                            {
-                                descendants = descendants.Where( a => a.IsActive == true );
-                            }
+                            var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, cbIncludeInactiveGroups.Checked );
 
-                            childGroupTypeIds.AddRange( descendants.Select( a => a.GroupTypeId ).Distinct().ToList() );
+                            childGroupTypeIds.AddRange( descendantGroupTypes.Select(a => a.Id).ToList() );
                         }
                         else
                         {
@@ -418,11 +415,16 @@ namespace Rock.Reporting.DataFilter.Person
                     qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
                 }
 
-                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
+                {
+                    a.Name,
+                    GroupTypeName = a.GroupType.Name,
+                    a.Guid
+                } ).ToList();
                 cblRole.Items.Clear();
                 foreach ( var item in list )
                 {
-                    cblRole.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupType.Name ), item.Guid.ToString() ) );
+                    cblRole.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupTypeName ), item.Guid.ToString() ) );
                 }
 
                 cblRole.Visible = list.Count > 0;
@@ -697,13 +699,9 @@ namespace Rock.Reporting.DataFilter.Person
                         if ( includeChildGroupsPlusDescendants )
                         {
                             // get all children and descendants of the selected group(s)
-                            var descendants = groupService.GetAllDescendents( groupId );
-                            if ( !includeInactiveGroups )
-                            {
-                                descendants = descendants.Where( a => a.IsActive == true );
-                            }
+                            var descendantGroupIds = groupService.GetAllDescendentGroupIds( groupId, includeInactiveGroups );
 
-                            childGroupIds.AddRange( descendants.Select( a => a.Id ).Distinct().ToList() );
+                            childGroupIds.AddRange( descendantGroupIds );
                         }
                         else
                         {

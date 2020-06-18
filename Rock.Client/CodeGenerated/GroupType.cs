@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AdministratorTerm { get; set; } = @"Administrator";
 
         /// <summary />
+        public bool AllowAnyChildGroupType { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary />
@@ -74,7 +77,13 @@ namespace Rock.Client
         public bool EnableGroupTag { get; set; }
 
         /// <summary />
+        public bool EnableInactiveReason { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary />
+        public bool EnableRSVP { get; set; }
 
         /// <summary />
         public bool EnableSpecificGroupRequirements { get; set; }
@@ -315,7 +324,16 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        public bool RequiresInactiveReason { get; set; }
+
+        /// <summary />
         public bool RequiresReasonIfDeclineSchedule { get; set; }
+
+        /// <summary />
+        public int? RSVPReminderOffsetDays { get; set; }
+
+        /// <summary />
+        public int? RSVPReminderSystemCommunicationId { get; set; }
 
         /// <summary />
         public int? ScheduleCancellationWorkflowTypeId { get; set; }
@@ -324,12 +342,22 @@ namespace Rock.Client
         public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
 
         /// <summary />
+        public int? ScheduleConfirmationSystemCommunicationId { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", false )]
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
         /// <summary />
         public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
 
         /// <summary />
+        public int? ScheduleReminderSystemCommunicationId { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", false )]
         public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary />
@@ -387,6 +415,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdministratorTerm = source.AdministratorTerm;
+            this.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowGroupSync = source.AllowGroupSync;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
@@ -399,7 +428,9 @@ namespace Rock.Client
             this.Description = source.Description;
             this.EnableGroupHistory = source.EnableGroupHistory;
             this.EnableGroupTag = source.EnableGroupTag;
+            this.EnableInactiveReason = source.EnableInactiveReason;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
+            this.EnableRSVP = source.EnableRSVP;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -424,12 +455,21 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.RequiresInactiveReason = source.RequiresInactiveReason;
             this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
+            this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            this.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            #pragma warning disable 612, 618
             this.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
+            #pragma warning restore 612, 618
             this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
+            this.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
+            #pragma warning disable 612, 618
             this.ScheduleReminderSystemEmailId = source.ScheduleReminderSystemEmailId;
+            #pragma warning restore 612, 618
             this.SendAttendanceReminder = source.SendAttendanceReminder;
             this.ShowAdministrator = source.ShowAdministrator;
             this.ShowConnectionStatus = source.ShowConnectionStatus;
@@ -474,10 +514,10 @@ namespace Rock.Client
         public WorkflowType ScheduleCancellationWorkflowType { get; set; }
 
         /// <summary />
-        public SystemEmail ScheduleConfirmationSystemEmail { get; set; }
+        public SystemCommunication ScheduleConfirmationSystemCommunication { get; set; }
 
         /// <summary />
-        public SystemEmail ScheduleReminderSystemEmail { get; set; }
+        public SystemCommunication ScheduleReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

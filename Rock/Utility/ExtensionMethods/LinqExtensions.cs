@@ -446,7 +446,7 @@ namespace Rock
         /// <example>
         /// var test = new PersonService( rockContext ).Queryable().Where( a =&gt; a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
         ///   </example>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Entity<T>, new()
         {
             int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
@@ -469,7 +469,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <param name="predicate">The predicate.</param>
         /// <returns></returns>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Rock.Data.Model<T>, new()
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Entity<T>, new()
         {
             /*
               Example: 
@@ -485,6 +485,28 @@ namespace Rock
                 .Select( a => a.EntityId );
 
             var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
+            return result;
+        }
+
+        /// <summary>
+        /// Wheres the campus.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereCampus<T>( this IQueryable<T> source, RockContext rockContext, int campusId ) where T : Entity<T>, new()
+        {
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var entityCampusFilterService = new EntityCampusFilterService( rockContext )
+                .Queryable()
+                .Where( e => e.CampusId == campusId )
+                .Where( e => e.EntityTypeId == entityTypeId )
+                .Select( e => e.EntityId );
+
+            var result = source.Where( s => entityCampusFilterService.Contains( ( s as T ).Id ) );
             return result;
         }
 

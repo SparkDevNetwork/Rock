@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
@@ -56,7 +57,7 @@ namespace Rock
             /// <value>
             /// The rock context.
             /// </value>
-            internal System.Data.Entity.DbContext DbContext { get; set; }
+            internal List<System.Data.Entity.DbContext> DbContextList { get; set; } = new List<System.Data.Entity.DbContext>();
 
             /// <summary>
             /// </summary>
@@ -134,7 +135,7 @@ namespace Rock
             private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
             {
                 userState = null;
-                if ( this.DbContext != null && !interceptionContext.DbContexts.Any( a => a == this.DbContext ) )
+                if ( !interceptionContext.DbContexts.Any( a => this.DbContextList.Contains( a ) ) )
                 {
                     return;
                 }
@@ -262,7 +263,7 @@ namespace Rock
             _callCounts = 0;
             _callMSTotal = 0.00;
             SQLLoggingStop();
-            _debugLoggingDbCommandInterceptor.DbContext = dbContext;
+            _debugLoggingDbCommandInterceptor.DbContextList.Add( dbContext );
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
         }
 
@@ -292,7 +293,11 @@ namespace Rock
             }
             else
             {
-                DebugHelper.SQLLoggingStop();
+                _debugLoggingDbCommandInterceptor.DbContextList.Remove( dbContext );
+                if ( !_debugLoggingDbCommandInterceptor.DbContextList.Any() )
+                {
+                    DebugHelper.SQLLoggingStop();
+                }
             }
 
         }

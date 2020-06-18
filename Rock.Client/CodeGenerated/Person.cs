@@ -132,6 +132,9 @@ namespace Rock.Client
         public int? PhotoId { get; set; }
 
         /// <summary />
+        public int? PrimaryCampusId { get; set; }
+
+        /// <summary />
         public int? PrimaryFamilyId { get; set; }
 
         /// <summary />
@@ -237,6 +240,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
+            this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

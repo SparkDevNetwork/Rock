@@ -341,11 +341,11 @@ namespace RockWeb.Blocks.Communication
 
                 if ( message.FromNumber.StartsWith( "+" ) )
                 {
-                    message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Substring(1) );
+                    message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Substring(1), true );
                 }
                 else
                 {
-                    message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber );
+                    message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
                 }
 
                 var outcomes = SmsActionService.ProcessIncomingMessage( message );

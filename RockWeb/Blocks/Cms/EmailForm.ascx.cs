@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Cms
                 // send email
                 foreach ( string recipient in GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList() )
                 {
-                    message.AddRecipient( new RecipientData( recipient, mergeFields ) );
+                    message.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );
                 }
 
                 message.CCEmails = GetAttributeValue( "CCEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) ).Split( ',' ).ToList();

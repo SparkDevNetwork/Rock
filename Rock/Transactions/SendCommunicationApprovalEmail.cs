@@ -136,7 +136,7 @@ namespace Rock.Transactions
                                                     ApprovalPageUrl );
 
                             var emailMessage = new RockEmailMessage();
-                            emailMessage.AddRecipient( approver.Person.Email );
+                            emailMessage.AddRecipient( new RockEmailMessageRecipient( approver.Person, null ) );
                             emailMessage.FromEmail = fromEmail;
                             emailMessage.FromName = fromName;
                             emailMessage.Subject = subject;

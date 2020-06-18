@@ -238,6 +238,7 @@ namespace RockWeb.Blocks.Core
 
             definedValue.Value = tbValueName.Text;
             definedValue.Description = tbValueDescription.Text;
+            definedValue.IsActive = cbValueActive.Checked;
             avcDefinedValueAttributes.GetEditValues( definedValue );
 
             if ( !Page.IsValid )
@@ -412,7 +413,8 @@ namespace RockWeb.Blocks.Core
             hfDefinedValueId.SetValue( definedValue.Id );
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;
-            
+            cbValueActive.Checked = definedValue.IsActive;
+
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
             avcDefinedValueAttributes.AddEditControls( definedValue );
 

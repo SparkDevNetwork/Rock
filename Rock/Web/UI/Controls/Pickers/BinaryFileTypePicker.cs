@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a binary file type
     /// </summary>
     public class BinaryFileTypePicker : RockDropDownList
     {

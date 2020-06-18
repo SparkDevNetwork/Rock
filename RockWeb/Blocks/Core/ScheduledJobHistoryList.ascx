@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlScheduledJobs" CssClass="panel panel-block" runat="server">
             
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-history"></i> Scheduled Job History</h1>
+                <h1 class="panel-title"><i class="fa fa-history"></i> Scheduled Job History for <asp:Literal ID="lJobName" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">

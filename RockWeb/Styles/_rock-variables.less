@@ -282,7 +282,6 @@
 @tag-bg:                      #c2b8a7;
 @tag-text-color:              #231f20;
 @tag-border-radius:           @border-radius-base;
-@tag-dot-color:               #dbd5cb;
 @tag-bg-alt:                  #d0c6b4;
 
 // Autocomplete Styles
@@ -334,7 +333,7 @@
 
 // Buttons
 @enable-btn-focus-outline:    false;
-@btn-focus-width:             0.2rem;
+@btn-focus-width:             .2rem;
 @btn-transition:              ~"color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out";
 
 @btn-action-color:            @theme-8-text;
@@ -379,9 +378,12 @@
 @const-border-darken-amt:     10%; // creates a border color by darkening the background by this amount
 
 // Font Weights
+@font-weight-lighter:         200;
 @font-weight-light:           300;
-@font-weight-bold:            700;
+@font-weight-normal:          400;
 @font-weight-semibold:        600;
+@font-weight-bold:            700;
+@font-weight-bolder:          900;
 
 // Alerts
 @alert-success-link-border-bottom:      1px dotted @alert-success-text;
@@ -397,6 +399,15 @@
 
 // DISC Assessment Margin
 @disc-question-spacing: 48px;
+
+
+@metric-pending-bg: #aeaeae;
+@metric-delivered-bg: @brand-info;
+@metric-failed-bg: @brand-danger;
+@metric-cancelled-bg: @brand-warning;
+@metric-clicked-bg: @brand-success;
+@metric-opened-bg: #0079cc;
+
 
 // Helper Variables
 // -------------------------

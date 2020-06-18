@@ -32,9 +32,9 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
- * 
+ *
  * Additional Features:
  * - FE1) Added Ability to navigate to a specified Person page
  */
@@ -103,12 +103,24 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
         defaultValue: false,
         order: 9,
         key: "NewPersonEmail" )]
-    
+
     /* BEMA.FE1.Start */
-    [LinkedPage( "Person Detail Page", "The page to navigate to when the Save button is clicked. Leave this blank to use the default.", false, "", "", 10 )]
+    [LinkedPage( "Person Detail Page",
+        Key = BemaAttributeKey.PersonDetailPage,
+        Description = "The page to navigate to when the Save button is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 10 )]
     /* BEMA.FE1.End */
+	
     public partial class EditGroup : PersonBlock
     {
+        /* BEMA.Start */
+        protected static class BemaAttributeKey
+        {
+            public const string PersonDetailPage = "PersonDetailPage";
+        }
+        /* BEMA.End */
+
         private GroupTypeCache _groupType = null;
         private bool _isFamilyGroupType = false;
         private Group _group = null;
@@ -163,6 +175,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                 }
 
                 return state;
+            }
+        }
+
+        private string DefaultCountry
+        {
+            get
+            {
+                var globalAttributesCache = GlobalAttributesCache.Get();
+                return globalAttributesCache.OrganizationCountry;
             }
         }
 
@@ -228,7 +249,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
-            cpCampus.Visible = campusi.Any();
 
             if ( _isFamilyGroupType )
             {
@@ -927,6 +947,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                     LocationTypeName = homeLocType.Value,
                     LocationIsDirty = true,
                     State = DefaultState,
+                    Country = DefaultCountry,
                     IsMailing = true,
                     IsLocation = setLocation,
                     ShowCounty = _showCounty
@@ -999,7 +1020,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, IsMailing = true, ShowCounty = _showCounty } );
+            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, Country = DefaultCountry, IsMailing = true, ShowCounty = _showCounty } );
             gLocations.EditIndex = GroupAddresses.Count - 1;
 
             BindLocations();
@@ -1442,10 +1463,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 
                         Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
 
-	                    _group.SaveAttributeValues( rockContext );
-                       
+                        _group.SaveAttributeValues( rockContext );
+
                         /* BEMA.FE1.Start */
-                        if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+                        if ( !string.IsNullOrEmpty( this.GetAttributeValue( BemaAttributeKey.PersonDetailPage ) ) )
                         {
                             var parms = new Dictionary<string, string>();
                             if(Person != null && Person.Id != 0){
@@ -1463,9 +1484,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                             Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                         }
                         /* BEMA.FE1.End */
-	
-	                } );
-				}
+
+                    } );
+                }
                 catch ( GroupMemberValidationException gmvex )
                 {
                     cvGroupMember.IsValid = false;
@@ -1499,7 +1520,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
             {
                 Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
             }
-            /* BEMA.FE1.End */        
+            /* BEMA.FE1.End */
         }
 
         /// <summary>

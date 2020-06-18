@@ -658,11 +658,22 @@ namespace RockWeb.Blocks.Cms
             {
                 int childItemId = hfRemoveChildItem.ValueAsInt();
 
-                var service = new ContentChannelItemService( rockContext );
-                var childItem = service.Get( childItemId );
+                var itemService = new ContentChannelItemService( rockContext );
+
+                var childItem = itemService.Get( childItemId );
+
                 if ( childItem != null )
                 {
-                    service.Delete( childItem );
+                    // Delete child item.
+                    itemService.Delete( childItem );
+
+                    // Delete child/parent association records for this child item.
+                    var associationService = new ContentChannelItemAssociationService( rockContext );
+
+                    var associations = associationService.Queryable().Where( x => x.ChildContentChannelItemId == childItem.Id ).ToList();
+
+                    associationService.DeleteRange( associations );
+
                     rockContext.SaveChanges();
                 }
             }

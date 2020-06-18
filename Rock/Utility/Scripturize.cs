@@ -143,7 +143,15 @@ namespace Rock.Utility
             string regexBook = GetBookRegex();
             string regexTranslations = GetTranslationRegex();
 
-            string regexChapterVerse = @"\d{1,3}(?::\d{1,3})?(?:\s?(?:[-&,]\s?\d+))*";
+            // 9/11/2019 - NA 
+            // Originally this matched 1-3 numbers a colon (:) then 1-3 numbers
+            // with either a dash (-) ampersand (&) or comma (,) followed by numbers.
+            // That could match something like 1:1-10, 13 -- but we're not supporting that
+            // format since it incorrectly matches multiple book syntax (such as "John 3:16-18, 1 Peter 1:1-10")
+            // ...so we're removing the comma below from the character set.
+            // If this ends up breaking something, please add the test case to the ShortcodeTests first
+            // and then fix it in the code.
+            string regexChapterVerse = @"\d{1,3}(?::\d{1,3})?(?:\s?(?:[-&]\s?\d+))*";
 
             string regexPassageRegex = string.Format( @"(?:({0})\s)?({1})\s({2})(?:\s?[,-]?\s?((?:{3})|\s?\((?:{3})\)))?",
                         regexVolumes, // 0
@@ -309,6 +317,13 @@ namespace Rock.Utility
 
             // Normalize the book name to match YouVersions requirements
             var bookConfig = _bibleBooks.Where( b => b.Name == book || b.Aliases.Contains( book ) ).FirstOrDefault();
+
+            // Fix references to 1 John / 2 John / 3 John, YouVersion has a different pattern for that... :(
+            if (bookConfig.Name == "John" && volume.IsNotNullOrWhiteSpace() )
+            {
+                bookConfig.YouVersionAbbreviation = "Jn";
+                bookConfig.HasVolume = true;
+            }
 
             // Return an empty string if we could not find the book
             if ( bookConfig.IsNull() )

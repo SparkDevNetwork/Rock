@@ -1,0 +1,124 @@
+{%- if PageParameter['FinancialAccount'] -%}
+    {%- assign account = PageParameter['FinancialAccount'] -%}
+{%- endif -%}
+ 
+{%- if PageParameter['AnalysisDate'] -%}
+    {%- assign analysisdate = PageParameter['AnalysisDate'] -%}
+{% else %}
+    {%- assign analysisdate = 'Now' | Date:'MM/dd/yyyy' -%}
+{%- endif -%}
+ 
+{% comment %}
+    Iniate the variable Values to 0
+{% endcomment %}
+ 
+{% assign count = 0 %}
+{% assign PledgeOverCount = 0 %}
+{% assign PledgeOver = 0 %}
+{% assign PledgeOverToDate = 0 %}
+{% assign GivenOver = 0 %}
+{% assign PledgeMeetsCount = 0 %}
+{% assign PledgeMeets = 0 %}
+{% assign GivenMeets = 0 %}
+{% assign PledgeMeetsToDate = 0 %}
+{% assign PledgeUnderCount = 0 %}
+{% assign PledgeUnder = 0 %}
+{% assign GivenUnder = 0 %}
+{% assign PledgeUnderToDate = 0 %}
+ 
+{% comment %}
+    Set the Page Title
+{% endcomment %}
+ 
+{% capture title %}
+    Pledge Analysis for {{rows[0].Name}} as of {{analysisdate | Date:'MM/dd/yyyy'}}
+{% endcapture %}
+{{title | SetPageTitle }}
+ 
+{% for row in rows %}
+    {% if row.PledgeStatus == 'Over' %}
+        {% assign count = count | Plus:1 %}
+        {% assign PledgeOverCount =  PledgeOverCount | Plus: 1 %}
+        {% assign PledgeOver = PledgeOver | Plus: row.PledgeAmount %}
+        {% assign PledgeOverToDate = row.PledgeToDate | Plus: PledgeOverToDate %}
+        {% assign GivenOver = GivenOver | Plus: row.AmountGiven %}
+        
+    {% elseif row.PledgeStatus == 'Meets' %}
+        {% assign count = count | Plus:1 %}
+        {% assign PledgeMeetsCount =  PledgeMeetsCount | Plus: 1 %}
+        {% assign PledgeMeets = PledgeMeets | Plus: row.PledgeAmount %}
+        {% assign PledgeMeetsToDate = row.PledgeToDate | Plus: PledgeMeetsToDate %}
+        {% assign GivenMeets = GivenMeets | Plus: row.AmountGiven %}
+    
+    {% else %}
+        {% assign count = count | Plus:1 %}
+        {% assign PledgeUnderCount =  PledgeUnderCount | Plus: 1 %}
+        {% assign PledgeUnder = PledgeUnder | Plus: row.PledgeAmount %}
+        {% assign PledgeUnderToDate = row.PledgeToDate | Plus: PledgeUnderToDate %}
+        {% assign GivenUnder = GivenUnder | Plus: row.AmountGiven %}
+        
+    {% endif %}
+{% endfor %}
+ 
+ 
+<div class="panel panel-default">
+    <div class="panel-heading">{{ title }}</div>
+    <div class="panel-body">
+    <table class="table-striped table table-hover table-responsive table-sm">
+    <thead>
+        <tr>
+            <th>Pledge Status:</th>
+            <th>Pledge Count:</th>
+            <th>Total $ Pledged:</th>
+            <th>Total $ Pledge To Date:</th>
+            <th>Total $ Given:</th>
+            <th>Difference To Date:</th>
+            <th>Pledge Difference:</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Over</td>
+            <td>{{ PledgeOverCount }}</td>
+            <td>{{ PledgeOver | FormatAsCurrency }}</td>
+            <td>{{ PledgeOverToDate | FormatAsCurrency}}</td>
+            <td>{{ GivenOver | FormatAsCurrency}}</td>
+            <td>{{ GivenOver | Minus:PledgeOverToDate | FormatAsCurrency }}</td>
+            <td>{{GivenOver | Minus: PledgeOver | FormatAsCurrency}}</td>
+        </tr>
+        <tr>
+            <td>Meets</td>
+            <td>{{ PledgeMeetsCount }}</td>
+            <td>{{ PledgeMeets | FormatAsCurrency }}</td>
+            <td>{{ PledgeMeetsToDate | FormatAsCurrency}}</td>
+            <td>{{ GivenMeets | FormatAsCurrency}}</td>
+            <td>{{ GivenMeets | Minus:PledgeMeetsToDate | FormatAsCurrency }}</td>
+            <td>{{GivenMeets | Minus: PledgeMeets | FormatAsCurrency}}</td>
+        </tr>
+         <tr>
+            <td>Under</td>
+            <td>{{ PledgeUnderCount }}</td>
+            <td>{{ PledgeUnder | FormatAsCurrency }}</td>
+            <td>{{ PledgeUnderToDate | FormatAsCurrency}}</td>
+            <td>{{ GivenUnder | FormatAsCurrency}}</td>
+            <td>{{ GivenUnder | Minus:PledgeUnderToDate | FormatAsCurrency }}</td>
+            <td>{{GivenUnder | Minus: PledgeUnder | FormatAsCurrency}}</td>
+        </tr>
+    </tbody>
+    <tfoot>
+            {% assign totalPledged = PledgeUnder | Plus: PledgeOver | Plus: PledgeMeets %}
+            {% assign totalPledgedToDate = PledgeUnderToDate | Plus: PledgeOverToDate | Plus: PledgeMeetsToDate %}
+            {% assign totalGiven = GivenUnder | Plus: GivenOver | Plus: GivenMeets %}
+        <tr style="border-top:1px solid black;" >
+            <th>Total</td>
+            <th>{{ PledgeUnderCount | Plus: PledgeOverCount | Plus: PledgeMeetsCount }}</th>
+            <th>{{ totalPledged | FormatAsCurrency }}</th>
+            <th>{{ totalPledgedToDate | FormatAsCurrency}}</th>
+            <th>{{ totalGiven | FormatAsCurrency}}</th>
+            <th>{{ totalGiven | Minus:totalPledgedToDate | FormatAsCurrency }}</th>
+            <th>{{totalGiven | Minus: totalPledged | FormatAsCurrency}}</th>
+        </tr>
+    </tfoot>
+</table> 
+    </div>
+</div>

@@ -36,7 +36,11 @@
                             <asp:Literal ID="lblMainDetails" runat="server" />
                         </div>
                     </div>
-
+                    <div>
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcDisplayAttributes" runat="server" />
+                        </div>
+                    </div>
                 </div>
 
                 <div id="pnlEditDetails" runat="server">
@@ -63,10 +67,13 @@
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpGroupTypePurpose" runat="server" Label="Purpose"
                                     Help="An optional field used to qualify what the over-all purpose of this group type is for.  Additional values can be added by editing the 'Group Type Purpose' Defined Type." />
-                                <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
+
+                                <Rock:RockCheckBox ID="cbAllowAnyChildGroupType" runat="server" Label="Allow Any Child Group Type" Help="Determines if all types of child groups can be added to groups of this type" AutoPostBack="true" OnCheckedChanged="cbAllowAnyChildGroupType_CheckedChanged" />
+                                <Rock:RockControlWrapper ID="rcwAllowedChildGroupTypes" runat="server" Label="Allowed Child Group Types" 
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
+
                                     <div class="grid">
-                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
+                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type" HideDeleteButtonForIsSystem="false">
                                             <Columns>
                                                 <Rock:RockBoundField DataField="Name" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
@@ -139,9 +146,43 @@
                                             Help="Determines if groups of this type should be allowed to manage tags." />
 
                                     </div>
-                        </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbEnableInactiveReason" runat="server" Label="Enable Inactive Reason" Help="Allows a reason for inactivation to be selected. The reasons are setup in the Defined Type 'Inactive Group Reasons'" AutoPostBack="true" OnCheckedChanged="cbEnableInactiveReason_CheckedChanged" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbRequireInactiveReason" runat="server" Label="Require Inactive Reason" Help="Requires an Inactive Reason to be selected for the group when inactivating it. The reasons are setup in the Defined Type 'Inactive Group Reasons'" Enabled="false" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </Rock:PanelWidget>
+
+                    <%-- RSVP Settings --%>
+                    <Rock:PanelWidget ID="wpRsvp" runat="server" Title="RSVP">
+                        <asp:UpdatePanel runat="server" UpdateMode="Conditional">
+                            <ContentTemplate>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" AutoPostBack="true" OnCheckedChanged="cbRsvp_CheckedChanged" Text="Yes"
+                                                           Help="This option will allow group RSVP." />
+                                    </div>
+                                </div>
+                                <asp:Panel runat="server" ID="pnlRsvpSettings">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <Rock:RockDropDownList ID="ddlRsvpReminderSystemCommunication" runat="server" Label="RSVP Reminder System Communication"
+                                                Help="The System Communication that should be sent to remind group members to RSVP for group events." />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <Rock:RangeSlider ID="rsRsvpReminderOffsetDays" runat="server" Label="RSVP Reminder Offset Days" MinValue="0" MaxValue="30" SelectedValue="1"
+                                                Help="The number of days prior to a group event occurrence to send the RSVP reminder.  Set this value to 0 if you prefer to set this on the individual group." />
+                                        </div>
+                                    </div>
+                                </asp:Panel>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpAttendanceCheckin" runat="server" Title="Attendance / Check-in">
@@ -154,7 +195,7 @@
                                         <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes"
                                             Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
                                         <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
-                                            Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
+                                            Help="Check this option if a notification should be sent to the group leaders of these group types reminding them to enter attendance information." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options" Help="The schedule option types to allow when editing groups of this type." />
@@ -211,15 +252,15 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemEmail" runat="server" Label="Schedule Confirmation Email" Help="The system email to use when a person is scheduled or when the schedule has been updated." />
+                                <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemCommunication" runat="server" Label="Schedule Confirmation Communication" Help="The system communication to use when a person is scheduled or when the schedule has been updated." />
                                 <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason If Schedule Declined" Help="Indicates whether a person must specify a reason when declining/cancelling." />
-                                <Rock:NumberBox ID="nbScheduleConfirmationEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Email Offset Days" Help="The number of days prior to the schedule to send a confirmation email." />
+                                <Rock:NumberBox ID="nbScheduleConfirmationOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Offset Days" Help="The number of days prior to the schedule to send a confirmation notification." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />
 
-                                <Rock:RockDropDownList ID="ddlScheduleReminderSystemEmail" runat="server" Label="Schedule Reminder Email" Help="The system email to use when sending a schedule reminder." />
-                                <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The default number of days prior to the schedule to send a reminder email." />
+                                <Rock:RockDropDownList ID="ddlScheduleReminderSystemCommunication" runat="server" Label="Schedule Reminder Communication" Help="The system communication to use when sending a schedule reminder." />
+                                <Rock:NumberBox ID="nbScheduleReminderOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Offset Days" Help="The default number of days prior to the schedule to send a reminder notification." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -341,6 +382,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpGroupTypeGroupRequirements" runat="server" Title="Group Requirements">
@@ -390,7 +432,7 @@
                                     Help="The term to use for members in groups of this group type." />
                                 <Rock:DataTextBox ID="tbAdministratorTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="AdministratorTerm" Required="true"
                                     Help="This setting allows you to customize the term used for the administrator of the group." />
-                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"
                                     Help="The Font Awesome icon class to use when displaying groups of this group type." />
                                 <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color"
                                     Help="The color used to visually distinguish groups on lists." />
@@ -446,7 +488,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Text="Yes" Help="Are people with this role in group considered a 'Leader' of the group?" />
-                        <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Text="Yes" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be emailed you will need to setup a 'Process Group Requirements Notification Job'." />
+                        <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Text="Yes" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be sent you will need to setup a 'Process Group Requirements Notification Job'." />
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Text="Yes" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />

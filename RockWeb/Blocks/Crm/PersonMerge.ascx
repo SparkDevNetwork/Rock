@@ -35,8 +35,14 @@
                         <Rock:Grid ID="gValues" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
                     </div>
 
-                    <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />
+                    <Rock:NotificationBox ID="nmMultipleFamilies" runat="server" NotificationBoxType="Warning" Visible="true" Heading="Merge Target Has Multiple Families:"
+                        Text="The person selected as the merge target is a member of multiple families. Any family-related merge values will only be applied to the primary family."
+                        CssClass="js-multiple-family-target-enable" />
 
+                    <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />
+                    <Rock:NotificationBox ID="nbPermissionNotice" runat="server" NotificationBoxType="Warning" Visible="false"
+                        Heading="Conflicting Attribute Values:"
+                        Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="actions pull-right">
@@ -48,7 +54,23 @@
         </div>
 
         <script>
+            function syncPersonSelection() {
+                var $selectedCheckbox = $('.js-person-merge-table').find('.js-header-checkbox-icon.fa-check-square-o');
+                var hasMultipleFamilies = $selectedCheckbox.parent().find('.js-person-header').hasClass('js-person-has-multiple-families');
+
+                $('.js-multiple-family-target-enable').each(function (index) {
+                    if (hasMultipleFamilies) {
+                        $(this).show();
+                    }
+                    else {
+                        $(this).hide();
+                    }
+                });
+            }
+
             Sys.Application.add_load(function () {
+                syncPersonSelection();
+
                 $('.js-merge-header-summary').off('click').on('click', function (event) {
                     // The checkbox in the header was clicked, so we want to set the checkbox/radiobuttons as checked for all the person's selection controls
                     var $checkboxIcon = $(this).children('.js-header-checkbox-icon');
@@ -65,6 +87,8 @@
                             $(this).prop('checked', true);
                             $(this).closest('.js-merge-field-cell').addClass('selected');
                         });
+
+                        syncPersonSelection();
                     }
                 });
 

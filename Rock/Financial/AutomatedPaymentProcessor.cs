@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,11 +41,44 @@ namespace Rock.Financial
     /// </summary>
     public class AutomatedPaymentProcessor
     {
+        #region Keys
+
         /// <summary>
-        /// Use this key to set metadata that will be used as the description of the transaction
-        /// in some gateways
+        /// Use this key to set metadata that will be used as the description of the transaction in some gateways
         /// </summary>
+        [Obsolete( "Use the 'MetadataKey' static class constants instead." )]
+        [RockObsolete( "1.10" )]
         public const string DescriptionMetadataKey = "description";
+
+        /// <summary>
+        /// Commonly used keys within the transaction metadata
+        /// </summary>
+        public static class MetadataKey
+        {
+            /// <summary>
+            /// The description
+            /// </summary>
+            public const string Description = "description";
+
+            /// <summary>
+            /// The idempotency key
+            /// </summary>
+            public const string IdempotencyKey = "idempotency_key";
+
+            /// <summary>
+            /// The giving system
+            /// </summary>
+            public const string GivingSystem = "giving_system";
+
+            /// <summary>
+            /// The transaction unique identifier
+            /// </summary>
+            public const string TransactionGuid = "transaction_guid";
+        }
+
+        #endregion Keys
+
+        #region Instance Properties
 
         // Constructor params
         private RockContext _rockContext;
@@ -77,14 +112,20 @@ namespace Rock.Financial
         // Results
         private Payment _payment;
 
+        #endregion Instance Properties
+
+        #region Constructors
+
         /// <summary>
         /// Create a new payment processor to handle a single automated payment.
         /// </summary>
         /// <param name="currentPersonAliasId">The current user's person alias ID. Possibly the REST user.</param>
-        /// <param name="automatedPaymentArgs">The arguments describing how toi charge the payment and store the resulting transaction</param>
+        /// <param name="automatedPaymentArgs">The arguments describing how to charge the payment and store the resulting transaction</param>
         /// <param name="rockContext">The context to use for loading and saving entities</param>
-        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person
+        /// within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if
+        /// the schedule has already been processed according to it's frequency.</param>
         public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool enableDuplicateChecking = true, bool enableScheduleAdherenceProtection = true )
         {
             _rockContext = rockContext;
@@ -135,6 +176,10 @@ namespace Rock.Financial
             CopyFutureTransactionToArgs();
         }
 
+        #endregion Constructors
+
+        #region Public Methods
+
         /// <summary>
         /// Allow access to the automated gateway's most recent exception property.
         /// </summary>
@@ -158,7 +203,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Validates that the args do not seem to be a repeat charge on the same person in a short timeframe.
-        /// Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge does not seem repeated. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge is a repeat. False otherwise.</returns>
@@ -171,29 +216,37 @@ namespace Rock.Financial
                 return false;
             }
 
+            // Since an instance of this class should be used per transaction, and because the args cannot be changed after the
+            // instantiation, we can "cache" the result of this function. This function is public so other code can call it explicitly,
+            // and it is also called during the actual charge method, which means it is very likely to be called multiple times.
+            if ( _isRepeatCharge.HasValue )
+            {
+                errorMessage = _isRepeatChargeErrorMessage;
+                return _isRepeatCharge.Value;
+            }
+
             LoadEntities();
 
             // Get all the person aliases in the giving group
-            var personAliasIds = _personAliasService.Queryable()
+            var personAliasIdQuery = _personAliasService.Queryable()
                 .AsNoTracking()
                 .Where( a => a.Person.GivingId == _authorizedPerson.GivingId )
-                .Select( a => a.Id )
-                .ToList();
+                .Select( a => a.Id );
 
             // Check to see if a transaction exists for the person aliases within the last 5 minutes. This should help eliminate accidental repeat charges.
             var minDateTime = RockDateTime.Now.AddMinutes( -5 );
-            var recentTransactions = _financialTransactionService.Queryable()
+            var recentTransactionQuery = _financialTransactionService.Queryable()
                 .AsNoTracking()
                 .Include( t => t.TransactionDetails )
                 .Where( t =>
                     // Check for transactions in the giving group
-                    t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                    t.AuthorizedPersonAliasId.HasValue && personAliasIdQuery.Contains( t.AuthorizedPersonAliasId.Value ) &&
                     // Check for recent transactions
                     ( t.TransactionDateTime >= minDateTime || t.FutureProcessingDateTime >= minDateTime ) )
                 .ToList();
 
             // Look for a recent transaction that has the same account/amount combinations
-            var repeatTransaction = recentTransactions.FirstOrDefault( t => t.TransactionDetails.All( d =>
+            var repeatTransaction = recentTransactionQuery.FirstOrDefault( t => t.TransactionDetails.All( d =>
                 _automatedPaymentArgs.AutomatedPaymentDetails.Any( ad =>
                     ad.AccountId == d.AccountId &&
                     ad.Amount == d.Amount ) ) );
@@ -201,11 +254,18 @@ namespace Rock.Financial
             if ( repeatTransaction != null )
             {
                 errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Toggle EnableDuplicateChecking to disable this protection.", repeatTransaction.Id );
-                return true;
+                _isRepeatCharge = true;
+            }
+            else
+            {
+                _isRepeatCharge = false;
             }
 
-            return false;
+            _isRepeatChargeErrorMessage = errorMessage;
+            return _isRepeatCharge.Value;
         }
+        private bool? _isRepeatCharge = null;
+        private string _isRepeatChargeErrorMessage = null;
 
         /// <summary>
         /// Validates that the frequency of the scheduled transaction appears to be adhered to
@@ -221,13 +281,24 @@ namespace Rock.Financial
                 return true;
             }
 
+            // Since an instance of this class should be used per transaction, and because the args cannot be changed after the
+            // instantiation, we can "cache" the result of this function. This function is public so other code can call it explicitly,
+            // and it is also called during the actual charge method, which means it is very likely to be called multiple times.
+            if ( _isAccordingToSchedule.HasValue )
+            {
+                errorMessage = _isAccordingToScheduleErrorMessage;
+                return _isAccordingToSchedule.Value;
+            }
+
             LoadEntities();
             var instructionsToIgnore = "Toggle EnableScheduleAdherenceProtection to disable this protection.";
 
             if ( _financialScheduledTransaction == null )
             {
                 errorMessage = string.Format( "The scheduled transaction did not resolve. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             // Allow a 1 day margin of error since this is not meant to be restrictive (just prevent big errors)
@@ -237,13 +308,17 @@ namespace Rock.Financial
             if ( tomorrow < _financialScheduledTransaction.StartDate )
             {
                 errorMessage = string.Format( "The schedule start date is in the future. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             if ( _financialScheduledTransaction.EndDate.HasValue && yesterday > _financialScheduledTransaction.EndDate )
             {
                 errorMessage = string.Format( "The schedule end date is in the past. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             if ( _financialScheduledTransaction.NumberOfPayments.HasValue )
@@ -258,7 +333,9 @@ namespace Rock.Financial
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
                     errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurrences. {0}", instructionsToIgnore );
-                    return false;
+                    _isAccordingToScheduleErrorMessage = errorMessage;
+                    _isAccordingToSchedule = false;
+                    return _isAccordingToSchedule.Value;
                 }
             }
 
@@ -299,7 +376,9 @@ namespace Rock.Financial
                         "The scheduled transaction frequency ID is not valid: {0}. {1}",
                         _financialScheduledTransaction.TransactionFrequencyValueId,
                         instructionsToIgnore );
-                    return false;
+                    _isAccordingToScheduleErrorMessage = errorMessage;
+                    _isAccordingToSchedule = false;
+                    return _isAccordingToSchedule.Value;
             }
 
             var previousOccurrenceTransaction = _financialTransactionService.Queryable()
@@ -315,14 +394,20 @@ namespace Rock.Financial
                     previousOccurrenceTransaction.TransactionDateTime.Value.ToShortDateString(),
                     previousOccurrenceTransaction.Id,
                     instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
-            return true;
+            _isAccordingToScheduleErrorMessage = errorMessage;
+            _isAccordingToSchedule = true;
+            return _isAccordingToSchedule.Value;
         }
+        private bool? _isAccordingToSchedule = null;
+        private string _isAccordingToScheduleErrorMessage = null;
 
         /// <summary>
-        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if arguments are valid. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the arguments are valid. False otherwise.</returns>
@@ -495,18 +580,31 @@ namespace Rock.Financial
                 return SaveTransaction( transactionGuid );
             }
 
+            // Generate metadata which supporting gateways can utilize to provide context information about the transaction
             var metadata = new Dictionary<string, string>
             {
-                ["giving_system"] = "RockRMS",
-                ["transaction_guid"] = transactionGuid.ToString()
+                [MetadataKey.GivingSystem] = "RockRMS",
+                [MetadataKey.TransactionGuid] = transactionGuid.ToString()
             };
 
             var description = GetDescription();
             if ( !description.IsNullOrWhiteSpace() )
             {
-                metadata[DescriptionMetadataKey] = description;
+                metadata[MetadataKey.Description] = description;
             }
 
+            // The Idempotency Key may be provided in the args, if not generate one
+            if ( _automatedPaymentArgs.IdempotencyKey.IsNullOrWhiteSpace() )
+            {
+                var idempotencyKey = GenerateIdempotencyKey();
+                metadata[MetadataKey.IdempotencyKey] = idempotencyKey;
+            }
+            else
+            {
+                metadata[MetadataKey.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
+            }
+
+            // 
             var automatedGatewayComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
             _payment = automatedGatewayComponent.AutomatedCharge( _financialGateway, _referencePaymentInfo, out errorMessage, metadata );
 
@@ -522,8 +620,33 @@ namespace Rock.Financial
                 return null;
             }
 
-            return SaveTransaction( transactionGuid );
+            try
+            {
+                return SaveTransaction( transactionGuid );
+            }
+            catch ( Exception exception )
+            {
+                // The payment has already been charged by the gateway, so if the transaction cannot be saved to the DB, it's bad.
+                // The save transaction method is safe to retry since it uses the preset guid and will not enter duplicate
+                // transactions. Wait a second and try saving again
+                Thread.Sleep( 1000 );
+
+                try
+                {
+                    return SaveTransaction( transactionGuid );
+                }
+                catch
+                {
+                    errorMessage = $"Error recording charge: payment was charged by the gateway but an error occurred trying to save the transaction to the database: Guid {transactionGuid}, Total Amount {_payment?.Amount.FormatAsCurrency()}, Person {_authorizedPerson?.Id}, Exception {exception.Message}";
+                    ExceptionLogService.LogException( new Exception( errorMessage, exception ) );
+                    return null;
+                }
+            }
         }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         /// <summary>
         /// Safely load entities that have not yet been assigned a non-null value based on the arguments.
@@ -564,36 +687,42 @@ namespace Rock.Financial
                 // Pick the correct saved account based on args or default for the user
                 var financialGatewayId = _financialGateway.Id;
 
-                var savedAccountQry = _financialPersonSavedAccountService
+                var savedAccounts = _financialPersonSavedAccountService
                     .GetByPersonId( _authorizedPerson.Id )
                     .AsNoTracking()
                     .Where( sa => sa.FinancialGatewayId == financialGatewayId )
-                    .Include( sa => sa.FinancialPaymentDetail );
+                    .Include( sa => sa.FinancialPaymentDetail )
+                    .OrderByDescending( sa => sa.CreatedDateTime ?? DateTime.MinValue )
+                    .ToList();
 
                 if ( _automatedPaymentArgs.FinancialPersonSavedAccountId.HasValue )
                 {
                     // If there is an indicated saved account to use, don't assume any other saved account even with a schedule
                     var savedAccountId = _automatedPaymentArgs.FinancialPersonSavedAccountId.Value;
-                    _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.Id == savedAccountId );
+                    _financialPersonSavedAccount = savedAccounts.FirstOrDefault( sa => sa.Id == savedAccountId );
                 }
                 else
                 {
                     // If there is a schedule and no indicated saved account to use, try to use payment info associated with the schedule
                     if ( _financialScheduledTransaction != null )
                     {
-                        _financialPersonSavedAccount = savedAccountQry
-                        .Where( sa =>
-                            ( !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ||
-                            ( sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ||
-                            ( !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode )
-                        )
-                        .FirstOrDefault();
+                        _financialPersonSavedAccount =
+                            // sa.ReferenceNumber == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.ReferenceNumber ) && sa.ReferenceNumber == _financialScheduledTransaction.TransactionCode ) ??
+                            // sa.GatewayPersonIdentifier == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ??
+                            // sa.FinancialPaymentDetailId == fst.FinancialPaymentDetailId
+                            savedAccounts.FirstOrDefault( sa => sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ??
+                            // sa.TransactionCode == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode );
                     }
 
                     if ( _financialPersonSavedAccount == null )
                     {
                         // Use the default or first if no default
-                        _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.IsDefault ) ?? savedAccountQry.FirstOrDefault();
+                        _financialPersonSavedAccount =
+                            savedAccounts.FirstOrDefault( sa => sa.IsDefault ) ??
+                            savedAccounts.FirstOrDefault();
                     }
                 }
             }
@@ -728,18 +857,20 @@ namespace Rock.Financial
 
             if ( _futureTransaction == null )
             {
-                // Add the new transaction amount into the batch control amount
-                var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                // use the financialTransactionService to add the transaction instead of batch.Transactions
+                // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
                 _financialTransactionService.Add( financialTransaction );
             }
 
             _rockContext.SaveChanges();
+
+            if ( _futureTransaction == null )
+            {
+                // Update the batch control amount
+                _financialBatchService.IncrementControlAmount( batch.Id, financialTransaction.TotalAmount, batchChanges );
+                _rockContext.SaveChanges();
+            }
 
             // Save the changes history for the batch
             HistoryService.SaveChanges(
@@ -754,7 +885,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// If this payment porocessor is handling charging a future transaction, this method copies that future transaction into the appropriate args
+        /// If this payment processor is handling charging a future transaction, this method copies that future transaction into the appropriate args
         /// </summary>
         private void CopyFutureTransactionToArgs()
         {
@@ -797,5 +928,33 @@ namespace Rock.Financial
 
             return $"{sourceName}: {firstAccountName}";
         }
+
+        /// <summary>
+        /// Generate a hash of several properties of the transaction which aim to ensure uniqueness and prevent duplicate charges
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateIdempotencyKey()
+        {
+            if ( _automatedPaymentArgs == null )
+            {
+                return null;
+            }
+
+            using ( var sha256Hash = SHA256.Create() )
+            {
+                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHHmm" )}_{_automatedPaymentArgs.ToJson()}";
+                var bytes = sha256Hash.ComputeHash( Encoding.UTF8.GetBytes( inputString ) );
+                var builder = new StringBuilder();
+
+                for ( int i = 0; i < bytes.Length; i++ )
+                {
+                    builder.Append( bytes[i].ToString( "x2" ) );
+                }
+
+                return builder.ToString();
+            }
+        }
+
+        #endregion Private Methods
     }
 }

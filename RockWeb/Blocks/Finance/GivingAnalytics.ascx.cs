@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Finance
 
     public partial class GivingAnalytics : RockBlock
     {
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string ChartStyle = "ChartStyle";
             public const string DetailPage = "DetailPage";

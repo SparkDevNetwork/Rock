@@ -638,6 +638,22 @@ namespace Rock.Data
         public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the document types.
+        /// </summary>
+        /// <value>
+        /// The document types.
+        /// </value>
+        public DbSet<DocumentType> DocumentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        public DbSet<Document> Documents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -660,6 +676,14 @@ namespace Rock.Data
         /// The devices.
         /// </value>
         public DbSet<Device> Devices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity campus filters.
+        /// </summary>
+        /// <value>
+        /// The entity campus filters.
+        /// </value>
+        public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the entity sets.
@@ -924,6 +948,22 @@ namespace Rock.Data
         /// the Groups.
         /// </value>
         public DbSet<Group> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic types.
+        /// </summary>
+        /// <value>
+        /// The group demographic types.
+        /// </value>
+        public DbSet<GroupDemographicType> GroupDemographicTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic values.
+        /// </summary>
+        /// <value>
+        /// The group demographic values.
+        /// </value>
+        public DbSet<GroupDemographicValue> GroupDemographicValues { get; set; }
 
         /// <summary>
         /// Gets or sets the group historicals.
@@ -1318,6 +1358,14 @@ namespace Rock.Data
         public DbSet<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
+        /// Gets or sets the persisted datasets.
+        /// </summary>
+        /// <value>
+        /// The persisted datasets.
+        /// </value>
+        public DbSet<PersistedDataset> PersistedDatasets { get; set; }
+
+        /// <summary>
         /// Gets or sets the People.
         /// </summary>
         /// <value>
@@ -1342,12 +1390,12 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
-        /// Gets or sets the person badge types.
+        /// Gets or sets the badges.
         /// </summary>
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<PersonBadge> PersonBadges { get; set; }
+        public DbSet<Model.Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.
@@ -1510,6 +1558,22 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template placements.
+        /// </summary>
+        /// <value>
+        /// The registration template placements.
+        /// </value>
+        public DbSet<RegistrationTemplatePlacement> RegistrationTemplatePlacements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entities.
+        /// </summary>
+        /// <value>
+        /// The related entities.
+        /// </value>
+        public DbSet<RelatedEntity> RelatedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the reports.
         /// </summary>
         /// <value>
@@ -1622,6 +1686,62 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the steps.
+        /// </summary>
+        /// <value>
+        /// The steps.
+        /// </value>
+        public DbSet<Step> Steps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step programs.
+        /// </summary>
+        /// <value>
+        /// The step programs.
+        /// </value>
+        public DbSet<StepProgram> StepPrograms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step statuses.
+        /// </summary>
+        /// <value>
+        /// The step statuses.
+        /// </value>
+        public DbSet<StepStatus> StepStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step types.
+        /// </summary>
+        /// <value>
+        /// The step types.
+        /// </value>
+        public DbSet<StepType> StepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The step type prerequisites.
+        /// </value>
+        public DbSet<StepTypePrerequisite> StepTypePrerequisites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflows.
+        /// </summary>
+        /// <value>
+        /// The step workflows.
+        /// </value>
+        public DbSet<StepWorkflow> StepWorkflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The step workflow triggers.
+        /// </value>
+        public DbSet<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
+
+        /// <summary>
         /// Gets or sets the site URL maps.
         /// </summary>
         /// <value>
@@ -1630,12 +1750,70 @@ namespace Rock.Data
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
+        /// Gets or sets the Streaks.
+        /// </summary>
+        /// <value>
+        /// The Streaks.
+        /// </value>
+        public DbSet<Streak> Streaks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakAchievementAttempts.
+        /// </summary>
+        /// <value>
+        /// The StreakAchievementAttempts.
+        /// </value>
+        public DbSet<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypes.
+        /// </summary>
+        /// <value>
+        /// The StreakTypes.
+        /// </value>
+        public DbSet<StreakType> StreakTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypeAchievementTypes.
+        /// </summary>
+        /// <value>
+        /// The StreakTypeAchievementTypes.
+        /// </value>
+        public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<StreakTypeAchievementTypePrerequisite> StreakTypeAchievementTypePrerequisites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypeExclusions.
+        /// </summary>
+        /// <value>
+        /// The StreakTypeExclusions.
+        /// </value>
+        public DbSet<StreakTypeExclusion> StreakTypeExclusions { get; set; }
+
+        /// <summary>
         /// Gets or sets the system emails.
         /// </summary>
         /// <value>
         /// The system emails.
         /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use SystemCommunications instead." )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system emails.
+        /// </summary>
+        /// <value>
+        /// The system emails.
+        /// </value>
+        public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.

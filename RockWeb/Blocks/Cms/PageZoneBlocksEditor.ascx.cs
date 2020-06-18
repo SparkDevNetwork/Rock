@@ -154,15 +154,17 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    page.RemoveBlocks();
+                    //page.RemoveBlocks();
+                    PageCache.Remove( page.Id );
+
                     if ( block.LayoutId.HasValue )
                     {
-                        PageCache.RemoveLayoutBlocks( block.LayoutId.Value );
+                        PageCache.FlushPagesForLayout( block.LayoutId.Value );
                     }
 
                     if ( block.SiteId.HasValue )
                     {
-                        PageCache.RemoveSiteBlocks( block.SiteId.Value );
+                        PageCache.FlushPagesForSite( block.SiteId.Value );
                     }
 
                     ShowDetailForZone( ddlZones.SelectedValue );
@@ -204,6 +206,8 @@ namespace RockWeb.Blocks.Cms
             int pageId = hfPageId.Value.AsInteger();
             var page = PageCache.Get( pageId );
 
+            hlInvalidZoneWarning.Visible = _invalidPageZones != null && _invalidPageZones.Contains( zoneName );
+
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
             lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
             if ( page != null )
@@ -229,6 +233,19 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        private string[] _invalidPageZones
+        {
+            get
+            {
+                return ViewState["_invalidPageZones"] as string[] ?? new string[0];
+            }
+
+            set
+            {
+                ViewState["_invalidPageZones"] = value;
+            }
+        }
+
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
@@ -241,6 +258,7 @@ namespace RockWeb.Blocks.Cms
             var page = PageCache.Get( pageId );
             if ( page != null )
             {
+                // get the valid zones from the Layout for this page
                 var zoneNames = FindZoneNames( page );
 
                 foreach ( var zoneName in zoneNames )
@@ -248,6 +266,14 @@ namespace RockWeb.Blocks.Cms
                     var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( zoneName, StringComparison.OrdinalIgnoreCase ) ).Count();
                     ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", zoneName, zoneBlockCount ), zoneName ) );
                     ddlMoveToZoneList.Items.Add( new ListItem( zoneName, zoneName ) );
+                }
+
+                // get any zones from blocks that have a zone that isn't part of the layout, then add those the list, but not the MoveToZoneList
+                _invalidPageZones = page.Blocks.Select( a => a.Zone ).ToList().Where( z => !zoneNames.Contains( z ) ).ToArray();
+                foreach ( var invalidPageZone in _invalidPageZones )
+                {
+                    var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( invalidPageZone, StringComparison.OrdinalIgnoreCase ) ).Count();
+                    ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", invalidPageZone, zoneBlockCount ), invalidPageZone ) );
                 }
 
                 // default to Main Zone (if there is one)
@@ -586,19 +612,31 @@ namespace RockWeb.Blocks.Cms
                     // ignore
                 }
 
+                // Get a list of BlockTypes that does not include Mobile block types.
+                List<BlockTypeCache> allExceptMobileBlockTypes = new List<BlockTypeCache>();
+                foreach( var cachedBlockType in BlockTypeCache.All() )
+                {
+                    try
+                    {
+                        var blockCompiledType = cachedBlockType.GetCompiledType();
 
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
-                var blockTypes = blockTypeService.Queryable().AsNoTracking()
-                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
-                    .ToList();
+                        if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                        {
+                            allExceptMobileBlockTypes.Add( cachedBlockType );
+                        }
+                    }
+                    catch ( Exception )
+                    {
+                        // Intentionally ignored
+                    }
+                }
+
+                var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
 
                 ddlBlockType.Items.Clear();
 
                 // Add the categorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category != string.Empty )
-                    .OrderBy( b => b.Category )
-                    .ThenBy( b => b.Name ) )
+                foreach ( var blockType in blockTypes.Where( b => b.Category != string.Empty ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
                 {
                     var li = new ListItem( blockType.Name, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", blockType.Category );
@@ -607,9 +645,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Add the uncategorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category == null || b.Category == string.Empty )
-                    .OrderBy( b => b.Name ) )
+                foreach ( var blockType in blockTypes.Where( b => b.Category == null || b.Category == string.Empty ).OrderBy( b => b.Name ) )
                 {
                     var li = new ListItem( blockType.Name, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", "Other (not categorized)" );
@@ -618,9 +654,8 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            var htmlContentBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
-
-            ddlBlockType.SetValue( htmlContentBlockType.Id );
+            // Set the initial selection to the HTMLContent block.
+            ddlBlockType.SetValue( BlockTypeCache.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() ).Id );
 
             rblAddBlockLocation.Items.Clear();
 
@@ -730,11 +765,12 @@ namespace RockWeb.Blocks.Cms
 
                 if ( block.LayoutId.HasValue )
                 {
-                    PageCache.RemoveLayoutBlocks( page.LayoutId );
+                    PageCache.FlushPagesForLayout( page.LayoutId );
                 }
                 else
                 {
-                    page.RemoveBlocks();
+                    //page.RemoveBlocks();
+                    PageCache.Remove( page.Id );
                 }
 
                 mdAddBlock.Hide();

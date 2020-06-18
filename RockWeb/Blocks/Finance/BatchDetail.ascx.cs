@@ -672,12 +672,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch.Campus != null )
             {
-                hlCampus.Visible = true;
+                hlCampus.Visible = CampusCache.All().Count > 1;
                 hlCampus.Text = batch.Campus.Name;
-            }
-            else
-            {
-                hlCampus.Visible = false;
             }
 
             hlBatchId.Text = string.Format( "Batch #{0}", batch.Id.ToString() );

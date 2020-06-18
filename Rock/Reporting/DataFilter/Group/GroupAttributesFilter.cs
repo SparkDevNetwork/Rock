@@ -446,10 +446,9 @@ namespace Rock.Reporting.DataFilter.Group
             {
                 var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId.Value };
                 Rock.Attribute.Helper.LoadAttributes( fakeGroup );
-                foreach ( var attribute in fakeGroup.Attributes.Select( a => a.Value ) )
-                {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
-                }
+
+                var attributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+                EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
             }
 
             int index = 0;

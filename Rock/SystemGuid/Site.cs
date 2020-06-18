@@ -25,5 +25,10 @@ namespace Rock.SystemGuid
         /// Gets the default Rock Site guid
         /// </summary>
         public const string SITE_ROCK_INTERNAL = "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
+
+        /// <summary>
+        /// Gets the External Site guid.
+        /// </summary>
+        public const string EXTERNAL_SITE = "F3F82256-2D66-432B-9D67-3552CD2F4C2B";
     }
 }

@@ -34,7 +34,7 @@ namespace Rock.Jobs
     /// <summary>
     /// The job will send a Lava email template to a list of people returned from the dataview. 
     /// </summary>
-    [SystemEmailField( "System Email", "The email template that will be sent.", true, "" )]
+    [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
     [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
     [DisallowConcurrentExecution]
@@ -94,7 +94,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
                 if( resultSet.Any() )
                 {
                     foreach( Person person in resultSet )
@@ -105,7 +105,7 @@ namespace Rock.Jobs
                         }
                         var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
                     }
                 }
 

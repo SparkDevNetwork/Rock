@@ -351,6 +351,24 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string BodyCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -363,6 +381,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Page ParentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon binary file.
+        /// </summary>
+        /// <value>
+        /// The icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -509,7 +536,9 @@ namespace Rock.Model
                 var routes = RouteTable.Routes;
                 if ( routes != null )
                 {
-                    foreach( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                    var routesToRemove = new List<Route>();
+
+                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
                     { 
                         var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
                         pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
@@ -519,9 +548,15 @@ namespace Rock.Model
                         }
                         else
                         {
-                            RouteTable.Routes.Remove( existingRoute );
+                            routesToRemove.Add( existingRoute );
                         }
                     }
+
+                    foreach ( var existingRoute in routesToRemove )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
+                    }
+
                 }
             }
 
@@ -577,11 +612,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
-            if ( oldPageCache != null )
-            {
-                oldPageCache.RemoveChildPages();
-            }
+            //var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
+            //if ( oldPageCache != null )
+            //{
+            //    oldPageCache.RemoveChildPages();
+            //}
 
             PageCache.UpdateCachedEntity( this.Id, entityState );
 
@@ -614,6 +649,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

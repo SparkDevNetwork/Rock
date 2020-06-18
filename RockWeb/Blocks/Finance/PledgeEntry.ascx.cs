@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 " )]
 
-    [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
+    [SystemCommunicationField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
     public partial class PledgeEntry : RockBlock
     {
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Finance
                 if ( confirmationEmailTemplateGuid.HasValue )
                 {
                     var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
-                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                     emailMessage.AppRoot = ResolveRockUrl( "~/" );
                     emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                     emailMessage.Send();

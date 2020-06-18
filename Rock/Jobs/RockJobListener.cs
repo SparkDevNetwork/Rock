@@ -242,13 +242,13 @@ namespace Rock.Jobs
                 }
 
                 var notificationEmailAddresses = job.NotificationEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().ToList();
-                var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_JOB_NOTIFICATION.AsGuid() );
+                var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_JOB_NOTIFICATION.AsGuid() );
                 emailMessage.AdditionalMergeFields = mergeFields;
 
                 // NOTE: the EmailTemplate may also have TO: defined, so even if there are no notificationEmailAddress defined for this specific job, we still should send the mail
                 foreach ( var notificationEmailAddress in notificationEmailAddresses )
                 {
-                    emailMessage.AddRecipient( new RecipientData( notificationEmailAddress ) );
+                    emailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( notificationEmailAddress, null ) );
                 }
 
                 emailMessage.Send();

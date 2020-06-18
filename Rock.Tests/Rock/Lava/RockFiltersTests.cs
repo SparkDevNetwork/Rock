@@ -1220,6 +1220,211 @@ a comment --> sit amet</p>";
 
         #endregion
 
+        #region OrderBy
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the default ordering (ascending).
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_Int()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    {""Title"": ""D"", ""Order"": 4},
+    {""Title"": ""A"", ""Order"": 1},
+    {""Title"": ""C"", ""Order"": 3},
+    {""Title"": ""B"", ""Order"": 2}
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the explicit ordering descending.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntDescending()
+        {
+            var expected = new List<string>() { "D", "C", "B", "A" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 4 },
+    { ""Title"": ""A"", ""Order"": 1 },
+    { ""Title"": ""C"", ""Order"": 3 },
+    { ""Title"": ""B"", ""Order"": 2 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""SecondOrder"": 1 },
+    { ""Title"": ""A"", ""Order"": 1, ""SecondOrder"": 2 },
+    { ""Title"": ""C"", ""Order"": 2, ""SecondOrder"": 2 },
+    { ""Title"": ""B"", ""Order"": 1, ""SecondOrder"": 1 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order,SecondOrder desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntNestedInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""Nested"": { ""Order"": 1 } },
+    { ""Title"": ""A"", ""Order"": 1, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""C"", ""Order"": 2, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""B"", ""Order"": 1, ""Nested"": { ""Order"": 1 } }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order, Nested.Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort collection of group members by person name.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromObject_GroupMemberPersonName()
+        {
+            var expected = new List<int>() { 1, 2, 3, 4 };
+
+            var members = new List<GroupMember>
+            {
+                new GroupMember
+                {
+                    Id = 2,
+                    Person = new Person { FirstName = "Zippey", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 4,
+                    Person = new Person { FirstName = "Nancy", LastName = "Smith" }
+                },
+                new GroupMember
+                {
+                    Id = 1,
+                    Person = new Person { FirstName = "Adele", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 3,
+                    Person = new Person { FirstName = "Fred", LastName = "Smith" }
+                },
+            };
+
+            var output = ( List<object> ) RockFilters.OrderBy( members, "Person.LastName, Person.FirstName" );
+            var sortedIds = output.Cast<dynamic>().Select( x => x.Id ).Cast<int>();
+
+            Assert.Equal( expected, sortedIds );
+        }
+
+        #endregion
+
+        #region Tags (if/else)
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldIf()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if true %} CORRECT {% else %} NO {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldElse()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if false %} NO {% else %} CORRECT {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElsIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElseIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        #endregion
+
         #region Date Filters
 
         /// <summary>
@@ -1701,6 +1906,18 @@ a comment --> sit amet</p>";
             webContentFolder = System.IO.Path.Combine( dirPath, "Content" );
         }
 
+        #endregion
+
+        #region Lava Test helper methods
+        private static void AssertTemplateResult( string expected, string template )
+        {
+            AssertTemplateResult( expected, template, null );
+        }
+
+        private static void AssertTemplateResult( string expected, string template, Hash localVariables )
+        {
+            Assert.Equal( expected, Template.Parse( template ).Render( localVariables ) );
+        }
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

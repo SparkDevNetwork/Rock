@@ -38,7 +38,7 @@ using Rock.Web.UI.Controls;
  *******************************************************************************************************************************/
  
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -54,6 +54,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     [Category( "BEMA Services > Person Detail" )]
     [Description( "Allows you to edit a person." )]
     [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
+    [SecurityAction( "EditSMS", "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
     [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField( "Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0 )]
@@ -81,10 +82,43 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     
     
     /* BEMA.FE1.Start */
-    [LinkedPage( "Person Detail Page", "The page to navigate to when the Save button is clicked. Leave this blank to use the default.", false, "", "", 3 )]
+    [LinkedPage( "Person Detail Page",
+        Key = BemaAttributeKey.PersonDetailPage,
+        Description = "The page to navigate to when the Save button is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 3 )]
     /* BEMA.FE1.End */
+	
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
+		/* BEMA.Start */
+        protected static class BemaAttributeKey
+        {
+            public const string PersonDetailPage = "PersonDetailPage";
+        }
+        /* BEMA.End */
+		
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditSMS = "EditSMS";
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Can the current user edit the SMS Enabled property?
+        /// </summary>
+        public bool CanEditSmsStatus { get; set; }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -109,6 +143,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+
+            this.CanEditSmsStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditSMS );
 
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
@@ -621,11 +657,11 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                             }
                             
                             /* BEMA.FE1.Start */
-                            if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+                            if ( !string.IsNullOrEmpty( this.GetAttributeValue( BemaAttributeKey.PersonDetailPage ) ) )
                             {
                                 var parms = new Dictionary<string, string>();
                                 parms.Add( "PersonId", Person.Id.ToString() );
-                                NavigateToLinkedPage( "PersonDetailPage", parms );
+                                NavigateToLinkedPage( BemaAttributeKey.PersonDetailPage, parms );
                             }
                             else
                             {

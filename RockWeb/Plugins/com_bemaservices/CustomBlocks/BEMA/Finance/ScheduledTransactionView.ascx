@@ -33,6 +33,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
+
                         <asp:Panel ID="pnlViewAccounts" runat="server" CssClass="clearfix">
                             <label>Accounts</label>
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">

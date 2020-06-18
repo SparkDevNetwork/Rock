@@ -7,9 +7,12 @@
         <asp:HiddenField ID="hfFinancialGatewayId" runat="server" />
         <Rock:HiddenFieldWithClass ID="hfPaymentInfoVisable" CssClass="js-add-payment-visible" runat="server" />
 
+        <%-- Message for any configuration warnings --%>
+        <Rock:NotificationBox ID="nbConfigurationNotification" runat="server" Visible="false" />
+
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-        <%-- Prompt for Changes to Scheduled Transaction --%>
+        <%-- Prompt for Changes to Scheduled Transaction --%> 
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 

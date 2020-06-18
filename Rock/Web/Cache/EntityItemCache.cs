@@ -181,6 +181,15 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Returns a string representation of the object.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} [Id={this.Id},Guid={this.Guid}]";
+        }
+
+        /// <summary>
         /// Converts item to json string
         /// </summary>
         /// <returns></returns>

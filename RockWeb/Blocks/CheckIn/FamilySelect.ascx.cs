@@ -301,8 +301,19 @@ namespace RockWeb.Blocks.CheckIn
 
             Func<bool> doNotProceedCondition = () =>
             {
-                var noMatchingFamilies = CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) &&
-                    CurrentCheckInState.CheckIn.Families.All( f => f.Action == CheckinAction.CheckIn );
+                var noMatchingFamilies =
+                    (
+                        CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) &&
+                        CurrentCheckInState.CheckIn.Families.All( f => f.Action == CheckinAction.CheckIn ) // not sure this is needed
+                    )
+                    &&
+                    (
+                        ! CurrentCheckInState.CheckInType.AllowCheckout ||
+                        (
+                            CurrentCheckInState.CheckInType.AllowCheckout &&
+                            CurrentCheckInState.CheckIn.Families.All( f => f.CheckOutPeople.Count == 0 )
+                        )
+                    );
 
                 if ( noMatchingFamilies )
                 {

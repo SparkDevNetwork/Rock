@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Cms
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
         #region Attribute Keys
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DefaultFileType = "DefaultFileType";
         }
@@ -459,6 +459,7 @@ namespace RockWeb.Blocks.Cms
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
+                site.EnableExclusiveRoutes = cbEnableExclusiveRoutes.Checked;
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
@@ -912,6 +913,7 @@ namespace RockWeb.Blocks.Cms
 
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
+            cbEnableExclusiveRoutes.Checked = site.EnableExclusiveRoutes;
 
             // disable the indexing features if indexing on site is disabled
             var siteEntityType = EntityTypeCache.Get( "Rock.Model.Site" );

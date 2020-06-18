@@ -244,14 +244,14 @@ namespace RockWeb.Blocks.Groups
             };
 
             int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
-            if ( id.HasValue  )
+            if ( id.HasValue )
             {
                 qryParams.Add( "OccurrenceId", id.Value.ToString() );
             }
 
             if ( !id.HasValue || id.Value == 0 )
             {
-                string occurrenceDate = ( (DateTime)e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
+                string occurrenceDate = ( ( DateTime ) e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
                 qryParams.Add( "Date", occurrenceDate );
 
                 var locationId = e.RowKeyValues["LocationId"] as int?;
@@ -319,16 +319,16 @@ namespace RockWeb.Blocks.Groups
         protected void gOccurrences_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var occurenceService = new AttendanceOccurrenceService( rockContext );
+            var occurrenceService = new AttendanceOccurrenceService( rockContext );
             var attendanceService = new AttendanceService( rockContext );
-            var occurrence = occurenceService.Get( e.RowKeyId );
+            var occurrence = occurrenceService.Get( e.RowKeyId );
 
             if ( occurrence != null )
             {
                 var locationId = occurrence.LocationId;
 
                 string errorMessage;
-                if ( !occurenceService.CanDelete( occurrence, out errorMessage ) )
+                if ( !occurrenceService.CanDelete( occurrence, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
                     return;
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Groups
                 var attendees = attendanceService.Queryable().Where( a => a.OccurrenceId == occurrence.Id );
                 rockContext.BulkDelete<Attendance>( attendees );
 
-                occurenceService.Delete( occurrence );
+                occurrenceService.Delete( occurrence );
                 rockContext.SaveChanges();
 
                 if ( locationId.HasValue )
@@ -556,8 +556,8 @@ namespace RockWeb.Blocks.Groups
                 {
                     string parentLocationPath = locationService.GetPath( parentLocationId );
                     foreach ( var occ in occurrences
-                        .Where( o => 
-                            o.ParentLocationId.HasValue && 
+                        .Where( o =>
+                            o.ParentLocationId.HasValue &&
                             o.ParentLocationId.Value == parentLocationId ) )
                     {
                         occ.ParentLocationPath = parentLocationPath;
@@ -629,10 +629,11 @@ namespace RockWeb.Blocks.Groups
         public bool DidNotOccur { get; set; }
         public int DidAttendCount { get; set; }
         public double AttendanceRate { get; set; }
+        public double PercentMembersAttended { get; set; }
         public bool CanDelete { get; set; }
         public string Notes { get; set; }
 
-        public AttendanceListOccurrence ( AttendanceOccurrence occurrence )
+        public AttendanceListOccurrence( AttendanceOccurrence occurrence )
         {
             Id = occurrence.Id;
             OccurrenceDate = occurrence.OccurrenceDate;
@@ -651,7 +652,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
-            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : (int?)null;
+            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : ( int? ) null;
             ScheduleId = occurrence.ScheduleId;
 
             if ( occurrence.Schedule != null )
@@ -671,6 +672,7 @@ namespace RockWeb.Blocks.Groups
             DidNotOccur = occurrence.DidNotOccur ?? false;
             DidAttendCount = occurrence.DidAttendCount;
             AttendanceRate = occurrence.AttendanceRate;
+            PercentMembersAttended = occurrence.PercentMembersAttended;
             Notes = occurrence.Notes;
         }
     }

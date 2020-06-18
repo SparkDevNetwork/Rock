@@ -517,6 +517,11 @@ Rock.controls.valueFilter.initialize({{
         /// <returns>A FilterExpression object or null if the data was invalid.</returns>
         public static FilterExpression FromJsonOrNull( string value )
         {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             try
             {
                 return FromJObject( Newtonsoft.Json.Linq.JObject.Parse( value ) );
@@ -595,7 +600,7 @@ Rock.controls.valueFilter.initialize({{
             {
                 Filters.Add( FilterExpression.FromJObject( filter ) );
             }
-            
+
         }
 
         #endregion

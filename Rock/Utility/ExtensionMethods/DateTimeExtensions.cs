@@ -172,6 +172,23 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the value for <see cref="DateTime.ToShortDateString"/> or empty string if the date is null
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToShortDateString( this DateTime? dateTime )
+        {
+            if ( dateTime.HasValue )
+            {
+                return dateTime.Value.ToShortDateString();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Returns the dateTime in ISO-8601 ( https://en.wikipedia.org/wiki/ISO_8601 ) format. Use this when serializing a date/time as an AttributeValue, UserPreference, etc
         /// </summary>
         /// <param name="dateTime">The date time.</param>
@@ -326,9 +343,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the date of the start of the week for the specified date/time
-        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-11"
-        /// from http://stackoverflow.com/a/38064/1755417
+        /// Returns the date of the start of the week for the specified date/time.
+        /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting
         /// </summary>
         /// <param name="dt">The dt.</param>
         /// <param name="startOfWeek">The start of week.</param>
@@ -345,8 +361,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the date of the last day of the week for the specified date/time
-        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-17"
+        /// Returns the date of the last day of the week for the specified date/time.
+        /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting.
         /// from http://stackoverflow.com/a/38064/1755417
         /// </summary>
         /// <param name="dt">The dt.</param>
@@ -357,33 +373,40 @@ namespace Rock
             return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
         }
 
+
         /// <summary>
-        /// Sundays the date.
+        /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek" />
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <returns></returns>
+        public static DateTime SundayDate( this DateTime dt)
+        {
+            return RockDateTime.GetSundayDate( dt );
+        }
+
+        /// <summary>
+        /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek"/>
         /// </summary>
         /// <param name="dt">The date to check.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
+        [Obsolete( "Use GetSundayDate without the firstDayOfWeek parameter" )]
+        [RockObsolete("1.10")]
         public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {
-            if ( dt.DayOfWeek == DayOfWeek.Sunday )
-            {
-                return dt.Date;
-            }
-            else
-            {
-                int intDayofWeek = (int)dt.DayOfWeek;
-                int diff = 7 - (int)dt.DayOfWeek;
-                return dt.AddDays( diff ).Date;
-            }
+            return RockDateTime.GetSundayDate( dt );
         }
 
         /// <summary>
         /// Gets the week of month.
-        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
+        /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for firstDayOfWeek if you want to have this based on the configured FirstDateOfWeek setting.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <param name="firstDayOfWeek">The first day of week. For example" RockDateTime.FirstDayOfWeek</param>
         /// <returns></returns>
+        /// <remarks>
+        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
+        /// </remarks>
         public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
         {
             DateTime first = new DateTime( dateTime.Year, dateTime.Month, 1 );
@@ -400,12 +423,15 @@ namespace Rock
 
         /// <summary>
         /// Gets the week of year.
-        /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+        /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for firstDayOfWeek if you want to have this based on the configured FirstDateOfWeek setting.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <param name="calendarWeekRule">The calendar week rule.</param>
         /// <param name="firstDayOfWeek">The first day of week.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+        /// </remarks>
         public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
         {
             return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );

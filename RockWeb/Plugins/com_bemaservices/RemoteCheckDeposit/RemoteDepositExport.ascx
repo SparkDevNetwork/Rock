@@ -28,14 +28,14 @@
                             <Rock:RockDropDownList ID="ddlDeposited" runat="server" Label="Deposited" />
                         </Rock:GridFilter>
 
-                        <Rock:Grid ID="gBatches" runat="server" OnGridRebind="gBatches_GridRebind" OnRowCreated="gBatches_RowCreated">
+                        <Rock:Grid ID="gBatches" runat="server" OnGridRebind="gBatches_GridRebind" >
                             <Columns>
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:DateField DataField="BatchStartDateTime" HeaderText="Date" SortExpression="BatchStartDateTime" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                                 <Rock:RockBoundField DataField="TransactionCount" HeaderText="Transaction Count" SortExpression="TransactionCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                                <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Batch Total" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockTemplateField HeaderText="Variance" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right">
                                     <ItemTemplate>
                                         <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# this.FormatValueAsCurrency((decimal)Eval("Variance")) %></span>

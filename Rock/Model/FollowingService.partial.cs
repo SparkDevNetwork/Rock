@@ -46,11 +46,7 @@ namespace Rock.Model
                 Type entityType = itemEntityType.GetEntityType();
                 if ( entityType != null )
                 {
-                    Type[] modelType = { entityType };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-
+                    Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, rockContext );
                     MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
                     var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
 
@@ -59,6 +55,24 @@ namespace Rock.Model
                         f => f.EntityId,
                         e => e.Id,
                         ( f, e ) => e );
+
+                    int personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+                    int personAliasEntityTypeId = EntityTypeCache.Get<Rock.Model.PersonAlias>().Id;
+
+                    // if requesting persons that the person is following, it is probably recorded as the PersonAlias records that the person is following, so get Person from that
+                    if ( entityTypeId == personEntityTypeId )
+                    {
+                        var followedItemsPersonAliasQry = this.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == personAliasEntityTypeId );
+                        var entityPersonAliasQry = new PersonAliasService( rockContext ).Queryable();
+
+                        var entityFollowedPersons = followedItemsPersonAliasQry.Join(
+                            entityPersonAliasQry,
+                            f => f.EntityId,
+                            e => e.Id,
+                            ( f, e ) => e ).Select( a => a.Person );
+
+                        entityQry = entityQry.Union( entityFollowedPersons as IQueryable<IEntity> );
+                    }
 
                     return entityQry;
                 }

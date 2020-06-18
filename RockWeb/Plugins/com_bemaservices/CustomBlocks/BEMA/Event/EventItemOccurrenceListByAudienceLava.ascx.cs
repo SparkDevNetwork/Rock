@@ -32,7 +32,7 @@ using Rock.Attribute;
 using Rock.Security;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -64,7 +64,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Description = "Determines which additional audiences should be displayed in the filter.",
         IsRequired = false,
         AllowMultiple = true,
-        Key = AttributeKey.AdditionalAudiences,
+        Key = BemaAttributeKey.AdditionalAudiences,
         Order = 2 )]
     /* BEMA.FE1.End */
 
@@ -72,7 +72,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string AdditionalAudiences = "AdditionalAudiences";
         }
@@ -148,7 +148,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var audienceGuid = GetAttributeValue( "Audience" ).AsGuid();
 
             /* BEMA.FE1.Start */
-            var selectedCategoryGuids = GetAttributeValue(AttributeKey.AdditionalAudiences ).SplitDelimitedValues( true ).AsGuidList();
+            var selectedCategoryGuids = GetAttributeValue(BemaAttributeKey.AdditionalAudiences ).SplitDelimitedValues( true ).AsGuidList();
 
             if ( audienceGuid != Guid.Empty || selectedCategoryGuids.Any() )
             /* BEMA.FE1.End */

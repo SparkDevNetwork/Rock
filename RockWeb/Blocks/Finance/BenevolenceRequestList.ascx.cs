@@ -668,6 +668,9 @@ namespace RockWeb.Blocks.Finance
             gList.DataSource = list;
             gList.DataBind();
 
+            // Hide the campus column if the campus filter is not visible.
+            gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
+
             // Builds the Totals section
             var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();

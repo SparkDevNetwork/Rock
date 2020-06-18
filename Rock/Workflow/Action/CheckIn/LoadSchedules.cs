@@ -53,7 +53,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary>
         /// 
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The load all
