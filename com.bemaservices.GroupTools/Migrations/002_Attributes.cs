@@ -30,6 +30,11 @@ namespace com.bemaservices.GroupTools
             RockMigrationHelper.AddAttributeQualifier( "ADFD8705-8143-4DDA-95ED-9B3C9D75556D", "definedtype", ageRangeId, "1EC3C845-7422-4915-8143-EE6671B9CB09" );
 
             RockMigrationHelper.AddGroupTypeGroupMemberAttribute( groupTypeGuid, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Preferred Contact Method", @"", 0, "", "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC" );
+            Sql( @"
+                Update Attribute
+                Set IsGridColumn = 1
+                Where Guid = '6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC'" );
+                 
             RockMigrationHelper.AddAttributeQualifier( "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC", "allowmultiple", "True", "D40EAEE4-6C7A-419E-945C-D5DAA9BA48C9" );
             RockMigrationHelper.AddAttributeQualifier( "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC", "definedtype", preferredContactMethodId, "555F6729-C699-44DF-B07D-B7A6176C6E48" );
         }
