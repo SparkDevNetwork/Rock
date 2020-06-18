@@ -861,7 +861,23 @@ namespace RockWeb.Blocks.Cms
             string contextParameter = GetAttributeValue( AttributeKey.ContextParameter );
             if ( !string.IsNullOrEmpty( contextParameter ) )
             {
-                entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
+                /*
+                    6/15/2020 - JME
+                    Updated the logic to get the Context Parameter. Before this would simply use the
+                    query string. Updated it to also consider the context variable if one exists and
+                    the query string did not contain the configured context paramater. This was added
+                    to allow having different content for each context object. The specific use case
+                    is when used in conjection with the campus context switcher. This change will allow
+                    having separate content per campus (without any Lava case statements).  
+                */
+                var entityId = PageParameter( contextParameter );
+
+                // If no page parameter then check for context value
+                if ( entityId.IsNullOrWhiteSpace() && this.ContextEntity() != null )
+                {
+                    entityId = this.ContextEntity().Id.ToString();
+                }
+                entityValue = string.Format( "{0}={1}", contextParameter, entityId ?? string.Empty );
             }
 
             string contextName = GetAttributeValue( AttributeKey.ContextName );
