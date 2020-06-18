@@ -8,6 +8,25 @@
   {% endfor %}
 {% endpage %}
 
+{% assign groupTypeId = 0 %}
+{% grouptype where:'Guid == "a4f16049-2525-426e-a6e8-cdfb7b198664"'%}
+  {% for groupType in grouptypeItems %}
+    {% assign groupTypeId = groupType.Id %}
+  {% endfor %}
+{% endgrouptype %}
+
+{% if groupTypeId == 0 %}
+  {% grouptype where:'Guid == "50FCFB30-F51A-49DF-86F4-2B176EA1820B"'%}
+    {% for groupType in grouptypeItems %}
+      {% assign groupTypeId = groupType.Id %}
+    {% endfor %}
+  {% endgrouptype %}
+{% endif %}
+
+{% if groupTypeId == 0 %}
+  {% assign groupTypeId = 25 %}
+{% endif %}
+
 {% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
 {% assign campusIds = campusIdString | Split:',' %}
 {% capture selectedCampuses %}
@@ -373,7 +392,7 @@ var app = new Vue({
       return bottomOfPage || pageHeight < visible
     },
     getGroupCount() {
-      var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds=25'+ this.getFilterParameters();
+      var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds={{groupTypeId}}'+ this.getFilterParameters();
       axios.get(url, {
         headers:{
           'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
@@ -384,7 +403,7 @@ var app = new Vue({
       })
     },
     addGroups() {
-      var url = '/api/com_bemaservices/GroupTools/GetGroups?GroupTypeIds=25&Limit=' + this.limit + '&Offset=' + this.groups.length + this.getFilterParameters();
+      var url = '/api/com_bemaservices/GroupTools/GetGroups?GroupTypeIds={{groupTypeId}}&Limit=' + this.limit + '&Offset=' + this.groups.length + this.getFilterParameters();
       axios.get(url, {
         headers:{
           'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
