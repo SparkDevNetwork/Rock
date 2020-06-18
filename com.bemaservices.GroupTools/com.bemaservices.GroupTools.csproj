@@ -84,6 +84,7 @@
     <Compile Include="Migrations\002_Attributes.cs" />
     <Compile Include="Migrations\003_Workflows.cs" />
     <Compile Include="Migrations\004_Pages.cs" />
+    <Compile Include="Migrations\007_RequestInfoWorkflows.cs" />
     <Compile Include="Migrations\006_MigrateCategoryValues.cs" />
     <Compile Include="Migrations\005_ControllerSecurity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
