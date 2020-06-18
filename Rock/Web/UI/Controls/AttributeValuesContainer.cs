@@ -47,19 +47,18 @@ namespace Rock.Web.UI.Controls
             public const string LimitToShowInGridAttributes = "LimitToShowInGridAttributes";
             public const string DisplayAsTabs = "DisplayAsTabs";
             public const string ShowPrePostHtml = "ShowPrePostHtml";
-            public const string _entityId = "_entityId";
-            public const string _entityTypeId = "_entityTypeId";
-            public const string _displayModeAttributeIdValuesState = "_displayModeAttributeIdValuesState";
-            public const string _editModeAttributeIdsState = "_editModeAttributeIdsState";
+            public const string EntityId = "EntityId";
+            public const string EntityTypeId = "EntityTypeId";
+            public const string DisplayModeAttributeIdValuesState = "DisplayModeAttributeIdValuesState";
+            public const string EditModeAttributeIdsState = "EditModeAttributeIdsState";
         }
 
         #endregion ViewStateKeys
 
-
         #region Controls
 
         /// <summary>
-        /// The ph attributes
+        /// The placeholder for attributes
         /// </summary>
         private DynamicPlaceholder _phAttributes;
 
@@ -67,19 +66,16 @@ namespace Rock.Web.UI.Controls
 
         #region Private fields
 
-        // Stores the Entity associated with the attributes
-        private IHasAttributes _entity;
-
-        // Keeps track of EntityTypeId of the Item we created edit/display controls for, so we can re-create them on postback
+        // Keeps track of EntityTypeId of the Item we created edit/display controls for, so we can re-create them on PostBack
         private int? _entityTypeId;
 
-        // Keeps track of Entity.Id of the Item we created edit/display controls for, so we can re-create them on postback
+        // Keeps track of Entity.Id of the Item we created edit/display controls for, so we can re-create them on PostBack
         private int? _entityId;
 
-        // Keeps track of which attributes we created edit controls for, so we can re-create them on postback
+        // Keeps track of which attributes we created edit controls for, so we can re-create them on PostBack
         private List<int> _editModeAttributeIdsState;
 
-        // Keeps track of which attributes and values we created display controls for, so we can re-create them on postback
+        // Keeps track of which attributes and values we created display controls for, so we can re-create them on PostBack
         private Dictionary<int, string> _displayModeAttributeIdValuesState { get; set; }
 
         #endregion
@@ -101,7 +97,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Attribute Display/Edit controls are sorted by Category (if there is a category). Then, by default, they are sorted by EntityTypeQualifier, Order, and Name.
         /// To keep the order that the Attributes are in (as a result of LoadAttributes), set SuppressOrderingWithinCategory to False.
-        /// For example, if these are Group or GroupMemberAttributes, LoadAttributes will order the attributes based on Inheritence,
+        /// For example, if these are Group or GroupMemberAttributes, LoadAttributes will order the attributes based on Inheritance,
         /// so you might want to use that ordering instead of reordering them by EntityTypeQualifier, Order, Name
         /// </summary>
         /// <value>
@@ -133,10 +129,10 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] RequiredAttributes
         {
-            get => (ViewState[ViewStateKey.RequiredAttributeIds] as int[] )?.Select(a => AttributeCache.Get(a ) ).ToArray();
+            get => ( ViewState[ViewStateKey.RequiredAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray();
             set => ViewState[ViewStateKey.RequiredAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
-        
+
         /// <summary>
         /// Gets or sets a list of Attributes to exclude when creating Display/Edit controls
         /// </summary>
@@ -145,7 +141,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] ExcludedAttributes
         {
-            get => (ViewState[ViewStateKey.ExcludedAttributeIds] as int[] )?.Select(a => AttributeCache.Get(a ) ).ToArray() ?? new AttributeCache[0];
+            get => ( ViewState[ViewStateKey.ExcludedAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray() ?? new AttributeCache[0];
             set => ViewState[ViewStateKey.ExcludedAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
 
@@ -222,10 +218,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
+        /// Gets or sets a value indicating whether [show pre/post HTML] (if EntityType supports it)
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [show pre/post HTML]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowPrePostHtml
         {
@@ -257,10 +253,10 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            this._entityId = ViewState[ViewStateKey._entityId] as int?;
-            this._entityTypeId = ViewState[ViewStateKey._entityTypeId] as int?;
-            this._displayModeAttributeIdValuesState = ( ViewState[ViewStateKey._displayModeAttributeIdValuesState] as string ).FromJsonOrNull<Dictionary<int, string>>();
-            this._editModeAttributeIdsState = ( ViewState[ViewStateKey._editModeAttributeIdsState] as string ).FromJsonOrNull<List<int>>();
+            this._entityId = ViewState[ViewStateKey.EntityId] as int?;
+            this._entityTypeId = ViewState[ViewStateKey.EntityTypeId] as int?;
+            this._displayModeAttributeIdValuesState = ( ViewState[ViewStateKey.DisplayModeAttributeIdValuesState] as string ).FromJsonOrNull<Dictionary<int, string>>();
+            this._editModeAttributeIdsState = ( ViewState[ViewStateKey.EditModeAttributeIdsState] as string ).FromJsonOrNull<List<int>>();
 
             if ( _entityId.HasValue && _entityTypeId.HasValue )
             {
@@ -300,10 +296,10 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ViewStateKey._entityId] = this._entityId;
-            ViewState[ViewStateKey._entityTypeId] = this._entityTypeId;
-            ViewState[ViewStateKey._displayModeAttributeIdValuesState] = this._displayModeAttributeIdValuesState.ToJson();
-            ViewState[ViewStateKey._editModeAttributeIdsState] = this._editModeAttributeIdsState.ToJson();
+            ViewState[ViewStateKey.EntityId] = this._entityId;
+            ViewState[ViewStateKey.EntityTypeId] = this._entityTypeId;
+            ViewState[ViewStateKey.DisplayModeAttributeIdValuesState] = this._displayModeAttributeIdValuesState.ToJson();
+            ViewState[ViewStateKey.EditModeAttributeIdsState] = this._editModeAttributeIdsState.ToJson();
 
             return base.SaveViewState();
         }
@@ -318,8 +314,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="item">The item.</param>
         private void SetEntity( Attribute.IHasAttributes item )
         {
-            this._entity = item;
-
             this._entityId = item.Id;
 
             Type entityType = item.GetType();
@@ -435,8 +429,7 @@ namespace Rock.Web.UI.Controls
                             _phAttributes,
                             this.ValidationGroup,
                             setValue,
-                            options
-                        );
+                            options );
                     }
                 }
             }
@@ -598,7 +591,7 @@ namespace Rock.Web.UI.Controls
                     tabContent.Controls.Add( parentControl );
                     var tabClientId = parentControl.ClientID;
 
-                    #region tabs
+                    // Add the tabs
                     HtmlGenericControl li = new HtmlGenericControl( "li" );
                     HtmlGenericControl a = new HtmlGenericControl( "a" );
                     a.Attributes.Add( "data-toggle", "tab" );
@@ -607,7 +600,6 @@ namespace Rock.Web.UI.Controls
                     a.InnerText = categoryName;
                     li.Controls.Add( a );
                     tabs.Controls.Add( li );
-                    #endregion tabs
 
                     if ( tabIndex == 0 )
                     {
@@ -619,7 +611,6 @@ namespace Rock.Web.UI.Controls
 
                     Rock.Attribute.Helper.AddDisplayControls( item, new List<AttributeCategory>() { attributeCategory }, parentControl, exclude, false );
                 }
-
             }
             else
             {
@@ -640,7 +631,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public List<AttributeCache> GetDisplayedAttributes()
         {
-            return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes ); ;
+            return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes );
         }
 
         #endregion Methods
