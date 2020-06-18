@@ -57,7 +57,7 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public bool PtoTypeId { get; set; }
+        public int PtoTypeId { get; set; }
 
         #endregion
 
@@ -71,6 +71,23 @@ namespace com.bemaservices.HrManagement.Model
 
         [LavaInclude]
         public virtual PtoType PtoType { get; set; }
+
+        [DataMember]
+        [NotMapped]
+        public virtual string Name
+        {
+            get
+            {
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                return this.PersonAlias.Person.FullName + "(" + this.StartDate.ToString("M/d/yyyy") + ")";
+            }
+
+            private set
+            {
+                // intentionally blank
+            }
+        }
 
         #endregion
     }
