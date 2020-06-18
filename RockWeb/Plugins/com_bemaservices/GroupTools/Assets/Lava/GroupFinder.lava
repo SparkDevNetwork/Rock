@@ -383,7 +383,9 @@ var app = new Vue({
       })
         .then(response => {
           response.data.forEach((value, index) => {
+            if(this.groupCount> this.groups.length){
               this.groups.push(value);
+            }
           });
           if (this.bottomVisible()) {
             if(this.groupCount> this.groups.length){
