@@ -75,8 +75,8 @@
     <tbody>
       <tr>
         <td style="width: 50%">
-          <strong>Ages</strong> <br>
-          {{group | Attribute:'AgeRange'}}
+          <strong>Life Stage</strong> <br>
+          {{group | Attribute:'LifeStage'}}
         </td>
         <td style="width: 50%">
           <strong>Type</strong> <br>

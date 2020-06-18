@@ -82,16 +82,16 @@
   {% endif %}
 {% endcapture %}
 
-{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRangeIds' | ToString %}
-{% assign ageRangeIds = ageRangeIdString | Split:',' %}
-{% capture selectedAgeRanges %}
-  {% if ageRangeIdString != '' %}
+{% assign lifeStageIdString = 'Global' | PageParameter:'LifeStageIds' | ToString %}
+{% assign lifeStageIds = lifeStageIdString | Split:',' %}
+{% capture selectedLifeStages %}
+  {% if lifeStageIdString != '' %}
     {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
       {% for definedtype in definedtypeItems %}
         {% for definedValue in definedtype.DefinedValues %}
           {% assign idString = definedValue.Id | ToString %}
-          {% for ageRangeId in ageRangeIds %}
-            {% if ageRangeId == idString %}
+          {% for lifeStageId in lifeStageIds %}
+            {% if lifeStageId == idString %}
               {{definedValue | ToJSON }},
             {% endif %}
           {% endfor %}
@@ -260,14 +260,14 @@
           </multiselect>
         </div>
       </div>
-    </div>
+    </d
 
     <div class="col-md-3">
       <div class="form-group">
-        <label class="control-label">Age Range</label>
+        <label class="control-label">Life Stage</label>
         <div class="control-wrapper">
-          <multiselect v-model="ageRangeValues" :options="ageRangeOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Value" track-by="Value" :preselect-first="false" @input="ageRangeFilterChange()">
-            <template slot="selection" slot-scope="{ ageRangeValues, search, isOpen }"><span class="multiselect__single" v-if="ageRangeValues.length &amp;&amp; !isOpen">{{ ageRangeValues.length }} options selected</span></template>
+          <multiselect v-model="lifeStageValues" :options="lifeStageOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Value" track-by="Value" :preselect-first="false" @input="lifeStageFilterChange()">
+            <template slot="selection" slot-scope="{ lifeStageValues, search, isOpen }"><span class="multiselect__single" v-if="lifeStageValues.length &amp;&amp; !isOpen">{{ lifeStageValues.length }} options selected</span></template>
           </multiselect>
         </div>
       </div>
@@ -294,7 +294,7 @@
                   <div class="fontSize-xxs">{{group.Frequency}}</div>
                 </div>
                 <div class="sg-card-info m-b-1" :style="'color:' + group.Color+';'">{{group.Category}}</div>
-                <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.AgeRange}}</div>
+                <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.LifeStage}}</div>
               </div>
               <a class="more-info-text" :href="'/page/{% endraw%}{{linkedPage.Id}}{% raw %}?Group=' + group.Guid" target="_blank">More Info</a>
             </div>
@@ -317,7 +317,7 @@ var app = new Vue({
       campusId: "",
       meetingDay:"",
       categoryId: "",
-      ageRange: "",
+      lifeStage: "",
       limit: 10,
       groupCount: 0,
       meetingDayValues: [{{selectedMeetingDays | ReplaceLast:',','' }}],
@@ -340,8 +340,8 @@ var app = new Vue({
                 {{definedtype.DefinedValues | ToJSON}}
               {% endfor %}
             {% enddefinedtype %},
-      ageRangeValues: [{{selectedAgeRanges| ReplaceLast:',','' }}],
-      ageRangeOptions: {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
+      lifeStageValues: [{{selectedLifeStages| ReplaceLast:',','' }}],
+      lifeStageOptions: {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
               {% for definedtype in definedtypeItems %}
                 {{definedtype.DefinedValues | ToJSON}}
               {% endfor %}
@@ -422,16 +422,16 @@ var app = new Vue({
       this.insertParam("CategoryIds", categoryIdsString);
       this.filterChange();
     },
-    ageRangeFilterChange(){
-      var ageRangeIdsString = "";
-      this.ageRangeValues.forEach(function(ageRangeValue){
-        ageRangeIdsString += ageRangeValue.Id + ",";
+    lifeStageFilterChange(){
+      var lifeStageIdsString = "";
+      this.lifeStageValues.forEach(function(lifeStageValue){
+        lifeStageIdsString += lifeStageValue.Id + ",";
       });
-      if(ageRangeIdsString != ""){
-        ageRangeIdsString = ageRangeIdsString.slice(0,-1);
+      if(lifeStageIdsString != ""){
+        lifeStageIdsString = lifeStageIdsString.slice(0,-1);
       }
 
-      this.insertParam("AgeRangeIds", ageRangeIdsString);
+      this.insertParam("LifeStageIds", lifeStageIdsString);
       this.filterChange();
     },
     campusFilterChange(){
@@ -491,12 +491,12 @@ var app = new Vue({
         url += '&CategoryIds='+categoryIdsString.slice(0,-1);
       }
 
-      var ageRangeIdsString = "";
-      this.ageRangeValues.forEach(function(ageRangeValue){
-        ageRangeIdsString += ageRangeValue.Id + ",";
+      var lifeStageIdsString = "";
+      this.lifeStageValues.forEach(function(lifeStageValue){
+        lifeStageIdsString += lifeStageValue.Id + ",";
       });
-      if(ageRangeIdsString != ""){
-        url += '&AgeRangeIds='+ageRangeIdsString.slice(0,-1);
+      if(lifeStageIdsString != ""){
+        url += '&LifeStageIds='+lifeStageIdsString.slice(0,-1);
       }
       return url;
     }

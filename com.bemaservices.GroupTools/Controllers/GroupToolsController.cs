@@ -63,11 +63,11 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string ageRangeIds = "",
+            string lifeStageIds = "",
             int? offset = null,
             int? limit = null )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, ageRangeIds );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, lifeStageIds );
 
             var groupInfoList = new List<GroupInformation>();
             foreach ( var group in qry.ToList() )
@@ -83,13 +83,13 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
-                var ageRangeGuidList = group.GetAttributeValue( "AgeRange" ).SplitDelimitedValues().AsGuidList();
-                if ( ageRangeGuidList.Any() )
+                var lifeStageGuidList = group.GetAttributeValue( "LifeStage" ).SplitDelimitedValues().AsGuidList();
+                if ( lifeStageGuidList.Any() )
                 {
-                    var ageRanges = new DefinedValueService( new RockContext() ).GetByGuids( ageRangeGuidList );
-                    if ( ageRanges.Any() )
+                    var lifeStages = new DefinedValueService( new RockContext() ).GetByGuids( lifeStageGuidList );
+                    if ( lifeStages.Any() )
                     {
-                        groupInfo.AgeRange = ageRanges.Select( ar => ar.Value ).JoinStrings( "," );
+                        groupInfo.LifeStage = lifeStages.Select( ar => ar.Value ).JoinStrings( "," );
                     }
                 }
 
@@ -190,7 +190,7 @@ namespace com.bemaservices.GroupTools.Controllers
             return groupInfoQry;
         }
 
-        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string ageRangeIds )
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string lifeStageIds )
         {
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
@@ -200,7 +200,7 @@ namespace com.bemaservices.GroupTools.Controllers
             var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
             var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
             var categoryIdList = categoryIds.SplitDelimitedValues().AsIntegerList();
-            var ageRangeIdList = ageRangeIds.SplitDelimitedValues().AsIntegerList();
+            var lifeStageIdList = lifeStageIds.SplitDelimitedValues().AsIntegerList();
 
             if ( groupTypeIdList.Any() )
             {
@@ -223,10 +223,10 @@ namespace com.bemaservices.GroupTools.Controllers
                 qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "Category" && categoryList.Any( c => av.Value.Contains( c ) ) );
             }
 
-            if ( ageRangeIdList.Any() )
+            if ( lifeStageIdList.Any() )
             {
-                var ageRangeList = new DefinedValueService( rockContext ).GetByIds( ageRangeIdList ).Select( c => c.Guid.ToString() ).ToList();
-                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "AgeRange" && ageRangeList.Any( c => av.Value.Contains( c ) ) );
+                var lifeStageList = new DefinedValueService( rockContext ).GetByIds( lifeStageIdList ).Select( c => c.Guid.ToString() ).ToList();
+                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "LifeStage" && lifeStageList.Any( c => av.Value.Contains( c ) ) );
             }
 
             return qry;
@@ -250,9 +250,9 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string ageRangeIds = "" )
+            string lifeStageIds = "" )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, ageRangeIds );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, lifeStageIds );
 
             return qry.Count();
         }
@@ -285,7 +285,7 @@ namespace com.bemaservices.GroupTools.Controllers
 
         public string FriendlyScheduleText { get; set; }
 
-        public string AgeRange { get; set; }
+        public string LifeStage { get; set; }
 
         public string Category { get; set; }
 

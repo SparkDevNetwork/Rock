@@ -16,7 +16,7 @@ namespace com.bemaservices.GroupTools
             RockMigrationHelper.AddAttributeQualifier( "F1B412F2-B6DD-4B11-8651-2DD8324EF955", "definedtype", categoryId, "B22689D0-BAD8-408A-AC3E-F23780C70716" );
 
             var ageRangeId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '64C9BFA7-EE35-4829-802E-004CD2F78971'" ).ToString();
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Age Range", @"", 2, "", "ADFD8705-8143-4DDA-95ED-9B3C9D75556D" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Life Stage", @"", 2, "", "ADFD8705-8143-4DDA-95ED-9B3C9D75556D" );
             RockMigrationHelper.AddAttributeQualifier( "ADFD8705-8143-4DDA-95ED-9B3C9D75556D", "allowmultiple", "True", "47F1A353-BAB0-4C1F-8384-258E9E79BEA0" );
             RockMigrationHelper.AddAttributeQualifier( "ADFD8705-8143-4DDA-95ED-9B3C9D75556D", "definedtype", ageRangeId, "1EC3C845-7422-4915-8143-EE6671B9CB09" );
 
