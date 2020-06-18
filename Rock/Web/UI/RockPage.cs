@@ -460,6 +460,20 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is being served in a <see cref="ModalIFrameDialog"/>.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is being served in a <see cref="ModalIFrameDialog"/>; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIFrameModal
+        {
+            get
+            {
+                return this.PageParameter( "IsIFrameModal" ).AsBoolean();
+            }
+        }
+
+        /// <summary>
         /// Gets a single object that contains all of the information about the web browser.
         /// </summary>
         /// <value>
@@ -1298,10 +1312,20 @@ namespace Rock.Web.UI
                         PageReference.BreadCrumbs.Last().Active = true;
                     }
 
+                    /*
+                     * 2020-06-17 - JH
+                     *
+                     * When Rock is loaded via an iFrame modal (i.e. Block Properties), the PageReferences for the "main" instance of Rock
+                     * are overwritten, causing some Blocks to no longer render their BreadCrumbs once the modal is closed, and subsequent
+                     * Page loads/postbacks occur. By providing a suffix for the storage key when in an iFrame modal, we can preserve the
+                     * main Rock instance's PageReference history.
+                     */
+                    var pageReferencesKeySuffix = IsIFrameModal ? "_iFrameModal" : null;
+
                     Page.Trace.Warn( "Getting parent page references" );
-                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, PageReference );
+                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, PageReference, pageReferencesKeySuffix );
                     pageReferences.Add( PageReference );
-                    PageReference.SavePageReferences( pageReferences );
+                    PageReference.SavePageReferences( pageReferences, pageReferencesKeySuffix );
 
                     // Update breadcrumbs
                     Page.Trace.Warn( "Updating breadcrumbs" );
