@@ -70,16 +70,8 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // If an entity value is specified, then return content specific to that context, 
-            // otherwise return content for the current block instance
-            if ( !string.IsNullOrEmpty( entityValue ) )
-            {
-                content = content.Where( c => c.EntityValue == entityValue );
-            }
-            else
-            {
-                content = content.Where( c => c.BlockId == blockId );
-            }
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
 
             // return the most recently approved item
             return content.OrderByDescending( c => c.Version );
@@ -95,16 +87,8 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // If an entity value is specified, then return content specific to that context, 
-            // otherwise return content for the current block instance
-            if ( !string.IsNullOrEmpty( entityValue ) )
-            {
-                content = content.Where( c => c.EntityValue == entityValue );
-            }
-            else
-            {
-                content = content.Where( c => c.BlockId == blockId );
-            }
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
 
             return content.OrderByDescending( c => c.Version ).ThenByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
         }
@@ -124,6 +108,22 @@ namespace Rock.Model
                     ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
                     ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
 
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
+
+            // Return the most recently approved item
+            return content.OrderByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Adds the filter logic.
+        /// </summary>
+        /// <param name="qry">The qry.</param>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        public IQueryable<HtmlContent> AddFilterLogic( IQueryable<HtmlContent> qry, int blockId, string entityValue )
+        {
             /*
                 6/16/2020 - JME
                 How the context value and context name work with the HTML block is a bit tricky. Updated the code below
@@ -167,7 +167,7 @@ namespace Rock.Model
             // otherewise return content for the current block instance
             if ( entityValue.IsNotNullOrWhiteSpace() )
             {
-                content = content.Where( c => c.EntityValue == entityValue );
+                qry = qry.Where( c => c.EntityValue == entityValue );
 
                 // Don't consider Block Id if there is a ContextName
                 if ( entityValue.Contains( "&ContextName=" ) )
@@ -175,14 +175,13 @@ namespace Rock.Model
                     shouldFilterByBlockId = false;
                 }
             }
-                        
+
             if ( shouldFilterByBlockId )
             {
-                content = content.Where( c => c.BlockId == blockId );
+                qry = qry.Where( c => c.BlockId == blockId );
             }
 
-            // Return the most recently approved item
-            return content.OrderByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
+            return qry;
         }
 
         #region HtmlContent Caching Methods
