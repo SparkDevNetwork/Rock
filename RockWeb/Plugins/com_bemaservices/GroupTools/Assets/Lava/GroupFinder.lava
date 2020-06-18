@@ -267,7 +267,11 @@
       <div class="form-group">
         <label class="control-label">Age</label>
         <div class="control-wrapper">
-          <input v-model="age" @input="ageFilterChange()" placeholder="edit me">
+          <div tabindex="-1" class="multiselect">
+            <div class="multiselect__tags">
+              <input v-model.number="age" @input="ageFilterChange()" class="multiselect__input" placeholder="" type="number" autocomplete="off">
+            </div>
+          </div>
         </div>
       </div>
     </div>
