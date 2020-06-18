@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -28,6 +29,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI;
@@ -230,7 +232,11 @@ namespace RockWeb.Blocks.CheckIn
                             attendanceSessionGuidsCookie.Expires = RockDateTime.Now.AddHours( 8 );
 
                             var attendanceSessionGuids = attendanceSessionGuidsCookie.Value.Split( ',' ).AsGuidList();
-                            if ( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.HasValue )
+                            attendanceSessionGuids = ValidAttendanceSessionGuids( attendanceSessionGuids );
+
+                            // Add the guid to the list of checkin session cookie guids if it's not already there.
+                            if ( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.HasValue &&
+                                !attendanceSessionGuids.Contains( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.Value ) )
                             {
                                 attendanceSessionGuids.Add( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.Value );
                             }
@@ -250,8 +256,6 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
         }
-
-
 
         /// <summary>
         /// Handles the Click event of the lbDone control.
@@ -294,6 +298,35 @@ namespace RockWeb.Blocks.CheckIn
                 NavigateToHomePage();
             }
         }
+
+
+        /// <summary>
+        /// Checks the given list of the attendance check-in session guids are still valid
+        /// and returns the valid ones back.
+        /// NOTE: Because someone could check-in a person multiple times, only the
+        /// latest attendance record will have the correct attendance check-in session guid.
+        /// That means attendance check-in session guids could be old/invalid, so
+        /// this method will filter out the old/ones so a QR code does not
+        /// become unnecessarily dense.
+        /// </summary>
+        /// <param name="sessionGuids">The attendance session guids.</param>
+        /// <returns></returns>
+        private List<Guid> ValidAttendanceSessionGuids( List<Guid> sessionGuids )
+        {
+            if ( sessionGuids == null )
+            {
+                return new List<Guid>();
+            }
+            if ( !sessionGuids.Any() )
+            {
+                return sessionGuids;
+            }
+
+            return new AttendanceService( new RockContext() ).Queryable().AsNoTracking()
+                .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
+                .Select( a => a.AttendanceCheckInSession.Guid ).Distinct().ToList();
+        }
+
 
         /// <summary>
         /// Adds the label script.
