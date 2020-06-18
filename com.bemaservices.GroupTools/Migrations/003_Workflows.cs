@@ -77,7 +77,7 @@ namespace com.bemaservices.GroupTools
 
             #region Small Group Registration
 
-            RockMigrationHelper.UpdateWorkflowType( false, true, "Small Group Registration", "", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Work", "fa fa-group", 28800, false, 0, "75A7DCFB-AF3C-492A-81EB-F48BAF606BBB", 0 ); // Small Group Registration
+            RockMigrationHelper.UpdateWorkflowType( false, true, "Group Registration", "", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Work", "fa fa-group", 28800, false, 0, "75A7DCFB-AF3C-492A-81EB-F48BAF606BBB", 0 ); // Small Group Registration
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "75A7DCFB-AF3C-492A-81EB-F48BAF606BBB", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Group", "Group", "", 0, @"", "9B2D333E-EDB4-4E3D-8E3F-1281B737EE66", false ); // Small Group Registration:Group
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "75A7DCFB-AF3C-492A-81EB-F48BAF606BBB", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Person", "Person", "", 1, @"", "04A2157A-ACC8-4409-B2A0-55D2BA2E9412", false ); // Small Group Registration:Person
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "75A7DCFB-AF3C-492A-81EB-F48BAF606BBB", "9C204CD0-1233-41C5-818A-C5DA439445AA", "First Name", "FirstName", "", 2, @"", "45A974C2-E1D1-44DC-A138-8D6033F18738", false ); // Small Group Registration:First Name

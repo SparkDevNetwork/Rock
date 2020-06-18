@@ -10,7 +10,14 @@ namespace com.bemaservices.GroupTools
         /// </summary>
         public override void Up()
         {
-            Sql( @"Declare @GroupTypeGuid uniqueidentifier = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'
+            var groupTypeGuid = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
+            var lifeGroupTypeIdObject = SqlScalar( "Select Top 1 Id From GroupType Where Guid = 'a4f16049-2525-426e-a6e8-cdfb7b198664'" );
+            if ( lifeGroupTypeIdObject != null )
+            {
+                groupTypeGuid = lifeGroupTypeIdObject.ToString();
+            }
+
+            Sql( string.Format( @"Declare @GroupTypeGuid uniqueidentifier = '{0}'
 
 Declare @OldAttributeKey nvarchar(max) = 'ClassCategory'
 Declare @NewAttributeKey nvarchar(max) = 'Category'
@@ -55,8 +62,8 @@ INSERT INTO [dbo].[AttributeValue]
            ,vt.NewValue
            ,newId()
 	From @ValueTable vt
-" );
-            }
+", groupTypeGuid ) );
+        }
 
 
         /// <summary>

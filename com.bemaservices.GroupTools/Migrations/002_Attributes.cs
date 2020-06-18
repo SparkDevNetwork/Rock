@@ -10,18 +10,26 @@ namespace com.bemaservices.GroupTools
         /// </summary>
         public override void Up()
         {
+            var groupTypeGuid = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
+            var lifeGroupTypeIdObject = SqlScalar( "Select Top 1 Id From GroupType Where Guid = 'a4f16049-2525-426e-a6e8-cdfb7b198664'" );
+            if ( lifeGroupTypeIdObject != null )
+            {
+                groupTypeGuid = lifeGroupTypeIdObject.ToString();
+            }
+
             var categoryId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '8BF1BECD-9B0C-4689-8204-8405327DCBCF'" ).ToString();
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Category", @"", 1, "", "F1B412F2-B6DD-4B11-8651-2DD8324EF955" );
+            var ageRangeId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '64C9BFA7-EE35-4829-802E-004CD2F78971'" ).ToString();
+            var preferredContactMethodId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '982CC7BD-451B-420F-9F54-FDBAE32672E0'" ).ToString();
+
+            RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Category", @"", 1, "", "F1B412F2-B6DD-4B11-8651-2DD8324EF955" );
             RockMigrationHelper.AddAttributeQualifier( "F1B412F2-B6DD-4B11-8651-2DD8324EF955", "allowmultiple", "True", "7E3B2592-9A10-47BD-8791-6502D4F58903" );
             RockMigrationHelper.AddAttributeQualifier( "F1B412F2-B6DD-4B11-8651-2DD8324EF955", "definedtype", categoryId, "B22689D0-BAD8-408A-AC3E-F23780C70716" );
 
-            var ageRangeId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '64C9BFA7-EE35-4829-802E-004CD2F78971'" ).ToString();
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Life Stage", @"", 2, "", "ADFD8705-8143-4DDA-95ED-9B3C9D75556D" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Life Stage", @"", 2, "", "ADFD8705-8143-4DDA-95ED-9B3C9D75556D" );
             RockMigrationHelper.AddAttributeQualifier( "ADFD8705-8143-4DDA-95ED-9B3C9D75556D", "allowmultiple", "True", "47F1A353-BAB0-4C1F-8384-258E9E79BEA0" );
             RockMigrationHelper.AddAttributeQualifier( "ADFD8705-8143-4DDA-95ED-9B3C9D75556D", "definedtype", ageRangeId, "1EC3C845-7422-4915-8143-EE6671B9CB09" );
 
-            var preferredContactMethodId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '982CC7BD-451B-420F-9F54-FDBAE32672E0'" ).ToString();
-            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Preferred Contact Method", @"", 0, "", "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC" );
+            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( groupTypeGuid, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Preferred Contact Method", @"", 0, "", "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC" );
             RockMigrationHelper.AddAttributeQualifier( "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC", "allowmultiple", "True", "D40EAEE4-6C7A-419E-945C-D5DAA9BA48C9" );
             RockMigrationHelper.AddAttributeQualifier( "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC", "definedtype", preferredContactMethodId, "555F6729-C699-44DF-B07D-B7A6176C6E48" );
         }
