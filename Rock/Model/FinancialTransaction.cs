@@ -319,6 +319,7 @@ namespace Rock.Model
         /// The transaction date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? TransactionDateKey
         {
             get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
@@ -334,6 +335,7 @@ namespace Rock.Model
         /// The settled date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? SettledDateKey
         {
             get => ( SettledDate == null || SettledDate.Value == default ) ?

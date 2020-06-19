@@ -47,6 +47,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Key, DatabaseGenerated( DatabaseGeneratedOption.None )]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int DateKey { get; set; }
 
         /// <summary>

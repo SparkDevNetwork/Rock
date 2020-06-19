@@ -234,6 +234,7 @@ namespace Rock.Model
         /// The send date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? SendDateKey
         {
             get => ( SendDateTime == null || SendDateTime.Value == default ) ?

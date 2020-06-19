@@ -198,6 +198,7 @@ namespace Rock.Model
         /// The occurrence date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int OccurrenceDateKey
         {
             get => OccurrenceDate.ToString( "yyyyMMdd" ).AsInteger();

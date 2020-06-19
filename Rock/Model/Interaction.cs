@@ -269,6 +269,7 @@ namespace Rock.Model
         /// The interaction date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int InteractionDateKey
         {
             get => InteractionDateTime.ToString( "yyyyMMdd" ).AsInteger();
