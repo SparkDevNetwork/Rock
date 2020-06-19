@@ -10,12 +10,6 @@ namespace com.bemaservices.GroupTools
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedType( "Group", "Small Group Life Stage", "Used to manage the life stage options for small groups.", "64C9BFA7-EE35-4829-802E-004CD2F78971", @"" );
-            RockMigrationHelper.UpdateDefinedValue( "64C9BFA7-EE35-4829-802E-004CD2F78971", "18-28", "", "6BCC0FE9-2A9A-402F-8B80-6CAB5AA19AD8", false );
-            RockMigrationHelper.UpdateDefinedValue( "64C9BFA7-EE35-4829-802E-004CD2F78971", "30s", "", "23141BD1-34CE-49F7-AAB6-05D58FAB7C27", false );
-            RockMigrationHelper.UpdateDefinedValue( "64C9BFA7-EE35-4829-802E-004CD2F78971", "40s", "", "A96649CE-1D07-46C1-987C-92D5AF69D720", false );
-            RockMigrationHelper.UpdateDefinedValue( "64C9BFA7-EE35-4829-802E-004CD2F78971", "50s", "", "F7522BF7-511E-476F-880A-388D13C89F02", false );
-
             RockMigrationHelper.AddDefinedType( "Group", "Small Group Preferred Contact Method", "Used to manage the preferred contact method options for small group members.", "982CC7BD-451B-420F-9F54-FDBAE32672E0", @"" );
             RockMigrationHelper.UpdateDefinedValue( "982CC7BD-451B-420F-9F54-FDBAE32672E0", "Email", "", "5281BD8C-6A7B-4ACC-9491-9C1A9F753EB3", false );
             RockMigrationHelper.UpdateDefinedValue( "982CC7BD-451B-420F-9F54-FDBAE32672E0", "Phone", "", "9AEA0AF0-15CD-483D-B75A-0472B549FA4B", false );
