@@ -7632,5 +7632,54 @@ END
         }
 
         #endregion
+
+        #region Index Helpers
+
+        /// <summary>
+        /// Creates the index if it doesn't exist. The index name is calculated from the keys.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="keys">The keys.</param>
+        /// <param name="includes">The includes.</param>
+        public void CreateIndexIfNotExists( string tableName, string[] keys, string[] includes )
+        {
+            var indexName = $"IX_{keys.JoinStrings( "_" )}";
+            CreateIndexIfNotExists( tableName, indexName, keys, includes);
+        }
+
+        /// <summary>
+        /// Creates the index if it doesn't exist.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The keys.</param>
+        /// <param name="includes">The includes.</param>
+        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes )
+        {
+            Migration.Sql(
+$@"IF NOT EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
+BEGIN
+    CREATE INDEX [{indexName}]
+    ON [{tableName}] ( {keys.JoinStrings( "," )} )
+    { ( includes.Length > 0 ? $"INCLUDE ( {includes.JoinStrings( "," )} )" : "" ) };
+END" );
+        }
+
+        /// <summary>
+        /// Drops the index if it exists.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        public void DropIndexIfExists( string tableName, string indexName )
+        {
+            Migration.Sql(
+$@"IF EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
+BEGIN
+    DROP INDEX [{indexName}]
+    ON [{tableName}];
+END" );
+        }
+
+        #endregion Index Helpers
     }
 }
