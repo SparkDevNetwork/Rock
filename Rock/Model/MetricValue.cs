@@ -107,6 +107,7 @@ namespace Rock.Model
         /// The metric value date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? MetricValueDateKey
         {
             get => ( MetricValueDateTime == null || MetricValueDateTime.Value == default ) ?
