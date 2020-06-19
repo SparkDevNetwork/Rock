@@ -401,11 +401,11 @@ namespace Rock.Web.UI.Controls
             _editModeAttributeIdsState = new List<int>();
             if ( item != null && item.Attributes != null )
             {
-                List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
+                var categoryAttributes = GetDistinctAttributesByCategory( item );
 
-                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
+                foreach ( var attributeCategory in categoryAttributes.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
-                    IEnumerable<AttributeCache> attributes = GetFilteredAttributesForCategory( attributeCategory );
+                    var attributes = attributeCategory.Attributes;
 
                     if ( attributes.Any() )
                     {
@@ -433,58 +433,6 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the filtered attributes based the filters (IncludedCategoryNames, ExcludedCategoryNames, IncludedAttributes, ExcludedAttributes, etc)
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        private IEnumerable<AttributeCache> GetFilteredAttributes( IHasAttributes item )
-        {
-            return GetFilteredAttributeCategories( item ).SelectMany( c => GetFilteredAttributesForCategory( c ) );
-        }
-
-        /// <summary>
-        /// Gets the Attributes for the AttributeCategory that should be included based the filters (IncludedAttributes, ExcludedAttributes, etc)
-        /// </summary>
-        /// <param name="attributeCategory">The attribute category.</param>
-        /// <returns></returns>
-        private IEnumerable<AttributeCache> GetFilteredAttributesForCategory( AttributeCategory attributeCategory )
-        {
-            var attributes = attributeCategory.Attributes.Where( a => a.IsActive );
-            if ( this.IncludedAttributes != null )
-            {
-                attributes = attributes.Where( a => this.IncludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
-            }
-
-            if ( this.ExcludedAttributes != null )
-            {
-                attributes = attributes.Where( a => !this.ExcludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
-            }
-
-            return attributes;
-        }
-
-        /// <summary>
-        /// Gets the AttributeCategories that should be included based the filters (IncludedCategoryNames, ExcludedCategoryNames, etc)
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        private List<AttributeCategory> GetFilteredAttributeCategories( IHasAttributes item )
-        {
-            var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, false, this.SuppressOrderingWithinCategory );
-            if ( this.IncludedCategoryNames != null )
-            {
-                attributeCategories = attributeCategories.Where( a => this.IncludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
-            }
-
-            if ( this.ExcludedCategoryNames != null )
-            {
-                attributeCategories = attributeCategories.Where( a => !this.ExcludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
-            }
-
-            return attributeCategories;
         }
 
         /// <summary>
@@ -549,12 +497,7 @@ namespace Rock.Web.UI.Controls
 
             _displayModeAttributeIdValuesState = item.AttributeValues.ToDictionary( k => k.Value.AttributeId, v => v.Value.Value );
 
-            List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
-
-            foreach ( var attributeCategory in attributeCategories )
-            {
-                attributeCategory.Attributes = GetFilteredAttributesForCategory( attributeCategory ).ToList();
-            }
+            var attributeCategories = GetDistinctAttributesByCategory( item );
 
             // only show heading labels if ShowCategoryLabel and there is at least attribute to show
             bool showCategoryLabel = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
@@ -634,6 +577,67 @@ namespace Rock.Web.UI.Controls
             return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes );
         }
 
+        private List<AttributeCategory> GetDistinctAttributesByCategory( IHasAttributes item )
+        {
+            var attributes = new List<AttributeCategory>();
+            var currentAttributes = new HashSet<string>();
+
+            foreach ( var category in GetFilteredAttributeCategories( item ) )
+            {
+                var categoryAttributes = GetFilteredAttributesForCategory( category );
+                var distinctCategoryAttributes = categoryAttributes.Where( a => !currentAttributes.Contains( a.Key ) );
+                if ( distinctCategoryAttributes.Any() )
+                {
+                    category.Attributes = distinctCategoryAttributes.ToList();
+                    attributes.Add( category );
+                    currentAttributes.UnionWith( categoryAttributes.Select( a => a.Key ) );
+                }
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
+        /// Gets the Attributes for the AttributeCategory that should be included based the filters (IncludedAttributes, ExcludedAttributes, etc)
+        /// </summary>
+        /// <param name="attributeCategory">The attribute category.</param>
+        /// <returns></returns>
+        private IEnumerable<AttributeCache> GetFilteredAttributesForCategory( AttributeCategory attributeCategory )
+        {
+            var attributes = attributeCategory.Attributes.Where( a => a.IsActive );
+            if ( this.IncludedAttributes != null )
+            {
+                attributes = attributes.Where( a => this.IncludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+            }
+
+            if ( this.ExcludedAttributes != null )
+            {
+                attributes = attributes.Where( a => !this.ExcludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
+        /// Gets the AttributeCategories that should be included based the filters (IncludedCategoryNames, ExcludedCategoryNames, etc)
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        private List<AttributeCategory> GetFilteredAttributeCategories( IHasAttributes item )
+        {
+            var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, true, this.SuppressOrderingWithinCategory );
+            if ( this.IncludedCategoryNames != null )
+            {
+                attributeCategories = attributeCategories.Where( a => this.IncludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+            }
+
+            if ( this.ExcludedCategoryNames != null )
+            {
+                attributeCategories = attributeCategories.Where( a => !this.ExcludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+            }
+
+            return attributeCategories;
+        }
         #endregion Methods
     }
 }
