@@ -65,6 +65,7 @@ namespace RockWeb.Webhooks
                     postedData = reader.ReadToEnd();
                 }
 
+                System.Threading.Thread.Sleep(5000);
                 Rock.Checkr.Checkr.SaveWebhookResults( postedData );
 
                 // Per Gerhard this has to be set to 200 regardless of the result or the page will not function.
