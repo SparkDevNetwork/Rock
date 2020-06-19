@@ -310,15 +310,17 @@
           <h2>{{ row.Title }}</h1>
           <h5>{{ row.Subtitle }}</h4>
           <div class='row'>
-            <div class='col-sm-8'>
-              <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
-              <p>
-                {{ row.CumulativeValue }} YTD
-              </p>
-            </div>
-            <div class='col-sm-4'>
-              <i class='fa fa-hand-o-up fa-3x'></i>
-            </div>
+              <a href="/page/1976">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-hand-o-up fa-3x'></i>
+              </div>
+            </a>
           </div>
         {% endfor %}
       </div>

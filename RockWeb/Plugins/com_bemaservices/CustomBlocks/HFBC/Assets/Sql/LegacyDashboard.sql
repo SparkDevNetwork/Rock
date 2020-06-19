@@ -507,107 +507,104 @@ cross join
 -----------------------------------------------------------------------------
 -- Touches (Table 14)
 -----------------------------------------------------------------------------
-Declare @GroupAttributeKey nvarchar(max) = 'AdoptionAssistance'
-Declare @ColumnName nvarchar(max) = '# of Children'
-Declare @ApprovedColumnName nvarchar(50) = 'Date Approved'
 
 Declare @TouchesTable table(
-	GroupId nvarchar(max),
+	GroupId int,
+	PersonId int,
+	TouchType nvarchar(max),
 	MetricDateTime datetime
 )
 
 ----- ADD FAMILIES WHO ATTENDED A CONNECT GROUP
 Insert Into @TouchesTable
-Select g.Id, StartDateTime
+Select f.Id, pa.PersonId, 'Attended Connect Group', StartDateTime
 	From Attendance A
 	INNER JOIN AttendanceOccurrence AO ON A.[OccurrenceId] = AO.[Id]
 	Join [Group] g on AO.GroupId = g.Id
+	Join PersonAlias pa on a.PersonAliasId = pa.Id
+	Join GroupMember fm on pa.PersonId = fm.PersonId and fm.GroupMemberStatus = 1
+	Join [Group] f on f.Id = fm.GroupId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
 	Where g.GroupTypeId = 424
 	And StartDateTime >= @ThisYearStart
 
------ ADD FAMILIES WHO ATTENDED AN EQUIP GROUP
+------- ADD FAMILIES WHO ATTENDED AN EQUIP GROUP
 Insert Into @TouchesTable
-Select g.Id, StartDateTime
+Select f.Id, pa.PersonId, 'Attended Equip Group', StartDateTime
 	From Attendance A
 	INNER JOIN AttendanceOccurrence AO ON A.[OccurrenceId] = AO.[Id]
 	Join [Group] g on AO.GroupId = g.Id
+	Join PersonAlias pa on a.PersonAliasId = pa.Id
+	Join GroupMember fm on pa.PersonId = fm.PersonId and fm.GroupMemberStatus = 1
+	Join [Group] f on f.Id = fm.GroupId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
 	Where g.GroupTypeId = 425
 	And StartDateTime >= @ThisYearStart
 
------ ADD FAMILIES WHO HAD PRE ADOPTION ASSISTANCE
+------- ADD FAMILIES WHO ATTENDED A SUSTAIN GROUP
+Insert Into @TouchesTable
+Select f.Id, pa.PersonId, 'Attended Sustain Group', StartDateTime
+	From Attendance A
+	INNER JOIN AttendanceOccurrence AO ON A.[OccurrenceId] = AO.[Id]
+	Join [Group] g on AO.GroupId = g.Id
+	Join PersonAlias pa on a.PersonAliasId = pa.Id
+	Join GroupMember fm on pa.PersonId = fm.PersonId and fm.GroupMemberStatus = 1
+	Join [Group] f on f.Id = fm.GroupId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
+	Where g.GroupTypeId = 426
+	And StartDateTime >= @ThisYearStart
+
+------- ADD FAMILIES WHO HAD FINANCIAL ASSISTANCE
 	Insert into @TouchesTable
-	Select distinct groupAttributeValue.EntityId,
-	approvedColumn.ValueAsDateTime as 'DateApproved'
+	Select distinct f.Id,
+					fm.PersonId,
+					Case When groupAttribute.[Key] = 'AdoptionAssistance' Then 'Recieved Pre Adoption Assistance'
+						When groupAttribute.[Key] = 'Legacy685Documents' Then 'Recieved Post Adoption Assistance'
+						When groupAttribute.[Key] = 'FosterCareAssistance' Then 'Recieved Foster Care Assistance'
+						When groupAttribute.[Key] = 'CommunityAssistance' Then 'Recieved Community Assistance'
+						End as 'Type',
+					approvedColumn.ValueAsDateTime as 'DateApproved'
 	-- Get the matrixes
 	From AttributeValue groupAttributeValue
-	Join Attribute groupAttribute on groupAttributeValue.AttributeId = groupAttribute.Id and groupAttribute.[Key] = @GroupAttributeKey
+	Join Attribute groupAttribute on groupAttributeValue.AttributeId = groupAttribute.Id and groupAttribute.[Key] in ('AdoptionAssistance','Legacy685Documents','FosterCareAssistance','CommunityAssistance') 
 	Join AttributeMatrix am on groupAttributeValue.Value = Convert(nvarchar(max),am.[Guid])
 
-	-- Get the Columns
-	Join AttributeMatrixTemplate amt on am.AttributeMatrixTemplateId = amt.Id
-	Join Attribute ValueColumn 
-		on ValueColumn.EntityTypeQualifierColumn = 'AttributeMatrixTemplateId' 
-		and ValueColumn.EntityTypeQualifierValue = convert(nvarchar(max),amt.Id)
-		and ValueColumn.[Name] = @ColumnName
-	Join Attribute DateApprovedColumn 
-		on DateApprovedColumn.EntityTypeQualifierColumn = 'AttributeMatrixTemplateId' 
-		and DateApprovedColumn.EntityTypeQualifierValue = convert(nvarchar(max),amt.Id)
-		and DateApprovedColumn.[Name] = @ApprovedColumnName
-
-	-- Get the Row Values
-	Join AttributeMatrixItem ami on ami.AttributeMatrixId = am.Id
-	Join AttributeValue itemColumn on itemColumn.AttributeId = ValueColumn.Id and itemColumn.EntityId = ami.Id
-	Join AttributeValue approvedColumn on approvedColumn.AttributeId = DateApprovedColumn.Id and approvedColumn.EntityId = ami.Id
-	Where approvedColumn.ValueAsDateTime >= @ThisYearStart
-
------ ADD FAMILIES WHO HAD FINANCIAL ASSISTANCE
-	Insert into @TouchesTable
-	Select distinct groupAttributeValue.EntityId,
-	approvedColumn.ValueAsDateTime as 'DateApproved'
-	-- Get the matrixes
-	From AttributeValue groupAttributeValue
-	Join Attribute groupAttribute on groupAttributeValue.AttributeId = groupAttribute.Id and groupAttribute.[Key] in ('Legacy685Documents','FosterCareAssistance','CommunityAssistance')
-	Join AttributeMatrix am on groupAttributeValue.Value = Convert(nvarchar(max),am.[Guid])
 	-- Get the Columns
 	Join AttributeMatrixTemplate amt on am.AttributeMatrixTemplateId = amt.Id
 	Join Attribute DateApprovedColumn 
 		on DateApprovedColumn.EntityTypeQualifierColumn = 'AttributeMatrixTemplateId' 
 		and DateApprovedColumn.EntityTypeQualifierValue = convert(nvarchar(max),amt.Id)
-		and DateApprovedColumn.[Name] = @ApprovedColumnName
+		and DateApprovedColumn.[Name] = 'Date Approved'
 
 	-- Get the Row Values
 	Join AttributeMatrixItem ami on ami.AttributeMatrixId = am.Id
 	Join AttributeValue approvedColumn on approvedColumn.AttributeId = DateApprovedColumn.Id and approvedColumn.EntityId = ami.Id
+
+	-- Get Family Members
+	Join [Group] f on f.Id = groupAttributeValue.EntityId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
+	Join GroupMember fm on f.Id = fm.GroupId and fm.GroupMemberStatus = 1
 	Where approvedColumn.ValueAsDateTime >= @ThisYearStart
 
------ ADD FAMILIES WHO WERE TOUCHED BY A PATHWAY
+------- ADD FAMILIES WHO WERE TOUCHED BY A PATHWAY
 Insert into @TouchesTable
-Select g.Id, n.CreatedDateTime
+Select f.Id, p.Id, 'Pathway Added', n.CreatedDateTime
 	From Note n
 	Join Person p on n.EntityId = p.Id
-	Join GroupMember gm on p.Id = gm.PersonId
-	Join [Group] g on gm.GroupId = g.Id
-	Join GroupType gt on g.GroupTypeId = gt.Id
+	Join GroupMember fm on p.Id = fm.PersonId and fm.GroupMemberStatus = 1
+	Join [Group] f on f.Id = fm.GroupId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
 	Where ( NoteTypeId = 27 or NoteTypeId = 28)
-	And gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- Family
 	And n.CreatedDateTime >= @ThisYearStart
 
-
------ ADD FAMILIES WHO WERE TOUCHED BY AN INTERACTION
+------- ADD FAMILIES WHO WERE TOUCHED BY AN INTERACTION
 Insert into @TouchesTable
-Select g.Id, n.CreatedDateTime
+Select f.Id, p.Id, 'Interaction Added', n.CreatedDateTime
 	From Note n
 	Join Person p on n.EntityId = p.Id
-	Join GroupMember gm on p.Id = gm.PersonId
-	Join [Group] g on gm.GroupId = g.Id
-	Join GroupType gt on g.GroupTypeId = gt.Id
+	Join GroupMember fm on p.Id = fm.PersonId and fm.GroupMemberStatus = 1
+	Join [Group] f on f.Id = fm.GroupId and f.GroupTypeId = 10 and f.IsActive = 1 and f.IsArchived = 0
 	Join GroupMember legacyGm on p.Id = legacyGm.PersonId
 	Join [Group] legacyG on legacyGm.GroupId = legacyG.Id and legacyG.Id = 486871
 	Where ( NoteTypeId = 24 or NoteTypeId = 25)
-	And gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- Family
 	And n.CreatedDateTime >= @ThisYearStart
 
-Select
+	Select
 	'Touches' as 'Title',
 	'Total Families touched by Legacy 685' as 'Subtitle',
 	MTD as 'LastValue',
