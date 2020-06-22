@@ -63,6 +63,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,6 +72,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\002_Pages.cs" />
+    <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Model\PtoAllocationService.cs" />
+    <Compile Include="Model\PtoAllocation.cs" />
+    <Compile Include="Model\PtoRequestService.cs" />
+    <Compile Include="Model\PtoRequest.cs" />
     <Compile Include="Model\PtoBracketTypeService.cs" />
     <Compile Include="Model\PtoBracketType.cs" />
     <Compile Include="Model\PtoTier.cs" />
@@ -79,10 +86,17 @@
     <Compile Include="Model\PtoTierService.cs" />
     <Compile Include="Model\PtoBracketService.cs" />
     <Compile Include="Model\PtoTypeService.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
+    <Compile Include="SystemGuid\FieldType.cs" />
+    <Compile Include="Field\Types\PtoRequestFieldType.cs" />
+    <Compile Include="Field\Types\PtoTierFieldType.cs" />
+    <Compile Include="Field\Types\PtoTypeFieldType.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PtoRequestPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PtoTierPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PtoTypePicker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

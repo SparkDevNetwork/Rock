@@ -48,7 +48,7 @@ namespace com.bemaservices.HrManagement.Migrations
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoTier](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
                     [Name] [nvarchar](100) NULL,
-	                [Description] [nvarchar] NULL,
+	                [Description] [nvarchar](max) NULL,
                     [Color] [nvarchar](100) NULL,
 	                [IsActive] [bit] NOT NULL,
 	                [Guid] [uniqueidentifier] NOT NULL,
@@ -76,7 +76,7 @@ namespace com.bemaservices.HrManagement.Migrations
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoType](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
                     [Name] [nvarchar](100) NULL,
-	                [Description] [nvarchar] NULL,
+	                [Description] [nvarchar](max) NULL,
                     [Color] [nvarchar](100) NULL,
 	                [IsActive] [bit] NOT NULL,
                     [IsNegativeTimeBalanceAllowed] [bit] NOT NULL,
