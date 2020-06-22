@@ -309,6 +309,10 @@
     <Compile Include="Migrations\202006191943311_InteractionIndex.Designer.cs">
       <DependentUpon>202006191943311_InteractionIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202006222205351_Rollup_0622.cs" />
+    <Compile Include="Migrations\202006222205351_Rollup_0622.Designer.cs">
+      <DependentUpon>202006222205351_Rollup_0622.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1476,6 +1480,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202006191943311_InteractionIndex.resx">
       <DependentUpon>202006191943311_InteractionIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006222205351_Rollup_0622.resx">
+      <DependentUpon>202006222205351_Rollup_0622.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
