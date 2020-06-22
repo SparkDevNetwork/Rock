@@ -33,6 +33,7 @@ namespace Rock.Migrations
             UpdateGroupAttendanceDigestUp();
             AlterFunctionUfnCrmGetAddressUp();
             UpdateLocationTypeIdForRoomsUp();
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -256,6 +257,17 @@ END" );
 		                    'the Warehouse',
 		                    'the Garage'
 	                    )" );
+        }
+    
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+            UPDATE [dbo].[__MigrationHistory]
+            SET [Model] = 0x
+            WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
         }
     }
 }
