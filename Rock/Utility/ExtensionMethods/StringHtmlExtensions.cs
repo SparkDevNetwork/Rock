@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -84,6 +85,59 @@ namespace Rock
         }
 
         /// <summary>
+        /// Turns a string into a properly XML Encoded string.
+        /// </summary>
+        /// <param name="str">Plain text to convert to XML Encoded string</param>
+        /// <param name="isAttribute">If <c>true</c> then additional encoding is done to ensure proper use in an XML attribute value.</param>
+        /// <returns>XML encoded string</returns>
+        public static string EncodeXml( this string str, bool isAttribute = false )
+        {
+            var sb = new StringBuilder( str.Length );
+
+            foreach ( var chr in str )
+            {
+                if ( chr == '<' )
+                {
+                    sb.Append( "&lt;" );
+                }
+                else if ( chr == '>' )
+                {
+                    sb.Append( "&gt;" );
+                }
+                else if ( chr == '&' )
+                {
+                    sb.Append( "&amp;" );
+                }
+                else if ( isAttribute && chr == '\"' )
+                {
+                    sb.Append( "&quot;" );
+                }
+                else if ( isAttribute && chr == '\'' )
+                {
+                    sb.Append( "&apos;" );
+                }
+                else if ( chr == '\n' )
+                {
+                    sb.Append( isAttribute ? "&#xA;" : "\n" );
+                }
+                else if ( chr == '\r' )
+                {
+                    sb.Append( isAttribute ? "&#xD;" : "\r" );
+                }
+                else if ( chr == '\t' )
+                {
+                    sb.Append( isAttribute ? "&#x9;" : "\t" );
+                }
+                else
+                {
+                    sb.Append( chr );
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// URLs the encode.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -119,6 +173,31 @@ namespace Rock
             {
                 return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
             }
+        }
+
+        /// <summary>
+        /// Removes all lava markup from the string including short codes.
+        /// </summary>
+        /// <param name="lava">The lava.</param>
+        /// <returns></returns>
+        public static string SanitizeLava( this string lava )
+        {
+            // Don't choke on nulls
+            if ( string.IsNullOrWhiteSpace( lava ) )
+            {
+                return string.Empty;
+            }
+
+            var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
+            lava = doubleBracesRegex.Replace( lava, string.Empty );
+
+            var bracePercentRegex = new Regex( @"\{%([^\}]+)%\}" );
+            lava = bracePercentRegex.Replace( lava, string.Empty );
+
+            var bracBracketRegex = new Regex( @"\{\[([^\}]+)\]\}" );
+            lava = bracBracketRegex.Replace( lava, string.Empty );
+
+            return lava;
         }
 
         /// <summary>
@@ -207,7 +286,16 @@ namespace Rock
             var settings = CommonMark.CommonMarkSettings.Default.Clone();
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
 
-            return CommonMark.CommonMarkConverter.Convert( markdown, settings );
+            /*
+	            6/9/2020 - JME 
+	            Added the .Trim() to the return below. Without it CommonMark was converting strings
+                like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
+                when other filters were being applied in Lava to make line breaks '<br>'.
+
+                Reason: Notes Lava was having extra <br>'s at the end.
+            */
+            
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
         }
 
         /// <summary>

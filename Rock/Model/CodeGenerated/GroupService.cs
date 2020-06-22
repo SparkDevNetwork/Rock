@@ -193,6 +193,8 @@ namespace Rock.Model
             target.GroupCapacity = source.GroupCapacity;
             target.GroupTypeId = source.GroupTypeId;
             target.InactiveDateTime = source.InactiveDateTime;
+            target.InactiveReasonNote = source.InactiveReasonNote;
+            target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;
@@ -202,6 +204,8 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;

@@ -19,6 +19,8 @@
 // -------------------------
 @checkin-scrollbar-bg: fade(@text-color, 50%);
 
+@checkin-keypad-width: 260px;
+
 @font-size-base: 18px;
 @font-size-h1: 28px;
 
@@ -37,7 +39,15 @@
 
 select.form-control {
   // Fix for iOS not trimming border-radius
-  border-radius: 4px;
+  border-radius: @border-radius-base;
+}
+
+// Fix to allow SVGs inside of buttons.
+.btn svg {
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+  display: block;
 }
 
 h1,
@@ -69,20 +79,26 @@ h1 {
   .row {
     display: -ms-flexbox;
     display: flex;
+    -ms-flex-align: center;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-    -ms-flex-align: center;
     align-items: center;
     margin-right: 0;
     margin-left: 0;
+
+    &::before,
+    &::after {
+      content: normal;
+    }
   }
+}
+
+.btn-barcode {
+  margin-top: 40px;
 }
 
 .btn-checkin-change {
   .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
-}
-
-.btn-checkin-change {
   display: -ms-flexbox;
   display: flex;
   -ms-flex-align: center;
@@ -98,6 +114,7 @@ h1 {
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+  width: 100%;
   margin-bottom: 20px;
 
   .btn-checkin-select {
@@ -235,17 +252,27 @@ body {
   padding: 0 0 @padding-base-vertical 0;
 }
 
-.checkin-search-actions a {
-  padding: 20px 48px;
-  font-size: 48px;
-  font-weight: @checkin-button-text-weight;
-  line-height: 48px;
+.checkin-search-actions{
+  text-align: center;
+  a {
+    max-width: 100%;
+    padding: 20px 200px;
+    font-size: 48px;
+    font-weight: @checkin-button-text-weight;
+    line-height: 48px;
+  }
 }
 
 .checkin-start {
   margin-top: 25%;
   text-align: center;
 }
+
+.checkin-camera {
+  margin-top: 24px;
+  text-align: center;
+}
+
 
 // checkin footer
 
@@ -306,7 +333,8 @@ body {
 
 /* Ten Key Keypad */
 .tenkey {
-  width: 265px;
+  width: (@checkin-keypad-width + 5);
+  text-align: center;
 
   .btn {
     width: 80px;
@@ -384,17 +412,17 @@ img[src*="no-photo"] {
   margin: 0 auto;
 
   &.search-phone {
-    width: 260px;
+    width: @checkin-keypad-width;
   }
 }
 
 .search-phone-form-group {
-  width: 260px; // keypad is 320 - padding (24px x 2)
+  width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
   margin: 0 auto;
 }
 
 input.checkin-phone-entry {
-  width: 260px; // keypad is 320 - padding (24px x 2)
+  width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
   margin: 0 auto 10px auto;

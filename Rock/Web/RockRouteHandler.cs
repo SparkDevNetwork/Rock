@@ -515,12 +515,12 @@ namespace Rock.Web
                         return;
                     }
                 }
-            }
 
-            // If the requesting site uses exclusive routes and we didn't find anything for the site then just return
-            if ( site.EnableExclusiveRoutes )
-            {
-                return;
+                // If the requesting site uses exclusive routes and we didn't find anything for the site then just return
+                if ( site.EnableExclusiveRoutes )
+                {
+                    return;
+                }
             }
 
             // Default to first site/page that is not Exclusive

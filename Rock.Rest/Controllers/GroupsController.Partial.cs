@@ -107,6 +107,13 @@ namespace Rock.Rest.Controllers
                         }
                         else
                         {
+                            /*
+                            2020-05-01 BJW
+
+                            This heirarchy query was timing out on some Rock instances with a large amount of groups. I removed the
+                            limitToSchedulingEnabled=true param from the group scheduling block because of it. This logic will remain here
+                            for backwards compatability, but note that sometimes there are performance issues.
+                            */
                             bool hasChildScheduledEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.IsSchedulingEnabled == true );
                             if ( hasChildScheduledEnabledGroups )
                             {
@@ -206,6 +213,7 @@ namespace Rock.Rest.Controllers
 
         /// <summary>
         /// Returns a simplified data structure of the check-in parameters. This is used by FrontPorch but is generalized.
+        /// The children of the provided group GUID are incuded in the results.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <returns></returns>
@@ -214,44 +222,51 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GroupTypeCheckinConfiguration/{groupTypeGuid}" )]
         public HttpResponseMessage GroupTypeCheckinConfiguration( Guid groupTypeGuid )
         {
-            var groups = new GroupService( new RockContext() ).Queryable().AsNoTracking()
-                            .Where( g => g.GroupType.Guid == groupTypeGuid )
-                            .Select( g => new CheckinConfig
-                            {
-                                Id = g.Id,
-                                Name = g.Name,
-                                Guid = g.Guid,
-                                Locations = g.GroupLocations.Select( l => new CheckinConfigLocation
-                                {
-                                    Id = l.Location.Id,
-                                    Name = l.Location.Name,
-                                    Guid = l.Location.Guid,
-                                    GeoFence = l.Location.GeoFence,
-                                    Latitude = l.Location.GeoPoint.Latitude,
-                                    Longitude = l.Location.GeoPoint.Longitude,
-                                    Street1 = l.Location.Street1,
-                                    City = l.Location.City,
-                                    State = l.Location.State,
-                                    PostalCode = l.Location.PostalCode,
-                                    Country = l.Location.Country,
-                                    IsActive = l.Location.IsActive,
-                                    LocationType = l.Location.LocationTypeValue.Value,
-                                    LocationTypeId = l.Location.LocationTypeValue.Id,
-                                    Schedules = l.Schedules.Select( s => new CheckinConfigLocationSchedule
-                                    {
-                                        Id = s.Id,
-                                        Name = s.Name,
-                                        Guid = s.Guid,
-                                        IcalContent = s.iCalendarContent,
-                                        Category = s.Category.Name,
-                                        IsActive = s.IsActive
-                                    } )
-                                } )
-                            } )
-                            .ToList();
+            int groupTypeId = GroupTypeCache.Get( groupTypeGuid ).Id;
+
+            var rockContext = new RockContext();
+            var groupTypeChildList = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId, 20 ).Select( t => t.Id ).ToList();
+            groupTypeChildList.Add( groupTypeId );
+
+            var groups = new GroupService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( g => groupTypeChildList.Contains( g.GroupTypeId ) )
+                .Select( g => new CheckinConfig
+                {
+                    Id = g.Id,
+                    Name = g.Name,
+                    Guid = g.Guid,
+                    Locations = g.GroupLocations.Select( l => new CheckinConfigLocation
+                    {
+                        Id = l.Location.Id,
+                        Name = l.Location.Name,
+                        Guid = l.Location.Guid,
+                        GeoFence = l.Location.GeoFence,
+                        Latitude = l.Location.GeoPoint.Latitude,
+                        Longitude = l.Location.GeoPoint.Longitude,
+                        Street1 = l.Location.Street1,
+                        City = l.Location.City,
+                        State = l.Location.State,
+                        PostalCode = l.Location.PostalCode,
+                        Country = l.Location.Country,
+                        IsActive = l.Location.IsActive,
+                        LocationType = l.Location.LocationTypeValue.Value,
+                        LocationTypeId = l.Location.LocationTypeValue.Id,
+                        Schedules = l.Schedules.Select( s => new CheckinConfigLocationSchedule
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                            Guid = s.Guid,
+                            IcalContent = s.iCalendarContent,
+                            Category = s.Category.Name,
+                            IsActive = s.IsActive
+                        } )
+                    } )
+                } )
+                .ToList();
 
             // The returned type is great but lets add some schedule details from the ical string
-
             foreach (var groupCheckinInfo in groups)
             {
                 if ( groupCheckinInfo.Locations.IsNull() )
@@ -658,7 +673,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(), street1, street2, city, state, postalCode, country, true );
         }
@@ -1456,7 +1471,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The location type identifier.
             /// </value>
-            public int LocationTypeId { get; set; }
+            public int? LocationTypeId { get; set; }
 
             /// <summary>
             /// Gets or sets the schedules.

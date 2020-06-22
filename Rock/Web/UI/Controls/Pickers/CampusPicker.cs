@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a campus
     /// </summary>
     public class CampusPicker : RockDropDownList
     {
@@ -136,6 +136,7 @@ namespace Rock.Web.UI.Controls
                 if ( li != null )
                 {
                     li.Selected = true;
+                    this.SelectedValue = id.ToString();
                 }
                 else
                 {
@@ -199,7 +200,12 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                this.Visible = true;
+                /*
+                 * 2020-04-09 ETD
+                 * Don't set the Visible property here. If a block setting or somthing else is hiding the control this will show it.
+                 * Removed this to fix issue #4172.
+                 * this.Visible = true;
+                 */
 
                 selectedItems = Items.Cast<ListItem>()
                 .Where( i => i.Selected )

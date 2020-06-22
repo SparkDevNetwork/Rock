@@ -97,7 +97,7 @@
                                     <%# FormatGroupName( Eval("Group"), Eval("GroupRole"), Eval("GroupStatus") )  %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
+                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="ConnectorPersonAlias.Person.LastName,ConnectorPersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" SortExpression="LastActivity" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
@@ -110,6 +110,7 @@
                                     <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
+                            <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>

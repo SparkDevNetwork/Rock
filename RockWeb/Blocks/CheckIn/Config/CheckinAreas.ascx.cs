@@ -592,6 +592,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                         var newLocationIds = checkinGroup.Locations.Select( l => l.LocationId ).ToList();
                         foreach ( var groupLocation in group.GroupLocations.Where( l => !newLocationIds.Contains( l.LocationId ) ).ToList() )
                         {
+                            groupLocation.GroupLocationScheduleConfigs.Clear();
+
                             groupLocationService.Delete( groupLocation );
                             group.GroupLocations.Remove( groupLocation );
                         }

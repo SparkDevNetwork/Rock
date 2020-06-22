@@ -21,6 +21,40 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Block Template
+
+        /// <summary>
+        /// The block template for the event template on the mobile calendar event list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
+
+        /// <summary>
+        /// The block template for the event template on the mobile calendar item view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW = "128F7350-97FD-4ECA-9C79-D02DE0C434EB";
+
+        /// <summary>
+        /// The block template for the mobile group member list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
+
+        /// <summary>
+        /// The block template for the mobile group member view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW = "09053C7C-9374-4489-8A7B-71F02E3E7D89";
+
+        /// <summary>
+        /// The block template for the mobile group view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
+        /// <summary>
+        /// The block template for the mobile prayer session block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
+
+        #endregion
+
         #region Campus
 
         /// <summary>
@@ -353,9 +387,14 @@ namespace Rock.SystemGuid
         public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
 
         /// <summary>
-        /// Twice a month
+        /// Twice a month on the 1st and 15th
         /// </summary>
         public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
+
+        /// <summary>
+        /// A Frequency of First and Fifteenth
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH = "C752403C-0F88-45CD-B574-069355C01D77";
 
         /// <summary>
         /// Monthly
@@ -572,6 +611,15 @@ namespace Rock.SystemGuid
         /// Android platform
         /// </summary>       
         public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
+
+        #endregion
+
+        #region Structure Content Editor
+
+        /// <summary>
+        /// Default Structure Content Editor
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
 
         #endregion
 

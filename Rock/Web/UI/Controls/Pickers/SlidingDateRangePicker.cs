@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a sliding date range
     /// </summary>
     public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering, IRockChangeHandlerControl
     {
@@ -962,6 +962,15 @@ namespace Rock.Web.UI.Controls
                         result.End = null;
                     }
                 }
+
+                // To avoid confusion about the day or hour of the end of the date range, subtract a microsecond off our 'less than' end date
+                // for example, if our end date is 2019-11-7, we actually want all the data less than 2019-11-8, but if a developer does EndDate.DayOfWeek, they would want 2019-11-7 and not 2019-11-8
+                // So, to make sure we include all the data for 2019-11-7, but avoid the confusion about what DayOfWeek of the end, we'll compromise by subtracting a millisecond from the end date
+                if ( result.End.HasValue && timeUnit != TimeUnitType.Hour )
+                {
+                    result.End = result.End.Value.AddMilliseconds( -1 );
+                }
+
             }
 
             return result;

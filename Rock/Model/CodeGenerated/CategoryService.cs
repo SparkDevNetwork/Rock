@@ -130,11 +130,19 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<SystemCommunication>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
+                return false;
+            }  
+
+            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated 
             if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemEmail.FriendlyTypeName );
                 return false;
             }  
+            #pragma warning restore 612, 618
  
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {

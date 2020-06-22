@@ -166,13 +166,23 @@ namespace Rock.Model
 
             var streakTypeCache = StreakTypeCache.Get( streak.StreakTypeId );
 
-            foreach ( var streakTypeAchievementTypeCache in streakTypeCache.StreakTypeAchievementTypes )
-            {
-                var component = streakTypeAchievementTypeCache.AchievementComponent;
-                component.Process( rockContext, streakTypeAchievementTypeCache, streak );
-            }
+            /*
+             * 2019-01-13 BJW
+             *
+             * Achievements need to be processed in order according to dependencies (prerequisites). Prerequisites should be processed first so that,
+             * if the prerequisite becomes completed, the dependent achievement will be processed at this time as well. Furthermore, each achievement
+             * needs to be processed and changes saved to the database so that subsequent achievements will see the changes (for example: now met
+             * prerequisites).
+             */ 
+            var sortedAchievementTypes = StreakTypeAchievementTypeService.SortAccordingToPrerequisites( streakTypeCache.StreakTypeAchievementTypes );
 
-            rockContext.SaveChanges();
+            foreach ( var streakTypeAchievementTypeCache in sortedAchievementTypes )
+            {
+                var loopRockContext = new RockContext();
+                var component = streakTypeAchievementTypeCache.AchievementComponent;
+                component.Process( loopRockContext, streakTypeAchievementTypeCache, streak );
+                loopRockContext.SaveChanges();
+            }
         }
     }
 }

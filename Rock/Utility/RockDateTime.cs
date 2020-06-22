@@ -322,9 +322,32 @@ WHERE SundayDate IS NULL
         /// <returns></returns>
         public static DateTime GetSundayDate( DateTime inputDate )
         {
+            var firstDayOfWeek = RockDateTime.FirstDayOfWeek;
+            return GetSundayDate( inputDate, firstDayOfWeek );            
+        }
+
+        /// <summary>
+        /// Gets the Date of which Sunday is associated with the specified Date/Time, based on what the First Day Of Week is defined as.
+        /// </summary>
+        /// <param name="inputDate">The date time.</param>
+        /// <param name="firstDayOfWeek">The first day of week. Use the override of this method with only the inputDate to assume the system setting.</param>
+        /// <returns></returns>
+        public static DateTime GetSundayDate( DateTime inputDate, DayOfWeek firstDayOfWeek )
+        {
+            /*
+             * 12-09-2019 BJW
+             * 
+             * I restored the ability to specify the firstDayOfWeek so that each StreakType could have a custom setting. Some streaks, like those
+             * for serving, make sense to measure Wed - Tues so that an entire three day "weekend" of services is counted as the same Sunday Date.
+             * However, just because the church wants the streak type to have a Wed start of week for the streak type doesn't mean they want the
+             * entire system to be configured this way.
+             * 
+             * See Rock.Model.StreakType.FirstDayOfWeek
+             * Also see task: https://app.asana.com/0/1120115219297347/1152845555131825/f 
+             */
+
             // Get the number of days until the next Sunday date
             int sundayDiff = 7 - ( int ) inputDate.DayOfWeek;
-            var firstDayOfWeek = RockDateTime.FirstDayOfWeek;
 
             // Figure out which DayOfWeek would be the lastDayOfWeek ( which would be the DayOfWeek before the firstDayOfWeek )
             DayOfWeek lastDayOfWeek;
@@ -364,19 +387,6 @@ WHERE SundayDate IS NULL
             }
 
             return sundayDate.Date;
-        }
-
-        /// <summary>
-        /// Gets the Date of which Sunday is associated with the specified Date/Time, based on what the First Day Of Week is defined as.
-        /// </summary>
-        /// <param name="dateTime">The date time.</param>
-        /// <param name="firstDayOfWeek">The first day of week. This value is no longer used, the First Day Of Week is a system setting.</param>
-        /// <returns></returns>
-        [Obsolete("First Day of Week is set in the configuration block so this override is no longer needed. Use GetSundayDate( DateTime inputDate ) instead.")]
-        [RockObsolete("1.10.1")]
-        public static DateTime GetSundayDate( DateTime dateTime, DayOfWeek firstDayOfWeek )
-        {
-            return GetSundayDate( dateTime );
         }
     }
 }

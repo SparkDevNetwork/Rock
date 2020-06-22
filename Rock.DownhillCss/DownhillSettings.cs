@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,49 +22,54 @@ namespace Rock.DownhillCss
 {
     public class DownhillSettings
     {
-        /// <summary>
-        /// Gets or sets the platform.
-        /// </summary>
-        /// <value>
-        /// The platform.
-        /// </value>
-        public DownhillPlatform Platform { get; set; } = DownhillPlatform.Web;
 
         /// <summary>
-        /// Gets or sets the spacing base.
+        /// Gets the spacing units based on the platform.
         /// </summary>
         /// <value>
-        /// The spacing base.
+        /// The spacing units.
         /// </value>
-        public decimal SpacingBase
+        public Dictionary<int,string> SpacingValues
         {
             get
             {
-                if ( _spacingBase != 0 )
+                if (this.Platform == DownhillPlatform.Mobile )
                 {
-                    return _spacingBase;
-                }
-
-                if ( this.Platform == DownhillPlatform.Mobile )
-                {
-                    _spacingBase = 10;
+                    return new Dictionary<int, string>()
+                    {
+                        { 0, "0" },
+                        { 1, "1" },
+                        { 2, "2" },
+                        { 4, "4" },
+                        { 8, "8" },
+                        { 12, "12" },
+                        { 16, "16" },
+                        { 24, "24" },
+                        { 32, "32" },
+                        { 64, "64" },
+                    };
                 }
                 else
                 {
-                    _spacingBase = 1;
+                    return new Dictionary<int, string>()
+                    {
+                        { 0, "0" },
+                        { 1, ".25rem" },
+                        { 2, ".5rem" },
+                        { 4, ".75rem" },
+                        { 8, "2rem" },
+                        { 12, "3rem" },
+                        { 16, "4rem" },
+                        { 24, "6rem" },
+                        { 32, "8rem" },
+                        { 64, "16rem" },
+                    };
                 }
-
-                return _spacingBase;
-            }
-            set
-            {
-                _spacingBase = value;
             }
         }
-        private decimal _spacingBase = 0;
 
         /// <summary>
-        /// Gets the spacing units.
+        /// Gets the spacing units based on the platform.
         /// </summary>
         /// <value>
         /// The spacing units.
@@ -57,24 +78,64 @@ namespace Rock.DownhillCss
         {
             get
             {
-                if ( _spacingUnits != null )
-                {
-                    return _spacingUnits;
-                }
-
                 if ( this.Platform == DownhillPlatform.Mobile )
                 {
-                    _spacingUnits = string.Empty;
+                    return string.Empty;
                 }
                 else
                 {
-                    _spacingUnits = "rem";
+                    return "rem";
                 }
-
-                return _spacingUnits;
             }
         }
-        private string _spacingUnits;
+
+        /// <summary>
+        /// Gets the font size list.
+        /// </summary>
+        /// <value>
+        /// The font sizes.
+        /// </value>
+        public Dictionary<string, decimal> FontSizes
+        {
+            get
+            {
+                return new Dictionary<string, decimal>()
+                {
+                    { "xs", .75m },
+                    { "sm", .875m },
+                    { "base", 1 },
+                    { "lg", 1.125m },
+                    { "xl", 1.25m },
+                    { "2xl", 1.5m },
+                    { "3xl", 1.875m },
+                    { "4xl", 2.25m },
+                    { "5xl", 3m },
+                    { "6xl", 4m },
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the border widths.
+        /// </summary>
+        /// <value>
+        /// The border widths.
+        /// </value>
+        public List<int> BorderWidths
+        {
+            get
+            {
+                return new List<int> { 0, 1, 2, 4, 8 };
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the platform.
+        /// </summary>
+        /// <value>
+        /// The platform.
+        /// </value>
+        public DownhillPlatform Platform { get; set; } = DownhillPlatform.Web;
 
         /// <summary>
         /// Gets the border units.

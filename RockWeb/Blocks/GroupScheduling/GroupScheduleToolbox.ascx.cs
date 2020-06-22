@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.GroupScheduling
 </div>",
         Order = 2
          )]
+
+    [LinkedPage("Decline Reason Page",
+        Description = "If the group type has enabled 'RequiresReasonIfDeclineSchedule' then specify the page to provide that reason here.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.SCHEDULE_CONFIRMATION,
+        Key = AttributeKey.DeclineReasonPage )]
+
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey
@@ -87,6 +94,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string FutureWeeksToShow = "FutureWeeksToShow";
             public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
+            public const string DeclineReasonPage = "DeclineReasonPage";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -355,6 +363,21 @@ $('#{0}').tooltip();
         /// <returns></returns>
         protected string GetOccurrenceDetails( Attendance attendance )
         {
+            if ( attendance.Occurrence.GroupId == null && attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
+            if ( attendance.Occurrence.GroupId == null )
+            {
+                return string.Format( "{0} - {1}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Location );
+            }
+
+            if ( attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
             return string.Format( "{0} - {1} - {2}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Group.Name, attendance.Occurrence.Location );
         }
 
@@ -459,12 +482,25 @@ $('#{0}').tooltip();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
+                var attendanceService = new AttendanceService( rockContext );
+                var requiresDeclineReason = attendanceService.Get( attendanceId.Value ).Occurrence.Group.GroupType.RequiresReasonIfDeclineSchedule;
 
-                // TODO: Need to provide a way to indicate the reason a pending schedule was declined.
-                int? declineReasonValueId = null;
+                if ( requiresDeclineReason )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        { "attendanceId", attendanceId.Value.ToString() },
+                        { "isConfirmed", "false" },
+                        { "ReturnUrl", this.RockPage.Guid.ToString() }
+                    };
 
-                new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
-                rockContext.SaveChanges();
+                    NavigateToLinkedPage( AttributeKey.DeclineReasonPage, queryParams );
+                }
+                else
+                {
+                    attendanceService.ScheduledPersonDecline( attendanceId.Value, null );
+                    rockContext.SaveChanges();
+                }
             }
 
             UpdateMySchedulesTab();
@@ -485,7 +521,7 @@ $('#{0}').tooltip();
         /// </summary>
         private void BindUpcomingSchedulesGrid()
         {
-            var currentDateTime = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now.Date;
             var rockContext = new RockContext();
 
             var qryConfirmedScheduled = new AttendanceService( rockContext ).GetConfirmedScheduled()
@@ -934,8 +970,15 @@ $('#{0}').tooltip();
             {
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
                 var personScheduleExclusion = personScheduleExclusionService.Get( e.RowKeyId );
+
                 if ( personScheduleExclusion != null )
                 {
+                    var scheduleExclusionChildren = personScheduleExclusionService.Queryable().Where( x => x.ParentPersonScheduleExclusionId == personScheduleExclusion.Id );
+                    foreach ( var scheduleExclusionChild in scheduleExclusionChildren )
+                    {
+                        scheduleExclusionChild.ParentPersonScheduleExclusionId = null;
+                    }
+
                     personScheduleExclusionService.Delete( personScheduleExclusion );
                     rockContext.SaveChanges();
                     BindBlackoutDates();
@@ -1234,13 +1277,17 @@ $('#{0}').tooltip();
             {
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
-                    currentGroupId = availableSchedule.GroupId;
+                    if ( currentGroupId != -1 )
+                    {
+                        phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
+                    }
+
                     CreateGroupHeader( availableSchedule.GroupName, availableSchedule.GroupType );
                 }
 
                 if ( availableSchedule.ScheduledDateTime.Date != currentOccurrenceDate.Date )
                 {
-                    if ( currentScheduleId != -1 )
+                    if ( currentScheduleId != -1 && availableSchedule.GroupId == currentGroupId )
                     {
                         phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
                     }
@@ -1249,6 +1296,7 @@ $('#{0}').tooltip();
                     CreateDateHeader( currentOccurrenceDate );
                 }
 
+                currentGroupId = availableSchedule.GroupId;
                 currentScheduleId = availableSchedule.ScheduleId;
                 CreateScheduleSignUpRow( availableSchedule, availableGroupLocationSchedules );
             }

@@ -55,6 +55,14 @@ namespace Rock.Web.UI
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextAwareAttribute"/> class.
         /// </summary>
+        /// <param name="entityType">The entity type.</param>
+        public ContextAwareAttribute( Type entityType ) : this( new[] { entityType } )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContextAwareAttribute"/> class.
+        /// </summary>
         /// <param name="entityTypes">The entity types.</param>
         public ContextAwareAttribute( params Type[] entityTypes )
         {

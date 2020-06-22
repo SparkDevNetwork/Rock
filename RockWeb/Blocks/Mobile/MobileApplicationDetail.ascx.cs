@@ -30,7 +30,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile;
-using Rock.Mobile.Common.Enums;
+using Rock.Common.Mobile.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -38,7 +38,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
-using ShellType = Rock.Mobile.Common.Enums.ShellType;
+using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
 
 namespace RockWeb.Blocks.Mobile
@@ -500,10 +500,11 @@ namespace RockWeb.Blocks.Mobile
                 cpWarning.Value = additionalSettings.DownhillSettings.ApplicationColors.Warning;
                 cpLight.Value = additionalSettings.DownhillSettings.ApplicationColors.Light;
                 cpDark.Value = additionalSettings.DownhillSettings.ApplicationColors.Dark;
+                cpBrand.Value = additionalSettings.DownhillSettings.ApplicationColors.Brand;
+                cpInfo.Value = additionalSettings.DownhillSettings.ApplicationColors.Info;
 
                 nbRadiusBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.RadiusBase ).ToStringSafe();
 
-                nbSpacingBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.SpacingBase ).ToStringSafe();
                 nbFontSizeDefault.Text = decimal.ToInt32( additionalSettings.DownhillSettings.FontSizeDefault ).ToStringSafe();
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
@@ -916,10 +917,11 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Dark = ParseColor( cpDark.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Brand = ParseColor( cpBrand.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
 
                 additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
 
-                additionalSettings.DownhillSettings.SpacingBase = nbSpacingBase.Text.AsDecimal();
                 additionalSettings.DownhillSettings.FontSizeDefault = nbFontSizeDefault.Text.AsDecimal();
                 additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
 

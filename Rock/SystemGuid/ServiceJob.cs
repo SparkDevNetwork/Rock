@@ -77,6 +77,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_90 = "3F279016-C7D1-490F-835D-8FFE6D943A32";
 
         /// <summary>
+        /// The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates
+        /// </summary>
+        public const string DATA_MIGRATIONS_103_SPIRITUAL_GIFTS = "B16F889F-3349-4CA9-976D-7EF098DD8BC6";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -97,8 +102,14 @@ namespace Rock.SystemGuid
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
 
         /// <summary>
-        /// The Job to Rebuild a Sequence.
+        /// The Job to Rebuild a Sequence. This job has been deleted and replaced with
+        /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
+
+        /// <summary>
+        /// The Job to send an email digest with an attendance summary of all child groups to regional group leaders
+        /// </summary>
+        public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
     }
 }

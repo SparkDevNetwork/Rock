@@ -193,8 +193,8 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetByGroupId( int groupId, bool includeDeceased = false )
         {
-            return Queryable("Person,GroupRole", includeDeceased)
-                .Where( t => t.GroupId == groupId)
+            return Queryable( "Person,GroupRole", includeDeceased )
+                .Where( t => t.GroupId == groupId )
                 .OrderBy( g => g.GroupRole.Order );
         }
 
@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who match the criteria.</returns>
         public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
         {
-            return GetByGroupId(groupId, includeDeceased).Where( g => g.PersonId == personId );
+            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId );
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Rock.Model
         {
             return Queryable( "Person", includeDeceased ).Where( t => t.GroupRoleId == groupRoleId );
         }
-        
+
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember"/> entities associated with a <see cref="Rock.Model.Person"/> by the Person's PersonId
         /// </summary>
@@ -292,9 +292,21 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetLeaders( int groupId )
         {
             return GetByGroupId( groupId, false )
-                .Where( t => 
+                .Where( t =>
                     t.GroupMemberStatus == GroupMemberStatus.Active &&
                     t.GroupRole.IsLeader );
+        }
+
+        /// <summary>
+        /// Gets the active leaders of the group who have active emails.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetLeadersWithActiveEmails( int groupId )
+        {
+            return GetLeaders( groupId )
+                .Where( m => !string.IsNullOrEmpty( m.Person.Email ) )
+                .Where( m => m.Person.IsEmailActive );
         }
 
         /// <summary>
@@ -306,7 +318,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="System.String"/> objects containing the first names of each person in the group.</returns>
         public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased = false )
         {
-            return GetByGroupId(groupId, includeDeceased)
+            return GetByGroupId( groupId, includeDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.BirthYear )
                 .ThenBy( m => m.Person.BirthMonth )
@@ -361,8 +373,8 @@ namespace Rock.Model
             return Queryable()
                 .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
                 .SelectMany( g => g.Group.GroupLocations )
-                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId && 
-                    gl.Location.Street1.Contains(partialHomeAddress) )
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId &&
+                    gl.Location.Street1.Contains( partialHomeAddress ) )
                 .SelectMany( gl => gl.Group.Members )
                 .Select( gm => gm.PersonId ).Distinct();
         }
@@ -407,7 +419,7 @@ namespace Rock.Model
                         .Where( m =>
                             m.GroupId == groupMember.GroupId &&
                             ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
-                        .Select( m => new 
+                        .Select( m => new
                         {
                             PersonId = m.PersonId,
                             RoleId = m.GroupRoleId
@@ -461,7 +473,7 @@ namespace Rock.Model
 
                                 if ( inverseGroupMember == null )
                                 {
-                                    var inverseRole = new GroupTypeRoleService( (RockContext)Context ).Get( inverseRoleGuid );
+                                    var inverseRole = new GroupTypeRoleService( ( RockContext ) Context ).Get( inverseRoleGuid );
                                     if ( inverseRole != null )
                                     {
                                         inverseGroupMember = new GroupMember();
@@ -531,7 +543,7 @@ namespace Rock.Model
             var rockContext = this.Context as RockContext;
             int? groupTypeId = item.Group?.GroupTypeId;
 
-            if ( !groupTypeId.HasValue)
+            if ( !groupTypeId.HasValue )
             {
                 groupTypeId = new GroupService( rockContext ).GetSelect( item.GroupId, a => a.GroupTypeId );
             }
@@ -644,7 +656,7 @@ namespace Rock.Model
             }
 
             // Add relationships
-            var relationshipMember = groupMemberService.Queryable(true)
+            var relationshipMember = groupMemberService.Queryable( true )
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroupId.Value &&
                     m.PersonId == relatedPersonId &&
@@ -674,44 +686,44 @@ namespace Rock.Model
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
         public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
         {
-           var groupMemberService = this;
-           var rockContext = this.Context as RockContext;
+            var groupMemberService = this;
+            var rockContext = this.Context as RockContext;
 
-           var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-           var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
-           var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
-           if ( ownerRole == null )
-           {
-              throw new Exception( "Unable to find known relationships owner role" );
-           }
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+            var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+            if ( ownerRole == null )
+            {
+                throw new Exception( "Unable to find known relationships owner role" );
+            }
 
-           if ( relationshipRole == null )
-           {
-              throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
-           }
+            if ( relationshipRole == null )
+            {
+                throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
+            }
 
-           // find the personId's "known relationship" group
-           int? knownRelationshipGroupId = groupMemberService.Queryable(true)
-               .Where( m =>
-                   m.PersonId == personId &&
-                   m.GroupRoleId == ownerRole.Id )
-               .Select( m => m.GroupId )
-               .FirstOrDefault();
-        
-           // if there was a known relationship group found
-           IQueryable<GroupMember> groupMembers = null;
-           if ( knownRelationshipGroupId.HasValue )
-           {
-              // take everyone that has the specified relationship role.
-              groupMembers = groupMemberService.Queryable()
-                 .Where( gm =>
-                    gm.GroupId == knownRelationshipGroupId &&
-                    gm.GroupRoleId == relationshipRoleId );
-           }
+            // find the personId's "known relationship" group
+            int? knownRelationshipGroupId = groupMemberService.Queryable( true )
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRoleId == ownerRole.Id )
+                .Select( m => m.GroupId )
+                .FirstOrDefault();
 
-           return groupMembers;
+            // if there was a known relationship group found
+            IQueryable<GroupMember> groupMembers = null;
+            if ( knownRelationshipGroupId.HasValue )
+            {
+                // take everyone that has the specified relationship role.
+                groupMembers = groupMemberService.Queryable()
+                   .Where( gm =>
+                      gm.GroupId == knownRelationshipGroupId &&
+                      gm.GroupRoleId == relationshipRoleId );
+            }
+
+            return groupMembers;
         }
-     
+
         /// <summary>
         /// Deletes the known relationship.
         /// </summary>
@@ -750,7 +762,7 @@ namespace Rock.Model
             }
 
             // lookup the relationship to delete
-            var relationshipMember = groupMemberService.Queryable(true)
+            var relationshipMember = groupMemberService.Queryable( true )
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
                     m.PersonId == relatedPersonId &&
@@ -818,4 +830,42 @@ namespace Rock.Model
             return changesMade;
         }
     }
+
+    #region Extension Methods
+
+    public static partial class GroupMemberExtensionMethods
+    {
+        /// <summary>
+        /// Group members that are in the specified groups.
+        /// </summary>
+        /// <param name="groupMembers">The group members.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> InGroupList( this IQueryable<GroupMember> groupMembers, List<int> groupIds )
+        {
+            return groupMembers.Where( m => groupIds.Contains( m.GroupId ) );
+        }
+
+        /// <summary>
+        /// Group Members that are active.
+        /// </summary>
+        /// <param name="groupMembers">The group members.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> AreActive( this IQueryable<GroupMember> groupMembers )
+        {
+            return groupMembers.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+        }
+
+        /// <summary>
+        /// Group members that are leaders.
+        /// </summary>
+        /// <param name="groupMembers">The group members.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> AreLeaders( this IQueryable<GroupMember> groupMembers )
+        {
+            return groupMembers.Where( m => m.GroupRole.IsLeader );
+        }
+    }
+
+    #endregion
 }

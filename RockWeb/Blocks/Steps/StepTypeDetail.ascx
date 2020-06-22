@@ -126,7 +126,7 @@
                                 PropertyName="HasEndDate"
                                 Label="Spans Time"
                                 Text="Yes"
-                                Help="Determines if a step is happens in a momemnt in time or if it happens over time." />
+                                Help="Determines if the step occurs at a specific point or over a period of time." />
                             <Rock:RockCheckBox ID="cbShowBadgeCount"
                                 runat="server"
                                 SourceTypeName="Rock.Model.StepType, Rock"
@@ -199,7 +199,7 @@
                                     SourceTypeName="Rock.Model.StepType, Rock"
                                     PropertyName="AllowManualEditing"
                                     Label="Allow Manual Edit"
-                                    Help="Can the details of this step achievement be modified by the participant?"
+                                    Help="Can the step be manually added or edited?"
                                     Checked="false"
                                     Text="Yes" />
                             </div>

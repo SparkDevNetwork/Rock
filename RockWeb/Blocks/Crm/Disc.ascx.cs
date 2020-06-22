@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -125,7 +126,7 @@ namespace Rockweb.Blocks.Crm
             public const string AssessmentId = "AssessmentId";
 
             /// <summary>
-            /// The ULR encoded key for a person
+            /// The URL encoded key for a person
             /// </summary>
             public const string Person = "Person";
         }
@@ -220,7 +221,8 @@ namespace Rockweb.Blocks.Crm
             {
                 try
                 {
-                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                    var personService = new PersonService( new RockContext() );
+                    _targetPerson = personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByUrlEncodedKey( personKey );
                     _isQuerystringPersonKey = true;
                 }
                 catch ( Exception )
@@ -254,60 +256,7 @@ namespace Rockweb.Blocks.Crm
         {
             if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
-                Assessment assessment = null;
-
-                if ( _targetPerson != null )
-                {
-                    var primaryAliasId = _targetPerson.PrimaryAliasId;
-
-                    if ( _assessmentId == 0 )
-                    {
-                        // This indicates that the block should create a new assessment instead of looking for an existing one. e.g. a user directed re-take
-                        assessment = null;
-                    }
-                    else
-                    {
-                        // Look for an existing pending or completed assessment.
-                        assessment = new AssessmentService( rockContext )
-                            .Queryable()
-                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
-                            .OrderByDescending( a => a.CreatedDateTime )
-                            .FirstOrDefault();
-                    }
-
-                    if ( assessment != null )
-                    {
-                        hfAssessmentId.SetValue( assessment.Id );
-                    }
-                    else
-                    {
-                        hfAssessmentId.SetValue( 0 );
-                    }
-
-                    if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
-                    {
-                        DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
-                        ShowResult( savedScores, assessment );
-                    }
-                    else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
-                    {
-                        if ( _targetPerson.Id != CurrentPerson.Id )
-                        {
-                            // If the current person is not the target person and there are no results to show then show a not taken message.
-                            HidePanelsAndShowError( string.Format("{0} does not have results for the EQ Inventory Assessment.", _targetPerson.FullName ) );
-                        }
-                        else
-                        {
-                            ShowInstructions();
-                        }
-                    }
-                    else
-                    {
-                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
-                    }
-                }
+                ShowAssessment();
             }
             else
             {
@@ -516,6 +465,135 @@ namespace Rockweb.Blocks.Crm
         #region Methods
 
         /// <summary>
+        /// Shows the assessment.
+        /// A null value for _targetPerson is already handled in OnInit() so this method assumes there is a value
+        /// </summary>
+        private void ShowAssessment()
+        {
+            /*
+            2020-01-09 - ETD
+            This block will either show the assessment results of the most recent assessment test or give the assessment test.
+            The following use cases are considered:
+            1. If the assessment ID "0" was provided then create a new test for the current user. This covers user directed retakes.
+            2. If the assessment ID was provided and is not "0"
+                Note: The assessment results are stored on the person's attributes and are overwritten if the assessment is retaken. So past Assessments will not be loaded by this block.
+                The test data is saved in the assessment table but would need to be recomputed, which may be a future feature.
+                a. The assessment ID is ignored and the current person is used.
+                b. If the assessment exists for the current person and is completed then show the results
+                c. If the assessment exists for the current person and is pending then show the questions.
+                d. If the assessment does not exist for the current person then nothing loads.
+            3. If the assessment ID was not provided and the PersonKey was provided
+                a. If there is only one test of the type
+                    1. If the assessment is completed show the results
+                    2. If the assessment is pending and the current person is the one assigned the test then show the questions.
+                    3. If the assessment is pending and the current person is not the one assigned then show a message that the test has not been completed.
+                b. If more than one of type
+                    1. If the latest requested assessment is completed show the results.
+                    2. If the latest requested assessment is pending and the current person is the one assigned then show the questions.
+                    3. If the latest requested assessment is pending and the current person is not the one assigned the show the results of the last completed test.
+                    4. If the latest requested assessment is pending and the current person is not the one assigned and there are no previous completed assessments then show a message that the test has not been completed.
+            4. If an assessment ID or PersonKey were not provided or are not valid then show an error message
+            */
+
+            var rockContext = new RockContext();
+            var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
+            Assessment assessment = null;
+            Assessment previouslyCompletedAssessment = null;
+
+            // A "0" value indicates that the block should create a new assessment instead of looking for an existing one, so keep assessment null. e.g. a user directed re-take
+            if ( _assessmentId != 0 )
+            {
+                var assessments = new AssessmentService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.PersonAlias != null
+                             && a.PersonAlias.PersonId == _targetPerson.Id 
+                             && a.AssessmentTypeId == assessmentType.Id )
+                .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
+                .ToList();
+
+                if ( _assessmentId == null && assessments.Count == 0 )
+                {
+                    // For this to happen the user has to have never taken the assessment, the user isn't using a link with the assessment ID, AND they are arriving at the block directly rather than through the assessment list block.
+                    // So treat this as a user directed take/retake.
+                    _assessmentId = 0;
+                }
+                else
+                {
+                    if ( assessments.Count > 0 )
+                    {
+                        // If there are any results then pick the first one. If the assesement ID was specified then the query will only return one result
+                        assessment = assessments[0];
+                    }
+                    if ( assessments.Count > 1 )
+                    {
+                        // If there are more than one result then we need to pick the right one (see developer note)
+                        // If the most recent assessment is "Completed" then it is already set as the assessment and we can move on. Otherwise check if there are previoulsy completed assessments.
+                        if ( assessment.Status == AssessmentRequestStatus.Pending )
+                        {
+                            // If the most recent assessment is pending then check for a prior completed one
+                            previouslyCompletedAssessment = assessments.Where( a => a.Status == AssessmentRequestStatus.Complete ).FirstOrDefault();
+                        }
+                    }
+                }
+            }
+
+            if ( assessment == null )
+            {
+                // If assessment is null and _assessmentId = 0 this is user directed. If the type does not require a request then show instructions
+                if ( _assessmentId == 0 && !assessmentType.RequiresRequest )
+                {
+                    hfAssessmentId.SetValue( 0 );
+                    ShowInstructions();
+                }
+                else
+                {
+                    // If assessment is null and _assessmentId != 0 or is 0 but the type does require a request then show requires request error
+                    HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
+                }
+
+                return;
+            }
+
+            hfAssessmentId.SetValue( assessment.Id );
+
+            // If assessment is completed show the results
+            if ( assessment.Status == AssessmentRequestStatus.Complete )
+            {
+                DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+                ShowResult( savedScores, assessment );
+                return;
+            }
+
+            if ( assessment.Status == AssessmentRequestStatus.Pending )
+            {
+                if ( _targetPerson.Id != CurrentPerson.Id )
+                {
+                    // If assessment is pending and the current person is not the one assigned the show previouslyCompletedAssessment results
+                    if ( previouslyCompletedAssessment != null )
+                    {
+                        DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+                        ShowResult( savedScores, previouslyCompletedAssessment, true );
+                        return;
+                    }
+
+                    // If assessment is pending and the current person is not the one assigned and previouslyCompletedAssessment is null show a message that the test has not been completed.
+                    HidePanelsAndShowError( string.Format("{0} has not yet taken the {1} Assessment.", _targetPerson.FullName, assessmentType.Title ) );
+                }
+                else
+                {
+                    // If assessment is pending and the current person is the one assigned then show the questions
+                    ShowInstructions();
+                }
+
+                return;
+            }
+
+            // This should never happen, if the block gets to this point then something is not right
+            HidePanelsAndShowError( "Unable to load assessment" );
+        }
+
+        /// <summary>
         /// Hides the Instructions and Questions panels and shows the specified error.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
@@ -524,8 +602,19 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
             pnlResult.Visible = false;
+            ShowNotification( errorMessage, NotificationBoxType.Danger );
+        }
+
+        /// <summary>
+        /// Shows the notification.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="notificationBoxType">Type of the notification box.</param>
+        private void ShowNotification( string errorMessage, NotificationBoxType notificationBoxType )
+        {
             nbError.Visible = true;
             nbError.Text = errorMessage;
+            nbError.NotificationBoxType = notificationBoxType;
         }
 
         /// <summary>
@@ -639,11 +728,16 @@ namespace Rockweb.Blocks.Crm
         /// Shows the results of the assessment test.
         /// </summary>
         /// <param name="savedScores">The saved scores.</param>
-        private void ShowResult( DiscService.AssessmentResults savedScores, Assessment assessment )
+        private void ShowResult( DiscService.AssessmentResults savedScores, Assessment assessment, bool isPrevious = false )
         {
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
+            
+            if ( isPrevious )
+            {
+                ShowNotification( "A more recent assessment request has been made but has not been taken. Displaying the most recently completed test.", NotificationBoxType.Info );
+            }
 
             if ( CurrentPersonId == _targetPerson.Id )
             {

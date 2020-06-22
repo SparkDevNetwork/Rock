@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Field.Types;
 
 namespace RockWeb.Blocks.Core
 {
@@ -79,30 +80,48 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-            _entity = this.ContextEntity();
-            if ( _entity != null )
+            try
             {
-                if ( !Page.IsPostBack )
+                nbMessage.Visible = false;
+
+                base.OnLoad( e );
+                _entity = this.ContextEntity();
+                if ( _entity != null )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.Add( "Entity", _entity );
-                    lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
-
-                    BindFilter();
-                    BindGrid();
-
-                    IModel model = _entity as IModel;
-                    if ( model != null && model.CreatedDateTime.HasValue )
+                    if ( !Page.IsPostBack )
                     {
-                        hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
-                    }
-                    else
-                    {
-                        hlDateAdded.Visible = false;
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Entity", _entity );
+                        lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
+
+                        BindFilter();
+                        BindGrid();
+
+                        IModel model = _entity as IModel;
+                        if ( model != null && model.CreatedDateTime.HasValue )
+                        {
+                            hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        else
+                        {
+                            hlDateAdded.Visible = false;
+                        }
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                Exception sqlException = ex;
+                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
+                {
+                    sqlException = sqlException.InnerException;
+                }
+
+                nbMessage.Visible = true;
+                nbMessage.Text = string.Format( "<p>An error occurred trying to retrieve the history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",
+                    sqlException != null ? sqlException.Message : ex.Message );
             }
         }
 
@@ -269,7 +288,7 @@ namespace RockWeb.Blocks.Core
                         // as per issue #1594, if relatedEntityType is an Attribute then check View Authorization
                         var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
                         var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
-                        var allowedAttributeIds = personAttributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
+                        var allowedAttributeIds = GetAuthorizedPersonAttributes( rockContext ).Select( a => a.Id ).ToList();
                         qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );                            
                     }
                     else
@@ -332,6 +351,58 @@ namespace RockWeb.Blocks.Core
                     gHistory.DataBind();
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the person attributes that the current user is authorized to view.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entityTypeCache">The entity type cache.</param>
+        /// <returns></returns>
+        private List<AttributeCache> GetAuthorizedPersonAttributes( RockContext rockContext )
+        {
+            var personEntityTypeId = EntityTypeCache.GetId<Person>();
+
+            // Start with the more obvious attributes that are directly for a person
+            var allPersonAttributes = new AttributeService( rockContext )
+                .GetByEntityTypeId( personEntityTypeId )
+                .AsNoTracking()
+                .ToList()
+                .Select( a => AttributeCache.Get( a ) );
+
+            // Filter these down to the attributes that the current person is allowed to view
+            var allowedPersonAttributes = allPersonAttributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList();
+
+            // Add the attributes that are part of a matrix that is for a person
+            // We know which attributes are matrices according to the field type
+            var matrixFieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.MATRIX );
+            var personMatrixAttributes = allowedPersonAttributes.Where( pa => pa.FieldType == matrixFieldType );
+
+            if ( personMatrixAttributes.Any() )
+            {
+                // Each matrix has a template. The template defines which attributes make up the values of the matrix
+                var templateKey = MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE;
+                var templateIds = personMatrixAttributes
+                    .Select( a => a.QualifierValues.ContainsKey( templateKey ) ? a.QualifierValues[templateKey].Value : null )
+                    .Where( i => !i.IsNullOrWhiteSpace() );
+
+                if ( templateIds.Any() )
+                {
+                    var matrixItemEntityTypeId = EntityTypeCache.GetId<AttributeMatrixItem>();
+                    var allMatrixAttributes = new AttributeService( rockContext )
+                        .GetByEntityTypeId( matrixItemEntityTypeId )
+                        .AsNoTracking()
+                        .Where( a => a.EntityTypeQualifierColumn == "AttributeMatrixTemplateId" && templateIds.Contains( a.EntityTypeQualifierValue ) )
+                        .ToList()
+                        .Select( a => AttributeCache.Get( a ) );
+
+                    // Of the attributes within the person matrix templates, add those that are authorized to view
+                    var allowedMatrixAttributes = allMatrixAttributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList();
+                    allowedPersonAttributes.AddRange( allowedMatrixAttributes );
+                }
+            }
+
+            return allowedPersonAttributes;
         }
 
         /// <summary>

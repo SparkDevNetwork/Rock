@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -72,20 +73,40 @@ namespace Rock.Workflow.Action
                         }
                         else
                         {
-                            // Person is handled special since it needs the person alias id
+                            // Person + PersonFieldType is handled differently since it needs to be stored as PersonAlias.Guid
                             if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                             {
-                                var person = (Person)entity;
-
-                                var primaryAlias = new PersonAliasService( rockContext ).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
+                                var primaryAlias = GetPrimaryPersonAlias( ( Person ) entity, rockContext, errorMessages );
                                 if ( primaryAlias != null )
                                 {
                                     SetWorkflowAttributeValue( action, guid, primaryAlias.Guid.ToString() );
                                     return true;
                                 }
+                            }
+                            // If the attribute is an Entity FieldType, store the value as EntityType.Guid|Entity.Id
+                            else if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.ENTITY.AsGuid(), rockContext ).Id )
+                            {
+                                // Person + EntityFieldType is handled differently since it needs to be stored as PersonAlias's EntityType.Guid
+                                EntityTypeCache entityType = entity is Person
+                                    ? EntityTypeCache.Get( SystemGuid.EntityType.PERSON_ALIAS )
+                                    : EntityTypeCache.Get( entity.GetType(), rockContext: rockContext );
+
+                                if ( entityType == null )
+                                {
+                                    errorMessages.Add( "Unable to find the entity type. Type=" + entity.GetType().FullName );
+                                }
                                 else
                                 {
-                                    errorMessages.Add( "Person Entity: Could not determine person's primary alias. PersonId=" + person.Id );
+                                    // Person + EntityFieldType is handled differently since it needs to be stored as PersonAlias.Id
+                                    int? entityId = entity is Person
+                                        ? GetPrimaryPersonAlias( ( Person ) entity, rockContext, errorMessages )?.Id
+                                        : ( ( IEntity ) entity ).Id;
+
+                                    if ( entityId.HasValue )
+                                    {
+                                        var value = $"{entityType.Guid}|{entityId.ToStringSafe()}";
+                                        SetWorkflowAttributeValue( action, guid, value );
+                                    }
                                 }
                             }
                             else
@@ -127,5 +148,26 @@ namespace Rock.Workflow.Action
             return false;
         }
 
+        /// <summary>
+        /// Gets the primary person alias.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        private PersonAlias GetPrimaryPersonAlias( Person person, RockContext rockContext, List<string> errorMessages )
+        {
+            var personAlias = new PersonAliasService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .FirstOrDefault( a => a.AliasPersonId == person.Id );
+
+            if ( personAlias == null )
+            {
+                errorMessages.Add( "Person Entity: Could not determine person's primary alias. PersonId=" + person.Id );
+            }
+
+            return personAlias;
+        }
     }
 }

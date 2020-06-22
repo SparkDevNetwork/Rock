@@ -19,12 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -66,6 +69,12 @@ namespace RockWeb.Blocks.Steps
         key: AttributeKey.StepsPerRowMobile,
         defaultValue: AttributeDefault.StepsPerRowMobile )]
 
+    [BooleanField(
+        "Show Campus Column",
+        Description = "Should the campus should be shown on the grid and card display?",
+        DefaultBooleanValue = true,
+        Order = 5,
+        Key = AttributeKey.ShowCampusColumn )]
     #endregion Attributes
 
     public partial class PersonProgramStepList : RockBlock
@@ -96,6 +105,11 @@ namespace RockWeb.Blocks.Steps
             /// The steps per row on mobile attribute key
             /// </summary>
             public const string StepsPerRowMobile = "StepsPerRowMobile";
+
+            /// <summary>
+            /// The show campus column attribute key
+            /// </summary>
+            public const string ShowCampusColumn = "ShowCampusColumn";
         }
 
         /// <summary>
@@ -173,6 +187,15 @@ namespace RockWeb.Blocks.Steps
             gStepList.DataKeyNames = new[] { "id" };
             gStepList.GridRebind += gStepList_GridRebind;
 
+            var campusField = gStepList.ColumnsOfType<CampusField>().First();
+            if ( campusField != null )
+            {
+                var campusCount = CampusCache.All()
+                    .Where( c =>
+                        !c.IsActive.HasValue || c.IsActive.Value ).Count();
+                campusField.Visible = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && campusCount > 1;
+            }
+
             if ( !IsPostBack )
             {
                 SetProgramDetailsOnBlock();
@@ -182,6 +205,12 @@ namespace RockWeb.Blocks.Steps
                 if ( isCardViewPref.HasValue )
                 {
                     hfIsCardView.Value = isCardViewPref.ToString();
+                }
+                else
+                {
+                    // use the program's default view setting
+                    var program = GetStepProgram();
+                    hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
                 }
             }
 
@@ -213,7 +242,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Show the grid view
+        /// Show the grid view and save the user's preference.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -221,10 +250,11 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = false.ToString();
             RenderViewMode();
+            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
         }
 
         /// <summary>
-        /// Show the card view
+        /// Show the card view and save the user's preference.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -232,6 +262,7 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = true.ToString();
             RenderViewMode();
+            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
         }
 
         /// <summary>
@@ -252,8 +283,6 @@ namespace RockWeb.Blocks.Steps
 
             pnlCardView.Visible = isCardView;
             pnlGridView.Visible = !isCardView;
-
-            SetUserPreference( PreferenceKey.IsCardView, isCardView.ToString(), true );
         }
 
         /// <summary>
@@ -288,6 +317,51 @@ namespace RockWeb.Blocks.Steps
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",
                 classAttribute,
                 stepGridRow.StepStatusName.IsNullOrWhiteSpace() ? "-" : stepGridRow.StepStatusName );
+        }
+
+        protected void lSummary_DataBound( object sender, RowEventArgs e )
+        {
+            var lStepStatus = sender as Literal;
+            if(lStepStatus == null )
+            {
+                return;
+            }
+
+            var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
+            if(stepGridRowViewModel == null )
+            {
+                return;
+            }
+
+            var step = stepGridRowViewModel.Step;
+            if(step == null )
+            {
+                return;
+            }
+
+            var classAttribute = string.Empty;
+            var itemSummary = new StringBuilder();
+
+            if ( step.Attributes == null )
+            {
+                step.LoadAttributes();
+            }
+
+            var formatString = "{0}: {1}<br />";
+            var attributesToDisplay = step.Attributes.Where( a => a.Value.IsGridColumn );
+            foreach ( var attributeCache in attributesToDisplay )
+            {
+                var attribute = step.Attributes[attributeCache.Key];
+                var rawValue = step.GetAttributeValue( attributeCache.Key );
+                
+                var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
+
+                var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
+
+                itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
+            }
+        
+            lStepStatus.Text = itemSummary.ToString();
         }
 
         /// <summary>
@@ -433,12 +507,12 @@ namespace RockWeb.Blocks.Steps
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlPrereqs.Visible = !cardData.HasMetPrerequisites;
+            pnlPrereqs.Visible = UserCanEdit && !cardData.HasMetPrerequisites;
 
             // Existing step records panel
             var steps = GetPersonStepsOfType( stepTypeId );
-            var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
-            var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
+            var canEdit = cardData.StepType.AllowManualEditing && UserCanEdit;
+            var canDelete = cardData.StepType.AllowManualEditing && UserCanEdit;
 
             var data = steps.Select( s => new CardStepViewModel
             {
@@ -543,27 +617,24 @@ namespace RockWeb.Blocks.Steps
                 var programId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
                 var rockContext = GetRockContext();
                 var service = new StepProgramService( rockContext );
+                var query = service.Queryable()
+                    .Include( sp => sp.StepTypes )
+                    .AsNoTracking();
 
                 if ( programGuid.HasValue )
                 {
                     // 1.) Use the block setting
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.Guid == programGuid.Value && sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.Guid == programGuid.Value && sp.IsActive );
                 }
                 else if ( programId.HasValue )
                 {
                     // 2.) Use the page parameter
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.Id == programId.Value && sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.Id == programId.Value && sp.IsActive );
                 }
                 else
                 {
                     // 3.) Just use the first active program
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.IsActive );
                 }
             }
 
@@ -609,7 +680,7 @@ namespace RockWeb.Blocks.Steps
 
                 if ( program != null )
                 {
-                    _stepTypes = program.StepTypes.Where( st => st.IsActive ).ToList();
+                    _stepTypes = OrderStepTypes( program.StepTypes.Where( st => st.IsActive ) ).ToList();
                 }
             }
 
@@ -696,10 +767,21 @@ namespace RockWeb.Blocks.Steps
 
                 if ( person != null && program != null )
                 {
-                    _personStepsMap = program.StepTypes.Where( st => st.IsActive ).ToDictionary(
-                        st => st.Id,
-                        st => st.Steps
-                            .Where( s => s.PersonAlias.PersonId == person.Id )
+                    var rockContext = GetRockContext();
+                    var stepService = new StepService( rockContext );
+
+                    var activeStepTypeIds = program.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
+
+                    var personSteps = stepService.Queryable()
+                        .Where( s =>
+                            activeStepTypeIds.Contains( s.StepTypeId ) &&
+                            s.PersonAlias.PersonId == person.Id )
+                        .ToList();
+
+                    _personStepsMap = activeStepTypeIds.ToDictionary(
+                        stId => stId,
+                        stId => personSteps
+                            .Where( s => s.StepTypeId == stId )
                             .OrderBy( s => s.CompletedDateTime ?? s.EndDateTime ?? s.StartDateTime ?? s.CreatedDateTime ?? DateTime.MinValue )
                             .ToList() );
                 }
@@ -782,7 +864,7 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
-            if ( !stepType.AllowManualEditing && !UserCanEdit )
+            if ( !stepType.AllowManualEditing || !UserCanEdit )
             {
                 return false;
             }
@@ -942,6 +1024,10 @@ namespace RockWeb.Blocks.Steps
             var person = GetPerson();
             var orderedStepTypes = OrderStepTypes( GetStepTypes() );
             var cardsData = new List<CardViewModel>();
+            var campusCount = CampusCache.All()
+                    .Where( c =>
+                        !c.IsActive.HasValue || c.IsActive.Value ).Count();
+            var showCampus = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && campusCount > 1;
 
             foreach ( var stepType in orderedStepTypes )
             {
@@ -965,6 +1051,7 @@ namespace RockWeb.Blocks.Steps
                     { "CanAddStep", canAddStep },
                     { "LatestStep", latestStep },
                     { "LatestStepStatus", latestStepStatus },
+                    { "ShowCampus", showCampus },
                 } );
 
                 if ( isComplete )
@@ -986,7 +1073,7 @@ namespace RockWeb.Blocks.Steps
                     cardCssClasses.Add( "has-add" );
                 }
 
-                if ( !hasMetPrerequisites )
+                if ( UserCanEdit && !hasMetPrerequisites )
                 {
                     cardCssClasses.Add( "has-prerequisite" );
                 }
@@ -1073,9 +1160,12 @@ namespace RockWeb.Blocks.Steps
                 CompletedDateTime = s.CompletedDateTime,
                 StepStatusColor = s.StepStatus == null ? string.Empty : s.StepStatus.StatusColor,
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
+                CampusId = s.CampusId,
+                CampusName = s.Campus != null ? s.Campus.Name : string.Empty,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
                 StepTypeOrder = s.StepType.Order,
-                Summary = string.Empty // TODO
+                Summary = string.Empty,
+                Step = s
             } );
 
             // Sort the view models
@@ -1245,6 +1335,23 @@ namespace RockWeb.Blocks.Steps
             /// </value>
             public string Summary { get; set; }
 
+
+            /// <summary>
+            /// Gets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
+            public int? CampusId { get; set; }
+
+            /// <summary>
+            /// Gets the campus name.
+            /// </summary>
+            /// <value>
+            /// The campus name.
+            /// </value>
+            public string CampusName { get; set; }
+
             /// <summary>
             /// Gets the step type order.
             /// </summary>
@@ -1252,6 +1359,8 @@ namespace RockWeb.Blocks.Steps
             /// The step type order.
             /// </value>
             public int StepTypeOrder { get; internal set; }
+
+            public Step Step { get; set; }
         }
 
         /// <summary>

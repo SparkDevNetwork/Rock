@@ -238,6 +238,8 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
+            rangeValue = decimal.Round( rangeValue.Value, 0 );
+
             var configurationJSON = configurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON );
             List<ConditionalScaleRangeRule> conditionalScaleRangeRuleList = configurationJSON.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
 

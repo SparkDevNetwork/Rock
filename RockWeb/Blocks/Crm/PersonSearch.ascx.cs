@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append( "<div class=\"pull-left margin-l-sm\">" );
                         sbPersonDetails.Append( string.Format( "<strong>{0}</strong> ", person.FullNameReversed ) );
                         sbPersonDetails.Append( string.Format( "{0} ", Person.GetSignalMarkup( person.TopSignalColor, person.TopSignalIconCssClass ) ) );
-                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}<br></small>", delimitedCampuses ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", DefinedValueCache.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append( string.Format( " <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted ) );
 
@@ -322,11 +322,14 @@ namespace RockWeb.Blocks.Crm
                         }
                     case ( "email" ):
                         {
-
+                            var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                             var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
                             people = personService.Queryable()
-                                .Where( p => ( term != "" && p.Email == term )
-                                        || searchKeyQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == term ) );
+                                .Where( p => ( term != "" && p.Email.Contains( term ) )
+                                        || searchKeyQry.Any( a => emailSearchTypeValueId.HasValue
+                                            && a.SearchTypeValueId == emailSearchTypeValueId.Value
+                                            && a.PersonAlias.PersonId == p.Id
+                                            && a.SearchValue.Contains( term ) ) );
                             break;
                         }
                     case ( "birthdate" ):

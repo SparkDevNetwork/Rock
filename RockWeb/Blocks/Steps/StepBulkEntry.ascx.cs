@@ -255,6 +255,7 @@ namespace RockWeb.Blocks.Steps
             step.StartDateTime = startDate.Value;
             step.EndDateTime = stepType.HasEndDate ? dpEndDate.SelectedDate : null;
             step.StepStatusId = status.Id;
+            step.CampusId = cpCampus.SelectedCampusId;
 
             // Mark the completed date if the status is a completed status
             if ( !status.IsCompleteStatus )

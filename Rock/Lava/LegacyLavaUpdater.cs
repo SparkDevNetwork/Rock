@@ -212,7 +212,7 @@ namespace Rock.Lava
 
             try
             {
-                Regex regex = new Regex( @"{{{{(.*?)_unformatted(.*?)}}}}" );
+                Regex regex = new Regex( @"{{(.*?)_unformatted(.*?)}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {
@@ -249,7 +249,7 @@ namespace Rock.Lava
             
             try
             {
-                Regex regex = new Regex( @"{{{{(.*?)_url(.*?)}}}}" );
+                Regex regex = new Regex( @"{{(.*?)_url(.*?)}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {
@@ -454,9 +454,9 @@ namespace Rock.Lava
             try
             {
                 RockContext rockContext = new RockContext();
-                SystemEmailService systemEmailService = new SystemEmailService( rockContext );
+                var systemEmailService = new SystemCommunicationService( rockContext );
 
-                foreach ( SystemEmail systemEmail in systemEmailService.Queryable().ToList() )
+                foreach ( var systemEmail in systemEmailService.Queryable().ToList() )
                 {
                     // don't change if modified
                     if ( systemEmail.ModifiedDateTime != null )

@@ -518,12 +518,13 @@ namespace RockWeb.Blocks.Event
 
         public class CommitResult
         {
-            public string RegistrationInstanceId, GroupId, EventId, EventOccurrenceId, RegistrationTitle;
+            public string RegistrationInstanceId, GroupId, EventItemId, FirstEventCalendarId, EventOccurrenceId, RegistrationTitle;
             public CommitResult()
             {
                 RegistrationInstanceId = "";
                 GroupId = "";
-                EventId = "";
+                EventItemId = "";
+                FirstEventCalendarId = "";
                 EventOccurrenceId = "";
                 RegistrationTitle = "";
             }
@@ -564,22 +565,10 @@ namespace RockWeb.Blocks.Event
             var registrationTemplate = registrationTemplateService.Get( registrationInstance.RegistrationTemplateId );
             if ( registrationTemplate.SetCostOnInstance == true )
             {
-                // Set Account
                 registrationInstance.AccountId = apAccount.SelectedValueAsId();
-
-                // Set Cost
-                decimal cost = 0.0M;
-                if ( decimal.TryParse( cbCost.Text, out cost ) )
-                {
-                    registrationInstance.Cost = cost;
-                }
-
-                // Set Minimum Payment
-                decimal minimumPayment = 0.0M;
-                if ( decimal.TryParse( cbMinimumInitialPayment.Text, out minimumPayment ) )
-                {
-                    registrationInstance.MinimumInitialPayment = minimumPayment;
-                }
+                registrationInstance.Cost = cbCost.Text.AsDecimalOrNull();
+                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
+                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
             }
 
             // Save changes to database.
@@ -706,13 +695,17 @@ namespace RockWeb.Blocks.Event
                     eventItemService.Add( eventItem );
                     rockContext.SaveChanges();
 
-                    foreach ( var eventCalendarItem in eventItem.EventCalendarItems )
+                    foreach ( var eventCalendarItem in eventItem.EventCalendarItems.OrderBy( i => i.EventCalendarId ) )
                     {
                         eventCalendarItem.LoadAttributes();
                         Helper.GetEditValues( phAttributes, eventCalendarItem );
                         eventCalendarItem.SaveAttributeValues();
+                        if ( string.IsNullOrWhiteSpace( result.FirstEventCalendarId ) )
+                        {
+                            result.FirstEventCalendarId = eventCalendarItem.EventCalendarId.ToString();
+                        }
                     }
-                    result.EventId = eventItem.Id.ToString();
+                    result.EventItemId = eventItem.Id.ToString();
                 }
                 else // "Existing Event" option selected.
                 {
@@ -795,14 +788,15 @@ namespace RockWeb.Blocks.Event
                 hlGroup.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.GroupViewerPage ), qryGroup );
             }
 
-            if ( string.IsNullOrWhiteSpace( result.EventId ) )
+            if ( string.IsNullOrWhiteSpace( result.EventItemId ) )
             {
                 liEventLink.Visible = false;
             }
             else
             {
                 var qryEventDetail = new Dictionary<string, string>();
-                qryEventDetail.Add( "EventId", result.EventId );
+                qryEventDetail.Add( "EventItemId", result.EventItemId );
+                qryEventDetail.Add( "EventCalendarId", result.FirstEventCalendarId  );
                 hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
             }
 
@@ -899,7 +893,7 @@ namespace RockWeb.Blocks.Event
                     var templateGroupType = groupTypeService.Get( registrationTemplate.GroupTypeId.Value );
                     var parentGroupType = groupTypeService.Get( parentGroup.GroupTypeId );
 
-                    bool isChildPermitted = parentGroupType.ChildGroupTypes.Contains( templateGroupType );
+                    bool isChildPermitted = parentGroupType.AllowAnyChildGroupType || parentGroupType.ChildGroupTypes.Contains( templateGroupType );
                     if ( !isChildPermitted )
                     {
                         nbNotPermitted.Text = string.Format( "Groups of type \"{0}\" are not permitted under the parent \"{1}\".", templateGroupType.Name, parentGroup.Name );
@@ -936,6 +930,8 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            this.BlockUpdated += Block_BlockUpdated;
 
             // Tell the browsers to not cache. This will help prevent browser using stale wizard stuff after navigating away from this page
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
@@ -1029,7 +1025,7 @@ namespace RockWeb.Blocks.Event
                 divEvent.Visible = true;
                 divEventOccurrence.Visible = true;
 
-                ddlCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true ).ToList();
+                ddlCampus.DataSource = CampusCache.All( includeInactive: false );
                 ddlCampus.DataBind();
                 ddlCampus.Items.Insert( 0, new ListItem( All.Text, string.Empty ) );
             }
@@ -1538,6 +1534,17 @@ namespace RockWeb.Blocks.Event
 
         #region Control Event Handlers
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // reload page if block settings where changed
+            this.NavigateToCurrentPageReference();
+        }
+
         protected void ppContact_SelectPerson( object sender, EventArgs e )
         {
             int? selectedPerson = ppContact.SelectedValue;
@@ -1626,7 +1633,7 @@ namespace RockWeb.Blocks.Event
             hfPreviousName.Value = tbRegistrationName.Text;
         }
 
-        protected void cblCalendars_SelectionChanged( object sender, EventArgs e )
+        protected void cblCalendars_SelectedIndexChanged( object sender, EventArgs e )
         {
             Session["CurrentCalendars"] = cblCalendars.SelectedValuesAsInt;
             ShowItemAttributes();

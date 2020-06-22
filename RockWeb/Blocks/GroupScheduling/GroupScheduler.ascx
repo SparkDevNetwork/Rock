@@ -39,11 +39,18 @@
                         This block is not supported on mobile.
                     </div>
                 </div>
-                <div class="row row-eq-height hidden-xs">
+                <div class="row row-eq-height w-100 hidden-xs">
                     <%-- Filter Options --%>
                     <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />
-                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" LimitToSchedulingEnabledGroups="true" OnValueChanged="gpGroup_ValueChanged" />
+                        <%--
+                            2020-05-01 BJW
+                            LimitToSchedulingEnabledGroups="true" was removed from this group picker because it was causing performance issues.
+                            The performance issue was a result of querying the heirarchy for groups that have group types with scheduling enabled.
+                            This heirarchy query was timing out on some Rock instances with a large amount of groups. Talked with JME to verify
+                            this was okay to remove.
+                        --%>
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnValueChanged="gpGroup_ValueChanged" />
                         <Rock:RockDropDownList ID="ddlWeek" runat="server" Label="Week" AutoPostBack="true" OnSelectedIndexChanged="ddlWeek_SelectedIndexChanged" />
 
                         <Rock:NotificationBox ID="nbGroupWarning" runat="server" NotificationBoxType="Warning" />
@@ -120,15 +127,14 @@
                                                 </div>
                                             </div>
 
+                                            <div class="js-add-resource-picker margin-all-sm" style="display: none">
+                                                <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                            </div>
+
                                             <div class="panel-body padding-all-none">
-
-                                                <div class="js-add-resource-picker margin-all-sm" style="display: none">
-                                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
-                                                </div>
-
                                                 <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
 
-                                                <div class="viewport">
+                                                <div class="scroll-list">
                                                     <%-- loading indicator --%>
                                                     <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 

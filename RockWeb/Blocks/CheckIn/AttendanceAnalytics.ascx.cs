@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.CheckIn
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CampusCache.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
+            foreach ( var campus in CampusCache.All( includeInactiveCampuses ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
@@ -1546,6 +1546,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -1646,6 +1647,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -2264,12 +2266,14 @@ function(item) {
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
 
-                    // limit to Groups that don't have a Parent, or the ParentGroup is a different grouptype so we don't end up with infinite recursion
-                    foreach ( var group in groupType.Groups
-                        .Where( g => !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
+                    // Select only those Groups that don't have a Parent, or the ParentGroup is a different group type so we don't end up with an infinite recursion.
+                    var eligibleGroups = groupType.Groups
+                        .Where( g => ( g.ParentGroup == null ) || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
-                        .ToList() )
+                        .ToList();
+
+                    foreach ( var group in eligibleGroups )
                     {
                         if ( group.IsActive || showInactive )
                         {
@@ -2582,6 +2586,8 @@ function(item) {
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
+
+            public string CampusName { get; set; }
 
             public int? GroupId { get; set; }
 

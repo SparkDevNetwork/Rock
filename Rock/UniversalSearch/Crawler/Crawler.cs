@@ -38,7 +38,7 @@ namespace Rock.UniversalSearch.Crawler
     public class Crawler
     {
         #region Private Fields
-        private string _userAgent = "Rock Web Indexer";
+        private string _userAgent = "Rock Web Crawler";
         private List<string> _previouslyCrawledPages = new List<string>();
         private Site _site = null;
         private string _baseUrl = string.Empty;
@@ -46,6 +46,7 @@ namespace Rock.UniversalSearch.Crawler
         private string _startUrl = string.Empty;
         private CookieContainer _cookieContainer = null;
         private Queue<string> _urlQueue = new Queue<string>();
+        private HashSet<long> _pageHashes = new HashSet<long>();
 
         string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
         #endregion
@@ -83,8 +84,11 @@ namespace Rock.UniversalSearch.Crawler
         /// <returns></returns>
         public int CrawlSite( Site site, string loginId, string password )
         {
-            _site = site;
+            // Delete the indicies for the site that is being indexed.
+            IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
 
+            _site = site;
+            
             _startUrl = _site.IndexStartingLocation;
             var startingUri = new Uri( _startUrl );
 
@@ -152,7 +156,7 @@ namespace Rock.UniversalSearch.Crawler
                             htmlDoc.LoadHtml( rawPage );
 
                             // ensure the page should be indexed by looking at the robot and rock conventions
-                            HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
+                            HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robots']" );
                             if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
                             {
                                 // index the page
@@ -180,7 +184,14 @@ namespace Rock.UniversalSearch.Crawler
                                     sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
                                 }
 
-                                IndexContainer.IndexDocument( sitePage );
+                                // Get a hash of the content and check it against a list of to see if page has already been indexed, if not then index it and add it to the list.
+                                long contentHash = sitePage.Content.MakeInt64HashCode();
+
+                                if ( !_pageHashes.Contains( contentHash ) )
+                                {
+                                    IndexContainer.IndexDocument( sitePage );
+                                    _pageHashes.Add( contentHash );
+                                }
                             }
 
                             if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "nofollow" ) )
@@ -216,8 +227,9 @@ namespace Rock.UniversalSearch.Crawler
                     HtmlAttribute hrefAttribute = link.Attributes["href"];
                     string anchorLink = hrefAttribute.Value;
 
-                    // Skip links that have been flagged to not be followed.
-                    if ( link.Attributes.Contains( "rel" ) && link.Attributes["rel"].Value.Contains( "nofollow" ) )
+                    // Skip links that have been flagged to not be followed. "rocknofollow" is just for this
+                    // crawler for things like breadcrumbs and won't effect 3rd parties (e.g. google, et. al.)
+                    if ( link.Attributes.Contains( "rel" ) && ( link.Attributes["rel"].Value.Contains( "nofollow" ) || link.Attributes["rel"].Value.Contains( "rocknofollow" ) ) )
                     {
                         continue;
                     }

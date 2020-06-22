@@ -243,6 +243,34 @@ namespace Rock.Model
         }
         private ICollection<StreakAchievementAttempt> _streakAchievementAttempts;
 
+        /// <summary>
+        /// Gets or sets the prerequisites.
+        /// </summary>
+        /// <value>
+        /// The prerequisites.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Prerequisites
+        {
+            get => _prerequisites ?? ( _prerequisites = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _prerequisites = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _prerequisites;
+
+        /// <summary>
+        /// Gets or sets the dependencies.
+        /// </summary>
+        /// <value>
+        /// The dependencies.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Dependencies
+        {
+            get => _dependencies ?? ( _dependencies = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _dependencies = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _dependencies;
+
         #endregion Virtual Properties
 
         #region Entity Configuration

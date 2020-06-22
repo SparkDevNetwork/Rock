@@ -21,29 +21,38 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Registration Instance Linkage Detail" )]
     [Category( "Event" )]
-    [Description( "Template block for editing a linkage associated to an event registration instance." )]
+    [Description( "Block for editing a linkage associated to an event registration instance." )]
 
     public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Page Parameter Keys
+        /// </summary>
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The registration instance identifier
+            /// </summary>
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+        }
+
+        #endregion Keys
 
         #region Base Control Methods
 
@@ -89,7 +98,7 @@ namespace RockWeb.Blocks.Event
                 if ( linkage == null )
                 {
                     linkage = new EventItemOccurrenceGroupMap();
-                    linkage.RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
+                    linkage.RegistrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
                     service.Add( linkage );
                 }
 
@@ -106,10 +115,7 @@ namespace RockWeb.Blocks.Event
                 rockContext.SaveChanges();
             }
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
-            qryParams.Add( "Tab", "4" );
-            NavigateToParentPage( qryParams );
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -119,10 +125,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
-            qryParams.Add( "Tab", "4" );
-            NavigateToParentPage( qryParams );
+            NavigateToParentPage();
         }
 
         #endregion
@@ -298,6 +301,17 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         /// <summary>
+        /// Navigates to the parent page with necessary query params.
+        /// </summary>
+        private void NavigateToParentPage()
+        {
+            NavigateToParentPage( new Dictionary<string, string>
+            {
+                { PageParameterKey.RegistrationInstanceId, PageParameter( PageParameterKey.RegistrationInstanceId ) }
+            } );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         public void ShowDetail( int linkageId )
@@ -451,7 +465,7 @@ namespace RockWeb.Blocks.Event
         protected void gpLinkageGroup_SelectItem( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( PageParameter( "RegistrationInstanceId" ).AsInteger() );
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger() );
             var group = new GroupService( rockContext ).Get( gpLinkageGroup.SelectedValue.AsInteger() );
             bool showGroupTypeWarning = false;
             if ( registrationInstance != null && group != null )

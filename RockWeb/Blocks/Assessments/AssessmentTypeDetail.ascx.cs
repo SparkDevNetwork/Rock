@@ -496,7 +496,11 @@ namespace RockWeb.Blocks.Assessments
             // Create the read-only description text.
             var descriptionListMain = new DescriptionList();
 
-            descriptionListMain.Add( "Description", assessmentType.Description );
+            descriptionListMain.Add( string.Empty, assessmentType.Description );
+            descriptionListMain.Add( "Requires Request", assessmentType.RequiresRequest, true );
+            descriptionListMain.Add( "Minimum Days To Retake", assessmentType.MinimumDaysToRetake, true );
+            descriptionListMain.Add( "Valid Duration", assessmentType.ValidDuration, true );
+
 
             lAssessmentTypeDescription.Text = descriptionListMain.Html;
 

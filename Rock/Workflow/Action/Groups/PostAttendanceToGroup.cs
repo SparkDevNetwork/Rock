@@ -221,7 +221,12 @@ namespace Rock.Workflow.Action
                     int? personAliasId = person.PrimaryAliasId;
                     if ( personAliasId.HasValue )
                     {
-                        new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime.Date, group.Id, locationId, scheduleId, group.CampusId );
+                        /*
+                           3/31/2020 - SK 
+                           Updated code to consider time with attendance date to fix the issue raised in #4159
+                           https://github.com/SparkDevNetwork/Rock/issues/4159
+                        */
+                        new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime, group.Id, locationId, scheduleId, group.CampusId );
                         rockContext.SaveChanges();
 
                         if ( locationId.HasValue )

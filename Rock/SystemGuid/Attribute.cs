@@ -424,6 +424,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COMMUNICATION_ENTRY_DEFAULT_AS_BULK = "679E5FBB-AB03-4DE4-BB24-1C7CEFEACD3E";
 
+        /// <summary>
+        /// System Communication List/Detail Page configuration setting.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST_DETAIL_PAGE = "9880C186-F079-4113-99B6-EF53AB4FE92D";
+
         #endregion
 
         #region Communication List (group) attributes
@@ -445,7 +450,32 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
+        [RockObsolete( "1.10" )]
+        [Obsolete("This value is no longer used. The Communication Preference on the Group Member should be used.")]
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
+
+        #endregion
+
+        #region DefinedType Attributes
+
+        /// <summary>
+        /// The Template DefinedType > TemplateBlock DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_TEMPLATE_BLOCK = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D";
+
+        /// <summary>
+        /// The Template DefinedType > Icon DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_ICON = "831403EB-262E-4BC5-8B5E-F16153493BF5";
+
+        #endregion
+
+        #region Device Type Attributes
+
+        /// <summary>
+        /// The defined value attribute for storing if a device type supports cameras.
+        /// </summary>
+        public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
 
         #endregion
 

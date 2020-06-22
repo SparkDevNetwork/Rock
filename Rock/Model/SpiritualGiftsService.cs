@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -25,8 +27,6 @@ namespace Rock.Model
     /// </summary>
     public class SpiritualGiftsService
     {
-        private static readonly double minDominantGiftScore = 1.0; // 84.1%
-
         private static readonly double minSupportiveGiftScore = 0.0; // 50.0%
 
         private const string ATTRIBUTE_DOMINANT_GIFTS = "core_DominantGifts";
@@ -238,8 +238,12 @@ namespace Rock.Model
         /// <returns>returns a AssessmentResults object</returns>
         static public AssessmentResults GetResult( Dictionary<string, int> assessmentResponse )
         {
-            AssessmentResults testResults = new AssessmentResults();
-            testResults.LastSaveDate = RockDateTime.Now;
+            AssessmentResults testResults = new AssessmentResults
+            {
+                SpiritualGiftScores = new List<SpiritualGiftScore>(),
+                LastSaveDate = RockDateTime.Now
+            };
+
             var zScores = new Dictionary<Guid, double>();
 
             foreach ( var spiritualGiftDefinedValue in constructData.Keys )
@@ -256,11 +260,30 @@ namespace Rock.Model
 
                 var zScore = Math.Round( ( totalResponse - spiritualGift.Mean ) / spiritualGift.StandardDeviation, 1 );
                 zScores.AddOrReplace( spiritualGiftDefinedValue, zScore );
+
+                zScoreToPercentage.TryGetValue( zScore, out double percentage );
+
+                testResults.SpiritualGiftScores.Add( new SpiritualGiftScore
+                {
+                    DefinedValueGuid = spiritualGiftDefinedValue,
+                    SpiritualGiftName = DefinedValueCache.Get( spiritualGiftDefinedValue )?.Value,
+                    ZScore = zScore,
+                    Percentage = percentage
+                } );
             }
 
-            testResults.DominantGifts = zScores.Where( a => a.Value >= minDominantGiftScore ).OrderByDescending(a=>a.Value).Select( a => a.Key ).ToList();
-            testResults.SupportiveGifts = zScores.Where( a => a.Value < minDominantGiftScore && a.Value >= minSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
-            testResults.OtherGifts = zScores.Where( a => a.Value < minSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
+            // Sort the scores from highest to lowest
+            var orderedZScores = zScores.OrderByDescending( s => s.Value );
+
+            // The DominantGifts should be populated based on the top 5 scores
+            testResults.DominantGifts = orderedZScores.Take( 5 ).Select( s => s.Key ).ToList();
+
+            // The SupportiveGifts should be populated based on a minimum score value, after bypassing the top 5
+            testResults.SupportiveGifts = orderedZScores.Skip( 5 ).Where( s => s.Value >= minSupportiveGiftScore ).Select( s => s.Key ).ToList();
+
+            // The OtherGifts should be populated by all that remain
+            testResults.OtherGifts = orderedZScores.Skip( 5 ).Where( s => s.Value < minSupportiveGiftScore ).Select( s => s.Key ).ToList();
+
             return testResults;
         }
 
@@ -299,10 +322,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Loads and returns saved Assessment scores for the Person, along with zScores and Percentages for each Spiritual Gift.
+        /// </summary>
+        /// <param name="person">The Person to get the scores for.</param>
+        /// <param name="assessment">The Assessment to get the scores for.</param>
+        /// <returns>AssessmentResults</returns>
+        static public AssessmentResults LoadSavedAssessmentResults( Person person, Assessment assessment )
+        {
+            var savedScores = LoadSavedAssessmentResults( person );
+
+            // Deserialize the stored JSON
+            savedScores.SpiritualGiftScores = assessment?
+                .AssessmentResultData
+                .FromJsonOrNull<AssessmentResultData>()?
+                .ResultScores;
+
+            return savedScores;
+        }
+
+        /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
         public class AssessmentResults
         {
+            /// <summary>
+            /// Gets or sets the Spiritual Gift Scores.
+            /// </summary>
+            /// <value>
+            /// The Spiritual Gift Scores.
+            /// </value>
+            public List<SpiritualGiftScore> SpiritualGiftScores { get; set; }
+
             /// <summary>
             /// Gets or sets the dominant gifts.
             /// </summary>
@@ -331,6 +381,74 @@ namespace Rock.Model
             /// The last save date
             /// </summary>
             public DateTime? LastSaveDate;
+        }
+        
+        /// <summary>
+        /// The AssessmentResultData class used for serializing/deserializing to/from JSON
+        /// </summary>
+        public class AssessmentResultData
+        {
+            /// <summary>
+            /// Gets or sets the Assessment result (responses).
+            /// </summary>
+            /// <value>
+            /// The Assessment result.
+            /// </value>
+            public Dictionary<string, int> Result { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Assessment result scores.
+            /// </summary>
+            /// <value>
+            /// The Assessment result scores.
+            /// </value>
+            public List<SpiritualGiftScore> ResultScores { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time to take the Assessment.
+            /// </summary>
+            /// <value>
+            /// The time to take the Assessment.
+            /// </value>
+            public double TimeToTake { get; set; }
+        }
+
+        /// <summary>
+        /// The SpiritualGiftScore struct used to return the spiritual gift score
+        /// </summary>
+        public class SpiritualGiftScore : RockDynamic
+        {
+            /// <summary>
+            /// Gets or sets the defined value unique identifier.
+            /// </summary>
+            /// <value>
+            /// The defined value unique identifier.
+            /// </value>
+            public Guid DefinedValueGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the spiritual gift.
+            /// </summary>
+            /// <value>
+            /// The name of the spiritual gift.
+            /// </value>
+            public string SpiritualGiftName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the zScore.
+            /// </summary>
+            /// <value>
+            /// The zScore.
+            /// </value>
+            public double ZScore { get; set; }
+
+            /// <summary>
+            /// Gets or sets the percentage.
+            /// </summary>
+            /// <value>
+            /// The percentage.
+            /// </value>
+            public double Percentage { get; set; }
         }
 
         /// <summary>

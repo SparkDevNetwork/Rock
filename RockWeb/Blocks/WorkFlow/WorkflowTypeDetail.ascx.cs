@@ -795,7 +795,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             workflowActionType.WorkflowForm = new WorkflowActionForm();
                         }
 
-                        workflowActionType.WorkflowForm.NotificationSystemEmailId = editorWorkflowActionType.WorkflowForm.NotificationSystemEmailId;
+                        workflowActionType.WorkflowForm.NotificationSystemCommunicationId = editorWorkflowActionType.WorkflowForm.NotificationSystemCommunicationId;
                         workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
                         workflowActionType.WorkflowForm.AllowNotes = editorWorkflowActionType.WorkflowForm.AllowNotes;
                         workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;

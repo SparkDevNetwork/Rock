@@ -104,30 +104,30 @@ namespace RockWeb.Blocks.Security
         Category = "Pages",
         Order = 7 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Forgot Username",
         Key = AttributeKeys.ForgotUsernameTemplate,
         Description = "Forgot Username Email Template",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME,
         Category = "Email Templates",
         Order = 8 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Confirm Account",
         Key = AttributeKeys.ConfirmAccountTemplate,
         Description = "Confirm Account Email Template",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Category = "Email Templates",
         Order = 9 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Account Created",
         Key = AttributeKeys.AccountCreatedTemplate,
         Description = "Account Created Email Template",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_ACCOUNT_CREATED,
         Category = "Email Templates",
         Order = 10 )]
 

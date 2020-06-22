@@ -177,6 +177,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             InitializeChartScripts();
+            InitializeChartFilter();
 
             dvpAutocomplete.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpAutocomplete.CategoryGuids = GetAttributeValue( AttributeKey.DataViewCategories ).SplitDelimitedValues().AsGuidList();
@@ -532,7 +533,7 @@ namespace RockWeb.Blocks.Steps
             {
                 rockContext.SaveChanges();
 
-                Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepTypeId.ToString(), rockContext );
+                Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepType.Id.ToString(), rockContext );
             } );
 
             return stepType.Id;
@@ -562,26 +563,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentstepType = GetStepType();
-
-            if ( currentstepType != null )
-            {
-                ShowReadonlyDetails( currentstepType );
-            }
-            else
-            {
-                string stepTypeId = PageParameter( PageParameterKey.StepTypeId );
-                if ( !string.IsNullOrWhiteSpace( stepTypeId ) )
-                {
-                    ShowDetail( stepTypeId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
-
-            btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
@@ -927,6 +909,13 @@ namespace RockWeb.Blocks.Steps
         /// <param name="rockContext">The rock context.</param>
         private void LoadAttributeDefinitions( int targetEntityTypeId, string targetEntityParentForeignKeyName, int targetEntityParentId )
         {
+            if ( targetEntityParentId == 0 )
+            {
+                // If this is a new step type, then there are no attributes to load
+                AttributesState = new List<Attribute>();
+                return;
+            }
+
             var dataContext = this.GetDataContext();
 
             var attributeService = new AttributeService( dataContext );
@@ -1632,19 +1621,25 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // If the Step Type does not have any activity, hide the Activity Summary.
-            var dataContext = GetDataContext();
+            // Set the visibility of the Activity Summary chart.
+            bool showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
 
-            var stepService = new StepService( dataContext );
+            if ( showActivitySummary )
+            {
+                // If the Step Type does not have any activity, hide the Activity Summary.
+                var dataContext = GetDataContext();
 
-            var stepsQuery = stepService.Queryable()
-                                .Where( x => x.StepTypeId == _stepTypeId );
+                var stepService = new StepService( dataContext );
 
-            var hasStepData = stepsQuery.Any();
+                var stepsQuery = stepService.Queryable().AsNoTracking()
+                                    .Where( x => x.StepTypeId == _stepTypeId );
 
-            pnlActivitySummary.Visible = hasStepData;
+                showActivitySummary = stepsQuery.Any();
+            }
 
-            if ( !hasStepData )
+            pnlActivitySummary.Visible = showActivitySummary;
+
+            if ( !showActivitySummary )
             {
                 return;
             }
@@ -1687,10 +1682,10 @@ namespace RockWeb.Blocks.Steps
             var stepService = new StepService( dataContext );
 
             // Get the Steps associated with the current Step Type.
-            var stepsStartedQuery = stepService.Queryable()
+            var stepsStartedQuery = stepService.Queryable().AsNoTracking()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
 
-            var stepsCompletedQuery = stepService.Queryable()
+            var stepsCompletedQuery = stepService.Queryable().AsNoTracking()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
 
             var dateRange = reportPeriod.GetDateRange();

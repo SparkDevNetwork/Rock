@@ -186,7 +186,10 @@
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
     <Compile Include="CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="CodeGenerated\InteractionImport.cs" />
+    <Compile Include="CodeGenerated\InteractionImportInteraction.cs" />
     <Compile Include="CodeGenerated\InteractionSession.cs" />
+    <Compile Include="CodeGenerated\InteractionsImport.cs" />
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
@@ -239,6 +242,8 @@
     <Compile Include="CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplatePlacement.cs" />
+    <Compile Include="CodeGenerated\RelatedEntity.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />
     <Compile Include="CodeGenerated\RestAction.cs" />
@@ -266,7 +271,9 @@
     <Compile Include="CodeGenerated\StreakAchievementAttempt.cs" />
     <Compile Include="CodeGenerated\StreakType.cs" />
     <Compile Include="CodeGenerated\StreakTypeAchievementType.cs" />
+    <Compile Include="CodeGenerated\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="CodeGenerated\StreakTypeExclusion.cs" />
+    <Compile Include="CodeGenerated\SystemCommunication.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />

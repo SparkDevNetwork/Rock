@@ -16,19 +16,22 @@
 </doc>
 */
 
-ALTER FUNCTION [dbo].[ufnCrm_GetAge](@BirthDate datetime) 
+ALTER FUNCTION [dbo].[ufnCrm_GetAge](@BirthDate date) 
 
 RETURNS INT WITH SCHEMABINDING AS
 
 BEGIN
 
 	DECLARE @Age INT
+	DECLARE @CurrentDate AS DATE
+	SET @CurrentDate = GETDATE()
 
-	IF @BirthDate IS NOT NULL
+	-- Year 0001 is a special year, which denotes no year selected therefore we shouldn't calculate the age.
+	IF @BirthDate IS NOT NULL AND DATEPART( year, @BirthDate ) > 1
 	BEGIN
 
-		SET @Age = DATEPART( year, GETDATE() ) - DATEPART( year, @BirthDate )
-		IF @BirthDate > DATEADD( year, 0 - @Age, GETDATE() )
+		SET @Age = DATEPART( year, @CurrentDate ) - DATEPART( year, @BirthDate )
+		IF @BirthDate > DATEADD( year, 0 - @Age, @CurrentDate )
 		BEGIN
 			SET @Age = @Age - 1
 		END

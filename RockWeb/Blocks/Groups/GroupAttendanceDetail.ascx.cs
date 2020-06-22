@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
+    [SystemCommunicationField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemCommunication.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     [BooleanField( "Allow Sorting", "Should the block allow sorting the Member's list by First Name or Last Name?", true, "", 13 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
@@ -906,7 +906,8 @@ namespace RockWeb.Blocks.Groups
 
             lvMembers.DataBind();
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = string.Format( "Add New {0}", GetAttributeValue( "AddPersonAs" ) );
         }
 

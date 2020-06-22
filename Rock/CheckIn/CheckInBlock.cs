@@ -30,38 +30,125 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in", false, false, "", "", 0 )]
-    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "", "", 1 )]
-    [LinkedPage( "Home Page", "", false, "", "", 2 )]
-    [LinkedPage( "Previous Page", "", false, "", "", 3 )]
-    [LinkedPage( "Next Page", "", false, "", "", 4 )]
+    [WorkflowTypeField(
+        "Workflow Type",
+        Key = AttributeKey.WorkflowType,
+        Description = "The workflow type to activate for check-in",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 0 )]
+
+    [TextField(
+        "Workflow Activity",
+        Key = AttributeKey.WorkflowActivity,
+        Description = "The name of the workflow activity to run on selection.",
+        IsRequired = false,
+        Order = 1 )]
+
+    [LinkedPage(
+        "Home Page",
+        Key = AttributeKey.HomePage,
+        Description = "",
+        IsRequired = false,
+        Order = 2 )]
+
+    [LinkedPage(
+        "Previous Page",
+        Key = AttributeKey.PreviousPage,
+        IsRequired = false,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Next Page",
+        Key = AttributeKey.NextPage,
+        IsRequired = false,
+        Order = 4 )]
+
     public abstract class CheckInBlock : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string WorkflowType = "WorkflowType";
+            public const string WorkflowActivity = "WorkflowActivity";
+            public const string HomePage = "HomePage";
+            public const string PreviousPage = "PreviousPage";
+            public const string NextPage = "NextPage";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string IsActive = "IsActive";
+            public const string Override = "Override";
+            public const string Back = "back";
+        }
+
+        #endregion Page Parameter Keys
+
+        /// <summary>
+        /// Gets or sets the local device configuration.
+        /// </summary>
+        /// <value>
+        /// The local device configuration.
+        /// </value>
+        public LocalDeviceConfiguration LocalDeviceConfig { get; set; } = new LocalDeviceConfiguration();
 
         /// <summary>
         /// The current theme.
         /// </summary>
-        protected string CurrentTheme { get; set; }
+        [Obsolete( "Use LocalDeviceConfig..." )]
+        [RockObsolete( "1.10" )]
+        protected string CurrentTheme
+        {
+            get => LocalDeviceConfig.CurrentTheme;
+            set => LocalDeviceConfig.CurrentTheme = value;
+        }
 
         /// <summary>
         /// The current kiosk id
         /// </summary>
-        protected int? CurrentKioskId { get; set; }
+        [Obsolete( "Use LocalDeviceConfig..." )]
+        [RockObsolete( "1.10" )]
+        protected int? CurrentKioskId
+        {
+            get => LocalDeviceConfig.CurrentKioskId;
+            set => LocalDeviceConfig.CurrentKioskId = value;
+        }
 
         /// <summary>
         /// The current primary checkin-type id
         /// </summary>
+        [Obsolete( "Use LocalDeviceConfig..." )]
+        [RockObsolete( "1.10" )]
         protected int? CurrentCheckinTypeId
         {
-            get { return _currentCheckinTypeId; }
+            get
+            {
+                return LocalDeviceConfig.CurrentCheckinTypeId;
+            }
+
             set
             {
-                _currentCheckinTypeId = value;
+                LocalDeviceConfig.CurrentCheckinTypeId = value;
                 _currentCheckinType = null;
             }
         }
 
-        private int? _currentCheckinTypeId;
+        /// <summary>
+        /// The current group type ids (Checkin Areas)
+        /// </summary>
+        [Obsolete( "Use LocalDeviceConfig..." )]
+        [RockObsolete( "1.10" )]
+        protected List<int> CurrentGroupTypeIds
+        {
+            get => LocalDeviceConfig.CurrentGroupTypeIds;
+            set => LocalDeviceConfig.CurrentGroupTypeIds = value;
+        }
 
         /// <summary>
         /// Gets the type of the current check in.
@@ -78,15 +165,16 @@ namespace Rock.CheckIn
                     return _currentCheckinType;
                 }
 
-                if ( CurrentCheckinTypeId.HasValue )
+                if ( LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
                 {
-                    _currentCheckinType = new CheckinType( CurrentCheckinTypeId.Value );
+                    _currentCheckinType = new CheckinType( LocalDeviceConfig.CurrentCheckinTypeId.Value );
                     return _currentCheckinType;
                 }
 
                 return null;
             }
         }
+
         private CheckinType _currentCheckinType;
 
         /// <summary>
@@ -99,45 +187,60 @@ namespace Rock.CheckIn
         {
             get
             {
-                return Request["Override"] != null && Request["Override"].AsBoolean();
+                return this.PageParameter( PageParameterKey.Override )?.AsBoolean() ?? false;
             }
         }
 
         /// <summary>
-        /// The current group type ids
-        /// </summary>
-        protected List<int> CurrentGroupTypeIds;
-
-        /// <summary>
         /// The current check-in state
         /// </summary>
-        protected CheckInState CurrentCheckInState;
+        protected CheckInState CurrentCheckInState { get; set; }
 
         /// <summary>
         /// The current workflow
         /// </summary>
-        protected Rock.Model.Workflow CurrentWorkflow;
+        protected Rock.Model.Workflow CurrentWorkflow
+        {
+            get
+            {
+                return _currentWorkflow;
+            }
+
+            set
+            {
+                _currentWorkflow = value;
+            }
+        }
+
+        private Rock.Model.Workflow _currentWorkflow;
 
         /// <summary>
         /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
+        [Obsolete( "Use CheckinConfigurationHelper.CheckInCookieKey instead" )]
+        [RockObsolete( "1.10" )]
         public struct CheckInCookie
         {
+            /// <summary>
+            /// The local device configuration
+            /// </summary>
+            public static readonly string LocalDeviceConfig = CheckInCookieKey.LocalDeviceConfig;
+
             /// <summary>
             /// The name of the cookie that holds the DeviceId. Setters of this cookie should
             /// be sure to set the expiration to a time when the device is no longer valid.
             /// </summary>
-            public static readonly string DEVICEID = "Checkin.DeviceId";
+            public static readonly string DEVICEID = CheckInCookieKey.DeviceId;
 
             /// <summary>
             /// The name of the cookie that holds whether or not the device was a mobile device.
             /// </summary>
-            public static readonly string ISMOBILE = "Checkin.IsMobile";
+            public static readonly string ISMOBILE = CheckInCookieKey.IsMobile;
 
             /// <summary>
             /// The phone number used to check in could be in this cookie.
             /// </summary>
-            public static readonly string PHONENUMBER = "Checkin.PhoneNumber";
+            public static readonly string PHONENUMBER = CheckInCookieKey.PhoneNumber;
         }
 
         /// <summary>
@@ -151,15 +254,15 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( CurrentCheckInState == null || CurrentCheckInState.Kiosk == null || CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentGroupTypeIds ).Count == 0 )
+                if ( CurrentCheckInState == null || CurrentCheckInState.Kiosk == null || CurrentCheckInState.Kiosk.FilteredGroupTypes( LocalDeviceConfig.CurrentGroupTypeIds ).Count == 0 )
                 {
                     return false;
                 }
-                else if ( ! CurrentCheckInType.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentGroupTypeIds ) )
+                else if ( !CurrentCheckInType.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return false;
                 }
-                else if ( CurrentCheckInType.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( CurrentGroupTypeIds ) )
+                else if ( CurrentCheckInType.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return true;
                 }
@@ -216,7 +319,6 @@ namespace Rock.CheckIn
                     }
 
                     return person.ToString();
-
                 }
             }
 
@@ -231,7 +333,7 @@ namespace Rock.CheckIn
         /// </value>
         protected IEnumerable<Location> GetGroupTypesLocations( RockContext rockContext )
         {
-            return CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, rockContext );
+            return CurrentCheckInState.Kiosk.Locations( LocalDeviceConfig.CurrentGroupTypeIds, rockContext );
         }
 
         /// <summary>
@@ -244,8 +346,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                bool backingUp = false;
-                bool.TryParse( Request.QueryString["back"], out backingUp );
+                bool backingUp = this.PageParameter( PageParameterKey.Back ).AsBoolean();
                 return backingUp;
             }
         }
@@ -278,7 +379,7 @@ namespace Rock.CheckIn
         {
             errorMessages = new List<string>();
 
-            Guid? guid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
+            Guid? guid = GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull();
             if ( guid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -326,62 +427,6 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the current state of the kiosk and workflow
-        /// </summary>
-        protected void SaveState()
-        {
-            if ( !string.IsNullOrWhiteSpace( CurrentTheme ) )
-            {
-                Session["CheckInTheme"] = CurrentTheme;
-            }
-
-            if ( CurrentKioskId.HasValue )
-            {
-                Session["CheckInKioskId"] = CurrentKioskId.Value;
-            }
-            else
-            {
-                Session.Remove( "CheckInKioskId" );
-            }
-
-            if ( CurrentCheckinTypeId.HasValue )
-            {
-                Session["CheckinTypeId"] = CurrentCheckinTypeId.Value;
-            }
-            else
-            {
-                Session.Remove( "CheckinTypeId" );
-            }
-
-            if ( CurrentGroupTypeIds != null )
-            {
-                Session["CheckInGroupTypeIds"] = CurrentGroupTypeIds;
-            }
-            else
-            {
-                Session.Remove( "CheckInGroupTypeIds" );
-            }
-
-            if ( CurrentCheckInState != null )
-            {
-                Session["CheckInState"] = CurrentCheckInState;
-            }
-            else
-            {
-                Session.Remove( "CheckInState" );
-            }
-
-            if ( CurrentWorkflow != null )
-            {
-                Session["CheckInWorkflow"] = CurrentWorkflow;
-            }
-            else
-            {
-                Session.Remove( "CheckInWorkflow" );
-            }
-        }
-
-        /// <summary>
         /// Processes the selection, save state and navigates to the next page if no errors
         /// are encountered during processing the activity.
         /// </summary>
@@ -403,7 +448,7 @@ namespace Rock.CheckIn
         {
             var errors = new List<string>();
 
-            string workflowActivity = GetAttributeValue( "WorkflowActivity" );
+            string workflowActivity = GetAttributeValue( AttributeKey.WorkflowActivity );
             if ( string.IsNullOrEmpty( workflowActivity ) || ProcessActivity( workflowActivity, out errors ) )
             {
                 SaveState();
@@ -446,7 +491,7 @@ namespace Rock.CheckIn
         {
             var errors = new List<string>();
 
-            string workflowActivity = GetAttributeValue( "WorkflowActivity" );
+            string workflowActivity = GetAttributeValue( AttributeKey.WorkflowActivity );
             if ( string.IsNullOrEmpty( workflowActivity ) || ProcessActivity( workflowActivity, out errors ) )
             {
                 if ( doNotProceedCondition() )
@@ -500,7 +545,7 @@ namespace Rock.CheckIn
         /// </summary>
         protected virtual void NavigateToHomePage()
         {
-            NavigateToLinkedPage( "HomePage" );
+            NavigateToLinkedPage( AttributeKey.HomePage );
         }
 
         /// <summary>
@@ -540,15 +585,15 @@ namespace Rock.CheckIn
 
             if ( validateSelectionRequired )
             {
-                var nextBlock = GetCheckInBlock( "NextPage" );
+                var nextBlock = GetCheckInBlock( AttributeKey.NextPage );
                 if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
                 {
-                    NavigateToLinkedPage( "NextPage", queryParams );
+                    NavigateToLinkedPage( AttributeKey.NextPage, queryParams );
                 }
             }
             else
             {
-                NavigateToLinkedPage( "NextPage", queryParams );
+                NavigateToLinkedPage( AttributeKey.NextPage, queryParams );
             }
         }
 
@@ -592,15 +637,15 @@ namespace Rock.CheckIn
         {
             if ( validateSelectionRequired )
             {
-                var nextBlock = GetCheckInBlock( "PreviousPage" );
+                var nextBlock = GetCheckInBlock( AttributeKey.PreviousPage );
                 if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
                 {
-                    NavigateToLinkedPage( "PreviousPage", queryParams );
+                    NavigateToLinkedPage( AttributeKey.PreviousPage, queryParams );
                 }
             }
             else
             {
-                NavigateToLinkedPage( "PreviousPage", queryParams );
+                NavigateToLinkedPage( AttributeKey.PreviousPage, queryParams );
             }
         }
 
@@ -627,8 +672,9 @@ namespace Rock.CheckIn
                         pageReference.Parameters = new Dictionary<string, string>();
                     }
 
-                    pageReference.Parameters.AddOrIgnore( "IsActive", "True" );
+                    pageReference.Parameters.AddOrIgnore( PageParameterKey.IsActive, "True" );
                 }
+
                 return pageReference.BuildUrl();
             }
             else
@@ -649,8 +695,10 @@ namespace Rock.CheckIn
                 {
                     queryParams = new Dictionary<string, string>();
                 }
-                queryParams.AddOrReplace( "Override", "True" );
+
+                queryParams.AddOrReplace( PageParameterKey.Override, "True" );
             }
+
             return queryParams;
         }
 
@@ -701,46 +749,67 @@ namespace Rock.CheckIn
             return null;
         }
 
-        /// <summary>
-        /// Gets the state.
-        /// </summary>
-        private void GetState()
+        private static class SessionKey
         {
-            if ( Session["CurrentTheme"] != null )
+            public const string CheckInState = "CheckInState";
+            public const string CheckInWorkflow = "CheckInWorkflow";
+        }
+
+        /// <summary>
+        /// Saves the current state of the kiosk and workflow
+        /// </summary>
+        protected void SaveState()
+        {
+            var localDeviceConfigCookie = this.Page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
+            if ( localDeviceConfigCookie == null )
             {
-                CurrentTheme = Session["CurrentTheme"].ToString();
+                localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
             }
 
-            if ( Session["CheckInKioskId"] != null )
-            {
-                CurrentKioskId = (int)Session["CheckInKioskId"];
-            }
+            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            localDeviceConfigCookie.Value = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
 
-            if ( Session["CheckinTypeId"] != null )
-            {
-                CurrentCheckinTypeId = (int)Session["CheckinTypeId"];
-            }
+            this.Page.Response.Cookies.Set( localDeviceConfigCookie );
 
-            if ( Session["CheckInGroupTypeIds"] != null )
-            {
-                CurrentGroupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
-            }
+            Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 
-            if ( Session["CheckInState"] != null )
+            if ( CurrentCheckInState != null )
             {
-                CurrentCheckInState = Session["CheckInState"] as CheckInState;
+                Session[SessionKey.CheckInState] = CurrentCheckInState;
             }
-
-            if ( Session["CheckInWorkflow"] != null )
+            else
             {
-                CurrentWorkflow = Session["CheckInWorkflow"] as Rock.Model.Workflow;
-            }
-
-            if ( CurrentCheckInState == null && CurrentKioskId.HasValue )
-            {
-                CurrentCheckInState = new CheckInState( CurrentKioskId.Value, CurrentCheckinTypeId, CurrentGroupTypeIds );
+                Session.Remove( SessionKey.CheckInState );
             }
         }
 
+        /// <summary>
+        /// Populates State variables that are stored in Cookies, Session, ViewState
+        /// </summary>
+        private void GetState()
+        {
+            var localDeviceConfigCookie = this.Page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
+            this.LocalDeviceConfig = localDeviceConfigCookie?.Value?.FromJsonOrNull<LocalDeviceConfiguration>();
+
+            if ( this.LocalDeviceConfig == null )
+            {
+                this.LocalDeviceConfig = new LocalDeviceConfiguration();
+            }
+
+            if ( Session[SessionKey.CheckInWorkflow] != null )
+            {
+                CurrentWorkflow = Session[SessionKey.CheckInWorkflow] as Rock.Model.Workflow;
+            }
+
+            if ( Session[SessionKey.CheckInState] != null )
+            {
+                CurrentCheckInState = Session[SessionKey.CheckInState] as CheckInState;
+            }
+
+            if ( CurrentCheckInState == null && this.LocalDeviceConfig.CurrentKioskId.HasValue )
+            {
+                CurrentCheckInState = new CheckInState( this.LocalDeviceConfig.CurrentKioskId.Value, this.LocalDeviceConfig.CurrentCheckinTypeId, this.LocalDeviceConfig.CurrentGroupTypeIds );
+            }
+        }
     }
 }

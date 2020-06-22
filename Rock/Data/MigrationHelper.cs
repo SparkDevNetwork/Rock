@@ -1172,6 +1172,420 @@ WHERE [Guid] = '{pageGuid}';";
 
         #endregion
 
+        #region Block Template Methods
+
+        /// <summary>
+        /// Adds or Updates a 'Template Block' DefinedValue.
+        /// </summary>
+        /// <param name="guid">The well-known Guid for this Template Block (the DefinedValue to be added or updated).</param>
+        /// <param name="name">The name for this Template Block (i.e. 'Mobile Group Member List')</param>
+        /// <param name="description">The description for this Template Block</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="guid"/> is null or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null or white space.</exception>
+        public void AddOrUpdateTemplateBlock( string guid, string name, string description = null )
+        {
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( name ) )
+            {
+                throw new ArgumentNullException( nameof( name ) );
+            }
+
+            UpdateDefinedValue( SystemGuid.DefinedType.TEMPLATE_BLOCK, name, description ?? string.Empty, guid, true );
+        }
+
+        /// <summary>
+        /// Deletes a 'Template Block' DefinedValue.
+        /// </summary>
+        /// <param name="guid">The well-known Guid for this Template Block (the DefinedValue to be deleted).</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="guid"/> is null or white space.</exception>
+        public void DeleteTemplateBlock( string guid )
+        {
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            DeleteDefinedValue( guid );
+        }
+
+        /// <summary>
+        /// Adds or Updates a Template Block 'Template' DefinedValue, as well as its associated AttributeValue and BinaryFile records.
+        /// </summary>
+        /// <param name="guid">The well-known Guid for this Template (the DefinedValue to be added or updated).</param>
+        /// <param name="templateBlockGuid">The well-known Guid for this Template's corresponding Template Block (the 'Template Block' DefinedValue that this Template relates to).</param>
+        /// <param name="name">The name for this Template (i.e. 'Default', 'Concise').</param>
+        /// <param name="xamlTemplate">The XAML markup for this Template.</param>
+        /// <param name="base64IconData">
+        /// The data portion (the portion after the comma) of a BASE64 encoded icon image to use for this Template.
+        /// <para>Important: Do not provide the scheme or media type here, or the image will not be saved to the database.</para>
+        /// </param>
+        /// <param name="iconName">The name to use for this Template's icon file when saved to storage.</param>
+        /// <param name="iconMimeType">The MIME Type of this Template's icon (i.e. 'image/png', 'image/jpeg', Etc.).</param>
+        /// <param name="iconWidth">The width (in pixels) this Template's icon should be in the UI.</param>
+        /// <param name="iconHeight">The height (in pixels) this Template's icon should be in the UI.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="guid"/> is null or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="templateBlockGuid"/> is null or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="xamlTemplate"/> is null or white space.</exception>
+        /// <exception cref="ArgumentException">Throw when <paramref name="base64IconData"/> is defined, and either <paramref name="iconName"/> or <paramref name="iconMimeType"/> are null or white space.</exception>
+        public void AddOrUpdateTemplateBlockTemplate( string guid, string templateBlockGuid, string name, string xamlTemplate, string base64IconData = null, string iconName = null, string iconMimeType = null, int? iconWidth = null, int? iconHeight = null )
+        {
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( templateBlockGuid ) )
+            {
+                throw new ArgumentNullException( nameof( templateBlockGuid ) );
+            }
+
+            var formattedName = name?.Replace( "'", "''" ) ?? throw new ArgumentNullException( nameof( name ) );
+            var formattedXamlTemplate = xamlTemplate?.Replace( "'", "''" ) ?? throw new ArgumentNullException( nameof( xamlTemplate ) );
+            var formattedBase64Icon = base64IconData?.Replace( "'", "''" ); // there shouldn't be any single quotes here, but might as well check, so as not to prevent the migration helper from running
+            var formattedIconName = iconName?.Replace( "'", "''" );
+            var formattedIconMimeType = iconMimeType?.Replace( "'", "''" );
+
+            if ( !string.IsNullOrWhiteSpace( base64IconData ) && ( string.IsNullOrWhiteSpace( iconName ) || string.IsNullOrWhiteSpace( iconMimeType ) ) )
+            {
+                throw new ArgumentException( $"When providing a {nameof( base64IconData )} argument value, the {nameof( iconName )} and {nameof( iconMimeType )} arguments must also be defined." );
+            }
+
+            Migration.Sql( $@"-- Find the 'Template' DefinedType ID, as well as the associated, required IDs using well-known Guids
+DECLARE @TemplateDefinedTypeId [int] = (SELECT [Id] FROM [DefinedType] WHERE ([Guid] = '{SystemGuid.DefinedType.TEMPLATE}'))
+    , @TemplateBlockAttributeId [int] = (SELECT [Id] FROM [Attribute] wHERE ([Guid] = '{SystemGuid.Attribute.DEFINED_TYPE_TEMPLATE_TEMPLATE_BLOCK}'))
+    , @IconAttributeId [int] = (SELECT [Id] FROM [Attribute] WHERE ([Guid] = '{SystemGuid.Attribute.DEFINED_TYPE_TEMPLATE_ICON}'))
+    , @DefaultBinaryFileTypeId [int] = (SELECT [Id] FROM [BinaryFileType] WHERE ([Guid] = '{SystemGuid.BinaryFiletype.DEFAULT}'))
+    , @DatabaseStorageEntityTypeId [int] = (SELECT [Id] FROM [EntityType] WHERE ([Guid] = '{SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE}'))
+    , @Now [datetime] = (SELECT GETDATE())
+    , @DefinedValueGuid [nvarchar] (50) = '{guid}'
+    , @DefinedValueName [nvarchar] (250) = '{formattedName}'
+    , @DefinedValueDescription [nvarchar] (max) = '{formattedXamlTemplate}'
+    , @TemplateBlockGuid [nvarchar] (50) = '{templateBlockGuid}'
+    , @Base64IconData [nvarchar] (max) = '{formattedBase64Icon}'
+    , @BinaryFileName [nvarchar] (255) = '{formattedIconName}'
+    , @BinaryFileMimeType [nvarchar] (255) = '{formattedIconMimeType}'
+    , @BinaryFileWidth [int] = {(iconWidth.HasValue ? iconWidth.Value.ToString() : "NULL")}
+    , @BinaryFileHeight [int] = {(iconHeight.HasValue ? iconHeight.Value.ToString() : "NULL")};
+
+DECLARE @TemplateBlockDefinedValueId [int] = (SELECT [Id] FROM [DefinedValue] WHERE ([Guid] = @TemplateBlockGuid));
+
+IF (@TemplateDefinedTypeId IS NOT NULL AND
+    @TemplateBlockDefinedValueId IS NOT NULL AND
+    @TemplateBlockAttributeId IS NOT NULL AND
+    @IconAttributeId IS NOT NULL AND
+    @DefaultBinaryFileTypeId IS NOT NULL AND
+    @DatabaseStorageEntityTypeId IS NOT NULL)
+BEGIN
+    -------------------------------------------------------------------
+    -- Manage the Template Block 'Template' DefinedValue record itself
+    -------------------------------------------------------------------
+
+    -- Check to see if this DefinedValue already exists
+    DECLARE @TemplateDefinedValueId [int] = (SELECT [Id] FROM [DefinedValue] WHERE ([Guid] = @DefinedValueGuid));
+
+    IF (@TemplateDefinedValueId IS NOT NULL)
+        -- Update the existing DefinedValue record
+        UPDATE [DefinedValue]
+        SET [Value] = @DefinedValueName
+            , [Description] = @DefinedValueDescription
+            , [ModifiedDateTime] = @Now
+        WHERE ([Id] = @TemplateDefinedValueId);
+    ELSE
+    BEGIN
+        DECLARE @Order [int] = (SELECT ISNULL(MAX([Order]) + 1, 0) FROM [DefinedValue] WHERE ([DefinedTypeId] = @TemplateDefinedTypeId));
+
+        -- Insert a new DefinedValue record
+        INSERT INTO [DefinedValue]
+        (
+            [IsSystem]
+            , [DefinedTypeId]
+            , [Order]
+            , [Value]
+            , [Description]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+        )
+        VALUES
+        (
+            1
+            , @TemplateDefinedTypeId
+            , @Order
+            , @DefinedValueName
+            , @DefinedValueDescription
+            , @DefinedValueGuid
+            , @Now
+            , @Now
+        );
+
+        -- Take note of the newly-added DefinedValue ID
+        SET @TemplateDefinedValueId = (SELECT SCOPE_IDENTITY());
+    END
+
+    ----------------------------------------------------------------------------------------------
+    -- Manage the 'Template Block' AttributeValue for this Template Block 'Template' DefinedValue
+    ----------------------------------------------------------------------------------------------
+
+    -- Check to see if this AttributeValue already exists
+    DECLARE @TemplateBlockAttributeValueId [int] = (SELECT [Id] FROM [AttributeValue] WHERE ([AttributeId] = @TemplateBlockAttributeId AND [EntityId] = @TemplateDefinedValueId));
+
+    IF (@TemplateBlockAttributeValueId IS NOT NULL)
+        -- Update the existing AttributeValue record
+        UPDATE [AttributeValue]
+        SET [Value] = @TemplateBlockGuid
+            , [ModifiedDateTime] = @Now
+        WHERE ([Id] = @TemplateBlockAttributeValueId);
+    ELSE
+        -- Insert a new AttributeValue record
+        INSERT INTO [AttributeValue]
+        (
+            [IsSystem]
+            , [AttributeId]
+            , [EntityId]
+            , [Value]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+        )
+        VALUES
+        (
+            1
+            , @TemplateBlockAttributeId
+            , @TemplateDefinedValueId
+            , @TemplateBlockGuid
+            , NEWID()
+            , @Now
+            , @Now
+        );
+
+    -----------------------------------------------------------------------------
+    -- Manage the 'Icon' records for this Template Block 'Template' DefinedValue
+    -----------------------------------------------------------------------------
+
+    DECLARE @IconAttributeValueId [int] = (SELECT [Id] FROM [AttributeValue] WHERE ([AttributeId] = @IconAttributeId AND [EntityId] = @TemplateDefinedValueId))
+        , @BinaryIcon [varbinary] (max)
+        , @BinaryFileId [int]
+        , @AddNewBinaryFile [bit] = 0
+        , @BinaryFileDataId [int]
+        , @AddNewBinaryFileData [bit] = 0;
+
+    -- Attempt to convert the supplied Icon data to binary
+    IF (LEN(@Base64IconData) > 0)
+        SET @BinaryIcon = (SELECT CAST(N'' as xml).value('xs:base64Binary(sql:variable(""@Base64IconData""))', 'varbinary(max)'));
+
+    IF (@IconAttributeValueId IS NOT NULL)
+    BEGIN
+        -- Update (or delete) the existing AttributeValue, BinaryFile and BinaryFileData records
+        SET @BinaryFileId = (SELECT [Id]
+                             FROM [BinaryFile]
+                             WHERE ([Guid] = (SELECT [Value]
+                                              FROM [AttributeValue]
+                                              WHERE ([Id] = @IconAttributeValueId))));
+
+        -- The [BinaryFileData].[Id] should be the same as the [BinaryFile].[Id], but we still need to check if the BinaryFileData record exists
+        IF (@BinaryFileId IS NOT NULL)
+            SET @BinaryFileDataId = (SELECT [Id] FROM [BinaryFileData] WHERE ([Id] = @BinaryFileId));
+
+        IF (@BinaryIcon IS NULL)
+        BEGIN
+            -- If Icon records exist and the caller did not provide a valid Icon, delete the existing records
+            IF (@BinaryFileDataId IS NOT NULL)
+                DELETE FROM [BinaryFileData] WHERE ([Id] = @BinaryFileDataId);
+
+            IF (@BinaryFileId IS NOT NULL)
+                DELETE FROM [BinaryFile] WHERE ([Id] = @BinaryFileId);
+
+            DELETE FROM [AttributeValue] WHERE [Id] = @IconAttributeValueId;
+        END
+        ELSE
+        BEGIN
+            -- The caller provided a valid Icon; update the existing records
+            -- Also, ensure the BinaryFile record is still using the correct BinaryFileType and StorageEntityType values
+            -- If either of the records are not found, set a flag to add them below
+            IF (@BinaryFileId IS NOT NULL)
+                UPDATE [BinaryFile]
+                SET [BinaryFileTypeId] = @DefaultBinaryFileTypeId
+                    , [FileName] = @BinaryFileName
+                    , [MimeType] = @BinaryFileMimeType
+                    , [StorageEntityTypeId] = @DatabaseStorageEntityTypeId
+                    , [ModifiedDateTime] = @Now
+                    , [Width] = @BinaryFileWidth
+                    , [Height] = @BinaryFileHeight
+                WHERE ([Id] = @BinaryFileId);
+            ELSE
+            BEGIN
+                SET @AddNewBinaryFile = 1;
+                SET @AddNewBinaryFileData = 1;
+            END
+
+            IF (@AddNewBinaryFileData = 0 AND @BinaryFileDataId IS NOT NULL)
+                UPDATE [BinaryFileData]
+                SET [Content] = @BinaryIcon
+                    , [ModifiedDateTime] = @Now
+                WHERE ([Id] = @BinaryFileDataId);
+            ELSE
+                SET @AddNewBinaryFileData = 1;
+        END
+    END
+    ELSE
+    BEGIN
+        IF (@BinaryIcon IS NOT NULL)
+        BEGIN
+            -- Set flags to add new BinaryFile and BinaryFileData records below
+            -- After these are added, we'll add a new AttributeValue record
+            SET @AddNewBinaryFile = 1;
+            SET @AddNewBinaryFileData = 1;
+        END
+    END
+
+    IF (@AddNewBinaryFile = 1)
+    BEGIN
+        -- Add a new BinaryFile record
+        DECLARE @BinaryFileGuid [uniqueidentifier] = NEWID();
+
+        INSERT INTO [BinaryFile]
+        (
+            [IsTemporary]
+            , [IsSystem]
+            , [BinaryFileTypeId]
+            , [FileName]
+            , [MimeType]
+            , [StorageEntityTypeId]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+            , [ContentLastModified]
+            , [StorageEntitySettings]
+            , [Path]
+            , [Width]
+            , [Height]
+        )
+        VALUES
+        (
+            0
+            , 1
+            , @DefaultBinaryFileTypeId
+            , @BinaryFileName
+            , @BinaryFileMimeType
+            , @DatabaseStorageEntityTypeId
+            , @BinaryFileGuid
+            , @Now
+            , @Now
+            , @Now
+            , '{{}}'
+            , '~/GetImage.ashx?guid=' + (SELECT CONVERT([nvarchar] (50), @BinaryFileGuid))
+            , @BinaryFileWidth
+            , @BinaryFileHeight
+        );
+
+        -- Take note of the newly-added BinaryFile ID
+        SET @BinaryFileId = (SELECT SCOPE_IDENTITY());
+    END
+
+    
+    IF (@AddNewBinaryFileData = 1 AND @BinaryFileId IS NOT NULL)
+    BEGIN
+        -- Add a new BinaryFileData record whose ID matches the BinaryFile record
+        INSERT INTO [BinaryFileData]
+        (
+            [Id]
+            , [Content]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+        )
+        VALUES
+        (
+            @BinaryFileId
+            , @BinaryIcon
+            , NEWID()
+            , @Now
+            , @Now
+        );
+    END
+
+    -- Finally, add the 'Icon' AttributeValue now that we have added the BinaryFile/Data records
+    IF (@IconAttributeValueId IS NULL AND @BinaryFileId IS NOT NULL)
+        INSERT INTO [AttributeValue]
+        (
+            [IsSystem]
+            , [AttributeId]
+            , [EntityId]
+            , [Value]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+        )
+        VALUES
+        (
+            1
+            , @IconAttributeId
+            , @TemplateDefinedValueId
+            , CONVERT([nvarchar] (50), (SELECT [Guid] FROM [BinaryFile] WHERE ([Id] = @BinaryFileId)))
+            , NEWID()
+            , @Now
+            , @Now
+        );
+END" );
+        }
+
+        /// <summary>
+        /// Deletes a Template Block 'Template' DefinedValue, as well as its associated AttributeValues and BinaryFile records.
+        /// </summary>
+        /// <param name="guid">The well-known Guid for this Template (the DefinedValue to be deleted).</param>
+        public void DeleteTemplateBlockTemplate( string guid )
+        {
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            Migration.Sql( $@"DECLARE @TemplateDefinedValueId [int] = (SELECT [Id] FROM [DefinedValue] WHERE ([Guid] = '{guid}'))
+    , @TemplateBlockAttributeId [int] = (SELECT [Id] FROM [Attribute] WHERE ([Guid] = '{SystemGuid.Attribute.DEFINED_TYPE_TEMPLATE_TEMPLATE_BLOCK}'))
+    , @IconAttributeId [int] = (SELECT [Id] FROM [Attribute] WHERE ([Guid] = '{SystemGuid.Attribute.DEFINED_TYPE_TEMPLATE_ICON}'));
+
+IF (@TemplateDefinedValueId IS NOT NULL)
+BEGIN
+    -- Delete the 'Template Block' AttributeValue record
+    IF (@TemplateBlockAttributeId IS NOT NULL)
+        DELETE FROM [AttributeValue] WHERE ([AttributeId] = @TemplateBlockAttributeId AND [EntityId] = @TemplateDefinedValueId);
+
+    IF (@IconAttributeId IS NOT NULL)
+    BEGIN
+        DECLARE @IconAttributeValueId [int] = (SELECT [Id] FROM [AttributeValue] WHERE ([AttributeId] = @IconAttributeId AND [EntityId] = @TemplateDefinedValueId));
+
+        IF (@IconAttributeValueId IS NOT NULL)
+        BEGIN
+            -- Delete any BinaryFile/Data records tied to the AttributeValue
+            DECLARE @BinaryFileId [int] = (SELECT [Id]
+                                           FROM [BinaryFile]
+                                           WHERE ([Guid] = (SELECT [Value]
+                                                            FROM [AttributeValue]
+                                                            WHERE ([Id] = @IconAttributeValueId))));
+
+            IF (@BinaryFileId IS NOT NULL)
+            BEGIN
+                DELETE FROM [BinaryFileData] WHERE ([Id] = @BinaryFileId);
+                DELETE FROM [BinaryFile] WHERE ([Id] = @BinaryFileId);
+            END
+
+            -- Delete the 'Icon' AttributeValue record
+            DELETE FROM [AttributeValue] WHERE ([Id] = @IconAttributeValueId);
+        END
+    END
+
+    -- Delete the Template DefinedValue record
+    DELETE FROM [DefinedValue] WHERE ([Id] = @TemplateDefinedValueId);
+END" );
+        }
+
+        #endregion
+
         #region Category Methods
 
         /// <summary>
@@ -5446,6 +5860,7 @@ END
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         /// <param name="guid">The unique identifier.</param>
+        [RockObsolete( "1.10.2" )]
         public void UpdateSystemEmail( string category, string title, string from, string fromName, string to,
             string cc, string bcc, string subject, string body, string guid )
         {
@@ -5508,9 +5923,123 @@ END
         /// Deletes the SystemEmail.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        [RockObsolete( "1.10.2" )]
         public void DeleteSystemEmail( string guid )
         {
             DeleteByGuid( guid, "SystemEmail" );
+        }
+
+        /// <summary>
+        /// Updates or Inserts the SystemCommunication.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="to">To.</param>
+        /// <param name="cc">The cc.</param>
+        /// <param name="bcc">The BCC.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isActive">The IsActive value (default true).</param>
+        /// <param name="smsMessage">The SMS Message (default blank).</param>
+        /// <param name="smsFromDefinedValueId">The SMSFromDefinedValueId value (default null).</param>
+        /// <param name="pushTitle">The Push Title (default blank).</param>
+        /// <param name="pushMessage">The Push Message (default blank).</param>
+        /// <param name="pushSound">The Push Sound (default blank).</param>
+        public void UpdateSystemCommunication( string category, string title, string from, string fromName, string to,
+            string cc, string bcc, string subject, string body, string guid, bool isActive = true, string smsMessage = "",
+            int? smsFromDefinedValueId = null, string pushTitle = "", string pushMessage = "", string pushSound = "" )
+        {
+            string isActiveText = "0";
+            if ( isActive )
+            {
+                isActiveText = "1";
+            }
+
+            string smsFromDefinedValueIdText = "NULL";
+            if ( smsFromDefinedValueId.HasValue )
+            {
+                smsFromDefinedValueIdText = smsFromDefinedValueId.Value.ToString();
+            }
+
+            Migration.Sql( string.Format(@"
+
+                DECLARE @SystemCommunicationEntity int = (
+                    SELECT TOP 1 [Id]
+                    FROM [EntityType]
+                    WHERE [Name] = 'Rock.Model.SystemCommunication' )
+
+                DECLARE @CategoryId int = (
+                    SELECT TOP 1 [Id] FROM [Category]
+                    WHERE [EntityTypeId] = @SystemCommunicationEntity
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @SystemCommunicationEntity IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @SystemCommunicationEntity,'{0}', 0, NEWID() )
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [SystemCommunication] WHERE [guid] = '{9}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [SystemCommunication] (
+                        [IsSystem],[CategoryId],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid],
+                        [IsActive], [SMSMessage], [SMSFromDefinedValueId], [PushTitle], [PushMessage], [PushSound])
+                    VALUES(
+                        1, @CategoryId,'{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',{10},'{11}',{12},'{13}','{14}','{15}')
+                    END
+                ELSE
+                BEGIN
+                    UPDATE [SystemCommunication] SET
+                        [CategoryId] = @CategoryId,
+                        [Title] = '{1}',
+                        [From] = '{2}',
+                        [FromName] = '{3}',
+                        [To] = '{4}',
+                        [Cc] = '{5}',
+                        [Bcc] = '{6}',
+                        [Subject] = '{7}',
+                        [Body] = '{8}',
+                        [IsActive] = {10},
+                        [SMSMessage] = '{11}',
+                        [SMSFromDefinedValueId] = {12},
+                        [PushTitle] = '{13}',
+                        [PushMessage] = '{14}',
+                        [PushSound] = '{15}'
+                    WHERE [Guid] = '{9}'
+                END
+",
+                    category.Replace( "'", "''" ),
+                    title.Replace( "'", "''" ),
+                    from.Replace( "'", "''" ),
+                    fromName.Replace( "'", "''" ),
+                    to.Replace( "'", "''" ),
+                    cc.Replace( "'", "''" ),
+                    bcc.Replace( "'", "''" ),
+                    subject.Replace( "'", "''" ),
+                    body.Replace( "'", "''" ),
+                    guid,
+                    isActiveText,
+                    smsMessage.Replace( "'", "''" ),
+                    smsFromDefinedValueIdText,
+                    pushTitle.Replace( "'", "''" ),
+                    pushMessage.Replace( "'", "''" ),
+                    pushSound.Replace( "'", "''" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Deletes the SystemCommunication.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSystemCommunication( string guid )
+        {
+            DeleteByGuid( guid, "SystemCommunication");
         }
 
         #endregion

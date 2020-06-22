@@ -22,6 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -336,6 +337,7 @@ namespace RockWeb.Blocks.Streaks
         {
             nbMessage.Text = string.Empty;
             var streakType = GetStreakType();
+            var streakTypeCache = GetStreakTypeCache();
 
             if ( streakType == null )
             {
@@ -352,24 +354,18 @@ namespace RockWeb.Blocks.Streaks
             lTitle.Text = GetTargetMapTitle();
             var map = GetTargetMap();
             var errorMessage = string.Empty;
+            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
 
-            var isDaily = streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
             var dateRange = GetDateRange();
-            var startDate = dateRange.Start.Value;
-            var endDate = dateRange.End.Value;
-
-            if ( !isDaily )
-            {
-                startDate = startDate.SundayDate();
-                endDate = endDate.SundayDate();
-            }
+            var startDate = StreakTypeService.AlignDate( dateRange.Start.Value, streakTypeCache );
+            var endDate = StreakTypeService.AlignDate( dateRange.End.Value, streakTypeCache );
 
             cblCheckboxes.Label = isDaily ? "Days" : "Weeks";
             cblCheckboxes.Items.Clear();
 
             var minDate = GetMinDate();
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Today.SundayDate();
-            var checkboxCount = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakType.OccurrenceFrequency, true );
+            var maxDate = StreakTypeService.AlignDate( RockDateTime.Today, streakTypeCache );
+            var checkboxCount = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, true );
 
             for ( var i = 0; i < checkboxCount; i++ )
             {
@@ -378,7 +374,7 @@ namespace RockWeb.Blocks.Streaks
                 cblCheckboxes.Items.Add( new ListItem
                 {
                     Enabled = representedDate >= minDate && representedDate <= maxDate,
-                    Selected = StreakTypeService.IsBitSet( map, streakType.StartDate, representedDate, streakType.OccurrenceFrequency, out errorMessage ),
+                    Selected = StreakTypeService.IsBitSet( streakTypeCache, map, representedDate, out errorMessage ),
                     Text = GetLabel( isDaily, representedDate ),
                     Value = representedDate.ToISO8601DateString()
                 } );
@@ -466,6 +462,16 @@ namespace RockWeb.Blocks.Streaks
         private StreakType _streakType = null;
 
         /// <summary>
+        /// Gets the streak type cache.
+        /// </summary>
+        /// <returns></returns>
+        private StreakTypeCache GetStreakTypeCache()
+        {
+            var streakType = GetStreakType();
+            return streakType == null ? null : StreakTypeCache.Get( streakType.Id );
+        }
+
+        /// <summary>
         /// Returns true if the streak type is daily (vs weekly)
         /// </summary>
         /// <returns></returns>
@@ -481,14 +487,8 @@ namespace RockWeb.Blocks.Streaks
         /// <returns></returns>
         private DateTime GetDefaultEndDate()
         {
-            var isDaily = IsStreakTypeDaily();
-
-            if ( isDaily )
-            {
-                return RockDateTime.Today;
-            }
-
-            return RockDateTime.Today.SundayDate();
+            var streakTypeCache = GetStreakTypeCache();
+            return StreakTypeService.AlignDate( RockDateTime.Now, streakTypeCache );
         }
 
         /// <summary>
@@ -574,13 +574,13 @@ namespace RockWeb.Blocks.Streaks
         private DateTime GetMinDate()
         {
             var streakType = GetStreakType();
-            var isDaily = streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var minDate = isDaily ? streakType.StartDate.Date : streakType.StartDate.SundayDate();
+            var streakTypeCache = GetStreakTypeCache();
+            var minDate = StreakTypeService.AlignDate( streakType.StartDate, streakTypeCache );
 
             if ( IsTargetingEngagementMap() )
             {
                 var enrollment = GetStreak();
-                var enrollmentDate = isDaily ? enrollment.EnrollmentDate.Date : enrollment.EnrollmentDate.SundayDate();
+                var enrollmentDate = StreakTypeService.AlignDate( enrollment.EnrollmentDate, streakTypeCache );
 
                 if ( enrollmentDate > minDate )
                 {
@@ -597,6 +597,7 @@ namespace RockWeb.Blocks.Streaks
         private void SaveMapState()
         {
             var streakType = GetStreakType();
+            var streakTypeCache = GetStreakTypeCache();
             var map = GetTargetMap();
             var errorMessage = string.Empty;
 
@@ -606,8 +607,7 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( representedDate.HasValue )
                 {
-                    map = StreakTypeService.SetBit( map, streakType.StartDate, representedDate.Value,
-                        streakType.OccurrenceFrequency, checkbox.Selected, out errorMessage );
+                    map = StreakTypeService.SetBit( streakTypeCache, map, representedDate.Value, checkbox.Selected, out errorMessage );
                 }
             }
 

@@ -152,11 +152,25 @@ namespace RockWeb
 
                 // Indicate to always log to file during initialization.
                 ExceptionLogService.AlwaysLogToFile = true;
-                
-                if ( !File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) )
+
+                try
                 {
-                    // Clear all cache
-                    RockCache.ClearAllCachedItems( false );
+                    // if there is a Run.Migration, skip this so we don't get an exception.
+                    // if Run.Migration does not exist, check for PendingEFMigrations
+                    if ( File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) || HasPendingEFMigrations() )
+                    {
+                        // don't try to clear the cache if there was either a Run.Migration or HasPendingEFMigration detected migrations
+                        // we skip this because it might throw an exception if there are pending schema changes
+                    }
+                    else
+                    {
+                        // if we there wasn't a RunMigration and HasPendingEFMigration didn't detect any either, clear all cached items
+                        RockCache.ClearAllCachedItems( false );
+                    }
+                }
+                catch
+                {
+                    // ignore just in case there we tried to run ClearAllCacheItems even though there were pending migration
                 }
 
                 // Get a db context
@@ -175,7 +189,6 @@ namespace RockWeb
                     }
 
                     //// Run any needed Rock and/or plugin migrations
-                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
                     bool anyMigrations = MigrateDatabase( rockContext );
                     
                     // Run any plugin migrations
@@ -183,7 +196,7 @@ namespace RockWeb
                     bool anyPluginMigrations = MigratePlugins( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "EF Migrations and MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                     }
                     
                     if ( anyMigrations || anyPluginMigrations )
@@ -471,7 +484,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>
@@ -616,19 +629,50 @@ namespace RockWeb
         #region Methods
 
         /// <summary>
-        /// Migrates the database.
+        /// uses Reflection and a query on __MigrationHistory to determine whether we need to check for pending EF Migrations
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [has pending ef migrations]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasPendingEFMigrations()
+        {
+            /* MDP 2020-03-20
+             * We had previously used the presence of a "~/App_Data/Run.Migration" file to see if there are migrations to run.
+             * We did this to avoid the ~5 second delay that asking EF if there were pending migrations.
+             * However, we ran into a few cases where the Run.Migration method may have gotten deleted even though there were still migrations that needed to be run.
+             * To avoid this problem, we use Reflection plus querying the __MigrationHistory table to see if migrations need to be run. This only takes a few milliseconds
+             * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
+             */
+
+            // use reflection to find the last EF Migration (last Rock.Migrations.RockMigration since that is what all of Rock's EF migrations are based on)
+            var migrationTypes = Rock.Reflection.SearchAssembly( typeof( Rock.Migrations.RockMigration ).Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
+            var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
+            var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
+
+            // now look in __MigrationHistory table to see what the last migration that ran was
+            var lastDbMigrationId = DbService.ExecuteScaler( "select max(MigrationId) from __MigrationHistory" ) as string;
+
+            // if they aren't the same, run EF Migrations
+            return ( lastDbMigrationId != lastRockMigrationId );
+        }
+
+        /// <summary>
+        /// If EF migrations need to be done, does MF Migrations on the database 
         /// </summary>
         /// <returns>True if at least one migration was run</returns>
         public bool MigrateDatabase( RockContext rockContext )
         {
             bool result = false;
 
+            // if they aren't the same, run EF Migrations
             var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-            if ( fileInfo.Exists )
+            if ( fileInfo.Exists || HasPendingEFMigrations() )
             {
                 // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
                 var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                 var pendingMigrations = migrator.GetPendingMigrations().OrderBy(a => a);
+
+                // double check if there are migrations to run
                 if ( pendingMigrations.Any() )
                 {
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
@@ -645,7 +689,12 @@ namespace RockWeb
                     result = true;
                 }
 
-                fileInfo.Delete();
+                if ( fileInfo.Exists )
+                {
+                    // fileInfo.Delete() won't do anything if the file doesn't exist (it doesn't throw an exception if it is not there
+                    // but do the fileInfo.Exists to make this logic more readable
+                    fileInfo.Delete();
+                }
             }
 
             return result;
@@ -797,7 +846,7 @@ namespace RockWeb
                                                     {
                                                         sqlTxn.Rollback();
                                                     }
-                                                    throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
+                                                    throw new Exception( string.Format( "##Plugin Migration error occurred in {0}, {1}##",
                                                         assemblyMigrations.Key, migrationType.Value.Name ), ex );
                                                 }
                                             }
@@ -807,6 +856,7 @@ namespace RockWeb
                                 catch ( Exception ex )
                                 {
                                     // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                    System.Diagnostics.Debug.WriteLine( ex.Message );
                                     LogError( ex, null );
                                 }
                             }
@@ -1113,7 +1163,7 @@ namespace RockWeb
 
                             if ( recipients.Any() )
                             {
-                                var message = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
+                                var message = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
                                 message.SetRecipients( recipients );
                                 message.Send();
                             }
@@ -1174,26 +1224,7 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-
-                while ( RockQueue.TransactionQueue.Count != 0 )
-                {
-                    ITransaction transaction;
-                    if ( RockQueue.TransactionQueue.TryDequeue( out transaction ) )
-                    {
-                        if ( transaction != null )
-                        {
-                            try
-                            {
-                                transaction.Execute();
-                            }
-                            catch ( Exception ex )
-                            {
-                                LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
-                            }
-                        }
-                    }
-                }
-
+                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
                 Global.QueueInUse = false;
             }
         }

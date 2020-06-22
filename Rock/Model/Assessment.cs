@@ -83,6 +83,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the enum of the assessment status.
+        /// Requirement from Jon, a pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
         /// </summary>
         /// <value>
         /// A <see cref="System.Enum"/> for the Assessment status (i.e Complete, Pending).
@@ -190,16 +191,17 @@ namespace Rock.Model
     #region Enumerations
     /// <summary>
     /// Gets the status of the Assessment  (i.e. Pending, Complete)
+    /// Complete should only be used if the Assessment was actually completed, everything else is pending.
     /// </summary>
     public enum AssessmentRequestStatus
     {
         /// <summary>
-        /// Pending Status
+        /// Pending Status, anything that wasn't completed.
         /// </summary>
         Pending = 0,
 
         /// <summary>
-        /// Complete Status
+        /// Complete Status, only use if assessment was actually completed
         /// </summary>
         Complete = 1,
     }

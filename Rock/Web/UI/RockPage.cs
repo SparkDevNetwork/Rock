@@ -248,7 +248,7 @@ namespace Rock.Web.UI
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
                     {
-                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                        Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     }
                 }
 
@@ -267,7 +267,7 @@ namespace Rock.Web.UI
 
                 if ( _CurrentUser != null )
                 {
-                    Context.Items.Add( "CurrentUser", _CurrentUser );
+                    Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     CurrentPerson = _CurrentUser.Person;
                 }
                 else
@@ -311,7 +311,7 @@ namespace Rock.Web.UI
                 _currentPerson = value;
                 if ( _currentPerson != null )
                 {
-                    Context.Items.Add( "CurrentPerson", value );
+                    Context.AddOrReplaceItem( "CurrentPerson", value );
                 }
 
                 _currentPersonAlias = null;
@@ -1307,6 +1307,7 @@ namespace Rock.Web.UI
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
+                        adminFooter.AddCssClass( "js-cms-admin-footer" );
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
@@ -1339,9 +1340,9 @@ namespace Rock.Web.UI
                         {
                             HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aBlockConfig );
-                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config js-block-config" );
                             aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
                             iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
@@ -1354,9 +1355,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aPageProperties );
                             aPageProperties.ID = "aPageProperties";
                             aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aPageProperties.Attributes.Add( "class", "btn properties" );
+                            aPageProperties.Attributes.Add( "class", "btn properties js-page-properties" );
                             aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                            aPageProperties.Attributes.Add( "Title", "Page Properties" );
+                            aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
@@ -1369,9 +1370,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aChildPages );
                             aChildPages.ID = "aChildPages";
                             aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aChildPages.Attributes.Add( "class", "btn page-child-pages" );
+                            aChildPages.Attributes.Add( "class", "btn page-child-pages js-page-child-pages" );
                             aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
-                            aChildPages.Attributes.Add( "Title", "Child Pages" );
+                            aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
                             iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
@@ -1379,9 +1380,9 @@ namespace Rock.Web.UI
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aPageZones );
-                            aPageZones.Attributes.Add( "class", "btn page-zones" );
+                            aPageZones.Attributes.Add( "class", "btn page-zones js-page-zones" );
                             aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
-                            aPageZones.Attributes.Add( "Title", "Page Zones" );
+                            aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
                             iPageZones.Attributes.Add( "class", "fa fa-columns" );
@@ -1399,7 +1400,7 @@ namespace Rock.Web.UI
                             aPageSecurity.Controls.Add( iPageSecurity );
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
-                            // ShorLink Properties
+                            // ShortLink Properties
                             HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aShortLink );
                             aShortLink.ID = "aShortLink";
@@ -2012,7 +2013,8 @@ Sys.Application.add_load(function () {
             string virtualPath = this.ResolveRockUrl( url );
             if ( Context.Request != null && Context.Request.Url != null )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                string protocol = WebRequestHelper.IsSecureConnection(Context) ? "https" : Context.Request.Url.Scheme;
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();

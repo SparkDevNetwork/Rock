@@ -131,12 +131,18 @@ namespace Rock.Achievement.Component
             var minDate = openAttempt.AchievementAttemptStartDateTime;
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
+            // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
+            // engage in that day or week (because it is the current day or week)
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
+
             // Track the accumulation
             var accumulation = new ComputedStreak( minDate ) { EndDate = minDate };
 
             // Define what happens for each bit in the date range
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
             {
+                var iterationCanStop = false;
+
                 // If there is an engagement, then increment the accumulation
                 if ( hasOccurrence && hasEngagement )
                 {
@@ -152,6 +158,7 @@ namespace Rock.Achievement.Component
                         openAttempt.Progress = progress;
                         openAttempt.IsClosed = !streakTypeAchievementTypeCache.AllowOverAchievement;
                         openAttempt.IsSuccessful = progress >= 1m;
+                        iterationCanStop = !streakTypeAchievementTypeCache.AllowOverAchievement;
                     }
                 }
 
@@ -166,12 +173,13 @@ namespace Rock.Achievement.Component
 
                         openAttempt.AchievementAttemptEndDateTime = accumulation.EndDate;
                         openAttempt.Progress = progress;
-                        openAttempt.IsClosed = true;
+                        openAttempt.IsClosed = currentDate <= maxDateForStreakBreaking;
                         openAttempt.IsSuccessful = progress >= 1m;
+                        iterationCanStop = true;
                     }
                 }
 
-                return openAttempt.IsClosed;
+                return iterationCanStop;
             }
 
             // Iterate through the streak date for the date range specified
@@ -229,6 +237,10 @@ namespace Rock.Achievement.Component
             var minDate = CalculateMinDateForAchievementAttempt( streak.EnrollmentDate, mostRecentSuccess, attributeMinDate, numberToAccumulate );
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
+            // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
+            // engage in that day or week (because it is the current day or week)
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
+
             // Track the attempts in a list that will be returned. The int is the streak count for that attempt
             var attempts = new List<StreakAchievementAttempt>();
             var accumulations = new List<ComputedStreak>();
@@ -278,7 +290,7 @@ namespace Rock.Achievement.Component
 
                         if ( inclusiveAge >= attributeTimespanDays.Value )
                         {
-                            var timedOutAttempt = GetAttempt( accumulation, numberToAccumulate, true );
+                            var timedOutAttempt = GetAttempt( accumulation, numberToAccumulate, currentDate <= maxDateForStreakBreaking );
                             attempts.Add( timedOutAttempt );
                             accumulations.RemoveAt( i );
 

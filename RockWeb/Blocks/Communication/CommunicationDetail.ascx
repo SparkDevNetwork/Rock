@@ -11,12 +11,16 @@
         width: 100%;
     }
 
-        .chart-banner canvas {
-            height: 350px;
-        }
+    .chart-banner canvas {
+        height: 350px;
+    }
+
+    .clickable {
+        cursor: pointer
+    }
 </style>
 
-<asp:UpdatePanel ID="upPanel" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
         <div class="panel panel-block">
@@ -31,23 +35,30 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <ul class="nav nav-tabs">
-                    <li id="tabAnalytics" runat="server"><a id="lnkTabAnalytics" runat="server" data-toggle="tab" href="#tabPaneAnalytics" class="js-chart-tab">Analytics</a></li>
-                    <li id="tabMessageDetails" runat="server"><a id="lnkTabMessageDetails" runat="server" data-toggle="tab" href="#tabPaneMessageDetails">Message Details</a></li>
-                    <li id="tabActivity" runat="server"><a id="lnkTabActivity" runat="server" data-toggle="tab" href="#tabPaneActivity">Activity</a></li>
-                    <li id="tabRecipientDetails" runat="server"><a id="lnkTabRecipientDetails" runat="server" data-toggle="tab" href="#tabPaneRecipientDetails">Recipient Details</a></li>
-                </ul>
-                <asp:HiddenField ID="hfActiveView" runat="server" />
-                <div class="tab-content margin-t-md">
-                    <%-- Tab Pane: Analytics --%>
-                    <div id="tabPaneAnalytics" runat="server" class="tab-pane fade in">
+                <asp:Panel ID="pnlTabs" runat="server">
+                    <ul class="nav nav-tabs margin-b-md">
+                        <li id="tabAnalytics" runat="server" class="active">
+                            <asp:LinkButton ID="lnkTabAnalytics" runat="server" Text="Analytics" OnClick="lbTab_Click" class="js-chart-tab" />
+                        </li>
+                        <li id="tabMessageDetails" runat="server">
+                            <asp:LinkButton ID="lnkTabMessageDetails" runat="server" Text="Message Details" OnClick="lbTab_Click" />
+                        </li>
+                        <li id="tabActivity" runat="server">
+                            <asp:LinkButton ID="lnkTabActivity" runat="server" Text="Activity" OnClick="lbTab_Click" />
+                        </li>
+                        <li id="tabRecipientDetails" runat="server">
+                            <asp:LinkButton ID="lnkTabRecipientDetails" runat="server" Text="Recipient Details" OnClick="lbTab_Click" />
+                        </li>
+                    </ul>
+                    <div class="tab-content margin-t-md">
+                        <%-- Tab Pane: Analytics --%>
                         <asp:Panel ID="pnlAnalyticsTab" runat="server" CssClass="tab-panel">
                             <asp:Panel ID="pnlAnalyticsDeliveryStatusSummary" runat="server" CssClass="margin-t-md">
 
                                 <%-- Actions Summary --%>
                                 <div class="recipient-status row">
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-pending js-actions-statistic" title="The number of recipients that have not yet received the communication">
+                                        <div id="pnlPendingSummary" runat="server" class="metric-tile metric-pending clickable js-actions-statistic" title="The number of recipients that have not yet received the communication">
                                             <div class="metric-icon"><i class="fa fa-clock"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lPending" runat="server"></asp:Literal>
@@ -56,7 +67,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-delivered js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
+                                        <div id="pnlDeliveredSummary" runat="server" class="metric-tile metric-delivered clickable js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
                                             <div class="metric-icon"><i class="fa fa-inbox"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lDelivered" runat="server"></asp:Literal>
@@ -65,7 +76,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-failed js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
+                                        <div id="pnlFailedSummary" runat="server" class="metric-tile metric-failed clickable js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
                                             <div class="metric-icon"><i class="fa fa-comment-slash"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal>
@@ -74,7 +85,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-cancelled js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
+                                        <div id="pnlCancelledSummary" runat="server" class="metric-tile metric-cancelled clickable js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
                                             <div class="metric-icon"><i class="fa fa-ban"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lCancelled" runat="server"></asp:Literal>
@@ -237,9 +248,7 @@
                                 </ContentTemplate>
                             </asp:UpdatePanel>
                         </asp:Panel>
-                    </div>
-                    <%-- Tab Pane: Message Details --%>
-                    <div id="tabPaneMessageDetails" runat="server" class="tab-pane fade in">
+                        <%-- Tab Pane: Message Details --%>
                         <asp:Panel ID="pnlMessage" runat="server" CssClass="tab-panel">
                             <asp:UpdatePanel runat="server" UpdateMode="Conditional">
                                 <ContentTemplate>
@@ -283,9 +292,7 @@
                             </asp:UpdatePanel>
 
                         </asp:Panel>
-                    </div>
-                    <%-- Tab Pane: Activity --%>
-                    <div id="tabPaneActivity" runat="server" class="tab-pane fade in">
+                        <%-- Tab Pane: Activity --%>
                         <asp:Panel ID="pnlActivity" runat="server" CssClass="tab-panel">
                             <asp:UpdatePanel ID="upnlActivity" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="true">
                                 <ContentTemplate>
@@ -305,10 +312,8 @@
                                 </ContentTemplate>
                             </asp:UpdatePanel>
                         </asp:Panel>
-                    </div>
 
-                    <%-- Tab Pane: Recipient Details --%>
-                    <div id="tabPaneRecipientDetails" runat="server" class="tab-pane fade in">
+                        <%-- Tab Pane: Recipient Details  --%>
                         <asp:Panel ID="pnlRecipients" runat="server" CssClass="tab-panel">
                             <asp:UpdatePanel ID="upnlRecipients" runat="server" UpdateMode="Conditional">
                                 <ContentTemplate>
@@ -356,7 +361,8 @@
                             </asp:UpdatePanel>
                         </asp:Panel>
                     </div>
-                </div>
+
+                </asp:Panel>
             </div>
         </div>
 
@@ -425,6 +431,12 @@
                 var lineChartDataUnopened = <%=this.LineChartDataUnOpenedJSON%>;
 
                 resetCanvas('js-chart-canvas-main');
+
+                var linecharts = $('#<%=openClicksLineChartCanvas.ClientID%>');
+
+                if (linecharts.length == 0) {
+                    return null;
+                }
 
                 var linechartCtx = $('#<%=openClicksLineChartCanvas.ClientID%>')[0].getContext('2d');
 
