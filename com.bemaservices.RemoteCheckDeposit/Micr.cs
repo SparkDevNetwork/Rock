@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace com.bemaservices.RemoteCheckDeposit
 {
@@ -214,17 +215,17 @@ namespace com.bemaservices.RemoteCheckDeposit
                 {
                     var micr = new Micr(content);
 
-                    if (micr.GetRoutingNumber().Length != 9 || !double.TryParse( micr.GetRoutingNumber(), out _ ) )
+                    if (micr.GetRoutingNumber().Length != 9 || !Regex.IsMatch(micr.GetRoutingNumber(), @"^[0-9-]*$") )
                     {
                         error.Add("MICR Routing Number Error. Must Be 9 Digits.");
                     }
 
-                    if (micr.GetAccountNumber().Length < 4 || !double.TryParse( micr.GetAccountNumber(), out _) )
+                    if (micr.GetAccountNumber().Length < 4 || !Regex.IsMatch( micr.GetAccountNumber(), @"^[0-9-]*$" ) )
                     {
                         error.Add("MICR Account Number Error. Must Be At Least 4 Digits.");
                     }
 
-                    if (micr.GetCheckNumber().Length < 1 || !double.TryParse( micr.GetCheckNumber(), out _) )
+                    if (micr.GetCheckNumber().Length < 1 || !Regex.IsMatch( micr.GetCheckNumber(), @"^[0-9-]*$" ) )
                     {
                         error.Add("MICR Check Number Error. Must Be At Least 2 Digits.");
                     }
