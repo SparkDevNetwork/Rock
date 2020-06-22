@@ -29,9 +29,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateCheckScannerUrlUp();
-            UpdateGroupAttendanceDigestUp();
-            AlterFunctionUfnCrmGetAddressUp();
+            //UpdateCheckScannerUrlUp();
+            //UpdateGroupAttendanceDigestUp();
+            //AlterFunctionUfnCrmGetAddressUp();
         }
 
         /// <summary>
