@@ -20,19 +20,6 @@
 
     {% endcapture %}
 
-    {% if Group.GroupCapacity != null %}
-        {% assign GroupFullness = Group.Members.size | DividedBy:Group.GroupCapacity %}
-    {% else %}
-        {% assign GroupFullness = 0 %}
-    {% endif %}
-
-    {% if GroupFullness >= 1 %}
-        {% assign CapacityColor = '#ff0000' %}
-    {% elseif GroupFullness > 0.8 %}
-        {% assign CapacityColor = '#ffcc00' %}
-    {% else %}
-        {% assign CapacityColor = '#8bc540' %}
-    {% endif %}
 
     {% assign GroupTypes = Group | Attribute:'Hub' | Split:',' %}
     {% assign GroupCharacteristics = Group | Attribute:'GroupCharacteristics' | Split:',' %}
@@ -52,14 +39,7 @@
         <h1>{{ Group.Name }}</h1>
         <h4 class="text-muted">{{ GroupSubtitle }}</h4>
         <p>{{ Group | Attribute:'GroupGoal' }}</p>
-        <p>
-            <span style="font-size: 1em; color: {{ CapacityColor }};"><i class="fas fa-circle"></i></span>&nbsp;
-            {% if Group.GroupCapacity == null %}
-                {{ Group.Members.size }} {{ "member" | PluralizeForQuantity:Group.Members.size }}
-            {% else %}
-                {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
-            {% endif %}
-        </p>
+
         <p style="line-height: 1.5;">
             <span class="label label-primary">{{ Group.Campus.Name }}</span>
             {% for Tag in GroupTypes %}
