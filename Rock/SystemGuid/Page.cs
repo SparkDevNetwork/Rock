@@ -1628,6 +1628,13 @@ namespace Rock.SystemGuid
         public const string SEARCH_SERVICES = "1719F597-5BA9-458D-9362-9C3E558E5C82";
 
         /// <summary>
+        /// Gets the Search Type page guid
+        /// </summary>
+        [Obsolete]
+        [RockObsolete("1.11")]
+        public const string SEARCH_TYPE = "3E0327B1-EE0E-41DC-87DB-C4C14922A7CA";
+
+        /// <summary>
         /// Gets the Security page guid
         /// ParentPage: Admin Tools
         /// </summary>

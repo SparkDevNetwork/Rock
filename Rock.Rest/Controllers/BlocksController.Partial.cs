@@ -151,6 +151,21 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Executes an action handler on a specific block.
+        /// </summary>
+        /// <param name="pageIdentifier">The page unique identifier.</param>
+        /// <param name="blockIdentifier">The block unique identifier.</param>
+        /// <param name="actionName">Name of the action.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        [RockObsolete("1.11")]
+        [Authenticate]
+        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
+        {
+            return ProcessAction( Request.Method.ToString(), pageIdentifier, blockIdentifier, actionName, parameters );
+        }
+
+        /// <summary>
         /// Processes the action.
         /// </summary>
         /// <param name="verb">The HTTP Method Verb that was used for the request.</param>
