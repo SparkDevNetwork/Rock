@@ -124,14 +124,15 @@
                 $control.find('.picker-btn').click(function (el) {
 
                     var rockTree = $control.find('.treeview').data('rockTree'),
-                            selectedNodes = rockTree.selectedNodes,
-                            selectedIds = [],
-                            selectedNames = [];
-
-                  $.each(selectedNodes, function (index, node) {
-                    var nodeName = $("<textarea/>").html(node.name).text();
-                    selectedNames.push(nodeName);
-                    selectedIds.push(node.id);
+                        selectedNodes = rockTree.selectedNodes,
+                        selectedIds = [],
+                        selectedNames = [];
+                    $.each(selectedNodes, function (index, node) {
+                        var nodeName = $("<textarea/>").html(node.name).text();
+                        selectedNames.push(nodeName);
+                        if (!selectedIds.includes(node.id)) {
+                            selectedIds.push(node.id);
+                        }
                     });
 
                     $hfItemIds.val(selectedIds.join(',')).change(); // .change() is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
