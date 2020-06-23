@@ -79,10 +79,11 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets all category and non-category item decendents for the provided <see cref="CategoryItem"/>, which should represent a <see cref="Metric"/> or <see cref="MetricCategory"/>.
+        /// Gets all category and non-category item decendents for the provided <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.
         /// </summary>
-        /// <param name="categoryItem">The <see cref="CategoryItem"/>, which should represent a <see cref="Metric"/> or <see cref="MetricCategory"/>.</param>
+        /// <param name="categoryItem">The <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.</param>
         /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <param name="metricCategoryService">The metric category service.</param>
         /// <returns></returns>
         private List<CategoryItem> GetAllMetricDescendants( CategoryItem categoryItem, string includedCategoryIds, MetricCategoryService metricCategoryService )
         {
