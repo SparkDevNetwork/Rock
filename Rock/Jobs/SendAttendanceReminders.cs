@@ -29,7 +29,6 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -399,7 +398,12 @@ namespace Rock.Jobs
                 var leaderOccurrences = occurrences.Where( o => o.Key == leader.GroupId );
                 foreach ( var leaderOccurrence in leaderOccurrences )
                 {
-                    var sendResult = SendMessage( leader, leaderOccurrence.Value.Max(), mediumType, systemCommunication, isSmsEnabled );
+                    var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, leader.Person );
+                    mergeObjects.Add( "Person", leader.Person );
+                    mergeObjects.Add( "Group", leader.Group );
+                    mergeObjects.Add( "Occurrence", leaderOccurrence.Value.Max() );
+
+                    var sendResult = CommunicationHelper.SendMessage( leader.Person, mediumType, systemCommunication, mergeObjects );
 
                     result.MessagesSent += sendResult.MessagesSent;
                     result.Errors.AddRange( sendResult.Errors );
@@ -407,142 +411,6 @@ namespace Rock.Jobs
                 }
             }
             return result;
-        }
-
-        /// <summary>
-        /// Sends the message.
-        /// </summary>
-        /// <param name="leader">The leader.</param>
-        /// <param name="groupOccurrence">The group occurrence.</param>
-        /// <param name="mediumType">Type of the medium.</param>
-        /// <param name="systemCommunication">The system communication.</param>
-        /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
-        /// <returns></returns>
-        private SendMessageResult SendMessage( GroupMember leader, DateTime groupOccurrence, int mediumType, SystemCommunication systemCommunication, bool isSmsEnabled )
-        {
-            var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, leader.Person );
-            mergeObjects.Add( "Person", leader.Person );
-            mergeObjects.Add( "Group", leader.Group );
-            mergeObjects.Add( "Occurrence", groupOccurrence );
-
-            RockMessage message = null;
-            var results = new SendMessageResult();
-            switch ( mediumType )
-            {
-                case ( int ) CommunicationType.SMS:
-                    message = CreateSmsMessage( leader, mergeObjects, systemCommunication, isSmsEnabled, out var smsWarnings );
-                    if ( message == null )
-                    {
-                        results.Warnings.AddRange( smsWarnings );
-                        return results;
-                    }
-                    break;
-                default:
-                    message = CreateEmailMessage( leader, mergeObjects, systemCommunication, out var emailWarnings );
-                    if ( message == null )
-                    {
-                        results.Warnings.AddRange( emailWarnings );
-                        return results;
-                    }
-                    break;
-            }
-
-            if ( message.Send( out var errors ) )
-            {
-                results.MessagesSent = 1;
-            }
-            else
-            {
-                results.Errors.AddRange( errors );
-            }
-
-            return results;
-        }
-
-        /// <summary>
-        /// Creates the SMS message.
-        /// </summary>
-        /// <param name="leader">The leader.</param>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="systemCommunication">The system communication.</param>
-        /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
-        /// <param name="warningMessages">The error messages.</param>
-        /// <returns></returns>
-        private RockSMSMessage CreateSmsMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, bool isSmsEnabled, out List<string> warningMessages )
-        {
-            warningMessages = new List<string>();
-            var smsNumber = leader.Person.PhoneNumbers.GetFirstSmsNumber();
-            var recipients = new List<RockMessageRecipient>();
-
-            if ( string.IsNullOrWhiteSpace( smsNumber ) || !isSmsEnabled )
-            {
-                string smsErrorMessage = GenerateSmsWarningMessage( isSmsEnabled, leader.Person );
-                warningMessages.Add( smsErrorMessage );
-                return null;
-            }
-
-            recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
-
-            var message = new RockSMSMessage( systemCommunication );
-            message.SetRecipients( recipients );
-            return message;
-        }
-
-        /// <summary>
-        /// Generates the SMS error message.
-        /// </summary>
-        /// <param name="isSmsEnabled">if set to <c>true</c> [is SMS enabled].</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        private string GenerateSmsWarningMessage( bool isSmsEnabled, Person person )
-        {
-            var smsWarningMessage = $"No SMS number could be found for {person.FullName}.";
-            if ( !isSmsEnabled )
-            {
-                smsWarningMessage = $"SMS is not enabled. {person.FullName} did not receive a notification.";
-            }
-
-            RockLogger.Log.Warning( RockLogDomains.Jobs, smsWarningMessage );
-
-            return smsWarningMessage;
-        }
-
-        /// <summary>
-        /// Creates the email message.
-        /// </summary>
-        /// <param name="leader">The leader.</param>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="systemCommunication">The system communication.</param>
-        /// <param name="warningMessages">The error messages.</param>
-        /// <returns></returns>
-        private RockEmailMessage CreateEmailMessage( GroupMember leader, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, out List<string> warningMessages )
-        {
-            warningMessages = new List<string>();
-
-            if ( string.IsNullOrWhiteSpace( leader.Person.Email ) )
-            {
-                var warning = $"{leader.Person.FullName} does not have an email address entered.";
-                warningMessages.Add( warning );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
-                return null;
-            }
-
-            if ( !leader.Person.IsEmailActive )
-            {
-                var warning = $"{leader.Person.FullName.ToPossessive()} email address is inactive.";
-                warningMessages.Add( warning );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
-                return null;
-            }
-
-            var recipients = new List<RockMessageRecipient>
-            {
-                new RockEmailMessageRecipient( leader.Person, mergeObjects )
-            };
-
-            var message = new RockEmailMessage( systemCommunication );
-            message.SetRecipients( recipients );
-            return message;
         }
 
         private StringBuilder FormatWarningMessages( List<string> warnings )

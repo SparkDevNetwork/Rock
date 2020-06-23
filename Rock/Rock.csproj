@@ -492,8 +492,10 @@
     <Compile Include="Bulk\BulkImport\InteractionsImport.cs" />
     <Compile Include="Bulk\BulkImport\InteractionImport.cs" />
     <Compile Include="CheckIn\LocalDeviceConfiguration.cs" />
+    <Compile Include="Communication\CommunicationHelper.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
     <Compile Include="Communication\PushData.cs" />
+    <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -507,7 +509,7 @@
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
-    <Compile Include="Jobs\SendMessageResults.cs" />
+    <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Lava\LavaFileSystem.cs" />
