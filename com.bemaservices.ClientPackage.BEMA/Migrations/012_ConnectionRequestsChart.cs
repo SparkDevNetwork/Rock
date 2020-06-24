@@ -186,7 +186,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Chart, Attribute:Pie Inner Radius Page: Connections Chart, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "5BE9807D-6081-4E45-9445-B15FEF8507EF", "4CAF4C44-586D-490E-918D-52C0BD81BB3C", @"0" );
             RockMigrationHelper.AddSecurityAuthForPage( "0403E0FE-64C1-4671-BD90-01E5AF9D0EEC", 0, "View", false, "", 1, "5E0D683F-A4AC-4939-9CEB-93718FBFA30A" );
-             RockMigrationHelper.UpdateHtmlContentBlock( "2FEC4C30-137C-4F7F-A4B7-E5EF9F6240ED", @"<div class='alert alert-info'>
+            RockMigrationHelper.UpdateHtmlContentBlock( "2FEC4C30-137C-4F7F-A4B7-E5EF9F6240ED", @"<div class='alert alert-info'>
     This block shows a list of open connection requests. </br>
     <b>Total Requests</b> includes all requests created in the last year.</br>
     <b>Currently Open</b> includes all requests set to <i>Active</i> or <i>Future Follow-Up</i> created in the last year.</br>
@@ -194,7 +194,7 @@ namespace com.bemaservices.ClientPackage.BEMA
     <b>Average Days until Completion</b> displays the average time between a request creation date and the time it was closed out ( The Modified Date Time) for all requests set to <i>Inactive</i> or <i>Connected</i> created in the last year.</br>
    
 </div>"
-            , "27d3abc2-db45-4512-a6fa-31ba52f1b01d" );
+           , "27d3abc2-db45-4512-a6fa-31ba52f1b01d" );
 
         }
 
