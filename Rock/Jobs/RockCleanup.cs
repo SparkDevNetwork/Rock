@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1814,7 +1814,10 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 // Get the components for this page
                 var componentIds = pageIdToComponentIdMap.GetValueOrNull( pageId );
 
-                if ( componentIds == null || !componentIds.Any() )
+                // Get the page (sometimes it doesn't exist if the page was deleted)
+                var page = pageService.Get( pageId );
+
+                if ( componentIds == null || !componentIds.Any() || page == null )
                 {
                     continue;
                 }
@@ -1851,8 +1854,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 var firstMiddleValue = recentTimesToServe.ElementAt( ( count - 1 ) / 2 );
                 var secondMiddleValue = recentTimesToServe.ElementAt( count / 2 );
                 var median = ( firstMiddleValue + secondMiddleValue ) / 2;
-
-                var page = pageService.Get( pageId );
                 page.MedianPageLoadTimeDurationSeconds = median;
 
                 rockContext.SaveChanges();
