@@ -75,8 +75,20 @@
     <tbody>
       <tr>
         <td style="width: 50%">
-          <strong>Life Stage</strong> <br>
-          {{group | Attribute:'LifeStage'}}
+          <strong>Age</strong> <br>
+          {% assign minAge = group | Attribute:'MinimumAge' %}
+          {% assign maxAge = group | Attribute:'MaximumAge' %}
+          {% if minAge != empty or maxAge != empty %}
+            {% if minAge == empty %}
+              {{maxAge}} & Under
+            {% else %}
+              {% if maxAge == empty %}
+                {{minAge}} & Up
+              {% else %}
+                {{minAge}} - {{maxAge}}
+              {% endif %}
+            {% endif %}
+          {% endif %}
         </td>
         <td style="width: 50%">
           <strong>Type</strong> <br>
