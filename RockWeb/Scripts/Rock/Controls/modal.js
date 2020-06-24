@@ -33,6 +33,11 @@
             // Use the anchor tag's href attribute as the source for the iframe
             // this will trigger the load event (above) which will show the popup
             $('#modal-popup').fadeTo(0, 0);
+
+            // Indicate to Rock that this content is being served in an iFrame modal.
+            var separator = popupUrl.indexOf("?") === -1 ? "?" : "&";
+            popupUrl = popupUrl + separator + "IsIFrameModal=true";
+
             $modalPopupIFrame.attr('src', popupUrl);
             $('#modal-popup').modal({
                 show: true,

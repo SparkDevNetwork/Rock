@@ -75,7 +75,7 @@
                         runat="server"
                         Text="Next"
                         OnClick="btnVerify_Click"
-                        CssClass="btn btn-lg btn-primary btn-block mt-3 js-verify-button" />
+                        CssClass="btn btn-lg btn-primary btn-block mt-4 js-verify-button" />
 
                     <Rock:BootstrapButton ID="btnResend"
                         runat="server"

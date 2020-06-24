@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -296,6 +297,41 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PushSound { get; set; }
 
+        /// <summary>
+        /// Gets or sets the push image file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image file identifier.
+        /// </value>
+        [DataMember]
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        [DataMember]
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        [DataMember]
+        public string PushData { get; set; }
         #endregion
 
         #endregion

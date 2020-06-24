@@ -36,6 +36,19 @@ namespace Rock.Model
     [DataContract]
     public partial class Interaction : Model<Interaction>
     {
+        /* Custom Indexes:
+         *
+         * InteractionComponentId, InteractionDateTime
+         *      Includes InteractionTimeToServe, Operation
+         *      This was added for <see cref="Rock.Jobs.RockCleanup.UpdateMedianPageLoadTimes"/>
+         *
+         *  InteractionDateTime
+         *      Includes InteractionComponentId, PersonAliasId
+         *
+         *  PersonAliasId, InteractionSessionId
+         *      Includes InteractionDateTime, InteractionComponentId
+         *      This was added for RockWeb.Blocks.Reporting.InteractionSessionList
+         */
 
         #region Entity Properties
 
@@ -198,7 +211,7 @@ namespace Rock.Model
         public double? InteractionLength { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction time to serve. 
+        /// Gets or sets the interaction time to serve.
         /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
         /// For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
         /// </summary>
@@ -269,6 +282,7 @@ namespace Rock.Model
         /// The interaction date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int InteractionDateKey
         {
             get => InteractionDateTime.ToString( "yyyyMMdd" ).AsInteger();

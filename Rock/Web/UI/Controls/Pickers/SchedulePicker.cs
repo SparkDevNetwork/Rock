@@ -184,6 +184,7 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
             ItemRestUrlExtraParams += "&includeInactiveItems=" + includeInactiveSchedules.ToTrueFalse();
+            ItemRestUrlExtraParams += "&lazyLoad=false";
         }
 
         /// <summary>

@@ -254,7 +254,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object exportSource = this.ViewState["ExportSource"];
-                return exportSource != null ? (ExcelExportSource)exportSource : ExcelExportSource.DataSource;
+                return exportSource != null ? ( ExcelExportSource ) exportSource : ExcelExportSource.DataSource;
             }
 
             set
@@ -384,7 +384,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object displayType = this.ViewState["DisplayType"];
-                return displayType != null ? (GridDisplayType)displayType : GridDisplayType.Full;
+                return displayType != null ? ( GridDisplayType ) displayType : GridDisplayType.Full;
             }
 
             set
@@ -1002,7 +1002,7 @@ namespace Rock.Web.UI.Controls
                             }
                             else
                             {
-                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RockRadioButton)cb ).GroupName )];
+                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( ( RockRadioButton ) cb ).GroupName )];
                                 if ( value == cb.ID )
                                 {
                                     col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
@@ -1356,7 +1356,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 _table.Rows.Add( _actionFooterRow );
 
                 TableCell actionFooterCell = new TableCell();
-                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.CustomColumns?.Count ?? 0);
+                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.CustomColumns?.Count ?? 0 );
                 actionFooterCell.ColumnSpan = visibleColumnCount;
                 actionFooterCell.CssClass = "grid-actions";
                 _actionFooterRow.Cells.Add( actionFooterCell );
@@ -1440,7 +1440,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 // get data priority from column
                 if ( column is IPriorityColumn )
                 {
-                    _columnDataPriorities.Add( column, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
+                    _columnDataPriorities.Add( column, ( ( IPriorityColumn ) column ).ColumnPriority.ConvertToInt().ToString() );
                 }
                 else
                 {
@@ -1629,7 +1629,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             if ( e.Row.RowType == DataControlRowType.Header )
             {
                 //add data priority
-                foreach( var cell in e.Row.Cells.OfType<DataControlFieldCell>())
+                foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
                 {
                     if ( _columnDataPriorities.ContainsKey( cell.ContainingField ) )
                     {
@@ -1858,7 +1858,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var parts = mergeField.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                     if ( parts.Any() )
                     {
-                        communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace('.','_') );
+                        communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
                     }
                 }
 
@@ -2340,14 +2340,14 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
                 {
-                    //var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                    Type dotLiquidDropType = typeof( DotLiquid.Drop );
-                    allprops = allprops.Where( a => a.DeclaringType != dotLiquidDropType ).ToList();
+                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
                 }
+                // If this is a RockDynamic class, don't include any of the properties that are inherited from RockDynamic
                 else if ( typeof( RockDynamic ).IsAssignableFrom( oType ) )
                 {
-                    Type rockDynamicType = typeof( RockDynamic );
-                    allprops = allprops.Where( a => a.DeclaringType != typeof( RockDynamic ) ).ToList();
+                    var dropProperties = typeof( RockDynamic ).GetProperties().Select( a => a.Name );
+                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
                 }
 
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
@@ -2378,10 +2378,10 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                 // Array provides slight performance improvement here over a list
                 var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
-                for (int i = 0; i < orderedVisibleFields.Count(); i++ )
+                for ( int i = 0; i < orderedVisibleFields.Count(); i++ )
                 {
                     DataControlField dataField = orderedVisibleFields[i];
-                    if (dataField.HeaderText.IsNullOrWhiteSpace())
+                    if ( dataField.HeaderText.IsNullOrWhiteSpace() )
                     {
                         dataField.HeaderText = string.Format( "Column {0}", i );
                     }
@@ -2427,8 +2427,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     columnCounter++;
                 }
 
-                string appRoot = ( (RockPage)Page ).ResolveRockUrl( "~/" );
-                string themeRoot = ( (RockPage)Page ).ResolveRockUrl( "~~/" );
+                string appRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~/" );
+                string themeRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~~/" );
 
                 // print data
                 int dataIndex = 0;
@@ -2535,7 +2535,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                     exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
                                 }
                             }
-                            else if ( boundField.DataField?.Contains(".") == true )
+                            else if ( boundField.DataField?.Contains( "." ) == true )
                             {
                                 exportValue = item.GetPropertyValue( boundField.DataField );
                             }
@@ -2721,11 +2721,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                         if ( prop.PropertyType == typeof( int ) )
                         {
-                            definedValueId = (int)propValue;
+                            definedValueId = ( int ) propValue;
                         }
                         else
                         {
-                            definedValueId = (int?)propValue ?? 0;
+                            definedValueId = ( int? ) propValue ?? 0;
                         }
 
                         if ( definedValueId > 0 )
@@ -3007,7 +3007,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             // Merge values
                             var mergeValues = new Dictionary<string, object>();
 
-                            for (  int i = 0; i < data.Columns.Count; i++ )
+                            for ( int i = 0; i < data.Columns.Count; i++ )
                             {
                                 // Add any new person id values from the selected person (or recipient) column(s)
                                 if ( personIdFields.Contains( data.Columns[i].ColumnName, StringComparer.OrdinalIgnoreCase ) )
@@ -3161,7 +3161,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                     {
                                         if ( personIdObjTree.Last() is int )
                                         {
-                                            int personId = (int)personIdObjTree.Last();
+                                            int personId = ( int ) personIdObjTree.Last();
                                             if ( !personIds.Contains( personId ) )
                                             {
                                                 personIds.Add( personId );
@@ -3169,7 +3169,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                         }
                                         if ( personIdObjTree.Last() is IEnumerable<int> )
                                         {
-                                            foreach ( int id in ( (IEnumerable<int>)personIdObjTree.Last() ) )
+                                            foreach ( int id in ( ( IEnumerable<int> ) personIdObjTree.Last() ) )
                                             {
                                                 if ( !personIds.Contains( id ) )
                                                 {
@@ -3179,9 +3179,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                         }
                                     }
 
-                                    foreach( int personId in personIds )
+                                    foreach ( int personId in personIds )
                                     {
-                                        int id = (int)idProp.GetValue( item, null );
+                                        int id = ( int ) idProp.GetValue( item, null );
 
                                         // Add the personId if none are selected or if it's one of the selected items.
                                         if ( !keysSelected.Any() || keysSelected.Contains( id ) )
@@ -3775,7 +3775,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     }
                 }
             }
-            catch (Exception ex )
+            catch ( Exception ex )
             {
                 Rock.Model.ExceptionLogService.LogException( ex, Context );
                 // Log and move on...
@@ -4483,7 +4483,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// Initializes a new instance of the <see cref="PagerTemplate"/> class.
         /// </summary>
         public PagerTemplate()
-        { 
+        {
             IsDisposed = false;
         }
 
@@ -4628,7 +4628,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 {
                     var li = ItemLinkListItem[i];
                     var lb = ItemLink[i];
-                    
+
                     if ( i < _pageSizes.Count )
                     {
                         lb.Text = _pageSizes[i].ToString( "N0" );
@@ -4675,10 +4675,10 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             LinkButton lbItems = sender as LinkButton;
             if ( lbItems != null && ItemsPerPageClick != null )
             {
-                int itemsPerPage = lbItems.Text.Replace(",", "").AsInteger();
+                int itemsPerPage = lbItems.Text.Replace( ",", "" ).AsInteger();
 
                 // If the page size is not valid, use the first available page size.
-                if ( !_pageSizes.Contains(itemsPerPage) )
+                if ( !_pageSizes.Contains( itemsPerPage ) )
                 {
                     itemsPerPage = _pageSizes.First();
                 }

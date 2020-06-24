@@ -225,7 +225,7 @@ namespace Rock.Security
                 authorizations.AddOrIgnore( authEntityRule.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[authEntityRule.EntityTypeId];
 
-                entityAuths.AddOrIgnore( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>() );
+                entityAuths.AddOrIgnore( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[authEntityRule.AuthRule.EntityId ?? 0];
 
                 instanceAuths.AddOrIgnore( authEntityRule.Action, new List<AuthRule>() );
@@ -277,7 +277,7 @@ namespace Rock.Security
                 var entityAuths = authorizations[entityTypeId];
                 if ( entityAuths.ContainsKey( entityId ) )
                 {
-                    entityAuths[entityId] = new Dictionary<string, List<AuthRule>>();
+                    entityAuths[entityId] = new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase );
                     AddOrUpdate( authorizations );
                 }
             }
@@ -1360,7 +1360,7 @@ namespace Rock.Security
                 authorizations.AddOrIgnore( entityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[entityTypeId];
 
-                entityAuths.AddOrIgnore( entityId, new Dictionary<string, List<AuthRule>>() );
+                entityAuths.AddOrIgnore( entityId, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[entityId];
 
                 instanceAuths.AddOrReplace( action, new List<AuthRule>() );

@@ -136,5 +136,16 @@ namespace Rock.Communication
         {
             return MediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
         }
+
+        /// <summary>
+        /// Determines whether an active push transport exists.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active push transport exists; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActivePushTransport()
+        {
+            return MediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
+        }
     }
 }

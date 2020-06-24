@@ -201,6 +201,13 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
+                // Notify the host-app what check-in device we are.
+                if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.SetKioskId !== 'undefined') {
+                    var localDeviceConfiguration = JSON.parse($('.js-local-device-configuration').val());
+
+                    window.RockCheckinNative.SetKioskId(localDeviceConfiguration.CurrentKioskId);
+                }
+
                 // Install function the host-app can call to pass the scanned barcode.
                 window.PerformScannedCodeSearch = function (code) {
                     if (!swipeProcessing) {
