@@ -210,7 +210,6 @@ namespace RockWeb.Blocks.Steps
             if ( !Page.IsPostBack )
             {
                 ShowDetail( _stepTypeId );
-                btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
             }
             else
             {
@@ -1349,6 +1348,12 @@ namespace RockWeb.Blocks.Steps
                 }
             }
 
+            // Set availability of Bulk Entry action.
+            var showBulkEntry = GetAttributeValue( AttributeKey.BulkEntryPage ).IsNotNullOrWhiteSpace()
+                && this.UserCanEdit 
+                && stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+            btnBulkEntry.Visible = showBulkEntry;
         }
 
         /// <summary>

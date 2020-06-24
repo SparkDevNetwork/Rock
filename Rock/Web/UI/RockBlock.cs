@@ -304,6 +304,20 @@ namespace Rock.Web.UI
             }
         }
 
+        /* 2020-06-12 MDP/DL
+         * If this block has custom admin controls, the Pages Configuration page ( Home > CMS Configuration > Pages)
+         * needs to load this block onto the page (but hide it off screen). This can sometimes cause an issue
+         * because the block still thinks it needs to render its content. To avoid this issue,
+         * we added the ConfigurationRenderModeIsEnabled so the block can use that flag to not render
+         * its content
+         */
+
+        /// <summary>
+        /// Indicates if the block should be rendered in configuration-only mode.
+        /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
+        /// </summary>
+        public bool ConfigurationRenderModeIsEnabled { get; set; }
+
         #endregion
 
         #region Constructors

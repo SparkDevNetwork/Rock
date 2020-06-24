@@ -32,6 +32,14 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+    /*
+	    06/12/2020 - MSB 
+        This class is not only used by dataviews, but also by content channel filters to filter which items from the content channels should be shown, 
+        and Registration Instance Group Placement for filtering purposes.
+        The above two places will add records to the DataViewFilter table, but no corresponding records will be added to the DataView table so
+        the DataViewFilter records will incorrectly appear to be orphans.
+    */
+
     /// <summary>
     /// Represents a filter on a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>

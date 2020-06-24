@@ -107,6 +107,36 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models, optionally excluding those that are in the specified <see cref="EntityState"/>s within the <see cref="DbContext"/>.
+        /// Note: You can sometimes improve performance by using Queryable().AsNoTracking(), but be careful. Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
+        /// <para>
+        /// Important: This call should only be used when expecting a small handful of <see cref="Entity{T}"/>s to be excluded, as the resulting SQL will include a 'WHERE [Entity].[Id] NOT IN(x,y,z)' clause,
+        /// which has a limitation: https://stackoverflow.com/questions/1069415/limit-on-the-where-col-in-condition
+        /// </para>
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<T> Queryable( params EntityState[] statesToExclude )
+        {
+            /*
+             * 2020-06-15 - JH
+             *
+             * Find the IDs for all Entity<T>s within the Context that are in the specified EntityState(s).
+             * Keep in mind that the Context might currently be referencing Entities of a different
+             * type than the one this call is targeting, hence the implicit type cast check below.
+             */
+            IList<int> excludedIds = statesToExclude?.Any() == true
+                ? Context.ChangeTracker
+                    .Entries()
+                    .Where( a => statesToExclude.Contains( a.State ) )
+                    .Where( a => a.Entity as Entity<T> != null )
+                    .Select( a => ( ( Entity<T> ) a.Entity ).Id )
+                    .ToList()
+                : new List<int>();
+
+            return _objectSet.Where( a => !excludedIds.Contains( a.Id ) );
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models ensuring that any EntityFramework.Plus Filter or service specific filter is not applied
         /// </summary>
         /// <returns></returns>

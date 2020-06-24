@@ -93,10 +93,6 @@ iframe {
   }
 }
 
-.clickable {
-  cursor: pointer;
-}
-
 .tip {
   padding: 0 6px 2px;
   font-size: 11px;
@@ -176,6 +172,8 @@ a.warning {
 
 .dropdown-menu {
   .box-shadow(@shadow-overlay);
+  max-height: 85vh;
+  overflow-y: auto;
 
   // Added to Support Right Aligned Dropdowns
   .dropdown-right & {
@@ -284,27 +282,27 @@ th[align="right"] {
 
 // add badge colors back to BS3
 .badge-danger {
-  color: #fff !important;
+  color: @badge-danger-color !important;
   background-color: @badge-danger-bg !important;
 }
 
 .badge-warning {
-  color: #fff !important;
+  color: @badge-warning-color !important;
   background-color: @badge-warning-bg !important;
 }
 
 .badge-success {
-  color: #fff !important;
+  color: @badge-success-color !important;
   background-color: @badge-success-bg !important;
 }
 
 .badge-info {
-  color: #fff !important;
+  color: @badge-info-color !important;
   background-color: @badge-info-bg !important;
 }
 
 .badge-critical {
-  color: #fff !important;
+  color: @badge-critical-color !important;
   background-color: @badge-critical-bg !important;
 }
 

@@ -42,7 +42,10 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         public override MediumControl GetControl( bool useSimpleMode )
         {
-            return new Web.UI.Controls.Communication.PushNotification();
+            return new Web.UI.Controls.Communication.PushNotification
+            {
+                Transport = Transport
+            };
         }
     }
 }
