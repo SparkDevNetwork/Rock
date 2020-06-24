@@ -90,6 +90,13 @@
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
+    <Compile Include="Migrations\012_ConnectionRequestsChart.cs" />
+    <Compile Include="Migrations\013_BaptismOverTimeChart.cs" />
+    <Compile Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs" />
+    <Compile Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs" />
+    <Compile Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs" />
+    <Compile Include="Migrations\017_FamilyCampusNotLastTransaction.cs" />
+    <Compile Include="Migrations\018_GivingByFinancialAccount.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
