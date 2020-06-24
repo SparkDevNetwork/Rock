@@ -57,6 +57,7 @@ namespace com.bemaservices.GroupTools.Controllers
             IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age );
 
             var groupInfoList = new List<GroupInformation>();
+            var definedValueService = new DefinedValueService( new RockContext() );
             foreach ( var group in qry.ToList() )
             {
                 var groupInfo = new GroupInformation();
@@ -98,7 +99,7 @@ namespace com.bemaservices.GroupTools.Controllers
                 var categoryGuids = group.GetAttributeValue( "Category" ).SplitDelimitedValues().AsGuidList();
                 if ( categoryGuids.Any() )
                 {
-                    var categories = new DefinedValueService( new RockContext() ).GetByGuids( categoryGuids );
+                    var categories = definedValueService.GetByGuids( categoryGuids );
                     if ( categories.Any() )
                     {
                         var category = categories.OrderBy( c => c.Order ).First();
