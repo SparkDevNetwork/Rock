@@ -76,7 +76,12 @@ namespace Rock.Jobs
                 INNER JOIN (
 	                SELECT Id
 		                , RelatedDataViewId
-		                , CASE WHEN CHARINDEX('|', Selection, 0) > 0 THEN SUBSTRING(Selection, 0, CHARINDEX('|', Selection, 0)) ELSE Selection END AS RelatedDataViewGuid
+		                , CASE WHEN CHARINDEX(',', Selection, 0) > 0 
+			                    THEN SUBSTRING(Selection, 0, CHARINDEX(',', Selection, 0)) 
+		                    WHEN CHARINDEX('|', Selection, 0) > 0 
+			                    THEN SUBSTRING(Selection, 0, CHARINDEX('|', Selection, 0)) 
+		                    ELSE Selection 
+			                    END AS RelatedDataViewGuid
 	                FROM DataViewFilter
 	                WHERE Selection LIKE REPLACE('00000000-0000-0000-0000-000000000000', '0', '[0-9a-fA-F]') + '%'
                 ) AS rdv ON rdv.RelatedDataViewGuid = DataView.[Guid]
