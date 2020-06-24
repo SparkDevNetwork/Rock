@@ -88,6 +88,7 @@ namespace Rock.Model
         /// The data view identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? DataViewId { get; set; }
 
         /// <summary>
