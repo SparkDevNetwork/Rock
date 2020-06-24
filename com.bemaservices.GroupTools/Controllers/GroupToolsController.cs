@@ -65,11 +65,14 @@ namespace com.bemaservices.GroupTools.Controllers
                 .Where( a => a.Attribute.Key == "Category" )
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId );
 
-            var groupQry = qry.Join( categoryValues, g => g.Id, av => av.EntityId, ( g, av ) => new
+            var groupQry = from g in qry
+                    join av in categoryValues on g.Id equals av.EntityId into gav
+                    from x in gav.DefaultIfEmpty()
+                    select new
             {
                 Group = g,
-                Categories = av.Value.ToUpper()
-            } );
+                Categories = x.Value.ToUpper()
+            };
 
             groupQry = groupQry.OrderByDescending( g => g.Categories.Contains( "99BC9586-3C23-4BE4-BEB3-2285FBBCD1C9" ) )
                     .ThenByDescending( g => g.Categories.Contains( "3F3EFCE6-8DEB-4F3E-A6F8-E9E6FE3A1852" ) )
