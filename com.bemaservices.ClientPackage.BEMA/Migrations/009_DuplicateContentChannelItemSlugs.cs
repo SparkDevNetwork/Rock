@@ -143,7 +143,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "48800E24-22B1-4F83-9E68-D8677FB3F5BD", @"<h4>Click on a name to be taken to the Content Channel Item</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "48800E24-22B1-4F83-9E68-D8677FB3F5BD", @"<div class='alert alert-info'>Click on a name to be taken to the Content Channel Item</div>"
             , "b072b9bc-c940-4c68-b3c5-d7be75b342e9" );
 
             // Hide Page from view

@@ -183,12 +183,12 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data 2, Attribute:Timeout Page: Pledge Progress Report, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "4CB2A095-8BAE-475C-B3E4-E17806722F31", @"<h5>There are two output tables:
+            RockMigrationHelper.UpdateHtmlContentBlock( "4CB2A095-8BAE-475C-B3E4-E17806722F31", @"<div class='alert alert-info'>There are two output tables:
             </br></br>
             1. Shows individual pledges, the person information, and their pledge progress</br>
-            2. Shows a summary of all pledges showing how many have given over their pledge, meeting their pledge, and who has given under their pledge. This report shows how much is outstanding if everyone meet's their pledge.</h5>
-
-            <h5>This page can also be used with the Page Parameter Filter. The Filter options defined are as follows: 
+            2. Shows a summary of all pledges showing how many have given over their pledge, meeting their pledge, and who has given under their pledge. This report shows how much is outstanding if everyone meet's their pledge.
+            </br></br>
+            This page can also be used with the Page Parameter Filter. The Filter options defined are as follows: 
             </br></br>
             Filter 1: Financial Account</br>
             Key: FinancialAccount</br>
@@ -198,7 +198,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             Filter 2: Analysis Date </br>
             Description: This is the date the report should be run against. If left blank it will run against the current date. </br>
             Key: AnalysisDate </br>
-            Type: Date</h5>"
+            Type: Date</div>"
             , "2d3be623-e17a-4808-b87d-ca44263e9ee4" );
 
             // Hide Page from view

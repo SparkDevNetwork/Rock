@@ -143,7 +143,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Large Donations, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "CEB3D683-9A8D-49D7-900D-BAE844887C1D", @"<h4>The report works with a Page Parameter of DateRange or Amount. You can also assign a minimum amount for the donations if you edit the report. The default minimum is $5000.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "CEB3D683-9A8D-49D7-900D-BAE844887C1D", @"<div class='alert alert-info'>The report works with a Page Parameter of DateRange or Amount. You can also assign a minimum amount for the donations if you edit the report. The default minimum is $5000.</div>"
             , "d50c9802-5f45-4092-b4e5-7981f091bbe7" );
 
             // Hide Page from view
