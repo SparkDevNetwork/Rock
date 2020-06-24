@@ -324,9 +324,8 @@ $(document).ready(function() {
                     DataViewFilter origDataViewFilter = dataViewFilterService.Get( origDataViewFilterId.Value );
 
                     dataView.DataViewFilterId = null;
-                    rockContext.SaveChanges();
 
-                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService );
+                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService, rockContext );
                 }
 
                 dataView.DataViewFilter = newDataViewFilter;
@@ -457,7 +456,7 @@ $(document).ready(function() {
                     try
                     {
                         DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
-                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService );
+                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService, rockContext );
                     }
                     catch
                     {
@@ -1229,16 +1228,22 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="dataViewFilter">The data view filter.</param>
         /// <param name="service">The service.</param>
-        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
+        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service, RockContext rockContext )
         {
             if ( dataViewFilter != null )
             {
                 foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
                 {
-                    DeleteDataViewFilter( childFilter, service );
+                    DeleteDataViewFilter( childFilter, service, rockContext );
                 }
 
+                dataViewFilter.DataViewId = null;
+                dataViewFilter.RelatedDataViewId = null;
+
+                rockContext.SaveChanges();
+
                 service.Delete( dataViewFilter );
+                
             }
         }
 
