@@ -42,7 +42,7 @@ namespace com.bemaservices.GroupTools.Controllers
 
     public partial class GroupToolsController
     {
-    
+
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/com_bemaservices/GroupTools/GetGroups" )]
         public IQueryable<GroupInformation> GetGroups(
@@ -54,11 +54,38 @@ namespace com.bemaservices.GroupTools.Controllers
             int? offset = null,
             int? limit = null )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age );
-
+            var rockContext = new RockContext();
             var groupInfoList = new List<GroupInformation>();
-            var definedValueService = new DefinedValueService( new RockContext() );
-            foreach ( var group in qry.ToList() )
+            var definedValueService = new DefinedValueService( rockContext );
+            int entityTypeId = EntityTypeCache.GetId( typeof( Group ) ) ?? 0;
+
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, rockContext );
+
+            var categoryValues = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                .Where( a => a.Attribute.Key == "Category" )
+                .Where( a => a.Attribute.EntityTypeId == entityTypeId );
+
+            var groupQry = qry.Join( categoryValues, g => g.Id, av => av.EntityId, ( g, av ) => new
+            {
+                Group = g,
+                Categories = av.Value.ToUpper()
+            } );
+
+            groupQry = groupQry.OrderByDescending( g => g.Categories.Contains( "99BC9586-3C23-4BE4-BEB3-2285FBBCD1C9" ) )
+                    .ThenByDescending( g => g.Categories.Contains( "3F3EFCE6-8DEB-4F3E-A6F8-E9E6FE3A1852" ) )
+                .ThenBy( g => g.Group.Name );
+
+            if ( offset.HasValue )
+            {
+                groupQry = groupQry.Skip( offset.Value );
+            }
+
+            if ( limit.HasValue )
+            {
+                groupQry = groupQry.Take( limit.Value );
+            }
+
+            foreach ( var group in groupQry.Select( g => g.Group ).ToList() )
             {
                 var groupInfo = new GroupInformation();
                 groupInfo.Id = group.Id;
@@ -174,28 +201,16 @@ namespace com.bemaservices.GroupTools.Controllers
             }
 
             var groupInfoQry = groupInfoList.AsQueryable()
-                .OrderBy( g => g.Category == "Featured" )
-                .ThenBy( g => g.Category == "New" )
+                .OrderByDescending( g => g.Category == "Featured" )
+                .ThenByDescending( g => g.Category == "New" )
                 .ThenBy( g => g.Name )
                 .AsQueryable();
-
-
-            if ( offset.HasValue )
-            {
-                groupInfoQry = groupInfoQry.Skip( offset.Value );
-            }
-
-            if ( limit.HasValue )
-            {
-                groupInfoQry = groupInfoQry.Take( limit.Value );
-            }
 
             return groupInfoQry;
         }
 
-        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age )
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, RockContext rockContext )
         {
-            var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
             var qry = groupService.Queryable().AsNoTracking();
 
@@ -221,8 +236,8 @@ namespace com.bemaservices.GroupTools.Controllers
 
             if ( categoryIdList.Any() )
             {
-                var categoryList = new DefinedValueService( rockContext ).GetByIds( categoryIdList ).Select( c => c.Guid.ToString() ).ToList();
-                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "Category" && categoryList.Any( c => av.Value.Contains( c ) ) );
+                var categoryList = new DefinedValueService( rockContext ).GetByIds( categoryIdList ).Select( c => c.Guid.ToString().ToUpper() ).ToList();
+                qry = qry.WhereAttributeValue( rockContext, av => av.Attribute.Key == "Category" && categoryList.Any( c => av.Value.ToUpper().Contains( c ) ) );
             }
 
             var ageInt = age.AsIntegerOrNull();
@@ -266,7 +281,7 @@ namespace com.bemaservices.GroupTools.Controllers
             string categoryIds = "",
             string age = "" )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, new RockContext() );
 
             return qry.Count();
         }
