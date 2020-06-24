@@ -25,7 +25,7 @@ namespace com.bemaservices.GroupTools
             RockMigrationHelper.AddAttributeQualifier( "F1B412F2-B6DD-4B11-8651-2DD8324EF955", "definedtype", categoryId, "B22689D0-BAD8-408A-AC3E-F23780C70716" );
 
             RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Minimum Age", @"", 6, "", "49E2CA73-BD1F-4BDC-B022-7E6C58D0A268", "MinimumAge" );
-            RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "MaximumAge", @"", 7, "", "328886F1-33BA-4F3D-BA69-4E3FFB1DF117", "MaximumAge" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Maximum Age", @"", 7, "", "328886F1-33BA-4F3D-BA69-4E3FFB1DF117", "MaximumAge" );
 
             RockMigrationHelper.AddGroupTypeGroupMemberAttribute( groupTypeGuid, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Preferred Contact Method", @"", 0, "", "6F18B7FD-5EC4-48D4-AD3D-48AE328CB0EC" );
             Sql( @"
