@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Data;
 
 namespace com.bemaservices.HrManagement.Model
@@ -28,5 +29,10 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         /// <param name="context">The context.</param>
         public PtoTierService( RockContext context ) : base( context ) { }
+
+        public int Copy( int ptoTierId )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

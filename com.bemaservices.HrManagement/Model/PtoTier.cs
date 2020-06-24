@@ -22,6 +22,8 @@ using System.Runtime.Serialization;
 using Rock.Model;
 using Rock.Data;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace com.bemaservices.HrManagement.Model
 {
@@ -51,6 +53,24 @@ namespace com.bemaservices.HrManagement.Model
         [MaxLength( 100 )]
         public string Color { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="com.bemaservices.HrManagement.Model.PtoBracket">PtoBrackets</see> who are associated with the PtoTier.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="com.bemaservices.HrManagement.Model.PtoBracket">PtoBrackets</see> who are associated with the PtoTier.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<PtoBracket> PtoBrackets
+        {
+            get { return _ptoBrackets ?? ( _ptoBrackets = new Collection<PtoBracket>() ); }
+            set { _ptoBrackets = value; }
+        }
+
+        private ICollection<PtoBracket> _ptoBrackets;
         #endregion
     }
 
