@@ -28,18 +28,17 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataSelect.Person
-{
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter" />
-    [Obsolete( "Use the InRegistrationInstanceFilter from the Rock.Reporting.DataFilter.Person namespace instead" )]
-    [RockObsolete( "1.11" )]
-    public class InRegistrationInstanceFilter : Rock.Reporting.DataFilter.Person.InRegistrationInstanceFilter { };
-}
+/*
+	06/24/2020 - MSB
+	
+	This filter needs to stay in this namespace unless a migration is created and tested to move the data view filters over to the
+    new entity type that will be created for the new location.
+	
+    Reason: DataView Filters
+	
+*/
 
-namespace Rock.Reporting.DataFilter.Person
+namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
     /// Filter people on whether they registered (registrar) or were registered (registrant) in the designated registration instance.
