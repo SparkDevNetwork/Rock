@@ -11,10 +11,10 @@ namespace com.bemaservices.GroupTools
         public override void Up()
         {
             var groupTypeGuid = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
-            var lifeGroupTypeIdObject = SqlScalar( "Select Top 1 Id From GroupType Where Guid = 'a4f16049-2525-426e-a6e8-cdfb7b198664'" );
-            if ( lifeGroupTypeIdObject != null )
+            var lifeGroupTypeGuidObject = SqlScalar( "Select Top 1 [Guid] From GroupType Where Guid = 'a4f16049-2525-426e-a6e8-cdfb7b198664'" );
+            if ( lifeGroupTypeGuidObject != null )
             {
-                groupTypeGuid = lifeGroupTypeIdObject.ToString();
+                groupTypeGuid = lifeGroupTypeGuidObject.ToString();
             }
 
             Sql( string.Format( @"Declare @GroupTypeGuid uniqueidentifier = '{0}'
