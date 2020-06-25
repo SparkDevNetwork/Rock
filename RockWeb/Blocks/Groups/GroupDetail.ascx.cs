@@ -1048,6 +1048,12 @@ namespace RockWeb.Blocks.Groups
                         if ( childGroup.IsActive )
                         {
                             childGroup.IsActive = false;
+                            childGroup.InactiveReasonValueId = ddlInactiveReason.SelectedValueAsInt();
+                            childGroup.InactiveReasonNote = "Parent Deactivated";
+                            if ( tbInactiveNote.Text.IsNotNullOrWhiteSpace() )
+                            {
+                                childGroup.InactiveReasonNote += ": " + tbInactiveNote.Text;
+                            }
                         }
                     }
 
