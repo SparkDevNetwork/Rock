@@ -35,7 +35,7 @@ namespace com.bemaservices.HrManagement.Model
     {
 
         #region Entity Properties
-        
+
         [Required]
         [DataMember]
         public int PtoTierId { get; set; }
@@ -50,7 +50,7 @@ namespace com.bemaservices.HrManagement.Model
 
         [DataMember]
         public int? MaximumYear { get; set; }
-        
+
         #endregion
 
         #region Virtual Properties
@@ -59,14 +59,14 @@ namespace com.bemaservices.HrManagement.Model
         public virtual PtoTier PtoTier { get; set; }
 
         [LavaInclude]
-        public virtual string Name {  get { return ToString(); } }
+        public virtual string Name { get { return ToString(); } }
 
         #endregion
-       
+
         public override string ToString()
         {
 
-            if( this.MaximumYear.HasValue )
+            if ( this.MaximumYear.HasValue )
             {
                 return this.MinimumYear.ToString() + " to " + this.MaximumYear.Value.ToString() + " years";
             }
@@ -90,7 +90,7 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         public PtoBracketConfiguration()
         {
-            this.HasRequired( r => r.PtoTier ).WithMany().HasForeignKey( r => r.PtoTierId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.PtoTier ).WithMany( r => r.PtoBrackets ).HasForeignKey( r => r.PtoTierId ).WillCascadeOnDelete( false );
 
             // IMPORTANT!!
             this.HasEntitySetName( "PtoBracket" );
