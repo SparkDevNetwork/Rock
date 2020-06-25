@@ -139,7 +139,11 @@
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
-                                        <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
+                                        <Rock:RockTemplateField HeaderText="Schedule(s)">
+                                            <ItemTemplate>
+                                                <asp:Literal ID="litSchedules" runat="server" Text='<%#Eval("Schedules") %>' />
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
                                         <Rock:EditField OnClick="gGroupLocations_Edit" />
                                         <Rock:DeleteField OnClick="gGroupLocations_Delete" />
                                     </Columns>
