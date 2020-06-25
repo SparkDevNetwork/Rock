@@ -18,24 +18,22 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA
 {
-    [MigrationNumber( 11, "1.9.4" )]
-    public class PledgeProgressReport : Migration
+    [MigrationNumber( 8, "1.9.4" )]
+    public class LargeDonations : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-            // Page: Pledge Progress Report              
-            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Pledge Progress Report","This report shows the progress for all pledges (Account and Date configurable).","39CB72A4-0952-48B7-9E3B-AA9B130E9BD6",""); // Site:Rock RMS
+            // Page: Large Donations              
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Large Donations","A report on the givers of large donations and their families.","754EFBFA-54B2-4558-9669-8121D92D88F0",""); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType("HTML Content","Adds an editable HTML fragment to the page.","~/Blocks/Cms/HtmlContentDetail.ascx","CMS","19B61D65-37E3-459F-A44F-DEF0089118A3");
             RockMigrationHelper.UpdateBlockType("Dynamic Data","Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.","~/Blocks/Reporting/DynamicData.ascx","Reporting","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
-            // Add Block to Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "39CB72A4-0952-48B7-9E3B-AA9B130E9BD6","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"4CB2A095-8BAE-475C-B3E4-E17806722F31");   
-            // Add Block to Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "39CB72A4-0952-48B7-9E3B-AA9B130E9BD6","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"A20EA4AF-0393-46F1-A671-70E0E701EEF5");   
-            // Add Block to Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "39CB72A4-0952-48B7-9E3B-AA9B130E9BD6","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data 2","Main","","",2,"773CDE9B-1FB3-407A-8138-EC4699C5A32B");   
+            // Add Block to Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "754EFBFA-54B2-4558-9669-8121D92D88F0","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"CEB3D683-9A8D-49D7-900D-BAE844887C1D");   
+            // Add Block to Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "754EFBFA-54B2-4558-9669-8121D92D88F0","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"D540BECB-1139-4138-B17F-218ECE6CCAEF");   
             // Attrib for BlockType: Dynamic Data:Update Page              
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Update Page","UpdatePage","","If True, provides fields for updating the parent page's Name and Description",0,@"True","230EDFE8-33CA-478D-8C9A-572323AF3466");  
             // Attrib for BlockType: Dynamic Data:Query Params              
@@ -106,103 +104,50 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","BD0D9B57-2A41-4490-89FF-F01DAB7D4904","Cache Tags","CacheTags","","Cached tags are used to link cached content so that it can be expired as a group",10,@"","522C18A9-C727-42A5-A0BA-13C673E8C4B6");  
             // Attrib for BlockType: HTML Content:Is Secondary Block              
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Is Secondary Block","IsSecondaryBlock","","Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",11,@"False","04C15DC1-DFB6-4D63-A7BC-0507D0E33EF4");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/PledgeProgressReport1.sql' %}");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","202A82BF-7772-481C-8419-600012607972",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("A20EA4AF-0393-46F1-A671-70E0E701EEF5","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Update Page Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Query Params Page: Pledge Progress Report, Site: Rock RMS             
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Query Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/PledgeProgressReport2.sql' %}");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Url Mask Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","202A82BF-7772-481C-8419-600012607972",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Merge Fields Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Formatted Output Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","6A233402-446C-47E9-94A5-6A247C29BC21",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Lava/PledgeProgressReport2.lava' %}");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Person Report Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Communication Recipient Person Id Columns Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Excel Export Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Communicate Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Merge Person Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Bulk Update Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Stored Procedure Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Merge Template Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Paneled Grid Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Show Grid Filter Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
-            // Attrib Value for Block:Dynamic Data 2, Attribute:Timeout Page: Pledge Progress Report, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("773CDE9B-1FB3-407A-8138-EC4699C5A32B","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% assign amount = '' %}  {% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/LargeDonations.sql' %}");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","202A82BF-7772-481C-8419-600012607972",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Large Donations, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("D540BECB-1139-4138-B17F-218ECE6CCAEF","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "4CB2A095-8BAE-475C-B3E4-E17806722F31", @"<h5>There are two output tables:
-            </br></br>
-            1. Shows individual pledges, the person information, and their pledge progress</br>
-            2. Shows a summary of all pledges showing how many have given over their pledge, meeting their pledge, and who has given under their pledge. This report shows how much is outstanding if everyone meet's their pledge.</h5>
-
-            <h5>This page can also be used with the Page Parameter Filter. The Filter options defined are as follows: 
-            </br></br>
-            Filter 1: Financial Account</br>
-            Key: FinancialAccount</br>
-            Type: Single Select </br>
-            Values: Select Distinct fa.PublicName as Text, fa.Guid as Value From FinancialAccount fa Inner Join FinancialPledge fp on fp.AccountId = fa.Id Order By Fa.PublicName
-            </br></br>
-            Filter 2: Analysis Date </br>
-            Description: This is the date the report should be run against. If left blank it will run against the current date. </br>
-            Key: AnalysisDate </br>
-            Type: Date</h5>"
-            , "2d3be623-e17a-4808-b87d-ca44263e9ee4" );
+            RockMigrationHelper.UpdateHtmlContentBlock( "CEB3D683-9A8D-49D7-900D-BAE844887C1D", @"<div class='alert alert-info'>The report works with a Page Parameter of DateRange or Amount. You can also assign a minimum amount for the donations if you edit the report. The default minimum is $5000.</div>"
+            , "d50c9802-5f45-4092-b4e5-7981f091bbe7" );
 
             // Hide Page from view
-            RockMigrationHelper.AddSecurityAuthForPage( "39CB72A4-0952-48B7-9E3B-AA9B130E9BD6", 0, "View", false, "", 1, "8bb4f0c5-41fb-4621-9214-eca1211f47ba" );
+            RockMigrationHelper.AddSecurityAuthForPage( "754EFBFA-54B2-4558-9669-8121D92D88F0", 0, "View", false, "", 1, "7c1e372c-48c4-48bc-a787-9b1a2754f924" );
         }
 
         /// <summary>
@@ -210,7 +155,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute("824634D6-7F75-465B-A2D2-BA3CE1662CAC");
+                        RockMigrationHelper.DeleteAttribute("824634D6-7F75-465B-A2D2-BA3CE1662CAC");
             RockMigrationHelper.DeleteAttribute("522C18A9-C727-42A5-A0BA-13C673E8C4B6");
             RockMigrationHelper.DeleteAttribute("AF7714D4-D825-419A-B136-FF8293396635");
             RockMigrationHelper.DeleteAttribute("3F4BA170-F5C5-405E-976F-0AFBB8855FE8");
@@ -245,12 +190,11 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.DeleteAttribute("7C1CE199-86CF-4EAE-8AB3-848416A72C58");
             RockMigrationHelper.DeleteAttribute("EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A");
             RockMigrationHelper.DeleteAttribute("4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4");
-            RockMigrationHelper.DeleteBlock("773CDE9B-1FB3-407A-8138-EC4699C5A32B");
-            RockMigrationHelper.DeleteBlock("A20EA4AF-0393-46F1-A671-70E0E701EEF5");
-            RockMigrationHelper.DeleteBlock("4CB2A095-8BAE-475C-B3E4-E17806722F31");
+            RockMigrationHelper.DeleteBlock("D540BECB-1139-4138-B17F-218ECE6CCAEF");
+            RockMigrationHelper.DeleteBlock("CEB3D683-9A8D-49D7-900D-BAE844887C1D");
             RockMigrationHelper.DeleteBlockType("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
             RockMigrationHelper.DeleteBlockType("19B61D65-37E3-459F-A44F-DEF0089118A3");
-            RockMigrationHelper.DeletePage("39CB72A4-0952-48B7-9E3B-AA9B130E9BD6"); //  Page: Pledge Progress Report
+            RockMigrationHelper.DeletePage("754EFBFA-54B2-4558-9669-8121D92D88F0"); //  Page: Large Donations
         }
     }
 }

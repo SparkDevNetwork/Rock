@@ -1,0 +1,1 @@
+select gm.GroupId , max(gm.PersonId) as Id , g.Name as [Family Name] , count(*) as [Number Of Adults] from Person p inner join GroupMember gm on gm.PersonId = p.id inner join [Group] g on g.Id = gm.GroupId and g.GroupTypeId = 10 where gm.GroupRoleId = 3 group by gm.GroupId, g.Name having count(*) > 2

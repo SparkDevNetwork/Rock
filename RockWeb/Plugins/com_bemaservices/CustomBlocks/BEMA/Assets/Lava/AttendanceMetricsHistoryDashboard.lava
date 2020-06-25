@@ -1,0 +1,257 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
+
+{% comment %}
+BEMA Attendance Dashboard
+
+    By default, this will pull every Metric that has the word 'Attendance' in it. Items are divided by their Sunday Date (weekly). 
+
+    To override which Metrics are displayed, uncomment out the lava code below and change the Metric Ids
+{% endcomment %}
+
+{% comment %}
+    {% assign metricIds = '1,2' %}
+{% endcomment %}
+
+{% sql return:'metrics' %}
+    SELECT MC.Id, M.Title
+    FROM Metric M
+    INNER JOIN MetricCategory MC ON MC.MetricId = M.Id
+    {% if metricIds and metricIds != '' %}
+    WHERE M.Id IN ({{metricIds}})
+    {% else %}
+    WHERE M.Title LIKE '%Attendance'
+    {% endif %}
+    ORDER BY M.Id
+{% endsql %}
+
+{% sql return:'campuses' %}
+    SELECT C.Name, C.Id
+    FROM Campus C
+    WHERE C.IsActive = 1
+    ORDEr BY C.Id
+{% endsql %}
+
+<div class="margin-b-sm row type-buttons">
+    <div class="col-sm-6">
+        <div class="btn btn-default btn-block btn-show-breakdown default">Breakdown</div>
+    </div>
+    <div class="col-sm-6">
+        <div class="btn btn-default btn-block btn-show-totals">Campus Totals</div>
+    </div>
+</div>
+
+<div class="well well-breakdown" style="display: none;">
+    <div class="margin-b-sm row campus-buttons">
+        <!-- data-id specifies the Id number of the campus -->
+        {% for campus in campuses %}
+        <div class="col-sm-3"><div class="btn btn-default btn-block {% if forloop.first %}default{% endif %}" data-id="{{campus.Id}}">{{campus.Name}}</div></div>
+        {% endfor %}
+    </div>
+
+    <div class="margin-b-md row metric-buttons">
+        <!-- data-id specifies the Id number of the metric -->
+        {% for metric in metrics %}
+        <div class="col-sm-2"><div class="btn btn-default btn-block {% if forloop.first %}default{% endif %}" data-id="{{metric.Id}}">{{metric.Title | ReplaceLast:'Attendance',''}}</div></div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="chart-container" style="position: relative; height:300px; width:100%;">
+    <canvas id="attendanceChart"></canvas>
+</div>
+
+<script>
+(function() {
+    var groupBy = function(xs, key) {
+        return xs.reduce(function(rv, x) {
+            (rv[x[key]] = rv[x[key]] || []).push(x);
+            return rv;
+        }, {});
+    };
+
+    var config = {
+        type: 'line',
+        data: {
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2500,
+            },
+            legend: {
+                position: 'right'
+            },
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            'hour': 'MM/YY',
+                            'day': 'MM/YY',
+                            'week': 'MM/YY',
+                            'month': 'MM/YY',
+                            'quarter': 'MM/YY',
+                            'year': 'MM/YY',
+                        },
+                        tooltipFormat: "MM/DD/YYYY"
+                    }
+                } ]
+            }
+        }
+    };
+    
+    var chartColors = [
+        "rgb(54, 162, 235)",
+        "rgb(75, 192, 192)",
+        "rgb(255, 159, 64)",
+        "rgb(153, 102, 255)",
+        "rgb(255, 99, 132)",
+        "rgb(255, 205, 86)",
+        "rgb(19, 141, 117)",
+        "rgb(160, 64, 0)",
+        "rgb(27, 79, 114)",
+        "rgb(210, 180, 222)" ];
+
+    var ctx = document.getElementById("attendanceChart").getContext('2d');
+    var chart = new Chart(ctx, config);
+    
+    var getTotalDataSet = function(rows) {
+        var groups = groupBy(rows, 'DateTime');
+        var dataset = { label: 'Total', borderWidth: 1, fill: false, data: [] };
+
+        for (k in groups) {
+            var value = 0;
+            groups[k].forEach((row) => {
+                value += row.Value;
+            });
+            dataset.data.push({ x: k, y: value });
+        }
+        
+        return dataset;
+    };
+    
+    var addSummedDataSets = function(rows, key) {
+        var groups = groupBy(rows, key);
+        for (k in groups) {
+            var dates = groupBy(groups[k], 'DateTime');
+            var dataset = { label: k, borderWidth: 1, fill: false, data: [] };
+
+            for (d in dates) {
+                var value = 0;
+                dates[d].forEach((dRow) => {
+                    value += dRow.Value;
+                });
+                dataset.data.push({ x: d, y: value });
+            }
+
+            dataset.borderColor = chartColors[config.data.datasets.length % chartColors.length];
+            dataset.backgroundColor = dataset.borderColor;
+            chart.data.datasets.push(dataset);
+        }
+    };
+    
+    var addDataSetsInGroups = function(groups) {
+        for (k in groups) {
+            var dataset = { label: k, borderWidth: 1, fill: false, data: [] };
+
+            dataset.borderColor = chartColors[config.data.datasets.length % chartColors.length];
+            dataset.backgroundColor = dataset.borderColor;
+            
+            groups[k].forEach((row) => {
+                dataset.data.push({ x: row.DateTime, y: row.Value });
+            });
+
+            chart.data.datasets.push(dataset);
+        }
+    };
+    
+    var updateChart = function() {
+        var campus = '';
+        var metric = '';
+        
+        if ($('.btn-show-breakdown').hasClass('btn-primary')) {
+            campus = $('.campus-buttons .btn-primary').map(function () { return $(this).data('id'); }).get().join(',');
+            metric = $('.metric-buttons .btn-primary').map(function () { return $(this).data('id'); }).get().join(',');
+        }
+
+        $.ajax({
+            url: '/Webhooks/Lava.ashx/BEMAAttendanceMetricsHistoryDashboard?Campus=' + campus + '&Metric=' + metric,
+            success: function (rows) {
+                chart.data.datasets = [];
+
+                if ($('.btn-show-totals').hasClass('btn-primary')) {
+                    var ds = getTotalDataSet(rows);
+                    ds.borderColor = chartColors[config.data.datasets.length % chartColors.length];
+                    ds.backgroundColor = ds.borderColor;
+                
+                    chart.data.datasets.push(ds);
+                    addSummedDataSets(rows, 'Campus');
+                }
+                else {
+                    var ds = getTotalDataSet(rows);
+                    ds.borderColor = chartColors[config.data.datasets.length % chartColors.length];
+                    ds.backgroundColor = ds.borderColor;
+                    ds.hidden = true;
+                    chart.data.datasets.push(ds);
+                    
+                    addDataSetsInGroups(groupBy(rows, 'Schedule'));
+                }
+
+                chart.update();
+            }
+        });
+    };
+
+    Sys.Application.add_load(function () {
+        $('.campus-buttons .btn.default').addClass('btn-primary').removeClass('btn-default');
+        $('.metric-buttons .btn.default').addClass('btn-primary').removeClass('btn-default');
+        $('.type-buttons .btn.default').addClass('btn-primary').removeClass('btn-default');
+
+        if ($('.btn-show-totals').hasClass('btn-primary')) {
+            $('.well-breakdown').hide();
+        }
+        else {
+            $('.well-breakdown').show();
+        }
+
+        $('.campus-buttons .btn').on('click', function () {
+            $('.campus-buttons .btn').removeClass('btn-primary').addClass('btn-default');
+            if ($(this).hasClass('btn-primary') && $('.campus-buttons .btn-primary').length == 1) {
+                return false;
+            }
+            $(this).toggleClass('btn-default').toggleClass('btn-primary');
+
+            updateChart();
+        });
+        
+        $('.metric-buttons .btn').on('click', function () {
+            if ($(this).hasClass('btn-primary') && $('.metric-buttons .btn-primary').length == 1) {
+                return false;
+            }
+
+            //$('.metric-buttons .btn').removeClass('btn-primary').addClass('btn-default');
+            $(this).toggleClass('btn-default').toggleClass('btn-primary');
+
+            updateChart();
+        });
+        
+        $('.type-buttons .btn').on('click', function () {
+            $('.type-buttons .btn').removeClass('btn-primary').addClass('btn-default');
+            $(this).toggleClass('btn-default').toggleClass('btn-primary');
+
+            if ($('.btn-show-totals').hasClass('btn-primary')) {
+                $('.well-breakdown').hide(350);
+            }
+            else {
+                $('.well-breakdown').show(350);
+            }
+            
+            updateChart();
+        });
+        
+        updateChart();
+    });
+})();
+</script>

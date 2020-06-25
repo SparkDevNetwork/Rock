@@ -18,23 +18,191 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA
 {
-    [MigrationNumber( 5, "1.9.4" )]
-    public class GiversWithoutPledges : Migration
+    [MigrationNumber( 7, "1.9.4" )]
+    public class PersonAuthorizedOnPage : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-            // Page: Givers Without Pledges              
-            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Givers Without Pledges","A report that shows information on givers who do not have pledges","D86AF59A-E6AF-4550-806E-24B74C822315",""); // Site:Rock RMS
+            //Stored Procedure
+            Sql( @"
+            CREATE OR ALTER PROCEDURE [dbo].[GetAuthorizationsByPage]
+                @pageId int 
+            AS
+
+            DECLARE @tt1 as TABLE
+            (
+                Id INT IDENTITY(1, 1) primary key ,
+                [PageName] NVARCHAR(200)
+                , [PageId] int
+                , [AuthId] int
+                , [Order] int
+                , [Action] NVARCHAR(100)
+                , [AllowOrDeny] NVARCHAR(20)
+                , [SpecialRole] NVARCHAR(50)
+                , [GroupName] NVARCHAR(200)
+                , [GroupId] NVARCHAR(50)
+                , [PersonName] NVARCHAR(200)
+                , [PersonId] NVARCHAR(50)
+                , [Path] NVARCHAR(520)
+            );
+
+
+            DECLARE @tt2 as TABLE
+            (
+                Id INT IDENTITY(1, 1) primary key ,
+                [PageName] NVARCHAR(200)
+                , [PageId] int
+                , [AuthId] int
+                , [Order] int
+                , [Action] NVARCHAR(100)
+                , [AllowOrDeny] NVARCHAR(20)
+                , [SpecialRole] NVARCHAR(50)
+                , [GroupName] NVARCHAR(200)
+                , [GroupId] NVARCHAR(50)
+                , [PersonName] NVARCHAR(200)
+                , [PersonId] NVARCHAR(50)
+                , [Path] NVARCHAR(520)
+            );
+
+            Declare @parentPageId int
+
+
+            WHILE @pageId IS NOT NULL
+            BEGIN 
+                INSERT INTO @tt1 
+                    SELECT
+                        --'Inherited' 
+                        p.InternalName 
+                        , p.id 
+                        , a.Id
+                        , a.[Order]
+                        , a.Action
+                        , CASE
+                            WHEN a.AllowOrDeny = 'A' THEN 'Allow'
+                            WHEN a.AllowOrDeny = 'D' THEN 'Deny'
+                        END
+                        , CASE
+                            WHEN a.SpecialRole = 0 THEN 'None'
+                            WHEN a.SpecialRole = 1 THEN 'All Users'
+                            WHEN a.SpecialRole = 2 THEN 'All Authenticated Users'
+                            WHEN a.SpecialRole = 3 THEN 'All Unauthenticated Users'
+                        END
+                        , g.Name
+                        , ISNULL(g.Id, 0)
+                        , person.FirstName + ' ' + person.LastName
+                        , ISNULL(person.Id, 0)
+                        , '' 
+                    FROM Page p
+                        JOIN Auth a on a.EntityId = p.Id
+                        LEFT JOIN [Group] g ON (g.Id = a.GroupId)
+                        LEFT JOIN PersonAlias pa ON (pa.Id = a.PersonAliasId)
+                        LEFT JOIN Person ON (person.Id = pa.PersonId)
+                    WHERE p.Id = @pageId
+                    AND a.EntityTypeId = 2 --RockPage
+                    Order By a.[Order] ASC
+
+                SET @pageId = (SELECT p.ParentPageId FROM Page p WHERE p.Id = @pageId)
+                CONTINUE
+            END
+
+
+            -- Include Authorizations for the Site (EntityTypeId = 1)
+                INSERT INTO @tt1 
+                    SELECT
+                        --'Inherited' 
+                        'Site'
+                        , NULL
+                        , a.Id
+                        , a.[Order]
+                        , a.Action
+                        , CASE
+                            WHEN a.AllowOrDeny = 'A' THEN 'Allow'
+                            WHEN a.AllowOrDeny = 'D' THEN 'Deny'
+                        END
+                        , CASE
+                            WHEN a.SpecialRole = 0 THEN 'None'
+                            WHEN a.SpecialRole = 1 THEN 'All Users'
+                            WHEN a.SpecialRole = 2 THEN 'All Authenticated Users'
+                            WHEN a.SpecialRole = 3 THEN 'All Unauthenticated Users'
+                        END
+                        , g.Name
+                        , ISNULL(g.Id, 0)
+                        , person.FirstName + ' ' + person.LastName
+                        , ISNULL(person.Id, 0)
+                        , '' 
+                    FROM Auth a	
+                        LEFT JOIN [Group] g ON (g.Id = a.GroupId)
+                        LEFT JOIN PersonAlias pa ON (pa.Id = a.PersonAliasId)
+                        LEFT JOIN Person ON (person.Id = pa.PersonId)
+                        JOIN Site s ON (s.Id = a.EntityId)
+                    WHERE a.EntityTypeId = 3
+                        AND EXISTS ( SELECT TOP(1) * FROM @tt1 t4 WHERE t4.PageId = s.DefaultPageId)
+                    Order By a.[Order] ASC
+
+
+            Declare @Id_Counter int = 1
+
+            WHILE @Id_Counter IN (SELECT Id FROM @tt1)
+            BEGIN 
+
+                INSERT INTO @tt2
+                SELECT 
+                        t1.PageName
+                        , t1.PageId
+                        , t1.AuthId
+                        , t1.[Order]
+                        , t1.[Action]
+                        , t1.AllowOrDeny
+                        , t1.SpecialRole 
+                        , t1.[GroupName]
+                        , t1.[GroupId]
+                        , t1.PersonName
+                        , t1.[Personid]
+                        , t1.[Path]
+                FROM   @tt1 t1
+                WHERE  @Id_Counter = t1.Id
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM   @tt2 t2
+                            WHERE  (
+                                        (t1.[Action] = t2.[Action]
+                                        AND t1.SpecialRole = t2.SpecialRole							  
+                                        AND t1.GroupId = t2.GroupId		  
+                                        AND t1.PersonId = t2.PersonId)
+                                    OR
+                                        (t1.[Action] = t2.[Action]
+                                        AND t1.SpecialRole LIKE '%None%'
+                                        AND (t2.SpecialRole LIKE '%All Users' OR t2.SpecialRole LIKE '%All Authenticated Users%')
+                                        )
+                                    OR 
+                                        (t1.[Action] = t2.[Action]
+                                        AND t1.SpecialRole LIKE '%All Authenticated Users%'
+                                        AND t2.SpecialRole LIKE '%All Users%')
+                                    OR 
+                                        (t1.[Action] = t2.[Action]
+                                        AND t1.SpecialRole LIKE '%All Unauthenticated Users%'
+                                        AND t2.SpecialRole LIKE '%All Users%') 
+                                )
+                            ) 
+                SET @Id_Counter = @Id_Counter + 1
+                CONTINUE
+            END				
+
+            SELECT * FROM @tt2 tt2                        
+            ");
+
+            // Page: Person Authorized On Page              
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Person Authorized On Page","A report of affected pages where a Person is allowed authorization to View, Edit, Administrate, etc on a page.","49F93E60-338F-45C8-B749-554D461AF6F4",""); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType("HTML Content","Adds an editable HTML fragment to the page.","~/Blocks/Cms/HtmlContentDetail.ascx","CMS","19B61D65-37E3-459F-A44F-DEF0089118A3");
             RockMigrationHelper.UpdateBlockType("Dynamic Data","Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.","~/Blocks/Reporting/DynamicData.ascx","Reporting","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
-            // Add Block to Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "D86AF59A-E6AF-4550-806E-24B74C822315","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"61020580-891A-482F-9964-D60BF00B4AA8");   
-            // Add Block to Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "D86AF59A-E6AF-4550-806E-24B74C822315","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97");   
-            // Attrib for BlockType: Dynamic Data:Update Page              
+            // Add Block to Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "49F93E60-338F-45C8-B749-554D461AF6F4","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"7E27CF7C-4F47-4F06-B9CF-B41FB0E8241A");   
+            // Add Block to Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "49F93E60-338F-45C8-B749-554D461AF6F4","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"376CF067-5604-46D2-9687-55492E3D13EA");   
+            // Attrib for BlockType: Dynamic Data:Update Page             
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Update Page","UpdatePage","","If True, provides fields for updating the parent page's Name and Description",0,@"True","230EDFE8-33CA-478D-8C9A-572323AF3466");  
             // Attrib for BlockType: Dynamic Data:Query Params              
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","9C204CD0-1233-41C5-818A-C5DA439445AA","Query Params","QueryParams","","Parameters to pass to query",0,@"","B0EC41B9-37C0-48FD-8E4E-37A8CA305012");  
@@ -66,7 +234,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Stored Procedure","StoredProcedure","","Is the query a stored procedure?",0,@"False","A4439703-5432-489A-9C14-155903D6A43E");  
             // Attrib for BlockType: Dynamic Data:Show Merge Template              
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Show Merge Template","ShowMergeTemplate","","Show Export to Merge Template button in grid footer?",0,@"True","6697B0A2-C8FE-497A-B5B4-A9D459474338");  
-            // Attrib for BlockType: Dynamic Data:Paneled Grid              
+            // Attrib for BlockType: Dynamic Data:Paneled Grid             
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Paneled Grid","PaneledGrid","","Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.",0,@"False","5449CB61-2DFC-4B55-A697-38F1C2AF128B");  
             // Attrib for BlockType: Dynamic Data:Show Grid Filter              
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Show Grid Filter","ShowGridFilter","","Show filtering controls that are dynamically generated to match the columns of the dynamic data.",0,@"True","E582FD3C-9990-47D1-A57F-A3DB753B1D0C");  
@@ -104,50 +272,50 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","BD0D9B57-2A41-4490-89FF-F01DAB7D4904","Cache Tags","CacheTags","","Cached tags are used to link cached content so that it can be expired as a group",10,@"","522C18A9-C727-42A5-A0BA-13C673E8C4B6");  
             // Attrib for BlockType: HTML Content:Is Secondary Block              
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Is Secondary Block","IsSecondaryBlock","","Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",11,@"False","04C15DC1-DFB6-4D63-A7BC-0507D0E33EF4");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/GiversWithoutPledges.sql' %}");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","202A82BF-7772-481C-8419-600012607972",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Givers Without Pledges, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/PersonAuthorizedOnPage.sql' %}");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","202A82BF-7772-481C-8419-600012607972",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Person Authorized On Page, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("376CF067-5604-46D2-9687-55492E3D13EA","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "61020580-891A-482F-9964-D60BF00B4AA8", @"<h4>This report will list out personal and giving information for givers who do not have pledges.</h4>"
-            , "9b033558-6eaf-4342-ad70-b17f4a6b186f" );
+            RockMigrationHelper.UpdateHtmlContentBlock( "7E27CF7C-4F47-4F06-B9CF-B41FB0E8241A", @"<div class='alert alert-info'>A report of affected pages where a Person is allowed authorization to View, Edit, Administrate, etc on a page.</div>"
+            , "d4962856-7c74-4ee1-a98a-d946cebf8ad5" );
 
             // Hide Page from view
-            RockMigrationHelper.AddSecurityAuthForPage( "D86AF59A-E6AF-4550-806E-24B74C822315", 0, "View", false, "", 1, "8df5d95d-8651-42e3-8197-509110940c8e" );
+            RockMigrationHelper.AddSecurityAuthForPage( "49F93E60-338F-45C8-B749-554D461AF6F4", 0, "View", false, "", 1, "27555789-2f3a-4a34-b991-e3767194373f" );
         }
 
         /// <summary>
@@ -190,11 +358,11 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.DeleteAttribute("7C1CE199-86CF-4EAE-8AB3-848416A72C58");
             RockMigrationHelper.DeleteAttribute("EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A");
             RockMigrationHelper.DeleteAttribute("4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4");
-            RockMigrationHelper.DeleteBlock("8E53FD60-4A1A-4DB9-8BA0-61B3207F3A97");
-            RockMigrationHelper.DeleteBlock("61020580-891A-482F-9964-D60BF00B4AA8");
+            RockMigrationHelper.DeleteBlock("376CF067-5604-46D2-9687-55492E3D13EA");
+            RockMigrationHelper.DeleteBlock("7E27CF7C-4F47-4F06-B9CF-B41FB0E8241A");
             RockMigrationHelper.DeleteBlockType("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
             RockMigrationHelper.DeleteBlockType("19B61D65-37E3-459F-A44F-DEF0089118A3");
-            RockMigrationHelper.DeletePage("D86AF59A-E6AF-4550-806E-24B74C822315"); //  Page: Givers Without Pledges
+            RockMigrationHelper.DeletePage("49F93E60-338F-45C8-B749-554D461AF6F4"); //  Page: Person Authorized On Page
         }
     }
 }
