@@ -145,7 +145,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.AddSecurityAuthForPage( "A1E82D63-4735-4F37-9BF3-09D9C631A5EE", 0, "View", false, "", 1, "606AADC5-515B-4E9E-9D6E-57B5ACF29121" );
             RockMigrationHelper.UpdateHtmlContentBlock( "3E97A41C-C1CB-4E63-8560-B13A1C96D4D4", @"<div class='alert alert-info'>
     Shows amount totals for each Financial Account over a given timespan (12 Months Default)
-</div>", "A47929B4-EE3C-4E0E-BB9F-4758D1036B93" );
+</div>", "e7cb2b83-440e-402e-8638-6036f86df811" );
 
         }
 
