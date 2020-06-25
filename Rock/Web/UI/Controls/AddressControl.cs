@@ -679,7 +679,7 @@ namespace Rock.Web.UI.Controls
             _tbStreet1 = new TextBox();
             Controls.Add( _tbStreet1 );
             _tbStreet1.ID = "tbStreet1";
-            _tbStreet1.CssClass = "form-control js-address-field";
+            _tbStreet1.CssClass = "form-control js-address-field js-street1";
 
             _tbStreet2 = new TextBox();
             Controls.Add( _tbStreet2 );
@@ -689,7 +689,7 @@ namespace Rock.Web.UI.Controls
             _tbCity = new TextBox();
             Controls.Add( _tbCity );
             _tbCity.ID = "tbCity";
-            _tbCity.CssClass = "form-control js-address-field";
+            _tbCity.CssClass = "form-control js-address-field js-city";
 
             _tbCounty = new TextBox();
             Controls.Add( _tbCounty );
@@ -699,7 +699,7 @@ namespace Rock.Web.UI.Controls
             _tbState = new TextBox();
             Controls.Add( _tbState );
             _tbState.ID = "tbState";
-            _tbState.CssClass = "form-control js-address-field";
+            _tbState.CssClass = "form-control js-address-field js-state";
 
             _ddlState = new DropDownList();
             Controls.Add( _ddlState );
