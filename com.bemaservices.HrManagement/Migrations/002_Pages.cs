@@ -99,6 +99,36 @@ namespace com.bemaservices.HrManagement.Migrations
             // Attrib for BlockType: PTO Type List:core.CustomGridEnableStickyHeaders
             RockMigrationHelper.UpdateBlockTypeAttribute( "39D2B37D-801B-408A-B726-DA962EB5F85F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "0D4BC881-A3A0-429C-A6F1-5068FC806A76" );
 
+            // Page: PTO Tiers
+            RockMigrationHelper.AddPage( "3EDD82D0-1F64-4784-875B-688B7D3BD9AD", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "PTO Tiers", "", "2B5A951C-91B2-43CB-8257-E5058C1FB199", "fa fa-directions" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Pto Teir List", "Block to display the Pto Teirs.", "~/Plugins/com_bemaservices/HrManagement/PtoTierList.ascx", "BEMA Services > HR Management", "39CA06DB-6454-4863-AE8D-E8912B1418FB" );
+            // Add Block to Page: PTO Tiers, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "2B5A951C-91B2-43CB-8257-E5058C1FB199", "", "39CA06DB-6454-4863-AE8D-E8912B1418FB", "Pto Teir List", "Main", "", "", 0, "545F83B4-F306-468D-94F1-A979AF6E28AA" );
+            // Attrib for BlockType: Pto Teir List:Detail Page
+            RockMigrationHelper.UpdateBlockTypeAttribute( "39CA06DB-6454-4863-AE8D-E8912B1418FB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "Page used to view details of a Pto Teir.", 0, @"", "0490C50F-6261-4EDE-BAB1-C564D67E101F" );
+            // Attrib Value for Block:Pto Teir List, Attribute:Detail Page Page: PTO Tiers, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "545F83B4-F306-468D-94F1-A979AF6E28AA", "0490C50F-6261-4EDE-BAB1-C564D67E101F", @"07b8444b-e388-44c4-a910-22c0f89f0a97" );
+
+            // Page: PTO Tier Detail
+            RockMigrationHelper.AddPage( "2B5A951C-91B2-43CB-8257-E5058C1FB199", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "PTO Tier Detail", "", "07B8444B-E388-44C4-A910-22C0F89F0A97", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Pto Teir Detail", "Displays the details of the given Pto Tier for editing.", "~/Plugins/com_bemaservices/HrManagement/PtoTierDetail.ascx", "BEMA Services > HR Management", "8FBBCF60-A8BD-4370-9506-B5C394CBA851" );
+            RockMigrationHelper.UpdateBlockType( "Pto Bracket List", "Lists all the brackets for a given PTO tier.", "~/Plugins/com_bemaservices/HrManagement/PtoBracketList.ascx", "BEMA Services > HR Management", "82D8942C-FE98-4B13-A0CA-9C11473450D5" );
+            // Add Block to Page: PTO Tier Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "07B8444B-E388-44C4-A910-22C0F89F0A97", "", "8FBBCF60-A8BD-4370-9506-B5C394CBA851", "Pto Teir Detail", "Main", "", "", 0, "D47C3266-810B-4F0D-BD6A-E420A4748D49" );
+            // Add Block to Page: PTO Tier Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "07B8444B-E388-44C4-A910-22C0F89F0A97", "", "82D8942C-FE98-4B13-A0CA-9C11473450D5", "Pto Bracket List", "Main", "", "", 1, "C574C5BB-2862-491E-8BC5-41910152F7EC" );
+            // Attrib for BlockType: Pto Bracket List:Detail Page
+            RockMigrationHelper.UpdateBlockTypeAttribute( "82D8942C-FE98-4B13-A0CA-9C11473450D5", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "4E60A5BC-9DAB-4372-9553-625673B80FB7" );
+            // Attrib for BlockType: Pto Bracket List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "82D8942C-FE98-4B13-A0CA-9C11473450D5", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "A0FF4ADD-CC49-44F0-B467-24647A39A254" );
+            // Attrib for BlockType: Pto Bracket List:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute( "82D8942C-FE98-4B13-A0CA-9C11473450D5", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "2F5160F7-8EC4-41EF-B88E-440E5957F64A" );
+            // Attrib Value for Block:Pto Bracket List, Attribute:Detail Page Page: PTO Tier Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "C574C5BB-2862-491E-8BC5-41910152F7EC", "4E60A5BC-9DAB-4372-9553-625673B80FB7", @"5fb4b6c8-1891-4d8a-a609-b160c966f3e0" );
+            // Attrib Value for Block:Pto Bracket List, Attribute:core.CustomGridEnableStickyHeaders Page: PTO Tier Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "C574C5BB-2862-491E-8BC5-41910152F7EC", "2F5160F7-8EC4-41EF-B88E-440E5957F64A", @"False" );
+
+
         }
 
         /// <summary>
@@ -119,6 +149,25 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.DeleteBlock( "A6DC28DF-5FC6-4D66-9AD1-78D24E6F370F" );
             RockMigrationHelper.DeleteBlockType( "CACB9D1A-A820-4587-986A-D66A69EE9948" );
             RockMigrationHelper.DeletePage( "F159FB38-FEF9-4F08-8A5C-5E112B1DD88F" ); //  Page: HR Management
+
+            RockMigrationHelper.DeleteAttribute( "2F5160F7-8EC4-41EF-B88E-440E5957F64A" );
+            RockMigrationHelper.DeleteAttribute( "A0FF4ADD-CC49-44F0-B467-24647A39A254" );
+            RockMigrationHelper.DeleteAttribute( "4E60A5BC-9DAB-4372-9553-625673B80FB7" );
+            RockMigrationHelper.DeleteBlock( "C574C5BB-2862-491E-8BC5-41910152F7EC" );
+            RockMigrationHelper.DeleteBlock( "D47C3266-810B-4F0D-BD6A-E420A4748D49" );
+            RockMigrationHelper.DeleteBlockType( "82D8942C-FE98-4B13-A0CA-9C11473450D5" );
+            RockMigrationHelper.DeleteBlockType( "8FBBCF60-A8BD-4370-9506-B5C394CBA851" );
+            RockMigrationHelper.DeletePage( "07B8444B-E388-44C4-A910-22C0F89F0A97" ); //  Page: PTO Tier Detail
+
+            RockMigrationHelper.DeleteAttribute( "A0905767-79C9-4567-BA76-A3FFEE71E0B3" );
+            RockMigrationHelper.DeleteAttribute( "8D2C5502-0AAB-4FE6-ABE9-05900439827D" );
+            RockMigrationHelper.DeleteAttribute( "D5CF91C1-2CC8-46BF-8CC6-DD6AD8B07518" );
+            RockMigrationHelper.DeleteAttribute( "E99F01A7-AF8F-4010-A456-3A9048347859" );
+            RockMigrationHelper.DeleteAttribute( "5B6219CE-84B5-4F68-BE5B-C3187EDFF2A6" );
+            RockMigrationHelper.DeleteAttribute( "6C00C171-E6DC-4027-B587-0AB63AC939E3" );
+            RockMigrationHelper.DeleteBlock( "71BE6A7A-7D51-4149-AFB1-3307DF04B2DF" );
+            RockMigrationHelper.DeleteBlockType( "040CFD6D-5155-4BC9-BAEE-A53219A7BECE" );
+            RockMigrationHelper.DeletePage( "BE5F3984-C25E-47CA-A602-EE1CED99E9AC" ); //  Page: Emotional Intelligence Assessment
         }
     }
 }
