@@ -78,6 +78,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( schedule != null )
             {
+                // If setting the value to an inactive schedule, enable the "Show Inactive Schedules" checkbox.
+                if ( !schedule.IsActive )
+                {
+                    _cbShowInactiveSchedules.Checked = true;
+                    SetExtraRestParams( true );
+                }
+
                 ItemId = schedule.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
@@ -116,6 +123,13 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( schedule != null )
                     {
+                        // If setting the value to an inactive schedule, enable the "Show Inactive Schedules" checkbox.
+                        if ( !schedule.IsActive )
+                        {
+                            _cbShowInactiveSchedules.Checked = true;
+                            SetExtraRestParams( true );
+                        }
+
                         ids.Add( schedule.Id.ToString() );
                         names.Add( schedule.Name );
                         var parentCategory = schedule.Category;
