@@ -19,7 +19,7 @@
                             <ItemTemplate>
                                 <li>
                                     <asp:LinkButton ID="lbPtoTeir" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("IconCssClass") %>'></i>
+                                        <i class='fa fa-clock'></i>
                                         <h3><%# Eval("Name") %> </h3>
                                     </asp:LinkButton>
                                 </li>

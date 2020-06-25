@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using Rock.Model;
 using Rock.Data;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace com.bemaservices.HrManagement.Model
 {
@@ -48,7 +49,7 @@ namespace com.bemaservices.HrManagement.Model
         public int MinimumYear { get; set; }
 
         [DataMember]
-        public int MaximumYear { get; set; }
+        public int? MaximumYear { get; set; }
         
         #endregion
 
@@ -57,7 +58,24 @@ namespace com.bemaservices.HrManagement.Model
         [LavaInclude]
         public virtual PtoTier PtoTier { get; set; }
 
+        [LavaInclude]
+        public virtual string Name {  get { return ToString(); } }
+
         #endregion
+       
+        public override string ToString()
+        {
+
+            if( this.MaximumYear.HasValue )
+            {
+                return this.MinimumYear.ToString() + " to " + this.MaximumYear.Value.ToString() + " years";
+            }
+            else
+            {
+                return this.MinimumYear.ToString() + "+ years";
+            }
+
+        }
     }
 
     #region Entity Configuration

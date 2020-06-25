@@ -28,6 +28,9 @@ using Rock.Model;
 using Rock.Security;
 
 using com.bemaservices.HrManagement.Model;
+using System.Drawing;
+using Rock.Field.Types;
+using System.Runtime.CompilerServices;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
@@ -102,10 +105,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddConnectionType_Click( object sender, EventArgs e )
+        protected void lbAddPtoTeir_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "PtoTierId", 0 );
         }
+
+        
         #endregion
 
         #region Methods

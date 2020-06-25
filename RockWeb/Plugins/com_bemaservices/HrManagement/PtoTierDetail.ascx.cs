@@ -81,7 +81,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "PtoTeirId" ).AsInteger() );
+                ShowDetail( PageParameter( "PtoTierId" ).AsInteger() );
             }
         }
 
@@ -267,6 +267,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     // Controls will render the error messages
                     return;
                 }
+
+                rockContext.SaveChanges();
 
                 //// need WrapTransaction due to Attribute saves
                 //rockContext.WrapTransaction( () =>
@@ -582,14 +584,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
-                    btnSecurity.Visible = false;
+                    //btnSecurity.Visible = false;
                     ShowReadonlyDetails( ptoTier );
                 }
                 else
                 {
                     btnEdit.Visible = true;
                     btnDelete.Visible = true;
-                    btnSecurity.Visible = true;
+                    //btnSecurity.Visible = true;
 
                     //btnSecurity.Title = "Secure " + ptoTier.Name;
                     //btnSecurity.EntityId = ptoTier.Id;

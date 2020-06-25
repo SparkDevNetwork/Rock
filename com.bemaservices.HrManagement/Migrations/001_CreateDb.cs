@@ -133,9 +133,9 @@ namespace com.bemaservices.HrManagement.Migrations
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracket] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracket_ModifiedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracket]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracket_PtoTeirId] FOREIGN KEY([PtoTierId])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracket]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracket_PtoTierId] FOREIGN KEY([PtoTierId])
                 REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoTier] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracket] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracket_PtoTeirId]
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracket] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracket_PtoTierId]
             " );
 
             Sql( @"
