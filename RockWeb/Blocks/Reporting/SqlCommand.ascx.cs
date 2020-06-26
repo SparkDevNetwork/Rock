@@ -18,9 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
@@ -40,19 +45,6 @@ namespace RockWeb.Blocks.Reporting
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
     public partial class SqlCommand : RockBlock
     {
-        #region User Preference Keys
-
-        /// <summary>
-        /// Keys to use for User Preferences
-        /// </summary>
-        private static class UserPreferenceKey
-        {
-            public const string SqlCommandHistoryJSON = "SqlCommandHistoryJSON";
-        }
-
-        #endregion
-
-
         #region Control Methods
 
         /// <summary>
@@ -63,28 +55,16 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnLoad( e );
 
-            foreach( Grid gReport in rptGrids.ControlsOfTypeRecursive<Grid>())
-            {
-                gReport.GridRebind += gReport_GridRebind;
-            }
+            gReport.GridRebind += gReport_GridRebind;
 
-            if ( !Page.IsPostBack )
+            if ( ! Page.IsPostBack )
             {
-                List<SqlCommandHistoryItem> sqlCommandHistory = GetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON ).FromJsonOrNull<List<SqlCommandHistoryItem>>() ?? new List<SqlCommandHistoryItem>();
-                if ( sqlCommandHistory.Any() )
-                {
-                    var lastSqlCommand = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).FirstOrDefault();
-                    tbQuery.Text = lastSqlCommand.SqlText;
-                }
-                else
-                {
-                    tbQuery.Text = @"
+                tbQuery.Text = @"
 SELECT
     TOP 10 *
 FROM
     [Person]
 ";
-                }
             }
         }
 
@@ -113,62 +93,33 @@ FROM
         #region Internal Methods
 
         /// <summary>
-        /// 
-        /// </summary>
-        public class SqlCommandHistoryItem
-        {
-            public string SqlText { get; set; }
-
-
-            public DateTime ExecuteDateTime { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format( "[{1}] {0}", SqlText.Truncate( 50 ), ExecuteDateTime.ToElapsedString() );
-            }
-        }
-
-        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void RunCommand()
         {
             nbSuccess.Visible = false;
             nbError.Visible = false;
-            rptGrids.Visible = false;
+            gReport.Visible = false;
 
             string query = tbQuery.Text;
             if ( !string.IsNullOrWhiteSpace( query ) )
-
             {
-                var sqlCommandHistory = GetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON ).FromJsonOrNull<List<SqlCommandHistoryItem>>() ?? new List<SqlCommandHistoryItem>();
-                var lastCommand = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).FirstOrDefault();
-                if ( lastCommand != null && lastCommand.SqlText == query )
-                {
-                    lastCommand.ExecuteDateTime = RockDateTime.Now;
-                }
-                else
-                {
-                    sqlCommandHistory.Add( new SqlCommandHistoryItem { SqlText = query, ExecuteDateTime = RockDateTime.Now } );
-                }
-
-                if ( sqlCommandHistory.Count > 50 )
-                {
-                    sqlCommandHistory = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).Take( 50 ).ToList();
-                }
-
-                SetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON, sqlCommandHistory.ToJson() );
-
                 try
                 {
                     if ( tQuery.Checked )
                     {
-                        rptGrids.Visible = true;
+                        gReport.Visible = true;
 
                         DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        if ( dataSet.Tables.Count > 0 )
+                        {
+                            var dataTable = dataSet.Tables[0];
 
-                        rptGrids.DataSource = dataSet.Tables.OfType<DataTable>().ToList();
-                        rptGrids.DataBind();
+                            AddGridColumns( dataTable );
+
+                            gReport.DataSource = GetSortedView( dataTable );
+                            gReport.DataBind();
+                        }
                     }
                     else
                     {
@@ -194,8 +145,7 @@ FROM
         /// Adds the grid columns.
         /// </summary>
         /// <param name="dataTable">The data table.</param>
-        /// <param name="gReport">The g report.</param>
-        private void AddGridColumns( DataTable dataTable, Grid gReport )
+        private void AddGridColumns( DataTable dataTable )
         {
             int rowsToEval = 10;
             if ( dataTable.Rows.Count < 10 )
@@ -222,7 +172,7 @@ FROM
                         object dateObj = dataTable.Rows[i][dataTableColumn];
                         if ( dateObj is DateTime )
                         {
-                            DateTime dateTime = ( DateTime ) dateObj;
+                            DateTime dateTime = (DateTime)dateObj;
                             if ( dateTime.TimeOfDay.Seconds != 0 )
                             {
                                 bf = new DateTimeField();
@@ -243,9 +193,8 @@ FROM
         /// Gets the sorted view.
         /// </summary>
         /// <param name="dataTable">The data table.</param>
-        /// <param name="gReport">The g report.</param>
         /// <returns></returns>
-        private System.Data.DataView GetSortedView( DataTable dataTable, Grid gReport )
+        private System.Data.DataView GetSortedView( DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
 
@@ -259,32 +208,5 @@ FROM
         }
 
         #endregion
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptGrids control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptGrids_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var dataTable = e.Item.DataItem as DataTable;
-            var lDataTableTitle = e.Item.FindControl( "lDataTableTitle" ) as Literal;
-            if ( dataTable.DataSet.Tables.Count > 1 )
-            {
-                lDataTableTitle.Text = string.Format( "<label>Result {0}</label>", dataTable.DataSet.Tables.IndexOf( dataTable ) + 1 );
-            }
-
-            var gReport = e.Item.FindControl( "gReport" ) as Grid;
-
-            AddGridColumns( dataTable, gReport );
-
-            gReport.DataSource = GetSortedView( dataTable, gReport );
-            gReport.DataBind();
-        }
-
-        protected void ddlCommandHistory_SelectedIndexChanged( object sender, EventArgs e )
-        {
-
-        }
     }
 }
