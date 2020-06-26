@@ -20,9 +20,9 @@
       <div class="col-md-10">
         <p>{{ opportunity.Summary }}</p>
 		{% if DetailPage contains "?" %}
-			<a class="btn btn-gray" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+			<a class="btn btn-primary btn-sm" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
 		{% else %}
-			<a class="btn btn-gray" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+			<a class="btn btn-primary btn-sm" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
 		{% endif %}
       </div>
     </div>
