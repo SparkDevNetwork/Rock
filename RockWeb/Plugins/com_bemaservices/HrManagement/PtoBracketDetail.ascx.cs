@@ -36,6 +36,8 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using com.bemaservices.HrManagement.Model;
+using OpenXmlPowerTools;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
@@ -53,7 +55,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         #region Properties
 
-        public List<PtoBracketTypeConfigsStateObj> PtoBracketTypeConfigsState { get; set; }
+        public List<PtoBracketTypeConfigsStateObj> ptoBracketTypeConfigsState { get; set; }
 
         #endregion
 
@@ -70,11 +72,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             string json = ViewState["PtoBracketTypeConfigsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                PtoBracketTypeConfigsState = new List<PtoBracketTypeConfigsStateObj>();
+                ptoBracketTypeConfigsState = new List<PtoBracketTypeConfigsStateObj>();
             }
             else
             {
-                PtoBracketTypeConfigsState = JsonConvert.DeserializeObject<List<PtoBracketTypeConfigsStateObj>>( json );
+                ptoBracketTypeConfigsState = JsonConvert.DeserializeObject<List<PtoBracketTypeConfigsStateObj>>( json );
             }
 
         }
@@ -94,9 +96,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlConnectionOpportunityDetail );
+            this.AddConfigurationUpdateTrigger( upnlPtoBracketDetail );
 
             _ptoTierId = PageParameter( "PtoTierId" ).AsInteger();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -140,7 +143,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["PtoBracketTypeConfigsState"] = JsonConvert.SerializeObject( PtoBracketTypeConfigsState, Formatting.None, jsonSetting );
+            ViewState["PtoBracketTypeConfigsState"] = JsonConvert.SerializeObject( ptoBracketTypeConfigsState, Formatting.None, jsonSetting );
 
 
             return base.SaveViewState();
@@ -220,7 +223,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             using ( RockContext rockContext = new RockContext() )
             {
-                if ( !ValidPlacementGroups() )
+                if ( !ValidPtoTypes() )
                 {
                     return;
                 }
@@ -245,63 +248,39 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ptoBracket.MaximumYear = tbMinimumYears.Text.AsIntegerOrNull();
                 ptoBracket.IsActive = cbIsActive.Checked;
 
-                // remove any group configs that were removed in the UI
-                var uiPtoBracketTypeConfigs = PtoBracketTypeConfigsState.Select( r => r.Guid );
-                foreach ( var PtoBracketTypeConfig in connectionOpportunity.ConnectionOpportunityGroupConfigs.Where( r => !uiGroupConfigs.Contains( r.Guid ) ).ToList() )
+                // remove any Bracket Types configs that were removed in the UI
+                var uiPtoBracketTypeConfigs = ptoBracketTypeConfigsState.Select( r => r.Guid );
+                foreach ( var ptoBracketType in ptoBracket.PtoBracketTypes.Where( r => !uiPtoBracketTypeConfigs.Contains( r.Guid ) ).ToList() )
                 {
-                    connectionOpportunity.ConnectionOpportunityGroupConfigs.Remove( connectionOpportunityGroupConfig );
-                    connectionOpportunityGroupConfigService.Delete( connectionOpportunityGroupConfig );
+                    ptoBracket.PtoBracketTypes.Remove( ptoBracketType );
+                    ptoBracketTypeService.Delete( ptoBracketType );
                 }
 
                 // Add or Update group configs from the UI
-                foreach ( var groupConfigStateObj in GroupConfigsState )
+                foreach ( var ptoBracketTypeConfigeObj in ptoBracketTypeConfigsState )
                 {
-                    ConnectionOpportunityGroupConfig connectionOpportunityGroupConfig = connectionOpportunity.ConnectionOpportunityGroupConfigs.Where( a => a.Guid == groupConfigStateObj.Guid ).FirstOrDefault();
-                    if ( connectionOpportunityGroupConfig == null )
+                    PtoBracketType ptoBracketType = ptoBracket.PtoBracketTypes.Where( a => a.Guid == ptoBracketTypeConfigeObj.Guid ).FirstOrDefault();
+                    if ( ptoBracketType == null )
                     {
-                        connectionOpportunityGroupConfig = new ConnectionOpportunityGroupConfig();
-                        connectionOpportunity.ConnectionOpportunityGroupConfigs.Add( connectionOpportunityGroupConfig );
+                        ptoBracketType = new PtoBracketType();
+                        ptoBracket.PtoBracketTypes.Add( ptoBracketType );
                     }
 
-                    connectionOpportunityGroupConfig.GroupTypeId = groupConfigStateObj.GroupTypeId;
-                    connectionOpportunityGroupConfig.GroupMemberRoleId = groupConfigStateObj.GroupMemberRoleId;
-                    connectionOpportunityGroupConfig.GroupMemberStatus = groupConfigStateObj.GroupMemberStatus;
-                    connectionOpportunityGroupConfig.UseAllGroupsOfType = groupConfigStateObj.UseAllGroupsOfType;
+                    ptoBracketType.PtoTypeId = ptoBracketTypeConfigeObj.PtoTypeId;
+                    ptoBracketType.DefaultHours = ptoBracketTypeConfigeObj.DefaultHours;
 
-                    connectionOpportunityGroupConfig.ConnectionOpportunityId = connectionOpportunity.Id;
+                    ptoBracketType.PtoBracketId = ptoBracket.Id;
                 }
 
-                // Remove any groups that were removed in the UI
-                var uiGroups = GroupsState.Select( r => r.Guid );
-                foreach ( var connectionOpportunityGroup in connectionOpportunity.ConnectionOpportunityGroups.Where( r => !uiGroups.Contains( r.Guid ) ).ToList() )
-                {
-                    connectionOpportunity.ConnectionOpportunityGroups.Remove( connectionOpportunityGroup );
-                    connectionOpportunityGroupService.Delete( connectionOpportunityGroup );
-                }
-
-                // Add or Update groups from the UI
-                foreach ( var groupStateObj in GroupsState )
-                {
-                    ConnectionOpportunityGroup connectionOpportunityGroup = connectionOpportunity.ConnectionOpportunityGroups.Where( a => a.Guid == groupStateObj.Guid ).FirstOrDefault();
-                    if ( connectionOpportunityGroup == null )
-                    {
-                        connectionOpportunityGroup = new ConnectionOpportunityGroup();
-                        connectionOpportunity.ConnectionOpportunityGroups.Add( connectionOpportunityGroup );
-                    }
-
-                    connectionOpportunityGroup.GroupId = groupStateObj.GroupId;
-                    connectionOpportunityGroup.ConnectionOpportunityId = connectionOpportunity.Id;
-                }
-
-                connectionOpportunity.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phAttributes, connectionOpportunity );
+                //ptoBracket.LoadAttributes();
+                //Rock.Attribute.Helper.GetEditValues( phAttributes, ptoBracket );
 
                 if ( !Page.IsValid )
                 {
                     return;
                 }
 
-                if ( !connectionOpportunity.IsValid )
+                if ( !ptoBracket.IsValid )
                 {
                     // Controls will render the error messages
                     return;
@@ -312,38 +291,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     rockContext.SaveChanges();
 
-                    connectionOpportunity.SaveAttributeValues( rockContext );
+                    //ptoBracket.SaveAttributeValues( rockContext );
 
-                    if ( orphanedPhotoId.HasValue || connectionOpportunity.PhotoId.HasValue)
-                    {
-                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    rockContext.SaveChanges();
 
-                        if ( orphanedPhotoId.HasValue )
-                        {
-                            var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                            if ( binaryFile != null )
-                            {
-                                string errorMessage;
-                                if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
-                                {
-                                    binaryFileService.Delete( binaryFile );
-                                }
-                            }
-                        }
-
-                        if ( connectionOpportunity.PhotoId.HasValue )
-                        {
-                            var binaryFile = binaryFileService.Get( connectionOpportunity.PhotoId.Value );
-                            if ( binaryFile != null )
-                            {
-                                binaryFile.IsTemporary = false;
-                            }
-                        }
-                        rockContext.SaveChanges();
-                    }
                 } );
-
-                ConnectionWorkflowService.RemoveCachedTriggers();
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams["PtoTierId"] = PageParameter( "PtoTierId" );
@@ -358,38 +310,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfConnectionOpportunityId.Value.Equals( "0" ) )
-            {
-                int? parentConnectionOpportunityId = PageParameter( "ParentConnectionOpportunityId" ).AsIntegerOrNull();
-                if ( parentConnectionOpportunityId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentConnectionOpportunityID, so we are probably in treeview mode,
-                    // so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    if ( parentConnectionOpportunityId != 0 )
-                    {
-                        qryParams["ConnectionOpportunityId"] = parentConnectionOpportunityId.ToString();
-                    }
-
-                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-
-                    NavigateToPage( RockPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["PtoTierId"] = PageParameter( "PtoTierId" );
-                    NavigateToParentPage( qryParams );
-                }
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                var qryParams = new Dictionary<string, string>();
-                qryParams["PtoTierId"] = PageParameter( "PtoTierId" );
-                NavigateToParentPage( qryParams );
-            }
+            
+            var qryParams = new Dictionary<string, string>();
+            qryParams["PtoTierId"] = PageParameter( "PtoTierId" );
+            NavigateToParentPage( qryParams );
+            
         }
 
         #endregion
@@ -398,26 +323,20 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         #region ConnectionOpportunityGroup Grid/Dialog Events
 
-        protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            BindDefaultConnectors();
-        }
-
         /// <summary>
-        /// Handles the Delete event of the gConnectionOpportunityGroups control.
+        /// Handles the Delete event of the gPtoBracketTypeConfigs control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gConnectionOpportunityGroups_Delete( object sender, RowEventArgs e )
+        protected void gPtoBracketTypeConfigs_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            var groupStateObj = GroupsState.Where( g => g.Guid.Equals( rowGuid ) ).FirstOrDefault();
-            if ( groupStateObj != null )
+            var ptoBracketTypeStateObj = ptoBracketTypeConfigsState.Where( g => g.Guid.Equals( rowGuid ) ).FirstOrDefault();
+            if ( ptoBracketTypeStateObj != null )
             {
-                GroupsState.Remove( groupStateObj );
+                ptoBracketTypeConfigsState.Remove( ptoBracketTypeStateObj );
             }
-            nbArchivedPlacementGroupWarning.Visible = GroupsState.Where( g => g.IsArchived ).Any();
-            BindGroupGrid();
+            BindPtoBracketTypeGrid();
         }
 
         /// <summary>
@@ -425,47 +344,54 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgGroupDetails_SaveClick( object sender, EventArgs e )
+        protected void dlgPtoTypeConfigDetails_SaveClick( object sender, EventArgs e )
         {
-            var groups = new List<Group>();
 
-            foreach ( int groupId in gpOpportunityGroup.SelectedValuesAsInt() )
+            PtoBracketType ptoBracketType;
+            var rockContext = new RockContext();
+            PtoBracketTypeService ptoBracketTypeService = new PtoBracketTypeService( rockContext );
+
+            int ptoBracketTypeId = hfPtoBracketTypeId.ValueAsInt();
+
+            if ( ptoBracketTypeId.Equals( 0 ) )
             {
-                var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( groupId );
-                if ( group != null )
-                {
-                    int? groupTypeId = ddlGroupType.SelectedValueAsInt();
-                    if ( groupTypeId.HasValue && group.GroupTypeId != groupTypeId.Value )
-                    {
-                        string groupTypeName = ddlGroupType.SelectedItem.Text;
-                        nbInvalidGroupType.Text = string.Format( "<p>One or more of the selected groups is not a <strong>{0}</strong> type. Please select groups that have a group type of <strong>{0}</strong>.", groupTypeName );
-                        nbInvalidGroupType.Visible = true;
-                        return;
-                    }
-
-                    groups.Add( group );
-                }
+                ptoBracketType = new PtoBracketType { Id = 0 };
+            }
+            else
+            {
+                ptoBracketType = ptoBracketTypeService.Get( ptoBracketTypeId );
             }
 
-            foreach ( var group in groups )
+            ptoBracketType.PtoTypeId = ddlPtoType.SelectedValue.AsInteger();
+            ptoBracketType.DefaultHours = tbDefaultHours.Text.AsInteger();
+            ptoBracketType.IsActive = cbBracketTypeIsActive.Checked;
+            ptoBracketType.PtoBracketId = PageParameter( "PtoBracketId" ).AsInteger();
+
+            if ( !Page.IsValid )
             {
-                var groupStateObj = GroupsState.Where( g => g.GroupId == group.Id ).FirstOrDefault();
-                if ( groupStateObj == null )
-                {
-                    groupStateObj = new GroupStateObj();
-                    groupStateObj.GroupId = group.Id;
-                    groupStateObj.GroupName = group.Name;
-                    groupStateObj.GroupTypeId = group.GroupTypeId;
-                    groupStateObj.CampusId = group.CampusId;
-                    groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
-                    groupStateObj.Guid = Guid.NewGuid();
-                    groupStateObj.IsArchived = group.IsArchived;
-                    GroupsState.Add( groupStateObj );
-                }
+                return;
             }
 
-            BindGroupGrid();
+            if ( !ptoBracketType.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            rockContext.WrapTransaction( () =>
+            {
+                if ( ptoBracketType.Id.Equals( 0 ) )
+                {
+                    ptoBracketTypeService.Add( ptoBracketType );
+                }
+
+                rockContext.SaveChanges();
+
+            } );
+
+            hfActiveDialog.Value = "";
+
+            BindPtoBracketTypeGrid();
             HideDialog();
         }
 
@@ -474,9 +400,9 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gConnectionOpportunityGroups_GridRebind( object sender, EventArgs e )
+        private void gPtoBracketTypeConfigs_GridRebind( object sender, EventArgs e )
         {
-            BindGroupGrid();
+            BindPtoBracketTypeGrid();
         }
 
         /// <summary>
@@ -486,41 +412,16 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityGroups_Add( object sender, EventArgs e )
         {
-            gpOpportunityGroup.SetValue( null );
-            ShowDialog( "GroupDetails", true );
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the lvDefaultConnectors control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
-        void lvDefaultConnectors_ItemDataBound( object sender, ListViewItemEventArgs e )
-        {
-            var defaultConnector = e.Item.DataItem as DefaultConnector;
-            if ( defaultConnector != null )
-            {
-                var hfDefaultConnector = e.Item.FindControl( "hfDefaultConnector" ) as HiddenField;
-                var ddlDefaultConnector = e.Item.FindControl( "ddlDefaultConnector" ) as RockDropDownList;
-                if ( hfDefaultConnector != null && ddlDefaultConnector != null )
-                {
-                    hfDefaultConnector.Value = defaultConnector.CampusId.ToString();
-                    ddlDefaultConnector.Label = defaultConnector.CampusName + " Default Connector";
-                    ddlDefaultConnector.DataSource = defaultConnector.Options;
-                    ddlDefaultConnector.DataBind();
-                    ddlDefaultConnector.Items.Insert( 0, new ListItem( "", "" ) );
-                    ddlDefaultConnector.SetValue( defaultConnector.PersonAliasId );
-                }
-            }
+            ShowDialog( "PtpBracketTypes", true );
         }
 
         /// <summary>
         /// Binds the group grid.
         /// </summary>
-        private void BindGroupGrid()
+        private void BindPtoBracketTypeGrid()
         {
-            gConnectionOpportunityGroups.DataSource = GroupsState;
-            gConnectionOpportunityGroups.DataBind();
+            gPtoBracketTypeConfigs.DataSource = ptoBracketTypeConfigsState;
+            gPtoBracketTypeConfigs.DataBind();
         }
 
         #endregion
@@ -1077,33 +978,30 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="connectionOpportunityId">The connectionOpportunity identifier.</param>
-        /// <param name="parentConnectionOpportunityId">The parent connectionOpportunity identifier.</param>
-        public void ShowDetail( int connectionOpportunityId )
+        /// <param name="ptoBracketId">The ptoBracket identifier.</param>
+        public void ShowDetail( int ptoBracketId )
         {
             RockContext rockContext = new RockContext();
 
-            ConnectionOpportunity connectionOpportunity = null;
+            PtoBracket ptoBracket = null;
 
-            if ( !connectionOpportunityId.Equals( 0 ) )
+            if ( !ptoBracketId.Equals( 0 ) )
             {
-                connectionOpportunity = GetConnectionOpportunity( connectionOpportunityId, rockContext );
-                pdAuditDetails.SetEntity( connectionOpportunity, ResolveRockUrl( "~" ) );
+                ptoBracket = GetPtoBracket( ptoBracketId, rockContext );
+                pdAuditDetails.SetEntity( ptoBracket, ResolveRockUrl( "~" ) );
             }
 
-            if ( connectionOpportunity == null )
+            if ( ptoBracket == null )
             {
-                int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
-
-                connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
-                connectionOpportunity.ConnectionTypeId = _connectionTypeId;
-                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
+                ptoBracket = new PtoBracket { Id = 0, IsActive = true, MinimumYear = 1 };
+                ptoBracket.PtoTierId = _ptoTierId;
+                ptoBracket.PtoTier = new PtoTierService( rockContext ).Get( _ptoTierId );
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            bool editAllowed = UserCanEdit || connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            bool editAllowed = true; //UserCanEdit || connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
             bool readOnly = true;
 
             if ( !editAllowed )
@@ -1115,10 +1013,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             {
                 nbEditModeMessage.Text = string.Empty;
 
-                if ( connectionOpportunity.Id != 0 && connectionOpportunity.ConnectionTypeId != _connectionTypeId )
+                if ( ptoBracket.Id != 0 && ptoBracket.PtoTierId != _ptoTierId )
                 {
-                    // Selected Opportunity does not belong to the selected Connection Type
-                    nbIncorrectOpportunity.Visible = true;
+                    // Selected Bracket does not belong to the selected Pto Tier
+                    nbIncorrectTier.Visible = true;
                 }
                 else
                 {
@@ -1203,171 +1101,28 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 GroupsState.Add( new GroupStateObj( opportunityGroup ) );
             }
 
-            GroupConfigsState = new List<GroupConfigStateObj>();
-            foreach ( var groupConfig in connectionOpportunity.ConnectionOpportunityGroupConfigs )
-            {
-                GroupConfigsState.Add( new GroupConfigStateObj( groupConfig ) );
-            }
-
-            ConnectorGroupsState = new List<GroupStateObj>();
-            foreach( var connectorGroup in connectionOpportunity.ConnectionOpportunityConnectorGroups )
-            {
-                if (connectorGroup.ConnectorGroup == null )
-                {
-                    // Look for archived groups.
-                    var archivedGroup = new GroupService( new RockContext() )
-                        .GetArchived()
-                        .Where( a => a.Id == connectorGroup.ConnectorGroupId )
-                        .FirstOrDefault();
-                    if ( archivedGroup != null )
-                    {
-                        nbArchivedConnectorGroupWarning.Visible = true;
-                        connectorGroup.ConnectorGroup = archivedGroup;
-                    }
-                }
-                ConnectorGroupsState.Add( new GroupStateObj( connectorGroup ) );
-            }
-
-            imgupPhoto.BinaryFileId = connectionOpportunity.PhotoId;
-
-            DefaultConnectors = new Dictionary<int, int>();
-            foreach( var campus in connectionOpportunity.ConnectionOpportunityCampuses
-                .Where( c =>
-                    c.DefaultConnectorPersonAlias != null &&
-                    c.DefaultConnectorPersonAlias.Person != null ) )
-            {
-                var personAlias = campus.DefaultConnectorPersonAlias.Person.PrimaryAlias;
-                if (personAlias != null )
-                {
-                    DefaultConnectors.AddOrReplace( campus.CampusId, personAlias.Id );
-                }
-            }
-
-            LoadDropDowns( connectionOpportunity );
-
-            ShowOpportunityAttributes();
-
-            BindGroupGrid();
-            BindGroupConfigsGrid();
-            BindWorkflowGrid();
-            BindConnectorGroupsGrid();
+            BindPtoBracketTypeGrid();
         }
 
         /// <summary>
-        /// Shows the opportunity attributes.
+        /// Gets the ptoBracket.
         /// </summary>
-        private void ShowOpportunityAttributes()
-        {
-            wpAttributes.Visible = false;
-            phAttributes.Controls.Clear();
-
-            ConnectionOpportunity connectionOpportunity;
-            int connectionOpportunityId = PageParameter( "ConnectionOpportunityId" ).AsInteger();
-            if ( connectionOpportunityId == 0 )
-            {
-                connectionOpportunity = new ConnectionOpportunity { ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger() };
-            }
-            else
-            {
-                connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( connectionOpportunityId );
-            }
-
-            connectionOpportunity.LoadAttributes();
-            if ( connectionOpportunity.Attributes != null && connectionOpportunity.Attributes.Any() )
-            {
-                wpAttributes.Visible = true;
-                if ( !Page.IsPostBack )
-                {
-                    Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, true, BlockValidationGroup );
-                }
-                else
-                {
-                    Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, false, BlockValidationGroup );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the connectionOpportunity.
-        /// </summary>
-        /// <param name="connectionOpportunityId">The connectionOpportunity identifier.</param>
+        /// <param name="ptoBracketId">The ptoBracket identifier.</param>
         /// <returns></returns>
-        private ConnectionOpportunity GetConnectionOpportunity( int connectionOpportunityId, RockContext rockContext = null )
+        private PtoBracket GetPtoBracket( int ptoBracketId, RockContext rockContext = null )
         {
-            string key = string.Format( "ConnectionOpportunity:{0}", connectionOpportunityId );
-            ConnectionOpportunity connectionOpportunity = RockPage.GetSharedItem( key ) as ConnectionOpportunity;
-            if ( connectionOpportunity == null )
+            string key = string.Format( "PtoBracket:{0}", ptoBracketId );
+            PtoBracket ptoBracket = RockPage.GetSharedItem( key ) as PtoBracket;
+            if ( ptoBracket == null )
             {
                 rockContext = rockContext ?? new RockContext();
-                connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable()
-                    .Where( e => e.Id == connectionOpportunityId )
+                ptoBracket = new PtoBracketService( rockContext ).Queryable()
+                    .Where( e => e.Id == ptoBracketId )
                     .FirstOrDefault();
-                RockPage.SaveSharedItem( key, connectionOpportunity );
+                RockPage.SaveSharedItem( key, ptoBracket );
             }
 
-            return connectionOpportunity;
-        }
-
-        private bool ValidPlacementGroups()
-        {
-            var validGroupTypeIds = GroupConfigsState.Where( c => !c.UseAllGroupsOfType ).Select( c => c.GroupTypeId ).ToList();
-            var validGroupTypeNames = GroupConfigsState.Where( c => !c.UseAllGroupsOfType ).Select( c => c.GroupTypeName ).ToList().AsDelimited( ", " );
-
-            if ( GroupsState.Any( g => !validGroupTypeIds.Contains( g.GroupTypeId ) ) )
-            {
-                if ( validGroupTypeNames.Any() )
-                {
-                    nbInvalidGroupTypes.Text = string.Format( "<p>One or more of the selected groups is not one of the configured group types that allow specifying a group ({0}). Please select groups that have one of these group types.", validGroupTypeNames );
-                }
-                else
-                {
-                    nbInvalidGroupTypes.Text = "<p>Placement Groups are not allowed because there are not any group types configured, or they all are configured to 'Use All Groups of This Type'. Please remove the placement group(s) or reconfigure the group types.";
-                }
-
-                nbInvalidGroupTypes.Visible = true;
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns( ConnectionOpportunity connectionOpportunity )
-        {
-            cblCampus.Items.Clear();
-            cblCampus.DataSource = CampusCache.All();
-            cblCampus.DataBind();
-            cblCampus.SetValues( connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList() );
-        }
-
-        /// <summary>
-        /// Loads the group roles.
-        /// </summary>
-        /// <param name="groupTypeId">The group type unique identifier.</param>
-        private void LoadGroupRoles( int? groupTypeId )
-        {
-            int? currentGroupRoleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
-            ddlGroupRole.SelectedValue = null;
-            ddlGroupRole.Items.Clear();
-
-            if ( groupTypeId.HasValue )
-            {
-                var groupRoleService = new Rock.Model.GroupTypeRoleService( new RockContext() );
-                var groupRoles = groupRoleService.Queryable()
-                    .Where( r =>
-                        r.GroupTypeId == groupTypeId.Value )
-                    .OrderBy( a => a.Name )
-                    .ToList();
-
-                foreach ( var r in groupRoles )
-                {
-                    var roleItem = new ListItem( r.Name, r.Id.ToString().ToUpper() );
-                    roleItem.Selected = r.Id == currentGroupRoleId;
-                    ddlGroupRole.Items.Add( roleItem );
-                }
-            }
+            return ptoBracket;
         }
 
         /// <summary>
@@ -1389,20 +1144,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "GROUPDETAILS":
-                    dlgGroupDetails.Show();
-                    break;
-
-                case "GROUPCONFIGDETAILS":
-                    dlgGroupConfigDetails.Show();
-                    break;
-
-                case "CONNECTORGROUPDETAILS":
-                    dlgConnectorGroupDetails.Show();
-                    break;
-
-                case "WORKFLOWDETAILS":
-                    dlgWorkflowDetails.Show();
+                case "PTOBRACKETTYPES":
+                    dlgPtoTypeConfigDetails.Show();
                     break;
             }
         }
@@ -1414,20 +1157,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "GROUPDETAILS":
-                    dlgGroupDetails.Hide();
-                    break;
-
-                case "GROUPCONFIGDETAILS":
-                    dlgGroupConfigDetails.Hide();
-                    break;
-
-                case "CONNECTORGROUPDETAILS":
-                    dlgConnectorGroupDetails.Hide();
-                    break;
-
-                case "WORKFLOWDETAILS":
-                    dlgWorkflowDetails.Hide();
+                case "PTOBRACKETTYPES":
+                    dlgPtoTypeConfigDetails.Hide();
                     break;
             }
 
@@ -1439,131 +1170,13 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         #region Helper Classes
 
         [Serializable]
-        public class GroupConfigStateObj
+        public class PtoBracketTypeConfigsStateObj
         {
             public int Id { get; set; }
             public Guid Guid { get; set; }
-            public int GroupTypeId { get; set; }
-            public string GroupTypeName { get; set; }
-            public int? GroupMemberRoleId { get; set; }
-            public string GroupMemberRoleName { get; set; }
-            public GroupMemberStatus GroupMemberStatus { get; set; }
-            public bool UseAllGroupsOfType { get; set; }
-
-
-            public GroupConfigStateObj()
-            {
-
-            }
-
-            public GroupConfigStateObj( ConnectionOpportunityGroupConfig groupConfig )
-            {
-                Id = groupConfig.Id;
-                Guid = groupConfig.Guid;
-                GroupTypeId = groupConfig.GroupTypeId;
-                GroupTypeName = groupConfig.GroupType != null ? groupConfig.GroupType.Name : string.Empty;
-                GroupMemberRoleId = groupConfig.GroupMemberRoleId;
-                GroupMemberRoleName = groupConfig.GroupMemberRole != null ? groupConfig.GroupMemberRole.Name : string.Empty;
-                GroupMemberStatus = groupConfig.GroupMemberStatus;
-                UseAllGroupsOfType = groupConfig.UseAllGroupsOfType;
-            }
-        }
-
-        [Serializable]
-        public class GroupStateObj
-        {
-            public int Id { get; set; }
-            public Guid Guid { get; set; }
-            public int? CampusId { get; set; }
-            public int GroupId { get; set; }
-            public string GroupName { get; set; }
-            public string GroupTypeName { get; set; }
-            public string CampusName { get; set; }
-            public int GroupTypeId { get; set; }
-            public bool IsArchived { get; set; }
-
-            public GroupStateObj()
-            {
-
-            }
-
-            public GroupStateObj( ConnectionOpportunityGroup opportunityGroup )
-            {
-                Id = opportunityGroup.Id;
-                Guid = opportunityGroup.Guid;
-                if ( opportunityGroup.Group != null )
-                {
-                    GroupId = opportunityGroup.Group.Id;
-                    GroupName = opportunityGroup.Group.Name;
-                    GroupTypeName = opportunityGroup.Group.GroupType != null ? opportunityGroup.Group.GroupType.Name : string.Empty;
-                    GroupTypeId = opportunityGroup.Group.GroupTypeId;
-                    CampusId = opportunityGroup.Group.CampusId;
-                    CampusName = opportunityGroup.Group.Campus != null ? opportunityGroup.Group.Campus.Name : string.Empty;
-                    IsArchived = opportunityGroup.Group.IsArchived;
-                }
-            }
-
-            public GroupStateObj( ConnectionOpportunityConnectorGroup connectorGroup )
-            {
-                Id = connectorGroup.Id;
-                Guid = connectorGroup.Guid;
-                if ( connectorGroup.ConnectorGroup != null )
-                {
-                    GroupId = connectorGroup.ConnectorGroup.Id;
-                    GroupName = connectorGroup.ConnectorGroup.Name;
-                    GroupTypeName = connectorGroup.ConnectorGroup.GroupType != null ? connectorGroup.ConnectorGroup.GroupType.Name : string.Empty;
-                    GroupTypeId = connectorGroup.ConnectorGroup.GroupTypeId;
-                    IsArchived = connectorGroup.ConnectorGroup.IsArchived;
-                }
-                if ( connectorGroup.Campus != null )
-                {
-                    CampusId = connectorGroup.CampusId;
-                    CampusName = connectorGroup.Campus.Name;
-                }
-                else
-                {
-                    CampusName = "All";
-                }
-            }
-        }
-
-        [Serializable]
-        public class WorkflowTypeStateObj
-        {
-            public int Id { get; set; }
-            public Guid Guid { get; set; }
-            public int? ConnectionTypeId { get; set; }
-            public int? WorkflowTypeId { get; set; }
-            public ConnectionWorkflowTriggerType TriggerType { get; set; }
-            public string QualifierValue { get; set; }
-            public string WorkflowTypeName { get; set; }
-
-            public WorkflowTypeStateObj()
-            {
-
-            }
-
-            public WorkflowTypeStateObj( ConnectionWorkflow connectionWorkflow )
-            {
-                Id = connectionWorkflow.Id;
-                Guid = connectionWorkflow.Guid;
-                ConnectionTypeId = connectionWorkflow.ConnectionTypeId;
-                TriggerType = connectionWorkflow.TriggerType;
-                QualifierValue = connectionWorkflow.QualifierValue;
-                if ( connectionWorkflow.WorkflowType != null )
-                {
-                    WorkflowTypeId = connectionWorkflow.WorkflowType.Id;
-                    WorkflowTypeName = connectionWorkflow.WorkflowType.Name;
-                }
-            }
-        }
-
-        public class DefaultConnector
-        {
-            public int CampusId { get; set; }
-            public string CampusName { get; set; }
-            public int? PersonAliasId { get; set; }
-            public Dictionary<int, string> Options { get; set; }
+            public int PtoBracketId { get; set; }
+            public int PtoTypeId { get; set; }
+            public int DefaultHours { get; set; }
         }
 
         #endregion

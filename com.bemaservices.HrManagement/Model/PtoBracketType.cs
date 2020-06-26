@@ -37,7 +37,7 @@ namespace com.bemaservices.HrManagement.Model
         
         [Required]
         [DataMember]
-        public int PtoTierId { get; set; }
+        public int PtoBracketId { get; set; }
         
         [Required]
         [DataMember]
@@ -57,7 +57,7 @@ namespace com.bemaservices.HrManagement.Model
         #region Virtual Properties
 
         [LavaInclude]
-        public virtual PtoTier PtoTier { get; set; }
+        public virtual PtoBracket PtoBracket { get; set; }
 
         [LavaInclude]
         public virtual PtoType PtoType { get; set; }
@@ -77,7 +77,7 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         public PtoBracketTypeConfiguration()
         {
-            this.HasRequired( r => r.PtoTier ).WithMany().HasForeignKey( r => r.PtoTierId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.PtoBracket ).WithMany( r => r.PtoBracketTypes ).HasForeignKey( r => r.PtoBracketId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.PtoType ).WithMany().HasForeignKey( r => r.PtoTypeId ).WillCascadeOnDelete( false );
 
             // IMPORTANT!!

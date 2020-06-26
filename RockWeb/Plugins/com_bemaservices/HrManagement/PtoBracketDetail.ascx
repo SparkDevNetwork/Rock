@@ -4,10 +4,6 @@
     function clearActiveDialog() {
         $('#<%= btnHideDialog.ClientID %>').click();
     }
-
-    function updateField(obj) {
-        $("#<%= tbPublicName.ClientID %>").val($(obj).val());
-    }
 </script>
 
 <asp:UpdatePanel ID="upnlPtoBracketDetail" runat="server">
@@ -36,6 +32,9 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <Rock:NotificationBox ID="nbInvalidPtoTypes" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Pto Types" />
+
+                    <Rock:NotificationBox ID="nbIncorrectTier" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="The bracket selected does not belong to the selected pto tier." />
 
                     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
@@ -85,13 +84,16 @@
         <Rock:ModalDialog ID="dlgPtoTypeConfigDetails" runat="server" ValidationGroup="PtoTypeConfig" SaveButtonText="Add" OnSaveClick="dlgPtoTypeConfigDetails_SaveClick" Title="PTO Allocation Configuration">
             <Content>
                 <asp:ValidationSummary ID="valPtoTypeConfig" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupConfig" />
-                <asp:HiddenField ID="hfGroupConfigGuid" runat="server" />
+                <asp:HiddenField ID="hfPtoBracketTypeId" runat="server" />
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" OnSelectedIndexChanged="ddlPtoType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="PtoTypeConfig" EnhanceForLongLists="false" />
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="ddlDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoTypeConfig" />
+                    <div class="col-md-4">
+                        <Rock:RockTextBox ID="tbDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoTypeConfig" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:RockCheckBox ID="cbBracketTypeIsActive" runat="server" Label="Active" ValidationGroup="PtoTypeConfig" />
                     </div>
                 </div>
             </Content>

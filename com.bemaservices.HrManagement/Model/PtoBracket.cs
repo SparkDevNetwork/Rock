@@ -23,6 +23,8 @@ using Rock.Model;
 using Rock.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace com.bemaservices.HrManagement.Model
 {
@@ -60,6 +62,15 @@ namespace com.bemaservices.HrManagement.Model
 
         [LavaInclude]
         public virtual string Name { get { return ToString(); } }
+
+        [LavaInclude]
+        public virtual ICollection<PtoBracketType> PtoBracketTypes
+        {
+            get { return _ptoBracketTypes ?? ( _ptoBracketTypes = new Collection<PtoBracketType>() ); }
+            set { _ptoBracketTypes = value; }
+        }
+
+        private ICollection<PtoBracketType> _ptoBracketTypes;
 
         #endregion
 

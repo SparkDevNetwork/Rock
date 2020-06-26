@@ -165,9 +165,9 @@ namespace com.bemaservices.HrManagement.Migrations
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_ModifiedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoTeirId] FOREIGN KEY([PtoTierId])
-                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoTier] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoTeirId]
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoBracketId] FOREIGN KEY([PtoBracketId])
+                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoBracket] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoBracketId]
 
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoTypeId] FOREIGN KEY([PtoTypeId])
                 REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoType] ([Id])
