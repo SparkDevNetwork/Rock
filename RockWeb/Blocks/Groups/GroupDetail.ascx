@@ -462,7 +462,7 @@
                             ID="ipScheduleIntervalMinutes"
                             runat="server"
                             Label="Sync Interval"
-                            Help="How often the group should sync in minutes. It will never be less then the Group Sync job execution interval."
+                            Help="Controls how often the group should sync to the Data View. It will never be less then the Group Sync job execution interval."
                             ValidationGroup="GroupSyncSettings"
                             DefaultValue="12"
                             DefaultInterval="Hour" />
