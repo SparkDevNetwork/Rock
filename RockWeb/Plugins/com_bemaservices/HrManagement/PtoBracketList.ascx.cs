@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             if ( ptoTierId != 0  )
             {
-                string key = string.Format( "PtoTeir:{0}", ptoTierId );
+                string key = string.Format( "PtoTier:{0}", ptoTierId );
                 _ptoTier = RockPage.GetSharedItem( key ) as PtoTier;
                 if ( _ptoTier == null )
                 {

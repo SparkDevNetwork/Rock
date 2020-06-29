@@ -141,7 +141,7 @@ namespace com.bemaservices.HrManagement.Migrations
             Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
-                    [PtoTierId] int NOT NULL,
+                    [PtoBracketId] int NOT NULL,
                     [PtoTypeId] int NOT NULL,
 	                [IsActive] [bit] NOT NULL,
                     [DefaultHours] int NOT NULL,

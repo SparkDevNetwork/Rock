@@ -5,20 +5,20 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i> Pto Teirs</h1>
+                <h1 class="panel-title"><i class="fa fa-plug"></i> Pto Tiers</h1>
 
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbAddPtoTeir" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddPtoTeir_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddPtoTier" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddPtoTier_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
 
                 <div class="list-as-blocks clearfix">
                     <ul class="list-unstyled">
-                        <asp:Repeater ID="rptPtoTeirs" runat="server">
+                        <asp:Repeater ID="rptPtoTiers" runat="server">
                             <ItemTemplate>
                                 <li>
-                                    <asp:LinkButton ID="lbPtoTeir" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                    <asp:LinkButton ID="lbPtoTier" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
                                         <i class='fa fa-clock'></i>
                                         <h3><%# Eval("Name") %> </h3>
                                     </asp:LinkButton>

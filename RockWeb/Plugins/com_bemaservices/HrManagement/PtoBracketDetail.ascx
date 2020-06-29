@@ -7,9 +7,6 @@
 </script>
 
 <asp:UpdatePanel ID="upnlPtoBracketDetail" runat="server">
-    <Triggers>
-        <asp:AsyncPostBackTrigger ControlID="cblCampus" />
-    </Triggers>
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfPtoBracketId" runat="server" />
@@ -42,8 +39,8 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbMinimumYears" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoBracket, com.bemaservices.HrManagement" PropertyName="MinimumYears" OnBlur='updateField(this)' />
-                                <Rock:DataTextBox ID="tbMaximumYears" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoBracket, com.bemaservices.HrManagement" PropertyName="MaximumYears" OnBlur='updateField(this)' />
+                                <Rock:DataTextBox ID="tbMinimumYears" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoBracket, com.bemaservices.HrManagement" PropertyName="MinimumYear" OnBlur='updateField(this)' />
+                                <Rock:DataTextBox ID="tbMaximumYears" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoBracket, com.bemaservices.HrManagement" PropertyName="MaximumYear" OnBlur='updateField(this)' />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
@@ -54,13 +51,12 @@
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </Rock:PanelWidget>--%>
 
-                        <Rock:PanelWidget ID="wpPtoBracketTypes" runat="server" Title="Annual PTO Allocations">
-                            <h4>Annual PTO Allocations Configuration</h4>
+                        <Rock:PanelWidget ID="wpPtoBracketTypes" runat="server" Title="PTO Allocations">
 							<div class="grid">
 								<Rock:Grid ID="gPtoBracketTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="PTO Type" ShowConfirmDeleteDialog="false">
 									<Columns>
-										<Rock:RockBoundField DataField="PtoTypeName" HeaderText="PTO Type" />
-										<Rock:RockBoundField DataField="DefaultHours" HeaderText="Default Hours Accured" />
+										<Rock:RockBoundField DataField="PtoType.Name" HeaderText="PTO Type" />
+										<Rock:RockBoundField DataField="DefaultHours" HeaderText="Default Hours Allocated" />
                                         <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                                         <Rock:EditField OnClick="gPtoBracketTypes_Edit" />
 										<Rock:DeleteField OnClick="gPtoBracketTypes_Delete" />

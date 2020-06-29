@@ -40,7 +40,7 @@ using com.bemaservices.HrManagement.Model;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Teir Detail" )]
+    [DisplayName( "Pto Tier Detail" )]
     [Category( "BEMA Services > HR Management" )]
     [Description( "Displays the details of the given Pto Tier for editing." )]
     public partial class PtoTierDetail : RockBlock, IDetailBlock
@@ -68,7 +68,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             //btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upPtoTeir );
+            this.AddConfigurationUpdateTrigger( upPtoTier );
         }
 
         /// <summary>
@@ -96,10 +96,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? ptoTeirId = PageParameter( pageReference, "PtoTeirId" ).AsIntegerOrNull();
-            if ( ptoTeirId != null )
+            int? ptoTierId = PageParameter( pageReference, "PtoTierId" ).AsIntegerOrNull();
+            if ( ptoTierId != null )
             {
-                PtoTier ptoTier = new PtoTierService( new RockContext() ).Get( ptoTeirId.Value );
+                PtoTier ptoTier = new PtoTierService( new RockContext() ).Get( ptoTierId.Value );
                 if ( ptoTier != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( ptoTier.Name, pageReference ) );
@@ -125,18 +125,18 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected void btnCopy_Click( object sender, EventArgs e )
         {
 
-            int newPtoTeirId = 0;
+            int newPtoTierId = 0;
 
             using ( RockContext rockContext = new RockContext() )
             {
                 PtoTierService ptoTierService = new PtoTierService( rockContext );
 
-                newPtoTeirId = ptoTierService.Copy( hfPtoTeirId.Value.AsInteger() );
+                newPtoTierId = ptoTierService.Copy( hfPtoTierId.Value.AsInteger() );
 
-                var newPtoTeir = ptoTierService.Get( newPtoTeirId );
-                if ( newPtoTeir != null)
+                var newPtoTier = ptoTierService.Get( newPtoTierId );
+                if ( newPtoTier != null )
                 {
-                    mdCopy.Show( "Pto Tier copied to '" + newPtoTeir.Name + "'", ModalAlertType.Information );
+                    mdCopy.Show( "Pto Tier copied to '" + newPtoTier.Name + "'", ModalAlertType.Information );
                 }
                 else
                 {
@@ -159,7 +159,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var ptoTier = new PtoTierService( rockContext ).Get( hfPtoTeirId.Value.AsInteger() );
+            var ptoTier = new PtoTierService( rockContext ).Get( hfPtoTierId.Value.AsInteger() );
 
             ShowEditDetails( ptoTier );
 
@@ -176,7 +176,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             {
                 PtoTierService ptoTierService = new PtoTierService( rockContext );
                 //AuthService authService = new AuthService( rockContext );
-                PtoTier ptoTier = ptoTierService.Get( int.Parse( hfPtoTeirId.Value ) );
+                PtoTier ptoTier = ptoTierService.Get( int.Parse( hfPtoTierId.Value ) );
 
                 if ( ptoTier != null )
                 {
@@ -239,13 +239,13 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             PtoTier ptoTier;
             using ( var rockContext = new RockContext() )
             {
-               
+
                 PtoTierService ptoTierService = new PtoTierService( rockContext );
-              
+
                 //AttributeService attributeService = new AttributeService( rockContext );
                 //AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
 
-                int ptoTierId = int.Parse( hfPtoTeirId.Value );
+                int ptoTierId = int.Parse( hfPtoTierId.Value );
 
                 if ( ptoTierId == 0 )
                 {
@@ -261,7 +261,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ptoTier.IsActive = cbActive.Checked;
                 ptoTier.Description = tbDescription.Text;
                 ptoTier.Color = cpColor.Text;
-                    
+
                 if ( !ptoTier.IsValid )
                 {
                     // Controls will render the error messages
@@ -315,13 +315,13 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfPtoTeirId.Value.Equals( "0" ) )
+            if ( hfPtoTierId.Value.Equals( "0" ) )
             {
                 NavigateToParentPage();
             }
             else
             {
-                ShowReadonlyDetails( GetPtoTier( hfPtoTeirId.ValueAsInt(), new RockContext() ) );
+                ShowReadonlyDetails( GetPtoTier( hfPtoTierId.ValueAsInt(), new RockContext() ) );
             }
         }
 
@@ -332,7 +332,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentPtoTier = GetPtoTier( hfPtoTeirId.Value.AsInteger() );
+            var currentPtoTier = GetPtoTier( hfPtoTierId.Value.AsInteger() );
             if ( currentPtoTier != null )
             {
                 ShowReadonlyDetails( currentPtoTier );
@@ -537,7 +537,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         //}
 
         #endregion
-        
+
         #endregion
 
         #region Internal Methods
@@ -562,6 +562,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 if ( ptoTier == null )
                 {
                     ptoTier = new PtoTier { Id = 0 };
+                    ptoTier.IsActive = true;
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
                 }
@@ -569,8 +570,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
                 bool adminAllowed = true; //UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                 pnlDetails.Visible = true;
-                hfPtoTeirId.Value = ptoTier.Id.ToString();
-                lIcon.Text = string.Format( "<i class='fa fa-clock'></i>");
+                hfPtoTierId.Value = ptoTier.Id.ToString();
+                lIcon.Text = string.Format( "<i class='fa fa-clock'></i>" );
                 bool readOnly = false;
 
                 nbEditModeMessage.Text = string.Empty;
@@ -617,10 +618,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             if ( ptoTier == null )
             {
                 ptoTier = new PtoTier();
+                ptoTier.IsActive = true;
             }
             if ( ptoTier.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( ConnectionType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( PtoTier.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
@@ -644,27 +646,27 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             SetEditMode( false );
 
-            hfPtoTeirId.SetValue( ptoTier.Id );
+            hfPtoTierId.SetValue( ptoTier.Id );
 
             lReadOnlyTitle.Text = ptoTier.Name.FormatAsHtmlTitle();
-            lPtoTeirDescription.Text = ptoTier.Description.ScrubHtmlAndConvertCrLfToBr();
+            lPtoTierDescription.Text = ptoTier.Description.ScrubHtmlAndConvertCrLfToBr();
         }
 
         /// <summary>
         /// Gets the type of the connection.
         /// </summary>
-        /// <param name="ptoTeirId">The Pto Tieridentifier.</param>
+        /// <param name="ptoTierId">The Pto Tieridentifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private PtoTier GetPtoTier( int ptoTeirId, RockContext rockContext = null )
+        private PtoTier GetPtoTier( int ptoTierId, RockContext rockContext = null )
         {
-            string key = string.Format( "PtoTier:{0}", ptoTeirId );
+            string key = string.Format( "PtoTier:{0}", ptoTierId );
             PtoTier ptoTier = RockPage.GetSharedItem( key ) as PtoTier;
             if ( ptoTier == null )
             {
                 rockContext = rockContext ?? new RockContext();
                 ptoTier = new PtoTierService( rockContext ).Queryable()
-                    .Where( c => c.Id == ptoTeirId )
+                    .Where( c => c.Id == ptoTierId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, ptoTier );
             }

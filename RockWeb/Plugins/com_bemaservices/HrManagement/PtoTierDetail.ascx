@@ -6,16 +6,16 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upPtoTeir" runat="server">
+<asp:UpdatePanel ID="upPtoTier" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Teir will delete all the Pto Brackets associated with the Pto Tier. Are you sure you want to delete the Pto Teir?" />
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Tier will delete all the Pto Brackets associated with the Pto Tier. Are you sure you want to delete the Pto Tier?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
         </asp:Panel>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
-            <asp:HiddenField ID="hfPtoTeirId" runat="server" />
+            <asp:HiddenField ID="hfPtoTierId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -26,11 +26,11 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <%--<Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default connection status and at least one activity are required." Visible="false" />--%>
-                <asp:ValidationSummary ID="valPtoTeirDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valPtoTierDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
-                        <asp:Literal ID="lPtoTeirDescription" runat="server"></asp:Literal>
+                        <asp:Literal ID="lPtoTierDescription" runat="server"></asp:Literal>
                     </p>
 
                     <div class="actions">
@@ -38,7 +38,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy PtoTeir" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy PtoTier" />
                             <%--<Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" /> --%>
                         </span>
                     </div>
@@ -65,7 +65,7 @@
                         </div>
                     </div>
                     
-                    <%--<Rock:PanelWidget ID="wpAttributes" runat="server" Title="Pto Teir Attributes">
+                    <%--<Rock:PanelWidget ID="wpAttributes" runat="server" Title="Pto Tier Attributes">
                         <div class="grid">
                             <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute" ShowConfirmDeleteDialog="false" >
                                 <Columns>

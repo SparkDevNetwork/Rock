@@ -37,10 +37,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
     /// <summary>
     /// Block to display the connection types.
     /// </summary>
-    [DisplayName( "Pto Teir List" )]
+    [DisplayName( "Pto Tier List" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Block to display the Pto Teirs." )]
-    [LinkedPage( "Detail Page", "Page used to view details of a Pto Teir." )]
+    [Description( "Block to display the Pto Tiers." )]
+    [LinkedPage( "Detail Page", "Page used to view details of a Pto Tier." )]
     public partial class PtoTierList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -52,8 +52,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            lbAddPtoTeir.Visible = UserCanAdministrate;
-            rptPtoTeirs.ItemCommand += rptPtoTeirs_ItemCommand;
+            lbAddPtoTier.Visible = UserCanAdministrate;
+            rptPtoTiers.ItemCommand += rptPtoTiers_ItemCommand;
         }
 
         /// <summary>
@@ -89,12 +89,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptPtoTeirs_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void rptPtoTiers_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            int? ptoTeirId = e.CommandArgument.ToString().AsIntegerOrNull();
-            if ( ptoTeirId.HasValue )
+            int? ptoTierId = e.CommandArgument.ToString().AsIntegerOrNull();
+            if ( ptoTierId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "PtoTierId", ptoTeirId.Value );
+                NavigateToLinkedPage( "DetailPage", "PtoTierId", ptoTierId.Value );
             }
 
             GetData();
@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddPtoTeir_Click( object sender, EventArgs e )
+        protected void lbAddPtoTier_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "PtoTierId", 0 );
         }
@@ -123,24 +123,24 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             using ( var rockContext = new RockContext() )
             {
                 // Get all of the event calendars
-                var allPtoTeirs = new PtoTierService( rockContext ).Queryable()
+                var allPtoTiers = new PtoTierService( rockContext ).Queryable()
                     .OrderBy( w => w.Name )
                     .ToList();
 
                 /* In case we add security on the entity later 
 
-                var authorizedPtoTeirs = new List<ConnectionType>();
-                foreach ( var ptoTeir in allPtoTeirs )
+                var authorizedPtoTiers = new List<ConnectionType>();
+                foreach ( var ptoTier in allPtoTiers )
                 {
-                    if ( UserCanEdit || ptoTeir.IsAuthorized( Authorization.VIEW, CurrentPerson ))
+                    if ( UserCanEdit || ptoTier.IsAuthorized( Authorization.VIEW, CurrentPerson ))
                     {
-                        authorizedPtoTeirs.Add( ptoTeir );
+                        authorizedPtoTiers.Add( ptoTier );
                     }
                 }
 
                 */
-                rptPtoTeirs.DataSource = allPtoTeirs.ToList(); //authorizedPtoTeirs.ToList();
-                rptPtoTeirs.DataBind();
+                rptPtoTiers.DataSource = allPtoTiers.ToList(); //authorizedPtoTiers.ToList();
+                rptPtoTiers.DataBind();
             }
         }
 

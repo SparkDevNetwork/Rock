@@ -112,14 +112,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             if ( !Page.IsPostBack )
             {
                 int ptoBracketId = PageParameter( "PtoBracketId" ).AsInteger();
-                if ( ptoBracketId != 0 )
-                {
-                    ShowDetail( ptoBracketId );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( ptoBracketId );
             }
             else
             {
@@ -240,7 +233,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
 
                 ptoBracket.MinimumYear = tbMinimumYears.Text.AsInteger();
-                ptoBracket.MaximumYear = tbMinimumYears.Text.AsIntegerOrNull();
+                ptoBracket.MaximumYear = tbMaximumYears.Text.AsIntegerOrNull();
                 ptoBracket.IsActive = cbIsActive.Checked;
 
                 // remove any Bracket Types configs that were removed in the UI
@@ -347,9 +340,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ptoBracketType.Guid = Guid.NewGuid();
                 PtoBracketTypesState.Add( ptoBracketType );
             }
-
-            //ptoBracketType.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-           // ptoBracketType.UseAllGroupsOfType = tglUseAllGroupsOfGroupType.Checked;
+            var ptoType = new PtoTypeService( new RockContext() ).Get( ddlPtoType.SelectedValue.AsInteger() );
+            ptoBracketType.PtoTypeId = ptoType.Id;
+            ptoBracketType.PtoType = ptoType;
+            ptoBracketType.DefaultHours = tbDefaultHours.Text.AsInteger();
+            ptoBracketType.IsActive = cbBracketTypeIsActive.Checked;
 
             BindPtoBracketTypesGrid();
 
@@ -391,24 +386,25 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         protected void gPtoBracketTypes_ShowEdit( Guid ptoBracketTypesGuid )
         {
+            ddlPtoType.Items.Clear();
+            foreach ( var ptoType in new PtoTypeService( new RockContext() ).Queryable().AsNoTracking() )
+            {
+                ddlPtoType.Items.Add( new ListItem( ptoType.Name, ptoType.Id.ToString() ) );
+            }
+
             var ptoBracketState = PtoBracketTypesState.FirstOrDefault( l => l.Guid.Equals( ptoBracketTypesGuid ) );
             if ( ptoBracketState != null )
             {
                 hfPtoBracketTypeId.Value = ptoBracketTypesGuid.ToString();
 
-                //ddlGroupType.SetValue( ptoBracketState.GroupTypeId );
-                //LoadGroupRoles( ddlGroupType.SelectedValue.AsInteger() );
-                //ddlGroupRole.SetValue( ptoBracketState.GroupMemberRoleId );
-
-                //ddlGroupMemberStatus.SetValue( ptoBracketState.GroupMemberStatus.ConvertToInt() );
-                //tglUseAllGroupsOfGroupType.Checked = ptoBracketState.UseAllGroupsOfType;
+                ddlPtoType.SetValue( ptoBracketState.PtoTypeId.ToString() );
+                tbDefaultHours.Text = ptoBracketState.DefaultHours.ToString();
+                cbBracketTypeIsActive.Checked = ptoBracketState.IsActive;
             }
             else
             {
                 hfPtoBracketTypeId.Value = string.Empty;
-                //LoadGroupRoles( null );
-                //ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
-                //tglUseAllGroupsOfGroupType.Checked = false;
+                cbBracketTypeIsActive.Checked = true;
             }
 
             ShowDialog( "PtoBracketTypeDetails", true );
@@ -524,11 +520,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
             }
 
-            //tbName.Text = ptoBracket.Name;
-            //tbPublicName.Text = ptoBracket.PublicName;
-            //tbIconCssClass.Text = ptoBracket.IconCssClass;
-            //htmlSummary.Text = ptoBracket.Summary;
-            //htmlDescription.Text = ptoBracket.Description;
+            tbMinimumYears.Text = ptoBracket.MinimumYear.ToString();
+            tbMaximumYears.Text = ptoBracket.MaximumYear.ToString();
             cbIsActive.Checked = ptoBracket.IsActive;
 
             PtoBracketTypesState = new List<PtoBracketType>();
@@ -580,7 +573,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "PtoBracketTypeDetails":
+                case "PTOBRACKETTYPEDETAILS":
                     dlgPtoBracketTypeDetails.Show();
                     break;
             }
@@ -593,7 +586,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "PtoBracketTypeDetails":
+                case "PTOBRACKETTYPEDETAILS":
                     dlgPtoBracketTypeDetails.Hide();
                     break;
             }
