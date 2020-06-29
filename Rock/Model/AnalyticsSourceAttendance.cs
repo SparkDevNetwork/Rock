@@ -63,6 +63,7 @@ namespace Rock.Model
         /// The transaction date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int AttendanceDateKey { get; set; }
 
         /// <summary>

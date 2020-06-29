@@ -371,45 +371,45 @@
     <value>version 10.0\Version 1.10.2\202001071827547_rollup_0107_sparklineshortcodemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202002182236274_AddCampusTeamToAllCampuses_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202002182236274_addcampusteamtoallcampuses_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 11.0\Version 1.11.0\202002182236274_addcampusteamtoallcampuses_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202002182236274_AddCampusTeamToAllCampuses_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202002182236274_addcampusteamtoallcampuses_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 11.0\Version 1.11.0\202002182236274_addcampusteamtoallcampuses_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003031854249_rollup_0303_spcheckin_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003031854249_rollup_0303_spcheckin_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003031854249_rollup_0303_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003031854249_rollup_0303_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003031854249_rollup_0303_spfinance_pledgeanalyticsquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003031854249_rollup_0303_spfinance_pledgeanalyticsquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_attendees_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_attendees_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_nonattendees_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202003051854011_attendanceanalyticsexports_spcheckin_attendanceanalyticsquery_nonattendees_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202003311924098_Rollup_0331_FixChartYAxisShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202003311924098_rollup_0331_fixchartyaxisshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 11.0\Version 1.11.0\202003311924098_rollup_0331_fixchartyaxisshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202005281058275_AddGetPersonNameFunction__ufnUtility_GetPersonName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202005281058275_AddGetPersonNameFunction _ufnUtility_GetPersonName.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202005281058275_AddGetPersonNameFunction _ufnUtility_GetPersonName.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202006081726186_improveperformanceoffamilyanalyticseradataset_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 11.0\Version 1.11.0\202006081726186_improveperformanceoffamilyanalyticseradataset_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202006081726186_ImprovePerformanceOfFamilyAnalyticsEraDataset_spCrm_FamilyAnalyticsEraDataset_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202006081726186_improveperformanceoffamilyanalyticseradataset_spcrm_familyanalyticseradataset_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202006081726186_improveperformanceoffamilyanalyticseradataset_spcrm_familyanalyticseradataset_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202006091841047_Rollup_0609_spDbaRebuildIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202006091841047_rollup_0609_spdbarebuildindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 11.0\Version 1.11.0\202006091841047_rollup_0609_spdbarebuildindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

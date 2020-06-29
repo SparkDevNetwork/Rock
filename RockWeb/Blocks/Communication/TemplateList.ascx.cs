@@ -503,6 +503,11 @@ namespace RockWeb.Blocks.Communication
                 html.AppendLine( "<span class='label label-success'>SMS</span>" );
             }
 
+            if ( !string.IsNullOrWhiteSpace( communicationTemplate.PushMessage ) )
+            {
+                html.AppendLine( "<span class='label label-info'>Push</span>" );
+            }
+
             lSupports.Text = html.ToString();
 
             if ( _templatesWithCommunications.Contains( communicationTemplate.Id ) )

@@ -41,24 +41,6 @@ namespace Rock.Reporting.DataFilter.Step
     [ExportMetadata( "ComponentName", "Step Attributes Values Filter" )]
     public class StepsAttributeValuesFilter : EntityFieldFilter
     {
-
-        #region Fields
-
-        private List<EntityField> entityFields
-        {
-            get => _entityFields;
-            set => _entityFields = value;
-        }
-
-        /// <summary>
-        /// Threadsafe field for entityFields
-        /// </summary>
-        [ThreadStatic]
-        private static List<EntityField> _entityFields = null;
-
-
-        #endregion Fields
-
         #region Properties
 
         /// <summary>
@@ -201,6 +183,7 @@ namespace Rock.Reporting.DataFilter.Step
             StepTypePicker stepTypePicker = new StepTypePicker
             {
                 ID = filterControl.ID + "_stepTypePicker",
+                CssClass = "js-step-type-picker",
                 Label = "Step Type",
                 Required = true
             };
@@ -272,7 +255,7 @@ namespace Rock.Reporting.DataFilter.Step
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
             // Get the EntityFields for the attributes associated with the selected StepType.
-            entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
+            var entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
 
             // Create the attribute selection dropdown.
             string propertyControlId = string.Format( "{0}_ddlProperty", containerControl.ID );
@@ -330,7 +313,9 @@ namespace Rock.Reporting.DataFilter.Step
             var ddlProperty = sender as RockDropDownList;
             var containerControl = ddlProperty.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
+            StepTypePicker stepTypePicker = filterControl.ControlsOfTypeRecursive<StepTypePicker>().Where( a => a.HasCssClass( "js-step-type-picker" ) ).FirstOrDefault();
 
+            var entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
             var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
             if ( entityField != null )
             {

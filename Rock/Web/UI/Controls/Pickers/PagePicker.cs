@@ -106,15 +106,60 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["HiddenPageIds"] = value;
-                if ( value != null && value.Length > 0 )
-                {
-                    this.ItemRestUrlExtraParams = "?hidePageIds=" + System.Web.HttpUtility.UrlEncode( value.ToList().AsDelimited( "," ) );
-                }
-                else
-                {
-                    this.ItemRestUrlExtraParams = string.Empty;
-                }
+                UpdateItemRestUrlExtraParams();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the site type.
+        /// </summary>
+        /// <value>
+        /// The site type.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        Description( "Narrow the pages to the specified site type." )
+        ]
+        public SiteType? SiteType
+        {
+            get
+            {
+                var result = ViewState["SiteType"];
+                if ( result == null )
+                {
+                    return null;
+                }
+
+                return ( Rock.Model.SiteType ) Convert.ToInt32( result );
+            }
+
+            set
+            {
+                ViewState["SiteType"] = value.ConvertToInt();
+                UpdateItemRestUrlExtraParams();
+            }
+        }
+
+        private void UpdateItemRestUrlExtraParams()
+        {
+            var extraParams = "";
+
+            if ( SiteType != null )
+            {
+                extraParams = $"siteType={SiteType.ConvertToInt().ToString()}";
+            }
+
+            if ( HiddenPageIds != null && HiddenPageIds.Length > 0 )
+            {
+                if ( extraParams.IsNotNullOrWhiteSpace() )
+                {
+                    extraParams += "&";
+                }
+                extraParams += $"hidePageIds={System.Web.HttpUtility.UrlEncode( HiddenPageIds.ToList().AsDelimited( "," ) )}";
+            }
+
+            ItemRestUrlExtraParams = $"?{extraParams}";
         }
 
         /// <summary>

@@ -298,6 +298,7 @@ namespace Rock.Model
         /// The birth date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? BirthDateKey { get; set; }
 
         /// <summary>

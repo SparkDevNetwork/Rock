@@ -95,7 +95,7 @@
                             <div class="form-group">
                                 <label for="inputEmail3" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
                                 </div>
                             </div>
                         </div>
@@ -116,7 +116,7 @@
                     <div runat="server" class="r-example">
                         <div class="form-horizontal label-sm">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail4" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
                                 </div>
@@ -125,7 +125,7 @@
 
                         <div class="form-horizontal label-md">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail5" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
                                 </div>
@@ -134,7 +134,7 @@
 
                         <div class="form-horizontal label-lg">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail6" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
                                 </div>
@@ -143,18 +143,18 @@
 
                         <div class="form-horizontal label-xl">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail7" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                    <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-horizontal label-auto">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                                <label for="inputEmail8" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
                                 <div class="control-wrapper">
-                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail8" placeholder="Email">
                                 </div>
                             </div>
                         </div>

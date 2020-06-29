@@ -251,6 +251,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", nbCodeNumericLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AllowCheckout", cbAllowCheckout.Checked.ToString() );
+                groupType.SetAttributeValue( "core_checkin_EnablePresence", cbEnablePresence.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectDaysBack", nbAutoSelectDaysBack.Text );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectOptions", ddlAutoSelectOptions.SelectedValueAsInt() );
 
@@ -501,6 +502,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbCodeNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" );
                 cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true );
                 cbAllowCheckout.Checked = groupType.GetAttributeValue( "core_checkin_AllowCheckout" ).AsBoolean( true );
+                cbEnablePresence.Checked = groupType.GetAttributeValue( "core_checkin_EnablePresence" ).AsBoolean();
                 nbAutoSelectDaysBack.Text = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" );
                 ddlAutoSelectOptions.SetValue( groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ) );
 

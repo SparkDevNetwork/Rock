@@ -11,26 +11,37 @@
 .checkin-timelist.btn-group {
   display: -ms-flexbox !important;
   display: flex !important;
+  flex-direction: column;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   justify-content: center;
   margin: 0 -5px;
+
+
+  @media (min-width: @screen-xs-min) {
+    flex-direction: row;
+  }
 
   > .btn {
     display: flex;
     flex-basis: 0;
     flex-grow: 1;
     max-width: 100%;
-    padding: 0;
+    min-height: 88px;
     padding: 10px;
-    margin: 0 5px;
+    margin: 0 0 10px;
     overflow: hidden;
-
-    font-size: 160px;
-    border-radius: 50% !important;
+    font-size: 36px;
+    border-radius: 10px !important;
     transition: box-shadow .3s ease;
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
+
+    @media (min-width: @screen-xs-min) {
+      margin: 0 5px;
+      font-size: 160px;
+      border-radius: 50% !important;
+    }
 
 
     @media (min-width: @screen-sm-min) {
@@ -39,10 +50,12 @@
       margin: 10px;
     }
 
-    &::after {
-      display: block;
-      padding-bottom: 100%;
-      content: "";
+    @media (min-width: @screen-xs-min) {
+      &::after {
+        display: block;
+        padding-bottom: 100%;
+        content: "";
+      }
     }
   }
 }
@@ -95,7 +108,7 @@
       align-self: center;
       justify-content: center;
       width: 100%;
-      font-size: 36px;
+      font-size: 26px;
       font-weight: @checkin-button-text-weight;
       word-break: break-word !important;
       overflow-wrap: break-word !important;
@@ -104,6 +117,10 @@
       -moz-user-select: none;
       -ms-user-select: none;
       user-select: none;
+
+      @media (min-width: @screen-xs-min) {
+        font-size: 36px;
+      }
     }
   }
 

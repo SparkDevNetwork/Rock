@@ -215,7 +215,6 @@ namespace RockWeb.Blocks.CheckIn
         /// Creates the dynamic family controls.
         /// </summary>
         /// <param name="editFamilyState">State of the edit family.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateDynamicFamilyControls( FamilyRegistrationState editFamilyState )
         {
             var fakeFamily = new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id };
@@ -226,23 +225,14 @@ namespace RockWeb.Blocks.CheckIn
             familyAttributeKeysToEdit.AddRange( this.OptionalAttributesForFamilies.OrderBy( a => a.Order ).ToList() );
 
             avcFamilyAttributes.IncludedAttributes = familyAttributeKeysToEdit.ToArray();
+
+            // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
+            avcFamilyAttributes.RequiredAttributes = this.RequiredAttributesForFamilies.ToArray();
+
             avcFamilyAttributes.ValidationGroup = btnSaveFamily.ValidationGroup;
             avcFamilyAttributes.NumberOfColumns = 2;
             avcFamilyAttributes.ShowCategoryLabel = false;
             avcFamilyAttributes.AddEditControls( fakeFamily );
-
-            // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in avcFamilyAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
-            {
-                if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
-                {
-                    int? attributeControlAttributeId = attributeControl.ID.Replace( "attribute_field_", string.Empty ).AsIntegerOrNull();
-                    if ( attributeControlAttributeId.HasValue )
-                    {
-                        ( attributeControl as IHasRequired ).Required = this.RequiredAttributesForFamilies.Any( a => a.Id == attributeControlAttributeId.Value );
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -261,6 +251,10 @@ namespace RockWeb.Blocks.CheckIn
             adultAttributeKeysToEdit.AddRange( this.OptionalAttributesForAdults.OrderBy( a => a.Order ).ToList() );
 
             avcAdultAttributes.IncludedAttributes = adultAttributeKeysToEdit.ToArray();
+
+            // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
+            avcAdultAttributes.RequiredAttributes = this.RequiredAttributesForAdults.ToArray();
+
             avcAdultAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
             avcAdultAttributes.NumberOfColumns = 2;
             avcAdultAttributes.ShowCategoryLabel = false;
@@ -270,35 +264,14 @@ namespace RockWeb.Blocks.CheckIn
             childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).ToList() );
 
             avcChildAttributes.IncludedAttributes = childAttributeKeysToEdit.ToArray();
+
+            // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
+            avcChildAttributes.RequiredAttributes = this.RequiredAttributesForChildren.ToArray();
+
             avcChildAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
             avcChildAttributes.NumberOfColumns = 2;
             avcChildAttributes.ShowCategoryLabel = false;
             avcChildAttributes.AddEditControls( fakePerson );
-
-            // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in avcAdultAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
-            {
-                if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
-                {
-                    int? attributeControlAttributeId = attributeControl.ID.Replace( "attribute_field_", string.Empty ).AsIntegerOrNull();
-                    if ( attributeControlAttributeId.HasValue )
-                    {
-                        ( attributeControl as IHasRequired ).Required = this.RequiredAttributesForAdults.Any( a => a.Id == attributeControlAttributeId.Value );
-                    }
-                }
-            }
-
-            foreach ( Control attributeControl in avcChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
-            {
-                if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
-                {
-                    int? attributeControlAttributeId = attributeControl.ID.Replace( "attribute_field_", string.Empty ).AsIntegerOrNull();
-                    if ( attributeControlAttributeId.HasValue )
-                    {
-                        ( attributeControl as IHasRequired ).Required = this.RequiredAttributesForChildren.Any( a => a.Id == attributeControlAttributeId.Value );
-                    }
-                }
-            }
         }
 
         #endregion Methods

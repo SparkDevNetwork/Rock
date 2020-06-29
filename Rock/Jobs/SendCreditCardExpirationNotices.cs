@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Web;
 
 using Quartz;
 
@@ -36,7 +35,7 @@ namespace Rock.Jobs
     /// Checks scheduled transactions for credit cards that are expiring next month and sends an email notice to the person.
     /// </summary>
     [DisplayName( "Expiring Credit Card Notices" )]
-    [Description( "Checks scheduled transactions for credit cards that are expiring next month and sends an email notice to the person." )]
+    [Description( "Checks scheduled transactions for credit cards that are expiring next month and sends an email notice to the person. Optionally removes expired, saved accounts after a specified number of days from the account's expiration date." )]
 
     [SystemCommunicationField(
         "Expiring Credit Card Email",
@@ -92,44 +91,60 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
-            string removeSavedAccountSummary;
             context.Result = string.Empty;
             StringBuilder jobSummaryBuilder = new StringBuilder();
+            jobSummaryBuilder.AppendLine( "Summary:" );
+            jobSummaryBuilder.AppendLine( string.Empty );
 
+            // Send emails.
             SendExpiredCreditCardNoticesResult sendExpiredCreditCardNoticesResult = SendExpiredCreditCardNotices( context );
-            string sendExpiredCreditCardNoticesSummary = $"{sendExpiredCreditCardNoticesResult.ExaminedCount} scheduled credit card transactions were examined with {sendExpiredCreditCardNoticesResult.NoticesSendCount } notice(s) sent.";
-            jobSummaryBuilder.AppendLine( sendExpiredCreditCardNoticesSummary );
+            jobSummaryBuilder.AppendLine( $"{sendExpiredCreditCardNoticesResult.ExaminedCount} scheduled credit card transaction(s) were examined." );
 
-            RemoveExpiredSavedAccountsResult removeExpiredSavedAccountsResult = RemoveExpiredSavedAccounts( context );
-            if ( removeExpiredSavedAccountsResult.FinancialPersonSavedAccountDeleteCount.HasValue )
+            // Report any email send successes.
+            if ( sendExpiredCreditCardNoticesResult.NoticesSentCount > 0 || !sendExpiredCreditCardNoticesResult.EmailSendExceptions.Any() )
             {
-                removeSavedAccountSummary = $"Removed {removeExpiredSavedAccountsResult.FinancialPersonSavedAccountDeleteCount} saved accounts that expired before {removeExpiredSavedAccountsResult.DeleteIfExpiredBeforeDate.ToShortDateString()}";
-                jobSummaryBuilder.AppendLine( removeSavedAccountSummary );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {sendExpiredCreditCardNoticesResult.NoticesSentCount } notice(s) sent." );
             }
 
-            context.Result = jobSummaryBuilder.ToString().Trim();
-            if ( sendExpiredCreditCardNoticesResult.EmailErrors.Any() )
+            context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+
+            // Combine all Exceptions encoutered along the way; we'll roll them into an AggregateException below.
+            var innerExceptions = new List<Exception>();
+
+            // Report any email send failures.
+            if ( sendExpiredCreditCardNoticesResult.EmailSendExceptions.Any() )
             {
-                StringBuilder sb = new StringBuilder();
-                string expiredCreditCardEmailErrors = $"{sendExpiredCreditCardNoticesResult.EmailErrors.Count()} errors occurred when sending expired credit card warning.";
-                jobSummaryBuilder.AppendLine( expiredCreditCardEmailErrors );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {sendExpiredCreditCardNoticesResult.EmailSendExceptions.Count()} error(s) occurred when sending expired credit card notice(s). See exception log for details." );
                 context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
-                sb.AppendLine( expiredCreditCardEmailErrors );
-                foreach ( var expiredCreditCardEmailMessageSendError in sendExpiredCreditCardNoticesResult.EmailErrors )
-                {
-                    sb.AppendLine( expiredCreditCardEmailMessageSendError );
-                }
+                innerExceptions.AddRange( sendExpiredCreditCardNoticesResult.EmailSendExceptions );
+            }
 
-                string errorMessage = sb.ToString();
-                context.Result += errorMessage;
-                var exception = new Exception( errorMessage );
-                HttpContext context2 = HttpContext.Current;
-                ExceptionLogService.LogException( exception, context2 );
+            // Remove expired, saved accounts.
+            RemoveExpiredSavedAccountsResult removeExpiredSavedAccountsResult = RemoveExpiredSavedAccounts( context );
 
-                context.Result = jobSummaryBuilder.ToString().Trim();
+            // Report any account removal successes.
+            if ( removeExpiredSavedAccountsResult.AccountsDeletedCount > 0 )
+            {
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {removeExpiredSavedAccountsResult.AccountsDeletedCount} saved account(s) that expired before {removeExpiredSavedAccountsResult.DeleteIfExpiredBeforeDate.ToShortDateString()} removed." );
+                context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+            }
 
-                throw exception;
+            // Report any account removal failures.
+            if ( removeExpiredSavedAccountsResult.AccountRemovalExceptions.Any() )
+            {
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {removeExpiredSavedAccountsResult.AccountRemovalExceptions.Count()} error(s) occurred when removing saved, expired account(s). See exception log for details." );
+                context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+
+                innerExceptions.AddRange( removeExpiredSavedAccountsResult.AccountRemovalExceptions );
+            }
+
+            // If any errors encountered, throw an exception to mark the job as unsuccessful.
+            if ( innerExceptions.Any() )
+            {
+                var aggregateException = new AggregateException( innerExceptions );
+
+                throw new RockJobWarningException( "Send Credit Card Expiration Notices completed with warnings.", aggregateException );
             }
         }
 
@@ -163,10 +178,11 @@ namespace Rock.Jobs
             int currentMonth = now.Month;
             int currentYear = now.Year;
 
-            int financialPersonSavedAccountDeleteCount = 0;
-
-            // if today is 3/16/2020 and removedExpiredSavedAccountDays is 90, only delete card if it expired before 12/17/2019
-            var deleteIfExpiredBeforeDate = RockDateTime.Today.AddDays( -removedExpiredSavedAccountDays.Value );
+            var result = new RemoveExpiredSavedAccountsResult()
+            {
+                // if today is 3/16/2020 and removedExpiredSavedAccountDays is 90, only delete card if it expired before 12/17/2019
+                DeleteIfExpiredBeforeDate = RockDateTime.Today.AddDays( -removedExpiredSavedAccountDays.Value )
+            };
 
             foreach ( var savedAccountInfo in savedAccountInfoList )
             {
@@ -210,36 +226,41 @@ namespace Rock.Jobs
                  Delete 10/19 (Expires 11/01/2019) card? Yes
                  */
 
-                if ( cardExpirationDate >= deleteIfExpiredBeforeDate )
+                if ( cardExpirationDate >= result.DeleteIfExpiredBeforeDate )
                 {
                     // We want to only delete cards that expired more than X days ago, so if this card expiration day is after that, skip
                     continue;
                 }
 
-                // Card expiration date is older than X day ago, so delete it
-                using ( var savedAccountRockContext = new RockContext() )
+                // Card expiration date is older than X day ago, so delete it.
+                // Wrapping the following in a try/catch so a single deletion failure doesn't end the process for all deletion candidates.
+                try
                 {
-                    var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( savedAccountRockContext );
-                    var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountInfo.Id );
-                    if ( financialPersonSavedAccount != null )
+                    using ( var savedAccountRockContext = new RockContext() )
                     {
-                        if ( financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out _ ) )
+                        var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( savedAccountRockContext );
+                        var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountInfo.Id );
+                        if ( financialPersonSavedAccount != null )
                         {
-                            financialPersonSavedAccountService.Delete( financialPersonSavedAccount );
-                            savedAccountRockContext.SaveChanges();
-                            financialPersonSavedAccountDeleteCount++;
+                            if ( financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out _ ) )
+                            {
+                                financialPersonSavedAccountService.Delete( financialPersonSavedAccount );
+                                savedAccountRockContext.SaveChanges();
+                                result.AccountsDeletedCount++;
+                            }
                         }
                     }
                 }
+                catch ( Exception ex )
+                {
+                    // Provide better identifying context in case the caught exception is too vague.
+                    var exception = new Exception( $"Unable to delete FinancialPersonSavedAccount (ID = {savedAccountInfo.Id}).", ex );
+
+                    result.AccountRemovalExceptions.Add( exception );
+                }
             }
 
-            RemoveExpiredSavedAccountsResult removeExpiredSavedAccountsResult = new RemoveExpiredSavedAccountsResult()
-            {
-                FinancialPersonSavedAccountDeleteCount = financialPersonSavedAccountDeleteCount,
-                DeleteIfExpiredBeforeDate = deleteIfExpiredBeforeDate,
-            };
-
-            return removeExpiredSavedAccountsResult;
+            return result;
         }
 
         /// <summary>
@@ -293,11 +314,14 @@ namespace Rock.Jobs
             DateTime now = DateTime.Now;
             int currentMonth = now.Month;
             int currentYYYY = now.Year;
-            int expiredCreditCardCount = 0;
-            var expiredCreditCardEmailMessageSendErrors = new List<string>();
 
             // get the common merge fields once, so we don't have to keep calling it for every person, then create a new mergeFields for each person, starting with a copy of the common merge fields
             var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
+            var result = new SendExpiredCreditCardNoticesResult
+            {
+                ExaminedCount = scheduledTransactionInfoList.Count()
+            };
 
             foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {
@@ -346,10 +370,26 @@ namespace Rock.Jobs
 
                     var emailMessage = new RockEmailMessage( systemCommunication );
                     emailMessage.SetRecipients( recipients );
+                    emailMessage.Send( out List<string> emailErrors );
 
-                    var emailErrors = new List<string>();
-                    emailMessage.Send( out emailErrors );
-                    expiredCreditCardEmailMessageSendErrors.AddRange( emailErrors );
+                    if ( emailErrors.Any() )
+                    {
+                        var errorLines = new StringBuilder();
+                        errorLines.AppendLine( string.Empty );
+                        foreach ( string error in emailErrors )
+                        {
+                            errorLines.AppendLine( error );
+                        }
+
+                        // Provide better identifying context in case the errors are too vague.
+                        var exception = new Exception( $"Unable to send email (Person ID = {person.Id}).{errorLines}" );
+
+                        result.EmailSendExceptions.Add( exception );
+                    }
+                    else
+                    {
+                        result.NoticesSentCount++;
+                    }
 
                     // Start workflow for this person
                     if ( workflowType != null )
@@ -362,17 +402,10 @@ namespace Rock.Jobs
 
                         StartWorkflow( workflowService, workflowType, attributes, $"{person.FullName} (scheduled transaction Id: {scheduledTransactionInfo.Id})" );
                     }
-
-                    expiredCreditCardCount++;
                 }
             }
 
-            return new SendExpiredCreditCardNoticesResult
-            {
-                EmailErrors = expiredCreditCardEmailMessageSendErrors,
-                ExaminedCount = scheduledTransactionInfoList.Count(),
-                NoticesSendCount = expiredCreditCardCount
-            };
+            return result;
         }
 
         /// <summary>
@@ -421,18 +454,20 @@ namespace Rock.Jobs
 
         private class SendExpiredCreditCardNoticesResult
         {
-            public List<string> EmailErrors { get; set; } = new List<string>();
-
             public int ExaminedCount { get; set; }
 
-            public int NoticesSendCount { get; set; }
+            public int NoticesSentCount { get; set; }
+
+            public IList<Exception> EmailSendExceptions { get; set; } = new List<Exception>();
         }
 
         private class RemoveExpiredSavedAccountsResult
         {
-            public int? FinancialPersonSavedAccountDeleteCount { get; internal set; }
+            public DateTime DeleteIfExpiredBeforeDate { get; internal set; }
 
-            public DateTime? DeleteIfExpiredBeforeDate { get; internal set; }
+            public int AccountsDeletedCount { get; internal set; }
+
+            public IList<Exception> AccountRemovalExceptions { get; set; } = new List<Exception>();
         }
     }
 }

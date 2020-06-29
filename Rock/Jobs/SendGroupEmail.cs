@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -37,12 +38,26 @@ namespace Rock.Jobs
     [DisplayName( "Send Group Email" )]
     [Description( "This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group." )]
 
-    [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
-    [GroupField( "Group", "The group the email will be sent to." )]
-    [BooleanField( "Send To Descendant Groups", "Determines if the email will be sent to descendant groups." )]
+    [SystemCommunicationField( "System Communication",
+        Description = "The email template that will be sent.",
+        IsRequired = true,
+        Key = AttributeKey.SystemCommunication )]
+    [GroupField( "Group",
+        Description = "The group the email will be sent to.",
+        Key = AttributeKey.Group )]
+    [BooleanField( "Send To Descendant Groups",
+        Description = "Determines if the email will be sent to descendant groups.",
+        Key = AttributeKey.SendToDescendantGroups )]
     [DisallowConcurrentExecution]
     public class SendGroupEmail : IJob
     {
+        private class AttributeKey
+        {
+            public const string SystemCommunication = "SystemEmail";
+            public const string Group = "Group";
+            public const string SendToDescendantGroups = "SendToDescendantGroups";
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SendGroupEmail"/> class.
         /// </summary>
@@ -57,50 +72,62 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var emailTemplateGuid = dataMap.Get( "SystemEmail" ).ToString().AsGuid();
-            var groupGuid = dataMap.Get( "Group" ).ToString().AsGuid();
-            var sendToDescendants = dataMap.Get( "SendToDescendantGroups" ).ToString().AsBoolean();
+            var emailTemplateGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuid();
+            var groupGuid = dataMap.Get( AttributeKey.Group ).ToString().AsGuid();
+            var sendToDescendants = dataMap.Get( AttributeKey.SendToDescendantGroups ).ToString().AsBoolean();
 
             var rockContext = new RockContext();
+            var systemCommunication = new SystemCommunicationService( rockContext ).Get( emailTemplateGuid );
+
             var group = new GroupService( rockContext ).Get( groupGuid );
             if ( group != null )
             {
-                List<int> groupIds = new List<int>();
+                var groupIds = new List<int>();
                 GetGroupIds( groupIds, sendToDescendants, group );
 
                 var recipients = new List<RockEmailMessageRecipient>();
 
-                var groupMemberList = new GroupMemberService( rockContext ).Queryable().Where( gm =>
-                    groupIds.Contains( gm.GroupId ) &&
-                    gm.GroupMemberStatus == GroupMemberStatus.Active )
+                var groupMemberList = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Where( gm => groupIds.Contains( gm.GroupId ) )
+                    .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active )
                     .ToList();
+
+                var errors = new List<string>();
+                var warnings = new List<string>();
+                var messagesSent = 0;
+
                 foreach ( GroupMember groupMember in groupMemberList )
                 {
                     var person = groupMember.Person;
-                    if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
-                    {
-                        continue;
-                    }
+
+                    var mediumType = Rock.Model.Communication.DetermineMediumEntityTypeId(
+                                    ( int ) CommunicationType.Email,
+                                    ( int ) CommunicationType.SMS,
+                                    ( int ) CommunicationType.PushNotification,
+                                    groupMember.CommunicationPreference,
+                                    person.CommunicationPreference );
 
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", person );
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 
-                    recipients.Add( new RockEmailMessageRecipient( groupMember.Person, mergeFields ) );
+                    var sendMessageResults = CommunicationHelper.SendMessage( person, mediumType, systemCommunication, mergeFields );
+                    errors.AddRange( sendMessageResults.Errors );
+                    warnings.AddRange( sendMessageResults.Warnings );
+                    messagesSent += sendMessageResults.MessagesSent;
                 }
 
-                var errors = new List<string>();
-                if ( recipients.Any() )
+                var jobResults = new StringBuilder( $"{messagesSent} messages were sent." );
+                if ( warnings.Any() )
                 {
-                    var emailMessage = new RockEmailMessage( emailTemplateGuid );
-                    emailMessage.SetRecipients( recipients );
-                    emailMessage.Send( out errors );
-
+                    jobResults.AppendLine();
+                    jobResults.AppendLine( $"{warnings.Count} warnings:" );
+                    warnings.ForEach( w => { jobResults.AppendLine( w ); } );
                 }
 
-                context.Result = string.Format( "{0} emails sent", recipients.Count() );
-
+                context.Result = jobResults.ToString();
                 if ( errors.Any() )
                 {
                     StringBuilder sb = new StringBuilder();

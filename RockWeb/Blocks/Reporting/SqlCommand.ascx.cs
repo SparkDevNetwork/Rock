@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
@@ -34,21 +33,13 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Block to execute a sql command and display the result (if any).
     /// </summary>
-    [DisplayName( "Sql Command" )]
+    [DisplayName( "SQL Command" )]
     [Category( "Reporting" )]
-    [Description( "Block to execute a sql command and display the result (if any)." )]
+    [Description( "Block to execute a SQL command and display the result (if any)." )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
     public partial class SqlCommand : RockBlock
     {
         #region User Preference Keys
-
-        /// <summary>
-        /// Keys to use for User Preferences
-        /// </summary>
-        private static class UserPreferenceKey
-        {
-            public const string SqlCommandHistoryJSON = "SqlCommandHistoryJSON";
-        }
 
         #endregion
 
@@ -63,28 +54,19 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnLoad( e );
 
-            foreach( Grid gReport in rptGrids.ControlsOfTypeRecursive<Grid>())
+            foreach ( Grid gReport in rptGrids.ControlsOfTypeRecursive<Grid>() )
             {
                 gReport.GridRebind += gReport_GridRebind;
             }
 
             if ( !Page.IsPostBack )
             {
-                List<SqlCommandHistoryItem> sqlCommandHistory = GetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON ).FromJsonOrNull<List<SqlCommandHistoryItem>>() ?? new List<SqlCommandHistoryItem>();
-                if ( sqlCommandHistory.Any() )
-                {
-                    var lastSqlCommand = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).FirstOrDefault();
-                    tbQuery.Text = lastSqlCommand.SqlText;
-                }
-                else
-                {
-                    tbQuery.Text = @"
+                tbQuery.Text = @"
 SELECT
     TOP 10 *
 FROM
     [Person]
 ";
-                }
             }
         }
 
@@ -113,22 +95,6 @@ FROM
         #region Internal Methods
 
         /// <summary>
-        /// 
-        /// </summary>
-        public class SqlCommandHistoryItem
-        {
-            public string SqlText { get; set; }
-
-
-            public DateTime ExecuteDateTime { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format( "[{1}] {0}", SqlText.Truncate( 50 ), ExecuteDateTime.ToElapsedString() );
-            }
-        }
-
-        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void RunCommand()
@@ -142,24 +108,6 @@ FROM
             if ( !string.IsNullOrWhiteSpace( query ) )
 
             {
-                var sqlCommandHistory = GetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON ).FromJsonOrNull<List<SqlCommandHistoryItem>>() ?? new List<SqlCommandHistoryItem>();
-                var lastCommand = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).FirstOrDefault();
-                if ( lastCommand != null && lastCommand.SqlText == query )
-                {
-                    lastCommand.ExecuteDateTime = RockDateTime.Now;
-                }
-                else
-                {
-                    sqlCommandHistory.Add( new SqlCommandHistoryItem { SqlText = query, ExecuteDateTime = RockDateTime.Now } );
-                }
-
-                if ( sqlCommandHistory.Count > 50 )
-                {
-                    sqlCommandHistory = sqlCommandHistory.OrderByDescending( a => a.ExecuteDateTime ).Take( 50 ).ToList();
-                }
-
-                SetBlockUserPreference( UserPreferenceKey.SqlCommandHistoryJSON, sqlCommandHistory.ToJson() );
-
                 try
                 {
                     if ( tQuery.Checked )
@@ -174,7 +122,7 @@ FROM
                         rptGrids.DataSource = dataSet.Tables.OfType<DataTable>().ToList();
                         rptGrids.DataBind();
 
-                        pQueryTime.InnerText = string.Format( "{0} completed in {1:N0}ms", "Query".PluralizeIf(dataSet.Tables.Count != 1), sw.ElapsedMilliseconds );
+                        pQueryTime.InnerText = string.Format( "{0} completed in {1:N0}ms", "Query".PluralizeIf( dataSet.Tables.Count != 1 ), sw.ElapsedMilliseconds );
                         pQueryTime.Visible = true;
                     }
                     else

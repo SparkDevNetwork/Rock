@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Web;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -217,7 +218,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
-        [Obsolete( "Use CheckinConfigurationHelper.CheckInCookieKey instead" )]
+        [Obsolete( "Use CheckInCookieKey instead" )]
         [RockObsolete( "1.10" )]
         public struct CheckInCookie
         {
@@ -258,11 +259,11 @@ namespace Rock.CheckIn
                 {
                     return false;
                 }
-                else if ( !CurrentCheckInType.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
+                else if ( !CurrentCheckInState.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return false;
                 }
-                else if ( CurrentCheckInType.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
+                else if ( CurrentCheckInState.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( LocalDeviceConfig.CurrentGroupTypeIds ) )
                 {
                     return true;
                 }
@@ -359,12 +360,31 @@ namespace Rock.CheckIn
         {
             base.OnInit( e );
 
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                return;
+            }
+
             // Tell the browsers to not cache any pages that have a block that inherits from CheckinBlock. This will help prevent browser using stale copy of checkin pages which could cause labels to get reprinted, and other expected things.
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
             Page.Response.Cache.SetNoStore();
 
             GetState();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( LocalDeviceConfig?.DisableIdleRedirect == true )
+            {
+                DisableIdleRedirectBlocks( true );
+            }
         }
 
         /// <summary>
@@ -525,7 +545,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Goes the back.
         /// </summary>
-        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on prev page has a selection required before redirecting.</param>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
         protected virtual void GoBack( bool validateSelectionRequired )
         {
             SaveState();
@@ -545,12 +565,21 @@ namespace Rock.CheckIn
         /// </summary>
         protected virtual void NavigateToHomePage()
         {
-            NavigateToLinkedPage( AttributeKey.HomePage );
+            Guid? homePageOverride = LocalDeviceConfig?.HomePageOverride;
+
+            if ( homePageOverride.HasValue )
+            {
+                NavigateToPage( homePageOverride.Value, null );
+            }
+            else
+            {
+                NavigateToLinkedPage( AttributeKey.HomePage );
+            }
         }
 
         /// <summary>
         /// Navigates to next page.
-        /// </summary>
+        /// </summary>6
         protected virtual void NavigateToNextPage()
         {
             NavigateToNextPage( null, false );
@@ -581,6 +610,14 @@ namespace Rock.CheckIn
         /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
         protected virtual void NavigateToNextPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
+            bool pageIsBlocked = IsPageBlocked( GetAttributeValue( AttributeKey.NextPage ), queryParams );
+
+            if ( pageIsBlocked )
+            {
+                NavigateToHomePage();
+                return;
+            }
+
             queryParams = CheckForOverride( queryParams );
 
             if ( validateSelectionRequired )
@@ -635,6 +672,14 @@ namespace Rock.CheckIn
         /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
         protected virtual void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
+            bool pageIsBlocked = IsPageBlocked( GetAttributeValue( AttributeKey.PreviousPage ), queryParams );
+
+            if ( pageIsBlocked )
+            {
+                NavigateToHomePage();
+                return;
+            }
+
             if ( validateSelectionRequired )
             {
                 var nextBlock = GetCheckInBlock( AttributeKey.PreviousPage );
@@ -647,6 +692,35 @@ namespace Rock.CheckIn
             {
                 NavigateToLinkedPage( AttributeKey.PreviousPage, queryParams );
             }
+        }
+
+        /// <summary>
+        /// Returns true of the
+        /// </summary>
+        /// <param name="pageAttributeKey">The page attribute key.</param>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <returns>
+        ///   <c>true</c> if [is page blocked] [the specified query parameters]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsPageBlocked( string pageAttributeKey, Dictionary<string, string> queryParams )
+        {
+            if ( LocalDeviceConfig.BlockedPageIds?.Any() == true )
+            {
+                var previousPagePageReference = new PageReference( pageAttributeKey, queryParams );
+                if ( previousPagePageReference != null )
+                {
+                    // make sure we don't end up in an infinite loop
+                    if ( previousPagePageReference.PageId != this.CurrentPageReference?.PageId )
+                    {
+                        if ( LocalDeviceConfig.BlockedPageIds.Contains( previousPagePageReference.PageId ) )
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -716,7 +790,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Loads a check-in block to determine if it will require a selection or not. This is used to find the
         /// next page/block that does require a selection so that user can be redirected once to that block, 
-        /// rather than just continuously redirected to next/prev page blocks and possibly exceeding the maximum
+        /// rather than just continuously redirected to next/previous page blocks and possibly exceeding the maximum
         /// number of redirects.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
@@ -756,20 +830,11 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the current state of the kiosk and workflow
+        /// Saves the current state of the LocalDeviceConfig, Kiosk, and workflow
         /// </summary>
         protected void SaveState()
         {
-            var localDeviceConfigCookie = this.Page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
-            if ( localDeviceConfigCookie == null )
-            {
-                localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
-            }
-
-            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            localDeviceConfigCookie.Value = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
-
-            this.Page.Response.Cookies.Set( localDeviceConfigCookie );
+            this.LocalDeviceConfig.SaveToCookie( this.Page );
 
             Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 
@@ -788,8 +853,7 @@ namespace Rock.CheckIn
         /// </summary>
         private void GetState()
         {
-            var localDeviceConfigCookie = this.Page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
-            this.LocalDeviceConfig = localDeviceConfigCookie?.Value?.FromJsonOrNull<LocalDeviceConfiguration>();
+            this.LocalDeviceConfig = LocalDeviceConfig.GetFromCookie( this.Page );
 
             if ( this.LocalDeviceConfig == null )
             {
@@ -808,8 +872,30 @@ namespace Rock.CheckIn
 
             if ( CurrentCheckInState == null && this.LocalDeviceConfig.CurrentKioskId.HasValue )
             {
-                CurrentCheckInState = new CheckInState( this.LocalDeviceConfig.CurrentKioskId.Value, this.LocalDeviceConfig.CurrentCheckinTypeId, this.LocalDeviceConfig.CurrentGroupTypeIds );
+                CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
             }
+        }
+
+        /// <summary>
+        /// Gets the URL for the QRCode for the current AttendanceSession(s) that are in the <seealso cref="CheckInCookieKey.AttendanceSessionGuids" /> cookie.
+        /// </summary>
+        /// <param name="attendanceSessionGuidsCookie">The attendance session guids cookie.</param>
+        /// <returns></returns>
+        public string GetAttendanceSessionsQrCodeImageUrl( HttpCookie attendanceSessionGuidsCookie )
+        {
+            if ( attendanceSessionGuidsCookie == null || attendanceSessionGuidsCookie.Value.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var attendanceSessionGuids = attendanceSessionGuidsCookie.Value.Split( ',' ).AsGuidList();
+
+            var guidListAsShortStringList = attendanceSessionGuids.Select( a => GuidHelper.ToShortString( a ) ).ToList().AsDelimited( "," );
+            var qrCodeData = HttpUtility.UrlEncode( "PCL+" + guidListAsShortStringList );
+
+            var qrCodeUrl = this.ResolveRockUrl( string.Format( "~/GetQRCode.ashx?data={0}&outputType=svg", qrCodeData ) );
+
+            return qrCodeUrl;
         }
     }
 }

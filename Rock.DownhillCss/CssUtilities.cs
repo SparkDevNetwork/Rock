@@ -576,7 +576,7 @@ NavigationPage {
 
 ^label {
     font-size: default;
-    color: ?color-text;
+    color:  ;
 }
 
 /*
@@ -865,6 +865,36 @@ NavigationPage {
     Control CSS
     -----------------------------------------------------------
 */
+
+/* Countdown */
+.countdown-field {
+    width: 32;
+}
+
+.countdown-field-value,
+.countdown-separator-value,
+.countdown-complete-message {
+    font-size: 24;
+    font-style: bold;
+    color: ?color-text;
+}
+
+.countdown-separator-value {
+    color: ?color-gray-500;
+}
+
+.countdown-field-label {
+    font-size: 12;
+    color: ?color-gray-500;
+}
+
+.countdown-complete .countdown-field-value,
+.countdown-complete .countdown-separator-value {}
+
+.less-than-day .countdown-field-value {}
+.less-than-hour {}
+.less-than-15-min {}
+.less-than-5-min{}
 
 /* Divider */
 .divider {

@@ -108,10 +108,7 @@ html {
 }
 
 .family-personselect {
-  font-size: 18px;
-  @media (min-width: @screen-xs-min) {
-    font-size: 26px;
-  }
+  font-size: 26px;
 }
 
 .photo-container {
@@ -129,10 +126,14 @@ html {
     right: 0;
     bottom: 0;
     left: 0;
-    width: 59.7%;
+    width: 100%;
     content: "";
     background: url(@welcome-image) no-repeat bottom right;
     background-size: contain;
+
+    @media (min-width: @screen-xs-min) {
+      width: 59.7%;
+    }
   }
 
   &::after {

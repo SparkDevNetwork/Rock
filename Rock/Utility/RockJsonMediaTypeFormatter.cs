@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
-
+using System.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Utility
@@ -31,40 +31,67 @@ namespace Rock.Utility
     public class RockJsonMediaTypeFormatter : JsonMediaTypeFormatter
     {
         /// <summary>
-        /// Gets or sets a value indicating whether [load attributes].
+        /// 
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [load attributes]; otherwise, <c>false</c>.
-        /// </value>
-        [ThreadStatic]
-        private static bool _loadAttributes;
+        private class LoadAttributesOptions
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LoadAttributesOptions"/> class.
+            /// </summary>
+            /// <param name="loadAttributesEnabled">if set to <c>true</c> [load attributes enabled].</param>
+            /// <param name="serializeInSimpleMode">if set to <c>true</c> [serialize in simple mode].</param>
+            /// <param name="limitToAttributeKeyList">The limit to attribute key list.</param>
+            /// <param name="person">The person.</param>
+            public LoadAttributesOptions( bool loadAttributesEnabled, bool serializeInSimpleMode, string[] limitToAttributeKeyList, Rock.Model.Person person )
+            {
+                LoadAttributesEnabled = loadAttributesEnabled;
+                SerializeInSimpleMode = serializeInSimpleMode;
+                LimitToAttributeKeyList = limitToAttributeKeyList ?? new string[0];
+                Person = person;
+            }
 
-        /// <summary>
-        /// Gets or sets the limit to attribute key list.
-        /// </summary>
-        /// <value>
-        /// The limit to attribute key list.
-        /// </value>
-        [ThreadStatic]
-        private static string[] _limitToAttributeKeyList;
+            /// <summary>
+            /// The context items key
+            /// </summary>
+            public static readonly string ContextItemsKey = $"{typeof( RockJsonMediaTypeFormatter ).FullName}:LoadAttributesOptions";
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [serialize in simple mode].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [serialize in simple mode]; otherwise, <c>false</c>.
-        /// </value>
-        [ThreadStatic]
-        private static bool _serializeInSimpleMode;
+            /// <summary>
+            /// Gets or sets a value indicating whether [load attributes].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [load attributes]; otherwise, <c>false</c>.
+            /// </value>
+            public readonly bool LoadAttributesEnabled;
 
-        /// <summary>
-        /// Gets or sets the person that initiated the REST request
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [ThreadStatic]
-        private static Rock.Model.Person _person;
+            /// <summary>
+            /// Gets or sets the limit to attribute key list.
+            /// </summary>
+            /// <value>
+            /// The limit to attribute key list.
+            /// </value>
+            public readonly string[] LimitToAttributeKeyList;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [serialize in simple mode].
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if [serialize in simple mode]; otherwise, <c>false</c>.
+            /// </value>
+            public readonly bool SerializeInSimpleMode;
+
+            /// <summary>
+            /// Gets or sets the person that initiated the REST request
+            /// </summary>
+            /// <value>
+            /// The person.
+            /// </value>
+            public readonly Rock.Model.Person Person;
+
+            public override string ToString()
+            {
+                return $"LoadAttributesEnabled:{LoadAttributesEnabled}&{SerializeInSimpleMode}, {Person}";
+            }
+        }
 
         /// <summary>
         /// Returns a specialized instance of the <see cref="T:System.Net.Http.Formatting.MediaTypeFormatter" /> that can format a response for the given parameters.
@@ -80,19 +107,25 @@ namespace Rock.Utility
             var qryParams = System.Web.HttpUtility.ParseQueryString( request.RequestUri.Query );
             string loadAttributes = qryParams["LoadAttributes"] ?? string.Empty;
 
-            _limitToAttributeKeyList = qryParams["AttributeKeys"]?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).ToArray();
+            string[] limitToAttributeKeyList = qryParams["AttributeKeys"]?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).ToArray();
 
             // if "simple" or True is specified in the LoadAttributes param, tell the formatter to serialize in Simple mode
-            _serializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
+            bool serializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
-            _loadAttributes = _serializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
+            bool loadAttributesEnabled = serializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
+
+            Rock.Model.Person person = null;
 
             // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
-            if ( _loadAttributes && request.Properties.ContainsKey( "Person" ) )
+            if ( loadAttributesEnabled && request.Properties.ContainsKey( "Person" ) )
             {
-                _person = request.Properties["Person"] as Rock.Model.Person;
+                person = request.Properties["Person"] as Rock.Model.Person;
             }
+
+            // store the request options in HttpContext.Current.Items so they are thread safe, and only for this request
+            var loadAttributesOptions = new LoadAttributesOptions( loadAttributesEnabled, serializeInSimpleMode, limitToAttributeKeyList, person );
+            HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] = loadAttributesOptions;
 
             return base.GetPerRequestFormatterInstance( type, request, mediaType );
         }
@@ -123,8 +156,15 @@ namespace Rock.Utility
                 }
             }
 
+            var loadAttributesOptions = HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] as LoadAttributesOptions;
+            if ( loadAttributesOptions == null )
+            {
+                // shouldn't happen, but just in case
+                loadAttributesOptions = new LoadAttributesOptions( false, false, null, null );
+            }
+
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
-            if ( _loadAttributes )
+            if ( loadAttributesOptions.LoadAttributesEnabled )
             {
                 IEnumerable<Attribute.IHasAttributes> items = null;
 
@@ -164,14 +204,14 @@ namespace Rock.Utility
                 }
 
                 List<AttributeCache> limitToAttributes = null;
-                if ( _limitToAttributeKeyList?.Any() == true && type.IsGenericType )
+                if ( loadAttributesOptions.LimitToAttributeKeyList?.Any() == true && type.IsGenericType )
                 {
                     var entityTypeType = type.GenericTypeArguments[0];
                     if ( entityTypeType != null )
                     {
                         var entityType = EntityTypeCache.Get( entityTypeType );
                         var entityAttributesList = AttributeCache.GetByEntity( entityType.Id )?.SelectMany( a => a.AttributeIds ).ToList().Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
-                        limitToAttributes = entityAttributesList?.Where( a => _limitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                        limitToAttributes = entityAttributesList?.Where( a => loadAttributesOptions.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
                     }
                 }
 
@@ -184,7 +224,7 @@ namespace Rock.Utility
                             Rock.Attribute.Helper.LoadAttributes( item, rockContext, limitToAttributes );
                         }
 
-                        FilterAttributes( rockContext, items, _person );
+                        FilterAttributes( rockContext, items, loadAttributesOptions.Person );
                     }
                 }
             }
@@ -197,7 +237,7 @@ namespace Rock.Utility
             {
                 using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    List<Dictionary<string, object>> valueAsDictionary = GetSelectAndExpandDictionaryObject( type, selectAndExpandList, rockContext );
+                    List<Dictionary<string, object>> valueAsDictionary = GetSelectAndExpandDictionaryObject( type, selectAndExpandList, rockContext, loadAttributesOptions );
                     base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );
                 }
 
@@ -213,8 +253,9 @@ namespace Rock.Utility
         /// <param name="type">The type.</param>
         /// <param name="selectAndExpandList">The select and expand list.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="loadAttributesOptions">The load attributes options.</param>
         /// <returns></returns>
-        private static List<Dictionary<string, object>> GetSelectAndExpandDictionaryObject( Type type, List<object> selectAndExpandList, Rock.Data.RockContext rockContext )
+        private static List<Dictionary<string, object>> GetSelectAndExpandDictionaryObject( Type type, List<object> selectAndExpandList, Rock.Data.RockContext rockContext, LoadAttributesOptions loadAttributesOptions )
         {
             // The normal SelectAllAndExpand converts stuff into dictionaries, but some stuff ends up missing
             // So, this will do all that manually using reflection and our own dictionary of each Entity
@@ -275,7 +316,7 @@ namespace Rock.Utility
                 }
 
                 // if LoadAttributes was specified, add those last
-                if ( _loadAttributes && ( entity is Attribute.IHasAttributes ) )
+                if ( loadAttributesOptions.LoadAttributesEnabled && ( entity is Attribute.IHasAttributes ) )
                 {
                     // Add Attributes and AttributeValues
                     valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
@@ -349,10 +390,17 @@ namespace Rock.Utility
         /// </returns>
         public override Newtonsoft.Json.JsonWriter CreateJsonWriter( Type type, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
-            if ( _loadAttributes && _serializeInSimpleMode )
+            var loadAttributesOptions = HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] as LoadAttributesOptions;
+            if ( loadAttributesOptions == null )
+            {
+                // shouldn't happen, but just in case
+                loadAttributesOptions = new LoadAttributesOptions( false, false, null, null );
+            }
+
+            if ( loadAttributesOptions.LoadAttributesEnabled && loadAttributesOptions.SerializeInSimpleMode )
             {
                 // Use the RockJsonTextWriter when we need to Serialize Model.AttributeValues and Model.Attributes in simple mode
-                return new RockJsonTextWriter( new System.IO.StreamWriter( writeStream ), _serializeInSimpleMode );
+                return new RockJsonTextWriter( new System.IO.StreamWriter( writeStream ), loadAttributesOptions.SerializeInSimpleMode );
             }
             else
             {

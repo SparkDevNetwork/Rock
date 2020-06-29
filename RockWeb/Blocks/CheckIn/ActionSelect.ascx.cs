@@ -68,13 +68,13 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        if ( UserBackedUp && ( !CurrentCheckInState.CheckInType.AllowCheckout || !family.CheckOutPeople.Any() ) )
+                        if ( UserBackedUp && ( !CurrentCheckInState.AllowCheckout || !family.CheckOutPeople.Any() ) )
                         {
                             GoBack();
                         }
                         else
                         {
-                            if ( !CurrentCheckInState.CheckInType.AllowCheckout || !family.CheckOutPeople.Any() )
+                            if ( !CurrentCheckInState.AllowCheckout || !family.CheckOutPeople.Any() )
                             {
                                 ProcessSelection( CheckinAction.CheckIn );
                             }
