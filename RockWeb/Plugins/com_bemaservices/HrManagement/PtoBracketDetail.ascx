@@ -18,7 +18,7 @@
 
                 <div class="panel-heading">
                     <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lIcon" runat="server" />
+                        <i class='fa fa-clock'></i>
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
@@ -57,13 +57,13 @@
                         <Rock:PanelWidget ID="wpPtoBracketTypes" runat="server" Title="Annual PTO Allocations">
                             <h4>Annual PTO Allocations Configuration</h4>
 							<div class="grid">
-								<Rock:Grid ID="gPtoBracketTypeConfigs" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="PTO Type" ShowConfirmDeleteDialog="false">
+								<Rock:Grid ID="gPtoBracketTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="PTO Type" ShowConfirmDeleteDialog="false">
 									<Columns>
 										<Rock:RockBoundField DataField="PtoTypeName" HeaderText="PTO Type" />
 										<Rock:RockBoundField DataField="DefaultHours" HeaderText="Default Hours Accured" />
                                         <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                                        <Rock:EditField OnClick="gPtoBracketTypeConfigs_Edit" />
-										<Rock:DeleteField OnClick="gPtoBracketTypeConfigs_Delete" />
+                                        <Rock:EditField OnClick="gPtoBracketTypes_Edit" />
+										<Rock:DeleteField OnClick="gPtoBracketTypes_Delete" />
 									</Columns>
 								</Rock:Grid>
                             </div>
@@ -81,19 +81,19 @@
         <asp:Button ID="btnHideDialog" runat="server" Style="display: none" OnClick="btnHideDialog_Click" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgPtoTypeConfigDetails" runat="server" ValidationGroup="PtoTypeConfig" SaveButtonText="Add" OnSaveClick="dlgPtoTypeConfigDetails_SaveClick" Title="PTO Allocation Configuration">
+        <Rock:ModalDialog ID="dlgPtoBracketTypeDetails" runat="server" ValidationGroup="PtoBracketType" SaveButtonText="Add" OnSaveClick="dlgPtoBracketTypeDetails_SaveClick" Title="PTO Allocation Configuration">
             <Content>
-                <asp:ValidationSummary ID="valPtoTypeConfig" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupConfig" />
+                <asp:ValidationSummary ID="valPtoBracketType" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupConfig" />
                 <asp:HiddenField ID="hfPtoBracketTypeId" runat="server" />
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" OnSelectedIndexChanged="ddlPtoType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="PtoTypeConfig" EnhanceForLongLists="false" />
+                        <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" Required="true" ValidationGroup="PtoBracketType" EnhanceForLongLists="false" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockTextBox ID="tbDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoTypeConfig" />
+                        <Rock:RockTextBox ID="tbDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoBracketType" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockCheckBox ID="cbBracketTypeIsActive" runat="server" Label="Active" ValidationGroup="PtoTypeConfig" />
+                        <Rock:RockCheckBox ID="cbBracketTypeIsActive" runat="server" Label="Active" ValidationGroup="PtoBracketType" />
                     </div>
                 </div>
             </Content>
