@@ -64,7 +64,7 @@ namespace com.bemaservices.HrManagement.Model
         #region Virtual Properties
 
         [LavaInclude]
-        public virtual Workflow Workflow { get; set; }
+        public virtual Rock.Model.Workflow Workflow { get; set; }
 
         [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
