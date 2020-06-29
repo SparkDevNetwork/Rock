@@ -476,6 +476,16 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Builds the storage key.
+        /// </summary>
+        /// <param name="suffix">The suffix - if any - that should be added to the base key.</param>
+        /// <returns>The base key + any suffix that should be added.</returns>
+        private static string BuildStorageKey( string suffix )
+        {
+            return $"RockPageReferenceHistory{( string.IsNullOrWhiteSpace( suffix ) ? string.Empty : suffix )}";
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -531,11 +541,29 @@ namespace Rock.Web
         /// <summary>
         /// Gets the parent page references.
         /// </summary>
+        /// <param name="rockPage">The rock page.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentPageReference">The current page reference.</param>
         /// <returns></returns>
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference )
         {
+            return GetParentPageReferences( rockPage, currentPage, currentPageReference, null );
+        }
+
+        /// <summary>
+        /// Gets the parent page references.
+        /// </summary>
+        /// <param name="rockPage">The rock page.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentPageReference">The current page reference.</param>
+        /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to get the parent page references.</param>
+        /// <returns></returns>
+        public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference, string keySuffix )
+        {
+            var key = BuildStorageKey( keySuffix );
+
             // Get previous page references in nav history
-            var pageReferenceHistory = HttpContext.Current.Session["RockPageReferenceHistory"] as List<PageReference>;
+            var pageReferenceHistory = HttpContext.Current.Session[key] as List<PageReference>;
 
             // Current page hierarchy references
             var pageReferences = new List<PageReference>();
@@ -609,7 +637,19 @@ namespace Rock.Web
         /// <param name="pageReferences">The page references.</param>
         public static void SavePageReferences( List<PageReference> pageReferences )
         {
-            HttpContext.Current.Session["RockPageReferenceHistory"] = pageReferences;
+            SavePageReferences( pageReferences, null );
+        }
+
+        /// <summary>
+        /// Saves the history.
+        /// </summary>
+        /// <param name="pageReferences">The page references.</param>
+        /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to save the parent page references.</param>
+        public static void SavePageReferences( List<PageReference> pageReferences, string keySuffix )
+        {
+            var key = BuildStorageKey( keySuffix );
+
+            HttpContext.Current.Session[key] = pageReferences;
         }
 
         #endregion

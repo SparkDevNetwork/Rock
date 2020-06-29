@@ -303,7 +303,15 @@ namespace RockWeb.Blocks.Core
 
             gNoteTypes.Columns.OfType<ReorderField>().FirstOrDefault().Visible = entityTypeId.HasValue;
 
-            gNoteTypes.SetLinqDataSource( noteTypeQuery );
+            var noteTypeRows = noteTypeQuery
+                                    .AsEnumerable()
+                                    .Select( a => new NoteTypeRow
+                                    {
+                                        Id = a.Id,
+                                        NoteType = a,
+                                        EntityTypeFriendlyName = CreateEntityTypeFriendlyName(a.EntityType)
+                                    } ).ToList();
+            gNoteTypes.DataSource = noteTypeRows;
             gNoteTypes.DataBind();
         }
 
@@ -351,6 +359,58 @@ namespace RockWeb.Blocks.Core
             }
 
             return noteTypeQuery;
+        }
+
+        /// <summary>
+        /// Create Entity Type Friendly Name
+        /// </summary>
+        private string CreateEntityTypeFriendlyName( EntityType entityType )
+        {
+            if ( entityType == null )
+            {
+                return string.Empty;
+            }
+            Type entityTypeType = Type.GetType( entityType.AssemblyName );
+            var assemblyName = entityTypeType.Assembly.GetName().Name;
+
+            string friendlyName = entityType.FriendlyName;
+            if ( !assemblyName.StartsWith( "Rock" ) )
+            {
+                friendlyName = string.Format( "{0} (Plugin: {1})", friendlyName, assemblyName );
+            }
+            return friendlyName;
+        }
+
+        #endregion
+
+        #region Nested Classes
+
+        private class NoteTypeRow
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note type.
+            /// </summary>
+            /// <value>
+            /// The note type.
+            /// </value>
+            public NoteType NoteType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity type friendly name.
+            /// </summary>
+            /// <value>
+            /// The entity type friendly name.
+            /// </value>
+            public string EntityTypeFriendlyName { get; set; }
+
         }
 
         #endregion

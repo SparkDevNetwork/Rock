@@ -110,10 +110,15 @@ input.namesearch,
 input.checkin-phone-entry {
   width: 100%;
   max-width: 710px;
-  height: 96px;
-  font-size: 68px;
+  height: 78px;
+  font-size: 48px;
   font-weight: 400;
   text-align: center;
+
+  @media (min-width: @screen-xs-min) {
+    height: 96px;
+    font-size: 68px;
+  }
 
   // Hide field X in MS Edge
   &::-ms-clear {

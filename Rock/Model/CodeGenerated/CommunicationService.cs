@@ -111,7 +111,11 @@ namespace Rock.Model
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PushData = source.PushData;
+            target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;
+            target.PushOpenAction = source.PushOpenAction;
+            target.PushOpenMessage = source.PushOpenMessage;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             target.ReplyToEmail = source.ReplyToEmail;

@@ -1219,6 +1219,11 @@ This can be due to multiple threads updating the same attribute at the same time
                         ShowPrePostHtml = ( addEditControlsOptions?.ShowPrePostHtml ?? true )
                     };
 
+                    if ( addEditControlsOptions.RequiredAttributes != null )
+                    {
+                        attributeControlOptions.Required = addEditControlsOptions.RequiredAttributes.Any( a => a.Id == attribute.Id );
+                    }
+
                     if ( numberOfColumns.HasValue )
                     {
                         int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
@@ -1528,6 +1533,14 @@ This can be due to multiple threads updating the same attribute at the same time
         /// The included attributes.
         /// </value>
         public List<AttributeCache> IncludedAttributes { get; set; }
+
+        /// <summary>
+        /// Overrides which Attributes are required. Leave null to use normal IsRequired for the attribute
+        /// </summary>
+        /// <value>
+        /// The required attributes.
+        /// </value>
+        public List<AttributeCache> RequiredAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)

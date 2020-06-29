@@ -469,7 +469,7 @@ namespace Rock.Model
                 cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
                 relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                    cleanUrl, HttpContext.Current.Request.UserHostAddress );
+                    cleanUrl, Rock.Web.UI.RockPage.GetClientIpAddress() );
             }
 
             var historyChangeList = new History.HistoryChangeList();

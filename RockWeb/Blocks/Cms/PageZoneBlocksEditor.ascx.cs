@@ -154,7 +154,6 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    //page.RemoveBlocks();
                     PageCache.Remove( page.Id );
 
                     if ( block.LayoutId.HasValue )
@@ -179,7 +178,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlZones_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowDetailForZone( ddlZones.SelectedValue );
+            // Note: nothing should be done here since this is already been take care of when OnLoad calls ShowDetailForZone
         }
 
         /// <summary>
@@ -221,6 +220,31 @@ namespace RockWeb.Blocks.Cms
 
                 // update SiteBlock, LayoutBlock and PageBlock repeaters
                 var zoneBlocks = page.Blocks.Where( a => a.Zone == zoneName ).ToList();
+
+                var blockTypes = zoneBlocks.Select( a => a.BlockType ).Distinct().ToList();
+
+                // if the blockType has changed since it IsInstancePropertiesVerified, check for updated attributes
+                foreach ( var blockType in blockTypes )
+                {
+                    if ( blockType != null && !blockType.IsInstancePropertiesVerified )
+                    {
+                        try
+                        {
+                            int blockTypeId = blockType.Id;
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var blockCompiledType = blockType.GetCompiledType();
+                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+                                bool attributesUpdated = Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
+                                BlockTypeCache.Get( blockTypeId ).MarkInstancePropertiesVerified( true );
+                            }
+                        }
+                        catch
+                        {
+                            // ignore if it can't be compiled
+                        }
+                    }
+                }
 
                 rptSiteBlocks.DataSource = zoneBlocks.Where(a => a.BlockLocation == BlockLocation.Site).ToList();
                 rptSiteBlocks.DataBind();
@@ -484,7 +508,13 @@ namespace RockWeb.Blocks.Cms
 
             if ( customAdminControls.Any() && blockControl != null)
             {
-                pnlBlocksHolder.Controls.Add( blockControl );
+                // Set a flag to indicate that the block should only render the necessary elements to allow configuration.
+                // Rendering the block content here may disrupt the formatting of the page.
+                blockControl.ConfigurationRenderModeIsEnabled = true;
+
+                // if the block an ID so that viewstate (in the dynamicplaceholder) can be tracked by id
+                blockControl.ID = string.Format( "config_block_control_{0}", block.Id );
+                phBlockHolder.Controls.Add( blockControl );
             }
         }
 

@@ -682,6 +682,21 @@ namespace Rock.Field.Types
                         }
                         else
                         {
+                            /*
+                             * Convert expressions to int if the property type is an int
+                             */
+                            if(propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            {
+                                if( constantExpressionLower != null )
+                                {
+                                    constantExpressionLower = Expression.Constant( Convert.ToDateTime( constantExpressionLower.Value ).ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                                }
+                                if ( constantExpressionUpper != null )
+                                {
+                                    constantExpressionUpper = Expression.Constant( Convert.ToDateTime( constantExpressionUpper.Value ).ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                                }
+                            }
+
                             return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
                         }
                     }
@@ -691,6 +706,11 @@ namespace Rock.Field.Types
                         if ( dateTime.HasValue )
                         {
                             ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
+                            if (propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            {
+                                constantExpression = Expression.Constant( dateTime?.ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                            } 
+                            
                             return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                         }
                         else

@@ -159,6 +159,7 @@ namespace Rock.Model
         /// The created date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? CreatedDateKey
         {
             get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?

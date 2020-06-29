@@ -1,0 +1,106 @@
+/*
+  Drop-in Mobile Styling for Legacy Themes.
+  Not needed in new themes.
+*/
+
+@media (max-width: @screen-xs-max) {
+
+
+  .body-content {
+    position: inherit;
+    height: ~"calc(100vh - 200px)";
+
+    // Unset 100vh in iOS
+    @supports (-webkit-touch-callout: none) {
+      height: unset;
+      min-height: -webkit-fill-available;
+    }
+  }
+
+  .container {
+    padding: 0;
+  }
+
+  // Override Adventure Theme
+  .checkin-body-container {
+    width: 100% !important;
+  }
+
+  .checkin-header {
+    margin: 15px;
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+  }
+
+  .iScrollVerticalScrollbar,
+  .iScrollLoneScrollbar {
+    width: 10px;
+  }
+
+  .scroller {
+    padding: 0 15px;
+  }
+
+  .row-checkin-item,
+  .btn-checkin-select {
+    margin-bottom: 10px;
+  }
+
+  .checkin-time-select,
+  .checkin-timelist {
+    display: block;
+  }
+
+  .checkin-timelist {
+    .btn {
+      display: block;
+      float: none;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: @border-radius-base !important;
+    }
+  }
+
+  .checkin-error:empty {
+    display: none;
+  }
+
+  .checkin-footer {
+    display: block;
+    padding: 0;
+    z-index: 1000;
+
+    .checkin-actions {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      padding-right: 15px;
+      padding-left: 15px;
+      margin-right: auto;
+      margin-left: auto;
+
+      .btn {
+        padding: 8px 24px;
+        margin: 4px;
+        font-size: 16px;
+        font-weight: 400;
+      }
+
+      .btn-primary {
+        display: block;
+        width: 100%;
+        font-size: 16px;
+      }
+
+      .btn-default {
+        flex-grow: 1;
+      }
+    }
+  }
+}

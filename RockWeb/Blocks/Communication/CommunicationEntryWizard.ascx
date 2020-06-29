@@ -129,6 +129,7 @@
                                     <a id="btnMediumRecipientPreference" runat="server" class="btn btn-info btn-sm active js-medium-recipientpreference" data-val="0" >Recipient Preference</a>
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
+                                    <a id="btnMediumPush" runat="server" class="btn btn-default btn-sm js-medium-push" data-val="3" >Push</a>
                                 </div>
                             </div>
                         </div>
@@ -1108,6 +1109,20 @@
                     </div>
                 </asp:Panel>
 
+                <%-- Push Editor --%>
+                <asp:Panel ID="pnlPushEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
+                    <h1 class="step-title">Push Notification Editor</h1>
+                    <asp:ValidationSummary ID="vsPushEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgPushEditor" CssClass="alert alert-validation" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:PlaceHolder ID="phPushControl" runat="server" />
+                        </div>
+                    </div>
+                    <div class="actions margin-t-md">
+                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnPushEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
+                    </div>
+                </asp:Panel>
                 <%-- Confirmation --%>
                 <asp:Panel ID="pnlConfirmation" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Confirmation</h1>

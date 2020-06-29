@@ -32,6 +32,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.UI.Controls.Communication;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -73,6 +74,18 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Base Control Methods
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            var mediumControl = MediumControl.GetMediumControl(CommunicationType.PushNotification);
+
+            mediumControl.ID = "mediumControl";
+            mediumControl.IsTemplate = false;
+            mediumControl.ValidationGroup = btnSave.ValidationGroup;
+
+            phPushNotification.Controls.Add( mediumControl );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -238,6 +251,20 @@ namespace RockWeb.Blocks.Communication
 
             communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
 
+            var pushCommunication = new CommunicationDetails();
+            var pushNotificationControl = phPushNotification.Controls[0] as PushNotification;
+            if ( pushNotificationControl != null )
+            {
+                pushNotificationControl.UpdateCommunication( pushCommunication );
+            }
+
+            communicationTemplate.PushData = pushCommunication.PushData;
+            communicationTemplate.PushImageBinaryFileId = pushCommunication.PushImageBinaryFileId;
+            communicationTemplate.PushMessage = pushCommunication.PushMessage;
+            communicationTemplate.PushOpenAction = pushCommunication.PushOpenAction;
+            communicationTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+            communicationTemplate.PushTitle = pushCommunication.PushTitle;
+
             rockContext.SaveChanges();
 
             var personalView = GetAttributeValue( AttributeKey.PersonalTemplatesView ).AsBoolean();
@@ -343,6 +370,7 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationTemplate communicationTemplate = null;
             var newTemplate = false;
+            var pushCommunication = new CommunicationDetails();
 
             if ( !templateId.Equals( 0 ) )
             {
@@ -352,6 +380,16 @@ namespace RockWeb.Blocks.Communication
                     lTitle.Text = communicationTemplate.Name.FormatAsHtmlTitle();
                     pdAuditDetails.SetEntity( communicationTemplate, ResolveRockUrl( "~" ) );
                 }
+
+                pushCommunication = new CommunicationDetails
+                {
+                    PushData = communicationTemplate.PushData,
+                    PushImageBinaryFileId = communicationTemplate.PushImageBinaryFileId,
+                    PushMessage = communicationTemplate.PushMessage,
+                    PushTitle = communicationTemplate.PushTitle,
+                    PushOpenMessage = communicationTemplate.PushOpenMessage,
+                    PushOpenAction = communicationTemplate.PushOpenAction
+                };
             }
 
             if ( communicationTemplate == null )
@@ -446,6 +484,13 @@ namespace RockWeb.Blocks.Communication
             btnSave.Enabled = !readOnly;
 
             tglPreviewAdvanced.Checked = true;
+
+            var pushNotificationControl = phPushNotification.Controls[0] as PushNotification;
+            if ( pushNotificationControl != null )
+            {
+                pushNotificationControl.SetFromCommunication( pushCommunication );
+            }
+
             SetEmailMessagePreviewModeEnabled( tglPreviewAdvanced.Checked );
         }
 
@@ -692,7 +737,6 @@ namespace RockWeb.Blocks.Communication
                 rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }
-
         #endregion
     }
 }

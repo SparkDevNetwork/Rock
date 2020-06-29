@@ -63,8 +63,16 @@
                                                 Help="Should the numbers be randomized (vs. generated in order)." />
                                         </Rock:RockControlWrapper>
                                     </div>
-                                    <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
                                         Help="Should there option for user to be able to check-out?" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes" 
+                                        Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+                                        </div>
+                                    </div>
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
                                         Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 

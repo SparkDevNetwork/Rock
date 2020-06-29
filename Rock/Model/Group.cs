@@ -982,7 +982,7 @@ namespace Rock.Model
         {
             var dataContext = ( RockContext ) dbContext;
 
-            if ( HistoryChangeList != null && HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
                 HistoryService.SaveChanges( dataContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChangeList, this.Name, null, null, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
             }
