@@ -1636,6 +1636,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        [Obsolete( "Use the method which accepts a List<int> parameter instead." )]
+        [RockObsolete( "1.10.4" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {
             var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
