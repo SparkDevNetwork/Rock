@@ -13,8 +13,8 @@ using System.Security.AccessControl;
 
 namespace com.bemaservices.HrManagement.Migrations
 {
-    [MigrationNumber( 2, "1.9.4" )]
-    public class Pages : Migration
+    [MigrationNumber( 3, "1.9.4" )]
+    public class Workflows : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
