@@ -275,9 +275,9 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
         {
+            var personIdList = personIds.Select( int.Parse ).ToList();
             new AttendanceService( new RockContext() )
-                .RegisterRSVPRecipients( occurrenceId, personIds.AsDelimited( "," ) );
-
+                .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 
 
