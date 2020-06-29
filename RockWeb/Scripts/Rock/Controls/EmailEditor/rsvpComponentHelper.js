@@ -17,10 +17,10 @@
                     self.setOccurrence();
                 });
 
-                $('#component-rsvp-registerbutton').click(function (e) {
+                $('#component-rsvp-registerbutton').on("click", function (e) {
                     self.registerRecipients();
                 });
-                $('.js-rsvp-include-decline').click(function (e) {
+                $('.js-rsvp-include-decline').on("click", function (e) {
                     self.toggleDeclineButton(e.target.checked);
                 });
 
@@ -255,13 +255,16 @@
 
             registerRecipients: function () {
                 var restUrl = Rock.settings.get('baseUrl') + 'api/Attendances/RegisterRSVPRecipients'
-                    + '?occurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0]
-                    + '&personIds=' + encodeURIComponent($('.js-rsvp-person-ids input').val());
+                    + '?OccurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0];
+                var restData = $('.js-rsvp-person-ids input').val().split(',');
 
                 $('#component-rsvp-registerbutton').addClass('disabled').text('Registering ...');
+
                 $.ajax({
                     url: restUrl,
-                    method: 'POST',
+                    type: "POST",
+                    data: JSON.stringify(restData),
+                    contentType: "application/json",
                     success: function () {
                         $('#component-rsvp-registerbutton').addClass('disabled').text('Recipients Registered!');
                     },
@@ -296,7 +299,7 @@
                 Rock.controls.emailEditor.$currentRsvpComponent.find('.rsvp-accept-link').css('color', color);
                 this.updateButtonUrls();
             },
-            
+
             setDeclineButtonText: function () {
                 var text = $('#component-rsvp-declinetext').val();
                 Rock.controls.emailEditor.$currentRsvpComponent.find('.rsvp-decline-link')
