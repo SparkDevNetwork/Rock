@@ -42,10 +42,6 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public bool IsActive { get; set; }
-
-        [Required]
-        [DataMember]
         public DateTime StartDate { get; set; }
 
         [DataMember]
@@ -53,13 +49,34 @@ namespace com.bemaservices.HrManagement.Model
 
         [DataMember]
         public decimal Hours { get; set; }
-        
+
+        [DataMember]
+        public PtoAccrualSchedule Schedule { get; set; }
+
+        [Required]
+        [DataMember]
+        public PtoAllocationSourceType SourceType { get; set; }
+
+        [DataMember]
+        public DateTime? LastProcessedDate { get; set; }
+
+        [Required]
+        [DataMember]
+        public PtoAllocationStatus PtoAllocationStatus { get; set; }
+
+        [Required]
+        [DataMember]
+        public int PersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
 
         [LavaInclude]
         public virtual PtoType PtoType { get; set; }
+
+        [LavaInclude]
+        public virtual PersonAlias PersonAlias { get; set; }
 
         #endregion
     }
@@ -83,5 +100,29 @@ namespace com.bemaservices.HrManagement.Model
         }
     }
 
+    #endregion
+
+    #region Enumerations
+    public enum PtoAccrualSchedule
+    {
+        Yearly = 1,
+        Quarterly = 2,
+        Monthly = 3,
+        Weekly = 4
+
+    }
+
+    public enum PtoAllocationSourceType
+    {
+        Automatic = 1,
+        Manual = 2
+    }
+
+    public enum PtoAllocationStatus
+    {
+        InActive = 0,
+        Active = 1,
+        Pending = 2
+    }
     #endregion
 }

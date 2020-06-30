@@ -42,6 +42,8 @@ namespace com.bemaservices.HrManagement.Migrations
 
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( Rock.SystemGuid.FieldType.PERSON, categoryGuids, "Supervisor", "Supervisor", "Supervisor", "", "", 1 , "", SystemGuid.Attribute.SUPERVISOR_PERSON_ATTRIBUTE );
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( SystemGuid.FieldType.PTO_TIER, categoryGuids, "PTO Tier", "PTO Tier", "PTOTier", "", "", 2, "", SystemGuid.Attribute.PTO_TIER_PERSON_ATTRIBUTE );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( Rock.SystemGuid.FieldType.DATE, categoryGuids, "Hire Date", "Hire Date", "HireDate", "", "", 3, "", SystemGuid.Attribute.HIRE_DATE_PERSON_ATTRIBUTE );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( Rock.SystemGuid.FieldType.DATE, categoryGuids, "Fire Date", "Fire Date", "FireDate", "", "", 3, "", SystemGuid.Attribute.FIRE_DATE_PERSON_ATTRIBUTE );
 
             // Create Tables
             Sql( @"
