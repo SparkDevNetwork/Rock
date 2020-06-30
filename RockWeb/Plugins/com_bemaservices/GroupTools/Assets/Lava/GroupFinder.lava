@@ -30,13 +30,13 @@
 {% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
 {% assign campusIds = campusIdString | Split:',' %}
 {% capture selectedCampuses %}
-  {% if campusIdString != '' %}
+  [{% if campusIdString != '' %}
     {% campus where:'IsActive == true' %}
       {% for campus in campusItems %}
         {% assign idString = campus.Id | ToString %}
         {% for campusId in campusIds %}
           {% if campusId == idString %}
-            {{campus | ToJSON }},
+            { Id:{{campus.Id}}, Name:'{{campus.Name | Replace:"'", "\'"}}'},
           {% endif %}
         {% endfor %}
       {% endfor %}
@@ -46,10 +46,18 @@
     {% if person != null %}
       {% assign campus = person | Campus %}
       {% if campus != empty %}
-        {{ campus | ToJSON }},
+        { Id:{{campus.Id}}, Name:'{{campus.Name | Replace:"'", "\'"}}'},
       {% endif %}
     {% endif %}
-  {% endif %}
+  {% endif %}]
+{% endcapture %}
+
+{% capture campusData %}
+  [{% campus where:'IsActive == true' %}
+    {% for campus in campusItems %}
+      { Id:{{campus.Id}}, Name:'{{campus.Name | Replace:"'", "\'"}}'},
+    {% endfor %}
+  {% endcampus %}]
 {% endcapture %}
 
 {% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString %}
@@ -85,20 +93,30 @@
 {% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
 {% assign categoryIds = categoryIdString | Split:',' %}
 {% capture selectedCategories %}
-  {% if categoryIdString != '' %}
+  [{% if categoryIdString != '' %}
     {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
       {% for definedtype in definedtypeItems %}
         {% for definedValue in definedtype.DefinedValues %}
           {% assign idString = definedValue.Id | ToString %}
           {% for categoryId in categoryIds %}
             {% if categoryId == idString %}
-              {{definedValue | ToJSON }},
+              { Id:{{definedValue.Id}}, Value:'{{definedValue.Value | Replace:"'", "\'"}}'},
             {% endif %}
           {% endfor %}
         {% endfor %}
       {% endfor %}
     {% enddefinedtype %}
-  {% endif %}
+  {% endif %}]
+{% endcapture %}
+
+{% capture categoryData %}
+  [{% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+    {% for definedtype in definedtypeItems %}
+      {% for definedValue in definedtype.DefinedValues %}
+        { Id:{{definedValue.Id}}, Value:'{{definedValue.Value | Replace:"'", "\'"}}'},
+      {% endfor %}
+    {% endfor %}
+  {% enddefinedtype %}]
 {% endcapture %}
 
 <style>
@@ -330,16 +348,10 @@ var app = new Vue({
                       { value:5, text:'Friday'},
                       { value:6, text:'Saturday'},
                         ],
-      campusValues: [{{selectedCampuses | ReplaceLast:',','' }}],
-      campusOptions: {% campus where:'IsActive == true' %}
-              {{campusItems | ToJSON}}
-            {% endcampus %},
-      categoryValues: [{{selectedCategories | ReplaceLast:',','' }}],
-      categoryOptions: {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
-              {% for definedtype in definedtypeItems %}
-                {{definedtype.DefinedValues | ToJSON}}
-              {% endfor %}
-            {% enddefinedtype %}
+      campusValues: {{selectedCampuses | ReplaceLast:',','' }},
+      campusOptions: {{ campusData | ReplaceLast:',','' }},
+      categoryValues: {{ selectedCategories | ReplaceLast:',','' }},
+      categoryOptions: {{ categoryData | ReplaceLast:',','' }},
     }
   },
   watch: {
