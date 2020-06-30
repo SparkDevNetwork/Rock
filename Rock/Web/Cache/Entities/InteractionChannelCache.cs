@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -309,14 +310,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the channel identifier by entity identifier, and creates it if it doesn't exist
+        /// Gets the channel identifier by type identifier and entity identifier, and creates it if it doesn't exist.
         /// </summary>
         /// <param name="channelTypeMediumValueId">The channel type medium value identifier.</param>
         /// <param name="channelEntityId">The channel entity identifier.</param>
-        /// <param name="componentEntityTypeId">The component entity type identifier.</param>
-        /// <param name="channelName">Name of the channel.</param>
+        /// <param name="channelName">Name of the channel. This value will only be used if a new record is created.</param>
+        /// <param name="componentEntityTypeId">The component entity type identifier. This value will only be used if a new record is created.</param>
+        /// <param name="interactionEntityTypeId">The interaction entity type identifier. This value will only be used if a new record is created.</param>
         /// <returns></returns>
-        public static int GetChannelIdByEntityId( int channelTypeMediumValueId, int channelEntityId, int componentEntityTypeId, string channelName )
+        public static int GetChannelIdByTypeIdAndEntityId( int? channelTypeMediumValueId, int? channelEntityId, string channelName, int? componentEntityTypeId, int? interactionEntityTypeId )
         {
             var lookupKey = $"{channelTypeMediumValueId}|{channelEntityId}";
 
@@ -329,10 +331,10 @@ namespace Rock.Web.Cache
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionChannel = interactionChannelService.Queryable()
-                .Where( a =>
-                    a.ChannelTypeMediumValueId == channelTypeMediumValueId &&
-                    a.ChannelEntityId == channelEntityId )
-                .FirstOrDefault();
+                    .Where( a =>
+                        a.ChannelTypeMediumValueId == channelTypeMediumValueId &&
+                        a.ChannelEntityId == channelEntityId )
+                    .FirstOrDefault();
 
                 if ( interactionChannel == null )
                 {
@@ -341,6 +343,7 @@ namespace Rock.Web.Cache
                     interactionChannel.ChannelTypeMediumValueId = channelTypeMediumValueId;
                     interactionChannel.ChannelEntityId = channelEntityId;
                     interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
+                    interactionChannel.InteractionEntityTypeId = interactionEntityTypeId;
                     interactionChannelService.Add( interactionChannel );
                     rockContext.SaveChanges();
                 }

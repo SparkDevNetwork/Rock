@@ -317,7 +317,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 mediumType,
                 contentChannelItem.ContentChannel,
                 contentChannelItem,
-                new InteractionTransactionOptions { InteractionSummary = contentChannelItem.Title, PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId } );
+                new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title, PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId } );
 
             interactionTransaction.Enqueue();
         }
