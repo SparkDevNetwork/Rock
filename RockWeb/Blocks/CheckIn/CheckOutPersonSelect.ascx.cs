@@ -62,8 +62,7 @@ namespace RockWeb.Blocks.CheckIn
         }}
 
         $('a.btn-checkin-select').on('click', function() {{
-            //$(this).toggleClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+            $(this).toggleClass('active').find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
@@ -164,6 +163,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void ProcessSelection()
         {
             ProcessSelection( maWarning, false );
+        }
+
+        protected string GetSelectedClass( bool selected )
+        {
+            return selected ? "active" : "";
         }
 
         protected string GetCheckboxClass( bool selected )
