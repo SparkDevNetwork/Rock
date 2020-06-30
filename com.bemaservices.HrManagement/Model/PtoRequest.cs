@@ -46,18 +46,27 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public DateTime StartDate { get; set; }
-
-        [DataMember]
-        public DateTime? EndDate {get;set; }
+        public DateTime RequestDate { get; set; }
 
         [Required]
         [DataMember]
-        public int HoursPerDay { get; set; }
+        public decimal Hours { get; set; }
 
         [Required]
         [DataMember]
         public int PtoTypeId { get; set; }
+
+        [Required]
+        [DataMember]
+        public int ApproverPersonAliasId { get; set; }
+
+        [Required]
+        [DataMember]
+        public PtoRequestApprovalState PtoRequestApprovalState { get; set; }
+
+        [Required]
+        [DataMember]
+        public string Reason { get; set; }
 
         #endregion
 
@@ -68,6 +77,8 @@ namespace com.bemaservices.HrManagement.Model
 
         [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
+        [LavaInclude]
+        public virtual PersonAlias ApproverPersonAlias { get; set; }
 
         [LavaInclude]
         public virtual PtoType PtoType { get; set; }
@@ -80,7 +91,7 @@ namespace com.bemaservices.HrManagement.Model
             {
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                return this.PersonAlias.Person.FullName + "(" + this.StartDate.ToString("M/d/yyyy") + ")";
+                return this.PersonAlias.Person.FullName + "(" + this.RequestDate.ToString( "M/d/yyyy" ) + ")";
             }
 
             private set
@@ -106,11 +117,33 @@ namespace com.bemaservices.HrManagement.Model
         {
             this.HasRequired( r => r.Workflow ).WithMany().HasForeignKey( r => r.WorkflowId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.ApproverPersonAlias ).WithMany().HasForeignKey( r => r.ApproverPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.PtoType ).WithMany().HasForeignKey( r => r.PtoTypeId ).WillCascadeOnDelete( false );
 
             // IMPORTANT!!
             this.HasEntitySetName( "PtoRequest" );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+    public enum PtoRequestApprovalState
+    {
+        /// <summary>
+        /// The <see cref="Rock.Model.GroupMember"/> is not an active member of the <see cref="Rock.Model.Group"/>.
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
+        /// </summary>
+        Approved = 1,
+
+        /// <summary>
+        /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
+        /// </summary>
+        Denied = 2
     }
 
     #endregion

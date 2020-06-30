@@ -181,10 +181,12 @@ namespace com.bemaservices.HrManagement.Migrations
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
                     [WorkflowId] int NOT NULL,
 	                [PersonAliasId] int NOT NULL,
-                    [StartDate] date NOT NULL,
-                    [EndDate] date NULL,
-                    [HoursPerDay] int NOT NULL,
+	                [ApproverPersonAliasId] int NOT NULL,
+                    [RequestDate] date NOT NULL,
+                    [Hours] decimal NOT NULL,
                     [PtoTypeId] int NOT NULL,
+                    [Reason] [nvarchar](max) NULL,
+                    [PtoRequestApprovalState] int NOT NULL,
 	                [Guid] [uniqueidentifier] NOT NULL,
 	                [CreatedDateTime] [datetime] NULL,
 	                [ModifiedDateTime] [datetime] NULL,
@@ -216,6 +218,10 @@ namespace com.bemaservices.HrManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId] FOREIGN KEY([PersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId]
+
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId] FOREIGN KEY([ApproverPersonAliasId])
+                REFERENCES [dbo].[PersonAlias] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId]
             " );
 
         }
