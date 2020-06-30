@@ -17,18 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Data.Entity;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -307,6 +305,14 @@ namespace RockWeb.Blocks.Reporting
 
                         if ( hfMetricIId != null && nbMetricValue != null )
                         {
+                            var metricYValue = nbMetricValue.Text.AsDecimalOrNull();
+
+                            // If no value was provided and the block is not configured to default to "0" then just skip this metric.
+                            if ( metricYValue == null && !GetAttributeValue( AttributeKey.DefaultToZero ).AsBoolean() )
+                            {
+                                continue;
+                            }
+
                             int metricId = hfMetricIId.ValueAsInt();
                             var metric = new MetricService( rockContext ).Get( metricId );
 
@@ -344,10 +350,13 @@ namespace RockWeb.Blocks.Reporting
                                     metricValue.MetricValuePartitions.Add( scheduleValuePartition );
                                 }
 
-                                metricValue.YValue = nbMetricValue.Text.AsDecimalOrNull();
-                                if ( metricValue.YValue == null && GetAttributeValue( AttributeKey.DefaultToZero ).AsBoolean() )
+                                if ( metricYValue == null )
                                 {
                                     metricValue.YValue = 0;
+                                }
+                                else
+                                {
+                                    metricValue.YValue = metricYValue;
                                 }
 
                                 metricValue.Note = tbNote.Text;
