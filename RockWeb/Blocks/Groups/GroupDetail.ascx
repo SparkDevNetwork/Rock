@@ -139,7 +139,11 @@
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
-                                        <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
+                                        <Rock:RockTemplateField HeaderText="Schedule(s)">
+                                            <ItemTemplate>
+                                                <asp:Literal ID="litSchedules" runat="server" Text='<%#Eval("Schedules") %>' />
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
                                         <Rock:EditField OnClick="gGroupLocations_Edit" />
                                         <Rock:DeleteField OnClick="gGroupLocations_Delete" />
                                     </Columns>
@@ -462,7 +466,7 @@
                             ID="ipScheduleIntervalMinutes"
                             runat="server"
                             Label="Sync Interval"
-                            Help="How often the group should sync in minutes. It will never be less then the Group Sync job execution interval."
+                            Help="Controls how often the group should sync to the Data View. It will never be less then the Group Sync job execution interval."
                             ValidationGroup="GroupSyncSettings"
                             DefaultValue="12"
                             DefaultInterval="Hour" />

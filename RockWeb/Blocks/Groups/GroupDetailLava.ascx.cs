@@ -162,6 +162,7 @@ namespace RockWeb.Blocks.Groups
         {
             get { return this.GetAttributeValue( "EnableCommunicationPreference" ).AsBooleanOrNull() ?? false; }
         }
+
         #endregion
 
         #region Base Control Methods
@@ -297,6 +298,10 @@ namespace RockWeb.Blocks.Groups
                 group.IsActive = cbIsActive.Checked;
                 group.IsPublic = cbIsPublic.Checked;
 
+                // Don't save inactive properties if the group is active.
+                group.InactiveReasonValueId = cbIsActive.Checked ? null : ddlInactiveReason.SelectedValueAsInt();
+                group.InactiveReasonNote = cbIsActive.Checked ? null : tbInactiveNote.Text;
+
                 if ( pnlSchedule.Visible )
                 {
                     if ( group.Schedule == null )
@@ -367,8 +372,34 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                rockContext.SaveChanges();
-                group.SaveAttributeValues( rockContext );
+                rockContext.WrapTransaction( () => {
+
+                    rockContext.SaveChanges();
+
+                    group.SaveAttributeValues( rockContext );
+
+                    if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                    {
+                        var allActiveChildGroupsId = groupService.GetAllDescendentGroupIds( group.Id, false );
+                        var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
+                        foreach ( var childGroup in allActiveChildGroups )
+                        {
+                            if ( childGroup.IsActive )
+                            {
+                                childGroup.IsActive = false;
+                                childGroup.InactiveReasonValueId = ddlInactiveReason.SelectedValueAsInt();
+                                childGroup.InactiveReasonNote = "Parent Deactivated";
+                                if ( tbInactiveNote.Text.IsNotNullOrWhiteSpace() )
+                                {
+                                    childGroup.InactiveReasonNote += ": " + tbInactiveNote.Text;
+                                }
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+                    }
+                } );
+
             }
 
             this.IsEditingGroup = false;
@@ -583,6 +614,7 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
             }
         }
+
         #endregion
 
         #region Methods
@@ -798,6 +830,27 @@ namespace RockWeb.Blocks.Groups
                     tbDescription.Text = group.Description;
                     cbIsActive.Checked = group.IsActive;
                     cbIsPublic.Checked = group.IsPublic;
+
+                    if ( group.GroupType != null && group.GroupType.EnableInactiveReason )
+                    {
+                        ddlInactiveReason.Visible = true;
+                        ddlInactiveReason.Items.Clear();
+                        ddlInactiveReason.Items.Add( new ListItem() );
+                        ddlInactiveReason.Required = group.GroupType.RequiresInactiveReason;
+
+                        foreach ( var reason in new GroupTypeService( rockContext ).GetInactiveReasonsForGroupType( group.GroupTypeId ).Select( r => new { Text = r.Value, Value = r.Id } ) )
+                        {
+                            ddlInactiveReason.Items.Add( new ListItem( reason.Text, reason.Value.ToString() ) );
+                        }
+
+                        ddlInactiveReason.SelectedValue = group.InactiveReasonValueId.ToString();
+
+                        tbInactiveNote.Visible = true;
+                        tbInactiveNote.Text = group.InactiveReasonNote;
+                    }
+
+                    // The inactivate child groups checkbox should only be visible if there are children to inactivate. js on the page will consume this.
+                    hfHasChildGroups.Value = groupService.GetAllDescendentGroupIds( group.Id, false ).Any() ? "true" : "false";
 
                     if ( ( group.GroupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly )
                     {
