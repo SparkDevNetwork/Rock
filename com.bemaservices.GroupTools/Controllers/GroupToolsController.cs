@@ -66,13 +66,13 @@ namespace com.bemaservices.GroupTools.Controllers
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId );
 
             var groupQry = from g in qry
-                    join av in categoryValues on g.Id equals av.EntityId into gav
-                    from x in gav.DefaultIfEmpty()
-                    select new
-            {
-                Group = g,
-                Categories = x.Value.ToUpper()
-            };
+                           join av in categoryValues on g.Id equals av.EntityId into gav
+                           from x in gav.DefaultIfEmpty()
+                           select new
+                           {
+                               Group = g,
+                               Categories = x.Value.ToUpper()
+                           };
 
             groupQry = groupQry.OrderByDescending( g => g.Categories.Contains( "99BC9586-3C23-4BE4-BEB3-2285FBBCD1C9" ) )
                     .ThenByDescending( g => g.Categories.Contains( "3F3EFCE6-8DEB-4F3E-A6F8-E9E6FE3A1852" ) )
@@ -101,6 +101,13 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
+
+                var groupName = group.GetAttributeValue( "PublicName" );
+                if ( groupName.IsNotNullOrWhiteSpace() )
+                {
+                    groupInfo.Name = groupName;
+                }
+
                 var maximumAge = group.GetAttributeValue( "MaximumAge" ).AsIntegerOrNull();
                 var minimumAge = group.GetAttributeValue( "MinimumAge" ).AsIntegerOrNull();
                 if ( minimumAge.HasValue || maximumAge.HasValue )

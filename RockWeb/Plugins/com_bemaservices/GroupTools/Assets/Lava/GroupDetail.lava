@@ -68,7 +68,8 @@
 {% assign group = Workflow | Attribute:'Group','Object' %}
 
 <div class="sg-group-details">
-  <div class="sg-name"> {{group.Name}} </div>
+  {% assign groupName = group | Attribute:'PublicName' %}
+  <div class="sg-name"> {% if groupName != '' %}{{groupName}}{% else %}{{group.Name}}{% endif %} </div>
   <div class="sg-campus"> {{group.Campus.Name}} </div>
   <div class="sg-description"> {{group.Description}} </div>
   <table class="sg-table table table-borderless">

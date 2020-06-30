@@ -17,6 +17,8 @@ namespace com.bemaservices.GroupTools
                 groupTypeGuid = lifeGroupTypeGuidObject.ToString();
             }
 
+            RockMigrationHelper.AddGroupTypeGroupAttribute( groupTypeGuid, "9C204CD0-1233-41C5-818A-C5DA439445AA", "Public Name", @"", 3, "", "5B37DB42-C8AF-4643-B3AB-C815B1E9A332", "Public Name" );
+
             var categoryId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '8BF1BECD-9B0C-4689-8204-8405327DCBCF'" ).ToString();
             var preferredContactMethodId = SqlScalar( "Select Top 1 Id From DefinedType Where Guid = '982CC7BD-451B-420F-9F54-FDBAE32672E0'" ).ToString();
 
