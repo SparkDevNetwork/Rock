@@ -97,6 +97,7 @@
     <Compile Include="Web\UI\Controls\Pickers\PtoTierPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PtoTypePicker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workflow\Action\HrManagement\PtoRequestDelete.cs" />
     <Compile Include="Workflow\Action\HrManagement\PtoRequestUpdate.cs" />
   </ItemGroup>
   <ItemGroup />

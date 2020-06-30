@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
+using com.bemaservices.HrManagement.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -38,50 +39,39 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "PTO Request Update" )]
 
-    // Person Search Fields
-    [WorkflowTextOrAttribute( "First Name", "Attribute Value", "The first name or an attribute that contains the first name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 0, FIRST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Last Name", "Attribute Value", "The last name or an attribute that contains the last name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 1, LAST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Email Address", "Attribute Value", "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 2, EMAIL_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
-    [WorkflowTextOrAttribute( "Mobile Number", "Attribute Value", "The mobile phone number or an attribute that contains the mobile phone number of the person ) <span class='tip tip-lava'></span>",
-        false, "", "", 3, MOBILE_NUMBER_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PhoneNumberFieldType" } )]
+    // Existing PtoRequest
+    [WorkflowAttribute( "Existing Pto Request", "The Pto Request to update.",
+        false, "", "", 0, PTO_REQUEST_ATTRIBUTE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoRequestFieldType" } )]
 
-    // Person Search Birth Date Fields
-    [WorkflowTextOrAttribute( "Birth Day", "Attribute Value", "The number corresponding to the birth day of a person or the attribute that contains the number corresponding to a birth day for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 4, BIRTH_DAY_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Birth Month", "Attribute Value", "The number corresponding to the birth month of a person or the attribute that contains the number corresponding to a birth month for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 5, BIRTH_MONTH_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Birth Year", "Attribute Value", "The number corresponding to the birth year of a person or the attribute that contains the number corresponding to a birth year for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 6, BIRTH_YEAR_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    // Input Fields
+    [WorkflowTextOrAttribute( "Person", "Attribute Value", "The person or an attribute that contains the person of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 1, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowTextOrAttribute( "Pto Type", "Attribute Value", "The pto type or an attribute that contains the pto type of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 2, PTO_TYPE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoTypeFieldType" } )]
+    [WorkflowTextOrAttribute( "Start Date", "Attribute Value", "The start date or an attribute that contains the start date of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 3, STARTDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
+    [WorkflowTextOrAttribute( "End Date", "Attribute Value", "The end date or an attribute that contains the end date of the pto request. <span class='tip tip-lava'></span>",
+        false, "", "", 4, ENDDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
+    [WorkflowTextOrAttribute( "Hours", "Attribute Value", "The hours per day or an attribute that contains the hours per day of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 5, HOURS_KEY, new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+    [WorkflowTextOrAttribute( "Reason", "Attribute Value", "The reason or an attribute that contains the reason of the pto request. <span class='tip tip-lava'></span>",
+        false, "", "", 6, PTO_REASON_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Approver", "Attribute Value", "The approver or an attribute that contains the approver of the pto request. <span class='tip tip-lava'></span>",
+        false, "", "", 7, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [EnumField( "Approval State", "The Approval State of the Pto Request", typeof( PtoRequestApprovalState ),
+        true, "Pending", "", 8, APPROVAL_STATE_KEY )]
 
-    // New Person Config
-    [WorkflowAttribute( "Person Attribute", "The person attribute to set the value to the person found or created.",
-        true, "", "", 7, PERSON_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Family Attribute", "The group attribute to add the person to.",
-        true, "", "", 8, FAMILY_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.GroupFieldType" } )]
-    [WorkflowAttribute( "Group Role Attribute", "The group role the person will have.",
-        true, "", "", 9, GROUP_ROLE_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.GroupRoleFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 10 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 11 )]
     public class PtoRequestUpdate : ActionComponent
     {
-        private const string FIRST_NAME_KEY = "FirstName";
-        private const string LAST_NAME_KEY = "LastName";
-        private const string EMAIL_KEY = "Email";
-        private const string PERSON_ATTRIBUTE_KEY = "PersonAttribute";
-        private const string FAMILY_ATTRIBUTE_KEY = "FamilyAttribute";
-        private const string GROUP_ROLE_ATTRIBUTE_KEY = "GroupRoleAttribute";
-        private const string DEFAULT_CONNECTION_STATUS_KEY = "DefaultConnectionStatus";
-        private const string DEFAULT_RECORD_STATUS_KEY = "DefaultRecordStatus";
-        private const string DEFAULT_CAMPUS_KEY = "DefaultCampus";
-        private const string MOBILE_NUMBER_KEY = "MobileNumber";
-        private const string BIRTH_MONTH_KEY = "BirthMonth";
-        private const string BIRTH_DAY_KEY = "BirthDay";
-        private const string BIRTH_YEAR_KEY = "BirthYear";
+        private const string PTO_REQUEST_ATTRIBUTE_KEY = "PTO_REQUEST_ATTRIBUTE_KEY";
+        private const string STARTDATE_KEY = "STARTDATE_KEY";
+        private const string ENDDATE_KEY = "ENDDATE_KEY";
+        private const string HOURS_KEY = "HOURS_KEY";
+        private const string PTO_TYPE_KEY = "PTO_TYPE_KEY";
+        private const string PTO_REASON_KEY = "PTO_REASON_KEY";
+        private const string PERSON_KEY = "PERSON_KEY";
+        private const string APPROVER_KEY = "APPROVER_KEY";
+        private const string APPROVAL_STATE_KEY = "APPROVAL_STATE_KEY";
 
         /// <summary>
         /// Executes the specified workflow.
@@ -94,145 +84,176 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+            Guid? ptoTypeGuid = null;
+            Person person = null;
+            Person approver = null;
+            PtoType ptoType = null;
+            Guid? ptoRequestGuid = null;
+            PtoRequest ptoRequest = null;
+            var ptoRequestService = new PtoRequestService( rockContext );
 
-            var attribute = AttributeCache.Get( GetAttributeValue( action, PERSON_ATTRIBUTE_KEY ).AsGuid(), rockContext );
-            if ( attribute != null )
+            // get the existing pto request
+            Guid ptoRequestAttributeGuid = GetAttributeValue( action, PTO_REQUEST_ATTRIBUTE_KEY ).AsGuid();
+
+            if ( !ptoRequestAttributeGuid.IsEmpty() )
             {
-                var mergeFields = GetMergeFields( action );
-                string firstName = GetAttributeValue( action, FIRST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
-                string lastName = GetAttributeValue( action, LAST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
-                string email = GetAttributeValue( action, EMAIL_KEY, true ).ResolveMergeFields( mergeFields );
-                string mobileNumber = GetAttributeValue( action, MOBILE_NUMBER_KEY, true ).ResolveMergeFields( mergeFields ) ?? string.Empty;
+                ptoRequestGuid = action.GetWorklowAttributeValue( ptoRequestAttributeGuid ).AsGuidOrNull();
 
-                int? birthDay = GetAttributeValue( action, BIRTH_DAY_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-                int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-                int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-
-                var groupService = new GroupService( rockContext );
-                var familyGroup = groupService.Get( GetAttributeValue( action, FAMILY_ATTRIBUTE_KEY, true ).AsGuid() );
-                if ( familyGroup.GroupType.Guid != Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() )
+                if ( ptoRequestGuid.HasValue )
                 {
-                    errorMessages.Add( "Provided group was not a group of type Family." );
+                    ptoRequest = ptoRequestService.Get( ptoRequestGuid.Value );
+                }
+            }
+
+            Guid personAliasGuid = Guid.Empty;
+            string personAttribute = GetAttributeValue( action, PERSON_KEY );
+
+            Guid guid = personAttribute.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                var attribute = AttributeCache.Get( guid, rockContext );
+                if ( attribute != null )
+                {
+                    string value = action.GetWorklowAttributeValue( guid );
+                    personAliasGuid = value.AsGuid();
+                }
+
+                if ( personAliasGuid != Guid.Empty )
+                {
+                    person = new PersonAliasService( rockContext ).Queryable()
+                                    .Where( p => p.Guid.Equals( personAliasGuid ) )
+                                    .Select( p => p.Person )
+                                    .FirstOrDefault();
                 }
                 else
                 {
-                    var groupRole = familyGroup.GroupType.Roles.Where( gr => gr.Guid == GetAttributeValue( action, GROUP_ROLE_ATTRIBUTE_KEY, true ).AsGuid() ).FirstOrDefault();
-                    if ( groupRole == null )
-                    {
-                        errorMessages.Add( "Invalid or no Group Role provided." );
-                    }
-                    else
-                    {
-                        if ( string.IsNullOrWhiteSpace( firstName ) ||
-                   string.IsNullOrWhiteSpace( lastName ) )
-                        {
-                            errorMessages.Add( "First Name and Last Name are required. One or more of these values was not provided!" );
-                        }
-                        else
-                        {
-                            Person person = null;
-                            PersonAlias personAlias = null;
-                            var personService = new PersonService( rockContext );
-                            var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobileNumber, null, birthMonth, birthDay, birthYear );
-                            person = personService.FindPerson( personQuery, true );
-
-                            if ( person.IsNotNull() )
-                            {
-                                personAlias = person.PrimaryAlias;
-                                if ( !familyGroup.Members.Where( gm => gm.PersonId == person.Id ).Any() )
-                                {
-                                    PersonService.AddPersonToFamily( person, false, familyGroup.Id, groupRole.Id, rockContext );
-                                }
-                            }
-                            else
-                            {
-                                // Add New Person
-                                person = new Person();
-                                person.FirstName = firstName.FixCase();
-                                person.LastName = lastName.FixCase();
-                                person.IsEmailActive = true;
-                                person.Email = email;
-                                person.EmailPreference = EmailPreference.EmailAllowed;
-                                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                                person.BirthMonth = birthMonth;
-                                person.BirthDay = birthDay;
-                                person.BirthYear = birthYear;
-
-                                UpdatePhoneNumber( person, mobileNumber );
-
-                                var defaultConnectionStatus = DefinedValueCache.Get( GetAttributeValue( action, DEFAULT_CONNECTION_STATUS_KEY ).AsGuid() );
-                                if ( defaultConnectionStatus != null )
-                                {
-                                    person.ConnectionStatusValueId = defaultConnectionStatus.Id;
-                                }
-
-                                var defaultRecordStatus = DefinedValueCache.Get( GetAttributeValue( action, DEFAULT_RECORD_STATUS_KEY ).AsGuid() );
-                                if ( defaultRecordStatus != null )
-                                {
-                                    person.RecordStatusValueId = defaultRecordStatus.Id;
-                                }
-
-                                PersonService.AddPersonToFamily( person, true, familyGroup.Id, groupRole.Id, rockContext );
-                                if ( familyGroup != null && familyGroup.Members.Any() )
-                                {
-                                    person = familyGroup.Members.Select( m => m.Person ).First();
-                                    personAlias = person.PrimaryAlias;
-                                }
-                            }
-
-                            if ( person != null && personAlias != null )
-                            {
-                                SetWorkflowAttributeValue( action, attribute.Guid, personAlias.Guid.ToString() );
-                                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, person.FullName ) );
-                                return true;
-                            }
-                            else
-                            {
-                                errorMessages.Add( "Person or Primary Alias could not be determined!" );
-                            }
-                        }
-                    }
+                    errorMessages.Add( "The person could not be found!" );
                 }
             }
-            else
+
+            Guid approverAliasGuid = Guid.Empty;
+            string approverAttributeString = GetAttributeValue( action, PERSON_KEY );
+
+            Guid approverGuid = approverAttributeString.AsGuid();
+            if ( !approverGuid.IsEmpty() )
             {
-                errorMessages.Add( "Person Attribute could not be found!" );
+                var approverAttribute = AttributeCache.Get( approverGuid, rockContext );
+                if ( approverAttribute != null )
+                {
+                    string value = action.GetWorklowAttributeValue( approverGuid );
+                    approverAliasGuid = value.AsGuid();
+                }
+
+                if ( approverAliasGuid != Guid.Empty )
+                {
+                    approver = new PersonAliasService( rockContext ).Queryable()
+                                    .Where( p => p.Guid.Equals( approverAliasGuid ) )
+                                    .Select( p => p.Person )
+                                    .FirstOrDefault();
+                }
             }
 
-            if ( errorMessages.Any() )
+            // get the pto type attribute
+            Guid ptoTypeAttributeGuid = GetAttributeValue( action, PTO_TYPE_KEY ).AsGuid();
+
+            if ( !ptoTypeAttributeGuid.IsEmpty() )
             {
-                errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
-                return false;
+                ptoTypeGuid = action.GetWorklowAttributeValue( ptoTypeAttributeGuid ).AsGuidOrNull();
+
+                if ( ptoTypeGuid.HasValue )
+                {
+                    ptoType = new PtoTypeService( rockContext ).Get( ptoTypeGuid.Value );
+
+                    if ( ptoType == null )
+                    {
+                        errorMessages.Add( "The pto type provided does not exist." );
+                    }
+                }
+                else
+                {
+                    errorMessages.Add( "Invalid pto type provided." );
+                }
             }
+
+            var mergeFields = GetMergeFields( action );
+            var startDate = GetAttributeValue( action, STARTDATE_KEY, true ).ResolveMergeFields( mergeFields ).AsDateTime();
+            if ( !startDate.HasValue )
+            {
+                errorMessages.Add( "The start date could not be found!" );
+            }
+
+            var hours = GetAttributeValue( action, HOURS_KEY, true ).ResolveMergeFields( mergeFields ).AsDecimalOrNull();
+            if ( !hours.HasValue )
+            {
+                errorMessages.Add( "The hours could not be found!" );
+            }
+
+            var endDate = GetAttributeValue( action, ENDDATE_KEY, true ).ResolveMergeFields( mergeFields ).AsDateTime();
+            string reason = GetAttributeValue( action, PTO_REASON_KEY, true ).ResolveMergeFields( mergeFields );
+            var approvalState = GetAttributeValue( action, APPROVAL_STATE_KEY, true ).ResolveMergeFields( mergeFields ).ConvertToEnum<PtoRequestApprovalState>( PtoRequestApprovalState.Pending );
+
+            if ( person != null && ptoType != null && hours.HasValue && startDate.HasValue )
+            {
+
+                if ( ptoRequest == null )
+                {
+                    ptoRequest = new PtoRequest();
+                    ptoRequestService.Add( ptoRequest );
+                }
+
+                if ( ptoRequest != null )
+                {
+                    ptoRequest.PersonAlias = person.PrimaryAlias;
+                    ptoRequest.PersonAliasId = person.PrimaryAliasId.Value;
+                    ptoRequest.PtoType = ptoType;
+                    ptoRequest.PtoTypeId = ptoType.Id;
+                    ptoRequest.RequestDate = startDate.Value;
+                    ptoRequest.Hours = hours.Value;
+                    ptoRequest.Reason = reason;
+                    ptoRequest.PtoRequestApprovalState = approvalState;
+
+                    if ( approver != null )
+                    {
+                        ptoRequest.ApproverPersonAlias = approver.PrimaryAlias;
+                        ptoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
+                    }
+
+                    if ( endDate.HasValue && endDate > startDate )
+                    {
+                        var requestDate = startDate.Value.AddDays( 1 );
+                        while ( requestDate <= endDate.Value )
+                        {
+                            var additionalPtoRequest = new PtoRequest();
+                            additionalPtoRequest.PersonAlias = person.PrimaryAlias;
+                            additionalPtoRequest.PersonAliasId = person.PrimaryAliasId.Value;
+                            additionalPtoRequest.PtoType = ptoType;
+                            additionalPtoRequest.PtoTypeId = ptoType.Id;
+                            additionalPtoRequest.RequestDate = requestDate;
+                            additionalPtoRequest.Hours = hours.Value;
+                            additionalPtoRequest.Reason = reason;
+                            additionalPtoRequest.PtoRequestApprovalState = approvalState;
+
+                            if ( approver != null )
+                            {
+                                additionalPtoRequest.ApproverPersonAlias = approver.PrimaryAlias;
+                                additionalPtoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
+                            }
+                            ptoRequestService.Add( additionalPtoRequest );
+
+                            requestDate.AddDays( 1 );
+                        }
+                    }
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    errorMessages.Add( "The pto request could not be created!" );
+                }
+            }
+
+            errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
 
             return true;
-        }
-
-        void UpdatePhoneNumber( Person person, string mobileNumber )
-        {
-            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( mobileNumber ) ) )
-            {
-                var phoneNumberType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                if ( phoneNumberType == null )
-                {
-                    return;
-                }
-
-                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                string oldPhoneNumber = string.Empty;
-                if ( phoneNumber == null )
-                {
-                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberType.Id };
-                    person.PhoneNumbers.Add( phoneNumber );
-                }
-                else
-                {
-                    oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                }
-
-                // TODO handle country code here
-                phoneNumber.Number = PhoneNumber.CleanNumber( mobileNumber );
-            }
         }
 
     }
