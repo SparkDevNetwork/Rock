@@ -30,11 +30,7 @@ using Rock.Web.UI;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// Sql stores the result of provided SQL query into a variable.
-    ///
-    /// {% sql results %}
-    /// SELECT [FirstName], [LastName] FROM [Person]
-    /// {% endsql %}
+    /// Tag which allows a snippet of JavaScript to be executed in the browser.
     /// </summary>
     public class Javascript : DotLiquid.Block, IRockStartup
     {

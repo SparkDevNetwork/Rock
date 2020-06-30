@@ -46,7 +46,23 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Obsolete( "Use the GetComponentByChannelIdAndEntityId method instead." )]
+        [RockObsolete( "1.11" )]
         public InteractionComponent GetComponentByEntityId( int channelId, int entityId, string name )
+        {
+            return GetComponentByPredicate( channelId, entityId, name, c =>
+                c.InteractionChannelId == channelId &&
+                c.EntityId == entityId );
+        }
+
+        /// <summary>
+        /// Gets the component by channel identifier and entity identifier, and creates it if it doesn't exist.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="name">The name. This value will only be used if a new record is created.</param>
+        /// <returns></returns>
+        public InteractionComponent GetComponentByChannelIdAndEntityId( int channelId, int? entityId, string name )
         {
             return GetComponentByPredicate( channelId, entityId, name, c =>
                 c.InteractionChannelId == channelId &&

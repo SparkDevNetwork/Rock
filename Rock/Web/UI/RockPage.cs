@@ -1787,7 +1787,7 @@ namespace Rock.Web.UI
             {
                 if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, null, _tsDuration.TotalSeconds );
+                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds } );
                     pageViewTransaction.Enqueue();
                 }
             }
