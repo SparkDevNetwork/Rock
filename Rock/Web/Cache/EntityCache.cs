@@ -35,7 +35,7 @@ namespace Rock.Web.Cache
     /// <seealso cref="IEntityCache" />
     [Serializable]
     [DataContract]
-    public abstract class EntityCache<T, TT> : EntityItemCache<T>, IEntityCache
+    public abstract class EntityCache<T, TT> : EntityItemCache<T>, IEntityCache, IHasLifespan
         where T : IEntityCache, new()
         where TT : Entity<TT>, new()
     {
@@ -55,6 +55,17 @@ namespace Rock.Web.Cache
                 return EntityTypeCache.Get<TT>().Id;
             }
         }
+
+
+        #region Lifespan
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. If null, then the
+        /// default lifespan is used.
+        /// </summary>
+        public virtual TimeSpan? Lifespan => null;
+
+        #endregion Lifespan
 
         #endregion
 
