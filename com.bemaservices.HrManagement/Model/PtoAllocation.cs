@@ -51,11 +51,11 @@ namespace com.bemaservices.HrManagement.Model
         public decimal Hours { get; set; }
 
         [DataMember]
-        public PtoAccrualSchedule Schedule { get; set; }
+        public PtoAccrualSchedule PtoAccrualSchedule { get; set; }
 
         [Required]
         [DataMember]
-        public PtoAllocationSourceType SourceType { get; set; }
+        public PtoAllocationSourceType PtoAllocationSourceType { get; set; }
 
         [DataMember]
         public DateTime? LastProcessedDate { get; set; }
@@ -67,6 +67,9 @@ namespace com.bemaservices.HrManagement.Model
         [Required]
         [DataMember]
         public int PersonAliasId { get; set; }
+
+        [DataMember]
+        public string Note { get; set; }
 
         #endregion
 
