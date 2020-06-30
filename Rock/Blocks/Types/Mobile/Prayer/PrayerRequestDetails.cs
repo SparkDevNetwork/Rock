@@ -573,6 +573,10 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />
     <Rock:Divider />" );
                 }
+                else
+                {
+                    content = content.Replace( "##HEADER##", "" );
+                }
 
                 fieldsContent = BuildCommonFields( request, parameters );
             }
