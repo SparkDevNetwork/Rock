@@ -215,12 +215,12 @@ namespace Rock.Tests.Integration.Interactions
                         break;
                     }
 
-                    InteractionTransactionOptions interactionTransactionOptions = new InteractionTransactionOptions
+                    InteractionTransactionInfo interactionTransactionInfo = new InteractionTransactionInfo
                     {
                         InteractionSummary = $"Some Random Summary {pageViewCounts}",
                         UserAgent = HttpUserAgentList[rnd.Next( HttpUserAgentList.Length )],
                         BrowserSessionId = browserSessionId,
-                        Url = $"http://localhost:12345/page/{testPage.Id}",
+                        InteractionData = $"http://localhost:12345/page/{testPage.Id}",
                         IPAddress = $"10.{rnd.Next( 10 )}.{rnd.Next( 255 )}.{rnd.Next( 255 )}",
                         PersonAliasId = personAliasIds[rnd.Next( personAliasIds.Length )],
                         GetValuesFromHttpRequest = false
@@ -235,7 +235,7 @@ namespace Rock.Tests.Integration.Interactions
                     if ( rnd.Next( 11 ) > 5 )
                     {
                         // have around 50% that are from an anonymous view
-                        interactionTransactionOptions.PersonAliasId = null;
+                        interactionTransactionInfo.PersonAliasId = null;
                     }
 
                     var testSite = SiteCache.Get( testPage.SiteId );
@@ -244,7 +244,7 @@ namespace Rock.Tests.Integration.Interactions
                         DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                         testSite,
                         testPage,
-                        interactionTransactionOptions );
+                        interactionTransactionInfo );
 
 
                     pageViewTransactionList.Enqueue( pageViewTransaction );
