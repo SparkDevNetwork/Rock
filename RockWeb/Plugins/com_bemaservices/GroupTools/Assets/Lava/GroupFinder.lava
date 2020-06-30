@@ -9,14 +9,14 @@
 {% endpage %}
 
 {% assign groupTypeId = 0 %}
-{% grouptype where:'Guid == "a4f16049-2525-426e-a6e8-cdfb7b198664"'%}
+{% grouptype where:'Guid == "a4f16049-2525-426e-a6e8-cdfb7b198664"' securityenabled:'false' %}
   {% for groupType in grouptypeItems %}
     {% assign groupTypeId = groupType.Id %}
   {% endfor %}
 {% endgrouptype %}
 
 {% if groupTypeId == 0 %}
-  {% grouptype where:'Guid == "50FCFB30-F51A-49DF-86F4-2B176EA1820B"'%}
+  {% grouptype where:'Guid == "50FCFB30-F51A-49DF-86F4-2B176EA1820B"' securityenabled:'false' %}
     {% for groupType in grouptypeItems %}
       {% assign groupTypeId = groupType.Id %}
     {% endfor %}
