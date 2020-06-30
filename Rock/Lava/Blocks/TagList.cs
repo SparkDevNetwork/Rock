@@ -28,11 +28,7 @@ using Rock.Utility;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// Sql stores the result of provided SQL query into a variable.
-    /// 
-    /// {% sql results %}
-    /// SELECT [FirstName], [LastName] FROM [Person]
-    /// {% endsql %}
+    /// Tag which allows you to list all of the registered Lava commands on your server.
     /// </summary>
     public class TagList : Tag, IRockStartup
     {
