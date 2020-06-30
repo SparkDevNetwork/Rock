@@ -68,8 +68,7 @@
 {% assign group = Workflow | Attribute:'Group','Object' %}
 
 <div class="sg-group-details">
-  {% assign groupName = group | Attribute:'PublicName' %}
-  <div class="sg-name"> {% if groupName != '' %}{{groupName}}{% else %}{{group.Name}}{% endif %} </div>
+  <div class="sg-name">{{group.Name}}</div>
   <div class="sg-campus"> {{group.Campus.Name}} </div>
   <div class="sg-description"> {{group.Description}} </div>
   <table class="sg-table table table-borderless">
@@ -113,7 +112,11 @@
     </tbody>
   </table>
 </div>
-<p id="sg-header" class="sg-interested-text">Interested in this {{group.GroupType.Name}}?</p>
+{% assign groupTypeName = group.GroupType | Attribute:'PublicName' %}
+{% if groupTypeName == ''%}
+  {% assign groupTypeName = group.GroupType.Name %}
+{% endif %}
+<p id="sg-header" class="sg-interested-text">Interested in this {{groupTypeName}}?</p>
 <p class=" sg-sub-head">
-    We’ll let the {{group.GroupType.Name}} leader know so they can follow up with more details.
+    We’ll let the {{groupTypeName}} leader know so they can follow up with more details.
 </p>

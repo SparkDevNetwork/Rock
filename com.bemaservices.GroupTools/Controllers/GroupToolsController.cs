@@ -101,13 +101,6 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
-
-                var groupName = group.GetAttributeValue( "PublicName" );
-                if ( groupName.IsNotNullOrWhiteSpace() )
-                {
-                    groupInfo.Name = groupName;
-                }
-
                 var maximumAge = group.GetAttributeValue( "MaximumAge" ).AsIntegerOrNull();
                 var minimumAge = group.GetAttributeValue( "MinimumAge" ).AsIntegerOrNull();
                 if ( minimumAge.HasValue || maximumAge.HasValue )
