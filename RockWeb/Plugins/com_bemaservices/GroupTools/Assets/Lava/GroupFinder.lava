@@ -372,11 +372,11 @@ var app = new Vue({
   },
   methods: {
     bottomVisible() {
-      const scrollY = window.scrollY
-      const visible = document.documentElement.clientHeight
-      const pageHeight = document.documentElement.scrollHeight
-      const bottomOfPage = visible + scrollY >= pageHeight
-      return bottomOfPage || pageHeight < visible
+    var docViewTop = $(window).scrollTop();
+    var docViewBottom = docViewTop + $(window).height();
+    var elemTop = $('#zone-footer').offset().top;
+    var elemBottom = elemTop + $('#zone-footer').height();
+    return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
     },
     getGroupCount() {
       var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds={{groupTypeId}}'+ this.getFilterParameters();
