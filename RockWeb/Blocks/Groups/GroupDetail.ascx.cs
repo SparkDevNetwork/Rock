@@ -1048,6 +1048,12 @@ namespace RockWeb.Blocks.Groups
                         if ( childGroup.IsActive )
                         {
                             childGroup.IsActive = false;
+                            childGroup.InactiveReasonValueId = ddlInactiveReason.SelectedValueAsInt();
+                            childGroup.InactiveReasonNote = "Parent Deactivated";
+                            if ( tbInactiveNote.Text.IsNotNullOrWhiteSpace() )
+                            {
+                                childGroup.InactiveReasonNote += ": " + tbInactiveNote.Text;
+                            }
                         }
                     }
 
@@ -1815,7 +1821,6 @@ namespace RockWeb.Blocks.Groups
 
             gGroupLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
             spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
-
 
             if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
             {
@@ -2913,6 +2918,16 @@ namespace RockWeb.Blocks.Groups
             nbMinimumCapacity.Text = groupLocationScheduleConfig.MinimumCapacity.ToString();
             nbDesiredCapacity.Text = groupLocationScheduleConfig.DesiredCapacity.ToString();
             nbMaximumCapacity.Text = groupLocationScheduleConfig.MaximumCapacity.ToString();
+
+            if ( !groupLocationScheduleConfig.Schedule.IsActive )
+            {
+                nbMinimumCapacity.CssClass = string.Join(" ", new string [] { nbMinimumCapacity.CssClass, "text-muted" } );
+                nbDesiredCapacity.CssClass = string.Join(" ", new string [] { nbDesiredCapacity.CssClass, "text-muted" } );
+                nbMaximumCapacity.CssClass = string.Join(" ", new string [] { nbMaximumCapacity.CssClass, "text-muted" } );
+                lScheduleName.Text =
+                    "<span class=\"text-muted\">" + lScheduleName.Text + "</span>"
+                    + " <span class=\"label label-default\">Inactive</span>";
+            }
         }
 
         /// <summary>
@@ -3095,7 +3110,7 @@ namespace RockWeb.Blocks.Groups
                     Location = gl.Location,
                     Type = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
                     Order = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Order : 0,
-                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.Name ).ToList().AsDelimited( ", " ) : string.Empty
+                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.IsActive ? s.Name : "<span class=\"text-muted\">" + s.Name + "</span> <span class=\"label label-default\">Inactive</span>" ).ToList().AsDelimited( ", " ) : string.Empty
                 } )
                 .OrderBy( i => i.Order )
                 .ToList();
