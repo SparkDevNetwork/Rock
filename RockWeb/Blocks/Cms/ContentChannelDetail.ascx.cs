@@ -40,9 +40,9 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     ///
     /// </summary>
-    [DisplayName("Content Channel Detail")]
-    [Category("CMS")]
-    [Description("Displays the details for a content channel.")]
+    [DisplayName( "Content Channel Detail" )]
+    [Category( "CMS" )]
+    [Description( "Displays the details for a content channel." )]
     public partial class ContentChannelDetail : RockBlock, IDetailBlock
     {
 
@@ -140,8 +140,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                int? contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull( );
-                if( contentChannelId.HasValue )
+                int? contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
+                if ( contentChannelId.HasValue )
                 {
                     upnlContent.Visible = true;
                     ShowDetail( contentChannelId.Value );
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentChannelId != 0 )
             {
                 channel = GetContentChannel( hfId.ValueAsInt() );
-                if (channel != null &&
+                if ( channel != null &&
                     channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue &&
                     channel.Items.Any() )
                 {
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            if (channel == null)
+            if ( channel == null )
             {
                 channel = new ContentChannel();
             }
@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
-                contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : (int?)null;
+                contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : ( int? ) null;
 
                 // Add any categories
                 contentChannel.Categories.Clear();
@@ -377,12 +377,12 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
                     contentChannel.SaveAttributeValues( rockContext );
 
-                    foreach( var item in new ContentChannelItemService( rockContext )
+                    foreach ( var item in new ContentChannelItemService( rockContext )
                         .Queryable()
                         .Where( i =>
                             i.ContentChannelId == contentChannel.Id &&
                             i.ContentChannelTypeId != contentChannel.ContentChannelTypeId
-                        ))
+                        ) )
                     {
                         item.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
                     }
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gItemAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gItemAttributes_ShowEdit( attributeGuid );
         }
 
@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Cms
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gItemAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             ItemAttributesState.RemoveEntity( attributeGuid );
 
             BindItemAttributesGrid();
@@ -709,6 +709,13 @@ namespace RockWeb.Blocks.Cms
                 SetHeadingInfo( contentChannel, contentChannel.Name );
                 SetEditMode( false );
 
+                nbRoleMessage.Visible = false;
+                if ( contentChannel.RequiresApproval && !IsApproverConfigured( contentChannel ) )
+                {
+                    nbRoleMessage.Text = "<p>No role or person is configured to approve the items for this channel. Please configure one or more roles or people in the security settings under the &quot;Approve&quot; tab.</p>";
+                    nbRoleMessage.Visible = true;
+                }
+
                 lGroupDescription.Text = contentChannel.Description;
 
                 var descriptionListLeft = new DescriptionList();
@@ -863,11 +870,11 @@ namespace RockWeb.Blocks.Cms
         private void SetHeadingInfo( ContentChannel contentChannel, string title )
         {
             string cssIcon = contentChannel.IconCssClass;
-            if (string.IsNullOrWhiteSpace(cssIcon))
+            if ( string.IsNullOrWhiteSpace( cssIcon ) )
             {
                 cssIcon = "fa fa-bullhorn";
             }
-            lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
+            lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
             lTitle.Text = title.FormatAsHtmlTitle();
             var categoriesHtml = new StringBuilder();
             foreach ( var category in contentChannel.Categories.OrderBy( a => a.Order ) )
@@ -1002,6 +1009,56 @@ namespace RockWeb.Blocks.Cms
             }
 
             hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Check if there is any approver configured.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        public bool IsApproverConfigured( ContentChannel contentChannel )
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var authService = new AuthService( rockContext );
+            var contentChannelEntityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannel>().Id;
+
+            var approvalAuths = authService.GetAuths( contentChannelEntityTypeId, contentChannel.Id, Rock.Security.Authorization.APPROVE );
+
+            // Get a list of all PersonIds that are allowed that are included in the Auths
+            // Then, when we get a list of all the allowed people that are in the auth as a specific Person or part of a Role (Group), we'll run all those people thru NoteType.IsAuthorized
+            // That way, we don't have to figure out all the logic of Allow/Deny based on Order, etc
+            List<int> authPersonIdListAll = new List<int>();
+            var approvalAuthsAllowed = approvalAuths.Where( a => a.AllowOrDeny == "A" ).ToList();
+
+
+            bool isValid = false;
+            foreach ( var approvalAuth in approvalAuthsAllowed )
+            {
+                int? personId = null;
+
+                if ( approvalAuth.PersonAlias != null )
+                {
+                    personId = approvalAuth.PersonAlias.PersonId;
+                }
+
+                if ( personId.HasValue )
+                {
+                    isValid = true;
+                    break;
+                }
+                else if ( approvalAuth.GroupId.HasValue )
+                {
+                    isValid = true;
+                    break;
+                }
+                else if ( approvalAuth.SpecialRole != SpecialRole.None )
+                {
+                    // Not Supported: Get people that belong to Special Roles like AllUsers, AllAuthenticatedUser, and AllUnAuthenicatedUsers doesn't really make sense, so ignore it
+                }
+            }
+
+            return isValid;
         }
 
         #endregion
