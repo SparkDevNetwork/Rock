@@ -28,28 +28,25 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class EntityItemCache<T> : IItemCache, IHasLifespan
+    public abstract class EntityItemCache<T> : IItemCache
         where T : IItemCache
     {
-        #region Lifespan
-
-        /// <summary>
-        /// The amount of time that this item will live in the cache before expiring. If null, then the
-        /// default lifespan is used.
-        /// </summary>
-        public virtual TimeSpan? Lifespan => null;
-
-        #endregion Lifespan
-
-        #region Properties
-
         /***********
-            NOTE: The properties (Id, Guid, ForeignKey, etc) need to be declared here (on the bottom-most class) to support backward binary-compatibility with pre-v8 plugins.
+          2018-07-20  MDP
+            IMPORTANT NOTE!: The properties (Id, Guid, ForeignKey, etc) need to be declared here (on the bottom-most class) to support backward binary-compatibility with pre-v8 plugins.
             It seems to be related to issues discussed in https://blogs.msdn.microsoft.com/ericlippert/2010/03/29/putting-a-base-in-the-middle/
 
             So, this EntityItemCache<T> is intentionally somewhat of a duplicate of ItemCache<T> because of this issue. However, the duplicate methods call ItemCache<T> manually
             to minimize the amount of duplicate code.
-        ************/
+        
+        Update:
+           2020-06-26 MDP
+            Do not add or remove any properties from this class! This could break any plugins compiled against a pre-v1.8 Rock.dll. 
+            
+         
+         ************/
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the identifier 
@@ -244,7 +241,7 @@ namespace Rock.Web.Cache
             ItemCache<T>.FlushItem( key );
         }
 
-        internal static void AddToAllIds( int key)
+        internal static void AddToAllIds( int key )
         {
             ItemCache<T>.AddToAllIds( key );
         }
