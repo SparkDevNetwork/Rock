@@ -376,7 +376,7 @@ var app = new Vue({
     var docViewBottom = docViewTop + $(window).height();
     var elemTop = $('#zone-footer').offset().top;
     var elemBottom = elemTop + $('#zone-footer').height();
-    return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+    return (elemTop <= docViewBottom);
     },
     getGroupCount() {
       var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds={{groupTypeId}}'+ this.getFilterParameters();
