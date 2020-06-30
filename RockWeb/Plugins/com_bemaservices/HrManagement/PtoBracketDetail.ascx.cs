@@ -525,7 +525,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             cbIsActive.Checked = ptoBracket.IsActive;
 
             PtoBracketTypesState = new List<PtoBracketType>();
-            foreach ( var ptoBracketType in ptoBracket.PtoBracketTypes )
+            foreach ( var ptoBracketType in ptoBracket.PtoBracketTypes.ToList() )
             {
                 PtoBracketTypesState.Add( ptoBracketType );
             }

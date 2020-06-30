@@ -111,6 +111,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     gPtoBrackets.RowDataBound += GPtoBrackets_RowDataBound;
                     gPtoBrackets.Actions.ShowAdd = _canEdit;
                     gPtoBrackets.IsDeleteEnabled = _canEdit;
+
+                    var deleteField = new DeleteField();
+                    gPtoBrackets.Columns.Add( deleteField );
+                    deleteField.Click += gPtoBrackets_Delete;
                 }
             }
 
@@ -133,6 +137,30 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     BindPtoBracketsGrid();
                 }
             }
+        }
+
+        protected void gPtoBrackets_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var ptoBracketService = new PtoBracketService( rockContext );
+
+            PtoBracket ptoBracket = ptoBracketService.Get( e.RowKeyId );
+
+            if ( ptoBracket != null )
+            {
+
+                var ptoBracketTypes = ptoBracket.PtoBracketTypes.ToList();
+                var ptoBracketTypeService = new PtoBracketTypeService( rockContext );
+                foreach( var ptoBracketType in ptoBracketTypes )
+                {
+                    ptoBracketTypeService.Delete( ptoBracketType );
+                }
+                rockContext.SaveChanges();
+                ptoBracketService.Delete( ptoBracket );
+                rockContext.SaveChanges();
+            }
+
+            BindPtoBracketsGrid();
         }
 
         /// <summary>

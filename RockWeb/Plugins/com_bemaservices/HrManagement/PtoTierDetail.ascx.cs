@@ -124,7 +124,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-
             int newPtoTierId = 0;
 
             using ( RockContext rockContext = new RockContext() )
@@ -140,10 +139,9 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
                 else
                 {
-                    mdCopy.Show( "Pto Tier failed to copy.", ModalAlertType.Warning );
+                    mdCopy.Show( "CPto Tier failed to copy.", ModalAlertType.Warning );
                 }
             }
-
         }
         #endregion
 
@@ -188,14 +186,21 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
                     var ptoBrackets = ptoTier.PtoBrackets.ToList();
                     PtoBracketService ptoBracketService = new PtoBracketService( rockContext );
+                    PtoBracketTypeService ptoBracketTypeService = new PtoBracketTypeService( rockContext );
                     foreach ( var ptoBracket in ptoBrackets )
                     {
                         // We may need to add a function for checking if we can delete the bracket prior to deleting.
+
+                        var ptoBracketTypes = ptoBracket.PtoBracketTypes.ToList();
+
+                        foreach ( var ptoBracketType in ptoBracketTypes )
+                        {
+                            ptoBracketTypeService.Delete( ptoBracketType );
+                        }
+                        rockContext.SaveChanges();
                         ptoBracketService.Delete( ptoBracket );
                     }
-
                     rockContext.SaveChanges();
-
                     ptoTierService.Delete( ptoTier );
                     rockContext.SaveChanges();
 

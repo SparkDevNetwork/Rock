@@ -29,4 +29,48 @@ namespace com.bemaservices.HrManagement.Model
         /// <param name="context">The context.</param>
         public PtoBracketTypeService( RockContext context ) : base( context ) { }
     }
+
+    public static partial class PtoBracketTypeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this PtoBracketType object to a new PtoBracketType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PtoBracketType Clone( this PtoBracketType source, bool deepCopy )
+        {
+            if ( deepCopy )
+            {
+                return source.Clone() as PtoBracketType;
+            }
+            else
+            {
+                var target = new PtoBracketType();
+                target.CopyPropertiesFrom( source );
+                return target;
+            }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PtoBracketType object to this PtoBracketType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PtoBracketType target, PtoBracketType source )
+        {
+            target.Id = source.Id;
+            target.PtoBracketId = source.PtoBracketId;
+            target.PtoTypeId = source.PtoTypeId;
+            target.IsActive = source.IsActive;
+            target.DefaultHours = source.DefaultHours;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
+
+        }
+    }
 }
