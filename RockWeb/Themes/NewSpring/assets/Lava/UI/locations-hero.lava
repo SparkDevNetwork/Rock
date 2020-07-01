@@ -1,5 +1,10 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+
+{% if campus == null %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
 
 {% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}{% if campus.Name != 'Eastlan' %} in {{ campus.Name }}, SC{% else %} - {{ campus.Name }}{% endif %} | Locations{% if servicetype == 'Fuse' %} | Fuse{% endif %} | {{ 'Global' | Attribute:'OrganizationName' }}{% endcapture %}
 {{ title | SetPageTitle }}
