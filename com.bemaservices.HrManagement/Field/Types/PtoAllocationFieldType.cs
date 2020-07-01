@@ -21,29 +21,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using Rock.Data;
-using Rock.Model;
-using Rock.Reporting;
-using Rock.Web.UI.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
-using com.bemaservices.HrManagement.Model;
-using com.bemaservices.HrManagement.Web.UI.Controls;
-using com.bemaservices.HrManagement.Web.UI.Controls.Pickers;
 using Rock;
 using Rock.Data;
 using Rock.Field;
-using Rock.MergeTemplates;
+using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace com.bemaservices.HrManagement.Field.Types
