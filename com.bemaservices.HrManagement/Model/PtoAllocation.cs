@@ -15,14 +15,15 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Model;
 using Rock.Data;
-using System.ComponentModel.DataAnnotations;
-using System;
+using Rock.Model;
 
 namespace com.bemaservices.HrManagement.Model
 {
@@ -80,7 +81,15 @@ namespace com.bemaservices.HrManagement.Model
 
         [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
+        
+        [LavaInclude]
+        public virtual ICollection<PtoRequest> PtoRequests
+        {
+            get { return _ptoRequests ?? ( _ptoRequests = new Collection<PtoRequest>() ); }
+            set { _ptoRequests = value; }
+        }
 
+        private ICollection<PtoRequest> _ptoRequests;
         #endregion
     }
 

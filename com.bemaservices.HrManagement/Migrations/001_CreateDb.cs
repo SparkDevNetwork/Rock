@@ -177,15 +177,56 @@ namespace com.bemaservices.HrManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoTypeId]
             " );
 
+             Sql( @"
+                CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation](
+	                [Id] [int] IDENTITY(1,1) NOT NULL,
+                    [PtoTypeId] int NOT NULL,
+	                [StartDate] datetime NOT NULL,
+	                [EndDate] datetime NULL,
+                    [Hours] decimal NOT NULL,
+                    [PtoAccrualSchedule] int NULL,
+                    [PtoAllocationSourceType] int NOT NULL,
+	                [LastProcessedDate] datetime NULL,
+                    [PtoAllocationStatus] int NOT NULL,
+                    [PersonAliasId] int NOT NULL,
+                    [Note] [nvarchar](max) NULL,
+	                [Guid] [uniqueidentifier] NOT NULL,
+	                [CreatedDateTime] [datetime] NULL,
+	                [ModifiedDateTime] [datetime] NULL,
+	                [CreatedByPersonAliasId] [int] NULL,
+	                [ModifiedByPersonAliasId] [int] NULL,
+	                [ForeignKey] [nvarchar](50) NULL,
+                    [ForeignGuid] [uniqueidentifier] NULL,
+                    [ForeignId] [int] NULL,
+                ) ON [PRIMARY]
+
+                ALTER TABLE [_com_bemaservices_HrManagement_PtoAllocation] ADD CONSTRAINT PK__com_bemaservices_HrManagement_PtoAllocation_Id PRIMARY KEY CLUSTERED ( Id );
+
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+                REFERENCES [dbo].[PersonAlias] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_CreatedByPersonAliasId]
+
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+                REFERENCES [dbo].[PersonAlias] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_ModifiedByPersonAliasId]
+
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_PtoTypeId] FOREIGN KEY([PtoTypeId])
+                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoType] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_PtoTypeId]
+
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_PersonAliasId] FOREIGN KEY([PersonAliasId])
+                REFERENCES [dbo].[PersonAlias] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoAllocation_PersonAliasId]
+            " );
+
             Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
                     [WorkflowId] int NOT NULL,
-	                [PersonAliasId] int NOT NULL,
 	                [ApproverPersonAliasId] int NOT NULL,
                     [RequestDate] date NOT NULL,
                     [Hours] decimal NOT NULL,
-                    [PtoTypeId] int NOT NULL,
+                    [PtoAllocationId] int NOT NULL,
                     [Reason] [nvarchar](max) NULL,
                     [PtoRequestApprovalState] int NOT NULL,
 	                [Guid] [uniqueidentifier] NOT NULL,
@@ -212,60 +253,14 @@ namespace com.bemaservices.HrManagement.Migrations
                 REFERENCES [dbo].[Workflow] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_WorkflowId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoTypeId] FOREIGN KEY([PtoTypeId])
-                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoType] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoTypeId]
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId] FOREIGN KEY([PersonAliasId])
-                REFERENCES [dbo].[PersonAlias] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoAllocationId] FOREIGN KEY([PtoAllocationId])
+                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ([Id])
+                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoAllocationId]
 
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId] FOREIGN KEY([ApproverPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId]
-            " );
-
-            Sql( @"
-                CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation](
-	                [Id] [int] IDENTITY(1,1) NOT NULL,
-                    [PtoTypeId] int NOT NULL,
-	                [StartDate] datetime NOT NULL,
-	                [EndDate] datetime NULL,
-                    [Hours] decimal NOT NULL,
-                    [PtoAccrualSchedule] int NULL,
-                    [PtoAllocationSourceType] int NOT NULL,
-	                [LastProcessedDate] datetime NULL,
-                    [PtoAllocationStatus] int NOT NULL,
-                    [PersonAliasId] int NOT NULL,
-                    [Note] [nvarchar](max) NULL,
-	                [Guid] [uniqueidentifier] NOT NULL,
-	                [CreatedDateTime] [datetime] NULL,
-	                [ModifiedDateTime] [datetime] NULL,
-	                [CreatedByPersonAliasId] [int] NULL,
-	                [ModifiedByPersonAliasId] [int] NULL,
-	                [ForeignKey] [nvarchar](50) NULL,
-                    [ForeignGuid] [uniqueidentifier] NULL,
-                    [ForeignId] [int] NULL,
-                ) ON [PRIMARY]
-
-                ALTER TABLE [_com_bemaservices_HrManagement_PtoRequest] ADD CONSTRAINT PK__com_bemaservices_HrManagement_PtoRequest_Id PRIMARY KEY CLUSTERED ( Id );
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
-                REFERENCES [dbo].[PersonAlias] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_CreatedByPersonAliasId]
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
-                REFERENCES [dbo].[PersonAlias] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ModifiedByPersonAliasId]
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoTypeId] FOREIGN KEY([PtoTypeId])
-                REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoType] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoTypeId]
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId] FOREIGN KEY([PersonAliasId])
-                REFERENCES [dbo].[PersonAlias] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PersonAliasId]
-            " );
+            " );           
 
         }
 

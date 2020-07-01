@@ -42,10 +42,6 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public int PersonAliasId { get; set; }
-
-        [Required]
-        [DataMember]
         public DateTime RequestDate { get; set; }
 
         [Required]
@@ -54,7 +50,7 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public int PtoTypeId { get; set; }
+        public int PtoAllocationId { get; set; }
 
         [Required]
         [DataMember]
@@ -76,12 +72,10 @@ namespace com.bemaservices.HrManagement.Model
         public virtual Rock.Model.Workflow Workflow { get; set; }
 
         [LavaInclude]
-        public virtual PersonAlias PersonAlias { get; set; }
-        [LavaInclude]
         public virtual PersonAlias ApproverPersonAlias { get; set; }
 
         [LavaInclude]
-        public virtual PtoType PtoType { get; set; }
+        public virtual PtoAllocation PtoAllocation { get; set; }
 
         [DataMember]
         [NotMapped]
@@ -91,7 +85,7 @@ namespace com.bemaservices.HrManagement.Model
             {
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                return this.PersonAlias.Person.FullName + "(" + this.RequestDate.ToString( "M/d/yyyy" ) + ")";
+                return this.PtoAllocation.PersonAlias.Person.FullName + "(" + this.RequestDate.ToString( "M/d/yyyy" ) + ")";
             }
 
             private set
@@ -116,9 +110,8 @@ namespace com.bemaservices.HrManagement.Model
         public PtoRequestConfiguration()
         {
             this.HasRequired( r => r.Workflow ).WithMany().HasForeignKey( r => r.WorkflowId ).WillCascadeOnDelete( false );
-            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverPersonAlias ).WithMany().HasForeignKey( r => r.ApproverPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( r => r.PtoType ).WithMany().HasForeignKey( r => r.PtoTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.PtoAllocation ).WithMany( r => r.PtoRequests ).HasForeignKey( r => r.PtoAllocationId ).WillCascadeOnDelete( false );
 
             // IMPORTANT!!
             this.HasEntitySetName( "PtoRequest" );
