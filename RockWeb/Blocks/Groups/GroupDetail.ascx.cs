@@ -1982,7 +1982,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
-            btnDelete.Visible = btnDelete.Visible && !group.IsSystem;
+            btnDelete.Visible = !group.IsSystem && group.IsAuthorized( Authorization.EDIT, CurrentPerson );
             btnArchive.Visible = false;
 
             var rockContext = new RockContext();

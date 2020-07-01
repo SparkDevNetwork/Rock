@@ -61,7 +61,7 @@
                 replace: true
             });
 
-            if ($('.modal-backdrop').length == 0) {
+            if ($('.modal-backdrop').filter(":visible").length == 0) {
                 // ensure that there is a modal-backdrop and include its owner as an attribute so that we can remove it when this modal is closed
                 $('<div class="modal-backdrop" data-modal-id="' + $modalDialog.prop('id') + '" />').appendTo('body');
             }
