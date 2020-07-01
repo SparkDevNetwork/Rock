@@ -18,7 +18,9 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+    using System.Web.Hosting;
+    using System.IO;
+
     /// <summary>
     ///
     /// </summary>
@@ -30,6 +32,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             CodeGenMigrationsUp();
+            EditLegacySendGridPluginWebhook();
         }
         
         /// <summary>
@@ -38,6 +41,28 @@ namespace Rock.Migrations
         public override void Down()
         {
             CodeGenMigrationsDown();
+        }
+
+        /// <summary>
+        /// Edits the legacy SendGrid plug-in webhook (if it exists) to replace
+        /// the occurrence of "c.ChannelId ==" with "c.InteractionChannelId =="
+        /// so that the webhook will continue to function until the admin
+        /// replaces it with the new core webhook.
+        /// </summary>
+        public void EditLegacySendGridPluginWebhook()
+        {
+            // We'll take a stab at editing the file to give the admin some 
+            // grace period to remove/replace the old plugin with the one in
+            // Rock core.
+            try
+            {
+                string webhook = HostingEnvironment.MapPath( "~/Webhooks/SendGrid.ashx" );
+                if ( File.Exists( webhook ) )
+                {
+                    System.IO.File.WriteAllText( webhook, System.Text.RegularExpressions.Regex.Replace( File.ReadAllText( webhook ), "c.ChannelId ==", "c.InteractionChannelId ==" ) );
+                }
+            }
+            catch { }
         }
 
         /// <summary>
