@@ -17,5 +17,6 @@ namespace com.bemaservices.HrManagement.SystemGuid
 
         public static string PTO_TYPE = "81FD3C9B-E22A-492F-9212-93546BBE6677";
 
+        public static string PTO_ALLOCATION = "C3206242-E213-4038-99EB-1A563B375997";
     }
 }

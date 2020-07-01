@@ -26,6 +26,7 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateFieldType( "Pto Tier", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoTierFieldType", SystemGuid.FieldType.PTO_TIER );
             RockMigrationHelper.UpdateFieldType( "Pto Type", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoTypeFieldType", SystemGuid.FieldType.PTO_TYPE );
             RockMigrationHelper.UpdateFieldType( "Pto Request", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoRequestFieldType", SystemGuid.FieldType.PTO_REQUEST );
+            RockMigrationHelper.UpdateFieldType( "Pto Allocation", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoAllocationFieldType", SystemGuid.FieldType.PTO_ALLOCATION );
 
             // Add Global Attributes
             RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.DATE, "", "", "Fiscal Year Start Date", "Used to determine when the Fiscal Year Starts and Ends.", 0, "2020-1-1", SystemGuid.Attribute.FISCAL_YEAR_START_DATE_ATTRIBUTE );
