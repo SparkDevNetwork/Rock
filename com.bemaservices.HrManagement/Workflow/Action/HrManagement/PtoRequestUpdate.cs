@@ -194,8 +194,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                         while ( requestDate <= endDate.Value )
                         {
                             var additionalPtoRequest = new PtoRequest();
-                            ptoRequest.PtoAllocation = ptoAllocation;
-                            ptoRequest.PtoAllocationId = ptoAllocation.Id;
+                            additionalPtoRequest.PtoAllocation = ptoAllocation;
+                            additionalPtoRequest.PtoAllocationId = ptoAllocation.Id;
                             additionalPtoRequest.RequestDate = requestDate;
                             additionalPtoRequest.Hours = hours.Value;
                             additionalPtoRequest.Reason = reason;
