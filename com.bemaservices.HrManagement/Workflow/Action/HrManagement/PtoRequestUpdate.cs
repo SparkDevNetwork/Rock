@@ -44,10 +44,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         false, "", "", 0, PTO_REQUEST_ATTRIBUTE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoRequestFieldType" } )]
 
     // Input Fields
-    [WorkflowTextOrAttribute( "Person", "Attribute Value", "The person or an attribute that contains the person of the pto request. <span class='tip tip-lava'></span>",
-        true, "", "", 1, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Pto Type", "Attribute Value", "The pto type or an attribute that contains the pto type of the pto request. <span class='tip tip-lava'></span>",
-        true, "", "", 2, PTO_TYPE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoTypeFieldType" } )]
+    [WorkflowTextOrAttribute( "Allocation", "Attribute Value", "The allocation or an attribute that contains the allocation of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 1, ALLOCATION_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoAllocationFieldType" } )]
     [WorkflowTextOrAttribute( "Start Date", "Attribute Value", "The start date or an attribute that contains the start date of the pto request. <span class='tip tip-lava'></span>",
         true, "", "", 3, STARTDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
     [WorkflowTextOrAttribute( "End Date", "Attribute Value", "The end date or an attribute that contains the end date of the pto request. <span class='tip tip-lava'></span>",
@@ -57,7 +55,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     [WorkflowTextOrAttribute( "Reason", "Attribute Value", "The reason or an attribute that contains the reason of the pto request. <span class='tip tip-lava'></span>",
         false, "", "", 6, PTO_REASON_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Approver", "Attribute Value", "The approver or an attribute that contains the approver of the pto request. <span class='tip tip-lava'></span>",
-        false, "", "", 7, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+        false, "", "", 7, APPROVER_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [EnumField( "Approval State", "The Approval State of the Pto Request", typeof( PtoRequestApprovalState ),
         true, "Pending", "", 8, APPROVAL_STATE_KEY )]
 
@@ -67,9 +65,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         private const string STARTDATE_KEY = "STARTDATE_KEY";
         private const string ENDDATE_KEY = "ENDDATE_KEY";
         private const string HOURS_KEY = "HOURS_KEY";
-        private const string PTO_TYPE_KEY = "PTO_TYPE_KEY";
         private const string PTO_REASON_KEY = "PTO_REASON_KEY";
-        private const string PERSON_KEY = "PERSON_KEY";
+        private const string ALLOCATION_KEY = "ALLOCATION_KEY";
         private const string APPROVER_KEY = "APPROVER_KEY";
         private const string APPROVAL_STATE_KEY = "APPROVAL_STATE_KEY";
 
@@ -84,10 +81,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            Guid? ptoTypeGuid = null;
-            Person person = null;
+            PtoAllocation ptoAllocation = null;
             Person approver = null;
-            PtoType ptoType = null;
             Guid? ptoRequestGuid = null;
             PtoRequest ptoRequest = null;
             var ptoRequestService = new PtoRequestService( rockContext );
@@ -105,34 +100,33 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                 }
             }
 
-            Guid personAliasGuid = Guid.Empty;
-            string personAttribute = GetAttributeValue( action, PERSON_KEY );
+            Guid allocationGuid = Guid.Empty;
+            string allocationAttribute = GetAttributeValue( action, ALLOCATION_KEY );
 
-            Guid guid = personAttribute.AsGuid();
+            Guid guid = allocationAttribute.AsGuid();
             if ( !guid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string value = action.GetWorklowAttributeValue( guid );
-                    personAliasGuid = value.AsGuid();
+                    allocationGuid = value.AsGuid();
                 }
 
-                if ( personAliasGuid != Guid.Empty )
+                if ( allocationGuid != Guid.Empty )
                 {
-                    person = new PersonAliasService( rockContext ).Queryable()
-                                    .Where( p => p.Guid.Equals( personAliasGuid ) )
-                                    .Select( p => p.Person )
+                    ptoAllocation = new PtoAllocationService( rockContext ).Queryable()
+                                    .Where( p => p.Guid.Equals( allocationGuid ) )
                                     .FirstOrDefault();
                 }
                 else
                 {
-                    errorMessages.Add( "The person could not be found!" );
+                    errorMessages.Add( "The PTO Allocation could not be found!" );
                 }
             }
 
             Guid approverAliasGuid = Guid.Empty;
-            string approverAttributeString = GetAttributeValue( action, PERSON_KEY );
+            string approverAttributeString = GetAttributeValue( action, APPROVER_KEY );
 
             Guid approverGuid = approverAttributeString.AsGuid();
             if ( !approverGuid.IsEmpty() )
@@ -153,28 +147,6 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                 }
             }
 
-            // get the pto type attribute
-            Guid ptoTypeAttributeGuid = GetAttributeValue( action, PTO_TYPE_KEY ).AsGuid();
-
-            if ( !ptoTypeAttributeGuid.IsEmpty() )
-            {
-                ptoTypeGuid = action.GetWorklowAttributeValue( ptoTypeAttributeGuid ).AsGuidOrNull();
-
-                if ( ptoTypeGuid.HasValue )
-                {
-                    ptoType = new PtoTypeService( rockContext ).Get( ptoTypeGuid.Value );
-
-                    if ( ptoType == null )
-                    {
-                        errorMessages.Add( "The pto type provided does not exist." );
-                    }
-                }
-                else
-                {
-                    errorMessages.Add( "Invalid pto type provided." );
-                }
-            }
-
             var mergeFields = GetMergeFields( action );
             var startDate = GetAttributeValue( action, STARTDATE_KEY, true ).ResolveMergeFields( mergeFields ).AsDateTime();
             if ( !startDate.HasValue )
@@ -192,7 +164,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
             string reason = GetAttributeValue( action, PTO_REASON_KEY, true ).ResolveMergeFields( mergeFields );
             var approvalState = GetAttributeValue( action, APPROVAL_STATE_KEY, true ).ResolveMergeFields( mergeFields ).ConvertToEnum<PtoRequestApprovalState>( PtoRequestApprovalState.Pending );
 
-            if ( person != null && ptoType != null && hours.HasValue && startDate.HasValue )
+            if ( ptoAllocation != null && hours.HasValue && startDate.HasValue )
             {
 
                 if ( ptoRequest == null )
@@ -203,10 +175,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
 
                 if ( ptoRequest != null )
                 {
-                    ptoRequest.PersonAlias = person.PrimaryAlias;
-                    ptoRequest.PersonAliasId = person.PrimaryAliasId.Value;
-                    ptoRequest.PtoType = ptoType;
-                    ptoRequest.PtoTypeId = ptoType.Id;
+                    ptoRequest.PtoAllocation = ptoAllocation;
+                    ptoRequest.PtoAllocationId = ptoAllocation.Id;
                     ptoRequest.RequestDate = startDate.Value;
                     ptoRequest.Hours = hours.Value;
                     ptoRequest.Reason = reason;
@@ -224,10 +194,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                         while ( requestDate <= endDate.Value )
                         {
                             var additionalPtoRequest = new PtoRequest();
-                            additionalPtoRequest.PersonAlias = person.PrimaryAlias;
-                            additionalPtoRequest.PersonAliasId = person.PrimaryAliasId.Value;
-                            additionalPtoRequest.PtoType = ptoType;
-                            additionalPtoRequest.PtoTypeId = ptoType.Id;
+                            ptoRequest.PtoAllocation = ptoAllocation;
+                            ptoRequest.PtoAllocationId = ptoAllocation.Id;
                             additionalPtoRequest.RequestDate = requestDate;
                             additionalPtoRequest.Hours = hours.Value;
                             additionalPtoRequest.Reason = reason;

@@ -132,7 +132,7 @@ namespace com.bemaservices.HrManagement.Field.Types
 Declare @PersonAliasGuid nvarchar(max) = '{{personAliasGuid}}'
 Declare @Now = GetDate();
 
-Select ptoAllocation.Id as Value,
+Select ptoAllocation.Guid as Value,
 		ptoType.Name+': '+
 		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+ 
 		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
