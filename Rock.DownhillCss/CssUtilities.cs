@@ -579,7 +579,7 @@ NavigationPage {
 
 ^label {
     font-size: default;
-    color:  ;
+    color: ?color-text;
 }
 ";
 
