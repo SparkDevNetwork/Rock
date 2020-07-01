@@ -48,6 +48,9 @@ namespace Rock.DownhillCss
 
             StringBuilder frameworkCss = new StringBuilder();
 
+            // Apply Reset First
+            frameworkCss.Append( resetStylesMobile );
+
             // Alerts
             AlertStyles( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
@@ -555,7 +558,7 @@ namespace Rock.DownhillCss
         #region Platform Base Styles
         private static string baseStylesWeb = @"";
 
-        private static string baseStylesMobile = @"
+        private static string resetStylesMobile = @"
 /*
     Resets
     -----------------------------------------------------------
@@ -578,7 +581,9 @@ NavigationPage {
     font-size: default;
     color:  ;
 }
+";
 
+        private static string baseStylesMobile = @"
 /*
     Utility Classes
     -----------------------------------------------------------
