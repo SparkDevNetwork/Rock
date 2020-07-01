@@ -46,7 +46,7 @@ namespace com.bemaservices.HrManagement.Model
         public DateTime StartDate { get; set; }
 
         [DataMember]
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         [DataMember]
         public decimal Hours { get; set; }
