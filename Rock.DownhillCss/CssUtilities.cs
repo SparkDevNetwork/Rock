@@ -210,16 +210,23 @@ namespace Rock.DownhillCss
         #region Text
         private static void TextSizes( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
         {
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Text Size Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            foreach ( var size in settings.FontSizes )
+            // Mobile won't be using the text sizes. Instead it will use named sizes
+            if (settings.Platform == DownhillPlatform.Mobile)
             {
-                frameworkCss.AppendLine( $".text-{size.Key.ToLower()} {{" );
-                frameworkCss.AppendLine( $"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};" );
-                frameworkCss.AppendLine( "}" );
+                return;
             }
+
+            frameworkCss.AppendLine("/*");
+            frameworkCss.AppendLine("// Text Size Utilities");
+            frameworkCss.AppendLine("*/");
+
+            foreach (var size in settings.FontSizes)
+            {
+                frameworkCss.AppendLine($".text-{size.Key.ToLower()} {{");
+                frameworkCss.AppendLine($"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};");
+                frameworkCss.AppendLine("}");
+            }
+            
         }
 
         private static void TextColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
@@ -671,22 +678,18 @@ NavigationPage {
 
 .text-xs {
     font-size: micro;
-    color: ?color-text;
 }
 
 .text-sm {
     font-size: small;
-    color: ?color-text;
 }
 
 .text-md {
     font-size: medium;
-    color: ?color-text;
 }
 
 .text-lg {
     font-size: large;
-    color: ?color-text;
 }
 
 .text-title {
@@ -696,21 +699,17 @@ NavigationPage {
 
 .text-subtitle {
     font-size: subtitle;
-    color: ?color-text;
 }
 
 .text-caption {
     font-size: caption;
-    color: ?color-text;
 }
 
 .text-body {
     font-size: body;
-    color: ?color-text;
 }
 
 .title {
-    color: ?color-text;
     font-style: bold;
     font-size: default;
     line-height: 1;
