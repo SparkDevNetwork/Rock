@@ -230,7 +230,7 @@ namespace com.bemaservices.HrManagement.Migrations
             Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
-	                [ApproverPersonAliasId] int NOT NULL,
+	                [ApproverPersonAliasId] int NULL,
                     [RequestDate] date NOT NULL,
                     [Hours] decimal NOT NULL,
                     [PtoAllocationId] int NOT NULL,

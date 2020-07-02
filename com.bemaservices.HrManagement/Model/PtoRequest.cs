@@ -44,7 +44,6 @@ namespace com.bemaservices.HrManagement.Model
         [DataMember]
         public decimal Hours { get; set; }
 
-        [Required]
         [DataMember]
         public int PtoAllocationId { get; set; }
 
@@ -63,9 +62,6 @@ namespace com.bemaservices.HrManagement.Model
         #endregion
 
         #region Virtual Properties
-
-        [LavaInclude]
-        public virtual Rock.Model.Workflow Workflow { get; set; }
 
         [LavaInclude]
         public virtual PersonAlias ApproverPersonAlias { get; set; }
