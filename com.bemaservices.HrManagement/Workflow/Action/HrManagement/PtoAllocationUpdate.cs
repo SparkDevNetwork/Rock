@@ -54,8 +54,10 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         false, "", "", 4, ENDDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
     [WorkflowTextOrAttribute( "Hours", "Attribute Value", "The hours or an attribute that contains the hours of the Pto Allocation. <span class='tip tip-lava'></span>",
         true, "", "", 5, HOURS_KEY, new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+    [WorkflowTextOrAttribute( "Status", "Attribute Value", "The status or an attribute that contains the status of the Pto Allocation. <span class='tip tip-lava'></span>",
+        true, "", "", 6, PTO_STATUS_KEY, new string[] { "Rock.Field.Types.SelectSingleFieldType" } )]
     [EnumField( "Source", "The source of the Pto Request", typeof( PtoAllocationSourceType ),
-        true, "Manual", "", 6, SOURCE_TYPE_KEY )]
+        true, "Manual", "", 7, SOURCE_TYPE_KEY )]
 
     public class PtoAllocationUpdate : ActionComponent
     {
@@ -64,6 +66,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         private const string ENDDATE_KEY = "ENDDATE_KEY";
         private const string HOURS_KEY = "HOURS_KEY";
         private const string PTO_TYPE_KEY = "PTO_TYPE_KEY";
+        private const string PTO_STATUS_KEY = "PTO_STATUS_KEY";
         private const string PERSON_KEY = "PERSON_KEY";
         private const string SOURCE_TYPE_KEY = "SOURCE_TYPE_KEY";
 
@@ -167,6 +170,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
 
             var endDate = GetAttributeValue( action, ENDDATE_KEY, true ).ResolveMergeFields( mergeFields ).AsDateTime();
             var sourceType = GetAttributeValue( action, SOURCE_TYPE_KEY, true ).ResolveMergeFields( mergeFields ).ConvertToEnum<PtoAllocationSourceType>( PtoAllocationSourceType.Manual );
+            var status = GetAttributeValue( action, PTO_STATUS_KEY, true ).ResolveMergeFields( mergeFields ).ConvertToEnum<PtoAllocationStatus>( PtoAllocationStatus.Pending );
 
             if ( person != null && ptoType != null && hours.HasValue && startDate.HasValue )
             {
@@ -187,6 +191,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                     ptoAllocation.EndDate = endDate;
                     ptoAllocation.Hours = hours.Value;
                     ptoAllocation.PtoAllocationSourceType = sourceType;
+                    ptoAllocation.PtoAllocationStatus = status;
                     
                     rockContext.SaveChanges();
                 }
