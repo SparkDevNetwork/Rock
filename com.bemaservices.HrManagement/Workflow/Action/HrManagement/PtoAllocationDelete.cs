@@ -35,9 +35,9 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     /// Sets an entity property.
     /// </summary>
     [ActionCategory( "BEMA Services > HR Management" )]
-    [Description( "Adds or Updates a PTO Allocation." )]
+    [Description( "Deletes a PTO Allocation." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "PTO Allocation Update" )]
+    [ExportMetadata( "ComponentName", "PTO Allocation Delete" )]
 
     // Existing PtoAllocation
     [WorkflowAttribute( "Existing Pto Allocation", "The Pto Allocation to update.",

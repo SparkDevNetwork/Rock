@@ -45,9 +45,9 @@ namespace com.bemaservices.HrManagement.Workflow.Action
 
     // Input Fields
     [WorkflowAttribute( "Person", "The person or an attribute that contains the person of the Pto Allocation. <span class='tip tip-lava'></span>",
-        true, "", "", 7, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+        true, "", "", 1, PERSON_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Pto Type", "The Pto Type or an attribute that contains the Pto Type of the Pto Allocation. <span class='tip tip-lava'></span>",
-        true, "", "", 1, PTO_TYPE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoTypeFieldType" } )]
+        true, "", "", 2, PTO_TYPE_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoTypeFieldType" } )]
     [WorkflowTextOrAttribute( "Start Date", "Attribute Value", "The start date or an attribute that contains the start date of the Pto Allocation. <span class='tip tip-lava'></span>",
         true, "", "", 3, STARTDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
     [WorkflowTextOrAttribute( "End Date", "Attribute Value", "The end date or an attribute that contains the end date of the Pto Allocation. <span class='tip tip-lava'></span>",
@@ -55,7 +55,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     [WorkflowTextOrAttribute( "Hours", "Attribute Value", "The hours or an attribute that contains the hours of the Pto Allocation. <span class='tip tip-lava'></span>",
         true, "", "", 5, HOURS_KEY, new string[] { "Rock.Field.Types.DecimalFieldType" } )]
     [EnumField( "Source", "The source of the Pto Request", typeof( PtoAllocationSourceType ),
-        true, "Manual", "", 8, SOURCE_TYPE_KEY )]
+        true, "Manual", "", 6, SOURCE_TYPE_KEY )]
 
     public class PtoAllocationUpdate : ActionComponent
     {
