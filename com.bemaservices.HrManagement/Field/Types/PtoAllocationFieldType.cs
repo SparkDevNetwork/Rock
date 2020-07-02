@@ -39,7 +39,6 @@ namespace com.bemaservices.HrManagement.Field.Types
 
         #region Configuration
 
-        private const string VALUES_KEY = "values";
         private const string FIELDTYPE_KEY = "fieldtype";
         private const string REPEAT_COLUMNS = "repeatColumns";
 
@@ -50,7 +49,6 @@ namespace com.bemaservices.HrManagement.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add( VALUES_KEY );
             configKeys.Add( FIELDTYPE_KEY );
             configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
@@ -148,7 +146,7 @@ namespace com.bemaservices.HrManagement.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var configuredValues = GetConfiguredAllocationValues();
                 var selectedValues = value.ToUpper().Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -302,7 +300,7 @@ namespace com.bemaservices.HrManagement.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( VALUES_KEY ) )
+            if ( configurationValues != null )
             {
                 var cbList = new RockCheckBoxList();
                 cbList.ID = string.Format( "{0}_cbList", id );
@@ -427,62 +425,7 @@ namespace com.bemaservices.HrManagement.Field.Types
         {
             var items = new Dictionary<string, string>();
 
-            var listSource = @"{% assign personAliasGuid = '' %}
-
-{% assign workflowId = 'Global' | PageParameter:'WorkflowId' %}
-{% if workflowId != empty and workflowId > 0 %}
-	{% workflow id:'{{workflowId}}' %}
-		{% if workflow != empty %}
-			{% assign workflowPersonAliasGuid = workflow | Attribute:'Person','RawValue' %}
-			{% assign isValidGuid = workflowPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-            {% if isValidGuid %}
-                {% assign personAliasGuid = workflowPersonAliasGuid %}
-            {% endif %}
-		{% endif %}
-	{% endworkflow %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-	{% assign pageParameterPersonAliasGuid = 'Global' | PageParameter:'Person' %}
-	{% assign isValidGuid = pageParameterPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-	{% if isValidGuid %}
-		{% assign personAliasGuid = pageParameterPersonAliasGuid %}
-    {% endif %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-    {% if CurrentPerson != null %}
-        {% assign currentPersonAliasGuid = CurrentPerson.PrimaryAlias.Guid %}
-        {% assign isValidGuid = currentPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-        {% if isValidGuid %}
-            {% assign personAliasGuid = currentPersonAliasGuid %}
-        {% endif %}
-    {% endif %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-	{% assign personAliasGuid = '996C8B72-C255-40E6-BB98-B1D5CF345F3B' %}
-{% endif %}
-
-Declare @PersonAliasGuid nvarchar(max) = '{{personAliasGuid}}'
-Declare @Now datetime = GetDate();
-
-Select ptoAllocation.Guid as Value,
-		ptoType.Name+': '+
-		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+ 
-		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
-		' (' + (Select convert(nvarchar(max),ptoAllocation.Hours-IsNull(Sum(ptoRequest.Hours),0))
-				From [dbo].[_com_bemaservices_HrManagement_PtoRequest] ptoRequest
-				Where ptoRequest.PtoAllocationId = ptoAllocation.Id) + ' hrs available)' as Text
-
-From [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ptoAllocation
-Join [dbo].[_com_bemaservices_HrManagement_PtoType] ptoType on ptoType.Id = ptoAllocation.PtoTypeId
-Join PersonAlias pa on pa.Id = ptoAllocation.PersonAliasId
-Where pa.Guid = @PersonAliasGuid
-and ptoAllocation.StartDate <= @Now
-and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
-
-";
+            var listSource = @"{% include '~/Plugins/com_bemaservices/HrManagement/Assets/Lava/PtoAllocationFieldTypeLava.lava'  %}";
 
             var options = new Rock.Lava.CommonMergeFieldsOptions();
             options.GetLegacyGlobalMergeFields = false;
