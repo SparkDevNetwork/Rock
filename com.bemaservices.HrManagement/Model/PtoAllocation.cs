@@ -132,7 +132,7 @@ namespace com.bemaservices.HrManagement.Model
 
     public enum PtoAllocationStatus
     {
-        InActive = 0,
+        Inactive = 0,
         Active = 1,
         Pending = 2
     }
