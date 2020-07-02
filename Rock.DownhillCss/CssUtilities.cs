@@ -902,6 +902,7 @@ NavigationPage {
 
 /* Divider */
 .divider {
+    background-color: ?color-gray-400;
     height: 1;
 }
 
@@ -1335,12 +1336,6 @@ fieldcontainer > .no-fieldstack {
 formfield .required-indicator {
     margin-right: 4;
 }
-
-/* Divider */
-.divider {
-    background-color: ?color-gray-400;
-}
-
 
 /* Cards */
 .card {
