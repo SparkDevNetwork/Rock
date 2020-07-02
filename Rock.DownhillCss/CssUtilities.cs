@@ -979,6 +979,11 @@ NavigationPage {
     background-color: ?color-secondary;
 }
 
+.btn.btn-brand {
+    color: #ffffff;
+    background-color: ?color-brand;
+}
+
 .btn.btn-default {
     color: ?color-primary;
     border-color: ?color-primary;
@@ -1047,6 +1052,14 @@ NavigationPage {
     border-width: 1;
     background-color: transparent;
 }
+
+.btn.btn-outline-brand {
+    color: ?color-brand;
+    border-color: ?color-brand;
+    border-width: 1;
+    background-color: transparent;
+}
+
 
 /* Button Sizes */
 .btn.btn-lg {
