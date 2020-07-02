@@ -35,12 +35,33 @@
 	{% assign personAliasGuid = '996C8B72-C255-40E6-BB98-B1D5CF345F3B' %}
 {% endif %}
 
+{% assign ptoAllocationGuid = '' %}
+
+{% assign workflowId = 'Global' | PageParameter:'WorkflowId' %}
+{% if workflowId != empty and workflowId > 0 %}
+	{% workflow id:'{{workflowId}}' %}
+		{% if workflow != empty %}
+			{% assign workflowPtoAllocationGuid = workflow | Attribute:'PTOAllocation','RawValue' %}
+			{% assign isValidGuid = workflowPtoAllocationGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
+				{% if isValidGuid %}
+						{% assign ptoAllocationGuid = workflowPtoAllocationGuid %}
+				{% endif %}
+		{% endif %}
+	{% endworkflow %}
+{% endif %}
+
+{% if ptoAllocationGuid == '' %}
+	{% assign pageParameterPtoAllocationGuid = 'Global' | PageParameter:'PTOAllocation' | Trim %}
+	{% assign ptoAllocationGuid = pageParameterPtoAllocationGuid %}
+{% endif %}
+
 Declare @PersonAliasGuid nvarchar(max) = '{{personAliasGuid}}'
+Declare @PtoAllocationGuid nvarchar(max) = '{{ptoAllocationGuid}}'
 Declare @Now datetime = GetDate();
 
 Select ptoAllocation.Guid as Value,
 		ptoType.Name+': '+
-		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+ 
+		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+
 		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
 		' (' + (Select convert(nvarchar(max),ptoAllocation.Hours-IsNull(Sum(ptoRequest.Hours),0))
 				From [dbo].[_com_bemaservices_HrManagement_PtoRequest] ptoRequest
@@ -50,5 +71,4 @@ From [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ptoAllocation
 Join [dbo].[_com_bemaservices_HrManagement_PtoType] ptoType on ptoType.Id = ptoAllocation.PtoTypeId
 Join PersonAlias pa on pa.Id = ptoAllocation.PersonAliasId
 Where pa.Guid = @PersonAliasGuid
-and ptoAllocation.StartDate <= @Now
-and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
+and ( ptoAllocation.PtoAllocationStatus = 1 or convert(nvarchar(max), ptoAllocation.Guid) = @PtoAllocationGuid )
