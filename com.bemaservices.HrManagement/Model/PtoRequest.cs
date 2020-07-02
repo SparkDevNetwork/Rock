@@ -38,10 +38,6 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public int WorkflowId { get; set; }
-
-        [Required]
-        [DataMember]
         public DateTime RequestDate { get; set; }
 
         [Required]
@@ -109,7 +105,6 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         public PtoRequestConfiguration()
         {
-            this.HasRequired( r => r.Workflow ).WithMany().HasForeignKey( r => r.WorkflowId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverPersonAlias ).WithMany().HasForeignKey( r => r.ApproverPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.PtoAllocation ).WithMany( r => r.PtoRequests ).HasForeignKey( r => r.PtoAllocationId ).WillCascadeOnDelete( false );
 
