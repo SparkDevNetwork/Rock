@@ -92,68 +92,9 @@ namespace com.bemaservices.HrManagement.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            var sourceSql = @"{% assign personAliasGuid = '' %}
-
-{% assign workflowId = 'Global' | PageParameter:'WorkflowId' %}
-{% if workflowId != empty and workflowId > 0 %}
-	{% workflow id:'{{workflowId}}' %}
-		{% if workflow != empty %}
-			{% assign workflowPersonAliasGuid = workflow | Attribute:'Person','RawValue' %}
-			{% assign isValidGuid = workflowPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-            {% if isValidGuid %}
-                {% assign personAliasGuid = workflowPersonAliasGuid %}
-            {% endif %}
-		{% endif %}
-	{% endworkflow %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-	{% assign pageParameterPersonAliasGuid = 'Global' | PageParameter:'Person' %}
-	{% assign isValidGuid = pageParameterPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-	{% if isValidGuid %}
-		{% assign personAliasGuid = pageParameterPersonAliasGuid %}
-    {% endif %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-    {% if CurrentPerson != null %}
-        {% assign currentPersonAliasGuid = CurrentPerson.PrimaryAlias.Guid %}
-        {% assign isValidGuid = currentPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
-        {% if isValidGuid %}
-            {% assign personAliasGuid = currentPersonAliasGuid %}
-        {% endif %}
-    {% endif %}
-{% endif %}
-
-{% if personAliasGuid == '' %}
-	{% assign personAliasGuid = '996C8B72-C255-40E6-BB98-B1D5CF345F3B' %}
-{% endif %}
-
-Declare @PersonAliasGuid nvarchar(max) = '{{personAliasGuid}}'
-Declare @Now = GetDate();
-
-Select ptoAllocation.Guid as Value,
-		ptoType.Name+': '+
-		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+ 
-		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
-		' (' + (Select convert(nvarchar(max),ptoAllocation.Hours-Sum(ptoRequest.Hours))
-				From [dbo].[_com_bemaservices_HrManagement_PtoRequest] ptoRequest
-				Where ptoRequest.PtoAllocationId = ptoAllocation.Id) + ')' as Text
-From [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ptoAllocation
-Join [dbo].[_com_bemaservices_HrManagement_PtoType] ptoType on ptoType.Id = ptoAllocation.PtoTypeId
-Join PersonAlias pa on pa.Id = ptoAllocation.PersonAliasId
-Where pa.Guid = @PersonAliasGuid
-and ptoAllocation.StartDate <= @Now
-and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
-
-";
-
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
 
-            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
-            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", description, sourceSql ) );
-
-            description = "The type of control to use for selecting a single value from the list.";
+            string description = "The type of control to use for selecting a single value from the list.";
             configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", description, "ddl" ) );
 
             description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
@@ -166,7 +107,6 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
 
                 tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
 
-                configurationValues[VALUES_KEY].Value = sourceSql;
                 configurationValues[FIELDTYPE_KEY].Value = ddlFieldType.SelectedValue;
                 configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
             }
@@ -210,13 +150,20 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
         {
             if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
             {
-                var configuredValues = GetConfiguredAllocationValues( configurationValues );
-                var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                return configuredValues
-                    .Where( v => selectedValues.Contains( v.Key ) )
-                    .Select( v => v.Value )
-                    .ToList()
-                    .AsDelimited( ", " );
+                var configuredValues = GetConfiguredAllocationValues();
+                var selectedValues = value.ToUpper().Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                var a = configuredValues;
+                var b = a.Where( v => selectedValues.Contains( v.Key.ToUpper() ) );
+                var c = b.Select( v => v.Value );
+                var d = c.ToList();
+                var e = d.AsDelimited( ", " );
+
+                return e;
+                //return  configuredValues
+                //    .Where( v => selectedValues.Contains( v.Key ) )
+                //    .Select( v => v.Value )
+                //    .ToList()
+                //    .AsDelimited( ", " );
             }
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
@@ -271,7 +218,7 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
                     editControl.Items.Add( new ListItem() );
                 }
 
-                foreach ( var keyVal in GetConfiguredAllocationValues( configurationValues ) )
+                foreach ( var keyVal in GetConfiguredAllocationValues() )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -362,7 +309,7 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
                 cbList.AddCssClass( "js-filter-control" );
                 cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-                foreach ( var keyVal in GetConfiguredAllocationValues( configurationValues ) )
+                foreach ( var keyVal in GetConfiguredAllocationValues() )
                 {
                     cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -467,7 +414,7 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
         /// <returns></returns>
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var configuredValues = GetConfiguredAllocationValues( configurationValues );
+            var configuredValues = GetConfiguredAllocationValues();
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             return AddQuotes( configuredValues
                 .Where( v => selectedValues.Contains( v.Key ) )
@@ -476,45 +423,98 @@ and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
                 .AsDelimited( "' OR '" ) );
         }
 
-        public Dictionary<string, string> GetConfiguredAllocationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public Dictionary<string, string> GetConfiguredAllocationValues()
         {
             var items = new Dictionary<string, string>();
 
-            if ( configurationValues.ContainsKey( "values" ) )
+            var listSource = @"{% assign personAliasGuid = '' %}
+
+{% assign workflowId = 'Global' | PageParameter:'WorkflowId' %}
+{% if workflowId != empty and workflowId > 0 %}
+	{% workflow id:'{{workflowId}}' %}
+		{% if workflow != empty %}
+			{% assign workflowPersonAliasGuid = workflow | Attribute:'Person','RawValue' %}
+			{% assign isValidGuid = workflowPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
+            {% if isValidGuid %}
+                {% assign personAliasGuid = workflowPersonAliasGuid %}
+            {% endif %}
+		{% endif %}
+	{% endworkflow %}
+{% endif %}
+
+{% if personAliasGuid == '' %}
+	{% assign pageParameterPersonAliasGuid = 'Global' | PageParameter:'Person' %}
+	{% assign isValidGuid = pageParameterPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
+	{% if isValidGuid %}
+		{% assign personAliasGuid = pageParameterPersonAliasGuid %}
+    {% endif %}
+{% endif %}
+
+{% if personAliasGuid == '' %}
+    {% if CurrentPerson != null %}
+        {% assign currentPersonAliasGuid = CurrentPerson.PrimaryAlias.Guid %}
+        {% assign isValidGuid = currentPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
+        {% if isValidGuid %}
+            {% assign personAliasGuid = currentPersonAliasGuid %}
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if personAliasGuid == '' %}
+	{% assign personAliasGuid = '996C8B72-C255-40E6-BB98-B1D5CF345F3B' %}
+{% endif %}
+
+Declare @PersonAliasGuid nvarchar(max) = '{{personAliasGuid}}'
+Declare @Now datetime = GetDate();
+
+Select ptoAllocation.Guid as Value,
+		ptoType.Name+': '+
+		CONVERT(VARCHAR(10), ptoAllocation.StartDate, 103) +' - '+ 
+		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
+		' (' + (Select convert(nvarchar(max),ptoAllocation.Hours-IsNull(Sum(ptoRequest.Hours),0))
+				From [dbo].[_com_bemaservices_HrManagement_PtoRequest] ptoRequest
+				Where ptoRequest.PtoAllocationId = ptoAllocation.Id) + ' hrs available)' as Text
+
+From [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ptoAllocation
+Join [dbo].[_com_bemaservices_HrManagement_PtoType] ptoType on ptoType.Id = ptoAllocation.PtoTypeId
+Join PersonAlias pa on pa.Id = ptoAllocation.PersonAliasId
+Where pa.Guid = @PersonAliasGuid
+and ptoAllocation.StartDate <= @Now
+and ( ptoAllocation.EndDate is null or ptoAllocation.EndDate >= @Now)
+
+";
+
+            var options = new Rock.Lava.CommonMergeFieldsOptions();
+            options.GetLegacyGlobalMergeFields = false;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
+
+            listSource = listSource.ResolveMergeFields( mergeFields, "RockEntity" );
+
+            if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
             {
-                string listSource = configurationValues["values"].Value;
-
-                var options = new Rock.Lava.CommonMergeFieldsOptions();
-                options.GetLegacyGlobalMergeFields = false;
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
-
-                listSource = listSource.ResolveMergeFields( mergeFields, "RockEntity" );
-
-                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
+                var tableValues = new List<string>();
+                DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
+                if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
                 {
-                    var tableValues = new List<string>();
-                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
-                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
+                    foreach ( DataRow row in dataTable.Rows )
                     {
-                        foreach ( DataRow row in dataTable.Rows )
-                        {
-                            items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
-                        }
-                    }
-                }
-
-                else
-                {
-                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                        if ( keyValueArray.Length > 0 )
-                        {
-                            items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
-                        }
+                        items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
                     }
                 }
             }
+
+            else
+            {
+                foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( keyValueArray.Length > 0 )
+                    {
+                        items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
+                    }
+                }
+            }
+
 
             return items;
         }
