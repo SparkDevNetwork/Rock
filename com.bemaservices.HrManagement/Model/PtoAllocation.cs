@@ -74,6 +74,15 @@ namespace com.bemaservices.HrManagement.Model
 
         #endregion
 
+        #region methods
+
+        public override string ToString()
+        {
+            return PtoType.Name + " " + this.StartDate.ToString( "M/yyyy") + ( this.EndDate.HasValue ? " - " + this.EndDate.Value.ToString("M/yyyy") : string.Empty ); 
+        }
+
+        #endregion
+
         #region Virtual Properties
 
         [LavaInclude]

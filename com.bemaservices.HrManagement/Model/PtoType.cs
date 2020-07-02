@@ -65,6 +65,15 @@ namespace com.bemaservices.HrManagement.Model
         public virtual WorkflowType WorkflowType { get; set; }
 
         #endregion
+
+        #region mothods
+
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

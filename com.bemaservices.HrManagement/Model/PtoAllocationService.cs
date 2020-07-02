@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
 using Rock.Data;
 
 namespace com.bemaservices.HrManagement.Model
@@ -28,5 +29,18 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         /// <param name="context">The context.</param>
         public PtoAllocationService( RockContext context ) : base( context ) { }
+
+        public bool CanDelete( PtoAllocation ptoAllocation, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( new Service<PtoRequest>( Context ).Queryable().Any( a => a.PtoAllocationId == ptoAllocation.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PtoAllocation.FriendlyTypeName, PtoRequest.FriendlyTypeName );
+                return false;
+            }
+
+            return true;
+        }
     }
 }
