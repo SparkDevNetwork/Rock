@@ -937,6 +937,7 @@ NavigationPage {
 /* Buttons */
 .btn {
     border-radius: ?radius-base;
+    padding: 16;
 }
 
 .btn.btn-primary {
