@@ -47,17 +47,17 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     [WorkflowTextOrAttribute( "Allocation", "Attribute Value", "The allocation or an attribute that contains the allocation of the pto request. <span class='tip tip-lava'></span>",
         true, "", "", 1, ALLOCATION_KEY, new string[] { "com.bemaservices.HrManagement.Field.Types.PtoAllocationFieldType" } )]
     [WorkflowTextOrAttribute( "Start Date", "Attribute Value", "The start date or an attribute that contains the start date of the pto request. <span class='tip tip-lava'></span>",
-        true, "", "", 3, STARTDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
+        true, "", "", 2, STARTDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
     [WorkflowTextOrAttribute( "End Date", "Attribute Value", "The end date or an attribute that contains the end date of the pto request. <span class='tip tip-lava'></span>",
-        false, "", "", 4, ENDDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
+        false, "", "", 3, ENDDATE_KEY, new string[] { "Rock.Field.Types.DateFieldType" } )]
     [WorkflowTextOrAttribute( "Hours", "Attribute Value", "The hours per day or an attribute that contains the hours per day of the pto request. <span class='tip tip-lava'></span>",
-        true, "", "", 5, HOURS_KEY, new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+        true, "", "", 4, HOURS_KEY, new string[] { "Rock.Field.Types.DecimalFieldType", "Rock.Field.Types.SelectSingleFieldType" } )]
     [WorkflowTextOrAttribute( "Reason", "Attribute Value", "The reason or an attribute that contains the reason of the pto request. <span class='tip tip-lava'></span>",
-        false, "", "", 6, PTO_REASON_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+        false, "", "", 5, PTO_REASON_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowTextOrAttribute( "Approver", "Attribute Value", "The approver or an attribute that contains the approver of the pto request. <span class='tip tip-lava'></span>",
-        false, "", "", 7, APPROVER_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [EnumField( "Approval State", "The Approval State of the Pto Request", typeof( PtoRequestApprovalState ),
-        true, "Pending", "", 8, APPROVAL_STATE_KEY )]
+        false, "", "", 6, APPROVER_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowTextOrAttribute( "Approval State", "Attribute Value", "The Approval State or an attribute that contains the Approval State of the pto request. <span class='tip tip-lava'></span>",
+        true, "", "", 7, APPROVAL_STATE_KEY, new string[] { "Rock.Field.Types.SelectSingleFieldType" } )]
 
     public class PtoRequestUpdate : ActionComponent
     {
@@ -173,6 +173,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                     ptoRequestService.Add( ptoRequest );
                 }
 
+                var oldApprovalState = ptoRequest.PtoRequestApprovalState;
+
                 if ( ptoRequest != null )
                 {
                     ptoRequest.PtoAllocation = ptoAllocation;
@@ -182,7 +184,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                     ptoRequest.Reason = reason;
                     ptoRequest.PtoRequestApprovalState = approvalState;
 
-                    if ( approver != null )
+                    if ( approver != null && ptoRequest.PtoRequestApprovalState == PtoRequestApprovalState.Approved && oldApprovalState != PtoRequestApprovalState.Approved )
                     {
                         ptoRequest.ApproverPersonAlias = approver.PrimaryAlias;
                         ptoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
@@ -201,14 +203,15 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                             additionalPtoRequest.Reason = reason;
                             additionalPtoRequest.PtoRequestApprovalState = approvalState;
 
-                            if ( approver != null )
+                            if ( approver != null && additionalPtoRequest.PtoRequestApprovalState == PtoRequestApprovalState.Approved )
                             {
-                                additionalPtoRequest.ApproverPersonAlias = approver.PrimaryAlias;
-                                additionalPtoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
+                                ptoRequest.ApproverPersonAlias = approver.PrimaryAlias;
+                                ptoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
                             }
+
                             ptoRequestService.Add( additionalPtoRequest );
 
-                            requestDate.AddDays( 1 );
+                            requestDate = requestDate.AddDays( 1 );
                         }
                     }
                     rockContext.SaveChanges();

@@ -28,6 +28,14 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateFieldType( "Pto Request", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoRequestFieldType", SystemGuid.FieldType.PTO_REQUEST );
             RockMigrationHelper.UpdateFieldType( "Pto Allocation", "", "com.bemaservices.HrManagement", "com.bemaservices.HrManagement.Field.Types.PtoAllocationFieldType", SystemGuid.FieldType.PTO_ALLOCATION );
 
+            // Update Entity Types
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoType", "Pto Type", "com.bemaservices.HrManagement.Model.PtoType, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "B1F9D79A-0B0D-49E2-AE3D-D1492425FD38" );
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoTier", "Pto Tier", "com.bemaservices.HrManagement.Model.PtoTier, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "9C7F0A71-23B9-4F8D-A104-7BB521F3EB0E" );
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoBracket", "Pto Bracket", "com.bemaservices.HrManagement.Model.PtoBracket, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "079275BF-4E79-4038-91E9-389A172DCA71" );
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoBracketType", "Pto Bracket Type", "com.bemaservices.HrManagement.Model.PtoBracketType, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "1632165E-246B-420C-AFE2-79BEE19BB3D0" );
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoAllocation", "Pto Allocation", "com.bemaservices.HrManagement.Model.PtoAllocation, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "198A76A9-9EA0-4030-B8B2-526ADE69C268" );
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Model.PtoRequest", "Pto Request", "com.bemaservices.HrManagement.Model.PtoRequest, com.bemaservices.HrManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true, true, "F38B7BA2-1289-4CFE-AFD4-74DF942280D8" );
+
             // Add Global Attributes
             RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.DATE, "", "", "Fiscal Year Start Date", "Used to determine when the Fiscal Year Starts and Ends.", 0, "2020-1-1", SystemGuid.Attribute.FISCAL_YEAR_START_DATE_ATTRIBUTE );
             RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.INTEGER, "", "", "Minimum Time Requirement", "The Minimum amout of time someone can request off in hours in a day.", 0, "4", SystemGuid.Attribute.MINIMUM_TIME_REQUIREMENT_ATTRIBUTE );
@@ -222,8 +230,7 @@ namespace com.bemaservices.HrManagement.Migrations
             Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
-                    [WorkflowId] int NOT NULL,
-	                [ApproverPersonAliasId] int NOT NULL,
+	                [ApproverPersonAliasId] int NULL,
                     [RequestDate] date NOT NULL,
                     [Hours] decimal NOT NULL,
                     [PtoAllocationId] int NOT NULL,
@@ -248,10 +255,6 @@ namespace com.bemaservices.HrManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ModifiedByPersonAliasId]
-
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_WorkflowId] FOREIGN KEY([WorkflowId])
-                REFERENCES [dbo].[Workflow] ([Id])
-                ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_WorkflowId]
 
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_PtoAllocationId] FOREIGN KEY([PtoAllocationId])
                 REFERENCES [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ([Id])

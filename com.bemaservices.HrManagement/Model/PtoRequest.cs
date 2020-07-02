@@ -38,17 +38,12 @@ namespace com.bemaservices.HrManagement.Model
 
         [Required]
         [DataMember]
-        public int WorkflowId { get; set; }
-
-        [Required]
-        [DataMember]
         public DateTime RequestDate { get; set; }
 
         [Required]
         [DataMember]
         public decimal Hours { get; set; }
 
-        [Required]
         [DataMember]
         public int PtoAllocationId { get; set; }
 
@@ -67,9 +62,6 @@ namespace com.bemaservices.HrManagement.Model
         #endregion
 
         #region Virtual Properties
-
-        [LavaInclude]
-        public virtual Rock.Model.Workflow Workflow { get; set; }
 
         [LavaInclude]
         public virtual PersonAlias ApproverPersonAlias { get; set; }
@@ -109,7 +101,6 @@ namespace com.bemaservices.HrManagement.Model
         /// </summary>
         public PtoRequestConfiguration()
         {
-            this.HasRequired( r => r.Workflow ).WithMany().HasForeignKey( r => r.WorkflowId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverPersonAlias ).WithMany().HasForeignKey( r => r.ApproverPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.PtoAllocation ).WithMany( r => r.PtoRequests ).HasForeignKey( r => r.PtoAllocationId ).WillCascadeOnDelete( false );
 
