@@ -235,7 +235,7 @@ namespace com.bemaservices.HrManagement.Migrations
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
 	                [ApproverPersonAliasId] int NULL,
                     [RequestDate] date NOT NULL,
-                    [Hours] decimal NOT NULL,
+                    [Hours] [decimal](18, 1) NOT NULL,
                     [PtoAllocationId] int NOT NULL,
                     [Reason] [nvarchar](max) NULL,
                     [PtoRequestApprovalState] int NOT NULL,
