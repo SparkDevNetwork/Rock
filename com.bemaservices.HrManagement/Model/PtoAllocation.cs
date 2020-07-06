@@ -126,11 +126,11 @@ namespace com.bemaservices.HrManagement.Model
     #region Enumerations
     public enum PtoAccrualSchedule
     {
+        None = 0,
         Yearly = 1,
         Quarterly = 2,
         Monthly = 3,
         Weekly = 4
-
     }
 
     public enum PtoAllocationSourceType
