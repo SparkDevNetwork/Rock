@@ -39,28 +39,189 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
 
-    [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
-    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false, "", "", 1 )]
-    [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
-    [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
-    [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
-    [LinkedPage( "Alternate Communication Page", "The communication page to use for sending an alternate communication to the group members.", false, "", "", 5 )]
-    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 6 )]
-    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 7 )]
-    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 8 )]
-    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 9 )]
-    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 10 )]
-    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", false, "", 11 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 12 )]
-    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 13 )]
-    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 14 )]
-    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
-    [BooleanField( "Enable Communication Preference", "Determines if the currently logged in individual should be allow to set their communication preference for the group.", false, "", 19 )]
+    #region Block Attributes
+
+    [LinkedPage( "Person Detail Page",
+        Key = AttributeKey.PersonDetailPage,
+        Description = "Page to link to for more information on a group member.",
+        IsRequired = false,
+        Order = 0 )]
+
+    [LinkedPage( "Group Member Add Page",
+        Key = AttributeKey.GroupMemberAddPage,
+        Description = "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.",
+        IsRequired = false,
+        Order = 1 )]
+
+    [LinkedPage( "Roster Page",
+        Key = AttributeKey.RosterPage,
+        Description = "The page to link to to view the roster.",
+        IsRequired = true,
+        Order = 2 )]
+
+    [LinkedPage( "Attendance Page",
+        Key = AttributeKey.AttendancePage,
+        Description = "The page to link to to manage the group's attendance.",
+        IsRequired = true,
+        Order = 3 )]
+
+    [LinkedPage( "Communication Page",
+        Key = AttributeKey.CommunicationPage,
+        Description = "The communication page to use for sending emails to the group members.",
+        IsRequired = true,
+        Order = 4 )]
+
+    [LinkedPage( "Alternate Communication Page",
+        Key = AttributeKey.AlternateCommunicationPage,
+        Description = "The communication page to use for sending an alternate communication to the group members.",
+        IsRequired = false,
+        Order = 5 )]
+
+    [BooleanField( "Hide the 'Active' Group checkbox",
+        Key = AttributeKey.HideActiveGroupCheckbox,
+        Description = "Set this to true to hide the checkbox for 'Active' for the group.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [BooleanField("Hide the 'Public' Group checkbox",
+        Key = AttributeKey.HidePublicGroupCheckbox,
+        Description = "Set this to true to hide the checkbox for 'Public' for the group.",
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
+    [BooleanField( "Hide Inactive Group Member Status",
+        Description = "Set this to true to hide the radiobox for the 'Inactive' group member status.",
+        DefaultBooleanValue = false,
+        Order = 8 )]
+
+    [BooleanField( "Hide Group Member Role",
+        Key = AttributeKey.HideGroupMemberRole,
+        Description = "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.",
+        DefaultBooleanValue = false,
+        Order = 9 )]
+
+    [BooleanField( "Hide Group Description Edit",
+        Key = AttributeKey.HideGroupDescriptionEdit,
+        Description = "Set this to true to hide the edit box for group 'Description'.",
+        DefaultBooleanValue = false,
+        Order = 10 )]
+
+    [BooleanField( "Enable Group Capacity Edit",
+        Key = AttributeKey.EnableGroupCapacityEdit,
+        Description = "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.",
+        DefaultBooleanValue = false,
+        Order = 11 )]
+
+    [CodeEditorField( "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "The lava template to use to format the group details.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = "{% include '~~/Assets/Lava/GroupDetail.lava' %}",
+        Order = 12 )]
+
+    [BooleanField( "Enable Location Edit",
+        Key = AttributeKey.EnableLocationEdit,
+        Description = "Enables changing locations when editing a group.",
+        DefaultBooleanValue = false,
+        Order = 13 )]
+
+    [BooleanField( "Allow Group Member Delete",
+        Key = AttributeKey.AllowGroupMemberDelete,
+        Description = "Should deleting of group members be allowed?",
+        DefaultBooleanValue = true,
+        Order = 14 )]
+
+    [CodeEditorField( "Edit Group Pre-HTML",
+        Key = AttributeKey.EditGroupPreHTML,
+        Description = "HTML to display before the edit group panel.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "HTML Wrappers",
+        Order = 15 )]
+
+    [CodeEditorField( "Edit Group Post-HTML",
+        Key = AttributeKey.EditGroupPostHTML,
+        Description = "HTML to display after the edit group panel.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "HTML Wrappers",
+        Order = 16 )]
+
+    [CodeEditorField( "Edit Group Member Pre-HTML",
+        Key = AttributeKey.EditGroupMemberPreHTML,
+        Description = "HTML to display before the edit group member panel.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "HTML Wrappers",
+        Order = 17 )]
+
+    [CodeEditorField( "Edit Group Member Post-HTML",
+        Key = AttributeKey.EditGroupMemberPostHTML,
+        Description = "HTML to display after the edit group member panel.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "HTML Wrappers",
+        Order = 18 )]
+
+    [BooleanField( "Enable Communication Preference",
+        Description = "Determines if the currently logged in individual should be allowed to set their communication preference for the group.",
+        DefaultBooleanValue = false,
+        Order = 19 )]
+
+    #endregion Block Attributes
+
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        private static class PageParameterKey
+        {
+            public const string GroupId = "GroupId";
+            public const string GroupName = "GroupName";
+            public const string CommunicationId = "CommunicationId";
+        }
+
+        private static class AttributeKey
+        {
+            public const string PersonDetailPage = "PersonDetailPage";
+            public const string GroupMemberAddPage = "GroupMemberAddPage";
+            public const string RosterPage = "RosterPage";
+            public const string AttendancePage = "AttendancePage";
+            public const string CommunicationPage = "CommunicationPage";
+            public const string AlternateCommunicationPage = "AlternateCommunicationPage";
+            public const string HideActiveGroupCheckbox = "HideActiveGroupCheckbox";
+            public const string HidePublicGroupCheckbox = "HidePublicGroupCheckbox";
+            public const string HideInactiveGroupMemberStatus = "HideInactiveGroupMemberStatus";
+            public const string HideGroupMemberRole = "HideGroupMemberRole";
+            public const string HideGroupDescriptionEdit = "HideGroupDescriptionEdit";
+            public const string EnableGroupCapacityEdit = "EnableGroupCapacityEdit";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string EnableLocationEdit = "EnableLocationEdit";
+            public const string AllowGroupMemberDelete = "AllowGroupMemberDelete";
+            public const string EditGroupPreHTML = "EditGroupPre-HTML";
+            public const string EditGroupPostHTML = "EditGroupPost-HTML";
+            public const string EditGroupMemberPreHTML = "EditGroupMemberPre-HTML";
+            public const string EditGroupMemberPostHTML = "EditGroupMemberPost-HTML";
+            public const string EnableCommunicationPreference = "EnableCommunicationPreference";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         // used for private variables
@@ -160,7 +321,7 @@ namespace RockWeb.Blocks.Groups
         /// </value>
         private bool EnableCommunicationPreference
         {
-            get { return this.GetAttributeValue( "EnableCommunicationPreference" ).AsBooleanOrNull() ?? false; }
+            get { return this.GetAttributeValue( AttributeKey.EnableCommunicationPreference ).AsBooleanOrNull() ?? false; }
         }
 
         #endregion
@@ -180,9 +341,9 @@ namespace RockWeb.Blocks.Groups
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // get the group id
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
-                _groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
+                _groupId = Convert.ToInt32( PageParameter( PageParameterKey.GroupId ) );
             }
         }
 
@@ -324,7 +485,7 @@ namespace RockWeb.Blocks.Groups
                 Rock.Attribute.Helper.GetEditValues( phAttributes, group );
 
                 // configure locations
-                if ( GetAttributeValue( "EnableLocationEdit" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.EnableLocationEdit ).AsBoolean() )
                 {
                     // get selected location
                     Location location = null;
@@ -468,7 +629,7 @@ namespace RockWeb.Blocks.Groups
             groupMember.GroupRoleId = role.Id;
 
             // set their status.  If HideInactiveGroupMemberStatus is True, and they are already Inactive, keep their status as Inactive;
-            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( AttributeKey.HideInactiveGroupMemberStatus ).AsBooleanOrNull() ?? false;
             var selectedStatus = rblStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
             if ( !selectedStatus.HasValue )
             {
@@ -551,7 +712,7 @@ namespace RockWeb.Blocks.Groups
         {
             mdConfirmDelete.Hide();
 
-            if ( GetAttributeValue( "AllowGroupMemberDelete" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.AllowGroupMemberDelete ).AsBoolean() )
             {
                 RockContext rockContext = new RockContext();
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -684,7 +845,7 @@ namespace RockWeb.Blocks.Groups
                             break;
 
                         case "DeleteGroupMember":
-                            if ( GetAttributeValue( "AllowGroupMemberDelete" ).AsBoolean() )
+                            if ( GetAttributeValue( AttributeKey.AllowGroupMemberDelete ).AsBoolean() )
                             {
                                 groupMemberId = int.Parse( parameters );
                                 DisplayDeleteGroupMember( groupMemberId );
@@ -716,25 +877,25 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BlockSetup()
         {
-            lGroupEditPreHtml.Text = GetAttributeValue( "EditGroupPre-HTML" );
-            lGroupEditPostHtml.Text = GetAttributeValue( "EditGroupPost-HTML" );
+            lGroupEditPreHtml.Text = GetAttributeValue( AttributeKey.EditGroupPreHTML );
+            lGroupEditPostHtml.Text = GetAttributeValue( AttributeKey.EditGroupPostHTML );
 
-            lGroupMemberEditPreHtml.Text = GetAttributeValue( "EditGroupMemberPre-HTML" );
-            lGroupMemberEditPostHtml.Text = GetAttributeValue( "EditGroupMemberPost-HTML" );
+            lGroupMemberEditPreHtml.Text = GetAttributeValue( AttributeKey.EditGroupMemberPreHTML );
+            lGroupMemberEditPostHtml.Text = GetAttributeValue( AttributeKey.EditGroupMemberPostHTML );
 
-            bool hideActiveGroupCheckbox = this.GetAttributeValue( "HideActiveGroupCheckbox" ).AsBooleanOrNull() ?? false;
+            bool hideActiveGroupCheckbox = this.GetAttributeValue( AttributeKey.HideActiveGroupCheckbox ).AsBooleanOrNull() ?? false;
             if ( hideActiveGroupCheckbox )
             {
                 cbIsActive.Visible = false;
             }
 
-            bool hidePublicGroupCheckbox = this.GetAttributeValue( "HidePublicGroupCheckbox" ).AsBooleanOrNull() ?? true;
+            bool hidePublicGroupCheckbox = this.GetAttributeValue( AttributeKey.HidePublicGroupCheckbox ).AsBooleanOrNull() ?? true;
             if ( hidePublicGroupCheckbox )
             {
                 cbIsPublic.Visible = false;
             }
 
-            bool hideDescriptionEdit = this.GetAttributeValue( "HideGroupDescriptionEdit" ).AsBooleanOrNull() ?? false;
+            bool hideDescriptionEdit = this.GetAttributeValue( AttributeKey.HideGroupDescriptionEdit ).AsBooleanOrNull() ?? false;
             if ( hideDescriptionEdit )
             {
                 tbDescription.Visible = false;
@@ -773,11 +934,11 @@ namespace RockWeb.Blocks.Groups
 
                 // add linked pages
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "PersonDetailPage", LinkedPageRoute( "PersonDetailPage" ) );
-                linkedPages.Add( "RosterPage", LinkedPageRoute( "RosterPage" ) );
-                linkedPages.Add( "AttendancePage", LinkedPageRoute( "AttendancePage" ) );
-                linkedPages.Add( "CommunicationPage", LinkedPageRoute( "CommunicationPage" ) );
-                linkedPages.Add( "AlternateCommunicationPage", LinkedPageRoute( "AlternateCommunicationPage" ) );
+                linkedPages.Add( AttributeKey.PersonDetailPage, LinkedPageRoute( AttributeKey.PersonDetailPage ) );
+                linkedPages.Add( AttributeKey.RosterPage, LinkedPageRoute( AttributeKey.RosterPage ) );
+                linkedPages.Add( AttributeKey.AttendancePage, LinkedPageRoute( AttributeKey.AttendancePage ) );
+                linkedPages.Add( AttributeKey.CommunicationPage, LinkedPageRoute( AttributeKey.CommunicationPage ) );
+                linkedPages.Add( AttributeKey.AlternateCommunicationPage, LinkedPageRoute( AttributeKey.AlternateCommunicationPage ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // add collection of allowed security actions
@@ -793,7 +954,7 @@ namespace RockWeb.Blocks.Groups
                 currentPageProperties.Add( "Path", Request.Path );
                 mergeFields.Add( "CurrentPage", currentPageProperties );
 
-                string template = GetAttributeValue( "LavaTemplate" );
+                string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
 
@@ -872,7 +1033,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     nbGroupCapacity.Text = group.GroupCapacity.ToString();
-                    bool enableGroupCapacityEdit = this.GetAttributeValue( "EnableGroupCapacityEdit" ).AsBooleanOrNull() ?? false;
+                    bool enableGroupCapacityEdit = this.GetAttributeValue( AttributeKey.EnableGroupCapacityEdit ).AsBooleanOrNull() ?? false;
                     if ( enableGroupCapacityEdit )
                     {
                         nbGroupCapacity.Visible = group.GroupType.GroupCapacityRule != GroupCapacityRule.None;
@@ -883,8 +1044,8 @@ namespace RockWeb.Blocks.Groups
                     Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
 
                     // enable editing location
-                    pnlGroupEditLocations.Visible = GetAttributeValue( "EnableLocationEdit" ).AsBoolean();
-                    if ( GetAttributeValue( "EnableLocationEdit" ).AsBoolean() )
+                    pnlGroupEditLocations.Visible = GetAttributeValue( AttributeKey.EnableLocationEdit ).AsBoolean();
+                    if ( GetAttributeValue( AttributeKey.EnableLocationEdit ).AsBoolean() )
                     {
                         ConfigureGroupLocationControls( group );
 
@@ -990,7 +1151,7 @@ namespace RockWeb.Blocks.Groups
                             {
                                 locpGroupLocation.SetBestPickerModeForLocation( groupLocation.Location );
 
-                                locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+                                //locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
                                 if ( groupLocation.Location != null )
                                 {
@@ -1073,7 +1234,7 @@ namespace RockWeb.Blocks.Groups
         private void AddGroupMember()
         {
             this.IsEditingGroupMember = true;
-            var personAddPage = GetAttributeValue( "GroupMemberAddPage" );
+            var personAddPage = GetAttributeValue( AttributeKey.GroupMemberAddPage );
 
             if ( personAddPage == null || personAddPage == string.Empty )
             {
@@ -1086,9 +1247,9 @@ namespace RockWeb.Blocks.Groups
                 if ( group != null )
                 {
                     var queryParams = new Dictionary<string, string>();
-                    queryParams.Add( "GroupId", group.Id.ToString() );
-                    queryParams.Add( "GroupName", group.Name );
-                    NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                    queryParams.Add( PageParameterKey.GroupId, group.Id.ToString() );
+                    queryParams.Add( PageParameterKey.GroupName, group.Name );
+                    NavigateToLinkedPage( AttributeKey.GroupMemberAddPage, queryParams );
                 }
             }
         }
@@ -1134,7 +1295,7 @@ namespace RockWeb.Blocks.Groups
             rblStatus.SetValue( ( int ) groupMember.GroupMemberStatus );
             rblCommunicationPreference.SetValue( groupMember.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
-            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( AttributeKey.HideInactiveGroupMemberStatus ).AsBooleanOrNull() ?? false;
             if ( hideGroupMemberInactiveStatus )
             {
                 var inactiveItem = rblStatus.Items.FindByValue( ( ( int ) GroupMemberStatus.Inactive ).ToString() );
@@ -1143,7 +1304,7 @@ namespace RockWeb.Blocks.Groups
                     rblStatus.Items.Remove( inactiveItem );
                 }
             }
-            bool hideGroupMemberRole = this.GetAttributeValue( "HideGroupMemberRole" ).AsBooleanOrNull() ?? false;
+            bool hideGroupMemberRole = this.GetAttributeValue( AttributeKey.HideGroupMemberRole ).AsBooleanOrNull() ?? false;
             if ( hideGroupMemberRole )
             {
                 pnlGroupMemberRole.Visible = false;
@@ -1207,7 +1368,7 @@ namespace RockWeb.Blocks.Groups
         private void SendCommunication()
         {
             // create communication
-            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
             {
                 var rockContext = new RockContext();
                 var service = new Rock.Model.CommunicationService( rockContext );
@@ -1236,9 +1397,9 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
 
                 Dictionary<string, string> queryParameters = new Dictionary<string, string>();
-                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
+                queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
 
-                NavigateToLinkedPage( "CommunicationPage", queryParameters );
+                NavigateToLinkedPage( AttributeKey.CommunicationPage, queryParameters );
             }
         }
 
@@ -1248,7 +1409,7 @@ namespace RockWeb.Blocks.Groups
         private void SendAlternateCommunication()
         {
             // create communication
-            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
             {
                 var rockContext = new RockContext();
                 var service = new Rock.Model.CommunicationService( rockContext );
@@ -1277,9 +1438,9 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
 
                 Dictionary<string, string> queryParameters = new Dictionary<string, string>();
-                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
+                queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
 
-                NavigateToLinkedPage( "AlternateCommunicationPage", queryParameters );
+                NavigateToLinkedPage( AttributeKey.AlternateCommunicationPage, queryParameters );
             }
         }
 
