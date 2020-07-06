@@ -54,6 +54,9 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( Rock.SystemGuid.FieldType.DATE, categoryGuids, "Hire Date", "Hire Date", "HireDate", "", "", 3, "", SystemGuid.Attribute.HIRE_DATE_PERSON_ATTRIBUTE );
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( Rock.SystemGuid.FieldType.DATE, categoryGuids, "Fire Date", "Fire Date", "FireDate", "", "", 3, "", SystemGuid.Attribute.FIRE_DATE_PERSON_ATTRIBUTE );
 
+            // Add Security Role
+            RockMigrationHelper.AddSecurityRoleGroup( "RSR - Human Resources Administration", "Group of individuals who can administrate the various parts of the human resources functionality.", "6F8AABA3-5BC8-468B-90DD-F0686F38E373" );
+
             // Create Tables
             Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoTier](
@@ -185,7 +188,7 @@ namespace com.bemaservices.HrManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoBracketType] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoBracketType_PtoTypeId]
             " );
 
-             Sql( @"
+            Sql( @"
                 CREATE TABLE [dbo].[_com_bemaservices_HrManagement_PtoAllocation](
 	                [Id] [int] IDENTITY(1,1) NOT NULL,
                     [PtoTypeId] int NOT NULL,
@@ -263,7 +266,7 @@ namespace com.bemaservices.HrManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId] FOREIGN KEY([ApproverPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 ALTER TABLE [dbo].[_com_bemaservices_HrManagement_PtoRequest] CHECK CONSTRAINT [FK__com_bemaservices_HrManagement_PtoRequest_ApproverPersonAliasId]
-            " );           
+            " );
 
         }
 
