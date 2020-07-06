@@ -134,6 +134,34 @@ namespace com.bemaservices.HrManagement.Migrations
             // Add Block to Page: PTO Bracket Detail, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "82B4AB59-DFFA-4A2F-9035-C0CF18073552", "", "0801C3F9-019E-4B8F-B5D5-4D38D48D11B2", "Pto Bracket Detail", "Main", "", "", 0, "D7B2C0D9-54DF-44F5-8A0F-6CD0F1F7F723" );
 
+            // Page: PTO Allocations
+            RockMigrationHelper.AddPage( "F159FB38-FEF9-4F08-8A5C-5E112B1DD88F", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "PTO Allocations", "", "E9E3118F-A7FC-4EC7-99C1-530727AF3275", "fa fa-clock" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Pto Allocation List", "Lists all the pto allocations.", "~/Plugins/com_bemaservices/HrManagement/PtoAllocationList.ascx", "BEMA Services > HR Management", "9A7FDFF1-21DE-4BF5-9598-690224E98FFC" );
+            // Add Block to Page: PTO Allocations, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "E9E3118F-A7FC-4EC7-99C1-530727AF3275", "", "9A7FDFF1-21DE-4BF5-9598-690224E98FFC", "Pto Allocation List", "Main", "", "", 0, "489C67D2-C537-495C-88C8-EC16E7D5ED87" );
+            // Attrib for BlockType: Pto Allocation List:Detail Page
+            RockMigrationHelper.UpdateBlockTypeAttribute( "9A7FDFF1-21DE-4BF5-9598-690224E98FFC", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "784D9FD6-96ED-4E74-8A72-A9BDF30471E1" );
+            // Attrib for BlockType: Pto Allocation List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "9A7FDFF1-21DE-4BF5-9598-690224E98FFC", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "79A67E87-6415-4D9F-8DF7-9B079791EAE8" );
+            // Attrib for BlockType: Pto Allocation List:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute( "9A7FDFF1-21DE-4BF5-9598-690224E98FFC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "7E3FCA44-7961-45C1-886F-666F3910F56F" );
+            // Attrib Value for Block:Pto Allocation List, Attribute:Detail Page Page: PTO Allocations, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "489C67D2-C537-495C-88C8-EC16E7D5ED87", "784D9FD6-96ED-4E74-8A72-A9BDF30471E1", @"a6ae71ea-8aba-40e6-b033-207aa98f88f2" );
+            // Attrib Value for Block:Pto Allocation List, Attribute:core.CustomGridEnableStickyHeaders Page: PTO Allocations, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "489C67D2-C537-495C-88C8-EC16E7D5ED87", "7E3FCA44-7961-45C1-886F-666F3910F56F", @"False" );
+
+            // Page: PTO Allocation Detail
+            RockMigrationHelper.AddPage( "E9E3118F-A7FC-4EC7-99C1-530727AF3275", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "PTO Allocation Detail", "", "A6AE71EA-8ABA-40E6-B033-207AA98F88F2", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Pto Allocation Detail", "Displays the details of the given Pto Allocation for editing.", "~/Plugins/com_bemaservices/HrManagement/PtoAllocationDetail.ascx", "BEMA Services > HR Management", "D59A0A08-0A20-406E-95CE-03882446F70C" );
+            // Add Block to Page: PTO Allocation Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "A6AE71EA-8ABA-40E6-B033-207AA98F88F2", "", "D59A0A08-0A20-406E-95CE-03882446F70C", "Pto Allocation Detail", "Main", "", "", 0, "597C5907-D760-4C6C-8E0D-98F67A6DEB72" );
+
+            // Page: Human Resources
+            RockMigrationHelper.AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "F66758C6-3E3D-4598-AF4C-B317047B5987", "Human Resources", "", "34A9F1E4-8249-4F39-B861-F28210E8C70A", "" ); // Site:Rock RMS
+            RockMigrationHelper.AddPageRoute( "34A9F1E4-8249-4F39-B861-F28210E8C70A", "Person/{PersonId}/HR" );
+            // Add/Update PageContext for Page:Human Resources, Entity: Rock.Model.Person, Parameter: PersonId
+            RockMigrationHelper.UpdatePageContext( "34A9F1E4-8249-4F39-B861-F28210E8C70A", "Rock.Model.Person", "PersonId", "ED667F0F-B9F1-4D14-8076-69F7F1C72DE2" );
+
         }
 
         /// <summary>
