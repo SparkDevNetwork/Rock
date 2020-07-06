@@ -169,7 +169,18 @@ namespace Rock.Lava
 
             try
             {
-                foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ).Select( a => a.Value ).ToList() )
+                /*
+                    7/6/2020 - JH
+                    Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
+                    In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
+                    We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
+                    inheriting from the RockLavaBlockBase class.
+                */
+                foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
+                    .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
+                    .Select( a => a.Value )
+                    .OrderBy( a => a.Name )
+                    .ToList() )
                 {
                     lavaCommands.Add( blockType.Name );
                     var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -360,6 +371,29 @@ namespace Rock.Lava
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified command is authorized within the context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsAuthorized( DotLiquid.Context context, string command )
+        {
+            if ( context?.Registers?.ContainsKey( "EnabledCommands" ) == true && command.IsNotNullOrWhiteSpace() )
+            {
+                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
+
+                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( command ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

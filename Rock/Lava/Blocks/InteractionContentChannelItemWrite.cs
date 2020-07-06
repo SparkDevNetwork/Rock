@@ -32,7 +32,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows a Content Channel Item Interaction to be written.
     /// </summary>
-    public class InteractionContentChannelItemWrite : DotLiquid.Tag, IRockStartup
+    public class InteractionContentChannelItemWrite : DotLiquid.Tag, IRockStartup, IRockLavaBlock
     {
         #region Parameter Keys
 
@@ -85,7 +85,7 @@ namespace Rock.Lava.Blocks
         public override void Render( Context context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
-            if ( !IsAuthorized( context ) )
+            if ( !LavaHelper.IsAuthorized( context, this.GetType().Name ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
@@ -156,26 +156,6 @@ namespace Rock.Lava.Blocks
 
             var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
-        }
-
-        /// <summary>
-        /// Determines whether the specified command is authorized.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>Whether the specified command is authorized.</returns>
-        private bool IsAuthorized( Context context )
-        {
-            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
-            {
-                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
-
-                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }
