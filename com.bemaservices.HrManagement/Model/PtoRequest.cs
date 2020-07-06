@@ -47,9 +47,8 @@ namespace com.bemaservices.HrManagement.Model
         [DataMember]
         public int PtoAllocationId { get; set; }
 
-        [Required]
         [DataMember]
-        public int ApproverPersonAliasId { get; set; }
+        public int? ApproverPersonAliasId { get; set; }
 
         [Required]
         [DataMember]
