@@ -590,7 +590,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             rockContext.Database.CommandTimeout = 90;
             var qry = allocationService.Queryable();
 
-            // only communications for the selected recipient (_person)
+            // only allocations for the selected recipient (_person)
             if ( _person != null )
             {
                 qry = qry.Where( a => a.PersonAlias.PersonId == _person.Id );
