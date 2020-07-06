@@ -138,7 +138,7 @@ namespace Rock.Transactions
                         }
 
                         // check that the page exists as a component
-                        var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, PageShortLinkId.Value, Token );
+                        var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByChannelIdAndEntityId( interactionChannel.Id, PageShortLinkId, Token );
                         if ( Url.IsNotNullOrWhiteSpace() )
                         {
                             
