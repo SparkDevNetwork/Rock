@@ -306,7 +306,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     pdAuditDetails.Visible = false;
                 }
 
-                bool adminAllowed = UserCanAdministrate;
+                bool adminAllowed = UserCanEdit;
                 pnlDetails.Visible = true;
                 hfPtoAllocationId.Value = ptoAllocation.Id.ToString();
                 bool readOnly = false;
