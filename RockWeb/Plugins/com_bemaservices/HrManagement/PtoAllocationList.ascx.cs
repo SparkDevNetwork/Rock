@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         #region Fields
 
         private RockDropDownList ddlAction;
-       
+
         #endregion
 
         #region Base Control Methods
@@ -123,7 +123,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             {
                 BindFilter();
                 BindGrid();
-               
+
             }
             else
             {
@@ -182,8 +182,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     }}
                 }});";
 
-            string script = string.Format( 
-                scriptFormat, 
+            string script = string.Format(
+                scriptFormat,
                 ddlAction.ClientID, // {0}
                 gPtoAllocationList.ClientID,  // {1}
                 Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ),  // {2}
@@ -333,13 +333,13 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
                 else
                 {
-                    mdGridWarning.Show( "You are not authorized to delete allocations.", ModalAlertType.Warning);
+                    mdGridWarning.Show( "You are not authorized to delete allocations.", ModalAlertType.Warning );
                 }
             }
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the RowDataBound event of the gPtoAllocationList control.
         /// </summary>
@@ -528,31 +528,32 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         private void BindGrid( bool isExporting = false )
         {
 
-            
+
             //try
             //{
-                var rockContext = new RockContext();
+            var rockContext = new RockContext();
 
-                var ptoAllocationQry = GetQuery( rockContext ).AsNoTracking();
+            var ptoAllocationQry = GetQuery( rockContext ).AsNoTracking();
 
-                var allocationRowQry = ptoAllocationQry.Select( b => new AllocationRow
-                {
-                    Id = b.Id,
-                    Name = b.PersonAlias.Person.NickName + " " + b.PersonAlias.Person.LastName,
-                    PtoType = b.PtoType,
-                    Status = b.PtoAllocationStatus,
-                    SourceType = b.PtoAllocationSourceType,
-                    AccrualSchedule = b.PtoAccrualSchedule
-                } );
+            var allocationRowQry = ptoAllocationQry.Select( b => new AllocationRow
+            {
+                Id = b.Id,
+                Name = b.PersonAlias.Person.NickName + " " + b.PersonAlias.Person.LastName,
+                PtoType = b.PtoType,
+                Hours = b.Hours,
+                Status = b.PtoAllocationStatus,
+                SourceType = b.PtoAllocationSourceType,
+                AccrualSchedule = b.PtoAccrualSchedule
+            } );
 
-                gPtoAllocationList.ObjectList = ptoAllocationQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
+            gPtoAllocationList.ObjectList = ptoAllocationQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
 
-                gPtoAllocationList.SetLinqDataSource( allocationRowQry.AsNoTracking() );
-                gPtoAllocationList.EntityTypeId = EntityTypeCache.Get<PtoAllocation>().Id;
-                gPtoAllocationList.DataBind();
+            gPtoAllocationList.SetLinqDataSource( allocationRowQry.AsNoTracking() );
+            gPtoAllocationList.EntityTypeId = EntityTypeCache.Get<PtoAllocation>().Id;
+            gPtoAllocationList.DataBind();
 
             RegisterJavaScriptForGridActions();
-               
+
             //}
             //catch ( Exception ex )
             //{
@@ -649,7 +650,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             public PtoType PtoType { get; set; }
             public PtoAllocationSourceType SourceType { get; set; }
             public PtoAccrualSchedule AccrualSchedule { get; set; }
-            public int PersonId { get; set;}
+            public int PersonId { get; set; }
 
             public string StatusText
             {
@@ -665,9 +666,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     switch ( Status )
                     {
-                        case PtoAllocationStatus.Inactive: return "label label-default";
-                        case PtoAllocationStatus.Active: return "label label-info";
-                        case PtoAllocationStatus.Pending: return "label label-warning";
+                        case PtoAllocationStatus.Inactive:
+                            return "label label-default";
+                        case PtoAllocationStatus.Active:
+                            return "label label-info";
+                        case PtoAllocationStatus.Pending:
+                            return "label label-warning";
                     }
 
                     return string.Empty;
