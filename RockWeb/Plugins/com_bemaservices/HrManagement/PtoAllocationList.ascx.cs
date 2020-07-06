@@ -40,10 +40,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
     [Description( "Lists all the pto allocations." )]
     [LinkedPage( "Detail Page", order: 0 )]
 
+    [ContextAware]
     public partial class PtoAllocationList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
 
         #region Fields
+        private Person _person = null;
 
         private RockDropDownList ddlAction;
 
@@ -118,6 +120,15 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected override void OnLoad( EventArgs e )
         {
             nbResult.Visible = false;
+
+            var contextEntity = this.ContextEntity();
+            if ( contextEntity != null )
+            {
+                if ( contextEntity is Person )
+                {
+                    _person = contextEntity as Person;
+                }
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -527,7 +538,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         private void BindGrid( bool isExporting = false )
         {
-
+            // If configured for a person and person is null, return
+            int personEntityTypeId = EntityTypeCache.Get<Person>().Id;
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
+            {
+                return;
+            }
 
             //try
             //{
@@ -573,6 +589,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             var allocationService = new PtoAllocationService( rockContext );
             rockContext.Database.CommandTimeout = 90;
             var qry = allocationService.Queryable();
+
+            // only communications for the selected recipient (_person)
+            if ( _person != null )
+            {
+                qry = qry.Where( a => a.PersonAlias.PersonId == _person.Id );
+            }
 
             // filter by date
             string dateRangeValue = gfPtoAllocationFilter.GetUserPreference( "Date Range" );
