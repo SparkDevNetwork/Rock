@@ -22,6 +22,15 @@
 {% endif %}
 
 {% if personAliasGuid == '' %}
+	{% assign pageParameterPtoRequestGuid = 'Global' | PageParameter:'PTORequest' %}
+    {% ptorequest where:'Guid == "{{pageParameterPtoRequestGuid}}"' %}
+        {% for ptoRequest in ptorequestItems %}
+            {% assign personAliasGuid = ptoRequest.PtoAllocation.PersonAlias.Guid %}
+        {% endfor %}
+    {% endptorequest %}
+{% endif %}
+
+{% if personAliasGuid == '' %}
     {% if CurrentPerson != null %}
         {% assign currentPersonAliasGuid = CurrentPerson.PrimaryAlias.Guid %}
         {% assign isValidGuid = currentPersonAliasGuid | RegExMatch:'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b' %}
