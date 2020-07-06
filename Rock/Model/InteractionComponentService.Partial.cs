@@ -94,7 +94,7 @@ namespace Rock.Model
             var channel = InteractionChannelCache.Get( channelGuid );
             if ( channel != null )
             {
-                return GetComponentByEntityId( channel.Id, entityId, name );
+                return GetComponentByChannelIdAndEntityId( channel.Id, entityId, name );
             }
             else
             {

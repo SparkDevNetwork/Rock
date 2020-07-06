@@ -27,6 +27,18 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class LavaCommandsPicker : RockCheckBoxList
     {
+        /*
+            7/6/2020 - JH
+            With the addition of the "InteractionContentChannelItemWrite" Lava Command within Rock Core, the RockCheckBoxList default
+            value of 4 is no longer ideal for LavaCommandsPicker.RepeatColumns. I have changed this value to 3 for this implementation
+            in order to help prevent wrapping of longer command names. Note that I have exposed this default value so other classes
+            (such as the LavaCommandsFieldType) can make use of this value as well.
+        */
+        /// <summary>
+        /// The default number of columns to display in the <see cref="RockCheckBoxList" /> control.
+        /// </summary>
+        public static readonly int DefaultRepeatColumns = 3;
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -65,5 +77,32 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the number of columns to display in the <see cref="RockCheckBoxList" /> control.
+        /// If RepeatDirection is Horizontal, this will default to 3 columns. There is no upper limit in the code so use wisely.
+        /// </summary>
+        public override int RepeatColumns
+        {
+            get
+            {
+                if ( this.RepeatDirection == RepeatDirection.Horizontal )
+                {
+                    // unless set specifically, default Horizontal to 3
+                    return _repeatColumns ?? DefaultRepeatColumns;
+                }
+                else
+                {
+                    return _repeatColumns ?? 0;
+                }
+            }
+
+            set
+            {
+                _repeatColumns = value;
+            }
+        }
+
+        private int? _repeatColumns;
     }
 }
