@@ -132,8 +132,17 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             if ( !Page.IsPostBack )
             {
-                BindFilter();
-                BindGrid();
+                bool canView = GetViewRights();
+
+                if ( canView )
+                {
+                    BindFilter();
+                    BindGrid();
+                }
+                else
+                {
+                    upnlContent.Visible = false;
+                }
 
             }
             else
@@ -141,7 +150,53 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 var temp = Page.Request.Form["__EVENTTARGET"];
             }
         }
+        private bool GetViewRights()
+        {
+            var canView = false;
 
+            if ( _person != null )
+            {
+                if ( CurrentPerson.Id == _person.Id )
+                {
+                    canView = true;
+                }
+
+                if ( canView == false )
+                {
+                    var adminGuid = "628C51A8-4613-43ED-A18D-4A6FB999273E".AsGuid();
+                    var hrGuid = "6F8AABA3-5BC8-468B-90DD-F0686F38E373".AsGuid();
+                    var inReviewGroup = CurrentPerson.Members.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Group.IsActive == true &&
+                             ( gm.Group.Guid == adminGuid || gm.Group.Guid == hrGuid ) ).Any();
+                    if ( inReviewGroup )
+                    {
+                        canView = true;
+                    }
+                }
+
+                if ( canView == false )
+                {
+                    _person.LoadAttributes();
+                    var supervisorAliasGuid = _person.GetAttributeValue( "Supervisor" ).AsGuidOrNull();
+                    if ( supervisorAliasGuid != null )
+                    {
+                        var personAlias = new PersonAliasService( new RockContext() ).Get( supervisorAliasGuid.Value );
+                        if ( personAlias != null )
+                        {
+                            if ( personAlias.PersonId == CurrentPerson.Id )
+                            {
+                                canView = true;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                canView = true;
+            }
+
+            return canView;
+        }
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
@@ -361,8 +416,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var allocationRow = e.Row.DataItem as AllocationRow;
-                var deleteField = gPtoAllocationList.Columns.OfType<DeleteField>().First();
-                var cell = ( e.Row.Cells[gPtoAllocationList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
+                if ( UserCanEdit )
+                {
+                    var deleteField = gPtoAllocationList.Columns.OfType<DeleteField>().First();
+                    if ( deleteField != null )
+                    {
+                        var cell = ( e.Row.Cells[gPtoAllocationList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
+                    }
+                }
             }
         }
 
@@ -474,10 +535,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// </summary>
         private void AddDynamicControls()
         {
-            // Add delete column
-            var deleteField = new DeleteField();
-            gPtoAllocationList.Columns.Add( deleteField );
-            deleteField.Click += gPtoAllocationList_Delete;
+            if ( UserCanEdit )
+            {
+                // Add delete column
+                var deleteField = new DeleteField();
+                gPtoAllocationList.Columns.Add( deleteField );
+                deleteField.Click += gPtoAllocationList_Delete;
+            }
+
         }
 
         /// <summary>
