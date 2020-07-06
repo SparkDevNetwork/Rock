@@ -411,8 +411,14 @@ achieve our mission.  We are so grateful for your commitment.
                     }
             }
 
-            // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-            divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+            // Show or Hide the new payment entry panels based on if a saved account exists and it's selected or not.
+            var showNewCard = Gateway.SupportsStandardRockPaymentEntryForm &&
+                ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected );
+            divNewCard.Style[HtmlTextWriterStyle.Display] = showNewCard ? "block" : "none";
+
+            var showNewAch = Gateway.SupportsStandardRockPaymentEntryForm &&
+                ( rblSavedAch.Items.Count == 0 || rblSavedAch.Items[rblSavedAch.Items.Count - 1].Selected );
+            divNewBank.Style[HtmlTextWriterStyle.Display] = showNewAch ? "block" : "none";
 
             if ( !Page.IsPostBack )
             {
