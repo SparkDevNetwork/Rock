@@ -399,7 +399,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
                 if ( allocationsSelected.Any() )
                 {
-                    var newStatus = hfAction.Value == "ACTIVATE" ? PtoAllocationStatus.Active : PtoAllocationStatus.InActive;
+                    var newStatus = hfAction.Value == "ACTIVATE" ? PtoAllocationStatus.Active : PtoAllocationStatus.Inactive;
                     var rockContext = new RockContext();
                     var allocationService = new PtoAllocationService( rockContext );
                     var allocationsToUpdate = allocationService.Queryable()
@@ -665,7 +665,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     switch ( Status )
                     {
-                        case PtoAllocationStatus.InActive: return "label label-default";
+                        case PtoAllocationStatus.Inactive: return "label label-default";
                         case PtoAllocationStatus.Active: return "label label-info";
                         case PtoAllocationStatus.Pending: return "label label-warning";
                     }
