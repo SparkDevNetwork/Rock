@@ -249,7 +249,7 @@ namespace Rock.Rest.Controllers
                                 //
                                 // Get an existing or create a new component.
                                 //
-                                var interactionComponent = interactionComponentService.GetComponentByEntityId( interactionChannelId.Value, page.Id, page.InternalName);
+                                var interactionComponent = interactionComponentService.GetComponentByChannelIdAndEntityId( interactionChannelId.Value, page.Id, page.InternalName );
                                 rockContext.SaveChanges();
 
                                 interactionComponentId = interactionComponent.Id;
