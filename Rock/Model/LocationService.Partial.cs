@@ -75,6 +75,25 @@ namespace Rock.Model
             //    return null;
             //}
 
+            // Remove leading and trailing whitespace.
+            street1 = street1.ToStringSafe().Trim();
+            street2 = street2.ToStringSafe().Trim();
+            city = city.ToStringSafe().Trim();
+            state = state.ToStringSafe().Trim();
+            postalCode = postalCode.ToStringSafe().Trim();
+            country = country.ToStringSafe().Trim();
+
+            // Make sure the address has some content.
+            if ( string.IsNullOrWhiteSpace( street1 )
+                 && string.IsNullOrWhiteSpace( street2 )
+                 && string.IsNullOrWhiteSpace( city )
+                 && string.IsNullOrWhiteSpace( state )
+                 && string.IsNullOrWhiteSpace( postalCode )
+                 && string.IsNullOrWhiteSpace( country ) )
+            {
+                return null;
+            }
+
             // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
             if ( foundLocation != null )
@@ -596,12 +615,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the locations associated to a device and optionally any child locations
+        /// Gets all locations associated with a <seealso cref="Rock.Model.Device"/>, optionally including all child locations
         /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
         /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>
         /// <returns></returns>
-        public IEnumerable<Location> GetByDevice( int deviceId, bool includeChildLocations = true )
+        public IEnumerable<Location> GetAllDeviceLocations( bool includeChildLocations )
+        {
+            return GetByDevice( null, includeChildLocations );
+        }
+
+        /// <summary>
+        /// Gets device locations for the specified deviceIds.
+        /// </summary>
+        /// <param name="deviceIds">The device ids to limit which Locations to return. Set to null to return all (which is the same as calling GetAllDeviceLocations) </param>
+        /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>
+        /// <returns></returns>
+        public IEnumerable<Location> GetByDevice( IEnumerable<int> deviceIds, bool includeChildLocations )
         {
             string childQuery = includeChildLocations ? @"
 
@@ -613,19 +642,53 @@ namespace Rock.Model
         WHERE [a].[ParentLocationId] IS NOT NULL
 " : "";
 
-            return ExecuteQuery( string.Format(
-                @"
+            string deviceClause;
+            if ( deviceIds == null )
+            {
+                // if NULL is specified for deviceIds, don't restrict by device Id.
+                deviceClause = string.Empty;
+            }
+            else 
+            {
+                if ( !deviceIds.Any() )
+                {
+                    // if no device id are specified just return an empty list
+                    return new List<Location>();
+                }
+                else if (deviceIds.Count() == 1)
+                {
+                    deviceClause = $"WHERE D.[DeviceId] = {deviceIds.First()}";
+                }
+                else
+                {
+                    deviceClause = $"WHERE D.[DeviceId] IN ({deviceIds.ToList().AsDelimited(",")})";
+                }
+            }
+
+            string query = $@"
     WITH CTE AS (
         SELECT L.Id
         FROM [DeviceLocation] D
         INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
-        WHERE D.[DeviceId] = {0}
-{1}
+        {deviceClause}
+{childQuery}
     )
 
     SELECT L.* FROM CTE
-    INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
-            ", deviceId, childQuery ) );
+    INNER JOIN [Location] L ON L.[Id] = CTE.[Id]";
+
+            return ExecuteQuery( query );
+        }
+
+        /// <summary>
+        /// Gets the locations associated to a device and optionally any child locations
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>
+        /// <returns></returns>
+        public IEnumerable<Location> GetByDevice( int deviceId, bool includeChildLocations = true )
+        {
+            return GetByDevice( new int[] { deviceId }, includeChildLocations );
         }
 
         /// <summary>

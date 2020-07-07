@@ -95,7 +95,7 @@
                             <div class="form-group">
                                 <label for="inputEmail3" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
                                 </div>
                             </div>
                         </div>
@@ -116,7 +116,7 @@
                     <div runat="server" class="r-example">
                         <div class="form-horizontal label-sm">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail4" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
                                 </div>
@@ -125,7 +125,7 @@
 
                         <div class="form-horizontal label-md">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail5" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
                                 </div>
@@ -134,7 +134,7 @@
 
                         <div class="form-horizontal label-lg">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail6" class="control-label">Email</label>
                                 <div class="control-wrapper">
                                     <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
                                 </div>
@@ -143,18 +143,18 @@
 
                         <div class="form-horizontal label-xl">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail7" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                    <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-horizontal label-auto">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                                <label for="inputEmail8" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
                                 <div class="control-wrapper">
-                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail8" placeholder="Email">
                                 </div>
                             </div>
                         </div>
@@ -297,6 +297,11 @@
                     <a id="RockCheckBoxListHorizontal"></a>
                     <div runat="server" class="r-example">
                         <Rock:RockCheckBoxList ID="cblExampleHorizontal" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
+                    </div>
+
+                    <a id="Rock List Box"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockListBox ID="lbExampleListBox" runat="server" Label="Rock:RockListBox" />
                     </div>
 
                     <a id="RockRadioButtonList"></a>
@@ -835,7 +840,7 @@
                     <a id="AttributeEditor"></a>
                     <h2 runat="server">Rock:AttributeEditor</h2>
                     <div runat="server" class="r-example">
-                        <asp:LinkButton ID="lbExample" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
                         <asp:Panel ID="pnlAttributeEditor" runat="server" Visible="false" CssClass="well">
                             <Rock:AttributeEditor ID="edtExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
                         </asp:Panel>

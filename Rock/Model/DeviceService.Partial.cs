@@ -24,7 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for the <see cref="Rock.Model.Device"/> entity objects
     /// </summary>
-    public partial class DeviceService 
+    public partial class DeviceService
     {
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Device">Devices</see> by the Guid of their Device Type <see cref="Rock.Model.DefinedValue"/>.
@@ -37,7 +37,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Finds the matching device for the given lat/long coordinates. The given coordinates
+        /// Finds the first matching device for the given lat/long coordinates. The given coordinates
         /// must intersect one of the stored GeoFence values to be a match.  Use the deviceTypeValueId
         /// to constrain matching to only certain device types.
         /// </summary>
@@ -47,17 +47,45 @@ namespace Rock.Model
         /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
         public Device GetByGeocode( double latitude, double longitude, int deviceTypeValueId )
         {
-            Device device = null;
-            DbGeography aLocation = DbGeography.FromText( string.Format("POINT({0} {1})", longitude, latitude) );
+            /* 2020-06-08 MDP
+              If more than one device is found, we'll have to pick one somehow
+              since there doesn't seem to be a way to determine which geofence to choose
+              if the geofences are overlapping at the specific latitude/longitude.
 
-            device = Queryable()
-                .Where( d => 
+              So if there this problem due to overlapping geofences, that would be a configuration issue.
+
+              We'll just deal with it by choosing the one with the lowest Id.
+           */
+
+            var deviceQueryable = GetDevicesByGeocode( latitude, longitude, deviceTypeValueId );
+
+            return deviceQueryable.OrderBy( a => a.Id ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Returns a queryable of matching devices for the given lat/long coordinate
+        /// The given coordinates must intersect one of the stored GeoFence values to be a match.
+        /// Use the deviceTypeValueId to constrain matching to only certain device types.
+        /// NOTE: If more than one device is found, the caller will have to pick which one they want
+        /// since there doesn't seem to be a way to determine which geofence to choose
+        /// if the geofences are overlapping at the specific latitude/longitude
+        /// </summary>
+        /// <param name="latitude">Latitude of the mobile phone/kiosk.</param>
+        /// <param name="longitude">Longitude of the mobile phone/kiosk.</param>
+        /// <param name="deviceTypeValueId">Longitude of the mobile phone/kiosk.</param>
+        /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
+        public IQueryable<Device> GetDevicesByGeocode( double latitude, double longitude, int deviceTypeValueId )
+        {
+            DbGeography geoLocation = Location.GetGeoPoint( latitude, longitude );
+
+            var deviceQueryable = Queryable()
+                .Where( d =>
                     d.DeviceTypeValueId == deviceTypeValueId &&
                     d.Location != null &&
-                    aLocation.Intersects( d.Location.GeoFence ) )
-                .FirstOrDefault();
+                    geoLocation.Intersects( d.Location.GeoFence )
+                    );
 
-            return device;
+            return deviceQueryable;
         }
 
         /// <summary>
@@ -97,7 +125,7 @@ namespace Rock.Model
                 if ( hostValue.IsNotNullOrWhiteSpace() )
                 {
                     // Find by name in the IP address field (why are people putting the name in the IP Address field?)
-                    device =  Queryable()
+                    device = Queryable()
                         .Where( d =>
                             d.DeviceTypeValueId == deviceTypeValueId &&
                             d.IPAddress == hostValue )

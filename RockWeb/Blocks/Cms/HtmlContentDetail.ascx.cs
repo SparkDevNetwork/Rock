@@ -214,7 +214,26 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
-            if ( !this.IsPostBack )
+            /*
+             * 2020-06-10 - JH
+             *
+             * In some areas of Rock, we force a full postback (page reload), as opposed to the default
+             * partial postback that occurs from within an UpdatePanel. See the 'Cms/EmailForm' Block
+             * for an example of forcing a full postback, by way of the 'PostBackTrigger' control:
+             *
+             * https://github.com/SparkDevNetwork/Rock/blob/b0239d87882d6986afb32bc5a5353dcbfc3edee3/RockWeb/Blocks/Cms/EmailForm.ascx#L87
+             * 
+             * When this happens, any 'HtmlContentDetail' Blocks on the page lose their content,
+             * because the 'this.IsPostBack' check below only returns true for partial postbacks.
+             * The fix is to detect if the current postback represents a full postback, and reload
+             * the HTML content in this case.
+             * 
+             * '!ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack'
+             * 
+             * Reason: Issue #4237
+             * https://github.com/SparkDevNetwork/Rock/issues/4237
+             */
+            if ( !this.IsPostBack || !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 ShowView();
             }
@@ -750,6 +769,14 @@ namespace RockWeb.Blocks.Cms
 
             pnlEdit.Visible = false;
             pnlVersionGrid.Visible = false;
+
+            // If we are rendering in configuration-only mode, hide the block runtime content.
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                upnlHtmlContentView.Visible = false;
+                return;
+            }
+
             string entityValue = EntityValue();
             string html = string.Empty;
 
@@ -834,7 +861,23 @@ namespace RockWeb.Blocks.Cms
             string contextParameter = GetAttributeValue( AttributeKey.ContextParameter );
             if ( !string.IsNullOrEmpty( contextParameter ) )
             {
-                entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
+                /*
+                    6/15/2020 - JME
+                    Updated the logic to get the Context Parameter. Before this would simply use the
+                    query string. Updated it to also consider the context variable if one exists and
+                    the query string did not contain the configured context paramater. This was added
+                    to allow having different content for each context object. The specific use case
+                    is when used in conjection with the campus context switcher. This change will allow
+                    having separate content per campus (without any Lava case statements).  
+                */
+                var entityId = PageParameter( contextParameter );
+
+                // If no page parameter then check for context value
+                if ( entityId.IsNullOrWhiteSpace() && this.ContextEntity() != null )
+                {
+                    entityId = this.ContextEntity().Id.ToString();
+                }
+                entityValue = string.Format( "{0}={1}", contextParameter, entityId ?? string.Empty );
             }
 
             string contextName = GetAttributeValue( AttributeKey.ContextName );

@@ -34,7 +34,7 @@
             });
 
             if ($('.block-instance.success').length){
-                success.play();
+                successSound.play();
             }
 
             $("a, button").on("click", function(){

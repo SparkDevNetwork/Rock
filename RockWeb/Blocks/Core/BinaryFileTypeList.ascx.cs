@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Administration
                           BinaryFileCount = x.Key == null ? 0 : x.Count(),
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
                           ft.IsSystem,
-                          ft.AllowCaching,
+                          ft.CacheToServerFileSystem,
                           RequiresViewSecurity = ft.RequiresViewSecurity
                       };
 

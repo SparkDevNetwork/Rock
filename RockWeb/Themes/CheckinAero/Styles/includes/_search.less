@@ -14,7 +14,10 @@
   }
 
   .search-phone-form-group {
-    margin-bottom: 48px;
+    margin-bottom: 0;
+    @media (min-width: @screen-xs-min) {
+      margin-bottom: 48px;
+    }
   }
 }
 
@@ -69,7 +72,7 @@
   }
 
   .btn.command {
-    padding: 24px 0 0 0;
+    padding: 24px 0 0;
     font-weight: @checkin-button-text-weight;
     color: @sheet-text-color;
     text-transform: lowercase;

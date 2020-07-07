@@ -19,8 +19,6 @@
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js" ) %>" ></script>
-
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
@@ -32,10 +30,6 @@
     </form>
 
     <script>
-        window.addEventListener('load', function () {
-            new FastClick(document.body);
-        }, false);
-
         function checkinSounds() {
             var tapSound = new Howl({
                 src: ['/Assets/Sounds/CheckIn/tap.mp3'],
@@ -48,7 +42,7 @@
             });
 
             if ($('.block-instance.success').length){
-                success.play();
+                successSound.play();
             }
 
             $("a, button").on("click", function(){

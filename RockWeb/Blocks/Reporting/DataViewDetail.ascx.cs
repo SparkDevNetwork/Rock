@@ -311,8 +311,10 @@ $(document).ready(function() {
             if ( adding )
             {
                 service.Add( dataView );
+                // We need to save the new data view so we can bind the data view filters.
+                rockContext.SaveChanges();
             }
-
+            
             rockContext.WrapTransaction( () =>
             {
                 if ( origDataViewFilterId.HasValue )
@@ -322,9 +324,8 @@ $(document).ready(function() {
                     DataViewFilter origDataViewFilter = dataViewFilterService.Get( origDataViewFilterId.Value );
 
                     dataView.DataViewFilterId = null;
-                    rockContext.SaveChanges();
 
-                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService );
+                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService, rockContext );
                 }
 
                 dataView.DataViewFilter = newDataViewFilter;
@@ -455,7 +456,7 @@ $(document).ready(function() {
                     try
                     {
                         DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
-                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService );
+                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService, rockContext );
                     }
                     catch
                     {
@@ -889,22 +890,30 @@ $(document).ready(function() {
 
         private void SetupNumberOfRuns( DataView dataView )
         {
-            hlRunSince.Text = "";
+            hlRunSince.Text = "Not Run";
             hlRunSince.LabelType = LabelType.Info;
+
+            var lastRefreshDateTime = dataView.CreatedDateTime;
 
             if ( dataView.RunCountLastRefreshDateTime == null )
             {
-                return;
+                lastRefreshDateTime = dataView.RunCountLastRefreshDateTime;
+            }
+
+            var status = "Since Creation";
+            if(lastRefreshDateTime != null )
+            {
+                status = string.Format( "Since {0}", lastRefreshDateTime.Value.ToShortDateString() );
             }
 
             if ( dataView.RunCount == null || dataView.RunCount.Value == 0 )
             {
                 hlRunSince.LabelType = LabelType.Warning;
-                hlRunSince.Text = string.Format( "Not Run Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+                hlRunSince.Text = string.Format( "Not Run {0}", status );
                 return;
             }
 
-            hlRunSince.Text = string.Format( "{0:0} Runs Since {1}", dataView.RunCount, dataView.RunCountLastRefreshDateTime.Value.ToShortDateString() );
+            hlRunSince.Text = string.Format( "{0:0} Runs {1}", dataView.RunCount, status );
         }
 
         private void SetupTimeToRunLabel( DataView dataView )
@@ -1219,16 +1228,22 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="dataViewFilter">The data view filter.</param>
         /// <param name="service">The service.</param>
-        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
+        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service, RockContext rockContext )
         {
             if ( dataViewFilter != null )
             {
                 foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
                 {
-                    DeleteDataViewFilter( childFilter, service );
+                    DeleteDataViewFilter( childFilter, service, rockContext );
                 }
 
+                dataViewFilter.DataViewId = null;
+                dataViewFilter.RelatedDataViewId = null;
+
+                rockContext.SaveChanges();
+
                 service.Delete( dataViewFilter );
+                
             }
         }
 

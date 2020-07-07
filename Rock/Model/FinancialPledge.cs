@@ -115,6 +115,7 @@ namespace Rock.Model
         /// The start date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int StartDateKey
         {
             get => StartDate.ToString( "yyyyMMdd" ).AsInteger();
@@ -128,6 +129,7 @@ namespace Rock.Model
         /// The end date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int EndDateKey
         {
             get => EndDate.ToString( "yyyyMMdd" ).AsInteger();

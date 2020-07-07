@@ -70,6 +70,14 @@ namespace Rock.Transactions
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the run count should be incremented.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [increment run count]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldIncrementRunCount { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RunDataViewTransaction"/> class.
         /// </summary>
         public RunDataViewTransaction()
@@ -94,7 +102,10 @@ namespace Rock.Transactions
                 if ( LastRunDateTime != null )
                 {
                     dataView.LastRunDateTime = LastRunDateTime;
-                    dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
+                    if( ShouldIncrementRunCount )
+                    {
+                        dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
+                    }
                 }
 
                 if ( PersistedLastRefreshDateTime != null )
@@ -112,7 +123,6 @@ namespace Rock.Transactions
                 {
                     dataView.TimeToRunDurationMilliseconds = TimeToRunDurationMilliseconds;
                 }
-
                 rockContext.SaveChanges();
             }
         }

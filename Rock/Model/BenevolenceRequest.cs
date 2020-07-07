@@ -218,6 +218,7 @@ namespace Rock.Model
         /// The request date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int RequestDateKey
         {
             get => RequestDateTime.ToString( "yyyyMMdd" ).AsInteger();

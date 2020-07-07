@@ -33,6 +33,11 @@
             // Use the anchor tag's href attribute as the source for the iframe
             // this will trigger the load event (above) which will show the popup
             $('#modal-popup').fadeTo(0, 0);
+
+            // Indicate to Rock that this content is being served in an iFrame modal.
+            var separator = popupUrl.indexOf("?") === -1 ? "?" : "&";
+            popupUrl = popupUrl + separator + "IsIFrameModal=true";
+
             $modalPopupIFrame.attr('src', popupUrl);
             $('#modal-popup').modal({
                 show: true,
@@ -109,9 +114,16 @@
                 }
             },
             // closes a ModalDialog control (non-IFrame Modal)
-            closeModalDialog: function ($modalDialog) {
+            closeModalDialog: function ($modalDialog, $manager) {
                 if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
                     $modalDialog.modal('hide');
+                }
+
+                // remove the modal-open class from this modal's manager
+                if ($manager && $manager.length) {
+                    $manager.each(function () {
+                        $(this).removeClass('modal-open');
+                    });
                 }
 
                 // if all modals are closed, remove the modal-open class from the body

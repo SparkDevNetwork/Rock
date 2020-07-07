@@ -225,6 +225,11 @@
     <Reference Include="PreMailer.Net, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\PreMailer.Net.1.5.5\lib\net45\PreMailer.Net.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
@@ -310,6 +315,7 @@
     <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
     <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.8.6.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
       <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.8.6\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
@@ -485,17 +491,25 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Bulk\BulkImport\InteractionsImport.cs" />
     <Compile Include="Bulk\BulkImport\InteractionImport.cs" />
+    <Compile Include="CheckIn\LocalDeviceConfiguration.cs" />
+    <Compile Include="Communication\CommunicationHelper.cs" />
+    <Compile Include="Communication\IRockMobilePush.cs" />
+    <Compile Include="Communication\PushData.cs" />
+    <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
-    <Compile Include="Jobs\SendMessageResults.cs" />
+    <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
+    <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Lava\LavaFileSystem.cs" />
@@ -505,8 +519,18 @@
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
+    <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Utility\Enums\PushOpenAction.cs" />
+    <Compile Include="Utility\RockSerializableList.cs" />
+    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Model\IdentityVerification.cs" />
+    <Compile Include="Model\IdentityVerificationCode.cs" />
+    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
+    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
@@ -515,6 +539,7 @@
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
+    <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
     <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
@@ -525,22 +550,33 @@
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\128_MigrationRollupsFor10_4_1.cs" />
+    <Compile Include="Plugin\HotFixes\127_MigrationRollupsFor10_4_0.cs" />
+    <Compile Include="Plugin\HotFixes\126_MigrationRollupsFor10_3_7.cs" />
+    <Compile Include="Plugin\HotFixes\125_MobileTemplateUpdatesPostAlpha.cs" />
     <Compile Include="Plugin\HotFixes\123_MigrationRollupsFor10_3_6.cs" />
     <Compile Include="Plugin\HotFixes\122_FixContentChannelItemChildItemsOrder.cs" />
     <Compile Include="Plugin\HotFixes\121_MigrationRollupsFor10_3_5.cs" />
     <Compile Include="Plugin\HotFixes\120_StructuredContentTools.cs" />
     <Compile Include="Plugin\HotFixes\119_AddMobileGroupMemberListBlockTemplate.cs" />
+    <Compile Include="Plugin\HotFixes\124_AddGroupAttendanceDigestSystemCommunication.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
+    <Compile Include="Utility\Enums\RockCacheablityType.cs" />
+    <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Utility\Enums\IntervalTimeUnit.cs" />
+    <Compile Include="Utility\GuidConverter.cs" />
+    <Compile Include="Utility\RockCacheability.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfig.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfigurationService.cs" />
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
+    <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
@@ -548,6 +584,7 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
@@ -560,6 +597,7 @@
     <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\DataEntryRequirementLevelFieldType.cs" />
     <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
@@ -642,6 +680,7 @@
     <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="SystemGuid\SystemCommunication.cs" />
+    <Compile Include="SystemKey\CountryAttributeKey.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
     <Compile Include="Transactions\RunDataViewTransaction.cs" />
@@ -2664,6 +2703,7 @@
     <Compile Include="Workflow\Action\People\PersonPropertyUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
+    <Compile Include="Workflow\Action\People\PrayerRequestAdd.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\Registrations\GenerateDiscountCode.cs" />
     <Compile Include="Workflow\Action\Registrations\UpdateDiscountCode.cs" />
@@ -2862,7 +2902,6 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin\Auth\" />
     <Folder Include="Pbx\Provider\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>

@@ -170,6 +170,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+        private const string LAST_FORM_INDEX_KEY = "LastFormIndexKey";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
         private const string AUTO_APPLIED_DISCOUNT = "AutoAppliedDiscount";
@@ -298,6 +299,14 @@ namespace RockWeb.Blocks.Event
         /// The index of the current form.
         /// </value>
         private int CurrentFormIndex { get; set; }
+
+        /// <summary>
+        /// Used to keep track of the last form when clicking back from the Summary panel. This is needed because CurrentFormIndex gets set to 0 when there are no more forms.
+        /// </summary>
+        /// <value>
+        /// The last index of the form.
+        /// </value>
+        private int LastFormIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the step2 i frame URL.
@@ -675,6 +684,7 @@ namespace RockWeb.Blocks.Event
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
+            LastFormIndex = ViewState[LAST_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
             defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
             autoAppliedDiscount = ViewState[DEFAULT_PAYMENT_KEY] as bool? ?? false;
@@ -882,6 +892,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_PANEL_KEY] = CurrentPanel;
             ViewState[CURRENT_REGISTRANT_INDEX_KEY] = CurrentRegistrantIndex;
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
+            ViewState[LAST_FORM_INDEX_KEY] = LastFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
             ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
             ViewState[AUTO_APPLIED_DISCOUNT] = autoAppliedDiscount;
@@ -1318,7 +1329,17 @@ namespace RockWeb.Blocks.Event
             {
                 _saveNavigationHistory = true;
 
-                ShowRegistrationAttributesEnd( false );
+                if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+                {
+                    ShowRegistrationAttributesEnd( false );
+                }
+                else
+                {
+                    // Show the last registrant
+                    CurrentRegistrantIndex = RegistrationState.RegistrantCount - 1;
+                    CurrentFormIndex = LastFormIndex;
+                    ShowRegistrant( false, false );
+                }
             }
             else
             {
@@ -3893,6 +3914,7 @@ namespace RockWeb.Blocks.Event
                         if ( ( CurrentFormIndex >= FormCount && !SignInline ) || CurrentFormIndex >= FormCount + 1 )
                         {
                             CurrentRegistrantIndex++;
+                            LastFormIndex = CurrentFormIndex - 1;
                             CurrentFormIndex = 0;
                         }
                     }
@@ -4716,7 +4738,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( AttributeKey.ShowFieldDescriptions ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( AttributeKey.ShowFieldDescriptions ).AsBoolean(), BlockValidationGroup, phRegistrantControls, DynamicControlPostbackMethod );
                     }
                 }
 
@@ -4741,6 +4763,18 @@ namespace RockWeb.Blocks.Event
             }
 
             divFees.Visible = phFees.Controls.Count > 0;
+        }
+
+        /// <summary>
+        /// Method to run for the dynamic control FieldVisibility.EditValueUpdated event.
+        /// This is to recreate the controls for filter conditions, so it is not used by
+        /// PersonFields.
+        /// </summary>
+        private void DynamicControlPostbackMethod()
+        {
+            CreateRegistrantControls( true );
+            ParseDynamicControls();
+            ShowFamilyMembersPanel();
         }
 
         /// <summary>
@@ -4804,7 +4838,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl, Action postbackMethod )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4829,7 +4863,9 @@ namespace RockWeb.Blocks.Event
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                    postbackMethod.Invoke();
                 };
+
 
                 parentControl.Controls.Add( fieldVisibilityWrapper );
 
@@ -4883,6 +4919,7 @@ namespace RockWeb.Blocks.Event
                     .OrderBy( f => f.Order ) )
                 {
                     object value = null;
+                    bool updateField = true;
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
@@ -4890,16 +4927,19 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        value = ParseAttributeField( field );
+                        value = ParseAttributeField( field, out updateField );
                     }
 
-                    if ( value != null )
+                    if ( updateField )
                     {
-                        registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
-                    }
-                    else
-                    {
-                        registrant.FieldValues.Remove( field.Id );
+                        if ( value != null )
+                        {
+                            registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
+                        }
+                        else
+                        {
+                            registrant.FieldValues.Remove( field.Id );
+                        }
                     }
                 }
 
@@ -5030,8 +5070,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object ParseAttributeField( RegistrationTemplateFormField field )
+        private object ParseAttributeField( RegistrationTemplateFormField field, out bool updateField )
         {
+            updateField = true;
+
             if ( field.AttributeId.HasValue )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
@@ -5040,7 +5082,15 @@ namespace RockWeb.Blocks.Event
                 Control control = phRegistrantControls.FindControl( fieldId );
                 if ( control != null )
                 {
-                    return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    if ( control.Visible )
+                    {
+                        return attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                    }
+
+                    // If the control is not visible we don't want to clear out the value.
+                    // So set updateField to false so the value is not set to null or empty
+                    updateField = false;
+                    return null;
                 }
             }
 

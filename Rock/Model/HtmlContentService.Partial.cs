@@ -70,16 +70,8 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // If an entity value is specified, then return content specific to that context, 
-            // otherwise return content for the current block instance
-            if ( !string.IsNullOrEmpty( entityValue ) )
-            {
-                content = content.Where( c => c.EntityValue == entityValue );
-            }
-            else
-            {
-                content = content.Where( c => c.BlockId == blockId );
-            }
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
 
             // return the most recently approved item
             return content.OrderByDescending( c => c.Version );
@@ -95,16 +87,8 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // If an entity value is specified, then return content specific to that context, 
-            // otherwise return content for the current block instance
-            if ( !string.IsNullOrEmpty( entityValue ) )
-            {
-                content = content.Where( c => c.EntityValue == entityValue );
-            }
-            else
-            {
-                content = content.Where( c => c.BlockId == blockId );
-            }
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
 
             return content.OrderByDescending( c => c.Version ).ThenByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
         }
@@ -137,19 +121,10 @@ namespace Rock.Model
                     ( c.StartDateTime == null || c.StartDateTime.Value <= RockDateTime.Now ) &&
                     ( c.ExpireDateTime == null || c.ExpireDateTime.Value >= RockDateTime.Now ) );
 
-            // If an entity value is specified, then return content specific to that context (entityValue), 
-            // otherewise return content for the current block instance
-            if ( !string.IsNullOrEmpty( entityValue ) )
-            {
-                //content = content.Where( c => !string.IsNullOrEmpty(c.EntityValue) &&  c.EntityValue == entityValue );
-                content = content.Where( c => c.EntityValue == entityValue );
-            }
-            else
-            {
-                content = content.Where( c => c.BlockId == blockId );
-            }
+            // Add appropraite filtering (reused by other methods)
+            content = AddFilterLogic( content, blockId, entityValue );
 
-            // return the most recently approved item
+            // Return the most recently approved item
             return content.OrderByDescending( c => c.ApprovedDateTime );
         }
 
@@ -162,6 +137,75 @@ namespace Rock.Model
         public string GetActiveContentHtml( int blockId, string entityValue )
         {
             return GetActiveContentQueryable( blockId, entityValue ).OrderByDescending( c => c.ApprovedDateTime ).Select( a => a.Content ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Adds the filter logic.
+        /// </summary>
+        /// <param name="qry">The qry.</param>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        public IQueryable<HtmlContent> AddFilterLogic( IQueryable<HtmlContent> qry, int blockId, string entityValue )
+        {
+            /*
+                6/16/2020 - JME
+                How the context value and context name work with the HTML block is a bit tricky. Updated the code below
+                as it was not written to support the intended requirements. Documenting those requirements here in detail
+                to ensure full understanding.
+
+                There are several ways a HTML block can get it's content.
+
+                Option 1: Simple
+                The content is loaded purely from the HTML stored for the block by it's ID.
+
+                Option 2: Context Value
+                The content is loaded based on the block ID AND the context value (e.g. CampusId=1 or GroupId=1424). In
+                this case the instance of the block could have different content for each unique campus value).
+
+                Option 3: Context Name
+                Context names allow you to link content across blocks. In this case the Block ID is not consider and instead
+                the ContextName becomes the linkage. On top of this the ContextName can be joined with a Context Value to make
+                a unique key.
+
+                The 'entityValue' passed to this method will be in the format of: <ContentValue>=##&ContextName=AAAAA>
+                Examples:
+                     CampusId=1
+                     CampusId=2
+                     GroupId=1424
+                     CampusId=1&ContextName=SharedKey
+                     CampusId=2&ContextName=SharedKey
+                     &ContextName=SharedKey (when context name is alone it still has the & in front, don't love it but it would break things to fix)
+                                
+                The previous logic did not filter on Block ID if the 'entityValue' had a value. This is incorrect. It should
+                only do that if the 'entityValue' contains 'ContextName='.
+
+                Changing this after so long could be considered a breaking change, but this is functionality is not working as
+                intended and is preventing some very powerful usage.
+
+            */
+
+            var shouldFilterByBlockId = true;
+
+            // If an entity value is specified, then return content specific to that context (entityValue), 
+            // otherewise return content for the current block instance
+            if ( entityValue.IsNotNullOrWhiteSpace() )
+            {
+                qry = qry.Where( c => c.EntityValue == entityValue );
+
+                // Don't consider Block Id if there is a ContextName
+                if ( entityValue.Contains( "&ContextName=" ) )
+                {
+                    shouldFilterByBlockId = false;
+                }
+            }
+
+            if ( shouldFilterByBlockId )
+            {
+                qry = qry.Where( c => c.BlockId == blockId );
+            }
+
+            return qry;
         }
 
         #region HtmlContent Caching Methods
