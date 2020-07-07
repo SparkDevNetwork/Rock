@@ -293,6 +293,9 @@ namespace Rock.Mobile
                 cssStyles += CssUtilities.ParseCss( additionalSettings.CssStyle, settings );
             }
 
+            // Run Lava on CSS to enable color utilities
+            cssStyles += cssStyles.ResolveMergeFields(Lava.LavaHelper.GetCommonMergeFields(null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false }));
+
             //
             // Initialize the base update package settings.
             //
