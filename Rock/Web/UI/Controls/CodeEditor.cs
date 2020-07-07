@@ -255,7 +255,7 @@ namespace Rock.Web.UI.Controls
             {
                 var height = ViewState["EditorHeight"] as string;
                 var heightPixels = ( height ?? string.Empty ).AsIntegerOrNull() ?? 0;
-                
+
                 if ( heightPixels <= 0)
                 {
                     // if height is not specified or is zero or less, default it to 200
@@ -382,19 +382,19 @@ namespace Rock.Web.UI.Controls
         /// Format should be one of the following formats
         ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
         ///     "FieldName|LabelName"
-        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes. Label will be a case delimited version of
         ///                                       FieldName (i.e. "Field Name")
-        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes.    
-        ///                                  
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes.
+        ///
         /// Supports the following "special" field names
         ///     "GlobalAttribute"               - Provides navigable list of global attributes
         ///     "Campuses"                      - Will return an array of all campuses
         ///     "Date"                          - Will return lava syntax for displaying current date
         ///     "Time"                          - Will return lava syntax for displaying current time
         ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
-        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter
         ///                                       (query string and/or route parameter value)
         /// </remarks>
         /// <value>
@@ -576,14 +576,14 @@ namespace Rock.Web.UI.Controls
             // write custom css for the code editor
             string styleTag = $@"
                 <style type='text/css' media='screen'>
-                    #codeeditor-div-{this.ClientID} {{ 
+                    #codeeditor-div-{this.ClientID} {{
                         position: absolute;
                         top: 0;
                         right: 0;
                         bottom: 0;
                         left: 0;
-                    }}      
-                </style>     
+                    }}
+                </style>
 ";
             writer.Write( styleTag );
 
@@ -602,6 +602,14 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.getSession().setUseWrapMode({7});
                 ce_{0}.setShowPrintMargin(false);
+                ce_{0}.commands.addCommand({{
+                    name: 'Toggle Fullscreen',
+                    bindKey: 'F11',
+                    exec: function(editor) {{
+                        Rock.controls.fullScreen.toggleFullscreen(editor.container);
+                        editor.resize()
+                    }}
+                }});
                 $('#codeeditor-div-{0}').data('aceEditor', ce_{0});
 
                 document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
@@ -612,7 +620,7 @@ namespace Rock.Web.UI.Controls
 
                     // set the input element value to the escaped value of contents
                     document.getElementById('{0}').value = $('<div/>').text( contents  ).html().replace(/&#39/g,""&apos"");
-                    
+
                     {3}
                 }});
 
@@ -633,11 +641,11 @@ namespace Rock.Web.UI.Controls
                 {6}
 ";
 
-            string script = string.Format( 
-                scriptFormat, 
+            string script = string.Format(
+                scriptFormat,
                 this.ClientID,  // {0}
                 EditorThemeAsString( this.EditorTheme ),  // {1}
-                EditorModeAsString( this.EditorMode ),  // {2} 
+                EditorModeAsString( this.EditorMode ),  // {2}
                 this.OnChangeScript,  // {3}
                 this.ReadOnly.ToTrueFalse().ToLower(),  // {4}
                 this.OnBlurScript, // {5}
@@ -686,8 +694,8 @@ namespace Rock.Web.UI.Controls
         /// <returns>The text value of the mode.</returns>
         private string EditorThemeAsString( CodeEditorTheme theme )
         {
-            string[] themeValues = new string[] { "github", "chrome", "crimson_editor", "dawn", "dreamweaver", "eclipse", "solarized_light", "textmate", 
-                "tomorrow", "xcode", "github", "ambiance", "chaos", "clouds_midnight", "cobalt", "idle_fingers", "kr_theme", 
+            string[] themeValues = new string[] { "github", "chrome", "crimson_editor", "dawn", "dreamweaver", "eclipse", "solarized_light", "textmate",
+                "tomorrow", "xcode", "github", "ambiance", "chaos", "clouds_midnight", "cobalt", "idle_fingers", "kr_theme",
                 "merbivore", "merbivore_soft", "mono_industrial", "monokai", "pastel_on_dark", "solarized_dark", "terminal", "tomorrow_night", "tomorrow_night_blue",
                 "tomorrow_night_bright", "tomorrow_night_eighties", "twilight", "vibrant_ink"};
 
