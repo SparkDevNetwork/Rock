@@ -46,7 +46,7 @@ namespace com.bemaservices.WorkflowExtensions.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
-        public SelectExtendedFieldAttribute( string name = "Extended Select", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
+        public SelectExtendedFieldAttribute( string name = "Extended-Select", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
             : base( name, description, required, null, category, order, key, typeof( SelectExtendedFieldType ).FullName )
         {
         }

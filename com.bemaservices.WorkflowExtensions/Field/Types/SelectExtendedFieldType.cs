@@ -122,7 +122,7 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
             ddlChildFieldType.Items.Add( new ListItem( "Single Select Drop Down List (Enhanced for Long Lists)", "ddl_single_enhanced" ) );
             ddlChildFieldType.Items.Add( new ListItem( "Multi Select Drop Down List (Enhanced for Long Lists)", "ddl_multi_enhanced" ) );
             ddlChildFieldType.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
-            ddlParentFieldType.Items.Add( new ListItem( "Check Boxes", "cb" ) );
+            ddlChildFieldType.Items.Add( new ListItem( "Check Boxes", "cb" ) );
             ddlChildFieldType.AutoPostBack = true;
             ddlChildFieldType.SelectedIndexChanged += OnQualifierUpdated;
             ddlChildFieldType.Label = "Child Control Type";
@@ -401,11 +401,12 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         private void EditParentControl_SelectedIndexChanged( object sender, EventArgs e )
         {
             _childEditControl.Items.Clear();
-            _childEditControl.Items.Add( new ListItem( "", "" ) );
-
-            foreach ( var keyVal in GetConfiguredChildValues( _configurationValues, CHILD_VALUES_KEY, _parentEditControl.SelectedValue ) )
+            if ( _parentEditControl.SelectedValue.IsNotNullOrWhiteSpace() )
             {
-                _childEditControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
+                foreach ( var keyVal in GetConfiguredChildValues( _configurationValues, CHILD_VALUES_KEY, _parentEditControl.SelectedValue ) )
+                {
+                    _childEditControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
+                }
             }
         }
 
@@ -566,7 +567,6 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
                         }
                     }
                 }
-
                 else
                 {
                     foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
