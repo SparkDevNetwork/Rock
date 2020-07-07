@@ -43,6 +43,8 @@
  *      This is because the postback calls the C# Hide method, which does not provide the manager to the JS close modal
  *      method. Because of this, proper cleanup doesn't occur. We can calculate the manger as we did when we opened the
  *      modal, which fixes the issue.
+ *      Also, there was a bug in hiding the backdrop where if the owner no longer existed
+ *      in the DOM, then the backdrop was not removed.
  */ 
 
 (function ($) {
@@ -181,11 +183,12 @@
                 // Ensure any modalBackdrops are removed if its owner is no longer visible. Note that some
                 // backdrops do not have an owner
                 $('.modal-backdrop').each(function () {
-                    const $modalBackdrop = $(this);
-                    var $owner = $('#' + $modalBackdrop.attr('data-modal-id'));
-                    var hasOwner = $owner.length > 0;
+                    var $modalBackdrop = $(this);
+                    var ownerId = $modalBackdrop.data('modalId');
+                    var $owner = $('#' + ownerId);
+                    var isOwnerInDom = $owner.length > 0;
 
-                    if (hasOwner && !$owner.is(':visible')) {
+                    if (ownerId && (!isOwnerInDom || !$owner.is(':visible'))) {
                         $modalBackdrop.remove();
                     }
                 });
