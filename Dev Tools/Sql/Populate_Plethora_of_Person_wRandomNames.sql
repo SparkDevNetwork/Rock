@@ -12008,6 +12008,8 @@ BEGIN
 
     DECLARE @connectionStatusValueId INT;
     DECLARE @recordStatusValueId INT;
+    DECLARE @ageClassificationAdult INT = 1;
+    DECLARE @ageClassificationChild INT = 2;
 
     WHILE @personCounter < @maxPerson
     BEGIN
@@ -12043,6 +12045,7 @@ BEGIN
             ,[BirthYear]
 			,[MaritalStatusValueId]
             ,[Gender]
+            ,[AgeClassification]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12063,6 +12066,7 @@ BEGIN
             ,@adultBirthYear
 			,@maritalStatusMarried
             ,@genderInt
+            ,@ageClassificationAdult
             ,@email
             ,1
             ,0
@@ -12177,6 +12181,7 @@ BEGIN
             ,[BirthYear]
             ,[Gender]
             ,[MaritalStatusValueId]
+            ,[AgeClassification]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12197,6 +12202,7 @@ BEGIN
             ,@adultBirthYear
             ,@genderInt
             ,@maritalStatusMarried
+            ,@ageClassificationAdult
             ,@email
             ,1
             ,0
@@ -12367,6 +12373,7 @@ BEGIN
 				,[BirthYear]
 				,[Gender]
 				,[MaritalStatusValueId]
+                ,[AgeClassification]
 				,[Email]
 				,[IsEmailActive]
 				,[EmailPreference]
@@ -12388,6 +12395,7 @@ BEGIN
 				,@childBirthYear
 				,@genderInt
 				,@maritalStatusSingle
+                ,@ageClassificationChild
 				,null
 				,1
 				,0

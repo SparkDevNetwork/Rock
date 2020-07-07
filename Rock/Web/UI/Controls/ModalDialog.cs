@@ -326,7 +326,8 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             _hfModalVisible.Value = "0";
 
-            var managerArg = !string.IsNullOrWhiteSpace( managerId ) ? $", $('#{managerId}')" : string.Empty;
+            var managerSelector = managerId.IsNullOrWhiteSpace() ? GetModalManagerSelector() : $"#{managerId}";
+            var managerArg = !string.IsNullOrWhiteSpace( managerId ) ? $", $('{managerSelector}')" : string.Empty;
 
             // make sure the close script gets fired, even if the modal isn't rendered
             string hideScript = string.Format( "Rock.controls.modal.closeModalDialog($('#{0}'){1});", _dialogPanel.ClientID, managerArg );
@@ -480,12 +481,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the modal manager.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetModalManagerSelector()
+        {
+            var parentPanel = this.ParentUpdatePanel();
+            return parentPanel != null ? "#" + parentPanel.ClientID : "body";
+        }
+
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         protected void RegisterJavaScript()
         {
-            var parentPanel = this.ParentUpdatePanel();
-            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
+            var modalManager = GetModalManagerSelector();
 
             // if this is Modal is a child of a another Modal, make sure the parent modal stays visible if this modal is closed
             var parentModal = this.FirstParentControlOfType<ModalDialog>();

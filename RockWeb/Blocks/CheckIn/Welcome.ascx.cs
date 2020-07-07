@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.CheckIn
             // Set to null so that object will be recreated with a potentially updated group type cache.
             CurrentCheckInState.CheckInType = null;
 
-            var checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState.Kiosk, CurrentCheckInState.ConfiguredGroupTypes, CurrentCheckInState.CheckInType );
+            var checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( this.CurrentCheckInState );
 
             switch ( checkinStatus )
             {
