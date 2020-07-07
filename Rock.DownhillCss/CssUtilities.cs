@@ -572,6 +572,11 @@ namespace Rock.DownhillCss
 */
 
 /* Fixes frame backgrounds from being black while in dark mode */
+
+^editor {
+    background-color: transparent;
+}
+
 ^frame {
     background-color: transparent;
 }
