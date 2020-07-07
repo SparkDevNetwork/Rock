@@ -17,7 +17,6 @@
 using System;
 using System.ComponentModel;
 using System.Data;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -39,11 +38,6 @@ namespace RockWeb.Blocks.Reporting
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
     public partial class SqlCommand : RockBlock
     {
-        #region User Preference Keys
-
-        #endregion
-
-
         #region Control Methods
 
         /// <summary>
@@ -54,10 +48,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnLoad( e );
 
-            foreach ( Grid gReport in rptGrids.ControlsOfTypeRecursive<Grid>() )
-            {
-                gReport.GridRebind += gReport_GridRebind;
-            }
+            gReport.GridRebind += gReport_GridRebind;
 
             if ( !Page.IsPostBack )
             {
@@ -101,28 +92,33 @@ FROM
         {
             nbSuccess.Visible = false;
             nbError.Visible = false;
+            gReport.Visible = false;
             pQueryTime.Visible = false;
-            rptGrids.Visible = false;
 
             string query = tbQuery.Text;
             if ( !string.IsNullOrWhiteSpace( query ) )
-
             {
                 try
                 {
                     if ( tQuery.Checked )
                     {
-                        rptGrids.Visible = true;
+                        gReport.Visible = true;
 
                         var sw = System.Diagnostics.Stopwatch.StartNew();
                         DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-
                         sw.Stop();
 
-                        rptGrids.DataSource = dataSet.Tables.OfType<DataTable>().ToList();
-                        rptGrids.DataBind();
+                        if ( dataSet.Tables.Count > 0 )
+                        {
+                            var dataTable = dataSet.Tables[0];
 
-                        pQueryTime.InnerText = string.Format( "{0} completed in {1:N0}ms", "Query".PluralizeIf( dataSet.Tables.Count != 1 ), sw.ElapsedMilliseconds );
+                            AddGridColumns( dataTable );
+
+                            gReport.DataSource = GetSortedView( dataTable );
+                            gReport.DataBind();
+                        }
+
+                        pQueryTime.InnerText = string.Format( "Query completed in {0:N0}ms", sw.ElapsedMilliseconds );
                         pQueryTime.Visible = true;
                     }
                     else
@@ -153,8 +149,7 @@ FROM
         /// Adds the grid columns.
         /// </summary>
         /// <param name="dataTable">The data table.</param>
-        /// <param name="gReport">The g report.</param>
-        private void AddGridColumns( DataTable dataTable, Grid gReport )
+        private void AddGridColumns( DataTable dataTable )
         {
             int rowsToEval = 10;
             if ( dataTable.Rows.Count < 10 )
@@ -202,9 +197,8 @@ FROM
         /// Gets the sorted view.
         /// </summary>
         /// <param name="dataTable">The data table.</param>
-        /// <param name="gReport">The g report.</param>
         /// <returns></returns>
-        private System.Data.DataView GetSortedView( DataTable dataTable, Grid gReport )
+        private System.Data.DataView GetSortedView( DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
 
@@ -218,27 +212,5 @@ FROM
         }
 
         #endregion
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptGrids control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptGrids_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var dataTable = e.Item.DataItem as DataTable;
-            var lDataTableTitle = e.Item.FindControl( "lDataTableTitle" ) as Literal;
-            if ( dataTable.DataSet.Tables.Count > 1 )
-            {
-                lDataTableTitle.Text = string.Format( "<label>Result {0}</label>", dataTable.DataSet.Tables.IndexOf( dataTable ) + 1 );
-            }
-
-            var gReport = e.Item.FindControl( "gReport" ) as Grid;
-
-            AddGridColumns( dataTable, gReport );
-
-            gReport.DataSource = GetSortedView( dataTable, gReport );
-            gReport.DataBind();
-        }
     }
 }
