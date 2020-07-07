@@ -2702,7 +2702,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // add any schedules that weren't shown in the repeater
-            foreach ( var schedule in schedules.Where( s => !currentGroupLocationScheduleConfigs.Any( x => x.ScheduleId == s.Id ) ) )
+            foreach ( var schedule in schedules.Where( s => s.IsActive ).Where( s => !currentGroupLocationScheduleConfigs.Any( x => x.ScheduleId == s.Id ) ) )
             {
                 currentGroupLocationScheduleConfigs.Add( new GroupLocationScheduleConfig
                 {
@@ -2957,7 +2957,10 @@ namespace RockWeb.Blocks.Groups
 
                 ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
 
-                spSchedules.SetValues( groupLocation.Schedules );
+                var activeSchedules = groupLocation.Schedules.Where( s => s.IsActive );
+                var inactiveScheduleIds = groupLocation.Schedules.Where( s=> !s.IsActive ).Select( s => s.Id ).ToList();
+                spSchedules.SetValues( activeSchedules );
+                hfInactiveGroupLocationSchedules.Value = inactiveScheduleIds.AsDelimited( "," );
 
                 hfAddLocationGroupGuid.Value = locationGuid.ToString();
             }
@@ -3041,16 +3044,6 @@ namespace RockWeb.Blocks.Groups
             nbMinimumCapacity.Text = groupLocationScheduleConfig.MinimumCapacity.ToString();
             nbDesiredCapacity.Text = groupLocationScheduleConfig.DesiredCapacity.ToString();
             nbMaximumCapacity.Text = groupLocationScheduleConfig.MaximumCapacity.ToString();
-
-            if ( !groupLocationScheduleConfig.Schedule.IsActive )
-            {
-                nbMinimumCapacity.CssClass = string.Join(" ", new string [] { nbMinimumCapacity.CssClass, "text-muted" } );
-                nbDesiredCapacity.CssClass = string.Join(" ", new string [] { nbDesiredCapacity.CssClass, "text-muted" } );
-                nbMaximumCapacity.CssClass = string.Join(" ", new string [] { nbMaximumCapacity.CssClass, "text-muted" } );
-                lScheduleName.Text =
-                    "<span class=\"text-muted\">" + lScheduleName.Text + "</span>"
-                    + " <span class=\"label label-default\">Inactive</span>";
-            }
         }
 
         /// <summary>
@@ -3183,8 +3176,16 @@ namespace RockWeb.Blocks.Groups
                 groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
 
                 var selectedIds = spSchedules.SelectedValuesAsInt();
-                groupLocation.Schedules = new ScheduleService( rockContext ).Queryable()
-                    .Where( s => selectedIds.Contains( s.Id ) ).ToList();
+                var inactiveSchedulesIds = new List<int>();
+                if ( hfInactiveGroupLocationSchedules.Value.IsNotNullOrWhiteSpace() )
+                {
+                    inactiveSchedulesIds = hfInactiveGroupLocationSchedules.Value.SplitDelimitedValues( "," ).Select( i => int.Parse( i ) ).ToList();
+                }
+
+                var scheduleService = new ScheduleService( rockContext );
+                var groupLocationSchedules = scheduleService.Queryable()
+                    .Where( s => selectedIds.Contains( s.Id ) || inactiveSchedulesIds.Contains( s.Id ) ).ToList();
+                groupLocation.Schedules = groupLocationSchedules;
 
                 if ( groupLocation.GroupLocationTypeValueId.HasValue )
                 {
@@ -3233,7 +3234,7 @@ namespace RockWeb.Blocks.Groups
                     Location = gl.Location,
                     Type = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
                     Order = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Order : 0,
-                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.IsActive ? s.Name : "<span class=\"text-muted\">" + s.Name + "</span> <span class=\"label label-default\">Inactive</span>" ).ToList().AsDelimited( ", " ) : string.Empty
+                    Schedules = gl.Schedules != null ? gl.Schedules.Where( s => s.IsActive ).Select( s => s.Name ).ToList().AsDelimited( ", " ) : string.Empty
                 } )
                 .OrderBy( i => i.Order )
                 .ToList();
