@@ -7,11 +7,29 @@
 {% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
 
-{% if Item.ChannelId != 17 and publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now or Item == null %}
+{% comment %} {% if Item.ChannelId != 17 and publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now or Item == null %}
     {% if CurrentPersonCanEdit %}
         <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
     {% else %}
         {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %} {% endcomment %}
+
+{% if Item.ChannelId == 17 %}
+    {% if expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
+    {% endif %}
+{% else %}
+    {% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
     {% endif %}
 {% endif %}
 
