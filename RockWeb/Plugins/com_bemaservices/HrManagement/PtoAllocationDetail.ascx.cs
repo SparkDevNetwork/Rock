@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upPtoAllocation );
         }
@@ -209,7 +209,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ptoAllocation.PtoTypeId = ddlPtoType.SelectedItem.Value.AsInteger();
                 ptoAllocation.PtoAllocationStatus = ddlStatus.SelectedValue.ConvertToEnum<PtoAllocationStatus>();
                 ptoAllocation.StartDate = dtpStartDate.SelectedDate.Value;
-                ptoAllocation.EndDate = dtpEndDate.SelectedDate.Value;
+
+                if ( dtpEndDate.SelectedDate.HasValue )
+                {
+                    ptoAllocation.EndDate = dtpEndDate.SelectedDate.Value;
+                }
+
                 ptoAllocation.Hours = tbHours.Text.AsDecimal();
                 ptoAllocation.PtoAccrualSchedule = ddlPtoAccrualSchedule.SelectedItem.Value.ConvertToEnum<PtoAccrualSchedule>();
                 ptoAllocation.PtoAllocationSourceType = PtoAllocationSourceType.Manual;
@@ -393,7 +398,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             {
                 ddlPtoType.SetValue( ptoAllocation.PtoType );
             }
-            
+
             dtpStartDate.SelectedDate = ptoAllocation.StartDate;
             dtpEndDate.SelectedDate = ptoAllocation.EndDate;
             tbHours.Text = ptoAllocation.Hours.ToString();
