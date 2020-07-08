@@ -23,6 +23,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -175,6 +176,7 @@ namespace Rock.Model
         /// The streak type achievement types.
         /// </value>
         [DataMember]
+        [JsonIgnore]
         public virtual ICollection<StreakAchievementAttempt> StreakAchievementAttempts
         {
             get => _streakAchievementAttempts ?? ( _streakAchievementAttempts = new Collection<StreakAchievementAttempt>() );
