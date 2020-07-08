@@ -134,7 +134,7 @@ namespace com.bemaservices.HrManagement.Jobs
                 if ( ptoTierGuid.HasValue )
                 {
                     var ptoTier = ptoTierService.Get( ptoTierGuid.Value );
-                    var brackets = ptoTier.PtoBrackets.Where( b => b.MinimumYear <= yearsWorked && ( b.MaximumYear.Value > yearsWorked || !b.MaximumYear.HasValue ) ).ToList();
+                    var brackets = ptoTier.PtoBrackets.Where( b => b.MinimumYear <= yearsWorked && (!b.MaximumYear.HasValue || b.MaximumYear.Value > yearsWorked  ) ).ToList();
 
                     foreach ( var bracket in brackets )
                     {
