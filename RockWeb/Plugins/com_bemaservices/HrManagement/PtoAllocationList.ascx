@@ -28,12 +28,12 @@
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.LastName" />
                                 <Rock:RockBoundField DataField="PtoType" HeaderText="PTO Type" SortExpression="PtoType.Name" />
+                                <Rock:RockBoundField DataField="SourceType" HeaderText="Source" SortExpression="PtoAllocationSourceType" />
+                                <Rock:RockBoundField DataField="Hours" HeaderText="Total Hours" SortExpression="Hours" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:DateField DataField="StartDate" HeaderText="Start Date" SortExpression="StartDate" />
                                 <Rock:DateField DataField="EndDate" HeaderText="End Date" SortExpression="EndDate" />
-                                <Rock:RockBoundField DataField="Hours" HeaderText="Total Hours" SortExpression="Hours" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                <Rock:RockLiteralField HeaderText="Status" ID="lAllocationStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lAllocationStatus_DataBound" />
-                                <Rock:RockBoundField DataField="SourceType" HeaderText="Source" SortExpression="PtoAllocationSourceType" />
                                 <Rock:RockBoundField DataField="AccrualSchedule" HeaderText="Schedule" SortExpression="PtoAccrualSchedule" Visible="false" />
+                                <Rock:RockLiteralField HeaderText="Status" ID="lAllocationStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lAllocationStatus_DataBound" />
                             </Columns>
                         </Rock:Grid>
                     </div>
