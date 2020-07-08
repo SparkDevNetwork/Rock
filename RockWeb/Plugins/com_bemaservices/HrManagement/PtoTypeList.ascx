@@ -47,7 +47,7 @@
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="IsActive" />
                             </div>
                             <div class="col-md-3">
-                                <Rock:RockCheckBox ID="rcbIsNegativeTimeBalanceAllowed" runat="server" Label="Negative Time Balance Allowed?" />
+                                <Rock:RockCheckBox ID="rcbIsNegativeTimeBalanceAllowed" runat="server" Label="Negative Time Balance Allowed?" Visible="false" />
                             </div>
                         </div>
                         <div class="row">
@@ -58,7 +58,7 @@
                                 <Rock:ColorPicker ID="cpColor" runat="server" Label="Color" />
                             </div>
                             <div class="col-md-3">
-                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" />
+                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Visible="false" />
                             </div>
                         </div>
                     </fieldset>
