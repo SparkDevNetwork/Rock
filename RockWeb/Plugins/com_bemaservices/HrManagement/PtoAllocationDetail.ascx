@@ -52,7 +52,7 @@
                             <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Start Date" Required="true" RequiredErrorMessage="Start Date is required" />
                             <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date" />
                             <Rock:DataTextBox ID="tbHours" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoAllocation, com.bemaservices.HrManagement" PropertyName="Hours" />
-                            <Rock:RockDropDownList ID="ddlPtoAccrualSchedule" runat="server" Label="Schedule" />
+                            <Rock:RockDropDownList ID="ddlPtoAccrualSchedule" runat="server" Label="Schedule" Visible="false" />
                         </div>
                     </div>
                     

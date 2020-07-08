@@ -33,7 +33,7 @@
                                 <Rock:RockBoundField DataField="Hours" HeaderText="Total Hours" SortExpression="Hours" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockLiteralField HeaderText="Status" ID="lAllocationStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lAllocationStatus_DataBound" />
                                 <Rock:RockBoundField DataField="SourceType" HeaderText="Source" SortExpression="PtoAllocationSourceType" />
-                                <Rock:RockBoundField DataField="AccrualSchedule" HeaderText="Schedule" SortExpression="PtoAccrualSchedule" />
+                                <Rock:RockBoundField DataField="AccrualSchedule" HeaderText="Schedule" SortExpression="PtoAccrualSchedule" Visible="false" />
                             </Columns>
                         </Rock:Grid>
                     </div>
