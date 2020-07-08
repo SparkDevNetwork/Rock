@@ -220,6 +220,7 @@ class TwilioSmsResponseAsync : IAsyncResult
                             twilioMessage.Media( new Uri( binaryFile.Url ) );
                         }
                     }
+                }
 
                 var messagingResponse = new Twilio.TwiML.MessagingResponse();
                 messagingResponse.Append( twilioMessage );

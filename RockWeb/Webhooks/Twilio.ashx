@@ -180,7 +180,7 @@ class TwilioResponseAsync : IAsyncResult
         string fromPhone = string.Empty;
         string toPhone = string.Empty;
         string body = string.Empty;
-        var twilioMessage = new Twilio.TwiML.Message();
+        var twilioMessage = new Twilio.TwiML.Messaging.Message();
         var messagingResponse = new Twilio.TwiML.MessagingResponse();
 
         response.ContentType = "application/xml";
@@ -208,7 +208,7 @@ class TwilioResponseAsync : IAsyncResult
             if ( errorMessage != string.Empty )
             {
                 twilioMessage.Body( errorMessage );
-                messagingResponse.Message( twilioMessage );
+                messagingResponse.Append( twilioMessage );
             }
         }
 
