@@ -575,6 +575,7 @@ namespace Rock.DownhillCss
 
 ^editor {
     background-color: transparent;
+    color: ?color-text;
 }
 
 ^frame {
