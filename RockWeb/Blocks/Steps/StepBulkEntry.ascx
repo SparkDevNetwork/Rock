@@ -39,6 +39,9 @@
                     <div class="col-md-6">
                         <Rock:StepStatusPicker Label="Status" runat="server" Required="true" ValidationGroup="BulkEntry" ID="sspStatusPicker"></Rock:StepStatusPicker>
                     </div>
+                    <div class="col-md-6">
+                        <Rock:CampusPicker Label="Campus" runat="server" ValidationGroup="BulkEntry" ID="cpCampus"></Rock:CampusPicker>
+                    </div>
                 </div>
 
                 <Rock:AttributeValuesContainer ID="avcBulkAttributes" runat="server" NumberOfColumns="2" />

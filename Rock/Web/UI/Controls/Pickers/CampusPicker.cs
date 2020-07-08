@@ -200,7 +200,12 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                this.Visible = true;
+                /*
+                 * 2020-04-09 ETD
+                 * Don't set the Visible property here. If a block setting or somthing else is hiding the control this will show it.
+                 * Removed this to fix issue #4172.
+                 * this.Visible = true;
+                 */
 
                 selectedItems = Items.Cast<ListItem>()
                 .Where( i => i.Selected )

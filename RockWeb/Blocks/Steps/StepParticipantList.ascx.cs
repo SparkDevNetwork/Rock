@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -125,6 +126,7 @@ namespace RockWeb.Blocks.Steps
             public const string DateStarted = "DateStarted";
             public const string DateCompleted = "DateCompleted";
             public const string Note = "Note";
+            public const string Campus = "Campus";
         }
 
         #endregion Filter Keys
@@ -135,10 +137,6 @@ namespace RockWeb.Blocks.Steps
         private DefinedValueCache _inactiveStatus = null;
         private StepType _stepType = null;
         private bool _canView = false;
-
-        // Cache these fields since they could get called many times in GridRowDataBound
-        private DeleteField _deleteField = null;
-        private int? _deleteFieldColumnIndex = null;
 
         private RockLiteralField _fullNameField = null;
         private RockLiteralField _nameWithHtmlField = null;
@@ -177,8 +175,6 @@ namespace RockWeb.Blocks.Steps
 
             InitializeGrid();
 
-            AddGridRowButtons();
-
             InitializeSettingsNotification( upMain );
         }
 
@@ -208,7 +204,11 @@ namespace RockWeb.Blocks.Steps
 
             if ( !Page.IsPostBack )
             {
+                GetAvailableAttributes();
+                AddDynamicControls();
+
                 pnlContent.Visible = _canView;
+
                 if ( _canView )
                 {
                     BindFilter();
@@ -307,21 +307,6 @@ namespace RockWeb.Blocks.Steps
                 e.Row.AddCssClass( "is-deceased" );
             }
 
-            if ( _deleteField != null && _deleteField.Visible )
-            {
-                LinkButton deleteButton = null;
-
-                if ( !_deleteFieldColumnIndex.HasValue )
-                {
-                    _deleteFieldColumnIndex = gSteps.GetColumnIndex( gSteps.Columns.OfType<DeleteField>().First() );
-                }
-
-                if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
-                {
-                    deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-                }
-            }
-
             if ( _inactiveStatus != null && stepPerson.RecordStatusValueId == _inactiveStatus.Id )
             {
                 e.Row.AddCssClass( "is-inactive-person" );
@@ -378,6 +363,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.SaveUserPreference( FilterKey.DateStarted, "Date Started", drpDateStarted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.Note, "Note", tbNote.Text );
+            rFilter.SaveUserPreference( FilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             // Save filter settings for custom attributes.
             if ( this.AvailableAttributes != null )
@@ -466,6 +452,9 @@ namespace RockWeb.Blocks.Steps
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
+
+            // Recreate the Attribute Filter fields to clear the filter values.
+            AddAttributeFilterFields();
 
             BindFilter();
         }
@@ -614,8 +603,6 @@ namespace RockWeb.Blocks.Steps
                 {
                     rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", _stepType.Id );
                 }
-
-                BindFilter();
             }
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -629,7 +616,7 @@ namespace RockWeb.Blocks.Steps
         private void InitializeGrid()
         {
             gSteps.DataKeyNames = new string[] { "Id" };
-            gSteps.PersonIdField = "Person Id";
+            gSteps.PersonIdField = "PersonId";
             gSteps.GetRecipientMergeFields += gSteps_GetRecipientMergeFields;
             gSteps.Actions.AddClick += gSteps_AddClick;
             gSteps.GridRebind += gSteps_GridRebind;
@@ -678,12 +665,10 @@ namespace RockWeb.Blocks.Steps
                 cblStepStatus.DataBind();
             }
 
-            GetAvailableAttributes();
-            AddDynamicControls();
-
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
             tbNote.Text = rFilter.GetUserPreference( FilterKey.Note );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( FilterKey.Campus ).AsIntegerOrNull();
 
             string statusValue = rFilter.GetUserPreference( FilterKey.StepStatus );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
@@ -824,15 +809,6 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Initialize the row buttons.
-        /// </summary>
-        private void AddGridRowButtons()
-        {
-            RemoveRowButtons();
-            AddRowButtons();
-        }
-
-        /// <summary>
         /// Removes the "delete" row button columns and any HyperLinkField/LinkButtonField columns.
         /// </summary>
         private void RemoveRowButtons()
@@ -860,7 +836,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Adds the PersonProfilePage button link and the "delete" row button column.
         /// </summary>
-        private void AddRowButtons()
+        private void AddGridRowButtons()
         {
             // Add Link to Profile Page Column
             if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
@@ -871,14 +847,15 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Add delete column
-            _deleteField = new DeleteField();
-            _deleteField.Click += DeleteStep_Click;
+            var deleteField = new DeleteField();
 
-            gSteps.Columns.Add( _deleteField );
+            gSteps.Columns.Add( deleteField );
+
+            deleteField.Click += DeleteStep_Click;
         }
 
         /// <summary>
-        /// Adds the column with a link to profile page.
+        /// Creates a grid column with a link to the person profile page.
         /// </summary>
         private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
         {
@@ -887,7 +864,7 @@ namespace RockWeb.Blocks.Steps
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = fieldName;
 
@@ -908,6 +885,16 @@ namespace RockWeb.Blocks.Steps
             pnlSteps.Visible = true;
             rFilter.Visible = true;
             gSteps.Visible = true;
+
+            var campusCount = CampusCache.All().Count;
+            if (campusCount <= 1 )
+            {
+                var campusColumn = gSteps.ColumnsOfType<RockBoundField>().Where( a => a.DataField == "CampusName" ).FirstOrDefault();
+                if ( campusColumn != null )
+                {
+                    gSteps.Columns.Remove( campusColumn );
+                }
+            }
 
             lHeading.Text = string.Format( "{0} Steps", _stepType.Name );
 
@@ -958,42 +945,40 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => statusIds.Contains( m.StepStatusId ?? 0 ) );
             }
 
-            if ( _stepType.HasEndDate )
+            // Filter By Start Date
+            var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+
+            if ( startDateRange.Start.HasValue )
             {
-                var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value >= startDateRange.Start.Value );
+            }
 
-                if ( startDateRange.Start.HasValue )
-                {
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value >= startDateRange.Start.Value );
-                }
-
-                if ( startDateRange.End.HasValue )
-                {
-                    var end = startDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value < end );
-                }
+            if ( startDateRange.End.HasValue )
+            {
+                var exclusiveEndDate = startDateRange.End.Value.Date.AddDays( 1 );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Date Completed
-            var endDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
+            var completedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
 
-            if ( endDateRange.Start.HasValue )
+            if ( completedDateRange.Start.HasValue )
             {
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value >= endDateRange.Start.Value );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value >= completedDateRange.Start.Value );
             }
 
-            if ( endDateRange.End.HasValue )
+            if ( completedDateRange.End.HasValue )
             {
-                var end = endDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var exclusiveEndDate = completedDateRange.End.Value.Date.AddDays( 1 );
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value < end );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Note
@@ -1001,6 +986,12 @@ namespace RockWeb.Blocks.Steps
             if ( !string.IsNullOrWhiteSpace( note ) )
             {
                 qry = qry.Where( m => m.Note.Contains( note ) );
+            }
+
+            var campusId = cpCampusFilter.SelectedCampusId;
+            if ( campusId != null )
+            {
+                qry = qry.Where( m => m.CampusId == campusId );
             }
 
             // Filter query by any configured attribute filters
@@ -1057,6 +1048,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusName = ( x.StepStatus == null ? "" : x.StepStatus.Name ),
                 IsCompleted = ( x.StepStatus == null ? false : x.StepStatus.IsCompleteStatus ),
                 Note = x.Note,
+                CampusName = x.Campus == null ? string.Empty : x.Campus.Name,
                 Person = x.PersonAlias.Person
             } );
 
@@ -1124,7 +1116,7 @@ namespace RockWeb.Blocks.Steps
         /// A view-model that represents a single row on the Steps Participant grid.
         /// </summary>
         /// <seealso cref="DotLiquid.Drop" />
-        public class StepParticipantListViewModel : DotLiquid.Drop
+        public class StepParticipantListViewModel : RockDynamic
         {
             public int Id { get; set; }
             public int PersonId { get; set; }
@@ -1138,6 +1130,7 @@ namespace RockWeb.Blocks.Steps
             public string Note { get; set; }
 
             public Person Person { get; set; }
+            public string CampusName { get; set; }
         }
 
         #endregion

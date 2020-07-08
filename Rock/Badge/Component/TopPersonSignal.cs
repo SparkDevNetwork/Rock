@@ -55,7 +55,8 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            if ( !string.IsNullOrWhiteSpace( Person.TopSignalColor ) && Person.Signals.Count > 0 )
+            var signalCount = Person.Signals.Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now ).Count();
+            if ( !string.IsNullOrWhiteSpace( Person.TopSignalColor ) && signalCount > 0 )
             {
                 writer.Write( string.Format( @"
 <div class='badge badge-signal badge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}'>
@@ -66,7 +67,7 @@ namespace Rock.Badge.Component
 </div>",
                     badge.Id,
                     Person.TopSignalColor,
-                    Person.Signals.Count,
+                    signalCount,
                     Person.NickName,
                     "signal".PluralizeIf( Person.Signals.Count != 1 ),
                     string.Join( ", ", Person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );

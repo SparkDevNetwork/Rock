@@ -735,28 +735,31 @@ namespace RockWeb.Blocks.RSVP
                 var occurrence = occurrenceService.Get( occurrenceId.Value );
                 var attendees = occurrence.Attendees.AsEnumerable();
 
-                // Filter by Group Member Status
-                var statuses = new List<Status>();
-                foreach ( string status in cblStatus.SelectedValues )
+                var rsvpStatus = new List<Rock.Model.RSVP>();
+
+                foreach ( string selectedStatuses in cblStatus.SelectedValues )
                 {
-                    if ( !string.IsNullOrWhiteSpace( status ) )
+                    var status = selectedStatuses.ConvertToEnum<Statuses>();
+
+                    switch ( status )
                     {
-                        statuses.Add( status.ConvertToEnum<Status>() );
+                        case Statuses.Accept:
+                            rsvpStatus.Add( Rock.Model.RSVP.Yes );
+                            break;
+
+                        case Statuses.Decline:
+                            rsvpStatus.Add( Rock.Model.RSVP.No );
+                            break;
+
+                        case Statuses.NoResponse:
+                            rsvpStatus.Add( Rock.Model.RSVP.Unknown );
+                            break;
                     }
                 }
 
-                if ( statuses.Any() && statuses.Count == 1 )
+                if ( rsvpStatus.Any() )
                 {
-                    var status = statuses.First();
-                    switch ( status )
-                    {
-                        case Status.Accept:
-                            attendees = attendees.Where( a => a.RSVP == Rock.Model.RSVP.Yes );
-                            break;
-                        case Status.Decline:
-                            attendees = attendees.Where( a => a.RSVP == Rock.Model.RSVP.No );
-                            break;
-                    }
+                    attendees = attendees.Where( a => rsvpStatus.Contains( a.RSVP ) );
                 }
 
                 var declineReasonValueIds = cblDeclineReason.SelectedValuesAsInt;
@@ -1120,7 +1123,13 @@ var dnutChart = new Chart(dnutCtx, {{
         /// </summary>
         private void BindFilter()
         {
-            cblStatus.BindToEnum<Status>();
+            cblStatus.Items.Clear();
+
+            foreach ( Statuses status in Enum.GetValues( typeof( Statuses ) ) )
+            {
+                cblStatus.Items.Add( new ListItem( status.ConvertToString().SplitCase(), status.ConvertToInt().ToString() ) );
+            }
+
             cblDeclineReason.DataSource = _availableDeclineReasons.Where( a => a.Id != default( int ) ).ToList();
             cblDeclineReason.DataBind();
 
@@ -1157,10 +1166,11 @@ var dnutChart = new Chart(dnutCtx, {{
 
         #region Helper Class
 
-        public enum Status
+        public enum Statuses
         {
             Accept,
-            Decline
+            Decline,
+            NoResponse
         }
 
         [Serializable]

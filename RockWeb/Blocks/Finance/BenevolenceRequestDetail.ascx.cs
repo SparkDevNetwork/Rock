@@ -434,6 +434,7 @@ namespace RockWeb.Blocks.Finance
 
                     // update related documents
                     var documentsService = new BenevolenceRequestDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
 
                     // delete any images that were removed
                     var orphanedBinaryFileIds = new List<int>();
@@ -461,6 +462,19 @@ namespace RockWeb.Blocks.Finance
                         document.Order = documentOrder;
                         documentOrder++;
                     }
+
+                    // Make sure updated binary files are not temporarytemporary
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => DocumentsState.Contains( f.Id ) ) )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+
+                    // Delete any orphaned images
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
+                    {
+                        binaryFile.IsTemporary = true;
+                    }
+
                     rockContext.SaveChanges();
 
                     // redirect back to parent

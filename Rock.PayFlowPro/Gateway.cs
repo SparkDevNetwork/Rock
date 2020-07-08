@@ -821,6 +821,13 @@ namespace Rock.PayFlowPro
         {
             var ppBillingInfo = new BillTo();
 
+            // If giving from a Business, FirstName will be blank
+            // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
+            if ( paymentInfo.FirstName.IsNullOrWhiteSpace() )
+            {
+                paymentInfo.FirstName = "-";
+            }
+
             ppBillingInfo.FirstName = paymentInfo.FirstName;
             ppBillingInfo.LastName = paymentInfo.LastName;
             ppBillingInfo.Email = paymentInfo.Email;

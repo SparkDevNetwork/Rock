@@ -691,6 +691,18 @@ namespace Rock.Attribute
                 allAttributes.Add( attribute );
             }
 
+            /*
+            2/14/2020 - SK 
+            Only "active" attributes should be included here because otherwise
+            we are passing the responsibility to filter them out (and the
+            AttributeValues) to other areas of code where it is sometimes
+            not easily done. See issue #3915 for example.
+
+            Reason: Lava AttributeValues would otherwise contain inactive attributes.
+            */
+
+            allAttributes = allAttributes.Where( a => a.IsActive ).ToList();
+
             if ( limitToAttributes?.Any() == true )
             {
                 allAttributes = allAttributes.Where( a => limitToAttributes.Any( l => l.Id == a.Id ) ).ToList();

@@ -19,10 +19,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Web.UI.WebControls;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Slingshot;
 using Rock.Web;
@@ -37,10 +39,32 @@ namespace RockWeb.Blocks.BulkImport
     [DisplayName( "Bulk Import" )]
     [Category( "Bulk Import" )]
     [Description( "Block to import Slingshot files into Rock using BulkImport" )]
+
+    [IntegerField(
+        "Person Record Import Batch Size",
+        Description = "If importing more than this many records, the import will be broken up into smaller batches to optimize memory use.  If you run into memory utilization problems while importing a large number of records, consider decreasing this value.  (A value less than 1 will result in the default of 25,000 records.)",
+        Key = AttributeKey.PersonRecordImportBatchSize,
+        DefaultIntegerValue = 25000,
+        IsRequired = true,
+        Order = 0 )]
+
+    [IntegerField(
+        "Financial Record Import Batch Size",
+        Description = "If importing more than this many records, the import will be broken up into smaller batches to optimize memory use.  If you run into memory utilization problems while importing a large number of records, consider decreasing this value.  (A value less than 1 will result in the default of 100,000 records.)",
+        Key = AttributeKey.FinancialRecordImportBatchSize,
+        DefaultIntegerValue = 100000,
+        IsRequired = true,
+        Order = 1 )]
+
     public partial class BulkImportTool : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string PersonRecordImportBatchSize = "PersonRecordImportBatchSize";
+            public const string FinancialRecordImportBatchSize = "FinancialRecordImportBatchSize";
+        }
 
-        #region Fields
+        #region Fields and Properties
 
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
@@ -61,7 +85,7 @@ namespace RockWeb.Blocks.BulkImport
             }
         }
 
-        #endregion Fields
+        #endregion Fields and Properties
 
         #region Base Control Methods
 
@@ -255,7 +279,7 @@ namespace RockWeb.Blocks.BulkImport
             var physicalSlingshotFile = this.Request.MapPath( hfMainSlingshotFileName.Value );
             long totalMilliseconds = 0;
 
-            Rock.Slingshot.SlingshotImporter _importer = null;
+            SlingshotImporter slingshotImporter = null;
 
             var importTask = new Task( () =>
             {
@@ -280,25 +304,38 @@ namespace RockWeb.Blocks.BulkImport
                     importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
                 }
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, _importer_OnProgress );
-                _importer.FinancialTransactionChunkSize = 100000;
+                slingshotImporter = new SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, slingshotImporter_OnProgress );
+                slingshotImporter.PersonChunkSize = 25000;
+                slingshotImporter.FinancialTransactionChunkSize = 100000;
+
+                var personChunkSize = GetAttributeValue( AttributeKey.PersonRecordImportBatchSize ).AsInteger();
+                var financialTransactionChunkSize = GetAttributeValue( AttributeKey.FinancialRecordImportBatchSize ).AsInteger();
+
+                if ( personChunkSize > 0 )
+                {
+                    slingshotImporter.PersonChunkSize = personChunkSize;
+                }
+                if ( financialTransactionChunkSize > 0 )
+                {
+                    slingshotImporter.FinancialTransactionChunkSize = financialTransactionChunkSize;
+                }
 
                 if ( importType == ImportType.Import || importType == ImportType.All )
                 {
-                    _importer.DoImport();
+                    slingshotImporter.DoImport();
                 }
 
                 if ( importType == ImportType.Photos || importType == ImportType.All )
                 {
-                    _importer.TEST_UseSampleLocalPhotos = false;
-                    _importer.DoImportPhotos();
+                    slingshotImporter.TEST_UseSampleLocalPhotos = false;
+                    slingshotImporter.DoImportPhotos();
                 }
 
                 stopwatch.Stop();
 
-                if ( _importer.Exceptions.Any() )
+                if ( slingshotImporter.Exceptions.Any() )
                 {
-                    _importer.Results.Add( "ERRORS", string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
+                    slingshotImporter.Results.Add( "ERRORS", string.Join( Environment.NewLine, slingshotImporter.Exceptions.Select( a => a.Message ).ToArray() ) );
                 }
 
                 totalMilliseconds = stopwatch.ElapsedMilliseconds;
@@ -313,17 +350,17 @@ namespace RockWeb.Blocks.BulkImport
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
                         LogException( exception );
-                        if ( _importer.Exceptions != null )
+                        if ( slingshotImporter.Exceptions != null )
                         {
-                            _importer.Exceptions.Add( exception.GetBaseException() );
+                            slingshotImporter.Exceptions.Add( exception.GetBaseException() );
                         }
                     }
 
-                    _importer_OnProgress( _importer, "ERROR: " + t.Exception.Message );
+                    slingshotImporter_OnProgress( slingshotImporter, "ERROR: " + t.Exception.Message );
                 }
                 else
                 {
-                    _importer_OnProgress( _importer, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
+                    slingshotImporter_OnProgress( slingshotImporter, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
 
             } );
@@ -336,9 +373,9 @@ namespace RockWeb.Blocks.BulkImport
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
-        private void _importer_OnProgress( object sender, object e )
+        private void slingshotImporter_OnProgress( object sender, object e )
         {
-            Rock.Slingshot.SlingshotImporter _importer = sender as Rock.Slingshot.SlingshotImporter;
+            var slingshotImporter = sender as SlingshotImporter;
 
             string progressMessage = string.Empty;
             DescriptionList progressResults = new DescriptionList();
@@ -347,7 +384,7 @@ namespace RockWeb.Blocks.BulkImport
                 progressMessage = e.ToString();
             }
 
-            var exceptionsCopy = _importer.Exceptions.ToArray();
+            var exceptionsCopy = slingshotImporter.Exceptions.ToArray();
             if ( exceptionsCopy.Any() )
             {
                 if ( exceptionsCopy.Count() > 50 )
@@ -361,7 +398,7 @@ namespace RockWeb.Blocks.BulkImport
                 }
             }
 
-            var resultsCopy = _importer.Results.ToArray();
+            var resultsCopy = slingshotImporter.Results.ToArray();
             foreach ( var result in resultsCopy )
             {
                 progressResults.Add( result.Key, result.Value );
@@ -379,8 +416,34 @@ namespace RockWeb.Blocks.BulkImport
             _hubContext.Clients.All.receiveNotification( this.SignalRNotificationKey, message, results.ConvertCrLfToHtmlBr() );
         }
 
-        #endregion
+        /// <summary>
+        /// Handles the Click event of the btnDownloadLog control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDownloadLog_Click( object sender, EventArgs e )
+        {
+            System.Web.HttpResponse response = System.Web.HttpContext.Current.Response;
+            response.ClearHeaders();
+            response.ClearContent();
+            response.Clear();
+            response.ContentType = "text/plain";
+            response.AddHeader( "content-disposition", "attachment; filename=slingshot-errors.log" );
+            response.Charset = "";
 
+            string filePath = Server.MapPath( "~/App_Data/SlingshotFiles/slingshot-errors.log" );
+            if ( File.Exists( filePath ) )
+            {
+                response.TransmitFile( filePath );
+            }
+
+            response.Flush();
+            response.End();
+            response.SuppressContent = true;
+            System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
+        }
+
+        #endregion
 
     }
 }
