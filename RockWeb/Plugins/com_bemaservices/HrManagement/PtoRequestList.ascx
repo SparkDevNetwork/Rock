@@ -23,9 +23,9 @@
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.LastName" />
                                 <Rock:RockBoundField DataField="PtoType" HeaderText="PTO Type" SortExpression="PtoType.Name" />
-                                <Rock:RockBoundField DataField="RequestDate" HeaderText="Request Date" SortExpression="RequestDate" />
                                 <Rock:RockBoundField DataField="Reason" HeaderText="Reason" SortExpression="Reason" />
                                 <Rock:RockBoundField DataField="Hours" HeaderText="Total Hours" SortExpression="Hours" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                                <Rock:DateField DataField="RequestDate" HeaderText="Request Date" SortExpression="RequestDate" />
                                 <Rock:RockLiteralField HeaderText="Status" ID="lRequestStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lRequestStatus_DataBound" />
                             </Columns>
                         </Rock:Grid>

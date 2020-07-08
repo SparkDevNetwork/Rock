@@ -621,11 +621,15 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 Id = b.Id,
                 Name = b.PersonAlias.Person.NickName + " " + b.PersonAlias.Person.LastName,
                 PtoType = b.PtoType,
+                StartDate = b.StartDate,
+                EndDate = b.EndDate,
                 Hours = b.Hours,
                 Status = b.PtoAllocationStatus,
                 SourceType = b.PtoAllocationSourceType,
                 AccrualSchedule = b.PtoAccrualSchedule
-            } );
+            } )
+            .OrderByDescending( b => b.StartDate ).ThenByDescending( b => b.EndDate );
+
 
             gPtoAllocationList.ObjectList = ptoAllocationQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
 
@@ -733,6 +737,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             public int Id { get; set; }
             public string Name { get; set; }
             public decimal Hours { get; set; }
+            public DateTime? StartDate { get; set; }
+            public DateTime? EndDate { get; set; }
             public PtoAllocationStatus Status { get; set; }
             public PtoType PtoType { get; set; }
             public PtoAllocationSourceType SourceType { get; set; }
