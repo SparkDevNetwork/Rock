@@ -17,7 +17,7 @@
                         <Rock:GridFilter ID="gfPtoAllocationFilter" runat="server">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                             <Rock:DateRangePicker ID="drpAllocationDate" runat="server" Label="Date Range" />
-                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="Pto Type" />
+                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="Pto Type" DataValueField="Id" DataTextField="Name" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </Rock:GridFilter>
