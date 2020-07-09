@@ -243,8 +243,18 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     ptoBracket.PtoBracketTypes.Remove( ptoBracketType );
                     ptoBracketTypeService.Delete( ptoBracketType );
                 }
+                //Check for Bracket Types in the Config.  If none are provided, throw an error
+                if ( PtoBracketTypesState.Count < 1 )
+                {
+                    nbInvalidPtoTypes.Visible = true;
+                    return;
+                }
+                else
+                {
+                    nbInvalidPtoTypes.Visible = false;
+                }
 
-                // Add or Update group configs from the UI
+                // Add or Update Bracket Type configs from the UI
                 foreach ( var ptoBracketTypeState in PtoBracketTypesState )
                 {
                     PtoBracketType ptoBracketType = ptoBracket.PtoBracketTypes.Where( a => a.Guid == ptoBracketTypeState.Guid ).FirstOrDefault();
@@ -531,6 +541,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             }
 
             BindPtoBracketTypesGrid();
+
+            wpPtoBracketTypes.Expanded = true;
         }
 
         /// <summary>

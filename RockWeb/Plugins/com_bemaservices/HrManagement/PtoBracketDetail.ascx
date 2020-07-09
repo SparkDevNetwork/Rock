@@ -28,7 +28,8 @@
                     
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                    <Rock:NotificationBox ID="nbInvalidPtoTypes" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Pto Types" />
+                    <Rock:NotificationBox ID="nbInvalidPtoTypes" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="At least one Pto Type needs to be configured."/>
 
                     <Rock:NotificationBox ID="nbIncorrectTier" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="The bracket selected does not belong to the selected pto tier." />
@@ -86,7 +87,7 @@
                         <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" Required="true" ValidationGroup="PtoBracketType" EnhanceForLongLists="false" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockTextBox ID="tbDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoBracketType" />
+                        <Rock:NumberBox ID="tbDefaultHours" runat="server" Label="Default Hours" Help="The number of hours the person will accru on an annual basis for this PTO Type." Required="true" ValidationGroup="PtoBracketType" NumberType="Integer" MinimumValue="1" />
                     </div>
                     <div class="col-md-4">
                         <Rock:RockCheckBox ID="cbBracketTypeIsActive" runat="server" Label="Active" ValidationGroup="PtoBracketType" />
