@@ -36,6 +36,10 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using Microsoft.Web.XmlTransform;
+using Rock.Security;
+using RestSharp;
+using System.Web;
+using Newtonsoft.Json;
 
 namespace RockWeb.Plugins.com_bemaservices.Support
 {
@@ -45,7 +49,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
     [DisplayName( "BEMA Plugin Installer" )]
     [Category( "BEMA Services > Support" )]
     [Description( "Allows a client to download the latest copy of their BEMA Code." )]
-    [TextField( "Client Acronym" )]
+    [EncryptedTextField( "Client Key" )]
     public partial class BemaPluginInstaller : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -110,7 +114,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         {
             string errorResponse = string.Empty;
 
-            string acronym = GetAttributeValue( "ClientAcronym" );
+            string acronym = GetClientFolder();
             if ( acronym.IsNotNullOrWhiteSpace() )
             {
                 InstallClientPackage( acronym, true );
@@ -120,7 +124,7 @@ namespace RockWeb.Plugins.com_bemaservices.Support
 
         private void InstallClientPackage( string acronym, bool isBasePackage )
         {
-            UpdateFile installedVersion = GetInstalledFileVersion( acronym, isBasePackage );
+            UpdateFile installedVersion = GetInstalledFileVersion( isBasePackage );
             UpdateFile latestVersion = GetLatestFileVersion( acronym, isBasePackage );
 
             if ( !IsLatestVersionInstalled( installedVersion, latestVersion ) )
@@ -293,14 +297,14 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         {
             var isClientLatestVersion = true;
             var isBemaLatestVersion = true;
-            string acronym = GetAttributeValue( "ClientAcronym" );
+            string acronym = GetClientFolder();
             if ( acronym.IsNotNullOrWhiteSpace() )
             {
-                UpdateFile bemaInstalledVersion = GetInstalledFileVersion( acronym, true );
+                UpdateFile bemaInstalledVersion = GetInstalledFileVersion( true );
                 UpdateFile bemaLatestVersion = GetLatestFileVersion( acronym, true );
                 isBemaLatestVersion = IsLatestVersionInstalled( bemaInstalledVersion, bemaLatestVersion );
 
-                UpdateFile clientInstalledVersion = GetInstalledFileVersion( acronym, false );
+                UpdateFile clientInstalledVersion = GetInstalledFileVersion( false );
                 UpdateFile clientLatestVersion = GetLatestFileVersion( acronym, false );
                 isClientLatestVersion = IsLatestVersionInstalled( clientInstalledVersion, clientLatestVersion );
             }
@@ -308,7 +312,47 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             pnlView.Visible = ( !isBemaLatestVersion || !isClientLatestVersion );
         }
 
-        private static UpdateFile GetInstalledFileVersion( string acronym, bool isBasePackage )
+        private string GetClientFolder()
+        {
+            var clientFolder = "";
+            string clientKey = Encryption.DecryptString( GetAttributeValue( "ClientKey" ) );
+            if ( clientKey.IsNotNullOrWhiteSpace() )
+            {
+                RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
+                UpdateFile installedBaseVersion = GetInstalledFileVersion( true );
+                UpdateFile installedClientVersion = GetInstalledFileVersion( false );
+
+                var url = string.Format( "Webhooks/Lava.ashx/GetClientPackageLocation/{0}/{1}/{2}/{3}", clientKey, rockVersion.ToString(), installedBaseVersion.ToString(), installedClientVersion.ToString() );
+                var restClient = new RestClient( "https://rock.bemaservices.com/" );
+                var request = new RestRequest( url );
+                request.Method = Method.GET;
+                request.RequestFormat = DataFormat.Json;
+                var response = restClient.Execute( request );
+
+                if ( response != null && response.StatusCode == HttpStatusCode.OK )
+                {
+                    if ( !string.IsNullOrEmpty( response.Content ) )
+                    {
+                        try
+                        {
+                            var apiResponse = JsonConvert.DeserializeObject<List<ClientFolder>>( response.Content );
+                            clientFolder = apiResponse.First().ShortName;
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Creating Exception is Exception Log
+                            HttpContext context2 = HttpContext.Current;
+                            ExceptionLogService.LogException( ex, context2 );
+
+                        }
+                    }
+                }
+            }
+
+            return clientFolder;
+        }
+
+        private static UpdateFile GetInstalledFileVersion( bool isBasePackage )
         {
             var installedVersion = new UpdateFile();
             var bemaCodePackageVersion = "";
@@ -550,5 +594,18 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         public int Minor { get; set; }
         public int Build { get; set; }
         public int Revision { get; set; }
+
+         public override string ToString()
+        {
+            var version = "" + Major + "." + Minor + "." + Build;
+            if ( Revision != null )
+                version += "." + Revision;
+            return version;
+        }
+    }
+
+    public class ClientFolder
+    {
+        public string ShortName { get; set; }
     }
 }

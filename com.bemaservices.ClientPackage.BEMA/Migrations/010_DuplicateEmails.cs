@@ -145,7 +145,7 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:Dynamic Data, Attribute:Enabled Lava Commands Page: Duplicate Emails, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("707B148D-3429-47C4-83CE-CCBA2B11A3D3","824634D6-7F75-465B-A2D2-BA3CE1662CAC",@"All");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "63CB1047-9CFB-4267-B324-B85D351E0CFB", @"<h4>This report can work with a Page Parameter block and a Group filter with the key: Group in order to filter down the results more.</h4>"
+            RockMigrationHelper.UpdateHtmlContentBlock( "63CB1047-9CFB-4267-B324-B85D351E0CFB", @"<div class='alert alert-info'>This report can work with a Page Parameter block and a Group filter with the key: Group in order to filter down the results more.</div>"
             , "c2c90333-aabc-4424-a310-0e7a97a1b926" );
 
             // Hide Page from view

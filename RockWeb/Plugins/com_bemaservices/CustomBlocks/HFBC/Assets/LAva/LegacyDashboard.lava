@@ -1,0 +1,377 @@
+<div class="row">
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table2.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/1946">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue | FormatAsCurrency }} MTD</span>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-money fa-3x'></i>
+              </div>
+              <div class='col-sm-12'>
+                <p>
+                  {{ row.CumulativeValue | FormatAsCurrency}} YTD / {{ row.TotalValue | FormatAsCurrency}} Total
+                </p>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table3.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/1926">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth | FormatAsCurrency }} MTD</span>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-money fa-3x'></i>
+              </div>
+              <div class='col-sm-12'>
+                <p>
+                  {{ row.ThisYear | FormatAsCurrency}} YTD / {{ row.TotalValue | FormatAsCurrency}} Total
+                </p>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table4.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/1926">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth | FormatAsCurrency }} MTD</span>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-money fa-3x'></i>
+              </div>
+              <div class='col-sm-12'>
+                <p>
+                  {{ row.ThisYear | FormatAsCurrency}} YTD / {{ row.TotalValue | FormatAsCurrency}} Total
+                </p>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table5.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/1974">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth | FormatAsCurrency }} MTD</span>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-money fa-3x'></i>
+              </div>
+              <div class='col-sm-12'>
+                <p>
+                  {{ row.ThisYear | FormatAsCurrency}} YTD / {{ row.TotalValue | FormatAsCurrency}} Total
+                </p>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table6.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/1975">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth | FormatAsCurrency }} MTD</span>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-money fa-3x'></i>
+              </div>
+              <div class='col-sm-12'>
+                <p>
+                  {{ row.ThisYear | FormatAsCurrency}} YTD / {{ row.TotalValue | FormatAsCurrency}} Total
+                </p>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table7.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <div class='col-sm-8'>
+              <a href="/page/1946">
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                    {{ row.CumulativeValue }} YTD / {{ row.TotalValue }} Total
+                </p>
+              </a>
+            </div>
+            <div class='col-sm-4'>
+                <i class='fa fa-handshake-o fa-3x'></i>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table8.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <div class='col-sm-8'>
+              <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+              <p>
+                {{ row.CumulativeValue }} YTD
+              </p>
+            </div>
+            <div class='col-sm-4'>
+              <i class='fa fa-exchange fa-3x'></i>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table9.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="/page/1099">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth }} MTD</span>
+                <p>
+                  {{ row.ThisYear }} YTD / {{row.Total}} Total
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-group fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table10.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="/page/1099">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth }} MTD</span>
+                <p>
+                  {{ row.ThisYear }} YTD / {{row.Total}} Total
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-group fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table11.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="/page/1099">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.ThisMonth }} MTD</span>
+                <p>
+                  {{ row.ThisYear }} YTD / {{row.Total}} Total
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-group fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table12.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/885?ReportId=1092&ExpandedIds=C495">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-plug fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table13.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="https://legacy.hfbc.org/page/885?ReportId=1117">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-compass fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table14.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+              <a href="/page/1976">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-hand-o-up fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table15.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="/page/1831">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-road fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class='col-md-4'>
+    <div class="panel panel-default">
+      <div class="panel panel-body" style="padding-top:5px;padding-bottom:5px;margin-bottom:0px;">
+        {% for row in table16.rows %}
+          <h2>{{ row.Title }}</h1>
+          <h5>{{ row.Subtitle }}</h4>
+          <div class='row'>
+            <a href="/page/1916">
+              <div class='col-sm-8'>
+                <span style='font-size:30px'>{{ row.LastValue }} MTD</span>
+                <p>
+                  {{ row.CumulativeValue }} YTD
+                </p>
+              </div>
+              <div class='col-sm-4'>
+                <i class='fa fa-exchange fa-3x'></i>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>

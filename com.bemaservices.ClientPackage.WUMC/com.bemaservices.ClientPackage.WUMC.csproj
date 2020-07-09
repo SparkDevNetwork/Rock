@@ -65,6 +65,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -73,16 +74,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attribute\MaintenanceRequestFieldAttribute.cs" />
+    <Compile Include="Field\Types\MaintenanceRequestFieldType.cs" />
+    <Compile Include="Migrations\001_Data.cs" />
+    <Compile Include="Model\MaintenanceRequest.cs" />
+    <Compile Include="Model\MaintenanceRequestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MaintenanceRequestPicker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <!-- There may be a better way of building this reference, but I don't see it -->

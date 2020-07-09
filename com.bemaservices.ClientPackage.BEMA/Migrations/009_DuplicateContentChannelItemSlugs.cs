@@ -18,22 +18,22 @@ using Rock.Plugin;
 
 namespace com.bemaservices.ClientPackage.BEMA
 {
-    [MigrationNumber( 6, "1.9.4" )]
-    public class AlternateBusinessList : Migration
+    [MigrationNumber( 9, "1.9.4" )]
+    public class DuplicateContentChannelItemSlugs : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-            // Page: Alternate Business List              
-            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Alternate Business List","This report is an alternate form of the business list page which includes additional information such as email and a list of contacts.","439D2663-12C8-4CD5-B9DA-0934BC84387B",""); // Site:Rock RMS
+            // Page: Duplicate Content Channel Item Slugs              
+            RockMigrationHelper.AddPage("2571CBBD-7CCA-4B24-AAAB-107FD136298B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Duplicate Content Channel Item Slugs","A report of Content Channel Items that have duplicate slugs","CEE4C449-1997-4FDA-B338-F73500085B4E",""); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType("HTML Content","Adds an editable HTML fragment to the page.","~/Blocks/Cms/HtmlContentDetail.ascx","CMS","19B61D65-37E3-459F-A44F-DEF0089118A3");
             RockMigrationHelper.UpdateBlockType("Dynamic Data","Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.","~/Blocks/Reporting/DynamicData.ascx","Reporting","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
-            // Add Block to Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "439D2663-12C8-4CD5-B9DA-0934BC84387B","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"11CA848C-273A-4683-B107-23EE506B5717");   
-            // Add Block to Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "439D2663-12C8-4CD5-B9DA-0934BC84387B","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"1F397262-7E26-459B-BF9B-6C507057D762");   
+            // Add Block to Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "CEE4C449-1997-4FDA-B338-F73500085B4E","","19B61D65-37E3-459F-A44F-DEF0089118A3","HTML","Main","","",0,"48800E24-22B1-4F83-9E68-D8677FB3F5BD");   
+            // Add Block to Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlock( true, "CEE4C449-1997-4FDA-B338-F73500085B4E","","E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","Dynamic Data","Main","","",1,"3BCC7CDC-3441-461C-AA86-ACA6494E1988");   
             // Attrib for BlockType: Dynamic Data:Update Page              
             RockMigrationHelper.UpdateBlockTypeAttribute("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Update Page","UpdatePage","","If True, provides fields for updating the parent page's Name and Description",0,@"True","230EDFE8-33CA-478D-8C9A-572323AF3466");  
             // Attrib for BlockType: Dynamic Data:Query Params              
@@ -104,50 +104,50 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","BD0D9B57-2A41-4490-89FF-F01DAB7D4904","Cache Tags","CacheTags","","Cached tags are used to link cached content so that it can be expired as a group",10,@"","522C18A9-C727-42A5-A0BA-13C673E8C4B6");  
             // Attrib for BlockType: HTML Content:Is Secondary Block              
             RockMigrationHelper.UpdateBlockTypeAttribute("19B61D65-37E3-459F-A44F-DEF0089118A3","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Is Secondary Block","IsSecondaryBlock","","Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",11,@"False","04C15DC1-DFB6-4D63-A7BC-0507D0E33EF4");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/AlternateBusinessList.sql' %}");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","202A82BF-7772-481C-8419-600012607972",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
-            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Alternate Business List, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1F397262-7E26-459B-BF9B-6C507057D762","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","230EDFE8-33CA-478D-8C9A-572323AF3466",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","B0EC41B9-37C0-48FD-8E4E-37A8CA305012",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","90B0E6AF-B2F4-4397-953B-737A40D4023B",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356",@"{% include '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Assets/Sql/DuplicateContentChannelItemSlugs.sql' %}");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","B9163A35-E09C-466D-8A2D-4ED81DF0114C",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","202A82BF-7772-481C-8419-600012607972",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","8EB882CE-5BB1-4844-9C28-10190903EECD",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","6A233402-446C-47E9-94A5-6A247C29BC21",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Communication Recipient Person Id Columns Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","75DDB977-9E71-44E8-924B-27134659D3A4",@"");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Excel Export Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","E11B57E5-EC7D-4C42-9ADA-37594D71F145",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Communicate Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","5B2C115A-C187-4AB3-93AE-7010644B39DA",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","8762ABE3-726E-4629-BD4D-3E42E1FBCC9E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","D01510AA-1B8D-467C-AFC6-F7554CB7CF78",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","A4439703-5432-489A-9C14-155903D6A43E",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","6697B0A2-C8FE-497A-B5B4-A9D459474338",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Paneled Grid Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","5449CB61-2DFC-4B55-A697-38F1C2AF128B",@"False");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Show Grid Filter Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","E582FD3C-9990-47D1-A57F-A3DB753B1D0C",@"True");  
+            // Attrib Value for Block:Dynamic Data, Attribute:Timeout Page: Duplicate Content Channel Item Slugs, Site: Rock RMS              
+            RockMigrationHelper.AddBlockAttributeValue("3BCC7CDC-3441-461C-AA86-ACA6494E1988","BEEE38DD-2791-4242-84B6-0495904143CC",@"30");  
 
-            RockMigrationHelper.UpdateHtmlContentBlock( "11CA848C-273A-4683-B107-23EE506B5717", @"<h4>This report is an alternate form of the business list page which includes additional information such as email and a list of contacts.</h4>"
-            , "8ff37d48-4899-4786-9a8d-bfe68445519d" );
+            RockMigrationHelper.UpdateHtmlContentBlock( "48800E24-22B1-4F83-9E68-D8677FB3F5BD", @"<div class='alert alert-info'>Click on a name to be taken to the Content Channel Item</div>"
+            , "b072b9bc-c940-4c68-b3c5-d7be75b342e9" );
 
             // Hide Page from view
-            RockMigrationHelper.AddSecurityAuthForPage( "439D2663-12C8-4CD5-B9DA-0934BC84387B", 0, "View", false, "", 1, "aef74ef4-c39b-4e34-ab8a-f710c4f9bf44" );
+            RockMigrationHelper.AddSecurityAuthForPage( "CEE4C449-1997-4FDA-B338-F73500085B4E", 0, "View", false, "", 1, "09a90ec1-c627-4f1c-93d4-4c2e960f032d" );
         }
 
         /// <summary>
@@ -190,11 +190,11 @@ namespace com.bemaservices.ClientPackage.BEMA
             RockMigrationHelper.DeleteAttribute("7C1CE199-86CF-4EAE-8AB3-848416A72C58");
             RockMigrationHelper.DeleteAttribute("EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A");
             RockMigrationHelper.DeleteAttribute("4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4");
-            RockMigrationHelper.DeleteBlock("1F397262-7E26-459B-BF9B-6C507057D762");
-            RockMigrationHelper.DeleteBlock("11CA848C-273A-4683-B107-23EE506B5717");
+            RockMigrationHelper.DeleteBlock("3BCC7CDC-3441-461C-AA86-ACA6494E1988");
+            RockMigrationHelper.DeleteBlock("48800E24-22B1-4F83-9E68-D8677FB3F5BD");
             RockMigrationHelper.DeleteBlockType("E31E02E9-73F6-4B3E-98BA-E0E4F86CA126");
             RockMigrationHelper.DeleteBlockType("19B61D65-37E3-459F-A44F-DEF0089118A3");
-            RockMigrationHelper.DeletePage("439D2663-12C8-4CD5-B9DA-0934BC84387B"); //  Page: Alternate Business List
+            RockMigrationHelper.DeletePage("CEE4C449-1997-4FDA-B338-F73500085B4E"); //  Page: Duplicate Content Channel Item Slugs
         }
     }
 }
