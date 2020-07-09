@@ -79,6 +79,15 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 PtoBracketTypesState = JsonConvert.DeserializeObject<List<PtoBracketType>>( json );
             }
 
+            var ptoTypeService = new PtoTypeService( new RockContext() );
+            foreach ( var bracketType in PtoBracketTypesState )
+            {
+                if ( bracketType.PtoType == null && bracketType.PtoTypeId != null )
+                {
+                    bracketType.PtoType = ptoTypeService.Get( bracketType.PtoTypeId );
+                }
+            }
+
         }
 
         /// <summary>
