@@ -125,6 +125,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( additionalSettings.ProcessLavaOnServer )
             {
                 var mergeFields = RequestContext.GetCommonMergeFields();
+                mergeFields.Add("CurrentPage", this.PageCache);
 
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
@@ -158,6 +159,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( additionalSettings.ProcessLavaOnServer )
             {
                 var mergeFields = RequestContext.GetCommonMergeFields();
+                mergeFields.Add("CurrentPage", this.PageCache);
 
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
@@ -182,6 +184,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var mergeFields = RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Command", command );
             mergeFields.Add( "Parameters", parameters );
+            mergeFields.Add("CurrentPage", this.PageCache);
 
             var xaml = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
 
