@@ -375,6 +375,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             var rockContext = new RockContext();
             var allocationService = new PtoAllocationService( rockContext );
+            var ptoRequestService = new PtoRequestService( rockContext );
             var allocation = allocationService.Get( e.RowKeyId );
             if ( allocation != null )
             {
@@ -384,6 +385,23 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     {
 
                         var changes = new History.HistoryChangeList();
+
+                        var ptoRequests = allocation.PtoRequests.ToList();
+                        foreach ( var ptoRequest in ptoRequests )
+                        {
+                            var requestChanges = new History.HistoryChangeList();
+
+                            requestChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoRequest" );
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( PtoRequest ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                                ptoRequest.Id,
+                                requestChanges );
+
+                            ptoRequestService.Delete( ptoRequest );
+                        }
+
                         changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoAllocation" );
                         HistoryService.SaveChanges(
                             rockContext,
