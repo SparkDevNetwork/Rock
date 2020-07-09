@@ -58,7 +58,18 @@ namespace com.bemaservices.HrManagement.Jobs
         , 4
         , "PtoTypes" )]
     [IntegerField( "Days Back", "The Number of Days prior to the Fiscal Start Date to create new Allocations", true, 30, "", 5, "DaysBack" )]
-    [BooleanField( "Inactivate Past Allocations", "Whether the job should set a status of 'Inactive' on allocations whose End Date has past", true, "", 6, "InactivatePastAllocations" )]
+    [BooleanField( "Update Allocation Status", "Whether the job should set a status of 'Inactive' on allocations whose End Date has past or Activate Allocations that have a Start Date in the past.", true, "", 6, "UpdateAllocationStatus" )]
+    [IntegerField( "Days Back", "The Number of Days prior to the Fiscal Start Date to create new Allocations", true, 30, "", 7, "DaysBack" )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON
+        , "Person Hours Per Week Worked Attribute"
+        , "The Person Attribute that contains the Number of Hours a person works in a week.  This will be used to calculate how many hours of PTO some gets allocated.  If someone only works 20hrs a week they'll only be allocated 50% of what their bracket calls for.  If left blank, everyone will recieve full allocations"
+        , false
+        , false
+        , ""
+        , ""
+        , 8
+        , "HoursWorked" )]
+    [IntegerField( "Hours Per Week", "This is used in conjuntion with the Hours a person works.  This is the number of hours someone should work to recieve the full PTO Allocation", true, 40, "", 9, "HoursPerWeek" )]
     public class ProcessPtoAllocations : IJob
     {
         public virtual void Execute( IJobExecutionContext context )
@@ -175,6 +186,24 @@ namespace com.bemaservices.HrManagement.Jobs
                                                                             .FirstOrDefault();
                                     if ( ptoAllocation.IsNull() )
                                     {
+                                        // Check if the Number of Hours worked attribute has been given
+                                        int hoursToAllocate = 0;
+
+                                        var hoursWorkedAttributeGuid = dataMap.GetString( "HoursWorked" ).AsGuidOrNull();
+                                        if ( hoursWorkedAttributeGuid.HasValue )
+                                        {
+                                            var hoursWorked = person.GetAttributeValue( AttributeCache.Get( hoursWorkedAttributeGuid.Value.ToString() ).Key ).AsIntegerOrNull() ?? 0;
+                                            var hoursPerWeek = dataMap.GetInt( "HoursPerWeek" );
+                                            decimal percent = (decimal)hoursWorked / hoursPerWeek;
+
+                                            hoursToAllocate = Decimal.ToInt32( Math.Round( bracketType.DefaultHours * percent, 0 ) );
+                                            
+                                        }
+                                        else
+                                        {
+                                            hoursToAllocate = bracketType.DefaultHours;
+                                        }
+
                                         ptoAllocation = new PtoAllocation();
                                         ptoAllocation.PtoAllocationSourceType = PtoAllocationSourceType.Automatic;
                                         ptoAllocation.PersonAliasId = person.PrimaryAliasId.Value;
@@ -185,12 +214,27 @@ namespace com.bemaservices.HrManagement.Jobs
                                         ptoAllocation.PtoAccrualSchedule = defaultSchedule;
                                         ptoAllocation.CreatedDateTime = RockDateTime.Now;
                                         ptoAllocation.ModifiedDateTime = RockDateTime.Now;
-                                        ptoAllocation.Hours = bracketType.DefaultHours;
+                                        ptoAllocation.Hours = hoursToAllocate;
 
                                         ptoAllocationService.Add( ptoAllocation );
 
                                     }
-
+                                    else
+                                    {
+                                        //Check if we should update past allocations
+                                        var updateAllocationStatus = dataMap.GetString( "UpdateAllocationStatus" ).AsBoolean();
+                                        if ( updateAllocationStatus )
+                                        {
+                                            if ( ptoAllocation.EndDate > RockDateTime.Now && ptoAllocation.PtoAllocationStatus != PtoAllocationStatus.Inactive )
+                                            {
+                                                ptoAllocation.PtoAllocationStatus = PtoAllocationStatus.Inactive;
+                                            }
+                                            else if ( ptoAllocation.StartDate >= RockDateTime.Now && ptoAllocation.PtoAllocationStatus == PtoAllocationStatus.Pending )
+                                            {
+                                                ptoAllocation.PtoAllocationStatus = PtoAllocationStatus.Active;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
