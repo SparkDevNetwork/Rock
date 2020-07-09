@@ -279,6 +279,14 @@ namespace com.bemaservices.HrManagement.Migrations
     {% endfor %}
 {% endgroup %}
 
+{% group where:'Guid == ""628C51A8-4613-43ED-A18D-4A6FB999273E""' %}
+    {% capture groupIdString %}{{group.Id}}{% endcapture %}
+    {% assign groupMembers = viewer | Group:groupIdString %}
+    {% for groupMember in groupMembers %}
+        {% assign canReview = true %}
+    {% endfor %}
+{% endgroup %}
+
 {% if canReview == false %}
     {% assign person = Workflow | Attribute:'Person','Object' %}
     {% assign supervisorAttribute = Workflow | Attribute:'SupervisorAttribute','Object' %}
@@ -295,6 +303,14 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "9DEAF62B-1C6C-494D-B6DC-ED84DD6A18B2", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign viewer = CurrentPerson %}
 {% assign canView = false %}
 {% group where:'Guid == ""6F8AABA3-5BC8-468B-90DD-F0686F38E373""' %}
+    {% capture groupIdString %}{{group.Id}}{% endcapture %}
+    {% assign groupMembers = viewer | Group:groupIdString %}
+    {% for groupMember in groupMembers %}
+        {% assign canView = true %}
+    {% endfor %}
+{% endgroup %}
+
+{% group where:'Guid == ""628C51A8-4613-43ED-A18D-4A6FB999273E""' %}
     {% capture groupIdString %}{{group.Id}}{% endcapture %}
     {% assign groupMembers = viewer | Group:groupIdString %}
     {% for groupMember in groupMembers %}
