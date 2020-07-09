@@ -20,9 +20,9 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                    <Rock:RockBoundField DataField="IsNegativeTimeBalanceAllowed" HeaderText="Negative Balance Allowed?" />
+                                    <Rock:RockBoundField DataField="IsNegativeTimeBalanceAllowed" HeaderText="Negative Balance Allowed?" Visible="false" />
                                     <Rock:RockBoundField DataField="Color" HeaderText="Color" />
-                                    <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" />
+                                    <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" Visible="false" />
                                     <Rock:RockBoundField DataField="IsActive" HeaderText="Is Active" />
                                 </Columns>
                             </Rock:Grid>
