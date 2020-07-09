@@ -396,7 +396,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             gPtoRequestList.ObjectList = ptoRequestQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
 
-            gPtoRequestList.SetLinqDataSource( requestRowQry.AsNoTracking() );
+            gPtoRequestList.DataSource = requestRowQry.AsNoTracking().ToList();
             gPtoRequestList.EntityTypeId = EntityTypeCache.Get<PtoRequest>().Id;
             gPtoRequestList.DataBind();
         }
@@ -464,7 +464,43 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             SortProperty sortProperty = gPtoRequestList.SortProperty;
             if ( sortProperty != null )
             {
-                sortedQry = qry.Sort( sortProperty );
+                if ( sortProperty.Property == "Status" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        sortedQry = qry.OrderBy( b => b.PtoRequestApprovalState );
+                    }
+                    else
+                    {
+                        sortedQry = qry.OrderByDescending( b => b.PtoRequestApprovalState );
+                    }
+                }
+                else if ( sortProperty.Property == "PersonAlias.Person.LastName,PersonAlias.Person.LastName" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        sortedQry = qry.OrderBy( b => b.PtoAllocation.PersonAlias.Person.LastName ).ThenBy( b => b.PtoAllocation.PersonAlias.Person.FirstName );
+                    }
+                    else
+                    {
+                        sortedQry = qry.OrderByDescending( b => b.PtoAllocation.PersonAlias.Person.LastName ).ThenByDescending( b => b.PtoAllocation.PersonAlias.Person.FirstName );
+                    }
+                }
+                else if ( sortProperty.Property == "PtoType.Name" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        sortedQry = qry.OrderBy( b => b.PtoAllocation.PtoType.Name );
+                    }
+                    else
+                    {
+                        sortedQry = qry.OrderByDescending( b => b.PtoAllocation.PtoType.Name );
+                    }
+                }
+                else
+                {
+                    sortedQry = qry.Sort( sortProperty );
+                }
             }
             else
             {
