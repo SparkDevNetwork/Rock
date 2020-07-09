@@ -3110,14 +3110,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var locationGroupGuid = hfAddLocationGroupGuid.Value.AsGuid();
+
             if ( location != null )
             {
                 GroupLocation groupLocation = null;
 
-                Guid guid = hfAddLocationGroupGuid.Value.AsGuid();
-                if ( !guid.IsEmpty() )
+                if ( !locationGroupGuid.IsEmpty() )
                 {
-                    groupLocation = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                    groupLocation = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals( locationGroupGuid ) );
                 }
 
                 if ( groupLocation == null )
@@ -3194,6 +3195,18 @@ namespace RockWeb.Blocks.Groups
                     if ( definedValue != null )
                     {
                         groupLocation.GroupLocationTypeValue.CopyPropertiesFrom( definedValue );
+                    }
+                }
+            }
+            else
+            {
+                if ( !locationGroupGuid.IsEmpty() )
+                {
+                    var groupLocation = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals( locationGroupGuid ) );
+
+                    if ( groupLocation != null )
+                    {
+                        GroupLocationsState.Remove( groupLocation );
                     }
                 }
             }
