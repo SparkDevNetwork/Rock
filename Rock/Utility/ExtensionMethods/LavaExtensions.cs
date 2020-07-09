@@ -573,10 +573,11 @@ namespace Rock
         {
             try
             {
-                if ( !content.HasMergeFields() )
-                {
-                    return content ?? string.Empty;
-                }
+                // 7-9-2020 JME / NA
+                // We decided to remove the check for lava merge fields here as this method is specifically
+                // made to resolve them. The performance increase for text without lava is acceptable as in
+                // a vast majority of cases the string will have lava (that's what this method is for). In
+                // these cases there is a performance tax (though small) on the vast majority of calls.
 
                 // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( enabledLavaCommands == null )
