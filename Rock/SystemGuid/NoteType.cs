@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public class NoteType
     {
         /// <summary>
+        /// The content channel item structured content user value
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE = "860C37A0-1A44-4681-B96D-4703813609D2";
+
+        /// <summary>
         /// The fundraising opportunity comment
         /// </summary>
         public const string FUNDRAISING_OPPORTUNITY_COMMENT = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95";

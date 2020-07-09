@@ -84,6 +84,7 @@
                                     <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
                                 
                                     <asp:LinkButton ID="lbUpdateLavaFields" runat="server" Text="Update Lava Fields" CssClass="btn btn-xs btn-action" OnClick="lbUpdateLavaFields_Click" CausesValidation="false" />
+                                    <Rock:HelpBlock ID="hbUpdateLavaFields" runat="server" Text="This will update the Message Template and above lava fields to match. If a field has a different value set in Preview mode, the lava field controls will be updated to use the value from the preview's value." />
                                 </div>
                             </div>
                         </asp:Panel>

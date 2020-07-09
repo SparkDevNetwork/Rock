@@ -57,8 +57,11 @@
                     <asp:ValidationSummary ID="valGatewayDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div class="col-sm-12 col-md-6">
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                        </div>
+                        <div class="col-sm-12 col-md-6">
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <Rock:DatePicker ID="rdpStartDate" runat="server" PropertyName="StartDate" Required="true" />

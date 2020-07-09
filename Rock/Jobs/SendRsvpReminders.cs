@@ -308,12 +308,12 @@ namespace Rock.Jobs
             lavaMergeFields.Add( "Occurrence", occurrence );
             lavaMergeFields.Add( "OccurrenceTitle", GetOccurrenceTitle( occurrence ) );
 
-            var smsNumber = person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+            var smsNumber = person.PhoneNumbers.GetFirstSmsNumber();
 
             if ( person.CommunicationPreference == CommunicationType.SMS
                 && !string.IsNullOrWhiteSpace( reminder.SMSMessage )
                 && reminder.SMSFromDefinedValueId.HasValue
-                && smsNumber != null )
+                && !string.IsNullOrWhiteSpace( smsNumber ) )
             {
                 return SendReminderSMS( person, reminder, lavaMergeFields, smsNumber );
             }
@@ -365,21 +365,13 @@ namespace Rock.Jobs
         /// <param name="person">The <see cref="Person"/>.</param>
         /// <param name="reminder">The <see cref="SystemCommunication"/> to be sent as a reminder.</param>
         /// <param name="lavaMergeFields">A dictionary containing Lava merge fields.</param>
-        /// <param name="phoneNumber">The <see cref="PhoneNumber"/> for SMS communications.</param>
+        /// <param name="smsNumber">The correctly formatted SMS Number for SMS communications.</param>
         /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
-        private int SendReminderSMS( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields, PhoneNumber phoneNumber )
+        private int SendReminderSMS( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields, string smsNumber )
         {
-            string smsNumber = phoneNumber.Number;
-            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-            {
-                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-            }
-
             var recipient = new RockSMSMessageRecipient( person, smsNumber, lavaMergeFields );
-            var message = new RockSMSMessage();
+            var message = new RockSMSMessage( reminder );
             message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );
-            message.FromNumber = DefinedValueCache.Get( reminder.SMSFromDefinedValueId.Value );
-            message.Message = reminder.SMSMessage;
             message.Send( out List<string> smsErrors );
 
             if ( !smsErrors.Any() )
@@ -399,6 +391,11 @@ namespace Rock.Jobs
         /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
         private int SendReminderEmail( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields )
         {
+            if ( !person.IsEmailActive )
+            {
+                return 0;
+            }
+
             var recipient = new RockEmailMessageRecipient( person, lavaMergeFields );
             var message = new RockEmailMessage( reminder );
             message.SetRecipients( new List<RockEmailMessageRecipient>() { recipient } );

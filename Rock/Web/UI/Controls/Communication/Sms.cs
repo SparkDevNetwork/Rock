@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private DefinedValuePicker dvpFrom;
+        private RockDropDownList dvpFrom;
         private RockControlWrapper rcwMessage;
         private MergeFieldPicker mfpMessage;
         private Label lblCount;
@@ -123,28 +123,26 @@ namespace Rock.Web.UI.Controls.Communication
             var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             var definedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
 
+            var smsNumbers = definedType.DefinedValues;
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+            }
 
-            dvpFrom = new DefinedValuePicker();
+            dvpFrom = new RockDropDownList();
+            dvpFrom.SelectedIndex = -1;
+            dvpFrom.DataSource = smsNumbers.Select( v => new
+            {
+                Description = string.IsNullOrWhiteSpace( v.Description ) ? v.Value : v.Description,
+                v.Id
+            } );
+            dvpFrom.DataTextField = "Description";
+            dvpFrom.DataValueField = "Id";
+            dvpFrom.DataBind();
+
             dvpFrom.ID = string.Format( "dvpFrom_{0}", this.ID );
             dvpFrom.Label = "From";
             dvpFrom.Help = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).";
-            if ( selectedNumberGuids.Any() )
-            {
-                dvpFrom.SelectedIndex = -1;
-                dvpFrom.DataSource = definedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
-                {
-                    v.Description,
-                    v.Id
-                } );
-                dvpFrom.DataTextField = "Description";
-                dvpFrom.DataValueField = "Id";
-                dvpFrom.DataBind();
-            }
-            else
-            {
-                dvpFrom.DefinedTypeId = definedType.Id;
-            }
-            dvpFrom.DisplayDescriptions = true;
             dvpFrom.Required = true;
             Controls.Add( dvpFrom );
 
@@ -159,7 +157,7 @@ namespace Rock.Web.UI.Controls.Communication
             mfpMessage.MergeFields.Clear();
             mfpMessage.MergeFields.Add( "GlobalAttribute" );
             mfpMessage.MergeFields.Add( "Rock.Model.Person" );
-            mfpMessage.CssClass += " margin-b-sm pull-right"; 
+            mfpMessage.CssClass += " margin-b-sm pull-right";
             mfpMessage.SelectItem += mfpMergeFields_SelectItem;
             rcwMessage.Controls.Add( mfpMessage );
 
@@ -198,7 +196,7 @@ namespace Rock.Web.UI.Controls.Communication
                 tbMessage.ValidationGroup = value;
             }
         }
-        
+
         /// <summary>
         /// On new communication, initializes controls from sender values
         /// </summary>
@@ -207,11 +205,11 @@ namespace Rock.Web.UI.Controls.Communication
         public override void InitializeFromSender( Person sender )
         {
             var numbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
-            if( numbers != null )
+            if ( numbers != null )
             {
                 foreach ( var number in numbers.DefinedValues )
                 {
-                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull(); 
+                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
                     if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
                     {
                         dvpFrom.SetValue( number.Id );

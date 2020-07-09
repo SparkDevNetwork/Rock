@@ -20,6 +20,13 @@
                      <p>As of Rock McKinley v6, Rock requires Microsoft .NET Framework 4.5.2 or greater on the hosting server.
                         This framework version was released by Microsoft on May 5th, 2014.</p>
                  </Rock:NotificationBox>
+                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
+                    <h2><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</h2>
+                    <p>
+                        As of Rock McKinley v11, Rock requires SQL Server 2014 or greater.
+                        You will need to upgrade your database in order to proceed with that update.
+                    </p>
+                 </Rock:NotificationBox>
                  <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
@@ -34,7 +41,7 @@
                     <div class="well well-message well-message-info">
                         <h1>New Pieces Available</h1>
                         <i class="fa fa-puzzle-piece"></i>
-                        <p>We’ve expanded the puzzle, let’s get you up-to-date.</p>
+                        <p>We've expanded the puzzle, let's get you up-to-date.</p>
                     </div>
 
                     <Rock:NotificationBox runat="server" Title="Remember..." NotificationBoxType="Warning" ID="nbRepoWarning" Visible="false">
@@ -42,7 +49,7 @@
 
                     <Rock:NotificationBox runat="server" Title="Note:" NotificationBoxType="Warning" ID="nbBackupMessage">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
-                        The changes that are made during the update process can’t be undone.
+                        The changes that are made during the update process can't be undone.
                         Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
                 </asp:Panel>

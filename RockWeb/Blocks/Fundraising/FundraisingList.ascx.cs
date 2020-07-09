@@ -106,7 +106,9 @@ namespace RockWeb.Blocks.Fundraising
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
 
             var fundraisingGroupList = groupService.Queryable()
-                .Where( a => fundraisingGroupTypeIdList.Contains( a.GroupTypeId ) )
+                .Where( a =>
+                            a.IsActive &&
+                            fundraisingGroupTypeIdList.Contains( a.GroupTypeId ) )
                 .WhereAttributeValue( rockContext, "ShowPublic", true.ToString() ).ToList();
 
             foreach ( var group in fundraisingGroupList )

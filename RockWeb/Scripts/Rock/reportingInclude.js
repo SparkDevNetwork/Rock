@@ -239,9 +239,13 @@ $(document).ready(function () {
                 //
                 formatFilterDefault: function (title, $selectedContent) {
                     var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
-                    var compareValueText = $('.js-filter-control', $selectedContent).find(':selected').map(function () { return this.text; }).get().join("', '");
-                  if (compareValueText == "") {
-                    var compareValueText = $('.js-filter-control', $selectedContent).find(':checked').next().map(function () { return $(this).text(); }).get().join("', '");
+
+                    var compareValueText = $('input[type=text].js-filter-control', $selectedContent).val(); // textbox value.
+                    if (!compareValueText || compareValueText == "") {
+                        compareValueText = $('.js-filter-control', $selectedContent).find(':selected').map(function () { return this.text; }).get().join("', '");
+                    }
+                    if (!compareValueText || compareValueText == "") {
+                        compareValueText = $('.js-filter-control', $selectedContent).find(':checked').next().map(function () { return $(this).text(); }).get().join("', '");
                     }
 
                     var result = title;

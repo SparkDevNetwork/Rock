@@ -67,6 +67,7 @@
       <HintPath>..\RockWeb\Bin\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -89,6 +90,7 @@
     <Compile Include="RockTests\Communications\SmsTests.cs" />
     <Compile Include="RockTests\Core\CoreModuleTestHelper.cs" />
     <Compile Include="RockTests\Core\SundayDateTest.cs" />
+    <Compile Include="RockTests\Crm\PersonBulkUpdateProcessorTests.cs" />
     <Compile Include="RockTests\Crm\StepsTests.cs" />
     <Compile Include="RockTests\DatabaseTests.cs" />
     <Compile Include="RockTests\Migrations\MigrationTests.cs" />
