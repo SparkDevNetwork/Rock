@@ -17,7 +17,7 @@ namespace com.bemaservices.OpenConnectionsDigest.Jobs
 {
     [GroupField( "Connection Group", "Members of this group who are connectors of any opportunity with connections assigned will be emailed.", false, null, null, 1 )]
     [CustomCheckboxListField( "Connection Opportunities", "Select the connection opportunities you would like to include.", "SELECT Guid AS Value, Name AS Text FROM ConnectionOpportunity WHERE IsActive = 1;" )]
-    [SystemEmailField( "System Email", "The system email to use when sending reminder.", true, "a1911882-19dd-4197-a8d8-63cbd8a7d80b", null, 2 )]
+    [SystemCommunicationField( "System Email", "The system email to use when sending reminder.", true, "a1911882-19dd-4197-a8d8-63cbd8a7d80b", null, 2 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "" )]
     [BooleanField( "Include Opportunity Breakdown", "Should the email digest include an opportunity breakdown?", true, "" )]
     [BooleanField( "Include All Requests", "Should the email digest include a line for every connection request?", true, "" )]
@@ -43,7 +43,7 @@ namespace com.bemaservices.OpenConnectionsDigest.Jobs
 
             List<int> connectorPersonAliasIds = new List<int>();
 
-            var recipients = new List<RecipientData>();
+            var recipients = new List<RockEmailMessageRecipient>();
 
             if ( group != null )
             {
@@ -120,7 +120,7 @@ namespace com.bemaservices.OpenConnectionsDigest.Jobs
                 mergeFields.Add( "IncludeOpportunityBreakdown", dataMap.GetString( "IncludeOpportunityBreakdown" ).AsBoolean() );
                 mergeFields.Add( "IncludeAllRequests", dataMap.GetString( "IncludeAllRequests" ).AsBoolean() );
 
-                recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
 
             }
 
