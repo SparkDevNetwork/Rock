@@ -627,8 +627,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 Status = b.PtoAllocationStatus,
                 SourceType = b.PtoAllocationSourceType,
                 AccrualSchedule = b.PtoAccrualSchedule
-            } )
-            .OrderByDescending( b => b.StartDate ).ThenByDescending( b => b.EndDate );
+            } );
 
 
             gPtoAllocationList.ObjectList = ptoAllocationQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
@@ -716,13 +715,26 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             SortProperty sortProperty = gPtoAllocationList.SortProperty;
             if ( sortProperty != null )
             {
-                sortedQry = qry.Sort( sortProperty );
+                if ( sortProperty.Property == "Status" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        sortedQry = qry.OrderBy( b => b.PtoAllocationStatus );
+                    }
+                    else
+                    {
+                        sortedQry = qry.OrderByDescending( b => b.PtoAllocationStatus );
+                    }
+                }
+                else
+                {
+                    sortedQry = qry.Sort( sortProperty );
+                }
             }
             else
             {
                 sortedQry = qry
-                    .OrderByDescending( b => b.StartDate )
-                    .ThenBy( b => b.PersonAlias.Person.LastName );
+            .OrderByDescending( b => b.StartDate ).ThenByDescending( b => b.EndDate );
             }
 
             return sortedQry;
