@@ -319,7 +319,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                         break;
                     }
 
-                case "Source":
+                case "Source Type":
                     {
                         var sourceType = e.Value.ConvertToEnumOrNull<PtoAllocationSourceType>();
                         if ( sourceType.HasValue )
@@ -360,7 +360,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             gfPtoAllocationFilter.SaveUserPreference( "Date Range", drpAllocationDate.DelimitedValues );
             gfPtoAllocationFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfPtoAllocationFilter.SaveUserPreference( "Pto Type", ddlPtoType.SelectedValue );
-            gfPtoAllocationFilter.SaveUserPreference( "Source", ddlSourceType.SelectedValue );
+            gfPtoAllocationFilter.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue );
             gfPtoAllocationFilter.SaveUserPreference( "Person", ppPerson.PersonId.ToString() );
 
             BindGrid();
