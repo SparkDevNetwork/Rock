@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ using Rock.Security;
 using DDay.iCal;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:

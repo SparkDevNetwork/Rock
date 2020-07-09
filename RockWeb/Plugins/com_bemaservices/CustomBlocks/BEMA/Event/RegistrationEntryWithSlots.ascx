@@ -76,7 +76,7 @@
                 <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same immediate family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
         
-            <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
+            <asp:Panel ID="pnlFamilyMembers" runat="server" CssClass="row" >
                 <div class="col-md-6">
                     <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member to Register" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
                 </div>

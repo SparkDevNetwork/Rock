@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -744,6 +744,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             gList.DataSource = list;
             gList.DataBind();
+
+            // Hide the campus column if the campus filter is not visible.
+            gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
 
             // Builds the Totals section
             var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );

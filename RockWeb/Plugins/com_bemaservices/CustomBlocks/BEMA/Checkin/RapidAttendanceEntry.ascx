@@ -207,7 +207,7 @@
                                     CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" Text="Save Contact Items" OnClick="bbtnSaveContactItems_Click" />
                                 </div>
                         </asp:Panel>
-                        <asp:Panel ID="pnlEditFamily" CssClass="padding-all-md" runat="server" Visible="false">
+                        <asp:Panel ID="pnlEditFamily" runat="server" Visible="false" CssClass="padding-all-md">
                                 <fieldset>
                                     <h4>Family Edit</h4>
                                     <div class="clearfix">
@@ -245,7 +245,7 @@
                                     <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click">Cancel</asp:LinkButton>
                                 </div>
                         </asp:Panel>
-                        <asp:Panel ID="pnlEditMember" runat="server" Visible="false">
+                        <asp:Panel ID="pnlEditMember" runat="server" Visible="false" CssClass="padding-all-md">
                             <Rock:RockRadioButtonList ID="rblRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" ValidationGroup="vgEditMember" />
                             <div class="row">
                                 <div class="col-md-6">

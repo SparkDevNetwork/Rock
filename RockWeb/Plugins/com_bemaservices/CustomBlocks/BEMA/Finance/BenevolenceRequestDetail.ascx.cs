@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:
@@ -267,8 +267,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             else
             {
                 var rockContext = new RockContext();
-                BenevolenceRequest item = new BenevolenceRequestService( rockContext ).Get( hfBenevolenceRequestId.ValueAsInt() );
-                if ( item == null )
+                BenevolenceRequest item = new BenevolenceRequestService(rockContext).Get( hfBenevolenceRequestId.ValueAsInt());
+                if (item == null )
                 {
                     item = new BenevolenceRequest();
                 }
@@ -553,6 +553,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                     // update related documents
                     var documentsService = new BenevolenceRequestDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
 
                     // delete any images that were removed
                     var orphanedBinaryFileIds = new List<int>();
@@ -580,9 +581,22 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                         document.Order = documentOrder;
                         documentOrder++;
                     }
-                    rockContext.SaveChanges();
 
-                    /* BEMA.FE1.Start */
+                    // Make sure updated binary files are not temporarytemporary
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => DocumentsState.Contains( f.Id ) ) )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+
+                    // Delete any orphaned images
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
+                    {
+                        binaryFile.IsTemporary = true;
+                    }
+
+                    rockContext.SaveChanges();
+					
+					/* BEMA.FE1.Start */
 
                     string statusChange = "";
 
@@ -659,13 +673,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbPrint_Click( object sender, EventArgs e )
+        protected void lbPrint_Click(object sender, EventArgs e)
         {
-            var benevolenceRequestId = this.PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
-            if ( benevolenceRequestId.HasValue && !benevolenceRequestId.Equals( 0 ) && !string.IsNullOrEmpty( GetAttributeValue( "BenevolenceRequestStatementPage" ) ) )
+            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
+            if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
             {
-                NavigateToLinkedPage( "BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } } );
-            }
+                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } });
+            }               
         }
 
         /// <summary>
@@ -680,8 +694,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 Person person = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value );
                 if ( person != null )
                 {
-                    // Make sure that the FirstName box gets either FirstName or NickName of person.
-                    if ( !string.IsNullOrWhiteSpace( person.FirstName ) )
+                    // Make sure that the FirstName box gets either FirstName or NickName of person. 
+                    if (!string.IsNullOrWhiteSpace(person.FirstName))
                     {
                         dtbFirstName.Text = person.FirstName;
                     }
@@ -691,12 +705,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
 
                     //If both FirstName and NickName are blank, let them edit it manually
-                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace( dtbFirstName.Text );
+                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace(dtbFirstName.Text);
 
                     dtbLastName.Text = person.LastName;
                     //If both LastName is blank, let them edit it manually
-                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text );
-                    ;
+                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text ); ;
 
                     dvpConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpConnectionStatus.Enabled = false;
@@ -742,11 +755,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
-
-                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || ( requestId.HasValue && requestId == 0 ) ) )
+                    
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
                         var personCampus = person.GetCampus();
-                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : ( int? ) null;
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
                     }
                 }
             }
@@ -765,7 +778,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
         {
-            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
+            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
 
             if ( fileUpDoc.BinaryFileId.HasValue )
             {
@@ -781,7 +794,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
         {
-            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
+            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
             if ( e.BinaryFileId.HasValue )
             {
                 DocumentsState.Remove( e.BinaryFileId.Value );
@@ -956,7 +969,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
             }
             else
-            {
+            { 
                 if ( benevolenceRequest.CaseWorkerPersonAlias != null )
                 {
                     ppCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAlias.Person );
@@ -1062,6 +1075,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         #endregion
 
-
+        
     }
 }
