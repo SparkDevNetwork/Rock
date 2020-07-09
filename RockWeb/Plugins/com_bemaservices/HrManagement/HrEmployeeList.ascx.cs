@@ -472,7 +472,25 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             SortProperty sortProperty = gEmployeeList.SortProperty;
             if ( sortProperty != null )
             {
-                sortedQry = qry.Sort( sortProperty );
+                if ( sortProperty.Property == "Name" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        sortedQry = qry
+                            .OrderBy( b => b.LastName )
+                            .ThenBy( p => p.FirstName );
+                    }
+                    else
+                    {
+                        sortedQry = qry
+                            .OrderByDescending( b => b.LastName )
+                            .ThenByDescending( p => p.FirstName );
+                    }
+                }
+                else
+                {
+                    sortedQry = qry.Sort( sortProperty );
+                }
             }
             else
             {

@@ -21,10 +21,10 @@
                         <Rock:Grid ID="gEmployeeList" runat="server" RowItemText="Request" OnRowSelected="gEmployeeList_Edit" AllowSorting="true" CssClass="js-grid-allocation-list" OnRowDataBound="gEmployeeList_RowDataBound">
                             <Columns>
                                 <Rock:RockLiteralField ID="lName" HeaderText="Name" SortExpression="Name" />
-                                <Rock:RockLiteralField ID="lAllocation" HeaderText="Allocations" SortExpression="Allocations" />
-                                <Rock:RockLiteralField ID="lTotalAccrued" HeaderText="Accrued Hours" SortExpression="TotalAccrued" />
-                                <Rock:RockLiteralField ID="lTotalTaken" HeaderText="Taken Hours" SortExpression="TotalTaken" />
-                                <Rock:RockLiteralField ID="lRemaining" HeaderText="Remaining Hours" SortExpression="Remaining" />
+                                <Rock:RockLiteralField ID="lAllocation" HeaderText="Allocations" />
+                                <Rock:RockLiteralField ID="lTotalAccrued" HeaderText="Accrued Hours"/>
+                                <Rock:RockLiteralField ID="lTotalTaken" HeaderText="Taken Hours" />
+                                <Rock:RockLiteralField ID="lRemaining" HeaderText="Remaining Hours" />
                             </Columns>
                         </Rock:Grid>
                     </div>
