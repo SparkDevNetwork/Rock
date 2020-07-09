@@ -447,7 +447,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             // filter by Pto Type
             var ptoTypeId = gfPtoRequestFilter.GetUserPreference( "Pto Type" ).AsIntegerOrNull();
-            if ( ptoTypeId.HasValue )
+            if ( ptoTypeId.HasValue && ptoTypeId != -1 )
             {
                 qry = qry.Where( a => a.PtoAllocation.PtoTypeId == ptoTypeId.Value );
             }
