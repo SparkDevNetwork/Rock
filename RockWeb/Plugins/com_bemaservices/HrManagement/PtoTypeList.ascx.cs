@@ -124,6 +124,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             var rockContext = new RockContext();
             var ptoTypeService = new PtoTypeService( rockContext );
+            var allocationService = new PtoAllocationService( rockContext );
+            var ptoRequestService = new PtoRequestService( rockContext );
 
             PtoType ptoType = ptoTypeService.Get( e.RowKeyId );
 
@@ -136,8 +138,44 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     return;
                 }
 
-                ptoTypeService.Delete( ptoType );
-                rockContext.SaveChanges();
+
+                rockContext.WrapTransaction( () =>
+                    {
+                        var allocations = allocationService.Queryable().Where( a => a.PtoTypeId == ptoType.Id ).ToList();
+                        foreach ( var allocation in allocations )
+                        {
+                            var changes = new History.HistoryChangeList();
+
+                            var ptoRequests = allocation.PtoRequests.ToList();
+                            foreach ( var ptoRequest in ptoRequests )
+                            {
+                                var requestChanges = new History.HistoryChangeList();
+
+                                requestChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoRequest" );
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( PtoRequest ),
+                                    Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                                    ptoRequest.Id,
+                                    requestChanges );
+
+                                ptoRequestService.Delete( ptoRequest );
+                            }
+
+                            changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoAllocation" );
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( PtoAllocation ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                                allocation.Id,
+                                changes );
+
+                            allocationService.Delete( allocation );
+                        }
+
+                        ptoTypeService.Delete( ptoType );
+                        rockContext.SaveChanges();
+                    } );
             }
 
             BindPtoTypesGrid();
