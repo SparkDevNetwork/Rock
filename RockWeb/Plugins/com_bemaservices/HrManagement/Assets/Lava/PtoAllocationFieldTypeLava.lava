@@ -74,7 +74,8 @@ Select ptoAllocation.Guid as Value,
 		( Case when ptoAllocation.EndDate is not null then CONVERT(VARCHAR(10), ptoAllocation.EndDate, 103) else 'N/A' end)+
 		' (' + (Select convert(nvarchar(max),ptoAllocation.Hours-IsNull(Sum(ptoRequest.Hours),0))
 				From [dbo].[_com_bemaservices_HrManagement_PtoRequest] ptoRequest
-				Where ptoRequest.PtoAllocationId = ptoAllocation.Id) + ' hrs available)' as Text
+				Where ptoRequest.PtoAllocationId = ptoAllocation.Id
+                And ptoRequest.PtoRequestApprovalState != 2) + ' hrs available)' as Text
 
 From [dbo].[_com_bemaservices_HrManagement_PtoAllocation] ptoAllocation
 Join [dbo].[_com_bemaservices_HrManagement_PtoType] ptoType on ptoType.Id = ptoAllocation.PtoTypeId
