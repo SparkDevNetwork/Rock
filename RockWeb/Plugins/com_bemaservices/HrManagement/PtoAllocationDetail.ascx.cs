@@ -38,6 +38,7 @@ using Attribute = Rock.Model.Attribute;
 
 using com.bemaservices.HrManagement.Model;
 using CSScriptLibrary;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
@@ -420,6 +421,29 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             lReadOnlyTitle.Text = ptoAllocation.ToString().FormatAsHtmlTitle();
             lPtoAllocationDescription.Text = ptoAllocation.Note.ScrubHtmlAndConvertCrLfToBr();
+
+            string statusLabelClass = "";
+            var statusText = ptoAllocation.PtoAllocationStatus.ConvertToString();
+
+            switch ( ptoAllocation.PtoAllocationStatus )
+            {
+                case PtoAllocationStatus.Inactive:
+                    statusLabelClass = "label label-danger";
+                    break;
+                case PtoAllocationStatus.Active:
+                    statusLabelClass = "label label-info";
+                    break;
+                case PtoAllocationStatus.Pending:
+                    statusLabelClass = "label label-warning";
+                    break;
+            }
+
+            hlStatus.Text = statusText;
+            hlStatus.CssClass = statusLabelClass;
+            hlStatus.Visible = true;
+            tdPerson.Description = ptoAllocation.PersonAlias.Person.FullName;
+            tdPtoType.Description = string.Format( "{0}: {1} hours", ptoAllocation.PtoType.Name, ptoAllocation.Hours );
+            tdDateRange.Description = string.Format( "{0}{1}", ptoAllocation.StartDate.ToString("d"), ptoAllocation.EndDate.HasValue ? ptoAllocation.EndDate.Value.ToString(" - MM/dd/yyyy") : "" );
         }
 
         /// <summary>

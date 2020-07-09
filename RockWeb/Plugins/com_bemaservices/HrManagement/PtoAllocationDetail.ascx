@@ -21,6 +21,11 @@
                 <h1 class="panel-title">
                     <asp:Literal ID="lIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlAllocationId" runat="server" LabelType="Default" />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" Visible="false" />
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -28,10 +33,19 @@
                 <asp:ValidationSummary ID="valPtoAllocationDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="margin-b-md">
+                                <Rock:TermDescription ID="tdPerson" runat="server" Term="Person" />
+                                <Rock:TermDescription ID="tdPtoType" runat="server" Term="Pto Type" />
+                                <Rock:TermDescription ID="tdDateRange" runat="server" Term="Date" />
+                            </dl>
+                        </div>
+                    </div>
+
                     <p class="description">
                         <asp:Literal ID="lPtoAllocationDescription" runat="server"></asp:Literal>
                     </p>
-
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
@@ -44,15 +58,15 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" />
                             <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" SourceTypeName="com.bemaservices.HrManagement.Model.PtoAllocation, com.bemaservices.HrManagement" PropertyName="PtoType" />
+                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Start Date" Required="true" RequiredErrorMessage="Start Date is required" />
+                            <Rock:RockDropDownList ID="ddlPtoAccrualSchedule" runat="server" Label="Schedule" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Start Date" Required="true" RequiredErrorMessage="Start Date is required" />
+                            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                            <Rock:NumberBox ID="tbHours" runat="server" NumberType="Integer" Label="Hours" MinimumValue="1"/>
                             <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date" />
-                            <Rock:DataTextBox ID="tbHours" runat="server" SourceTypeName="com.bemaservices.HrManagement.Model.PtoAllocation, com.bemaservices.HrManagement" PropertyName="Hours" />
-                            <Rock:RockDropDownList ID="ddlPtoAccrualSchedule" runat="server" Label="Schedule" Visible="false" />
                         </div>
                     </div>
                     
