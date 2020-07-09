@@ -4380,8 +4380,10 @@ END
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
         [Obsolete( "Use UpdateBinaryFileTypeRecord instead." )]
         [RockObsolete( "1.11.0" )]
-        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false, string cacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}" )
+        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
         {
+            var cacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}";
+
             var masterSql = @"
                 DECLARE @sql AS NVARCHAR(max)
                 IF EXISTS(SELECT 1 FROM sys.columns WHERE name = 'AllowCaching' AND object_id = OBJECT_ID('[dbo].[BinaryFileType]'))
