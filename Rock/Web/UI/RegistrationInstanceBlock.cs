@@ -136,6 +136,11 @@ namespace Rock.Web.UI
             public const string GridFilter_CellPhone = "CellPhone";
 
             /// <summary>
+            /// The grid filter work phone
+            /// </summary>
+            public const string GridFilter_WorkPhone = "WorkPhone";
+
+            /// <summary>
             /// The grid filter email
             /// </summary>
             public const string GridFilter_Email = "Email";
@@ -331,6 +336,11 @@ namespace Rock.Web.UI
         protected const string FILTER_HOME_PHONE_ID = "tbHomePhoneFilter";
 
         /// <summary>
+        /// The filter work phone Identifier
+        /// </summary>
+        protected const string FILTER_WORK_PHONE_ID = "tbWorkPhoneFilter";
+
+        /// <summary>
         /// Filter attribute prefix
         /// </summary>
         protected const string FILTER_ATTRIBUTE_PREFIX = "filterAttribute_";
@@ -483,10 +493,11 @@ namespace Rock.Web.UI
 
             if ( registrantFields != null )
             {
-                foreach ( var field in registrantFields )
+                // This needs to be a unique list to prevent FindControl() getting an exception on PersonFields in grid events.
+                var distinctRegistrantFields = registrantFields.DistinctBy( f => new { f.AttributeId, f.FieldSource, f.PersonFieldType } ).ToArray();
+                foreach ( var field in distinctRegistrantFields )
                 {
-                    if ( field.FieldSource == RegistrationFieldSource.PersonField
-                         && field.PersonFieldType.HasValue )
+                    if ( field.FieldSource == RegistrationFieldSource.PersonField && field.PersonFieldType.HasValue )
                     {
                         switch ( field.PersonFieldType.Value )
                         {
@@ -764,6 +775,30 @@ namespace Rock.Web.UI
                                     homePhoneNumbersField.ID = "lHomePhone";
                                     homePhoneNumbersField.HeaderText = homePhoneLabel;
                                     grid.Columns.Add( homePhoneNumbersField );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.WorkPhone:
+                                {
+                                    // Per discussion this should not have "Phone" appended to the end if it's missing.
+                                    var workLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Value;
+
+                                    var tbWorkPhoneFilter = new RockTextBox();
+                                    tbWorkPhoneFilter.ID = FILTER_WORK_PHONE_ID;
+                                    tbWorkPhoneFilter.Label = workLabel;
+
+                                    if ( setValues )
+                                    {
+                                        tbWorkPhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_WorkPhone );
+                                    }
+
+                                    filterFieldsContainer.Controls.Add( tbWorkPhoneFilter );
+
+                                    var workPhoneNumbersField = new RockLiteralField();
+                                    workPhoneNumbersField.ID = "lWorkPhone";
+                                    workPhoneNumbersField.HeaderText = workLabel;
+                                    grid.Columns.Add( workPhoneNumbersField );
                                 }
 
                                 break;
@@ -1046,6 +1081,18 @@ namespace Rock.Web.UI
         protected Dictionary<int, PhoneNumber> GetPersonMobilePhoneLookup( RockContext rockContext, IEnumerable<RegistrantFormField> registrantFields, List<int> personIds )
         {
             return GetPersonPhoneDictionary( rockContext, registrantFields, personIds, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE, RegistrationPersonFieldType.MobilePhone );
+        }
+
+        /// <summary>
+        /// Gets the person work phone lookup.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrantFields">The registrant fields.</param>
+        /// <param name="personIds">The person ids.</param>
+        /// <returns></returns>
+        protected Dictionary<int, PhoneNumber> GetPersonWorkPhoneLookup( RockContext rockContext, IEnumerable<RegistrantFormField> registrantFields, List<int> personIds )
+        {
+            return GetPersonPhoneDictionary( rockContext, registrantFields, personIds, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK, RegistrationPersonFieldType.WorkPhone );
         }
 
         /// <summary>
