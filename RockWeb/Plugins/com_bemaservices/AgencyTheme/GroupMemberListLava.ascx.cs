@@ -49,13 +49,13 @@ namespace RockWeb.Plugins.com_bemaservices.AgencyTheme
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel block.", false, order: 0 )]
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 1 )]
     [BooleanField( "Enable Legacy Global Attribute Lava", "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.", false, "", 2, "SupportLegacy" )]
-	[GroupField( "Group", "The group who's members will be listed", true ,"", "", 3 )]
+    [GroupField( "Group", "The group who's members will be listed", true, "", "", 3 )]
     // Custom Settings
- 
+
     [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
     [IntegerField( "Item Cache Duration", "Number of seconds to cache the content items returned by the selected filter.", false, 3600, "CustomSetting", 0, "CacheDuration" )]
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", false, 0, "CustomSetting", 0, "OutputCacheDuration" )]
-   
+
     public partial class GroupMemberListLava : RockBlockCustomSettings
     {
         #region Fields
@@ -181,9 +181,9 @@ namespace RockWeb.Plugins.com_bemaservices.AgencyTheme
 
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
-            FlushCacheItem( CONTENT_CACHE_KEY );
-            FlushCacheItem( TEMPLATE_CACHE_KEY );
-            FlushCacheItem( OUTPUT_CACHE_KEY );
+            RemoveCacheItem( CONTENT_CACHE_KEY );
+            RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             ShowView();
         }
@@ -220,9 +220,9 @@ namespace RockWeb.Plugins.com_bemaservices.AgencyTheme
 
             SaveAttributeValues();
 
-            FlushCacheItem( CONTENT_CACHE_KEY );
-            FlushCacheItem( TEMPLATE_CACHE_KEY );
-            FlushCacheItem( OUTPUT_CACHE_KEY );
+            RemoveCacheItem( CONTENT_CACHE_KEY );
+            RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             mdEdit.Hide();
             pnlEditModal.Visible = false;
@@ -283,9 +283,9 @@ $(document).ready(function() {
         private void ShowView()
         {
 
-			GroupGuid = GetAttributeValue("Group").AsGuidOrNull();
+            GroupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
 
-			nbContentError.Visible = false;
+            nbContentError.Visible = false;
             upnlContent.Update();
 
             string outputContents = null;
@@ -312,29 +312,29 @@ $(document).ready(function() {
                 mergeFields.Add( "LinkedPages", linkedPages );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-				var group = new Group();
-				var members = new List<GroupMember>();
+                var group = new Group();
+                var members = new List<GroupMember>();
 
-				if(GroupGuid.HasValue)
-				{
-					var rockContext = new RockContext();
-					group = new GroupService(rockContext).GetByGuid(GroupGuid.Value);
-					members = new GroupMemberService(rockContext).Queryable("GroupRole,Person", true)
-							.Where(m =>
-							   m.GroupId == group.Id
-							   )
-							.OrderBy(m => m.GroupRole.Order)
-							.ToList();
+                if ( GroupGuid.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    group = new GroupService( rockContext ).GetByGuid( GroupGuid.Value );
+                    members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person", true )
+                            .Where( m =>
+                                m.GroupId == group.Id
+                               )
+                            .OrderBy( m => m.GroupRole.Order )
+                            .ToList();
 
-				}
+                }
 
-				mergeFields.Add("Group", group);
-				mergeFields.Add("Members", members);
+                mergeFields.Add( "Group", group );
+                mergeFields.Add( "Members", members );
 
 
 
-				// TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-				mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                mergeFields.AddOrIgnore( "Person", CurrentPerson );
 
                 var template = GetTemplate();
 
@@ -351,8 +351,7 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( OutputCacheDuration.Value ) };
-                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, cacheItemPolicy );
+                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value );
                 }
             }
 
@@ -378,8 +377,7 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, cacheItemPolicy );
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value );
                     }
                 }
             }
