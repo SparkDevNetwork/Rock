@@ -617,28 +617,28 @@ NavigationPage {
 .h2 {
     color: ?color-heading;
     font-style: bold;
-    font-size: title;
+    font-size: 28;
     line-height: 1;
 }
 
 .h3 {
     color: ?color-heading;
     font-style: bold;
-    font-size: subtitle;
+    font-size: 22;
     line-height: 1.05;
 }
 
 .h4 {
     color: ?color-heading;
     font-style: bold;
-    font-size: default;
+    font-size: 16;
     line-height: 1.1;
 }
 
 .h5, .h6 {
     color: ?color-heading;
     font-style: bold;
-    font-size: small;
+    font-size: 13;
     line-height: 1.25;
 }
 
