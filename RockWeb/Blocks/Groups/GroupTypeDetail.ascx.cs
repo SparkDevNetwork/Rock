@@ -558,8 +558,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupType.EnableGroupHistory = cbEnableGroupHistory.Checked;
+
+            // Update the allowed Child Group Types.
+            var existingChildGroupTypeIdList = ( groupType.ChildGroupTypes == null )
+                ? new List<int>()
+                : groupType.ChildGroupTypes.Select( x => x.Id ).ToList();
+
             groupType.ChildGroupTypes = new List<GroupType>();
-            groupType.ChildGroupTypes.Clear();
+
             foreach ( var item in ChildGroupTypesList )
             {
                 var childGroupType = groupTypeService.Get( item );
@@ -567,6 +573,17 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupType.ChildGroupTypes.Add( childGroupType );
                 }
+            }
+
+            var newChildGroupTypeIdList = groupType.ChildGroupTypes.Select( x => x.Id ).ToList();
+
+            if ( existingChildGroupTypeIdList.Except( newChildGroupTypeIdList ).Any()
+                || newChildGroupTypeIdList.Except( existingChildGroupTypeIdList ).Any() )
+            {
+                // Ensure that at least one property of the Group Type is marked as modified.
+                // If we don't do this, Rock.Data.DbContext.RockPostSave won't interpret changes to the Child Group Types collection
+                // as a change to the Group Type itself.
+                groupType.ModifiedDateTime = RockDateTime.Now;
             }
 
             // Delete any removed exclusions
