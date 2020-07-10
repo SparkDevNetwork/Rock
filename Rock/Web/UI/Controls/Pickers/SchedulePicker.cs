@@ -31,6 +31,15 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SchedulePicker : ItemPicker
     {
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow selection of inactive schedules.  Default is true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow inactive selection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowInactiveSelection { get; set; } = true;
+
         #region Controls
 
         /// <summary>
@@ -47,15 +56,18 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            _cbShowInactiveSchedules = new RockCheckBox();
-            _cbShowInactiveSchedules.ContainerCssClass = "pull-right";
-            _cbShowInactiveSchedules.SelectedIconCssClass = "fa fa-check-square-o";
-            _cbShowInactiveSchedules.UnSelectedIconCssClass = "fa fa-square-o";
-            _cbShowInactiveSchedules.ID = this.ID + "_cbShowInactiveSchedules";
-            _cbShowInactiveSchedules.Text = "Show Inactive";
-            _cbShowInactiveSchedules.AutoPostBack = true;
-            _cbShowInactiveSchedules.CheckedChanged += _cbShowInactiveSchedules_CheckedChanged;
-            this.Controls.Add( _cbShowInactiveSchedules );
+            if ( AllowInactiveSelection )
+            {
+                _cbShowInactiveSchedules = new RockCheckBox();
+                _cbShowInactiveSchedules.ContainerCssClass = "pull-right";
+                _cbShowInactiveSchedules.SelectedIconCssClass = "fa fa-check-square-o";
+                _cbShowInactiveSchedules.UnSelectedIconCssClass = "fa fa-square-o";
+                _cbShowInactiveSchedules.ID = this.ID + "_cbShowInactiveSchedules";
+                _cbShowInactiveSchedules.Text = "Show Inactive";
+                _cbShowInactiveSchedules.AutoPostBack = true;
+                _cbShowInactiveSchedules.CheckedChanged += _cbShowInactiveSchedules_CheckedChanged;
+                this.Controls.Add( _cbShowInactiveSchedules );
+            }
         }
 
         /// <summary>
@@ -79,7 +91,7 @@ namespace Rock.Web.UI.Controls
             if ( schedule != null )
             {
                 // If setting the value to an inactive schedule, enable the "Show Inactive Schedules" checkbox.
-                if ( !schedule.IsActive )
+                if ( AllowInactiveSelection && !schedule.IsActive )
                 {
                     _cbShowInactiveSchedules.Checked = true;
                     SetExtraRestParams( true );
@@ -124,7 +136,7 @@ namespace Rock.Web.UI.Controls
                     if ( schedule != null )
                     {
                         // If setting the value to an inactive schedule, enable the "Show Inactive Schedules" checkbox.
-                        if ( !schedule.IsActive )
+                        if ( AllowInactiveSelection && !schedule.IsActive )
                         {
                             _cbShowInactiveSchedules.Checked = true;
                             SetExtraRestParams( true );
@@ -187,7 +199,10 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderCustomPickerActions( writer );
 
-            _cbShowInactiveSchedules.RenderControl( writer );
+            if ( AllowInactiveSelection )
+            {
+                _cbShowInactiveSchedules.RenderControl( writer );
+            }
         }
 
         /// <summary>
