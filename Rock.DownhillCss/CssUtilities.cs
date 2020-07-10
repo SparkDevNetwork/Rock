@@ -1218,7 +1218,6 @@ NavigationPage {
 
 .calendar-events-day {
     text-align: left;
-    margin-bottom: 8;
 }
 
 .calendar-event {
