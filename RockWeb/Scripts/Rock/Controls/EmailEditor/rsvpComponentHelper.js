@@ -255,13 +255,16 @@
 
             registerRecipients: function () {
                 var restUrl = Rock.settings.get('baseUrl') + 'api/Attendances/RegisterRSVPRecipients'
-                    + '?OccurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0]
-                    + '&PersonIds=' + encodeURIComponent($('.js-rsvp-person-ids input').val());
+                    + '?OccurrenceId=' + $('#component-rsvp-occurrence').val().split('|')[0];
+                var restData = $('.js-rsvp-person-ids input').val().split(',');
 
                 $('#component-rsvp-registerbutton').addClass('disabled').text('Registering ...');
+
                 $.ajax({
                     url: restUrl,
-                    method: 'POST',
+                    type: "POST",
+                    data: JSON.stringify(restData),
+                    contentType: "application/json",
                     success: function () {
                         $('#component-rsvp-registerbutton').addClass('disabled').text('Recipients Registered!');
                     },

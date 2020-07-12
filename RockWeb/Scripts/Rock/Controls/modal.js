@@ -1,3 +1,52 @@
+/*
+ * BJW  7-7-2020
+ * Previous Issues and Fixes
+ *
+ * April 15, 2020
+ * Problem:
+ *      Open a modal dialog and close it. Next, try to open a modal alert. An invisible backdrop is added to the
+ *      page such that the page cannot be interacted with. The alert does not appear.
+ * Solution:
+ *      Every postback causes the C# modal control code to register JS that checks a hidden field to determine
+ *      if a modal should be open or closed. If many modals exist, then they are all checked and all call
+ *      the JS close dialog method, which removed backdrops. If each modal removes any backdrop without
+ *      discretion, then they interfere with each other. Therefore, only remove backdrops that belong to the modal
+ *      in current context being closed.
+ *      https://github.com/SparkDevNetwork/Rock/commit/8a1c5653c534c61548de34d0ca1a4483304437a1
+ *
+ * June 1, 2020
+ * Problem:
+ *      When a modal is opened, sometimes the body is set to .modal-open and sometimes a manager (usually the
+ *      update panel of the block) is set to .modal-open. In the event of the manager, cleanup was not occurring
+ *      and the class remained even after the modal was gone.
+ * Solution:
+ *      A param was added to the close dialog JS method that allowed proper cleanup of classes (.modal-open) added
+ *      to the manager.
+ *      https://github.com/SparkDevNetwork/Rock/commit/26cf101ae8e8923008ae42f3d833cab5a35df8cb
+ *
+ * July 1, 2020
+ * Problem:
+ *      Open a dialog. Close the dialog with a postback that calls C# Hide with no manager param. Open the dialog again
+ *      and there is no backdrop.
+ * Solution:
+ *      This seems to be an issue with bootstrap (seems unlikely) or the combination of bootstrap with the postback
+ *      UI re-rendering. The modal is removed from the DOM before our JS close method is reached. Therefore proper
+ *      cleanup of the first modal open is never done. This seems to impact the second opening and bootstrap fails
+ *      to add the backdrop. Thus our code adds a backdrop if one is not visible.
+ *      https://github.com/SparkDevNetwork/Rock/commit/f08bb6fc1e17b79d0772152707acd4a3876a68d6
+ *
+ *  July 7, 2020
+ *  Problem:
+ *      Open a dialog. Close the dialog with a postback that calls C# Hide with no manager param. Open the dialog again
+ *      and there is a backdrop but no modal.
+ *  Solution:
+ *      This is because the postback calls the C# Hide method, which does not provide the manager to the JS close modal
+ *      method. Because of this, proper cleanup doesn't occur. We can calculate the manger as we did when we opened the
+ *      modal, which fixes the issue.
+ *      Also, there was a bug in hiding the backdrop where if the owner no longer existed
+ *      in the DOM, then the backdrop was not removed.
+ */ 
+
 (function ($) {
     'use strict';
     window.Rock = window.Rock || {};
@@ -61,7 +110,7 @@
                 replace: true
             });
 
-            if ($('.modal-backdrop').length == 0) {
+            if ($('.modal-backdrop').filter(':visible').length === 0) {
                 // ensure that there is a modal-backdrop and include its owner as an attribute so that we can remove it when this modal is closed
                 $('<div class="modal-backdrop" data-modal-id="' + $modalDialog.prop('id') + '" />').appendTo('body');
             }
@@ -134,11 +183,12 @@
                 // Ensure any modalBackdrops are removed if its owner is no longer visible. Note that some
                 // backdrops do not have an owner
                 $('.modal-backdrop').each(function () {
-                    const $modalBackdrop = $(this);
-                    var $owner = $('#' + $modalBackdrop.attr('data-modal-id'));
-                    var hasOwner = $owner.length > 0;
+                    var $modalBackdrop = $(this);
+                    var ownerId = $modalBackdrop.data('modalId');
+                    var $owner = $('#' + ownerId);
+                    var isOwnerInDom = $owner.length > 0;
 
-                    if (hasOwner && !$owner.is(':visible')) {
+                    if (ownerId && (!isOwnerInDom || !$owner.is(':visible'))) {
                         $modalBackdrop.remove();
                     }
                 });

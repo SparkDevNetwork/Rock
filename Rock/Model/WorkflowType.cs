@@ -300,8 +300,10 @@ namespace Rock.Model
         {
             if ( state == EntityState.Deleted )
             {
+                var rockContext = dbContext as RockContext;
+
                 // manually clear any registrations using this workflow type
-                foreach ( var template in new RegistrationTemplateService( dbContext as RockContext )
+                foreach ( var template in new RegistrationTemplateService( rockContext )
                     .Queryable()
                     .Where( r =>
                         r.RegistrationWorkflowTypeId.HasValue &&
@@ -310,13 +312,34 @@ namespace Rock.Model
                     template.RegistrationWorkflowTypeId = null;
                 }
 
-                foreach ( var instance in new RegistrationInstanceService( dbContext as RockContext )
+                foreach ( var instance in new RegistrationInstanceService( rockContext )
                     .Queryable()
                     .Where( r =>
                         r.RegistrationWorkflowTypeId.HasValue &&
                         r.RegistrationWorkflowTypeId.Value == this.Id ) )
                 {
                     instance.RegistrationWorkflowTypeId = null;
+                }
+
+                /*
+                    7/6/2020 - JH
+                    The deletion of the Workflow object graph is accomplished by a combination of SQL cascade deletes and
+                    PreSaveChanges() implementations.
+
+                    When a WorkflowType is deleted, any child Workflows will be cascade-deleted. Most children of the deleted
+                    Workflows will also be cascade-deleted, with the exception of any ConnectionRequestWorkflow records. Therefore,
+                    we need to manually delete those here in order to prevent foreign key violations within the database.
+
+                    Reason: GitHub Issue #4068
+                    https://github.com/SparkDevNetwork/Rock/issues/4068#issuecomment-648908315
+                */
+                var connectionRequestWorkflows = new ConnectionRequestWorkflowService( rockContext )
+                    .Queryable()
+                    .Where( c => c.Workflow.WorkflowTypeId == this.Id );
+
+                if ( connectionRequestWorkflows.Any() )
+                {
+                    dbContext.BulkDelete( connectionRequestWorkflows );
                 }
             }
 

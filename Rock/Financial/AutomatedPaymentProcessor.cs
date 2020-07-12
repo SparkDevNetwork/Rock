@@ -620,9 +620,15 @@ namespace Rock.Financial
                 return null;
             }
 
+            FinancialTransaction financialTransaction = null;
+
             try
             {
-                return SaveTransaction( transactionGuid );
+                _rockContext.WrapTransaction(() => {
+                    financialTransaction = SaveTransaction( transactionGuid );
+                } );
+                
+                return financialTransaction;
             }
             catch ( Exception exception )
             {
@@ -633,7 +639,11 @@ namespace Rock.Financial
 
                 try
                 {
-                    return SaveTransaction( transactionGuid );
+                    _rockContext.WrapTransaction( () => {
+                        financialTransaction = SaveTransaction( transactionGuid );
+                    } );
+
+                    return financialTransaction;
                 }
                 catch
                 {

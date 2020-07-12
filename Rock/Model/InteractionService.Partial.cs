@@ -371,6 +371,21 @@ new SqlParameter( "@currentDateTime", currentDateTime )
                     interactionImport.InteractionChannelId = InteractionChannelCache.Get( interactionImport.InteractionChannelId.Value )?.Id;
                 }
 
+                // Determine which Channel Type Medium this should be set to
+                if ( interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    // make sure it is a valid Id
+                    interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.Get( interactionImport.InteractionChannelChannelTypeMediumValueId.Value )?.Id;
+                }
+
+                if ( !interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    if ( interactionImport.InteractionChannelChannelTypeMediumValueGuid.HasValue )
+                    {
+                        interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.GetId( interactionImport.InteractionChannelChannelTypeMediumValueGuid.Value );
+                    }
+                }
+
                 if ( !interactionImport.InteractionChannelId.HasValue )
                 {
                     if ( interactionImport.InteractionChannelGuid.HasValue )
@@ -381,7 +396,7 @@ new SqlParameter( "@currentDateTime", currentDateTime )
                     // if InteractionChannelId is still null, lookup (or create) an InteractionChannel from InteractionChannelForeignKey (if it is specified) 
                     if ( interactionImport.InteractionChannelId == null && interactionImport.InteractionChannelForeignKey.IsNotNullOrWhiteSpace() )
                     {
-                        interactionImport.InteractionChannelId = InteractionChannelCache.GetChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName );
+                        interactionImport.InteractionChannelId = InteractionChannelCache.GetCreateChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName, interactionImport.InteractionChannelChannelTypeMediumValueId );
                     }
                     else
                     {
