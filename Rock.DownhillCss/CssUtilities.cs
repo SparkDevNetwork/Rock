@@ -48,6 +48,9 @@ namespace Rock.DownhillCss
 
             StringBuilder frameworkCss = new StringBuilder();
 
+            // Apply Reset First
+            frameworkCss.Append( resetStylesMobile );
+
             // Alerts
             AlertStyles( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
@@ -207,16 +210,23 @@ namespace Rock.DownhillCss
         #region Text
         private static void TextSizes( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
         {
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Text Size Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            foreach ( var size in settings.FontSizes )
+            // Mobile won't be using the text sizes. Instead it will use named sizes
+            if (settings.Platform == DownhillPlatform.Mobile)
             {
-                frameworkCss.AppendLine( $".text-{size.Key.ToLower()} {{" );
-                frameworkCss.AppendLine( $"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};" );
-                frameworkCss.AppendLine( "}" );
+                return;
             }
+
+            frameworkCss.AppendLine("/*");
+            frameworkCss.AppendLine("// Text Size Utilities");
+            frameworkCss.AppendLine("*/");
+
+            foreach (var size in settings.FontSizes)
+            {
+                frameworkCss.AppendLine($".text-{size.Key.ToLower()} {{");
+                frameworkCss.AppendLine($"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};");
+                frameworkCss.AppendLine("}");
+            }
+            
         }
 
         private static void TextColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
@@ -555,7 +565,7 @@ namespace Rock.DownhillCss
         #region Platform Base Styles
         private static string baseStylesWeb = @"";
 
-        private static string baseStylesMobile = @"
+        private static string resetStylesMobile = @"
 /*
     Resets
     -----------------------------------------------------------
@@ -576,9 +586,11 @@ NavigationPage {
 
 ^label {
     font-size: default;
-    color:  ;
+    color: ?color-text;
 }
+";
 
+        private static string baseStylesMobile = @"
 /*
     Utility Classes
     -----------------------------------------------------------
@@ -666,22 +678,18 @@ NavigationPage {
 
 .text-xs {
     font-size: micro;
-    color: ?color-text;
 }
 
 .text-sm {
     font-size: small;
-    color: ?color-text;
 }
 
 .text-md {
     font-size: medium;
-    color: ?color-text;
 }
 
 .text-lg {
     font-size: large;
-    color: ?color-text;
 }
 
 .text-title {
@@ -691,21 +699,17 @@ NavigationPage {
 
 .text-subtitle {
     font-size: subtitle;
-    color: ?color-text;
 }
 
 .text-caption {
     font-size: caption;
-    color: ?color-text;
 }
 
 .text-body {
     font-size: body;
-    color: ?color-text;
 }
 
 .title {
-    color: ?color-text;
     font-style: bold;
     font-size: default;
     line-height: 1;
@@ -898,6 +902,7 @@ NavigationPage {
 
 /* Divider */
 .divider {
+    background-color: ?color-gray-400;
     height: 1;
 }
 
@@ -932,6 +937,8 @@ NavigationPage {
 /* Buttons */
 .btn {
     border-radius: ?radius-base;
+    padding-left: 16;
+    padding-right: 16;
 }
 
 .btn.btn-primary {
@@ -972,6 +979,11 @@ NavigationPage {
 .btn.btn-secondary {
     color: #ffffff;
     background-color: ?color-secondary;
+}
+
+.btn.btn-brand {
+    color: #ffffff;
+    background-color: ?color-brand;
 }
 
 .btn.btn-default {
@@ -1042,6 +1054,14 @@ NavigationPage {
     border-width: 1;
     background-color: transparent;
 }
+
+.btn.btn-outline-brand {
+    color: ?color-brand;
+    border-color: ?color-brand;
+    border-width: 1;
+    background-color: transparent;
+}
+
 
 /* Button Sizes */
 .btn.btn-lg {
@@ -1316,12 +1336,6 @@ fieldcontainer > .no-fieldstack {
 formfield .required-indicator {
     margin-right: 4;
 }
-
-/* Divider */
-.divider {
-    background-color: ?color-gray-400;
-}
-
 
 /* Cards */
 .card {

@@ -512,18 +512,13 @@
                         </Rock:RockRadioButtonList>
                         <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount" />
                         <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
-                        <Rock:RockCheckBox ID="cbcAutoApplyDiscount" runat="server" Label="Auto Apply Discount"
-                            Help="Will automatically apply the discount if the registration meets the criteria.  If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
+                        <Rock:RockCheckBox ID="cbcAutoApplyDiscount" runat="server" Label="Auto Apply Discount" Help="Will automatically apply the discount if the registration meets the criteria. If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbDiscountMaxUsage" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Usage"
-                            Help="The maximum number of times (registrations) that the discount code can be used (leave blank for none)." />
-                        <Rock:NumberBox ID="nbDiscountMaxRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Registrants"
-                            Help="The maximum number of registrants (per registration) that the discount code should apply to." />
-                        <Rock:NumberBox ID="nbDiscountMinRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Minimum Registrants"
-                            Help="The minimum number of registrants (per registration) that are required in order to use this discount code." />
-                        <Rock:DateRangePicker ID="drpDiscountDateRange" runat="server" Label="Effective Dates"
-                            Help="The beginning and/or ending date that this discount code can be used." />
+                        <Rock:NumberBox ID="nbDiscountMaxUsage" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Usage" Help="The maximum number of registrations that the discount code can be used on (leave blank for none)." />
+                        <Rock:NumberBox ID="nbDiscountMaxRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Registrants" Help="The maximum number of registrants in a single registration that the discount code can be used on." />
+                        <Rock:NumberBox ID="nbDiscountMinRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Minimum Registrants" Help="The minimum number of registrants in the registration that are required in order to use the discount code." />
+                        <Rock:DateRangePicker ID="drpDiscountDateRange" runat="server" Label="Effective Dates" Help="The beginning and/or ending date that the discount code can be used." />
                     </div>
                 </div>
             </Content>

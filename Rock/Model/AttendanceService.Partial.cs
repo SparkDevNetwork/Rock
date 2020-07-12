@@ -1636,11 +1636,22 @@ namespace Rock.Model
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        [Obsolete( "Use the method which accepts a List<int> parameter instead." )]
+        [RockObsolete( "1.10.4" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {
-            var rockContext = this.Context as RockContext;
-
             var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
+            RegisterRSVPRecipients( occurrenceId, personIdList );
+        }
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIdList">A a list of Person IDs.</param>
+        public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
+        {
+            var rockContext = this.Context as RockContext;
 
             // Get Occurrence.
             var occurrence = new AttendanceOccurrenceService( rockContext ).Queryable().AsNoTracking()
