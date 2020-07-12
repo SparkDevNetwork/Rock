@@ -1,46 +1,50 @@
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+{% assign pageSize = 9 %}
+{% assign currentPage = 'Global' | PageParameter:'Page' | AsInteger %}
+{% assign offset = pageSize | Times:currentPage | Minus:pageSize %}
+{% assign defaultImage = 'Global' | Attribute:'ImageLandscape' %}
+
+{% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+{% endif %}
+
 <section>
   <div class="row">
-    <div class="col-md-4 col-sm-6 col-xs-12">
+    {% for eventItemOccurrence in EventItemOccurrences limit:pageSize offset:offset %}<div class="col-md-4 col-sm-6 col-xs-12">
 
-      {[ card title:'7 Prayers for 7 Days' titlesize:'h3' subtitle:'Clemson' content:'<p>June 29-July 1, 2020 12pm</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
+      {% eventitem id:'{{ eventItemOccurrence.EventItemOccurrence.EventItemId }}' iterator:'items' %}
+        {% assign event = items | First %}
+        {% assign imageurl = event | Attribute:'ImageLandscape' | WithFallback:'', defaultImage %}
+      {% endeventitem %}
 
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
+      {% assign title = eventItemOccurrence.Name | Replace:"'","’" %}
+      {% assign subtitle = eventItemOccurrence.EventItemOccurrence.Campus.Name | WithFallback:'', 'All Campuses' %}
 
-      {[ card title:'Connect Class' titlesize:'h3' subtitle:'All Campuses' content:'<p>July 12, 2020 9:15am & 11:15am</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
+      {% assign childcare = eventItemOccurrence.EventItemOccurrence | Attribute:'Childcare' %}
+      {% assign food = eventItemOccurrence.EventItemOccurrence | Attribute:'Food' %}
 
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
+      {% assign effectiveStartDate = eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate %}
+      {% capture formattedStartDate %}{[ formatDate date:effectiveStartDate ]}{% endcapture %}
 
-      {[ card title:'7 Prayers for 7 Days' titlesize:'h3' subtitle:'Clemson' content:'<p>July 6-9, 2020 12pm</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
+      {%- capture content -%}
+        <p>{{ formattedStartDate }} {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate | Date:'st' }}</p>
+      {%- endcapture -%}
 
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
+      {% if eventItemOccurrence.DetailPage != null %}
+        {% assign linkurl = eventItemOccurrence.DetailPage %}
+      {% else %}
+        {% capture linkurl %}{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}{% endcapture %}
+      {% endif %}
 
-      {[ card title:'Leadership Team Update' titlesize:'h3' subtitle:'All Campuses' content:'<p>July 10, 2020 8pm</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
+      {[ card title:'{{ title }}' titlesize:'h3' subtitle:'{{ subtitle }}' type:'Event' content:'{{ content }}' imageurl:'{{ imageurl }}' linkurl:'{{ linkurl }}' linktext:'Event Details' ]}
 
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      {[ card title:'Men’s Gathering' titlesize:'h3' subtitle:'Clemson' content:'<p>July 15, 2020 6am</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      {[ card title:'Connect Class' titlesize:'h3' subtitle:'All Campuses' content:'<p>July 12, 2020 9:15am & 11:15am</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      {[ card title:'7 Prayers for 7 Days' titlesize:'h3' subtitle:'Clemson' content:'<p>July 6-9, 2020 12pm</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      {[ card title:'Leadership Team Update' titlesize:'h3' subtitle:'All Campuses' content:'<p>July 10, 2020 8pm</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      {[ card title:'Men’s Gathering' titlesize:'h3' subtitle:'Clemson' content:'<p>July 15, 2020 6am</p>' imageurl:'https://s3.amazonaws.com/ns.images/newspring/FloodSCwithLove.Volunteer_2.jpg' linkurl:'#' linktext:'Event Details' ]}
-
-    </div>
+    </div>{% endfor %}
   </div>
 </section>
 
-{[ pagination itemcount:'36' pagesize:'9' ]}
+{[ pagination itemcount:'{{ eventItemOccurrenceCount }}' pagesize:'{{ pageSize }}' ]}
 
 {% comment %} {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
 

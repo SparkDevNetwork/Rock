@@ -1,3 +1,87 @@
+{% assign defaultImage = 'Global' | Attribute:'ImageSquare' %}
+{% assign eventOccurrenceId = 'Global' | PageParameter:'EventOccurrenceId' %}
+{% assign EventItemOccurrence = Event.EventItemOccurrences | Where:'Id',eventOccurrenceId | First %}
+
+{% assign title = Event.Name | Replace:"'","’" %}
+{% assign imageSquare = Event | Attribute:'ImageSquare' %}
+{% assign imageLandscape = Event | Attribute:'ImageLandscape' %}
+{% assign imageurl = imageSquare | WithFallback:'', imageLandscape | WithFallback:'', defaultImage %}
+{% assign subtitle = eventItemOccurrence.EventItemOccurrence.Campus.Name | WithFallback:'', 'All Campuses' %}
+{% assign childcare = EventItemOccurrence | Attribute:'Childcare' %}
+{% assign food = EventItemOccurrence | Attribute:'Food' %}
+
+{% assign effectiveStartDate = EventItemOccurrence.Schedule.EffectiveStartDate %}
+{% capture formattedStartDate %}{[ formatDate date:effectiveStartDate ]}{% endcapture %}
+
+{% sql %}
+  SELECT
+    eiogm.UrlSlug,
+    eiogm.RegistrationInstanceId
+  FROM EventItemOccurrence eio
+  JOIN EventItemOccurrenceGroupMap eiogm
+  ON eiogm.EventItemOccurrenceId = eio.Id
+  WHERE eio.Id = {{ EventItemOccurrence.Id }}
+{% endsql %}
+
+{% assign urlSlug = results | First | Property:'UrlSlug' %}
+{% assign registrationInstanceId = results | First | Property:'RegistrationInstanceId' %}
+
+{% capture content %}
+  {{ Event.Description | Replace:"'","’" }}
+  {% if childcare == 'Yes' or food != empty %}
+    <ul>
+      {% if childcare == 'Yes' %}<li><small>Childcare Provided</small></li>{% endif %}
+      {% if food and food != empty %}<li><small>{{ food }} Provided</small></li>{% endif %}
+    </ul>
+  {% endif %}
+{% endcapture %}
+
+{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'No' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+{% comment %}
+<div class="row">
+  <div class="col-md-6 col-xs-12">
+
+    <div class="bg-gray-darker ratio ratio-square push-bottom xs-push-half-bottom rounded shadowed background-cover background-center" style="background-image:url('{{ imageurl }}');"></div>
+
+  </div><div class="col-md-6 col-xs-12">
+    <div class="bg-white soft-double soft-bottom xs-soft xs-hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+
+      <h1 class="push-half-bottom">{{ title }}</h1>
+
+      <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+
+      <p>{{ formattedStartDate }} {{ EventItemOccurrence.Schedule.EffectiveStartDate | Date:'st' }}</p>
+
+      {{ Event.Description | Replace:"'","’" }}
+
+      {% if childcare == 'Yes' or food != empty %}
+        <ul>
+          {% if childcare == 'Yes' %}<li><small>Childcare Provided</small></li>{% endif %}
+          {% if food and food != empty %}<li><small>{{ food }} Provided</small></li>{% endif %}
+        </ul>
+      {% endif %}
+
+      {% if registrationInstanceId and registrationInstanceId != empty %}
+        {% capture registrationUrl %}
+          {% if urlSlug and urlSlug != empty %}
+            /registration/{{ urlSlug }}
+          {% else %}
+            /registration?RegistrationInstanceId={{ registrationInstanceId }}
+          {% endif %}
+        {% endcapture %}
+        <p class="flush"><a href="{{ registrationUrl | Trim }}" class="btn btn-primary">Sign Up Now</a></p>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endcomment %}
+
+
+
+
+{% comment %}
 <div class="row">
   <div class="col-md-8 col-md-push-4 margin-b-md">
     {% if Event.Photo.Guid %}
@@ -159,3 +243,4 @@
 
   </div>
 </div>
+{% endcomment %}

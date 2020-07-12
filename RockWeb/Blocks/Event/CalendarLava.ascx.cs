@@ -628,7 +628,7 @@ namespace RockWeb.Blocks.Event
             // Set filter visibility
             bool showFilter = pnlCalendar.Visible || rcwCampus.Visible || rcwCategory.Visible || drpDateRange.Visible;
             pnlFilters.Visible = showFilter;
-            pnlList.CssClass = showFilter ? "col-md-9" : "col-md-12";
+            pnlList.CssClass = showFilter ? "col-md-9" : "col-md-12 col-xs-12";
 
             return true;
         }

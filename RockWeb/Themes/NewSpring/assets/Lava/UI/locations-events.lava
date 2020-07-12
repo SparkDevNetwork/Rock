@@ -1,131 +1,51 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
-{% comment %} {[ swiper title:'{{ campus.Name }} Events' lava:'' ]}
-    [[ item ]]
-      {[ card title:'7 Prayers for 7 Days' titlesize:'h3' subtitle:'June 29-July 1, 2020 12pm' content:'' linkurl:'#' linktext:'Event Details' ]}
-    [[ enditem ]]
-    [[ item ]]
-      {[ card title:'Connect Class' titlesize:'h3' subtitle:'July 12, 2020 9:15am & 11:15am' content:'' linkurl:'#' linktext:'Event Details' ]}
-    [[ enditem ]]
-    [[ item ]]
-      {[ card title:'7 Prayers for 7 Days' titlesize:'h3' subtitle:'July 6-9, 2020 12pm' content:'' linkurl:'#' linktext:'Event Details' ]}
-    [[ enditem ]]
-    [[ item ]]
-      {[ card title:'Leadership Team Update' titlesize:'h3' subtitle:'July 10, 2020 8pm' content:'' linkurl:'#' linktext:'Event Details' ]}
-    [[ enditem ]]
-    [[ item ]]
-      {[ card title:'Men’s Gathering' titlesize:'h3' subtitle:'July 15, 2020 6am' content:'' linkurl:'#' linktext:'Event Details' ]}
-    [[ enditem ]]
-    [[ item ]]
-      <div class="bg-primary soft rounded shadowed">
-        <a href="/events" class="text-white text-decoration-none">
-          <h3 class="text-center flush">See More<br>{{ campus.Name }} Events</h3>
-        </a>
-      </div>
-    [[ enditem ]]
-{[ endswiper ]} {% endcomment %}
+<pre>
+[{% for occurrence in EventItemOccurrences limit:1 %}
 
-<section class="bg-white soft-double xs-soft-sides push-bottom xs-push-half-bottom rounded shadowed">
+    {{ occurrence | ToJSON }}{% unless forloop.last %},{% endunless %}
+{% endfor %}]
+</pre>
+
+{% assign occurrencesObject = occurrencesString | FromJSON %}
+
+{% capture lava %}
   <div class="text-center">
-    <h2 class="push-half-bottom">{{ campus.Name }} Events</h2>
-    <p class="lead"><a href="/events">See More Events</a></p>
-    <br>
+    <a href="#" class="btn btn-primary push-top">See More Events</a>
   </div>
-
-  <div class="row xs-text-center">
-    <div class="col-md-4 col-sm-6 col-xs-12">
-
-      <h3 class="push-half-bottom">7 Prayers for 7 Days</h3>
-      <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>June 29-July 1, 2020 12pm</small></p>
-      <p><a href="#" class="btn btn-primary">Event Details</a></p>
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      <h3 class="push-half-bottom">Connect Class</h3>
-      <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>July 12, 2020 9:15am & 11:15am</small></p>
-      <p><a href="#" class="btn btn-primary">Event Details</a></p>
-
-    </div><div class="col-md-4 col-sm-6 col-xs-12">
-
-      <h3 class="push-half-bottom">Leadership Team Update</h3>
-      <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>July 10, 2020 8pm</small></p>
-      <p><a href="#" class="btn btn-primary">Event Details</a></p>
-
-    </div>
-  </div>
-</section>
+{% endcapture %}
 
 
+<div id="events">
+{[ swiper title:'{{ campus.Name }} Events' subtitle:'<a href="/events?campus={{ campus.Id }}" class="lead">See More Events</a>' lava:'{{ lava }}' ]}
+  {% for eventItemOccurrence in occurrencesObject %}[[ item ]]
 
-
-
-
-
-
-
-
-{% comment %}
-{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
-
-{% if eventItemOccurrenceCount == 0 %}
-  <div class="panel panel-default margin-t-md">
-    <div class="margin-all-md"> There are no events in this time frame.</div>
-  </div>
-{% endif %}
-
-
-<section class="">
-<div class="row">
-  {% for eventItemOccurrence in EventItemOccurrences %}<div class="col-md-4 col-sm-6 col-xs-12">
-
-    {% assign rawStartDateTime = eventItemOccurrence.EventItemOccurrence.Schedule.iCalendarContent | Split:'DTSTART:' | Index:1 | Truncate:15,'' %}
-    {% capture startDateFormatted %}{{ rawStartDateTime | Slice:4,2 }}/{{ rawStartDateTime | Slice:6,2 }}/{{ rawStartDateTime | Slice:0,4 }} {{ rawStartDateTime | Slice:9,2 }}:{{ rawStartDateTime | Slice:11,2 }}:{{ rawStartDateTime | Slice:13,2 }}{% endcapture %}
-    {% assign startDate = startDateFormatted | AsDateTime %}
-
-    {% assign rawEndDateTime = eventItemOccurrence.EventItemOccurrence.Schedule.iCalendarContent | Split:'DTEND:' | Index:1 | Truncate:15,'' %}
-    {% capture endDateFormatted %}{{ rawEndDateTime | Slice:4,2 }}/{{ rawEndDateTime | Slice:6,2 }}/{{ rawEndDateTime | Slice:0,4 }} {{ rawEndDateTime | Slice:9,2 }}:{{ rawEndDateTime | Slice:11,2 }}:{{ rawEndDateTime | Slice:13,2 }}{% endcapture %}
-    {% assign endDate = endDateFormatted | AsDateTime %}
-
-
+    {% eventitem id:'{{ eventItemOccurrence.EventItemId }}' where:'IsActive == True' iterator:'items' %}
+      {% assign event = items | First %}
+      {% assign imageurl = event | Attribute:'ImageLandscape' | WithFallback:'', defaultImage %}
+    {% endeventitem %}
 
     {% assign title = eventItemOccurrence.Name | Replace:"'","’" %}
+    {% assign subtitle = eventItemOccurrence.Campus.Name | WithFallback:'', 'All Campuses' %}
+
+    {% assign childcare = eventItemOccurrence | Attribute:'Childcare' %}
+    {% assign food = eventItemOccurrence | Attribute:'Food' %}
+
+    {% assign effectiveStartDate = eventItemOccurrence.Schedule.EffectiveStartDate %}
+    {% capture formattedStartDate %}{[ formatDate date:effectiveStartDate ]}{% endcapture %}
+
+    {%- capture content -%}
+      <p>{{ formattedStartDate }} {{ eventItemOccurrence.Schedule.EffectiveStartDate | Date:'st' }}</p>
+    {%- endcapture -%}
 
     {% if eventItemOccurrence.DetailPage != null %}
       {% assign linkurl = eventItemOccurrence.DetailPage %}
     {% else %}
-      {% capture linkurl %}{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}{% endcapture %}
+      {% capture linkurl %}{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.Id }}{% endcapture %}
     {% endif %}
 
-    {% capture subtitle %}
-      {{ startDate }} - {{ endDate }}
-    {% endcapture %}
-
-
-
-    {% capture content %}
-
-      <h3 class="push-half-bottom">{{ title }}</h3>
-      <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
-      <p><b>Effective Start Date:</b> {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate }}<br>
-      <b>Effective End Date:</b> {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate }}<br>
-      <b>Friendly Schedule Text:</b> {{ eventItemOccurrence.EventItemOccurrence.Schedule.FriendlyScheduleText }}</p>
-      <p><a href="{{ linkurl }}" class="btn btn-primary">View Details</a></p>
-    {% endcapture %}
-
-    {[ card content:'{{ content | Escape }}' ]}
-
-  </div>{% endfor %}
+    {[ card title:'{{ title }}' titlesize:'h3' subtitle:'{{ subtitle }}' content:'{{ content }}' type:'Event' imageurl:'{{ imageurl }}' linkurl:'{{ linkurl }}' linktext:'Event Details' ]}
+  [[ enditem ]]{% endfor %}
+{[ endswiper ]}
 </div>
-</section>
-
-
-<script type="text/javascript">
-
-  $( document ).ready(function() {
-  $('.js-group-item').tooltip();
-  });
-
-</script>
-
-{% endcomment %}

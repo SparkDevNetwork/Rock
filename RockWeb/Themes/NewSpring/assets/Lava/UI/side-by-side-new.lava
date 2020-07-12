@@ -1,4 +1,3 @@
-{% assign trimcopy = 'Yes' %}
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
 
@@ -38,7 +37,7 @@
             </div>
         {% if linkurl != empty %}</a>{% endif %}
     </div><div class="floating-item col-xs-12 col-sm-12 col-md-6">
-        <div class="soft-sides sm-hard-sides sm-soft-half-bottom xs-hard-sides xs-soft-half-bottom clearfix text-left sm-text-center xs-text-center">
+        <div class="soft-sides sm-hard-sides sm-soft-half-bottom xs-hard-sides xs-soft-half-bottom clearfix text-left ">
 
             <div class="hidden-sm hidden-xs">
                 {% if label != null and label != '' %}
@@ -85,7 +84,7 @@
                 </p>
             {% endif %}
 
-            {% if lava and lava != empty and 1 == 2 %}
+            {% if lava and lava != empty %}
                 {{ lava | HtmlDecode }}
             {% endif %}
         </div>
