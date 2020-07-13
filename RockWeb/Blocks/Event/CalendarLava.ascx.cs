@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -29,10 +27,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using Rock.Store;
-using System.Text;
-using Rock.Security;
-using DDay.iCal;
+using Ical.Net.DataTypes;
 
 namespace RockWeb.Blocks.Event
 {
@@ -395,7 +390,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( o.Schedule != null )
                     {
-                        eventOccurrenceDate.ScheduleOccurrences = o.Schedule.GetOccurrences( beginDate, endDate ).ToList();
+                        eventOccurrenceDate.ScheduleOccurrences = o.Schedule.GetICalOccurrences( beginDate, endDate ).ToList();
                     }
                     else
                     {
@@ -742,7 +737,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// A class to store the event item occurrences dates
+        /// A block-level viewmodel for event item occurrences dates.
         /// </summary>
         public class EventOccurrenceDate
         {
