@@ -65,7 +65,7 @@
 								</td>
 								<td>{{ ptoAllocation.Hours }}</td>
 								<td>{{ usedHours }}</td>
-								<td>{{ ptoAllocation.Hours | Minus:usedHours }}</td>
+								<td>{% assign remainingHours = ptoAllocation.Hours | Minus:usedHours %}<div {% if remainingHours < 0 %}style="color:red;"{% endif %}>{{remainingHours}}</div></td>
 							</tr>
 						{% endfor %}
 					{% endptoallocation %}
