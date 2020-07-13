@@ -110,6 +110,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected void gfPtoAllocationFilter_ClearFilterClick( object sender, EventArgs e )
         {
             gfPtoAllocationFilter.DeleteUserPreferences();
+            ppPerson.PersonId = null;
             BindFilter();
         }
 
@@ -571,19 +572,17 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             ddlStatus.BindToEnum<PtoAllocationStatus>();
             ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
             string statusFilter = gfPtoAllocationFilter.GetUserPreference( "Status" );
-            if ( string.IsNullOrWhiteSpace( statusFilter ) )
+            if ( !string.IsNullOrWhiteSpace( statusFilter ) )
             {
-                statusFilter = PtoAllocationStatus.Active.ConvertToInt().ToString();
+                ddlStatus.SetValue( statusFilter );
             }
-
-            ddlStatus.SetValue( statusFilter );
 
             var ptoTypes = new PtoTypeService( new RockContext() ).Queryable().AsNoTracking().Where( x => x.IsActive == true ).ToList();
 
             ddlPtoType.DataSource = ptoTypes;
-            ddlPtoType.SetValue( gfPtoAllocationFilter.GetUserPreference( "Pto Type" ) );
             ddlPtoType.DataBind();
             ddlPtoType.Items.Insert( 0, Rock.Constants.All.ListItem );
+            ddlPtoType.SetValue( gfPtoAllocationFilter.GetUserPreference( "Pto Type" ) );
 
             ddlSourceType.BindToEnum<PtoAllocationSourceType>();
             ddlSourceType.Items.Insert( 0, Rock.Constants.All.ListItem );
@@ -600,6 +599,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             if ( personId.HasValue )
             {
                 ppPerson.PersonName = new PersonService( new RockContext() ).Get( personId.Value ).FullName;
+            }
+            else
+            {
+                ppPerson.PersonName = "";
             }
 
         }
