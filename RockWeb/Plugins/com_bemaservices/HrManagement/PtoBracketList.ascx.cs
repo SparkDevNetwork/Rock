@@ -83,12 +83,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-          
+
             int ptoTierId = 0;
 
             ptoTierId = PageParameter( "PtoTierId" ).AsInteger();
 
-            if ( ptoTierId != 0  )
+            if ( ptoTierId != 0 )
             {
                 string key = string.Format( "PtoTier:{0}", ptoTierId );
                 _ptoTier = RockPage.GetSharedItem( key ) as PtoTier;
@@ -151,7 +151,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
                 var ptoBracketTypes = ptoBracket.PtoBracketTypes.ToList();
                 var ptoBracketTypeService = new PtoBracketTypeService( rockContext );
-                foreach( var ptoBracketType in ptoBracketTypes )
+                foreach ( var ptoBracketType in ptoBracketTypes )
                 {
                     ptoBracketTypeService.Delete( ptoBracketType );
                 }
@@ -230,13 +230,37 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             //        catch { }
             //    }
             //}
-            /* else  */ if ( e.Key == MakeKeyUniqueToPtoTier( "Status" ) )
+            /* else  */
+            if ( e.Key == MakeKeyUniqueToPtoTier( "Status" ) )
             {
                 e.Value = e.Value == "True" ? "Only Show Active Items" : string.Empty;
             }
             else
             {
                 e.Value = string.Empty;
+            }
+        }
+
+        protected void gPtoBrackets_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var ptoBracket = e.Row.DataItem as PtoBracket;
+                if ( ptoBracket != null )
+                {
+                    var lSummary = e.Row.FindControl( "lSummary" ) as Literal;
+
+                    var bracketTypeItems = new List<string>();
+                    foreach ( var bracketType in ptoBracket.PtoBracketTypes )
+                    {
+                        var ptoType = bracketType.PtoType.Name;
+                        decimal defaultHours = bracketType.DefaultHours;
+                        bracketTypeItems.Add( String.Format( "{0}: {1} hrs", ptoType, defaultHours ) );
+
+                    }
+
+                    lSummary.Text = bracketTypeItems.AsDelimited( "<br/>" );
+                }
             }
         }
 
@@ -266,7 +290,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                         ptoBracketService.Delete( ptoBracket );
                         rockContext.SaveChanges();
 
-                                           }
+                    }
                     else
                     {
                         mdGridWarning.Show( "You are not authorized to delete this calendar item", ModalAlertType.Warning );
@@ -515,7 +539,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     ptoBrackets = qry.ToList().OrderBy( a => a.MinimumYear ).ToList();
                 }
-                
+
                 //// Only include opportunities that current person is allowed to view
                 //var authorizedOpportunities = new List<ConnectionOpportunity>();
                 //foreach( var opportunity in connectionOpportunities )
@@ -584,6 +608,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             pnlContent.Visible = visible;
         }
 
-        #endregion
+        #endregion      
     }
 }

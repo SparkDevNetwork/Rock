@@ -27,9 +27,10 @@
                                 <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" RepeatDirection="Horizontal" />
                                 <%--<asp:PlaceHolder ID="phAttributeFilters" runat="server" />--%>
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gPtoBrackets" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gPtoBracket_Edit" >
+                            <Rock:Grid ID="gPtoBrackets" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gPtoBracket_Edit" OnRowDataBound="gPtoBrackets_RowDataBound">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                                    <Rock:RockLiteralField ID="lSummary" HeaderText="Summary" />
                                     <Rock:RockLiteralField ID="lStatus" HeaderText="Status" SortExpression="IsActive" />
                                 </Columns>
                             </Rock:Grid>
