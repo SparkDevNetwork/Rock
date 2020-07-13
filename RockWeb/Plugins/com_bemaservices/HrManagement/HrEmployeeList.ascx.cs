@@ -212,7 +212,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfEmployeeFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfEmployeeFilter.SaveUserPreference( "Fiscal Year End", nbFiscalYearEnd.Text );
+            gfEmployeeFilter.SaveUserPreference( "Fiscal Year End", ddlFiscalYearEnd.SelectedValue );
             gfEmployeeFilter.SaveUserPreference( "Pto Type", ddlPtoType.SelectedValue );
             gfEmployeeFilter.SaveUserPreference( "Supervisor", ppSupervisor.PersonId.ToString() );
             gfEmployeeFilter.SaveUserPreference( "Ministry Area", tbMinistryArea.Text );
@@ -250,8 +250,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     var rockContext = new RockContext();
                     var ptoAllocationService = new PtoAllocationService( rockContext );
                     var ptoTypeService = new PtoTypeService( rockContext );
+                    var personAliasService = new PersonAliasService( rockContext );
 
                     var lName = e.Row.FindControl( "lName" ) as Literal;
+                    var lSupervisor = e.Row.FindControl( "lSupervisor" ) as Literal;
+                    var lMinistryArea = e.Row.FindControl( "lMinistryArea" ) as Literal;
                     var lAllocation = e.Row.FindControl( "lAllocation" ) as Literal;
                     var lTotalAccrued = e.Row.FindControl( "lTotalAccrued" ) as Literal;
                     var lTotalTaken = e.Row.FindControl( "lTotalTaken" ) as Literal;
@@ -267,7 +270,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     }
 
                     var ptoTypeIds = ptoTypes.Select( pto => pto.Id ).ToList();
-
 
                     // Get Allocations
                     var allocationQry = ptoAllocationService
@@ -321,12 +323,43 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                             remainingHours = accruedHours - takenHours;
                         }
 
-                        accruedItems.Add( String.Format( "{0}: {1}", name, accruedHours ) );
-                        takenItems.Add( String.Format( "{0}: {1}", name, takenHours ) );
-                        remainingItems.Add( String.Format( "{0}: <span style='color:{1};'>{2}</span>", name, remainingHours < 0 ? "red" : "", remainingHours ) );
+                        var isLimitedToAllocations = gfEmployeeFilter.GetUserPreference( "LimitToAllocations" ).AsBoolean();
+                        if ( !isLimitedToAllocations || accruedHours > 0 || takenHours > 0 )
+                        {
+                            accruedItems.Add( String.Format( "{0}: {1}", name, accruedHours ) );
+                            takenItems.Add( String.Format( "{0}: {1}", name, takenHours ) );
+                            remainingItems.Add( String.Format( "{0}: <span style='color:{1};'>{2}</span>", name, remainingHours < 0 ? "red" : "", remainingHours ) );
+                        }
                     }
 
+                    person.LoadAttributes();
                     lName.Text = person.FullNameReversed;
+
+                    var supervisorAttributeGuid = GetAttributeValue( "Supervisor" ).AsGuidOrNull();
+                    if ( lSupervisor != null && supervisorAttributeGuid.HasValue )
+                    {
+                        var supervisorAttribute = AttributeCache.Get( supervisorAttributeGuid.Value );
+                        if ( supervisorAttribute != null )
+                        {
+                            var supervisorAliasGuid = person.GetAttributeValue( supervisorAttribute.Key ).AsGuid();
+                            var supervisorAlias = personAliasService.Get( supervisorAliasGuid );
+                            if ( supervisorAlias != null )
+                            {
+                                lSupervisor.Text = supervisorAlias.Person.FullNameReversed;
+                            }
+                        }
+                    }
+
+                    var ministryAreaAttributeGuid = GetAttributeValue( "MinistryArea" ).AsGuidOrNull();
+                    if ( lMinistryArea != null && ministryAreaAttributeGuid.HasValue )
+                    {
+                        var ministryAreaAttribute = AttributeCache.Get( ministryAreaAttributeGuid.Value );
+                        if ( ministryAreaAttribute != null )
+                        {
+                            lMinistryArea.Text = person.GetAttributeValue( ministryAreaAttribute.Key );
+                        }
+                    }
+
                     lAllocation.Text = allocationItems.AsDelimited( "<br/>" );
                     lTotalAccrued.Text = accruedItems.AsDelimited( "<br/>" );
                     lTotalTaken.Text = takenItems.AsDelimited( "<br/>" );
@@ -351,7 +384,13 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             ddlPtoType.DataBind();
             ddlPtoType.Items.Insert( 0, Rock.Constants.All.ListItem );
 
-            nbFiscalYearEnd.Text = gfEmployeeFilter.GetUserPreference( "Fiscal Year End" );
+            ddlFiscalYearEnd.Items.Clear();
+            for ( int yearOffset = -5; yearOffset <= 5; yearOffset++ )
+            {
+                ddlFiscalYearEnd.Items.Add( new ListItem( RockDateTime.Now.AddYears( yearOffset ).Year.ToString() ) );
+            }
+            ddlFiscalYearEnd.Items.Insert( 0, Rock.Constants.None.ListItem );
+            ddlFiscalYearEnd.SetValue( gfEmployeeFilter.GetUserPreference( "Fiscal Year End" ) );
 
             var ministryAreaAttributeGuid = GetAttributeValue( "MinistryArea" ).AsGuidOrNull();
             if ( ministryAreaAttributeGuid.HasValue )
@@ -389,6 +428,9 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             var rockContext = new RockContext();
 
             var personService = new PersonService( rockContext );
+            var ptoAllocationService = new PtoAllocationService( rockContext );
+            var ptoTypeService = new PtoTypeService( rockContext );
+
             rockContext.Database.CommandTimeout = 90;
 
             DateTime todayOffset = RockDateTime.Now;
@@ -456,6 +498,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     qry = qry.WhereAttributeValue( rockContext, x => x.Attribute.Guid == supervisorAttributeGuid.Value && x.ValueAsPersonId == personId.Value );
                 }
             }
+            else
+            {
+                var supervisorCol = gEmployeeList.ColumnsOfType<RockLiteralField>().FirstOrDefault( c => c.ID == "lSupervisor" );
+                if ( supervisorCol != null )
+                {
+                    supervisorCol.Visible = false;
+                }
+            }
 
             // filter by ministry area
             if ( ministryAreaAttributeGuid.HasValue )
@@ -464,6 +514,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 if ( ministryArea.IsNotNullOrWhiteSpace() )
                 {
                     qry = qry.WhereAttributeValue( rockContext, x => x.Attribute.Guid == ministryAreaAttributeGuid.Value && x.Value == ministryArea );
+                }
+            }
+            else
+            {
+                var ministryAreaCol = gEmployeeList.ColumnsOfType<RockLiteralField>().FirstOrDefault( c => c.ID == "lMinistryArea" );
+                if ( ministryAreaCol != null )
+                {
+                    ministryAreaCol.Visible = false;
                 }
             }
 

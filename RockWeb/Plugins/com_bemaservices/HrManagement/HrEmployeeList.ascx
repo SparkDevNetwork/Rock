@@ -11,7 +11,7 @@
                     <div class="grid grid-panel">
                         <Rock:ModalAlert ID="maWarningDialog" runat="server" />
                         <Rock:GridFilter ID="gfEmployeeFilter" runat="server">
-                            <Rock:NumberBox ID="nbFiscalYearEnd" runat="server" Label="Fiscal Year End" NumberType="Integer" MaximumValue="3000" MinimumValue="1900" />
+                            <Rock:RockDropDownList ID="ddlFiscalYearEnd" runat="server" Label="Fiscal Year End" />
                             <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="Pto Type" DataValueField="Id" DataTextField="Name" />
                             <Rock:RockTextBox ID="tbMinistryArea" runat="server" Label="Ministry Area" />
                             <Rock:PersonPicker ID="ppSupervisor" runat="server" Label="Supervisor" />
@@ -21,8 +21,10 @@
                         <Rock:Grid ID="gEmployeeList" runat="server" RowItemText="Request" OnRowSelected="gEmployeeList_Edit" AllowSorting="true" CssClass="js-grid-allocation-list" OnRowDataBound="gEmployeeList_RowDataBound">
                             <Columns>
                                 <Rock:RockLiteralField ID="lName" HeaderText="Name" SortExpression="Name" />
+                                <Rock:RockLiteralField ID="lSupervisor" HeaderText="Supervisor" />
+                                <Rock:RockLiteralField ID="lMinistryArea" HeaderText="Ministry Area" />
                                 <Rock:RockLiteralField ID="lAllocation" HeaderText="Allocations" />
-                                <Rock:RockLiteralField ID="lTotalAccrued" HeaderText="Accrued Hours"/>
+                                <Rock:RockLiteralField ID="lTotalAccrued" HeaderText="Accrued Hours" />
                                 <Rock:RockLiteralField ID="lTotalTaken" HeaderText="Taken Hours" />
                                 <Rock:RockLiteralField ID="lRemaining" HeaderText="Remaining Hours" />
                             </Columns>
