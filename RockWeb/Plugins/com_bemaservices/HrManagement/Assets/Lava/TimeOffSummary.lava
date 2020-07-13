@@ -52,21 +52,23 @@
 				{% for alias in person.Aliases %}
 					{% ptoallocation where:'PersonAliasId == {{alias.Id}}' %}
 						{% for ptoAllocation in ptoallocationItems %}
-							{% assign usedHours = 0.0 %}
-							{% for ptoRequest in ptoAllocation.PtoRequests %}
-								{% if ptoRequest.PtoRequestApprovalState != 2 %}
-									{% assign usedHours = usedHours | Plus:ptoRequest.Hours %}
-								{% endif %}
-							{% endfor %}
-							<tr>
-								<td>
-										{{ptoAllocation.PtoType.Name}}</br>
-										<small>({{ptoAllocation.StartDate | Date:'M/d/yyyy' }}-{{ptoAllocation.EndDate | Date:'M/d/yyyy' }})
-								</td>
-								<td>{{ ptoAllocation.Hours }}</td>
-								<td>{{ usedHours }}</td>
-								<td>{% assign remainingHours = ptoAllocation.Hours | Minus:usedHours %}<div {% if remainingHours < 0 %}style="color:red;"{% endif %}>{{remainingHours}}</div></td>
-							</tr>
+                            {% if ptoAllocation.PtoAllocationStatus == 1 %}
+							    {% assign usedHours = 0.0 %}
+							    {% for ptoRequest in ptoAllocation.PtoRequests %}
+								    {% if ptoRequest.PtoRequestApprovalState != 2 %}
+									    {% assign usedHours = usedHours | Plus:ptoRequest.Hours %}
+								    {% endif %}
+							    {% endfor %}
+							    <tr>
+								    <td>
+										    {{ptoAllocation.PtoType.Name}}</br>
+										    <small>({{ptoAllocation.StartDate | Date:'M/d/yyyy' }}{% if ptoAllocation.EndDate != null %}-{{ptoAllocation.EndDate | Date:'M/d/yyyy' }}{% endif %})
+								    </td>
+								    <td>{{ ptoAllocation.Hours }}</td>
+								    <td>{{ usedHours }}</td>
+								    <td>{% assign remainingHours = ptoAllocation.Hours | Minus:usedHours %}<div {% if remainingHours < 0 %}style="color:red;"{% endif %}>{{remainingHours}}</div></td>
+							    </tr>
+                            {% endif %}
 						{% endfor %}
 					{% endptoallocation %}
 				{% endfor %}
