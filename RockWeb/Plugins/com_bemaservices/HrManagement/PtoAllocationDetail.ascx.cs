@@ -215,6 +215,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 {
                     ptoAllocation.EndDate = dtpEndDate.SelectedDate.Value;
                 }
+                else
+                {
+                    ptoAllocation.EndDate = null;
+                }
 
                 ptoAllocation.Hours = tbHours.Text.AsDecimal();
                 ptoAllocation.PtoAccrualSchedule = ddlPtoAccrualSchedule.SelectedItem.Value.ConvertToEnum<PtoAccrualSchedule>();
