@@ -251,7 +251,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             if ( hfPtoAllocationId.Value.Equals( "0" ) )
             {
-                NavigateToParentPage();
+                var personId = PageParameter( "PersonId" ).ToString();
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "PersonId", personId );
+                NavigateToParentPage( qryParams );
             }
             else
             {
@@ -447,7 +450,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             hlStatus.Visible = true;
             tdPerson.Description = ptoAllocation.PersonAlias.Person.FullName;
             tdPtoType.Description = string.Format( "{0}: {1} hours", ptoAllocation.PtoType.Name, ptoAllocation.Hours );
-            tdDateRange.Description = string.Format( "{0}{1}", ptoAllocation.StartDate.ToString("d"), ptoAllocation.EndDate.HasValue ? ptoAllocation.EndDate.Value.ToString(" - MM/dd/yyyy") : "" );
+            tdDateRange.Description = string.Format( "{0}{1}", ptoAllocation.StartDate.ToString( "d" ), ptoAllocation.EndDate.HasValue ? ptoAllocation.EndDate.Value.ToString( " - MM/dd/yyyy" ) : "" );
         }
 
         /// <summary>

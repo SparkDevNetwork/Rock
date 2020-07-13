@@ -462,7 +462,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gPtoAllocationList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ptoAllocationId", 0 );
+            NavigateToLinkedPage( "DetailPage", "PersonId", _person.Id );
         }
 
         /// <summary>
