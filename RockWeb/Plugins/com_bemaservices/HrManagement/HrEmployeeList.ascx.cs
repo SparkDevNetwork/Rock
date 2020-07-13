@@ -323,7 +323,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
                         accruedItems.Add( String.Format( "{0}: {1}", name, accruedHours ) );
                         takenItems.Add( String.Format( "{0}: {1}", name, takenHours ) );
-                        remainingItems.Add( String.Format( "{0}: {1}", name, remainingHours ) );
+                        remainingItems.Add( String.Format( "{0}: <span style='color:{1};'>{2}</span>", name, remainingHours < 0 ? "red" : "", remainingHours ) );
                     }
 
                     lName.Text = person.FullNameReversed;
