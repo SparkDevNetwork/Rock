@@ -216,6 +216,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             gfEmployeeFilter.SaveUserPreference( "Pto Type", ddlPtoType.SelectedValue );
             gfEmployeeFilter.SaveUserPreference( "Supervisor", ppSupervisor.PersonId.ToString() );
             gfEmployeeFilter.SaveUserPreference( "Ministry Area", tbMinistryArea.Text );
+            gfEmployeeFilter.SaveUserPreference( "Show Unallocated Pto Types", cbShowUnallocatedPtoTypes.Checked.ToTrueFalse() );
 
             BindGrid();
         }
@@ -281,7 +282,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
                     // Filter by fiscal year
                     var fiscalYearEnd = gfEmployeeFilter.GetUserPreference( "Fiscal Year End" ).AsIntegerOrNull();
-                    if ( fiscalYearEnd.HasValue )
+                    if ( fiscalYearEnd.HasValue && fiscalYearEnd != 0 )
                     {
                         //Get the currect fiscal start date to set the allocations dates.
                         var fiscalStartDateValue = GlobalAttributesCache.Value( AttributeCache.Get( com.bemaservices.HrManagement.SystemGuid.Attribute.FISCAL_YEAR_START_DATE_ATTRIBUTE ).Key );
@@ -323,8 +324,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                             remainingHours = accruedHours - takenHours;
                         }
 
-                        var isLimitedToAllocations = gfEmployeeFilter.GetUserPreference( "LimitToAllocations" ).AsBoolean();
-                        if ( !isLimitedToAllocations || accruedHours > 0 || takenHours > 0 )
+                        var showUnallocatedPtoTypes = gfEmployeeFilter.GetUserPreference( "Show Unallocated Pto Types" ).AsBoolean();
+                        if ( showUnallocatedPtoTypes || accruedHours > 0 || takenHours > 0 )
                         {
                             accruedItems.Add( String.Format( "{0}: {1}", name, accruedHours ) );
                             takenItems.Add( String.Format( "{0}: {1}", name, takenHours ) );
@@ -402,6 +403,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 tbMinistryArea.Visible = false;
             }
 
+            cbShowUnallocatedPtoTypes.Checked = gfEmployeeFilter.GetUserPreference( "Show Unallocated Pto Types" ).AsBoolean( );
+
             var supervisorAttributeGuid = GetAttributeValue( "Supervisor" ).AsGuidOrNull();
             if ( supervisorAttributeGuid.HasValue )
             {
@@ -446,7 +449,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
             // Filter by fiscal year
             var fiscalYearEnd = gfEmployeeFilter.GetUserPreference( "Fiscal Year End" ).AsIntegerOrNull();
-            if ( fiscalYearEnd.HasValue )
+            if ( fiscalYearEnd.HasValue && fiscalYearEnd != 0 )
             {
                 calculatedFiscalStartDate = new DateTime( fiscalYearEnd.Value - 1, fiscalStartMonth, fiscalStartDay );
                 calculatedFiscalEndDate = calculatedFiscalStartDate.AddYears( 1 ).AddDays( -1 );
