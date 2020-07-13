@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-o"></i>PTO Types</h1>
+                <h1 class="panel-title"><i class="fa fa-cog"></i>PTO Types</h1>
             </div>
             <div class="panel-body">
 
@@ -21,7 +21,7 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:RockBoundField DataField="IsNegativeTimeBalanceAllowed" HeaderText="Negative Balance Allowed?" Visible="false" />
-                                    <Rock:RockBoundField DataField="Color" HeaderText="Color" />
+                                    <Rock:RockBoundField DataField="Color" HeaderText="Color" Visible="false" />
                                     <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" Visible="false" />
                                     <Rock:RockBoundField DataField="IsActive" HeaderText="Is Active" />
                                 </Columns>
