@@ -84,17 +84,6 @@ namespace com.bemaservices.HrManagement.Jobs
 
             var defaultStatusValue = dataMap.GetString( "NewAllocationsStatus" ).AsIntegerOrNull();
             var defaultScheduleValue = dataMap.GetString( "NewAllocationAccrualSchedule" ).AsIntegerOrNull();
-            var arePastAllocationsInactivated = dataMap.GetString( "InactivatePastAllocations" ).AsBoolean();
-
-            if ( arePastAllocationsInactivated )
-            {
-                var pastAllocations = ptoAllocationService.Queryable().Where( a => a.EndDate.HasValue && a.EndDate.Value <= RockDateTime.Now && a.PtoAllocationStatus != PtoAllocationStatus.Inactive );
-                foreach ( var pastAllocation in pastAllocations )
-                {
-                    pastAllocation.PtoAllocationStatus = PtoAllocationStatus.Inactive;
-                }
-                rockContext.SaveChanges();
-            }
 
             PtoAllocationStatus defaultStatus = PtoAllocationStatus.Pending;
             PtoAccrualSchedule defaultSchedule = PtoAccrualSchedule.None;
@@ -226,11 +215,11 @@ namespace com.bemaservices.HrManagement.Jobs
                                         var updateAllocationStatus = dataMap.GetString( "UpdateAllocationStatus" ).AsBoolean();
                                         if ( updateAllocationStatus )
                                         {
-                                            if ( ptoAllocation.EndDate > RockDateTime.Now && ptoAllocation.PtoAllocationStatus != PtoAllocationStatus.Inactive )
+                                            if ( ptoAllocation.EndDate < RockDateTime.Now && ptoAllocation.PtoAllocationStatus != PtoAllocationStatus.Inactive )
                                             {
                                                 ptoAllocation.PtoAllocationStatus = PtoAllocationStatus.Inactive;
                                             }
-                                            else if ( ptoAllocation.StartDate >= RockDateTime.Now && ptoAllocation.PtoAllocationStatus == PtoAllocationStatus.Pending )
+                                            else if ( ptoAllocation.StartDate <= RockDateTime.Now && ptoAllocation.PtoAllocationStatus == PtoAllocationStatus.Pending )
                                             {
                                                 ptoAllocation.PtoAllocationStatus = PtoAllocationStatus.Active;
                                             }
