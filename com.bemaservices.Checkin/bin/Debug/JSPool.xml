@@ -1,0 +1,745 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JSPool</name>
+    </assembly>
+    <members>
+        <member name="T:JSPool.EngineMetadata">
+            <summary>
+            Contains metadata relating to a JavaScript engine.
+            </summary>
+        </member>
+        <member name="P:JSPool.EngineMetadata.InUse">
+            <summary>
+            Gets or sets whether this JavaScript engine is currently in use.
+            </summary>
+        </member>
+        <member name="P:JSPool.EngineMetadata.UsageCount">
+            <summary>
+            Gets or sets the number of times this engine has been used.
+            </summary>
+        </member>
+        <member name="T:JSPool.FileWatcher">
+            <summary>
+            Handles watching for changes to files.
+            </summary>
+        </member>
+        <member name="F:JSPool.FileWatcher.DEFAULT_DEBOUNCE_TIMEOUT">
+            <summary>
+            Default value for <see cref="P:JSPool.FileWatcher.DebounceTimeout"/>.
+            </summary>
+        </member>
+        <member name="F:JSPool.FileWatcher._watcher">
+            <summary>
+            FileSystemWatcher that handles actually watching the path.
+            </summary>
+        </member>
+        <member name="F:JSPool.FileWatcher._watchedFiles">
+            <summary>
+            Files to watch within the watched path.
+            </summary>
+        </member>
+        <member name="F:JSPool.FileWatcher._timer">
+            <summary>
+            Timer for debouncing changes.
+            </summary>
+        </member>
+        <member name="E:JSPool.FileWatcher.Changed">
+            <summary>
+            Occurs when any watched files have changed (including renames and deletions).
+            </summary>
+        </member>
+        <member name="P:JSPool.FileWatcher.DebounceTimeout">
+            <summary>
+            Gets or sets the time period to debounce file system changed events, in milliseconds.
+            This is useful to handle when multiple file change events happen in a short period of
+            time. JsPool will not reload/recycle the engines until this period elapses.
+            </summary>
+        </member>
+        <member name="P:JSPool.FileWatcher.Path">
+            <summary>
+            Gets or sets the path to watch.
+            </summary>
+        </member>
+        <member name="P:JSPool.FileWatcher.Files">
+            <summary>
+            Gets or sets the files to watch in the path. If no files are provided, every file in the 
+            path is watched.
+            </summary>
+        </member>
+        <member name="M:JSPool.FileWatcher.Start">
+            <summary>
+            Starts watching for changes in the specified path.
+            </summary>
+            <returns>Whether creation of the watcher was successful</returns>
+        </member>
+        <member name="M:JSPool.FileWatcher.Stop">
+            <summary>
+            Stops watching for changes in the specified path.
+            </summary>
+        </member>
+        <member name="M:JSPool.FileWatcher.OnFileChanged(System.Object,System.IO.FileSystemEventArgs)">
+            <summary>
+            Handles events fired when any files are changed.
+            </summary>
+            <param name="sender">The sender</param>
+            <param name="args">The <see cref="T:System.IO.FileSystemEventArgs"/> instance containing the event data</param>
+        </member>
+        <member name="M:JSPool.FileWatcher.OnTimer(System.Object)">
+            <summary>
+            Handles events fired when any files are changed, and the changes have been debounced.
+            </summary>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:JSPool.FileWatcher.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="T:JSPool.IFileWatcher">
+            <summary>
+            Handles watching for changes to files.
+            </summary>
+        </member>
+        <member name="E:JSPool.IFileWatcher.Changed">
+            <summary>
+            Occurs when any watched files have changed (including renames and deletions).
+            </summary>
+        </member>
+        <member name="P:JSPool.IFileWatcher.Path">
+            <summary>
+            Gets or sets the path to watch.
+            </summary>
+        </member>
+        <member name="P:JSPool.IFileWatcher.Files">
+            <summary>
+            Gets or sets the files to watch in the path. If no files are provided, every file in the 
+            path is watched.
+            </summary>
+        </member>
+        <member name="M:JSPool.IFileWatcher.Start">
+            <summary>
+            Starts watching for changes in the specified path.
+            </summary>
+            <returns>Whether creation of the watcher was successful</returns>
+        </member>
+        <member name="M:JSPool.IFileWatcher.Stop">
+            <summary>
+            Stops watching for changes in the specified path.
+            </summary>
+        </member>
+        <member name="T:JSPool.IJsPool">
+            <summary>
+            Handles acquiring JavaScript engines from a shared pool. This class is thread safe.
+            </summary>
+        </member>
+        <member name="T:JSPool.IJsEngineWithOwnThread">
+            <summary>
+            An adapter for <see cref="T:JavaScriptEngineSwitcher.Core.IJsEngine"/> implementations that always need to be used from
+            the same thread they are created on.
+            </summary>
+        </member>
+        <member name="P:JSPool.IJsEngineWithOwnThread.IsThreadAlive">
+            <summary>
+            Gets a value indicating the execution status of this engine's thread.
+            </summary>
+        </member>
+        <member name="T:JSPool.IJsPool`1">
+            <summary>
+            Handles acquiring JavaScript engines from a shared pool. This class is thread safe.
+            </summary>
+        </member>
+        <member name="M:JSPool.IJsPool`1.GetEngine(System.Nullable{System.TimeSpan})">
+            <summary>
+            Gets an engine from the pool. This engine should be returned to the pool via
+            <see cref="M:JSPool.JsPool`1.ReturnEngineToPool(`0)"/> when you are finished with it.
+            If an engine is free, this method returns immediately with the engine.
+            If no engines are available but we have not reached <see cref="P:JSPool.JsPoolConfig`1.MaxEngines"/>
+            yet, creates a new engine. If MaxEngines has been reached, blocks until an engine is
+            avaiable again.
+            </summary>
+            <param name="timeout">
+            Maximum time to wait for a free engine. If not specified, defaults to the timeout 
+            specified in the configuration.
+            </param>
+            <returns>A JavaScript engine</returns>
+            <exception cref="T:JSPool.Exceptions.JsPoolExhaustedException">
+            Thrown if no engines are available in the pool within the provided timeout period.
+            </exception>
+        </member>
+        <member name="M:JSPool.IJsPool`1.ReturnEngineToPool(`0)">
+            <summary>
+            Returns an engine to the pool so it can be reused
+            </summary>
+            <param name="engine">Engine to return</param>
+        </member>
+        <member name="P:JSPool.IJsPool`1.EngineCount">
+            <summary>
+            Gets the total number of engines in this engine pool, including engines that are
+            currently busy.
+            </summary>
+        </member>
+        <member name="P:JSPool.IJsPool`1.AvailableEngineCount">
+            <summary>
+            Gets the number of currently available engines in this engine pool.
+            </summary>
+        </member>
+        <member name="M:JSPool.IJsPool`1.DisposeEngine(`0,System.Boolean)">
+            <summary>
+            Disposes the specified engine
+            </summary>
+            <param name="engine">Engine to dispose</param>
+            <param name="repopulateEngines">
+            If <c>true</c>, a new engine will be created to replace the disposed engine
+            </param>
+        </member>
+        <member name="M:JSPool.IJsPool`1.Recycle">
+            <summary>
+            Disposes all engines in this pool, and creates new engines in their place.
+            </summary>
+        </member>
+        <member name="T:JSPool.JsPool">
+            <summary>
+            Handles acquiring JavaScript engines from a shared pool. This class is thread-safe.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool.#ctor(JSPool.JsPoolConfig)">
+            <summary>
+            Creates a new JavaScript engine pool
+            </summary>
+            <param name="config">
+            The configuration to use. If not provided, a default configuration will be used.
+            </param>
+        </member>
+        <member name="M:JSPool.JsPool.CreateEngineFactory">
+            <summary>
+            Gets a factory method used to create engines.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool.NeedsOwnThread(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Determines if the specified engine can only be used on the thread it is created on.
+            </summary>
+            <param name="engine">Engine</param>
+            <returns><c>true</c> if the engine should be confined to a single thread</returns>
+        </member>
+        <member name="M:JSPool.JsPool.CollectGarbage(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Runs garbage collection for the specified engine
+            </summary>
+            <param name="engine"></param>
+        </member>
+        <member name="T:JSPool.JsPoolConfig">
+            <summary>
+            Contains the configuration information for JSPool
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPoolConfig.#ctor">
+            <summary>
+            Creates a new JavaScript pool configuration. Default values will be set automatically.
+            </summary>
+        </member>
+        <member name="T:JSPool.JsEngineWithOwnThread">
+            <summary>
+            An adapter for <see cref="T:JavaScriptEngineSwitcher.Core.IJsEngine"/> implementations that always need to be used from
+            the same thread they are created on. This class creates a thread for the engine and
+            marshalls all method calls to that thread.
+            </summary>
+        </member>
+        <member name="T:JSPool.JsEngineWithOwnThread.ThreadWorkItem">
+            <summary>
+            Represents a method being executed on the JsEngine thread.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.ThreadWorkItem.Method">
+            <summary>
+            Gets or sets the method to execute.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.ThreadWorkItem.Exception">
+            <summary>
+            Gets or sets the exception that occurred while executing the method. If no 
+            exception has occurred, this will be null.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.ThreadWorkItem.Result">
+            <summary>
+            Gets or sets the result of the method invocation.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.ThreadWorkItem.WaitForCompletion">
+            <summary>
+            Event to signal when method execution has completed.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread.THREAD_STACK_SIZE">
+            <summary>
+            Stack size to use for the threads.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._innerEngineFactory">
+            <summary>
+            Method used to create <see cref="T:JavaScriptEngineSwitcher.Core.IJsEngine"/> instances.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._innerEngine">
+            <summary>
+            JsEngine used by this thread.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._thread">
+            <summary>
+            The thread the engine runs on.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._cancellationToken">
+            <summary>
+            Token used to signal that the thread should be shut down.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._disposedCancellation">
+            <summary>
+            Token used to stop the thread when the engine has been disposed
+            </summary>
+        </member>
+        <member name="F:JSPool.JsEngineWithOwnThread._queue">
+            <summary>
+            Queue of method calls to run on the thread.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.#ctor(System.Func{JavaScriptEngineSwitcher.Core.IJsEngine},System.Threading.CancellationToken)">
+            <summary>
+            Initializes a new instance of the <see cref="T:JSPool.JsEngineWithOwnThread"/> class.
+            </summary>
+            <param name="innerEngineFactory">The engine factory.</param>
+            <param name="cancellationToken">Token used to signal that the thread should be shut down.</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.WriteLog(System.String,System.Object[])">
+            <summary>
+            Writes a log message for debugging purposes. Only logs when compiled with 
+            TRACE flag.
+            </summary>
+            <param name="format">Format string</param>
+            <param name="args">Arguments for string</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.RunThread">
+            <summary>
+            Runs in the thread for this engine. Loops forever, processing items from the queue.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.RunOnThread(System.Func{JavaScriptEngineSwitcher.Core.IJsEngine,System.Object})">
+            <summary>
+            Runs the specified method on the engine thread, and returns its result as an 
+            <c>object</c>. Blocks until the method has been executed.
+            </summary>
+            <param name="method">Method to execute</param>
+            <returns>Result of the method</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.RunOnThread``1(System.Func{JavaScriptEngineSwitcher.Core.IJsEngine,``0})">
+            <summary>
+            Runs the specified method on the engine thread, and returns its result as an
+            instance of <typeparamref name="T" />. Blocks until the method has been executed.
+            </summary>
+            <typeparam name="T">Type of data returned by the method</typeparam>
+            <param name="method">Method to execute</param>
+            <returns>Result of the method</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.RunOnThread(System.Action{JavaScriptEngineSwitcher.Core.IJsEngine})">
+            <summary>
+            Runs the specified method on the engine thread. Blocks until the method has been 
+            executed.
+            </summary>
+            <param name="method">Method to execute</param>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.IsThreadAlive">
+            <summary>
+            Gets a value indicating the execution status of this engine's thread.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.Name">
+            <summary>
+            Gets a name of JavaScript engine
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.Version">
+            <summary>
+            Gets a version of original JavaScript engine
+            </summary>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.Dispose">
+            <summary>
+            Disposes the inner JavaScript engine
+            </summary>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.Evaluate(System.String)">
+            <summary>
+            Evaluates an expression
+            </summary>
+            <param name="expression">JS-expression</param>
+            <returns>Result of the expression</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.Evaluate``1(System.String)">
+            <summary>
+            Evaluates an expression
+            </summary>
+            <typeparam name="T">Type of result</typeparam>
+            <param name="expression">JS-expression</param>
+            <returns>Result of the expression</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.Execute(System.String)">
+            <summary>
+            Executes a code
+            </summary>
+            <param name="code">Code</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.ExecuteFile(System.String,System.Text.Encoding)">
+            <summary>
+            Executes a code from JS-file
+            </summary>
+            <param name="path">Path to the JS-file</param>
+            <param name="encoding">Text encoding</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.ExecuteResource(System.String,System.Type)">
+            <summary>
+            Executes a code from embedded JS-resource
+            </summary>
+            <param name="resourceName">JS-resource name</param>
+            <param name="type">Type from assembly that containing an embedded resource</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.ExecuteResource(System.String,System.Reflection.Assembly)">
+            <summary>
+            Executes a code from embedded JS-resource
+            </summary>
+            <param name="resourceName">JS-resource name</param>
+            <param name="assembly">Assembly that containing an embedded resource</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.CallFunction(System.String,System.Object[])">
+            <summary>
+            Calls a function
+            </summary>
+            <param name="functionName">Function name</param>
+            <param name="args">Function arguments</param>
+            <returns>Result of the function execution</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.CallFunction``1(System.String,System.Object[])">
+            <summary>
+            Calls a function
+            </summary>
+            <typeparam name="T">Type of function result</typeparam>
+            <param name="functionName">Function name</param>
+            <param name="args">Function arguments</param>
+            <returns>Result of the function execution</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.HasVariable(System.String)">
+            <summary>
+            Сhecks for the existence of a variable
+            </summary>
+            <param name="variableName">Variable name</param>
+            <returns>Result of check (true - exists; false - not exists</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.GetVariableValue(System.String)">
+            <summary>
+            Gets a value of variable
+            </summary>
+            <param name="variableName">Variable name</param>
+            <returns>Value of variable</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.GetVariableValue``1(System.String)">
+            <summary>
+            Gets a value of variable
+            </summary>
+            <typeparam name="T">Type of variable</typeparam>
+            <param name="variableName">Variable name</param>
+            <returns>Value of variable</returns>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.SetVariableValue(System.String,System.Object)">
+            <summary>
+            Sets a value of variable
+            </summary>
+            <param name="variableName">Variable name</param>
+            <param name="value">Value of variable</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.RemoveVariable(System.String)">
+            <summary>
+            Removes a variable
+            </summary>
+            <param name="variableName">Variable name</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.EmbedHostType(System.String,System.Type)">
+            <summary>
+            Embeds a .NET type in the JavaScript engine.
+            </summary>
+            <param name="itemName">Name of the type</param>
+            <param name="type">The type</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.EmbedHostObject(System.String,System.Object)">
+            <summary>
+            Embeds a .NET object in the JavaScript engine.
+            </summary>
+            <param name="itemName">Name of the item</param>
+            <param name="value">Value of the item</param>
+        </member>
+        <member name="M:JSPool.JsEngineWithOwnThread.CollectGarbage">
+            <summary>
+            Collects the garbage.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsEngineWithOwnThread.SupportsGarbageCollection">
+            <summary>
+            Determines if this engine supports garbage collection.
+            </summary>
+        </member>
+        <member name="T:JSPool.JsPool`1">
+            <summary>
+            Handles acquiring JavaScript engines from a shared pool. This class is thread-safe.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._config">
+            <summary>
+            Configuration for this engine pool.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._availableEngines">
+            <summary>
+            Engines that are currently available for use.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._metadata">
+            <summary>
+            Metadata for the engines. Total number of engines that have been created is reflected in its Count.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._engineFactory">
+            <summary>
+            Factory method used to create engines.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._fileWatcher">
+            <summary>
+            Handles watching for changes to files, to recycle the engines if any related files change.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._cancellationTokenSource">
+            <summary>
+            Used to cancel threads when disposing the class.
+            </summary>
+        </member>
+        <member name="F:JSPool.JsPool`1._engineCreationLock">
+            <summary>
+            Lock object used when creating a new engine
+            </summary>
+        </member>
+        <member name="E:JSPool.JsPool`1.Recycled">
+            <summary>
+            Occurs when any watched files have changed (including renames and deletions).
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.#ctor(JSPool.JsPoolConfig{`0})">
+            <summary>
+            Creates a new JavaScript engine pool
+            </summary>
+            <param name="config">
+            The configuration to use. If not provided, a default configuration will be used.
+            </param>
+        </member>
+        <member name="M:JSPool.JsPool`1.CreateEngineFactory">
+            <summary>
+            Gets a factory method used to create engines.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.InitializeWatcher">
+            <summary>
+            Initializes a <see cref="T:JSPool.FileWatcher"/> if enabled in the configuration.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.PopulateEngines">
+            <summary>
+            Ensures that at least <see cref="P:JSPool.JsPoolConfig`1.StartEngines"/> engines have been created.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.CreateEngine">
+            <summary>
+            Creates a new JavaScript engine and adds it to the list of all available engines.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.GetEngine(System.Nullable{System.TimeSpan})">
+            <summary>
+            Gets an engine from the pool. This engine should be returned to the pool via
+            <see cref="M:JSPool.JsPool`1.ReturnEngineToPool(`0)"/> when you are finished with it.
+            If an engine is free, this method returns immediately with the engine.
+            If no engines are available but we have not reached <see cref="P:JSPool.JsPoolConfig`1.MaxEngines"/>
+            yet, creates a new engine. If MaxEngines has been reached, blocks until an engine is
+            avaiable again.
+            </summary>
+            <param name="timeout">
+            Maximum time to wait for a free engine. If not specified, defaults to the timeout 
+            specified in the configuration.
+            </param>
+            <returns>A JavaScript engine</returns>
+            <exception cref="T:JSPool.Exceptions.JsPoolExhaustedException">
+            Thrown if no engines are available in the pool within the provided timeout period.
+            </exception>
+        </member>
+        <member name="M:JSPool.JsPool`1.TakeEngine(`0)">
+            <summary>
+            Marks the specified engine as "in use"
+            </summary>
+            <param name="engine"></param>
+        </member>
+        <member name="M:JSPool.JsPool`1.ReturnEngineToPool(`0)">
+            <summary>
+            Returns an engine to the pool so it can be reused
+            </summary>
+            <param name="engine">Engine to return</param>
+        </member>
+        <member name="M:JSPool.JsPool`1.DisposeEngine(`0,System.Boolean)">
+            <summary>
+            Disposes the specified engine.
+            </summary>
+            <param name="engine">Engine to dispose</param>
+            <param name="repopulateEngines">
+            If <c>true</c>, a new engine will be created to replace the disposed engine
+            </param>
+        </member>
+        <member name="M:JSPool.JsPool`1.DisposeAllEngines">
+            <summary>
+            Disposes all engines in this pool. Note that this will only dispose the engines that 
+            are *currently* available. Engines that are in use will be disposed when the user
+            attempts to return them.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.Recycle">
+            <summary>
+            Disposes all engines in this pool, and creates new engines in their place.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.Dispose">
+            <summary>
+            Disposes all the JavaScript engines in this pool.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPool`1.CollectGarbage(`0)">
+            <summary>
+            Runs garbage collection for the specified engine
+            </summary>
+            <param name="engine"></param>
+        </member>
+        <member name="P:JSPool.JsPool`1.EngineCount">
+            <summary>
+            Gets the total number of engines in this engine pool, including engines that are
+            currently busy.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPool`1.AvailableEngineCount">
+            <summary>
+            Gets the number of currently available engines in this engine pool.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPool`1.DebuggerDisplay">
+            <summary>
+            Gets a string for displaying this engine pool in the Visual Studio debugger.
+            </summary>
+        </member>
+        <member name="T:JSPool.JsPoolConfig`1">
+            <summary>
+            Contains the configuration information for JSPool
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.StartEngines">
+            <summary>
+            Gets or sets the number of engines to initially start when a pool is created. 
+            Defaults to <c>10</c>.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.MaxEngines">
+            <summary>
+            Gets or sets the maximum number of engines that will be created in the pool. 
+            Defaults to <c>25</c>.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.GetEngineTimeout">
+            <summary>
+            Gets or sets the default timeout to use when acquiring an engine from the pool.
+            If an engine can not be acquired in this timeframe, a 
+            <see cref="T:JSPool.Exceptions.JsPoolExhaustedException"/> will be thrown.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.Initializer">
+            <summary>
+            Gets or sets the code to run when a new engine is created. This should configure
+            the environment and set up any required JavaScript libraries.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.EngineFactory">
+            <summary>
+            Gets or sets the function method used to create engines. Defaults to the standard 
+            JsEngineSwitcher factory method.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.MaxUsagesPerEngine">
+            <summary>
+            Gets or sets the maximum number of times an engine can be reused before it is disposed.
+            <c>0</c> is unlimited.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.GarbageCollectionInterval">
+            <summary>
+            Gets or sets the number of times an engine can be reused before its garbage collector
+            is ran. Only used if the engine supports garbage collection (V8).
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.WatchPath">
+            <summary>
+            Gets or sets the path to watch for file changes. If any files in this path change,
+            all engines in the pool will be recycled
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.WatchFiles">
+            <summary>
+            Gets or sets the file paths to watch for file changes. Requires 
+            <see cref="P:JSPool.JsPoolConfig`1.WatchPath" /> to be set too. If not set, all files in 
+            <see cref="P:JSPool.JsPoolConfig`1.WatchPath" /> will be watched.
+            </summary>
+        </member>
+        <member name="P:JSPool.JsPoolConfig`1.DebounceTimeout">
+            <summary>
+            Gets or sets the time period to debounce file system changed events, in milliseconds.
+            This is useful to handle when multiple file change events happen in a short period of
+            time. JsPool will not reload/recycle the engines until this period elapses.
+            </summary>
+        </member>
+        <member name="M:JSPool.JsPoolConfig`1.#ctor">
+            <summary>
+            Creates a new JavaScript pool configuration. Default values will be set automatically.
+            </summary>
+        </member>
+        <member name="T:JSPool.Exceptions.JsPoolExhaustedException">
+            <summary>
+            Thrown when no engines are available in the pool.
+            </summary>
+        </member>
+        <member name="M:JSPool.Exceptions.JsPoolExhaustedException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:JSPool.Exceptions.JsPoolExhaustedException"/> class.
+            </summary>
+        </member>
+        <member name="M:JSPool.Exceptions.JsPoolExhaustedException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:JSPool.Exceptions.JsPoolExhaustedException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:JSPool.Exceptions.JsPoolExhaustedException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:JSPool.Exceptions.JsPoolExhaustedException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:JSPool.Exceptions.JsPoolExhaustedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+    </members>
+</doc>

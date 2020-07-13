@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CacheManager.Serialization.Json</name>
+    </assembly>
+    <members>
+        <member name="T:CacheManager.Serialization.Json.GzJsonCacheSerializer">
+            <summary>
+            Implements the <c>ICacheSerializer</c> contract using <c>Newtonsoft.Json</c> and the <see cref="T:System.IO.Compression.GZipStream"/> loseless compression.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Serialization.Json.GzJsonCacheSerializer"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.#ctor(Newtonsoft.Json.JsonSerializerSettings,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Serialization.Json.GzJsonCacheSerializer"/> class.
+            With this overload the settings for de-/serialization can be set independently.
+            </summary>
+            <param name="serializationSettings">The settings which should be used during serialization.</param>
+            <param name="deserializationSettings">The settings which should be used during deserialization.</param>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.Deserialize(System.Byte[],System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.Serialize``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.Compression(System.Byte[])">
+            <summary>
+            Compress the serialized <paramref name="data"/> using <see cref="T:System.IO.Compression.GZipStream"/>.
+            </summary>
+            <param name="data">The data which should be compressed.</param>
+            <returns>The compressed data.</returns>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.GzJsonCacheSerializer.Decompression(System.Byte[])">
+            <summary>
+            Decompress the <paramref name="compressedData"/> into the base serialized data.
+            </summary>
+            <param name="compressedData">The data which should be decompressed.</param>
+            <returns>The uncompressed data.</returns>
+        </member>
+        <member name="T:CacheManager.Serialization.Json.JsonCacheSerializer">
+            <summary>
+            Implements the <c>ICacheSerializer</c> contract using <c>Newtonsoft.Json</c>.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Serialization.Json.JsonCacheSerializer"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.#ctor(Newtonsoft.Json.JsonSerializerSettings,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Serialization.Json.JsonCacheSerializer"/> class.
+            With this overload the settings for de-/serialization can be set independently.
+            </summary>
+            <param name="serializationSettings">The settings which should be used during serialization.</param>
+            <param name="deserializationSettings">The settings which should be used during deserialization.</param>
+        </member>
+        <member name="P:CacheManager.Serialization.Json.JsonCacheSerializer.DeserializationSettings">
+            <summary>
+            Gets the settings which should be used during deserialization.
+            If nothing is specified the default <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> will be used.
+            </summary>
+            <value>The deserialization settings.</value>
+        </member>
+        <member name="P:CacheManager.Serialization.Json.JsonCacheSerializer.SerializationSettings">
+            <summary>
+            Gets the settings which should be used during serialization.
+            If nothing is specified the default <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> will be used.
+            </summary>
+            <value>The serialization settings.</value>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.Deserialize(System.Byte[],System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.Serialize``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.GetOpenGeneric">
+            <inheritdoc/>
+        </member>
+        <member name="M:CacheManager.Serialization.Json.JsonCacheSerializer.CreateNewItem``1(CacheManager.Core.Internal.ICacheItemProperties,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="T:CacheManager.Core.JsonConfigurationBuilderExtensions">
+            <summary>
+            Extensions for the configuration builder for the <c>Newtonsoft.Json</c> based <c>ICacheSerializer</c>.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Core.JsonConfigurationBuilderExtensions.WithJsonSerializer(CacheManager.Core.ConfigurationBuilderCachePart)">
+            <summary>
+            Configures the cache manager to use the <code>Newtonsoft.Json</code> based cache serializer.
+            </summary>
+            <param name="part">The configuration part.</param>
+            <returns>The builder instance.</returns>
+        </member>
+        <member name="M:CacheManager.Core.JsonConfigurationBuilderExtensions.WithJsonSerializer(CacheManager.Core.ConfigurationBuilderCachePart,Newtonsoft.Json.JsonSerializerSettings,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Configures the cache manager to use the <code>Newtonsoft.Json</code> based cache serializer.
+            </summary>
+            <param name="part">The configuration part.</param>
+            <param name="serializationSettings">The settings to be used during serialization.</param>
+            <param name="deserializationSettings">The settings to be used during deserialization.</param>
+            <returns>The builder instance.</returns>
+        </member>
+        <member name="M:CacheManager.Core.JsonConfigurationBuilderExtensions.WithGzJsonSerializer(CacheManager.Core.ConfigurationBuilderCachePart)">
+            <summary>
+            Configures the cache manager to use the <code>Newtonsoft.Json</code> based cache serializer with compression.
+            </summary>
+            <param name="part">The configuration part.</param>
+            <returns>The builder instance.</returns>
+        </member>
+        <member name="M:CacheManager.Core.JsonConfigurationBuilderExtensions.WithGzJsonSerializer(CacheManager.Core.ConfigurationBuilderCachePart,Newtonsoft.Json.JsonSerializerSettings,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Configures the cache manager to use the <code>Newtonsoft.Json</code> based cache serializer with compression.
+            </summary>
+            <param name="part">The configuration part.</param>
+            <param name="serializationSettings">The settings to be used during serialization.</param>
+            <param name="deserializationSettings">The settings to be used during deserialization.</param>
+            <returns>The builder instance.</returns>
+        </member>
+    </members>
+</doc>

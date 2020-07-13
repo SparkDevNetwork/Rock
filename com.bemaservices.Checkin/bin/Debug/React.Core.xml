@@ -1,0 +1,3249 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>React.Core</name>
+    </assembly>
+    <members>
+        <member name="T:React.AssemblyRegistration">
+            <summary>
+            Handles registration of core ReactJS.NET components.
+            </summary>
+        </member>
+        <member name="P:React.AssemblyRegistration.Container">
+            <summary>
+            Gets the IoC container. Try to avoid using this and always use constructor injection.
+            This should only be used at the root level of an object heirarchy.
+            </summary>
+        </member>
+        <member name="M:React.AssemblyRegistration.Register(React.TinyIoC.TinyIoCContainer)">
+            <summary>
+            Registers standard components in the React IoC container
+            </summary>
+            <param name="container">Container to register components in</param>
+        </member>
+        <member name="T:React.Babel">
+            <summary>
+            Handles compiling JavaScript files via Babel (http://babeljs.io/).
+            </summary>
+        </member>
+        <member name="F:React.Babel.JSX_CACHE_KEY">
+            <summary>
+            Cache key for JavaScript compilation
+            </summary>
+        </member>
+        <member name="F:React.Babel.COMPILED_FILE_SUFFIX">
+            <summary>
+            Suffix to append to compiled files
+            </summary>
+        </member>
+        <member name="F:React.Babel.SOURE_MAP_FILE_SUFFIX">
+            <summary>
+            Suffix to append to source map files
+            </summary>
+        </member>
+        <member name="F:React.Babel.LINES_IN_HEADER">
+            <summary>
+            Number of lines in the header prepended to compiled files.
+            </summary>
+        </member>
+        <member name="F:React.Babel._environment">
+            <summary>
+            Environment this transformer has been created in
+            </summary>
+        </member>
+        <member name="F:React.Babel._cache">
+            <summary>
+            Cache used for storing compiled JavaScript
+            </summary>
+        </member>
+        <member name="F:React.Babel._fileSystem">
+            <summary>
+            File system wrapper
+            </summary>
+        </member>
+        <member name="F:React.Babel._fileCacheHash">
+            <summary>
+            Hash algorithm for file-based cache
+            </summary>
+        </member>
+        <member name="F:React.Babel._config">
+            <summary>
+            Site-wide configuration
+            </summary>
+        </member>
+        <member name="F:React.Babel._babelConfig">
+            <summary>
+            The serialized Babel configuration
+            </summary>
+        </member>
+        <member name="M:React.Babel.#ctor(React.IReactEnvironment,React.ICache,React.IFileSystem,React.IFileCacheHash,React.IReactSiteConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Babel"/> class.
+            </summary>
+            <param name="environment">The ReactJS.NET environment</param>
+            <param name="cache">The cache to use for compilation</param>
+            <param name="fileSystem">File system wrapper</param>
+            <param name="fileCacheHash">Hash algorithm for file-based cache</param>
+            <param name="siteConfig">Site-wide configuration</param>
+        </member>
+        <member name="M:React.Babel.TransformFile(System.String)">
+            <summary>
+            Transforms a JavaScript file. Results of the transformation are cached.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.Babel.TransformFileWithSourceMap(System.String,System.Boolean)">
+            <summary>
+            Transforms a JavaScript file via Babel and also returns a source map to map the
+            compiled source to the original version. Results of the transformation are cached.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <param name="forceGenerateSourceMap">
+            <c>true</c> to re-transform the file if a cached version with no source map is available
+            </param>
+            <returns>JavaScript and source map</returns>
+        </member>
+        <member name="M:React.Babel.LoadFromFileCache(System.String,System.String,System.Boolean)">
+            <summary>
+            Loads a transformed JavaScript file from the disk cache. If the cache is invalid or there is
+            no cached version, returns <c>null</c>.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            /// <param name="hash">Hash of the input file, to validate the cache</param>
+            <param name="forceGenerateSourceMap">
+            <c>true</c> to re-transform the file if a cached version with no source map is available
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:React.Babel.TransformWithHeader(System.String,System.String,System.String)">
+            <summary>
+            Transforms JavaScript via Babel, and prepends a header used for caching 
+            purposes.
+            </summary>
+            <param name="filename">Name of the file being transformed</param>
+            <param name="contents">Contents of the input file</param>
+            <param name="hash">Hash of the input. If null, it will be calculated</param>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.Babel.Transform(System.String,System.String)">
+            <summary>
+            Transforms JavaScript via Babel. The result is not cached. Use 
+            <see cref="M:React.Babel.TransformFile(System.String)"/> if loading from a file since this will cache the result.
+            </summary>
+            <param name="input">JavaScript</param>
+            <param name="filename">Name of the file being transformed</param>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.Babel.TransformWithSourceMap(System.String,System.String)">
+            <summary>
+            Transforms JavaScript via Babel and also returns a source map to map the compiled
+            source to the original version. The result is not cached.
+            </summary>
+            <param name="input">JavaScript</param>
+            <param name="filename">Name of the file being transformed</param>
+            <returns>JavaScript and source map</returns>
+        </member>
+        <member name="M:React.Babel.GetFileHeader(System.String,System.String)">
+            <summary>
+            Gets the header prepended to transformed files. Contains a hash that is used to 
+            validate the cache.
+            </summary>
+            <param name="hash">Hash of the input</param>
+            <param name="babelVersion">Version of Babel used to perform this transformation</param>
+            <returns>Header for the cache</returns>
+        </member>
+        <member name="M:React.Babel.GetOutputPath(System.String)">
+            <summary>
+            Returns the path the specified file's compilation will be cached to
+            </summary>
+            <param name="path">Path of the input file</param>
+            <returns>Output path of the compiled file</returns>
+        </member>
+        <member name="M:React.Babel.GetSourceMapOutputPath(System.String)">
+            <summary>
+            Returns the path the specified file's source map will be cached to if
+            <see cref="M:React.Babel.TransformAndSaveFile(System.String)"/> is called.
+            </summary>
+            <param name="path">Path of the input file</param>
+            <returns>Output path of the source map</returns>
+        </member>
+        <member name="M:React.Babel.TransformAndSaveFile(System.String)">
+            <summary>
+            Transforms JavaScript via Babel and saves the result into a ".generated.js" file 
+            alongside the original file.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <returns>File contents</returns>
+        </member>
+        <member name="M:React.Babel.CacheIsValid(System.String,System.String)">
+            <summary>
+            Checks whether an input file (given as inputFileContents) should be transpiled
+            by calculating the hash and comparing it to the hash value stored
+            in the file given by outputPath. If the outputPath file does not
+            exist the input file should always be transpiled.
+            </summary>
+            <param name="inputFileContents">The contents of the input file.</param>
+            <param name="outputPath">The output path of the (possibly previously) generated file.</param>
+            <returns>Returns false if the file should be transpiled, true otherwise.</returns>
+        </member>
+        <member name="T:React.BabelConfig">
+            <summary>
+            Configuration for Babel (see http://babeljs.io/docs/usage/options/ for detailed 
+            documentation).
+            </summary>
+        </member>
+        <member name="P:React.BabelConfig.Plugins">
+            <summary>
+            Gets or sets the Babel plugins to use. See http://babeljs.io/docs/plugins/ for a full
+            list of plugins.
+            </summary>
+        </member>
+        <member name="P:React.BabelConfig.Presets">
+            <summary>
+            Gets or sets the Babel presets to use. See http://babeljs.io/docs/plugins/ for a full
+            list of presets.
+            </summary>
+        </member>
+        <member name="M:React.BabelConfig.#ctor">
+            <summary>
+            Creates a new instance of <see cref="T:React.BabelConfig" />.
+            </summary>
+        </member>
+        <member name="M:React.BabelConfig.Serialize">
+            <summary>
+            Serializes this Babel configuration into the format required for Babel.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:React.FileCacheHash">
+            <summary>
+            Handles calculating a hash value for validating a file-based cache.
+            </summary>
+        </member>
+        <member name="F:React.FileCacheHash.HASH_PREFIX">
+            <summary>
+            Prefix used for hash line in transformed file. Used for caching.
+            </summary>
+        </member>
+        <member name="F:React.FileCacheHash._hash">
+            <summary>
+            Algorithm for calculating file hashes
+            </summary>
+        </member>
+        <member name="M:React.FileCacheHash.CalculateHash(System.String)">
+            <summary>
+            Calculates a hash for the specified input
+            </summary>
+            <param name="input">Input string</param>
+            <returns>Hash of the input</returns>
+        </member>
+        <member name="M:React.FileCacheHash.ValidateHash(System.String,System.String)">
+            <summary>
+            Validates that the cache's hash is valid. This is used to ensure the input has not
+            changed, and to invalidate the cache if so.
+            </summary>
+            <param name="cacheContents">Contents retrieved from cache</param>
+            <param name="hash">Hash of the input</param>
+            <returns><c>true</c> if the cache is still valid</returns>
+        </member>
+        <member name="M:React.FileCacheHash.AddPrefix(System.String)">
+            <summary>
+            Prepends the hash prefix to the hash
+            </summary>
+            <param name="hash">Hash to prepend prefix to</param>
+            <returns>Hash with prefix</returns>
+        </member>
+        <member name="T:React.FileSystemBase">
+            <summary>
+            Handles file system functionality, such as reading files.
+            </summary>
+        </member>
+        <member name="F:React.FileSystemBase.RELATIVE_PREFIX">
+            <summary>
+            Prefix for relative paths
+            </summary>
+        </member>
+        <member name="M:React.FileSystemBase.MapPath(System.String)">
+            <summary>
+            Converts a path from an application relative path (~/...) to a full filesystem path
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns>Full path of the file</returns>
+        </member>
+        <member name="M:React.FileSystemBase.ToRelativePath(System.String)">
+            <summary>
+            Converts a path from a full filesystem path to anan application relative path (~/...)
+            </summary>
+            <param name="absolutePath">Full path of the file</param>
+            <returns>App-relative path of the file</returns>
+        </member>
+        <member name="M:React.FileSystemBase.ReadAsString(System.String)">
+            <summary>
+            Reads the contents of a file as a string.
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns>Contents of the file</returns>
+        </member>
+        <member name="M:React.FileSystemBase.WriteAsString(System.String,System.String)">
+            <summary>
+            Writes a string to a file
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <param name="contents">Contents of the file</param>
+        </member>
+        <member name="M:React.FileSystemBase.FileExists(System.String)">
+            <summary>
+            Determines if the specified file exists
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns><c>true</c> if the file exists</returns>
+        </member>
+        <member name="M:React.FileSystemBase.Glob(System.String)">
+            <summary>
+            Gets all the file paths that match the specified pattern
+            </summary>
+            <param name="glob">Pattern to search for (eg. "~/Scripts/*.js")</param>
+            <returns>File paths that match the pattern</returns>
+        </member>
+        <member name="T:React.FileSystemExtensions">
+            <summary>
+            Extension methods relating to file system paths.
+            </summary>
+        </member>
+        <member name="M:React.FileSystemExtensions.IsGlobPattern(System.String)">
+            <summary>
+            Determines if the specified string is a glob pattern that can be used with 
+            <see cref="M:System.IO.Directory.GetFiles(System.String,System.String)"/>.
+            </summary>
+            <param name="input">String</param>
+            <returns><c>true</c> if the specified string is a glob pattern</returns>
+        </member>
+        <member name="T:React.GuidExtensions">
+            <summary>
+            Extension methods relating to GUIDs.
+            </summary>
+        </member>
+        <member name="M:React.GuidExtensions.ToShortGuid(System.Guid)">
+            <summary>
+            Returns a short identifier for this GUID.
+            </summary>
+            <param name="guid">The unique identifier.</param>
+            <returns>A short version of the unique identifier</returns>
+        </member>
+        <member name="T:React.IAssemblyRegistration">
+            <summary>
+            IoC component registration. Used to register components in the ReactJS.NET IoC container. 
+            Every ReactJS.NET assembly should have an instance of IComponentRegistration.
+            </summary>
+        </member>
+        <member name="M:React.IAssemblyRegistration.Register(React.TinyIoC.TinyIoCContainer)">
+            <summary>
+            Registers components in the ReactJS.NET IoC container
+            </summary>
+            <param name="container">Container to register components in</param>
+        </member>
+        <member name="T:React.IBabel">
+            <summary>
+            Handles compiling JavaScript files via Babel (http://babeljs.io/).
+            </summary>
+        </member>
+        <member name="M:React.IBabel.TransformFile(System.String)">
+            <summary>
+            Transforms a JavaScript file. Results of the transformation are cached.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.IBabel.TransformFileWithSourceMap(System.String,System.Boolean)">
+            <summary>
+            Transforms a JavaScript file via Babel and also returns a source map to map the
+            compiled source to the original version. Results of the transformation are cached.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <param name="forceGenerateSourceMap">
+            <c>true</c> to re-transform the file if a cached version with no source map is available
+            </param>
+            <returns>JavaScript and source map</returns>
+        </member>
+        <member name="M:React.IBabel.Transform(System.String,System.String)">
+            <summary>
+            Transforms JavaScript via Babel. The result is not cached. Use 
+            <see cref="M:React.IBabel.TransformFile(System.String)"/> if loading from a file since this will cache the result.
+            </summary>
+            <param name="input">JavaScript</param>
+            <param name="filename">Name of the file being transformed</param>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.IBabel.TransformWithSourceMap(System.String,System.String)">
+            <summary>
+            Transforms JavaScript via Babel and also returns a source map to map the compiled
+            source to the original version. The result is not cached.
+            </summary>
+            <param name="input">JavaScript</param>
+            <param name="filename">Name of the file being transformed</param>
+            <returns>JavaScript and source map</returns>
+        </member>
+        <member name="M:React.IBabel.TransformAndSaveFile(System.String)">
+            <summary>
+            Transforms JavaScript via Babel and saves the result into a ".generated.js" file 
+            alongside the original file.
+            </summary>
+            <param name="filename">Name of the file to load</param>
+            <returns>File contents</returns>
+        </member>
+        <member name="M:React.IBabel.GetOutputPath(System.String)">
+            <summary>
+            Returns the path the specified file's compilation will be cached to
+            </summary>
+            <param name="path">Path of the input file</param>
+            <returns>Output path of the compiled file</returns>
+        </member>
+        <member name="M:React.IBabel.GetSourceMapOutputPath(System.String)">
+            <summary>
+            Returns the path the specified file's source map will be cached to if
+            <see cref="M:React.IBabel.TransformAndSaveFile(System.String)"/> is called.
+            </summary>
+            <param name="path">Path of the input file</param>
+            <returns>Output path of the source map</returns>
+        </member>
+        <member name="T:React.ICache">
+            <summary>
+            Handles caching of data and optionally tracking dependencies
+            </summary>
+        </member>
+        <member name="M:React.ICache.Get``1(System.String,``0)">
+            <summary>
+            Get an item from the cache. Returns <paramref name="fallback"/> if the item does
+            not exist.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="fallback">Value to return if item is not in the cache</param>
+            <returns>Data from cache, otherwise <paramref name="fallback"/></returns>
+        </member>
+        <member name="M:React.ICache.Set``1(System.String,``0,System.TimeSpan,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets an item in the cache.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="data">Data to cache</param>
+            <param name="slidingExpiration">
+            Sliding expiration, if cache key is not accessed in this time period it will 
+            automatically be removed from the cache
+            </param>
+            <param name="cacheDependencyFiles">
+            Filenames this cached item is dependent on. If any of these files change, the cache
+            will be cleared automatically
+            </param>
+        </member>
+        <member name="T:React.IFileCacheHash">
+            <summary>
+            Handles calculating a hash value for validating a file-based cache.
+            </summary>
+        </member>
+        <member name="M:React.IFileCacheHash.CalculateHash(System.String)">
+            <summary>
+            Calculates a hash for the specified input
+            </summary>
+            <param name="input">Input string</param>
+            <returns>Hash of the input</returns>
+        </member>
+        <member name="M:React.IFileCacheHash.ValidateHash(System.String,System.String)">
+            <summary>
+            Validates that the cache's hash is valid. This is used to ensure the input has not
+            changed, and to invalidate the cache if so.
+            </summary>
+            <param name="cacheContents">Contents retrieved from cache</param>
+            <param name="hash">Hash of the input</param>
+            <returns><c>true</c> if the cache is still valid</returns>
+        </member>
+        <member name="M:React.IFileCacheHash.AddPrefix(System.String)">
+            <summary>
+            Prepends the hash prefix to the hash
+            </summary>
+            <param name="hash">Hash to prepend prefix to</param>
+            <returns>Hash with prefix</returns>
+        </member>
+        <member name="T:React.IFileSystem">
+            <summary>
+            Handles file system functionality, such as reading files.
+            </summary>
+        </member>
+        <member name="M:React.IFileSystem.MapPath(System.String)">
+            <summary>
+            Converts a path from an application relative path (~/...) to a full filesystem path
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns>Full path of the file</returns>
+        </member>
+        <member name="M:React.IFileSystem.ToRelativePath(System.String)">
+            <summary>
+            Converts a path from a full filesystem path to anan application relative path (~/...)
+            </summary>
+            <param name="absolutePath">Full path of the file</param>
+            <returns>App-relative path of the file</returns>
+        </member>
+        <member name="M:React.IFileSystem.ReadAsString(System.String)">
+            <summary>
+            Reads the contents of a file as a string.
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns>Contents of the file</returns>
+        </member>
+        <member name="M:React.IFileSystem.WriteAsString(System.String,System.String)">
+            <summary>
+            Writes a string to a file
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <param name="contents">Contents of the file</param>
+        </member>
+        <member name="M:React.IFileSystem.FileExists(System.String)">
+            <summary>
+            Determines if the specified file exists
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns><c>true</c> if the file exists</returns>
+        </member>
+        <member name="M:React.IFileSystem.Glob(System.String)">
+            <summary>
+            Gets all the files that match the specified pattern
+            </summary>
+            <param name="glob">Pattern to search for (eg. "~/Scripts/*.js")</param>
+            <returns>File names that match the pattern</returns>
+        </member>
+        <member name="T:React.IJavaScriptEngineFactory">
+            <summary>
+            Handles creation of JavaScript engines. All methods are thread-safe.
+            </summary>
+        </member>
+        <member name="M:React.IJavaScriptEngineFactory.GetEngineForCurrentThread">
+            <summary>
+            Gets the JavaScript engine for the current thread. It is recommended to use 
+            <see cref="M:React.IJavaScriptEngineFactory.GetEngine"/> instead, which will pool/reuse engines.
+            </summary>
+            <returns>The JavaScript engine</returns>
+        </member>
+        <member name="M:React.IJavaScriptEngineFactory.DisposeEngineForCurrentThread">
+            <summary>
+            Disposes the JavaScript engine for the current thread. This should only be used
+            if the engine was acquired through <see cref="M:React.IJavaScriptEngineFactory.GetEngineForCurrentThread"/>.
+            </summary>
+        </member>
+        <member name="M:React.IJavaScriptEngineFactory.GetEngine">
+            <summary>
+            Gets a JavaScript engine from the pool.
+            </summary>
+            <returns>The JavaScript engine</returns>
+        </member>
+        <member name="M:React.IJavaScriptEngineFactory.ReturnEngineToPool(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Returns an engine to the pool so it can be reused
+            </summary>
+            <param name="engine">Engine to return</param>
+        </member>
+        <member name="T:React.Initializer">
+            <summary>
+            Handles initialisation of ReactJS.NET. This is only called once, at application start.
+            </summary>
+        </member>
+        <member name="F:React.Initializer._obsoleteAssemblies">
+            <summary>
+            Assemblies that are ignored when finding <see cref="T:React.IAssemblyRegistration"/>
+            implementations to register dependencies.
+            </summary>
+        </member>
+        <member name="M:React.Initializer.Initialize(System.Func{React.TinyIoC.TinyIoCContainer.RegisterOptions,React.TinyIoC.TinyIoCContainer.RegisterOptions})">
+            <summary>
+            Intialise ReactJS.NET
+            </summary>
+            <param name="requestLifetimeRegistration">
+            A function used to register IoC components with a per-request lifetime
+            </param>
+        </member>
+        <member name="M:React.Initializer.InitializeIoC(System.Func{React.TinyIoC.TinyIoCContainer.RegisterOptions,React.TinyIoC.TinyIoCContainer.RegisterOptions})">
+            <summary>
+            Initialises the IoC container by finding all <see cref="T:React.IAssemblyRegistration"/> 
+            implementations and calling their <see cref="M:React.IAssemblyRegistration.Register(React.TinyIoC.TinyIoCContainer)"/> methods.
+            </summary>
+            <param name="requestLifetimeRegistration">
+            A function used to register IoC components with a per-request lifetime
+            </param>
+        </member>
+        <member name="M:React.Initializer.IsReactAssembly(System.Reflection.Assembly)">
+            <summary>
+            Determines if the specified assembly is part of ReactJS.NET
+            </summary>
+            <param name="assembly">The assembly</param>
+            <returns>
+              <c>true</c> if this is a ReactJS.NET assembly; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:React.Initializer.IsReactAssembly(System.String)">
+            <summary>
+            Determines if the specified assembly is part of ReactJS.NET
+            </summary>
+            <param name="assemblyName">Name of the assembly</param>
+            <returns>
+              <c>true</c> if this is a ReactJS.NET assembly; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:React.Initializer.IsComponentRegistration(System.Type)">
+            <summary>
+            Determines whether the specified type is an assembly registration class
+            </summary>
+            <param name="type">The type to check</param>
+            <returns>
+              <c>true</c> if the type is a component registration class; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="T:React.IReactComponent">
+            <summary>
+            Represents a React JavaScript component.
+            </summary>
+        </member>
+        <member name="P:React.IReactComponent.Props">
+            <summary>
+            Gets or sets the props for this component
+            </summary>
+        </member>
+        <member name="P:React.IReactComponent.ComponentName">
+            <summary>
+            Gets or sets the name of the component
+            </summary>
+        </member>
+        <member name="P:React.IReactComponent.ContainerId">
+            <summary>
+            Gets or sets the unique ID for the container of this component
+            </summary>
+        </member>
+        <member name="P:React.IReactComponent.ContainerTag">
+            <summary>
+            Gets or sets the HTML tag the component is wrapped in
+            </summary>
+        </member>
+        <member name="P:React.IReactComponent.ContainerClass">
+            <summary>
+            Gets or sets the HTML class for the container of this component
+            </summary>
+        </member>
+        <member name="M:React.IReactComponent.RenderHtml(System.Boolean,System.Boolean)">
+            <summary>
+            Renders the HTML for this component. This will execute the component server-side and
+            return the rendered HTML.
+            </summary>
+            <param name="renderContainerOnly">Only renders component container. Used for client-side only rendering.</param>
+            <param name="renderServerOnly">Only renders the common HTML mark up and not any React specific data attributes. Used for server-side only rendering.</param>
+            <returns>HTML</returns>
+        </member>
+        <member name="M:React.IReactComponent.RenderJavaScript">
+            <summary>
+            Renders the JavaScript required to initialise this component client-side. This will
+            initialise the React component, which includes attach event handlers to the
+            server-rendered HTML.
+            </summary>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="T:React.IReactEnvironment">
+            <summary>
+            Request-specific ReactJS.NET environment. This is unique to the individual request and is 
+            not shared.
+            </summary>
+        </member>
+        <member name="P:React.IReactEnvironment.Version">
+            <summary>
+            Gets the version number of ReactJS.NET
+            </summary>
+        </member>
+        <member name="P:React.IReactEnvironment.EngineVersion">
+            <summary>
+            Gets the name and version of the JavaScript engine in use by ReactJS.NET
+            </summary>
+        </member>
+        <member name="M:React.IReactEnvironment.Execute(System.String)">
+            <summary>
+            Executes the provided JavaScript code.
+            </summary>
+            <param name="code">JavaScript to execute</param>
+        </member>
+        <member name="M:React.IReactEnvironment.Execute``1(System.String)">
+            <summary>
+            Executes the provided JavaScript code, returning a result of the specified type.
+            </summary>
+            <typeparam name="T">Type to return</typeparam>
+            <param name="code">Code to execute</param>
+            <returns>Result of the JavaScript code</returns>
+        </member>
+        <member name="M:React.IReactEnvironment.Execute``1(System.String,System.Object[])">
+            <summary>
+            Executes the provided JavaScript function, returning a result of the specified type.
+            </summary>
+            <typeparam name="T">Type to return</typeparam>
+            <param name="function">JavaScript function to execute</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Result of the JavaScript code</returns>
+        </member>
+        <member name="M:React.IReactEnvironment.ExecuteWithBabel``1(System.String,System.Object[])">
+            <summary>
+            Attempts to execute the provided JavaScript code using a non-pooled JavaScript engine (ie.
+            creates a new JS engine per-thread). This is because Babel uses a LOT of memory, so we 
+            should completely dispose any engines that have loaded Babel in order to conserve memory.
+            
+            If an exception is thrown, retries the execution using a new thread (and hence a new engine)
+            with a larger maximum stack size.
+            This is required because JSXTransformer uses a huge stack which ends up being larger 
+            than what ASP.NET allows by default (256 KB).
+            </summary>
+            <typeparam name="T">Type to return from JavaScript call</typeparam>
+            <param name="function">JavaScript function to execute</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Result returned from JavaScript code</returns>
+        </member>
+        <member name="M:React.IReactEnvironment.HasVariable(System.String)">
+            <summary>
+            Determines if the specified variable exists in the JavaScript engine
+            </summary>
+            <param name="name">Name of the variable</param>
+            <returns><c>true</c> if the variable exists; <c>false</c> otherwise</returns>
+        </member>
+        <member name="M:React.IReactEnvironment.CreateComponent``1(System.String,``0,System.String,System.Boolean)">
+            <summary>
+            Creates an instance of the specified React JavaScript component.
+            </summary>
+            <typeparam name="T">Type of the props</typeparam>
+            <param name="componentName">Name of the component</param>
+            <param name="props">Props to use</param>
+            <param name="containerId">ID to use for the container HTML tag. Defaults to an auto-generated ID</param>
+            <param name="clientOnly">True if server-side rendering will be bypassed. Defaults to false.</param>
+            <returns>The component</returns>
+        </member>
+        <member name="M:React.IReactEnvironment.GetInitJavaScript(System.Boolean)">
+            <summary>
+            Renders the JavaScript required to initialise all components client-side. This will 
+            attach event handlers to the server-rendered HTML.
+            </summary>
+            <param name="clientOnly">True if server-side rendering will be bypassed. Defaults to false.</param>
+            <returns>JavaScript for all components</returns>
+        </member>
+        <member name="P:React.IReactEnvironment.Babel">
+            <summary>
+            Gets the JSX Transformer for this environment.
+            </summary>
+        </member>
+        <member name="M:React.IReactEnvironment.ReturnEngineToPool">
+            <summary>
+            Returns the currently held JS engine to the pool. (no-op if engine pooling is disabled)
+            </summary>
+        </member>
+        <member name="T:React.IReactSiteConfiguration">
+            <summary>
+            Site-wide configuration for ReactJS.NET
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.AddScript(System.String)">
+            <summary>
+            Adds a script to the list of scripts that are executed. This should be called for all
+            React components and their dependencies. If the script does not have any JSX in it
+            (for example, it's built using Webpack or Gulp), use 
+            <see cref="M:React.IReactSiteConfiguration.AddScriptWithoutTransform(System.String)"/> instead.
+            </summary>
+            <param name="filename">
+            Name of the file to execute. Should be a server relative path starting with ~ (eg. 
+            <c>~/Scripts/Awesome.js</c>)
+            </param>
+            <returns>This configuration, for chaining</returns>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.AddScriptWithoutTransform(System.String)">
+            <summary>
+            Adds a script to the list of scripts that are executed. This is the same as
+            <see cref="M:React.IReactSiteConfiguration.AddScript(System.String)"/> except it does not run JSX transformation on the script and thus is
+            more efficient.
+            </summary>
+            <param name="filename">
+            Name of the file to execute. Should be a server relative path starting with ~ (eg. 
+            <c>~/Scripts/Awesome.js</c>)
+            </param>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.Scripts">
+            <summary>
+            Gets a list of all the scripts that have been added to this configuration and require JSX
+            transformation to be run.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.ScriptsWithoutTransform">
+            <summary>
+            Gets a list of all the scripts that have been added to this configuration and do not 
+            require JSX transformation to be run.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.ReuseJavaScriptEngines">
+            <summary>
+            Gets or sets whether JavaScript engines should be reused across requests.
+            </summary>
+            
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetReuseJavaScriptEngines(System.Boolean)">
+            <summary>
+            Sets whether JavaScript engines should be reused across requests.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.JsonSerializerSettings">
+            <summary>
+            Gets or sets the configuration for JSON serializer.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetJsonSerializerSettings(Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Sets the configuration for json serializer.
+            </summary>
+            <remarks>
+            This confiquration is used when component initialization script
+            is being generated server-side.
+            </remarks>
+            <param name="settings">The settings.</param>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.StartEngines">
+            <summary>
+            Gets or sets the number of engines to initially start when a pool is created. 
+            Defaults to <c>10</c>.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetStartEngines(System.Nullable{System.Int32})">
+            <summary>
+            Sets the number of engines to initially start when a pool is created. 
+            Defaults to <c>10</c>.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.MaxEngines">
+            <summary>
+            Gets or sets the maximum number of engines that will be created in the pool. 
+            Defaults to <c>25</c>.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetMaxEngines(System.Nullable{System.Int32})">
+            <summary>
+            Sets the maximum number of engines that will be created in the pool. 
+            Defaults to <c>25</c>.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.AllowMsieEngine">
+            <summary>
+            Gets or sets whether the MSIE engine should be used if V8 is unavailable.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetAllowMsieEngine(System.Boolean)">
+            <summary>
+            Sets whether the MSIE engine should be used if V8 is unavailable.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.LoadReact">
+            <summary>
+            Gets or sets whether the built-in version of React is loaded. If <c>false</c>, you must
+            provide your own version of React.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetLoadReact(System.Boolean)">
+            <summary>
+            Sets whether the built-in version of React is loaded. If <c>false</c>, you must 
+            provide your own version of React.
+            </summary>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.LoadBabel">
+            <summary>
+            Gets or sets whether Babel is loading. Disabling the loading of Babel can improve startup
+            performance, but all your JSX files must be transformed beforehand (eg. through Babel,
+            Webpack or Browserify).
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetLoadBabel(System.Boolean)">
+            <summary>
+            Sets whether Babel is loading. Disabling the loading of Babel can improve startup
+            performance, but all your JSX files must be transformed beforehand (eg. through Babel,
+            Webpack or Browserify).
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.BabelConfig">
+            <summary>
+            Gets or sets the Babel configuration to use.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetBabelConfig(React.BabelConfig)">
+            <summary>
+            Sets the Babel configuration to use.
+            </summary>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.UseDebugReact">
+            <summary>
+            Gets or sets whether to use the debug version of React. This is slower, but gives
+            useful debugging tips.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.SetUseDebugReact(System.Boolean)">
+            <summary>
+            Sets whether to use the debug version of React. This is slower, but gives
+            useful debugging tips.
+            </summary>
+        </member>
+        <member name="P:React.IReactSiteConfiguration.UseServerSideRendering">
+            <summary>
+            Gets or sets whether server-side rendering is enabled.
+            </summary>
+        </member>
+        <member name="M:React.IReactSiteConfiguration.DisableServerSideRendering">
+            <summary>
+            Disables server-side rendering. This is useful when debugging your scripts.
+            </summary>
+        </member>
+        <member name="T:React.JavaScriptEngineFactory">
+            <summary>
+            Handles creation of JavaScript engines. All methods are thread-safe.
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._config">
+            <summary>
+            React configuration for the current site
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._fileSystem">
+            <summary>
+            File system wrapper
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._factory">
+            <summary>
+            Function used to create new JavaScript engine instances.
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._jsEngineSwitcher">
+            <summary>
+            The JavaScript Engine Switcher instance used by ReactJS.NET
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._engines">
+            <summary>
+            Contains all current JavaScript engine instances. One per thread, keyed on thread ID.
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._pool">
+            <summary>
+            Pool of JavaScript engines to use
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._disposed">
+            <summary>
+            Whether this class has been disposed.
+            </summary>
+        </member>
+        <member name="F:React.JavaScriptEngineFactory._scriptLoadException">
+            <summary>
+            The exception that was thrown during the most recent recycle of the pool.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.#ctor(JavaScriptEngineSwitcher.Core.JsEngineSwitcher,React.IReactSiteConfiguration,React.IFileSystem)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.JavaScriptEngineFactory"/> class.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.CreatePool">
+            <summary>
+            Creates a new JavaScript engine pool.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.InitialiseEngine(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Loads standard React and Babel scripts into the engine.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.LoadUserScripts(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Loads any user-provided scripts. Only scripts that don't need JSX transformation can 
+            run immediately here. JSX files are loaded in ReactEnvironment.
+            </summary>
+            <param name="engine">Engine to load scripts into</param>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.EnsureReactLoaded(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Ensures that React has been correctly loaded into the specified engine.
+            </summary>
+            <param name="engine">Engine to check</param>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.GetEngineForCurrentThread">
+            <summary>
+            Gets the JavaScript engine for the current thread. It is recommended to use 
+            <see cref="M:React.JavaScriptEngineFactory.GetEngine"/> instead, which will pool/reuse engines.
+            </summary>
+            <returns>The JavaScript engine</returns>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.DisposeEngineForCurrentThread">
+            <summary>
+            Disposes the JavaScript engine for the current thread.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.GetEngine">
+            <summary>
+            Gets a JavaScript engine from the pool.
+            </summary>
+            <returns>The JavaScript engine</returns>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.ReturnEngineToPool(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Returns an engine to the pool so it can be reused
+            </summary>
+            <param name="engine">Engine to return</param>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.GetFactory(JavaScriptEngineSwitcher.Core.JsEngineSwitcher,System.Boolean)">
+            <summary>
+            Gets a factory for the most appropriate JavaScript engine for the current environment.
+            The first functioning JavaScript engine with the lowest priority will be used.
+            </summary>
+            <returns>Function to create JavaScript engine</returns>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.EngineIsUsable(JavaScriptEngineSwitcher.Core.IJsEngine,System.Boolean)">
+            <summary>
+            Performs a sanity check to ensure the specified engine type is usable.
+            </summary>
+            <param name="engine">Engine to test</param>
+            <param name="allowMsie">Whether the MSIE engine can be used</param>
+            <returns></returns>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.Dispose">
+            <summary>
+            Clean up all engines
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.EnsureValidState">
+            <summary>
+            Ensures that this object has not been disposed, and that no error was thrown while
+            loading the scripts.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineFactory.EnsureJsEnginesRegistered(JavaScriptEngineSwitcher.Core.JsEngineSwitcher,System.Boolean)">
+            <summary>
+            Ensures that some engines have been registered with JavaScriptEngineSwitcher. IF not,
+            registers some default engines.
+            </summary>
+            <param name="jsEngineSwitcher">JavaScript Engine Switcher instance</param>
+            <param name="allowMsie">Whether to allow the MSIE JS engine</param>
+        </member>
+        <member name="T:React.JavaScriptEngineUtils">
+            <summary>
+            Various helper methods for the JavaScript engine environment.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineUtils.EnvironmentSupportsVroomJs">
+            <summary>
+            Determines if the current environment supports the VroomJs engine.
+            </summary>
+            <returns><c>true</c> if VroomJs is supported</returns>
+        </member>
+        <member name="M:React.JavaScriptEngineUtils.EnvironmentSupportsClearScript">
+            <summary>
+            Determines if the current environment supports the ClearScript V8 engine
+            </summary>
+            <returns><c>true</c> if ClearScript is supported</returns>
+        </member>
+        <member name="M:React.JavaScriptEngineUtils.EnsureEngineFunctional``2(System.Func{System.Exception,``1})">
+            <summary>
+            Attempts to use the specified engine and throws an exception if it doesn't work.
+            </summary>
+        </member>
+        <member name="M:React.JavaScriptEngineUtils.CallFunctionReturningJson``1(JavaScriptEngineSwitcher.Core.IJsEngine,System.String,System.Object[])">
+            <summary>
+            Calls a JavaScript function using the specified engine. If <typeparamref name="T"/> is
+            not a scalar type, the function is assumed to return a string of JSON that can be 
+            parsed as that type.
+            </summary>
+            <typeparam name="T">Type returned by function</typeparam>
+            <param name="engine">Engine to execute function with</param>
+            <param name="function">Name of the function to execute</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Value returned by function</returns>
+        </member>
+        <member name="T:React.JavaScriptWithSourceMap">
+            <summary>
+            Represents the result of a Babel transformation along with its
+            corresponding source map.
+            </summary>
+        </member>
+        <member name="P:React.JavaScriptWithSourceMap.BabelVersion">
+            <summary>
+            Gets or sets the version of Babel used to perform this transformation.
+            </summary>
+        </member>
+        <member name="P:React.JavaScriptWithSourceMap.Code">
+            <summary>
+            The transformed result
+            </summary>
+        </member>
+        <member name="P:React.JavaScriptWithSourceMap.Hash">
+            <summary>
+            The hash of the input file.
+            </summary>
+        </member>
+        <member name="P:React.JavaScriptWithSourceMap.SourceMap">
+            <summary>
+            The source map for this code
+            </summary>
+        </member>
+        <member name="T:React.MemoryFileCache">
+            <summary>
+            Memory cache implementation for React.ICache. Uses System.Runtime.Caching.
+            </summary>
+        </member>
+        <member name="M:React.MemoryFileCache.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.MemoryFileCache"/> class.
+            </summary>		
+        </member>
+        <member name="M:React.MemoryFileCache.Get``1(System.String,``0)">
+            <summary>
+            Get an item from the cache. Returns <paramref name="fallback"/> if the item does
+            not exist.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="fallback">Value to return if item is not in the cache</param>
+            <returns>Data from cache, otherwise <paramref name="fallback"/></returns>
+        </member>
+        <member name="M:React.MemoryFileCache.Set``1(System.String,``0,System.TimeSpan,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets an item in the cache.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="data">Data to cache</param>
+            <param name="slidingExpiration">
+            Sliding expiration, if cache key is not accessed in this time period it will 
+            automatically be removed from the cache
+            </param>
+            <param name="cacheDependencyFiles">
+            Filenames this cached item is dependent on. If any of these files change, the cache
+            will be cleared automatically
+            </param>
+        </member>
+        <member name="T:React.NullCache">
+            <summary>
+            Implementation of <see cref="T:React.ICache"/> that never caches.
+            </summary>
+        </member>
+        <member name="M:React.NullCache.Get``1(System.String,``0)">
+            <summary>
+            Get an item from the cache. Returns <paramref name="fallback"/> if the item does
+            not exist.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="fallback">Value to return if item is not in the cache</param>
+            <returns>Data from cache, otherwise <paramref name="fallback"/></returns>
+        </member>
+        <member name="M:React.NullCache.Set``1(System.String,``0,System.TimeSpan,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets an item in the cache.
+            </summary>
+            <typeparam name="T">Type of data</typeparam>
+            <param name="key">The cache key</param>
+            <param name="data">Data to cache</param>
+            <param name="slidingExpiration">
+            Sliding expiration, if cache key is not accessed in this time period it will 
+            automatically be removed from the cache
+            </param>
+            <param name="cacheDependencyFiles">
+            Filenames this cached item is dependent on. If any of these files change, the cache
+            will be cleared automatically
+            </param>
+        </member>
+        <member name="T:React.ReactComponent">
+            <summary>
+            Represents a React JavaScript component.
+            </summary>
+        </member>
+        <member name="F:React.ReactComponent._identifierRegex">
+            <summary>
+            Regular expression used to validate JavaScript identifiers. Used to ensure component
+            names are valid.
+            Based off https://gist.github.com/Daniel15/3074365
+            </summary>
+        </member>
+        <member name="F:React.ReactComponent._environment">
+            <summary>
+            Environment this component has been created in
+            </summary>
+        </member>
+        <member name="F:React.ReactComponent._configuration">
+            <summary>
+            Global site configuration
+            </summary>
+        </member>
+        <member name="F:React.ReactComponent._props">
+            <summary>
+            Raw props for this component
+            </summary>
+        </member>
+        <member name="F:React.ReactComponent._serializedProps">
+            <summary>
+            JSON serialized props for this component
+            </summary>
+        </member>
+        <member name="P:React.ReactComponent.ComponentName">
+            <summary>
+            Gets or sets the name of the component
+            </summary>
+        </member>
+        <member name="P:React.ReactComponent.ContainerId">
+            <summary>
+            Gets or sets the unique ID for the DIV container of this component
+            </summary>
+        </member>
+        <member name="P:React.ReactComponent.ContainerTag">
+            <summary>
+            Gets or sets the HTML tag the component is wrapped in
+            </summary>
+        </member>
+        <member name="P:React.ReactComponent.ContainerClass">
+            <summary>
+            Gets or sets the HTML class for the container of this component
+            </summary>
+        </member>
+        <member name="P:React.ReactComponent.Props">
+            <summary>
+            Gets or sets the props for this component
+            </summary>
+        </member>
+        <member name="M:React.ReactComponent.#ctor(React.IReactEnvironment,React.IReactSiteConfiguration,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.ReactComponent"/> class.
+            </summary>
+            <param name="environment">The environment.</param>
+            <param name="configuration">Site-wide configuration.</param>
+            <param name="componentName">Name of the component.</param>
+            <param name="containerId">The ID of the container DIV for this component</param>
+        </member>
+        <member name="M:React.ReactComponent.RenderHtml(System.Boolean,System.Boolean)">
+            <summary>
+            Renders the HTML for this component. This will execute the component server-side and
+            return the rendered HTML.
+            </summary>
+            <param name="renderContainerOnly">Only renders component container. Used for client-side only rendering.</param>
+            <param name="renderServerOnly">Only renders the common HTML mark up and not any React specific data attributes. Used for server-side only rendering.</param>
+            <returns>HTML</returns>
+        </member>
+        <member name="M:React.ReactComponent.RenderJavaScript">
+            <summary>
+            Renders the JavaScript required to initialise this component client-side. This will
+            initialise the React component, which includes attach event handlers to the
+            server-rendered HTML.
+            </summary>
+            <returns>JavaScript</returns>
+        </member>
+        <member name="M:React.ReactComponent.EnsureComponentExists">
+            <summary>
+            Ensures that this component exists in global scope
+            </summary>
+        </member>
+        <member name="M:React.ReactComponent.GetComponentInitialiser">
+            <summary>
+            Gets the JavaScript code to initialise the component
+            </summary>
+            <returns>JavaScript for component initialisation</returns>
+        </member>
+        <member name="M:React.ReactComponent.EnsureComponentNameValid(System.String)">
+            <summary>
+            Validates that the specified component name is valid
+            </summary>
+            <param name="componentName"></param>
+        </member>
+        <member name="M:React.ReactComponent.GenerateId">
+            <summary>
+            Generates a unique identifier for this component, if one was not passed in.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:React.ReactEnvironment">
+            <summary>
+            Request-specific ReactJS.NET environment. This is unique to the individual request and is 
+            not shared.
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment.USER_SCRIPTS_LOADED_KEY">
+            <summary>
+            JavaScript variable set when user-provided scripts have been loaded
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment.LARGE_STACK_SIZE">
+            <summary>
+            Stack size to use for JSXTransformer if the default stack is insufficient
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._engineFactory">
+            <summary>
+            Factory to create JavaScript engines
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._config">
+            <summary>
+            Site-wide configuration
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._cache">
+            <summary>
+            Cache used for storing compiled JSX
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._fileSystem">
+            <summary>
+            File system wrapper
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._fileCacheHash">
+            <summary>
+            Hash algorithm for file-based cache
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._babelTransformer">
+            <summary>
+            JSX Transformer instance for this environment
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._version">
+            <summary>
+            Version number of ReactJS.NET
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._engineFromPool">
+            <summary>
+            Contains an engine acquired from a pool of engines. Only used if 
+            <see cref="P:React.IReactSiteConfiguration.ReuseJavaScriptEngines"/> is enabled.
+            </summary>
+        </member>
+        <member name="F:React.ReactEnvironment._components">
+            <summary>
+            List of all components instantiated in this environment
+            </summary>
+        </member>
+        <member name="P:React.ReactEnvironment.Current">
+            <summary>
+            Gets the <see cref="T:React.IReactEnvironment"/> for the current request. If no environment
+            has been created for the current request, creates a new one.
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.#ctor(React.IJavaScriptEngineFactory,React.IReactSiteConfiguration,React.ICache,React.IFileSystem,React.IFileCacheHash)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.ReactEnvironment"/> class.
+            </summary>
+            <param name="engineFactory">The JavaScript engine factory</param>
+            <param name="config">The site-wide configuration</param>
+            <param name="cache">The cache to use for JSX compilation</param>
+            <param name="fileSystem">File system wrapper</param>
+            <param name="fileCacheHash">Hash algorithm for file-based cache</param>
+        </member>
+        <member name="P:React.ReactEnvironment.Engine">
+            <summary>
+            Gets the JavaScript engine to use for this environment.
+            </summary>
+        </member>
+        <member name="P:React.ReactEnvironment.Babel">
+            <summary>
+            Gets the Babel transformer for this environment.
+            </summary>
+        </member>
+        <member name="P:React.ReactEnvironment.EngineVersion">
+            <summary>
+            Gets the version of the JavaScript engine in use by ReactJS.NET
+            </summary>
+        </member>
+        <member name="P:React.ReactEnvironment.Version">
+            <summary>
+            Gets the version number of ReactJS.NET
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.EnsureUserScriptsLoaded">
+            <summary>
+            Ensures any user-provided scripts have been loaded. This only loads JSX files; files
+            that need no transformation are loaded in JavaScriptEngineFactory.
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.Execute(System.String)">
+            <summary>
+            Executes the provided JavaScript code.
+            </summary>
+            <param name="code">JavaScript to execute</param>
+        </member>
+        <member name="M:React.ReactEnvironment.Execute``1(System.String)">
+            <summary>
+            Executes the provided JavaScript code, returning a result of the specified type.
+            </summary>
+            <typeparam name="T">Type to return</typeparam>
+            <param name="code">Code to execute</param>
+            <returns>Result of the JavaScript code</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.Execute``1(System.String,System.Object[])">
+            <summary>
+            Executes the provided JavaScript function, returning a result of the specified type.
+            </summary>
+            <typeparam name="T">Type to return</typeparam>
+            <param name="function">JavaScript function to execute</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Result of the JavaScript code</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.HasVariable(System.String)">
+            <summary>
+            Determines if the specified variable exists in the JavaScript engine
+            </summary>
+            <param name="name">Name of the variable</param>
+            <returns><c>true</c> if the variable exists; <c>false</c> otherwise</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.CreateComponent``1(System.String,``0,System.String,System.Boolean)">
+            <summary>
+            Creates an instance of the specified React JavaScript component.
+            </summary>
+            <typeparam name="T">Type of the props</typeparam>
+            <param name="componentName">Name of the component</param>
+            <param name="props">Props to use</param>
+            <param name="containerId">ID to use for the container HTML tag. Defaults to an auto-generated ID</param>
+            <param name="clientOnly">True if server-side rendering will be bypassed. Defaults to false.</param>
+            <returns>The component</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.GetInitJavaScript(System.Boolean)">
+            <summary>
+            Renders the JavaScript required to initialise all components client-side. This will 
+            attach event handlers to the server-rendered HTML.
+            </summary>
+            <param name="clientOnly">True if server-side rendering will be bypassed. Defaults to false.</param>
+            <returns>JavaScript for all components</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.ExecuteWithBabel``1(System.String,System.Object[])">
+            <summary>
+            Attempts to execute the provided JavaScript code using a non-pooled JavaScript engine (ie.
+            creates a new JS engine per-thread). This is because Babel uses a LOT of memory, so we 
+            should completely dispose any engines that have loaded Babel in order to conserve memory.
+            
+            If an exception is thrown, retries the execution using a new thread (and hence a new engine)
+            with a larger maximum stack size.
+            This is required because JSXTransformer uses a huge stack which ends up being larger 
+            than what ASP.NET allows by default (256 KB).
+            </summary>
+            <typeparam name="T">Type to return from JavaScript call</typeparam>
+            <param name="function">JavaScript function to execute</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Result returned from JavaScript code</returns>
+        </member>
+        <member name="M:React.ReactEnvironment.GetVersion">
+            <summary>
+            Gets the ReactJS.NET version number. Use <see cref="P:React.ReactEnvironment.Version" /> instead.
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.ReturnEngineToPool">
+            <summary>
+            Returns the currently held JS engine to the pool. (no-op if engine pooling is disabled)
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.WrapJavaScriptRuntimeException(JavaScriptEngineSwitcher.Core.JsRuntimeException)">
+            <summary>
+            Updates the Message of a <see cref="T:JavaScriptEngineSwitcher.Core.JsRuntimeException"/> to be more useful, containing
+            the line and column numbers.
+            </summary>
+            <param name="ex">Original exception</param>
+            <returns>New exception</returns>
+        </member>
+        <member name="P:React.ReactEnvironment.Configuration">
+            <summary>
+            Gets the site-wide configuration.
+            </summary>
+        </member>
+        <member name="M:React.ReactEnvironment.EnsureBabelLoaded(JavaScriptEngineSwitcher.Core.IJsEngine)">
+            <summary>
+            Ensures that Babel has been loaded into the JavaScript engine.
+            </summary>
+        </member>
+        <member name="T:React.ReactSiteConfiguration">
+            <summary>
+            Site-wide configuration for ReactJS.NET
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.Configuration">
+            <summary>
+            Gets or sets the site-side configuration
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.ReactSiteConfiguration"/> class.
+            </summary>
+        </member>
+        <member name="F:React.ReactSiteConfiguration._scriptFiles">
+            <summary>
+            All the scripts that have been added to this configuration and require JSX 
+            transformation to be run.
+            </summary>
+        </member>
+        <member name="F:React.ReactSiteConfiguration._scriptFilesWithoutTransform">
+            <summary>
+            All the scripts that have been added to this configuration and do not require JSX
+            transformation to be run.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.AddScript(System.String)">
+            <summary>
+            Adds a script to the list of scripts that are executed. This should be called for all
+            React components and their dependencies. If the script does not have any JSX in it
+            (for example, it's built using Webpack or Gulp), use 
+            <see cref="M:React.ReactSiteConfiguration.AddScriptWithoutTransform(System.String)"/> instead.
+            </summary>
+            <param name="filename">
+            Name of the file to execute. Should be a server relative path starting with ~ (eg. 
+            <c>~/Scripts/Awesome.js</c>)
+            </param>
+            <returns>This configuration, for chaining</returns>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.AddScriptWithoutTransform(System.String)">
+            <summary>
+            Adds a script to the list of scripts that are executed. This is the same as
+            <see cref="M:React.ReactSiteConfiguration.AddScript(System.String)"/> except it does not run JSX transformation on the script and thus is
+            more efficient.
+            </summary>
+            <param name="filename">
+            Name of the file to execute. Should be a server relative path starting with ~ (eg. 
+            <c>~/Scripts/Awesome.js</c>)
+            </param>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.Glob(System.String)">
+            <summary>
+            Gets all the file paths that match the specified pattern. If the pattern is a plain
+            path, just returns that path verbatim.
+            </summary>
+            <param name="glob">
+            Patterns to search for (eg. <c>~/Scripts/*.js</c> or <c>~/Scripts/Awesome.js</c>
+            </param>
+            <returns>File paths that match this pattern</returns>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.Scripts">
+            <summary>
+            Gets a list of all the scripts that have been added to this configuration and require JSX
+            transformation to be run.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.ScriptsWithoutTransform">
+            <summary>
+            Gets a list of all the scripts that have been added to this configuration.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.JsonSerializerSettings">
+            <summary>
+            Gets or sets the configuration for JSON serializer.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetJsonSerializerSettings(Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Sets the configuration for json serializer.
+            </summary>
+            <param name="settings">Settings.</param>
+            <remarks>
+            Thic confiquration is used when component initialization script
+            is being generated server-side.
+            </remarks>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.ReuseJavaScriptEngines">
+            <summary>
+            Gets or sets whether JavaScript engines should be reused across requests.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetReuseJavaScriptEngines(System.Boolean)">
+            <summary>
+            Sets whether JavaScript engines should be reused across requests.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.StartEngines">
+            <summary>
+            Gets or sets the number of engines to initially start when a pool is created. 
+            Defaults to <c>10</c>.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetStartEngines(System.Nullable{System.Int32})">
+            <summary>
+            Sets the number of engines to initially start when a pool is created. 
+            Defaults to <c>10</c>.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.MaxEngines">
+            <summary>
+            Gets or sets the maximum number of engines that will be created in the pool. 
+            Defaults to <c>25</c>.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetMaxEngines(System.Nullable{System.Int32})">
+            <summary>
+            Sets the maximum number of engines that will be created in the pool. 
+            Defaults to <c>25</c>.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.AllowMsieEngine">
+            <summary>
+            Gets or sets whether the MSIE engine should be used if V8 is unavailable.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetAllowMsieEngine(System.Boolean)">
+            <summary>
+            Sets whether the MSIE engine should be used if V8 is unavailable.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.LoadReact">
+            <summary>
+            Gets or sets whether the built-in version of React is loaded. If <c>false</c>, you must
+            provide your own version of React.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetLoadReact(System.Boolean)">
+            <summary>
+            Sets whether the built-in version of React is loaded. If <c>false</c>, you must 
+            provide your own version of React.
+            </summary>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.LoadBabel">
+            <summary>
+            Gets or sets whether Babel is loading. Disabling the loading of Babel can improve startup
+            performance, but all your JSX files must be transformed beforehand (eg. through Babel,
+            Webpack or Browserify).
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetLoadBabel(System.Boolean)">
+            <summary>
+            Sets whether Babel is loading. Disabling the loading of Babel can improve startup
+            performance, but all your JSX files must be transformed beforehand (eg. through Babel,
+            Webpack or Browserify).
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.BabelConfig">
+            <summary>
+            Gets or sets the Babel configuration to use.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetBabelConfig(React.BabelConfig)">
+            <summary>
+            Sets the Babel configuration to use.
+            </summary>
+            <returns>The configuration, for chaining</returns>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.UseDebugReact">
+            <summary>
+            Gets or sets whether to use the debug version of React. This is slower, but gives
+            useful debugging tips.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.SetUseDebugReact(System.Boolean)">
+            <summary>
+            Sets whether to use the debug version of React. This is slower, but gives
+            useful debugging tips.
+            </summary>
+        </member>
+        <member name="P:React.ReactSiteConfiguration.UseServerSideRendering">
+            <summary>
+            Gets or sets whether server-side rendering is enabled.
+            </summary>
+        </member>
+        <member name="M:React.ReactSiteConfiguration.DisableServerSideRendering">
+            <summary>
+            Disables server-side rendering. This is useful when debugging your scripts.
+            </summary>
+        </member>
+        <member name="T:React.SimpleFileSystem">
+            <summary>
+            An implementation of <see cref="T:React.IFileSystem" /> that does not do any mapping of file paths.
+            </summary>
+        </member>
+        <member name="M:React.SimpleFileSystem.MapPath(System.String)">
+            <summary>
+            Converts a path from an application relative path (~/...) to a full filesystem path
+            </summary>
+            <param name="relativePath">App-relative path of the file</param>
+            <returns>Full path of the file</returns>
+        </member>
+        <member name="T:React.SourceMap">
+            <summary>
+            Represents the data contained in a source map
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.Version">
+            <summary>
+            Version number of the source map spec used to build this source map. Expected
+            to be version 3.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.File">
+            <summary>
+            An optional name of the generated code that this source map is associated with.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.SourceRoot">
+            <summary>
+            An optional source root, useful for relocating source files on a server or
+            removing repeated values in the <see cref="P:React.SourceMap.Sources"/> entry.  This value is 
+            prepended to the individual entries in the <see cref="P:React.SourceMap.Sources"/> field.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.Sources">
+            <summary>
+            A list of original sources used by the <see cref="P:React.SourceMap.Mappings"/> entry.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.SourcesContent">
+            <summary>
+            An optional list of source content, useful when the <see cref="P:React.SourceMap.Sources"/> can't 
+            be hosted. The contents are listed in the same order as the <see cref="P:React.SourceMap.Sources"/>. 
+            <c>null</c> may be used if some original sources should be retrieved by name.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.Names">
+            <summary>
+            A list of symbol names used by the <see cref="P:React.SourceMap.Mappings"/> entry.
+            </summary>
+        </member>
+        <member name="P:React.SourceMap.Mappings">
+            <summary>
+            A string with the mapping data encoded in base 64 VLQ.
+            </summary>
+        </member>
+        <member name="M:React.SourceMap.ToJson">
+            <summary>
+            Outputs this source map as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:React.SourceMap.FromJson(System.String)">
+            <summary>
+            Parse a source map from JSON
+            </summary>
+            <param name="json">JSON input</param>
+            <returns>Source map</returns>
+        </member>
+        <member name="T:React.SystemEnvironmentUtils">
+            <summary>
+            Utility functions for handling system environmental differences
+            </summary>
+        </member>
+        <member name="M:React.SystemEnvironmentUtils.IsRunningOnMac">
+            <summary>
+            Determines whether the application is running on Mac OS.
+            Based off Mono's XplatUI.cs, licensed under LGPL.
+            </summary>
+            <returns><c>true</c> if running on Mac OS</returns>
+        </member>
+        <member name="T:React.TinyIoCExtensions">
+            <summary>
+            ReactJS.NET extensions to TinyIoC
+            </summary>
+        </member>
+        <member name="P:React.TinyIoCExtensions.AsRequestLifetime">
+            <summary>
+            Gets or sets the factory used to create per-request lifetime providers
+            </summary>
+        </member>
+        <member name="M:React.TinyIoCExtensions.AsPerRequestSingleton(React.TinyIoC.TinyIoCContainer.RegisterOptions)">
+            <summary>
+            Registers a class in IoC that uses a singleton per "request". This is generally in the
+            context of a web request.
+            </summary>
+            <param name="registerOptions">Class registration options</param>
+            <returns>The class registration (fluent interface)</returns>
+        </member>
+        <member name="T:React.VroomJsEngine">
+            <summary>
+            Basic implementation of a VroomJs JavaScript engine for JavaScriptEngineSwitcher.
+            Connects to the V8 JavaScript engine on Linux and Mac OS X.
+            </summary>
+        </member>
+        <member name="F:React.VroomJsEngine._jsEngine">
+            <summary>
+            The VroomJs engine. One engine is shared for the whole app, and separate contexts are
+            used for each instance of this class.
+            </summary>
+        </member>
+        <member name="F:React.VroomJsEngine._context">
+            <summary>
+            The V8 context
+            </summary>
+        </member>
+        <member name="P:React.VroomJsEngine.Name">
+            <summary>
+            Name of JavaScript engine
+            </summary>
+        </member>
+        <member name="P:React.VroomJsEngine.Version">
+            <summary>
+            Version of original JavaScript engine
+            </summary>
+        </member>
+        <member name="P:React.VroomJsEngine.Engine">
+            <summary>
+            The VroomJs engine. One engine is shared for the whole app, and separate contexts are
+            used for each instance of this class.
+            </summary>
+        </member>
+        <member name="M:React.VroomJsEngine.#ctor">
+            <summary>
+            Constructs instance of adapter for VroomJs
+            </summary>
+        </member>
+        <member name="M:React.VroomJsEngine.ConvertJavaScriptExceptionToJsRuntimeException(VroomJs.JsException)">
+            <summary>
+            Converts a VroomJs exception into a <see cref="T:JavaScriptEngineSwitcher.Core.JsRuntimeException" />.
+            </summary>
+            <param name="jsException">VroomJs exception</param>
+            <returns>JavaScriptEngineSwitcher exception</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerEvaluate(System.String)">
+            <summary>
+            Evaluates the specified JavaScript expression
+            </summary>
+            <param name="expression">Expression to evaluate</param>
+            <returns>Result of the expression</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerEvaluate``1(System.String)">
+            <summary>
+            Evaluates the specified JavaScript expression
+            </summary>
+            <param name="expression">Expression to evaluate</param>
+            <typeparam name="T">Return type</typeparam>
+            <returns>Result of the expression</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerExecute(System.String)">
+            <summary>
+            Executes the specified JavaScript code
+            </summary>
+            <param name="code">Code to execute</param>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerCallFunction(System.String,System.Object[])">
+            <summary>
+            Calls the specified JavaScript function
+            </summary>
+            <param name="functionName">Function to call</param>
+            <param name="args">Arguments to pass to function</param>
+            <returns>Result of the function</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerCallFunction``1(System.String,System.Object[])">
+            <summary>
+            Calls the specified JavaScript function
+            </summary>
+            <param name="functionName">Function to call</param>
+            <param name="args">Arguments to pass to function</param>
+            <typeparam name="T">Return type of the function</typeparam>
+            <returns>Result of the function</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerHasVariable(System.String)">
+            <summary>
+            Determines if the specified variable has been set
+            </summary>
+            <param name="variableName">Name of the variable</param>
+            <returns><c>true</c> if the variable is defined</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerGetVariableValue(System.String)">
+            <summary>
+            Gets the value of the specified variable
+            </summary>
+            <param name="variableName">Variable to get value of</param>
+            <returns>Value</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerGetVariableValue``1(System.String)">
+            <summary>
+            Gets the value of the specified variable
+            </summary>
+            <param name="variableName">Variable to get value of</param>
+            <typeparam name="T">Type of the variable</typeparam>
+            <returns>Value</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerSetVariableValue(System.String,System.Object)">
+            <summary>
+            Sets the value of the specified variable
+            </summary>
+            <param name="variableName">Variable to get value of</param>
+            <param name="value">New value to set</param>
+            <returns>Value</returns>
+        </member>
+        <member name="M:React.VroomJsEngine.InnerRemoveVariable(System.String)">
+            <summary>
+            Deletes a variable
+            </summary>
+            <param name="variableName">Variable to delete</param>
+        </member>
+        <member name="M:React.VroomJsEngine.Dispose">
+            <summary>
+            Releases resources used by this engine.
+            </summary>
+        </member>
+        <member name="T:React.VroomJsEngine.Factory">
+            <summary>
+            Engine factory for <see cref="N:VroomJs" />.
+            </summary>
+        </member>
+        <member name="M:React.VroomJsEngine.Factory.CreateEngine">
+            <summary>
+            Creates the engine
+            </summary>
+        </member>
+        <member name="P:React.VroomJsEngine.Factory.EngineName">
+            <summary>
+            Gets the name of the engine.
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.BabelException">
+            <summary>
+            Thrown when an error occurs when transforming a JavaScript file via Babel.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.BabelException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.BabelException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.BabelException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.BabelException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.BabelException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.BabelNotLoadedException">
+            <summary>
+            Thrown when Babel is required but has not been loaded.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.BabelNotLoadedException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.BabelNotLoadedException"/> class.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.BabelNotLoadedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.BabelNotLoadedException.GetMessage">
+            <summary>
+            Gets a message that describes the current exception.
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ClearScriptV8InitialisationException">
+            <summary>
+            Thrown when the ClearScript V8 JavaScript engine fails to initialise
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ClearScriptV8InitialisationException.#ctor(System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ClearScriptV8InitialisationException"/> class.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ClearScriptV8InitialisationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ClearScriptV8InitialisationException.GetMessage(System.Exception)">
+            <summary>
+            Gets a message that describes the current exception.
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactConfigurationException">
+            <summary>
+            Thrown when an error occurs while reading a site configuration file.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactConfigurationException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactConfigurationException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactConfigurationException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactConfigurationException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactConfigurationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactEngineNotFoundException">
+            <summary>
+            Thrown when no valid JavaScript engine is found.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactEngineNotFoundException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactEngineNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactEngineNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactEngineNotFoundException.GetMessage">
+            <summary>
+            Gets a message that describes the current exception.
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactException">
+            <summary>
+            Base class for all ReactJS.NET exceptions
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactException"/> class.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactInvalidComponentException">
+            <summary>
+            Thrown when a non-existent component is rendered.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactInvalidComponentException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactInvalidComponentException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactInvalidComponentException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactInvalidComponentException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactInvalidComponentException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactNotInitialisedException">
+            <summary>
+            Thrown when React has not been initialised correctly.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactNotInitialisedException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactNotInitialisedException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactNotInitialisedException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactNotInitialisedException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactNotInitialisedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactScriptLoadException">
+            <summary>
+            Thrown when an error is encountered while loading a JavaScript file.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactScriptLoadException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactScriptLoadException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactScriptLoadException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactScriptLoadException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactScriptLoadException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.ReactServerRenderingException">
+            <summary>
+            Thrown when an error occurs during server rendering of a React component.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.ReactServerRenderingException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactInvalidComponentException"/> class.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactServerRenderingException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.ReactInvalidComponentException"/> class.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+        </member>
+        <member name="M:React.Exceptions.ReactServerRenderingException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="T:React.Exceptions.VroomJsInitialisationException">
+            <summary>
+            Thrown when the VroomJs V8 JavaScript engine fails to initialise.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.VroomJsInitialisationException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:React.Exceptions.VroomJsInitialisationException"/> class.
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.VroomJsInitialisationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Used by deserialization
+            </summary>
+        </member>
+        <member name="M:React.Exceptions.VroomJsInitialisationException.GetMessage(System.String)">
+            <summary>
+            Gets a message that describes the current exception.
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TypeExtensions.GetGenericMethod(System.Type,System.Reflection.BindingFlags,System.String,System.Type[],System.Type[])">
+            <summary>
+            Gets a generic method from a type given the method name, binding flags, generic types and parameter types
+            </summary>
+            <param name="sourceType">Source type</param>
+            <param name="bindingFlags">Binding flags</param>
+            <param name="methodName">Name of the method</param>
+            <param name="genericTypes">Generic types to use to make the method generic</param>
+            <param name="parameterTypes">Method parameters</param>
+            <returns>MethodInfo or null if no matches found</returns>
+            <exception cref="T:System.Reflection.AmbiguousMatchException"/>
+            <exception cref="T:System.ArgumentException"/>
+        </member>
+        <member name="T:React.TinyIoC.NamedParameterOverloads">
+            <summary>
+            Name/Value pairs for specifying "user" parameters when resolving
+            </summary>
+        </member>
+        <member name="F:React.TinyIoC.UnregisteredResolutionActions.AttemptResolve">
+            <summary>
+            Attempt to resolve type, even if the type isn't registered.
+            
+            Registered types/options will always take precedence.
+            </summary>
+        </member>
+        <member name="F:React.TinyIoC.UnregisteredResolutionActions.Fail">
+            <summary>
+            Fail resolution if type not explicitly registered
+            </summary>
+        </member>
+        <member name="F:React.TinyIoC.UnregisteredResolutionActions.GenericsOnly">
+            <summary>
+            Attempt to resolve unregistered type if requested type is generic
+            and no registration exists for the specific generic parameters used.
+            
+            Registered types/options will always take precedence.
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.ResolveOptions">
+            <summary>
+            Resolution settings
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.ResolveOptions.Default">
+            <summary>
+            Gets the default options (attempt resolution of unregistered types, fail on named resolution if name not found)
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.ResolveOptions.FailNameNotFoundOnly">
+            <summary>
+            Preconfigured option for attempting resolution of unregistered types and failing on named resolution if name not found
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.ResolveOptions.FailUnregisteredAndNameNotFound">
+            <summary>
+            Preconfigured option for failing on resolving unregistered types and on named resolution if name not found
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.ResolveOptions.FailUnregisteredOnly">
+            <summary>
+            Preconfigured option for failing on resolving unregistered types, but attempting unnamed resolution if name not found
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.RegisterOptions">
+            <summary>
+            Registration options for "fluent" API
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterOptions.AsSingleton">
+            <summary>
+            Make registration a singleton (single instance) if possible
+            </summary>
+            <returns>RegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterOptions.AsMultiInstance">
+            <summary>
+            Make registration multi-instance if possible
+            </summary>
+            <returns>RegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterOptions.WithWeakReference">
+            <summary>
+            Make registration hold a weak reference if possible
+            </summary>
+            <returns>RegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterOptions.WithStrongReference">
+            <summary>
+            Make registration hold a strong reference if possible
+            </summary>
+            <returns>RegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterOptions.ToCustomLifetimeManager(React.TinyIoC.TinyIoCContainer.RegisterOptions,React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider,System.String)">
+            <summary>
+            Switches to a custom lifetime manager factory if possible.
+            
+            Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
+            </summary>
+            <param name="instance">RegisterOptions instance</param>
+            <param name="lifetimeProvider">Custom lifetime manager</param>
+            <param name="errorString">Error string to display if switch fails</param>
+            <returns>RegisterOptions</returns>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.MultiRegisterOptions">
+            <summary>
+            Registration options for "fluent" API when registering multiple implementations
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.MultiRegisterOptions.#ctor(System.Collections.Generic.IEnumerable{React.TinyIoC.TinyIoCContainer.RegisterOptions})">
+            <summary>
+            Initializes a new instance of the MultiRegisterOptions class.
+            </summary>
+            <param name="registerOptions">Registration options</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.MultiRegisterOptions.AsSingleton">
+            <summary>
+            Make registration a singleton (single instance) if possible
+            </summary>
+            <returns>RegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.MultiRegisterOptions.AsMultiInstance">
+            <summary>
+            Make registration multi-instance if possible
+            </summary>
+            <returns>MultiRegisterOptions</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCRegistrationException"></exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.MultiRegisterOptions.ToCustomLifetimeManager(React.TinyIoC.TinyIoCContainer.MultiRegisterOptions,React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider,System.String)">
+            <summary>
+            Switches to a custom lifetime manager factory if possible.
+            
+            Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
+            </summary>
+            <param name="instance">MultiRegisterOptions instance</param>
+            <param name="lifetimeProvider">Custom lifetime manager</param>
+            <param name="errorString">Error string to display if switch fails</param>
+            <returns>MultiRegisterOptions</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+            
+            If more than one class implements an interface then only one implementation will be registered
+            although no error will be thrown.
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(System.Func{System.Type,System.Boolean})">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+            Types will only be registered if they pass the supplied registration predicate.
+            
+            If more than one class implements an interface then only one implementation will be registered
+            although no error will be thrown.
+            </summary>
+            <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(React.TinyIoC.DuplicateImplementationActions)">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+            </summary>
+            <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+            <exception cref="T:React.TinyIoC.TinyIoCAutoRegistrationException"/>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(React.TinyIoC.DuplicateImplementationActions,System.Func{System.Type,System.Boolean})">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+            Types will only be registered if they pass the supplied registration predicate.
+            </summary>
+            <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+            <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
+            <exception cref="T:React.TinyIoC.TinyIoCAutoRegistrationException"/>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+            
+            If more than one class implements an interface then only one implementation will be registered
+            although no error will be thrown.
+            </summary>
+            <param name="assemblies">Assemblies to process</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(System.Collections.Generic.IEnumerable{System.Reflection.Assembly},System.Func{System.Type,System.Boolean})">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+            Types will only be registered if they pass the supplied registration predicate.
+            
+            If more than one class implements an interface then only one implementation will be registered
+            although no error will be thrown.
+            </summary>
+            <param name="assemblies">Assemblies to process</param>
+            <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(System.Collections.Generic.IEnumerable{System.Reflection.Assembly},React.TinyIoC.DuplicateImplementationActions)">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+            </summary>
+            <param name="assemblies">Assemblies to process</param>
+            <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+            <exception cref="T:React.TinyIoC.TinyIoCAutoRegistrationException"/>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.AutoRegister(System.Collections.Generic.IEnumerable{System.Reflection.Assembly},React.TinyIoC.DuplicateImplementationActions,System.Func{System.Type,System.Boolean})">
+            <summary>
+            Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+            Types will only be registered if they pass the supplied registration predicate.
+            </summary>
+            <param name="assemblies">Assemblies to process</param>
+            <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+            <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
+            <exception cref="T:React.TinyIoC.TinyIoCAutoRegistrationException"/>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type)">
+            <summary>
+            Creates/replaces a container class registration with default options.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with default options.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Type)">
+            <summary>
+            Creates/replaces a container class registration with a given implementation and default options.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="registerImplementation">Type to instantiate that implements RegisterType</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Type,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a given implementation and default options.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="registerImplementation">Type to instantiate that implements RegisterType</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Object)">
+            <summary>
+            Creates/replaces a container class registration with a specific, strong referenced, instance.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="instance">Instance of RegisterType to register</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Object,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a specific, strong referenced, instance.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="instance">Instance of RegisterType to register</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Type,System.Object)">
+            <summary>
+            Creates/replaces a container class registration with a specific, strong referenced, instance.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="registerImplementation">Type of instance to register that implements RegisterType</param>
+            <param name="instance">Instance of RegisterImplementation to register</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Type,System.Object,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a specific, strong referenced, instance.
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="registerImplementation">Type of instance to register that implements RegisterType</param>
+            <param name="instance">Instance of RegisterImplementation to register</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Func{React.TinyIoC.TinyIoCContainer,React.TinyIoC.NamedParameterOverloads,System.Object})">
+            <summary>
+            Creates/replaces a container class registration with a user specified factory
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register(System.Type,System.Func{React.TinyIoC.TinyIoCContainer,React.TinyIoC.NamedParameterOverloads,System.Object},System.String)">
+            <summary>
+            Creates/replaces a container class registration with a user specified factory
+            </summary>
+            <param name="registerType">Type to register</param>
+            <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
+            <param name="name">Name of registation</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1">
+            <summary>
+            Creates/replaces a container class registration with default options.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1(System.String)">
+            <summary>
+            Creates/replaces a named container class registration with default options.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``2">
+            <summary>
+            Creates/replaces a container class registration with a given implementation and default options.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <typeparam name="RegisterImplementation">Type to instantiate that implements RegisterType</typeparam>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``2(System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a given implementation and default options.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <typeparam name="RegisterImplementation">Type to instantiate that implements RegisterType</typeparam>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1(``0)">
+            <summary>
+            Creates/replaces a container class registration with a specific, strong referenced, instance.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <param name="instance">Instance of RegisterType to register</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1(``0,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a specific, strong referenced, instance.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <param name="instance">Instance of RegisterType to register</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``2(``1)">
+            <summary>
+            Creates/replaces a container class registration with a specific, strong referenced, instance.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <typeparam name="RegisterImplementation">Type of instance to register that implements RegisterType</typeparam>
+            <param name="instance">Instance of RegisterImplementation to register</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``2(``1,System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a specific, strong referenced, instance.
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <typeparam name="RegisterImplementation">Type of instance to register that implements RegisterType</typeparam>
+            <param name="instance">Instance of RegisterImplementation to register</param>
+            <param name="name">Name of registration</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1(System.Func{React.TinyIoC.TinyIoCContainer,React.TinyIoC.NamedParameterOverloads,``0})">
+            <summary>
+            Creates/replaces a container class registration with a user specified factory
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Register``1(System.Func{React.TinyIoC.TinyIoCContainer,React.TinyIoC.NamedParameterOverloads,``0},System.String)">
+            <summary>
+            Creates/replaces a named container class registration with a user specified factory
+            </summary>
+            <typeparam name="RegisterType">Type to register</typeparam>
+            <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
+            <param name="name">Name of registation</param>
+            <returns>RegisterOptions for fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterMultiple``1(System.Collections.Generic.IEnumerable{System.Type})">
+            <summary>
+            Register multiple implementations of a type.
+            
+            Internally this registers each implementation using the full name of the class as its registration name.
+            </summary>
+            <typeparam name="RegisterType">Type that each implementation implements</typeparam>
+            <param name="implementationTypes">Types that implement RegisterType</param>
+            <returns>MultiRegisterOptions for the fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.RegisterMultiple(System.Type,System.Collections.Generic.IEnumerable{System.Type})">
+            <summary>
+            Register multiple implementations of a type.
+            
+            Internally this registers each implementation using the full name of the class as its registration name.
+            </summary>
+            <param name="registrationType">Type that each implementation implements</param>
+            <param name="implementationTypes">Types that implement RegisterType</param>
+            <returns>MultiRegisterOptions for the fluent API</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Unregister``1">
+            <summary>
+            Remove a container class registration.
+            </summary>
+            <typeparam name="RegisterType">Type to unregister</typeparam>
+            <returns>true if the registration is successfully found and removed; otherwise, false.</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Unregister``1(System.String)">
+            <summary>
+            Remove a named container class registration.
+            </summary>
+            <typeparam name="RegisterType">Type to unregister</typeparam>
+            <param name="name">Name of registration</param>
+            <returns>true if the registration is successfully found and removed; otherwise, false.</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Unregister(System.Type)">
+            <summary>
+            Remove a container class registration.
+            </summary>
+            <param name="registerType">Type to unregister</param>
+            <returns>true if the registration is successfully found and removed; otherwise, false.</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Unregister(System.Type,System.String)">
+            <summary>
+            Remove a named container class registration.
+            </summary>
+            <param name="registerType">Type to unregister</param>
+            <param name="name">Name of registration</param>
+            <returns>true if the registration is successfully found and removed; otherwise, false.</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type)">
+            <summary>
+            Attempts to resolve a type using default options.
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <returns>Instance of type</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,React.TinyIoC.ResolveOptions)">
+            <summary>
+            Attempts to resolve a type using specified options.
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="options">Resolution options</param>
+            <returns>Instance of type</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,System.String)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,System.String,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a type using supplied options and  name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="parameters">User specified constructor parameters</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a type using specified options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied constructor parameters and name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="name">Name of registration</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a named type using specified options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1">
+            <summary>
+            Attempts to resolve a type using default options.
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <returns>Instance of type</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(React.TinyIoC.ResolveOptions)">
+            <summary>
+            Attempts to resolve a type using specified options.
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="options">Resolution options</param>
+            <returns>Instance of type</returns>
+            <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(System.String)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(System.String,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a type using supplied options and  name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="parameters">User specified constructor parameters</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a type using specified options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(System.String,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to resolve a type using default options and the supplied constructor parameters and name.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="name">Name of registration</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.Resolve``1(System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to resolve a named type using specified options and the supplied constructor parameters.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User specified constructor parameters</param>
+             <param name="options">Resolution options</param>
+             <returns>Instance of type</returns>
+             <exception cref="T:React.TinyIoC.TinyIoCResolutionException">Unable to resolve the type.</exception>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with default options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,System.String)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with default options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the specified options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,System.String,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the specified options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <param name="resolveType">Type to resolve</param>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1">
+             <summary>
+             Attempts to predict whether a given type can be resolved with default options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(System.String)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with default options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the specified options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(System.String,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the specified options.
+            
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(System.String,React.TinyIoC.NamedParameterOverloads)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.CanResolve``1(System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+             <summary>
+             Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
+            
+             Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
+             All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+             
+             Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+             </summary>
+             <typeparam name="ResolveType">Type to resolve</typeparam>
+             <param name="name">Name of registration</param>
+             <param name="parameters">User supplied named parameter overloads</param>
+             <param name="options">Resolution options</param>
+             <returns>Bool indicating whether the type can be resolved</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the default options
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,React.TinyIoC.ResolveOptions,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the given options
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,System.String,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the default options and given name
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="name">Name of registration</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,System.String,React.TinyIoC.ResolveOptions,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the given options and name
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="name">Name of registration</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,React.TinyIoC.NamedParameterOverloads,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the default options and supplied constructor parameters
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the default options and supplied name and constructor parameters
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="name">Name of registration</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the supplied options and constructor parameters
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve(System.Type,System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions,System.Object@)">
+            <summary>
+            Attemps to resolve a type using the supplied name, options and constructor parameters
+            </summary>
+            <param name="resolveType">Type to resolve</param>
+            <param name="name">Name of registration</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(``0@)">
+            <summary>
+            Attemps to resolve a type using the default options
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(React.TinyIoC.ResolveOptions,``0@)">
+            <summary>
+            Attemps to resolve a type using the given options
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(System.String,``0@)">
+            <summary>
+            Attemps to resolve a type using the default options and given name
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="name">Name of registration</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(System.String,React.TinyIoC.ResolveOptions,``0@)">
+            <summary>
+            Attemps to resolve a type using the given options and name
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="name">Name of registration</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(React.TinyIoC.NamedParameterOverloads,``0@)">
+            <summary>
+            Attemps to resolve a type using the default options and supplied constructor parameters
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(System.String,React.TinyIoC.NamedParameterOverloads,``0@)">
+            <summary>
+            Attemps to resolve a type using the default options and supplied name and constructor parameters
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="name">Name of registration</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions,``0@)">
+            <summary>
+            Attemps to resolve a type using the supplied options and constructor parameters
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.TryResolve``1(System.String,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions,``0@)">
+            <summary>
+            Attemps to resolve a type using the supplied name, options and constructor parameters
+            </summary>
+            <typeparam name="ResolveType">Type to resolve</typeparam>
+            <param name="name">Name of registration</param>
+            <param name="parameters">User specified constructor parameters</param>
+            <param name="options">Resolution options</param>
+            <param name="resolvedType">Resolved type or default if resolve fails</param>
+            <returns>True if resolved sucessfully, false otherwise</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ResolveAll(System.Type,System.Boolean)">
+            <summary>
+            Returns all registrations of a type
+            </summary>
+            <param name="resolveType">Type to resolveAll</param>
+            <param name="includeUnnamed">Whether to include un-named (default) registrations</param>
+            <returns>IEnumerable</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ResolveAll(System.Type)">
+            <summary>
+            Returns all registrations of a type, both named and unnamed
+            </summary>
+            <param name="resolveType">Type to resolveAll</param>
+            <returns>IEnumerable</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ResolveAll``1(System.Boolean)">
+            <summary>
+            Returns all registrations of a type
+            </summary>
+            <typeparam name="ResolveType">Type to resolveAll</typeparam>
+            <param name="includeUnnamed">Whether to include un-named (default) registrations</param>
+            <returns>IEnumerable</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ResolveAll``1">
+            <summary>
+            Returns all registrations of a type, both named and unnamed
+            </summary>
+            <typeparam name="ResolveType">Type to resolveAll</typeparam>
+            <returns>IEnumerable</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.BuildUp(System.Object)">
+            <summary>
+            Attempts to resolve all public property dependencies on the given object.
+            </summary>
+            <param name="input">Object to "build up"</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.BuildUp(System.Object,React.TinyIoC.ResolveOptions)">
+            <summary>
+            Attempts to resolve all public property dependencies on the given object using the given resolve options.
+            </summary>
+            <param name="input">Object to "build up"</param>
+            <param name="resolveOptions">Resolve options to use</param>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider">
+            <summary>
+            Provides custom lifetime management for ASP.Net per-request lifetimes etc.
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider.GetObject">
+            <summary>
+            Gets the stored object if it exists, or null if not
+            </summary>
+            <returns>Object instance or null</returns>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider.SetObject(System.Object)">
+            <summary>
+            Store the object
+            </summary>
+            <param name="value">Object to store</param>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ITinyIoCObjectLifetimeProvider.ReleaseObject">
+            <summary>
+            Release the object
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.TinyIoCContainer.ObjectFactoryBase.AssumeConstruction">
+            <summary>
+            Whether to assume this factory sucessfully constructs its objects
+            
+            Generally set to true for delegate style factories as CanResolve cannot delve
+            into the delegates they contain.
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.TinyIoCContainer.ObjectFactoryBase.CreatesType">
+            <summary>
+            The type the factory instantiates
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.TinyIoCContainer.ObjectFactoryBase.Constructor">
+            <summary>
+            Constructor to use, if specified
+            </summary>
+        </member>
+        <member name="M:React.TinyIoC.TinyIoCContainer.ObjectFactoryBase.GetObject(System.Type,React.TinyIoC.TinyIoCContainer,React.TinyIoC.NamedParameterOverloads,React.TinyIoC.ResolveOptions)">
+            <summary>
+            Create the type
+            </summary>
+            <param name="requestedType">Type user requested to be resolved</param>
+            <param name="container">Container that requested the creation</param>
+            <param name="parameters">Any user parameters passed</param>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.MultiInstanceFactory">
+            <summary>
+            IObjectFactory that creates new instances of types for each resolution
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.DelegateFactory">
+            <summary>
+            IObjectFactory that invokes a specified delegate to construct the object
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.WeakDelegateFactory">
+            <summary>
+            IObjectFactory that invokes a specified delegate to construct the object
+            Holds the delegate using a weak reference
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.InstanceFactory">
+            <summary>
+            Stores an particular instance to return for a type
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.WeakInstanceFactory">
+            <summary>
+            Stores an particular instance to return for a type
+            
+            Stores the instance with a weak reference
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.SingletonFactory">
+            <summary>
+            A factory that lazy instantiates a type and always returns the same instance
+            </summary>
+        </member>
+        <member name="T:React.TinyIoC.TinyIoCContainer.CustomObjectLifetimeFactory">
+            <summary>
+            A factory that offloads lifetime to an external lifetime provider
+            </summary>
+        </member>
+        <member name="P:React.TinyIoC.TinyIoCContainer.Current">
+            <summary>
+            Lazy created Singleton instance of the container for simple scenarios
+            </summary>
+        </member>
+    </members>
+</doc>
