@@ -23,7 +23,7 @@
                                     <Rock:RockBoundField DataField="IsNegativeTimeBalanceAllowed" HeaderText="Negative Balance Allowed?" Visible="false" />
                                     <Rock:RockBoundField DataField="Color" HeaderText="Color" Visible="false" />
                                     <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" Visible="false" />
-                                    <Rock:RockBoundField DataField="IsActive" HeaderText="Is Active" />
+                                    <Rock:BoolField DataField="IsActive" HeaderText="Is Active" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
