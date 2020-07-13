@@ -59,7 +59,7 @@ namespace com.bemaservices.HrManagement.Jobs
         , "PtoTypes" )]
     [IntegerField( "Days Back", "The Number of Days prior to the Fiscal Start Date to create new Allocations", true, 30, "", 5, "DaysBack" )]
     [BooleanField( "Update Allocation Status", "Whether the job should set a status of 'Inactive' on allocations whose End Date has past or Activate Allocations that have a Start Date in the past.", true, "", 6, "UpdateAllocationStatus" )]
-    [IntegerField( "Days Back", "The Number of Days prior to the Fiscal Start Date to create new Allocations", true, 30, "", 7, "DaysBack" )]
+    [IntegerField( "Year Offset", "Whether you need a custom offset in for your staff's Years Worked calculations", true, 0, "", 7, "YearOffset" )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON
         , "Person Hours Per Week Worked Attribute"
         , "The Person Attribute that contains the Number of Hours a person works in a week.  This will be used to calculate how many hours of PTO some gets allocated.  If someone only works 20hrs a week they'll only be allocated 50% of what their bracket calls for.  If left blank, everyone will recieve full allocations"
@@ -110,6 +110,7 @@ namespace com.bemaservices.HrManagement.Jobs
             }
 
             var daysOffset = dataMap.GetString( "DaysBack" ).AsIntegerOrNull();
+            var yearOffset = dataMap.GetString( "YearOffset" ).AsInteger();
 
             DateTime todayOffset = RockDateTime.Now;
             if ( daysOffset.HasValue )
@@ -132,6 +133,16 @@ namespace com.bemaservices.HrManagement.Jobs
                 context.UpdateLastStatusMessage( "No Pto Types were selected." );
             }
 
+            //Get the currect fiscal start date to set the allocations dates.
+            var fiscalStartDateValue = GlobalAttributesCache.Value( AttributeCache.Get( SystemGuid.Attribute.FISCAL_YEAR_START_DATE_ATTRIBUTE ).Key );
+            var fiscalStartDate = DateTime.Parse( fiscalStartDateValue );
+
+            var fiscalStartMonth = fiscalStartDate.Month;
+            var fiscalStartDay = fiscalStartDate.Day;
+            var fiscalStartYear = todayOffset.AddMonths( ( fiscalStartMonth - 1 ) * -1 ).AddDays( ( fiscalStartDay - 1 ) * -1 ).Year;
+            var calculatedFiscalStartDate = new DateTime( fiscalStartYear, fiscalStartMonth, fiscalStartDay );
+            var calculatedFiscalEndDate = calculatedFiscalStartDate.AddYears( 1 ).AddDays( -1 );
+
             //Get Active Employees
             var staff = personService.Queryable()
                                 .AsNoTracking()
@@ -152,12 +163,12 @@ namespace com.bemaservices.HrManagement.Jobs
 
                 if ( hiredDate.HasValue && !firedDate.HasValue )
                 {
-                    yearsWorked = todayOffset.Year - hiredDate.Value.Year;
+                    yearsWorked = calculatedFiscalStartDate.Year - hiredDate.Value.Year + yearOffset;
 
                     if ( ptoTierGuid.HasValue )
                     {
                         var ptoTier = ptoTierService.Get( ptoTierGuid.Value );
-                        var brackets = ptoTier.PtoBrackets.Where( b => b.MinimumYear <= yearsWorked && ( !b.MaximumYear.HasValue || b.MaximumYear.Value > yearsWorked ) ).ToList();
+                        var brackets = ptoTier.PtoBrackets.Where( b => b.MinimumYear <= yearsWorked && ( !b.MaximumYear.HasValue || b.MaximumYear.Value >= yearsWorked ) ).ToList();
 
                         foreach ( var bracket in brackets )
                         {
@@ -165,16 +176,6 @@ namespace com.bemaservices.HrManagement.Jobs
                             {
                                 if ( ptoTypeGuids.Contains( bracketType.PtoType.Guid ) )
                                 {
-                                    //Get the currect fiscal start date to set the allocations dates.
-                                    var fiscalStartDateValue = GlobalAttributesCache.Value( AttributeCache.Get( SystemGuid.Attribute.FISCAL_YEAR_START_DATE_ATTRIBUTE ).Key );
-                                    var fiscalStartDate = DateTime.Parse( fiscalStartDateValue );
-
-                                    var fiscalStartMonth = fiscalStartDate.Month;
-                                    var fiscalStartDay = fiscalStartDate.Day;
-                                    var fiscalStartYear = todayOffset.AddMonths( ( fiscalStartMonth - 1 ) * -1 ).AddDays( ( fiscalStartDay - 1 ) * -1 ).Year;
-                                    var calculatedFiscalStartDate = new DateTime( fiscalStartYear, fiscalStartMonth, fiscalStartDay );
-                                    var calculatedFiscalEndDate = calculatedFiscalStartDate.AddYears( 1 ).AddDays( -1 );
-
                                     var personAliasIds = person.Aliases.Select( a => a.Id ).ToList();
 
                                     //Check for an exsisting Pto Allocation.  If one doesn't exsist, create a new one.
@@ -194,10 +195,10 @@ namespace com.bemaservices.HrManagement.Jobs
                                         {
                                             var hoursWorked = person.GetAttributeValue( AttributeCache.Get( hoursWorkedAttributeGuid.Value.ToString() ).Key ).AsIntegerOrNull() ?? 0;
                                             var hoursPerWeek = dataMap.GetInt( "HoursPerWeek" );
-                                            decimal percent = (decimal)hoursWorked / hoursPerWeek;
+                                            decimal percent = ( decimal ) hoursWorked / hoursPerWeek;
 
                                             hoursToAllocate = Decimal.ToInt32( Math.Round( bracketType.DefaultHours * percent, 0 ) );
-                                            
+
                                         }
                                         else
                                         {
