@@ -292,10 +292,6 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             }
 
             EditFamilyState = ( this.ViewState["EditFamilyState"] as string ).FromJsonOrNull<FamilyRegistrationState>();
-
-            CreateDynamicFamilyControls( FamilyRegistrationState.FromGroup( new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id } ), false );
-
-            CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState.FromTemporaryPerson(), false );
         }
 
         /// <summary>
@@ -315,29 +311,23 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         /// </summary>
         /// <param name="editFamilyState">State of the edit family.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void CreateDynamicFamilyControls( FamilyRegistrationState editFamilyState, bool setValues )
+        private void CreateDynamicFamilyControls( FamilyRegistrationState editFamilyState )
         {
-            phFamilyAttributes.Controls.Clear();
-
             var fakeFamily = new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id };
             var attributeList = editFamilyState.FamilyAttributeValuesState.Select( a => AttributeCache.Get( a.Value.AttributeId ) ).ToList();
             fakeFamily.Attributes = attributeList.ToDictionary( a => a.Key, v => v );
             fakeFamily.AttributeValues = editFamilyState.FamilyAttributeValuesState;
-            var familyAttributeKeysToEdit = this.RequiredAttributesForFamilies.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            familyAttributeKeysToEdit.AddRange( this.OptionalAttributesForFamilies.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var familyAttributeKeysToEdit = this.RequiredAttributesForFamilies.OrderBy( a => a.Order ).ToList();
+            familyAttributeKeysToEdit.AddRange( this.OptionalAttributesForFamilies.OrderBy( a => a.Order ).ToList() );
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                familyAttributeKeysToEdit,
-                fakeFamily,
-                phFamilyAttributes,
-                btnSaveFamily.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcFamilyAttributes.IncludedAttributes = familyAttributeKeysToEdit.ToArray();
+            avcFamilyAttributes.ValidationGroup = btnSaveFamily.ValidationGroup;
+            avcFamilyAttributes.NumberOfColumns = 2;
+            avcFamilyAttributes.ShowCategoryLabel = false;
+            avcFamilyAttributes.AddEditControls( fakeFamily );
 
             // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in phFamilyAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcFamilyAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -355,30 +345,24 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState familyPersonState, bool setValues )
+        private void CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState familyPersonState )
         {
-            phAdultAttributes.Controls.Clear();
-            phChildAttributes.Controls.Clear();
             var fakePerson = new Person();
             var attributeList = familyPersonState.PersonAttributeValuesState.Select( a => AttributeCache.Get( a.Value.AttributeId ) ).ToList();
             fakePerson.Attributes = attributeList.ToDictionary( a => a.Key, v => v );
             fakePerson.AttributeValues = familyPersonState.PersonAttributeValuesState;
 
-            var adultAttributeKeysToEdit = this.RequiredAttributesForAdults.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            adultAttributeKeysToEdit.AddRange( this.OptionalAttributesForAdults.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var adultAttributeKeysToEdit = this.RequiredAttributesForAdults.OrderBy( a => a.Order ).ToList();
+            adultAttributeKeysToEdit.AddRange( this.OptionalAttributesForAdults.OrderBy( a => a.Order ).ToList() );
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                adultAttributeKeysToEdit,
-                fakePerson,
-                phAdultAttributes,
-                btnDonePerson.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcAdultAttributes.IncludedAttributes = adultAttributeKeysToEdit.ToArray();
+            avcAdultAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
+            avcAdultAttributes.NumberOfColumns = 2;
+            avcAdultAttributes.ShowCategoryLabel = false;
+            avcAdultAttributes.AddEditControls( fakePerson );
 
-            var childAttributeKeysToEdit = this.RequiredAttributesForChildren.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var childAttributeKeysToEdit = this.RequiredAttributesForChildren.OrderBy( a => a.Order ).ToList();
+            childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).ToList() );
 
             /* BEMA.FE1.Start */
 
@@ -391,9 +375,9 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             if ( attributeCheckInGroupGuid.HasValue )
             {
                 groupAttribute = AttributeCache.Get( GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute ).AsGuid() );
-                if ( !childAttributeKeysToEdit.Contains( groupAttribute.Key ) )
+                if ( !childAttributeKeysToEdit.Contains( groupAttribute ) )
                 {
-                    childAttributeKeysToEdit.Add( groupAttribute.Key );
+                    childAttributeKeysToEdit.Add( groupAttribute );
                 }
 
                 //Exclude excluded group types
@@ -415,18 +399,14 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
 
             /* BEMA.FE1.End */
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                childAttributeKeysToEdit,
-                fakePerson,
-                phChildAttributes,
-                btnDonePerson.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcChildAttributes.IncludedAttributes = childAttributeKeysToEdit.ToArray();
+            avcChildAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
+            avcChildAttributes.NumberOfColumns = 2;
+            avcChildAttributes.ShowCategoryLabel = false;
+            avcChildAttributes.AddEditControls( fakePerson );
 
             // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in phAdultAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcAdultAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -461,7 +441,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 /* BEMA.FE1.End */
             }
 
-            foreach ( Control attributeControl in phChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -578,7 +558,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 }
 
                 BindFamilyMembersGrid();
-                CreateDynamicFamilyControls( EditFamilyState, true );
+                CreateDynamicFamilyControls( EditFamilyState );
 
                 /* BEMA.UI8.Start */
                 // not a new family, don't require address
@@ -591,7 +571,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             else
             {
                 this.EditFamilyState = FamilyRegistrationState.FromGroup( new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id } );
-                CreateDynamicFamilyControls( EditFamilyState, true );
+                CreateDynamicFamilyControls( EditFamilyState );
                 hfGroupId.Value = "0";
                 mdEditFamily.Title = "Add Family";
 
@@ -901,7 +881,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                     if ( !string.IsNullOrEmpty( workflowActivity ) )
                     {
                         // just in case this is a new family, or family name or phonenumber was changed, update the search to match the updated values
-                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
+                        if (  CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid())
                         {
                             var firstFamilyPerson = EditFamilyState.FamilyPersonListState.OrderBy( a => a.IsAdult ).FirstOrDefault();
                             if ( firstFamilyPerson != null )
@@ -910,9 +890,9 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                             }
                         }
 
-                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
+                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid())
                         {
-                            var firstFamilyPersonWithPhone = EditFamilyState.FamilyPersonListState.Where( a => a.MobilePhoneNumber.IsNotNullOrWhiteSpace() ).OrderBy( a => a.IsAdult ).FirstOrDefault();
+                            var firstFamilyPersonWithPhone = EditFamilyState.FamilyPersonListState.Where(a => a.MobilePhoneNumber.IsNotNullOrWhiteSpace()).OrderBy( a => a.IsAdult ).FirstOrDefault();
                             if ( firstFamilyPersonWithPhone != null )
                             {
                                 CurrentCheckInState.CheckIn.SearchValue = firstFamilyPersonWithPhone.MobilePhoneNumber;
@@ -962,7 +942,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         {
             var fakeFamily = new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id, Id = EditFamilyState.GroupId ?? 0 };
             fakeFamily.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phFamilyAttributes, fakeFamily );
+            avcFamilyAttributes.GetEditValues( fakeFamily );
 
             EditFamilyState.FamilyAttributeValuesState = fakeFamily.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
         }
@@ -1134,7 +1114,6 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
 
             /* BEMA.UI9.Start */
             tglAdultMaritalStatus.Visible = familyPersonState.IsAdult & GetAttributeValue( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean();
-            ;
             /* BEMA.UI9.End */
 
             ddlChildRelationShipToAdult.Items.Clear();
@@ -1170,11 +1149,36 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             dvpRecordStatus.SetValue( familyPersonState.RecordStatusValueId );
             hfConnectionStatus.Value = familyPersonState.ConnectionStatusValueId.ToString();
 
+            bool showSmsButton = CurrentCheckInState.CheckInType.Registration.DisplaySmsButton;
+            if ( showSmsButton )
+            {
+                bgSMS.Visible = true;
+                bgSMS.SelectedValue = null;
+
+                if( CurrentCheckInState.CheckInType.Registration.DefaultSmsEnabled )
+                {
+                    bgSMS.SetValue( "True" );
+                }
+            }
+            else
+            {
+                bgSMS.Visible = false;
+            }
+
             var mobilePhoneNumber = familyPersonState.MobilePhoneNumber;
             if ( mobilePhoneNumber != null )
             {
                 pnMobilePhone.CountryCode = familyPersonState.MobilePhoneCountryCode;
                 pnMobilePhone.Number = mobilePhoneNumber;
+
+                if ( showSmsButton )
+                {
+                    // Set this value if it exists
+                    if ( familyPersonState.MobilePhoneSmsEnabled.HasValue )
+                    {
+                        bgSMS.SetValue( familyPersonState.MobilePhoneSmsEnabled.Value.ToTrueFalse() );
+                    }
+                }
             }
             else
             {
@@ -1193,7 +1197,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 gpGradePicker.SelectedValue = null;
             }
 
-            CreateDynamicPersonControls( familyPersonState, true );
+            CreateDynamicPersonControls( familyPersonState );
 
             ShowPersonView( familyPersonState );
         }
@@ -1229,8 +1233,8 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             pnlChildRelationshipToAdult.Visible = !isAdult;
 
             tbAlternateID.Visible = ( isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforAdults ) || ( !isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforChildren );
-            phAdultAttributes.Visible = isAdult;
-            phChildAttributes.Visible = !isAdult;
+            avcAdultAttributes.Visible = isAdult;
+            avcChildAttributes.Visible = !isAdult;
 
             /* BEMA.UI6.Start */
             pnMobilePhone.Visible = isAdult | GetAttributeValue( BemaAttributeKey.ShowMobileForChild ).AsBoolean();
@@ -1351,6 +1355,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
 
             familyPersonState.MobilePhoneNumber = pnMobilePhone.Number;
             familyPersonState.MobilePhoneCountryCode = pnMobilePhone.CountryCode;
+            familyPersonState.MobilePhoneSmsEnabled = bgSMS.SelectedValue.AsBoolean();
             familyPersonState.BirthDate = dpBirthDate.SelectedDate;
             familyPersonState.Email = tbEmail.Text;
 
@@ -1369,11 +1374,11 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
 
             if ( familyPersonState.IsAdult )
             {
-                Rock.Attribute.Helper.GetEditValues( phAdultAttributes, fakePerson );
+                avcAdultAttributes.GetEditValues( fakePerson );
             }
             else
             {
-                Rock.Attribute.Helper.GetEditValues( phChildAttributes, fakePerson );
+                avcChildAttributes.GetEditValues( fakePerson );
             }
 
             familyPersonState.PersonAttributeValuesState = fakePerson.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
