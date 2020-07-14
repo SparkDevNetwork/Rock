@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 // </copyright>
 using System;
 using System.Collections.Generic;
@@ -33,12 +32,22 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-/* * BEMA Modified Core Block (v9.4)
+/* * BEMA Modified Core Block (v8.6.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:
  * - FE1) Added Ability to select a group attribute so that new families can be assigned to groups
- * - UI1) Made lots of things configurable and added support for Address entry
+ * - FE2) Added Ability to set the campus id to the device's campus instead of the kiosk's campus
+ * - UI1) Added ability to toggle whether an Adult in a new family is required
+ * - UI2) Added ability to toggle whether a Mobile number on adults is required
+ * - UI3) Added ability to toggle whether an email for adults is required
+ * - UI4) Toggles whether a birthdate for Adults is shown
+ * - UI5) Added ability to toggle whether a birthdate is required
+ * - UI6) Added ability to toggle whether Mobile numbers for children are shown
+ * - UI7) Added ability to toggle whether grades for children is required
+ * - UI8) Added ability to toggle whether addresses are shown
+ * - UI9) Added ability to toggle whether Marital status is shown
+ * - UI10) Added ability to format initials on person first name
  */
 
 /// <summary>
@@ -49,32 +58,59 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
     /// <summary>
     ///
     /// </summary>
-    [DisplayName( "BEMA Check-In Edit Family" )]
+    [DisplayName( "Edit Family" )]
     [Category( "BEMA Services > Check-in" )]
     [Description( "Block to Add or Edit a Family during the Check-in Process." )]
 
     /* BEMA.FE1.Start */
-    [AttributeField (Rock.SystemGuid.EntityType.PERSON, "Check-In Group Attribute", "A person attribute specifying the check-in group to pass to the new person workflow.", false, false, "", "", 5)]
-    [BooleanField ( "Only Display Active Groups", "Should the Check-In Groups selector only display currently active check-in groups?", false, "", 5 )]
-    [BooleanField ( "Require Check-In Group for Child", "Should the Check-In Group be required for child?", false, "", 5 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Check-In Group Attribute", "A person attribute specifying the check-in group to pass to the new person workflow.", false, false, "", "", 5, Key = BemaAttributeKey.CheckInGroupAttribute )]
+    [BooleanField( "Only Display Active Groups", "Should the Check-In Groups selector only display currently active check-in groups?", false, "", 5, Key = BemaAttributeKey.OnlyDisplayActiveGroups )]
+    [BooleanField( "Require Check-In Group for Child", "Should the Check-In Group be required for child?", false, "", 5, Key = BemaAttributeKey.RequireCheckInGroupforChild )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this displaying.", false, key: BemaAttributeKey.GroupTypesExclude, order: 11 )]
     /* BEMA.FE1.End */
+
+    /* BEMA.FE2.Start */
+    [BooleanField( "Use Device Campus", "Whether to use the device campus instead of the kiosk campus", false, "", 8, Key = BemaAttributeKey.UseDeviceCampus )]
+    /* BEMA.FE2.End */
+
     /* BEMA.UI1.Start */
-    [BooleanField ( "Require Adult in New Family", "When adding a family, is an adult required in the family?", false, "", 8 )]
-    [BooleanField ( "Require Mobile for Adult", "When adding an adult, is Mobile Phone required?", true, "", 6 )]
-    [BooleanField ( "Require Email for Adult", "When adding an adult, is email required?", true, "", 6 )]
-    [BooleanField ( "Show Birthdate for Adult", "When adding an adult is Birthdate shown?", false, "", 6 )]
-    [BooleanField ( "Require Birthdate for Adult", "When adding an adult is Birthdate required?", false, "", 6 )]
-    [BooleanField ( "Require Birthdate for Child", "When adding a child, is Birthdate required?", true, "", 7 )]
-    [BooleanField ( "Show Mobile for Child", "When adding a child, is Birthdate required?", false, "", 7 )]
-    [BooleanField ( "Require Grade for Child", "When adding a child is Grade required?", false, "", 7 )]
-    [BooleanField ( "Show Address for New Family", "When adding a family is Address shown?", false, "", 9 )]
-    [BooleanField ( "Require Address for New Family", "When adding a family is Address required?", false, "", 9 )]
-    [BooleanField ( "Show Marital Status for Adult", "When adding an adult is Birthdate shown?", true, "", 10 )]
-    [DefinedValueField ( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "New Person Marital Status", "The Marital Status for new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, order:10 )]
+    [BooleanField( "Require Adult in New Family", "When adding a family, is an adult required in the family?", false, "", 8, Key = BemaAttributeKey.RequireAdultInNewFamily )]
     /* BEMA.UI1.End */
-    /* BEMA.FE1.Start */
-    [GroupTypesField ( "Group Types Exclude", "Select group types to exclude from this displaying.", false, key: "GroupTypesExclude", order: 11 )]
-    /* BEMA.FE1.End */
+
+    /* BEMA.UI2.Start */
+    [BooleanField( "Require Mobile for Adult", "When adding an adult, is Mobile Phone required?", true, "", 6, Key = BemaAttributeKey.RequireMobileForAdult )]
+    /* BEMA.UI2.End */
+
+    /* BEMA.UI3.Start */
+    [BooleanField( "Require Email for Adult", "When adding an adult, is email required?", true, "", 6, Key = BemaAttributeKey.RequireEmailForAdult )]
+    /* BEMA.UI3.End */
+
+    /* BEMA.UI4.Start */
+    [BooleanField( "Show Birthdate for Adult", "When adding an adult is Birthdate shown?", false, "", 6, Key = BemaAttributeKey.ShowBirthdateForAdult )]
+    /* BEMA.UI4.End */
+
+    /* BEMA.UI5.Start */
+    [BooleanField( "Require Birthdate for Adult", "When adding an adult is Birthdate required?", false, "", 6, Key = BemaAttributeKey.RequireBirthdateForAdult )]
+    [BooleanField( "Require Birthdate for Child", "When adding a child, is Birthdate required?", true, "", 7, Key = BemaAttributeKey.RequireBirthdateForChild )]
+    /* BEMA.UI5.End */
+
+    /* BEMA.UI6.Start */
+    [BooleanField( "Show Mobile for Child", "When adding a child, is mobile shown?", false, "", 7, Key = BemaAttributeKey.ShowMobileForChild )]
+    /* BEMA.UI6.End */
+
+    /* BEMA.UI7.Start */
+    [BooleanField( "Require Grade for Child", "When adding a child is Grade required?", false, "", 7, Key = BemaAttributeKey.RequireGradeForChild )]
+    /* BEMA.UI7.End */
+
+    /* BEMA.UI8.Start */
+    [BooleanField( "Show Address for New Family", "When adding a family is Address shown?", false, "", 9, Key = BemaAttributeKey.ShowAddressForNewFamily )]
+    [BooleanField( "Require Address for New Family", "When adding a family is Address required?", false, "", 9, Key = BemaAttributeKey.RequireAddressForNewFamily )]
+    /* BEMA.UI8.End */
+
+    /* BEMA.UI9.Start */
+    [BooleanField( "Show Marital Status for Adult", "When adding an adult is Marital Status shown?", true, "", 10, Key = BemaAttributeKey.ShowMaritalStatusForAdult )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Default New Person Marital Status", "The default Marital Status for new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, order: 10, Key = BemaAttributeKey.NewPersonMaritalStatus )]
+    /* BEMA.UI9.End */
 
     public partial class EditFamily : CheckInEditFamilyBlock
     {
@@ -83,6 +119,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         private static class BemaAttributeKey
         {
             public const string CheckInGroupAttribute = "Check-InGroupAttribute";
+            public const string UseDeviceCampus = "UseDeviceCampus";
             public const string OnlyDisplayActiveGroups = "OnlyDisplayActiveGroups";
             public const string RequireCheckInGroupforChild = "RequireCheck-InGroupforChild";
             public const string RequireAdultInNewFamily = "RequireAdultinNewFamily";
@@ -189,11 +226,6 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         /// The person record status active identifier
         /// </summary>
         private static int _personRecordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-
-        /// <summary>
-        /// The person search alternate value identifier (barcode search key)
-        /// </summary>
-        private static int _personSearchAlternateValueId = DefinedValueCache.Get ( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid () ).Id;
 
         #region Methods
 
@@ -325,8 +357,6 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState familyPersonState, bool setValues )
         {
-            List<Group> resultList = null;
-
             phAdultAttributes.Controls.Clear();
             phChildAttributes.Controls.Clear();
             var fakePerson = new Person();
@@ -351,35 +381,38 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
 
             /* BEMA.FE1.Start */
+
+            List<Group> resultList = null;
             // add check-in group attribute if not there for children
-            var attributeCheckInGroupGuid = GetAttributeValue ( BemaAttributeKey.CheckInGroupAttribute ).AsGuidOrNull();
+            var attributeCheckInGroupGuid = GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute ).AsGuidOrNull();
             var groupAttribute = new AttributeCache();
             GroupMember groupMember = null;
 
-            if (attributeCheckInGroupGuid.HasValue)
+            if ( attributeCheckInGroupGuid.HasValue )
             {
-                groupAttribute = AttributeCache.Get ( GetAttributeValue ( BemaAttributeKey.CheckInGroupAttribute ).AsGuid () );
-                if ( !childAttributeKeysToEdit.Contains(groupAttribute.Key))
+                groupAttribute = AttributeCache.Get( GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute ).AsGuid() );
+                if ( !childAttributeKeysToEdit.Contains( groupAttribute.Key ) )
                 {
-                    childAttributeKeysToEdit.Add ( groupAttribute.Key );
+                    childAttributeKeysToEdit.Add( groupAttribute.Key );
                 }
 
                 //Exclude excluded group types
-                List<Guid> groupTypeExcludeGuids = GetAttributeValue ( BemaAttributeKey.GroupTypesExclude ).SplitDelimitedValues ().AsGuidList ();
-                resultList = CurrentCheckInState.Kiosk.KioskGroupTypes.Where ( t => t.IsCheckInActive == true )
-                                .Where ( t => CurrentCheckInState.ConfiguredGroupTypes.Contains ( t.GroupType.Id ) && !groupTypeExcludeGuids.Contains ( t.GroupType.Guid ) )
-                                .SelectMany ( t => t.KioskGroups ).Select ( g => g.Group ).ToList ();
-                var idList = resultList.Select ( g => g.Id ).ToList ();
+                List<Guid> groupTypeExcludeGuids = GetAttributeValue( BemaAttributeKey.GroupTypesExclude ).SplitDelimitedValues().AsGuidList();
+                resultList = CurrentCheckInState.Kiosk.KioskGroupTypes.Where( t => t.IsCheckInActive == true )
+                                .Where( t => CurrentCheckInState.ConfiguredGroupTypes.Contains( t.GroupType.Id ) && !groupTypeExcludeGuids.Contains( t.GroupType.Guid ) )
+                                .SelectMany( t => t.KioskGroups ).Select( g => g.Group ).ToList();
+                var idList = resultList.Select( g => g.Id ).ToList();
 
                 // pre-populate check-in group to first valid group by getting the group member
                 if ( attributeCheckInGroupGuid.HasValue && familyPersonState.PersonId.HasValue )
                 {
-                    var groupMemberService = new GroupMemberService ( new RockContext() );
-                    groupMember = groupMemberService.Queryable ( false )
-                        .Where ( a => idList.Contains ( a.GroupId ) && a.PersonId == familyPersonState.PersonId )
-                        .FirstOrDefault ();
+                    var groupMemberService = new GroupMemberService( new RockContext() );
+                    groupMember = groupMemberService.Queryable( false )
+                        .Where( a => idList.Contains( a.GroupId ) && a.PersonId == familyPersonState.PersonId )
+                        .FirstOrDefault();
                 }
             }
+
             /* BEMA.FE1.End */
 
             Rock.Attribute.Helper.AddEditControls(
@@ -403,69 +436,66 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                         ( attributeControl as IHasRequired ).Required = this.RequiredAttributesForAdults.Any( a => a.Id == attributeControlAttributeId.Value );
                     }
                 }
-                var field = "attribute_field_" + groupAttribute.Id.ToString ();
+
+                /* BEMA.FE1.Start */
+                var field = "attribute_field_" + groupAttribute.Id.ToString();
                 if ( field == attributeControl.ID )
                 {
-                    /* BEMA.FE1.End */
-                    var limitCheckInGroup = GetAttributeValue ( BemaAttributeKey.OnlyDisplayActiveGroups ).AsBoolean ();
+                    var limitCheckInGroup = GetAttributeValue( BemaAttributeKey.OnlyDisplayActiveGroups ).AsBoolean();
                     if ( ( attributeCheckInGroupGuid.HasValue ) && ( limitCheckInGroup == true ) )
                     {
 
-                        ( (DropDownList) attributeControl ).Items.Clear ();
-                        ( (DropDownList) attributeControl ).Items.Add ( new ListItem ( String.Empty, String.Empty ) );
+                        ( ( DropDownList ) attributeControl ).Items.Clear();
+                        ( ( DropDownList ) attributeControl ).Items.Add( new ListItem( String.Empty, String.Empty ) );
 
                         foreach ( var group in resultList )
                         {
-                            ( (DropDownList) attributeControl ).Items.Add ( new ListItem ( group.Name, group.Id.ToString () ) );
-                            if (groupMember != null && group.Id == groupMember.Group.Id)
+                            ( ( DropDownList ) attributeControl ).Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                            if ( groupMember != null && group.Id == groupMember.Group.Id )
                             {
-                                ( (DropDownList) attributeControl ).Items[( (DropDownList) attributeControl ).Items.Count - 1].Selected = true;
+                                ( ( DropDownList ) attributeControl ).Items[( ( DropDownList ) attributeControl ).Items.Count - 1].Selected = true;
                             }
                         }
                     }
-                    /* BEMA.FE1.End */
-
                 }
+                /* BEMA.FE1.End */
             }
 
-            foreach (Control attributeControl in phChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>())
+            foreach ( Control attributeControl in phChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
-                if (attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace())
+                if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
-                    int? attributeControlAttributeId = attributeControl.ID.Replace("attribute_field_", string.Empty).AsIntegerOrNull();
-                    if (attributeControlAttributeId.HasValue)
+                    int? attributeControlAttributeId = attributeControl.ID.Replace( "attribute_field_", string.Empty ).AsIntegerOrNull();
+                    if ( attributeControlAttributeId.HasValue )
                     {
-                        (attributeControl as IHasRequired).Required = this.RequiredAttributesForChildren.Any(a => a.Id == attributeControlAttributeId.Value);
+                        ( attributeControl as IHasRequired ).Required = this.RequiredAttributesForChildren.Any( a => a.Id == attributeControlAttributeId.Value );
                     }
                 }
 
-                var field = "attribute_field_" + groupAttribute.Id.ToString ();
+                /* BEMA.FE1.End */
+                var field = "attribute_field_" + groupAttribute.Id.ToString();
                 if ( field == attributeControl.ID )
                 {
-                    /* BEMA.FE1.End */
-                    ( attributeControl as IHasRequired ).Required = GetAttributeValue ( BemaAttributeKey.RequireCheckInGroupforChild ).AsBoolean ();
+                    ( attributeControl as IHasRequired ).Required = GetAttributeValue( BemaAttributeKey.RequireCheckInGroupforChild ).AsBoolean();
 
-                    var limitCheckInGroup = GetAttributeValue(BemaAttributeKey.OnlyDisplayActiveGroups).AsBoolean();
-                    if ((attributeCheckInGroupGuid.HasValue) && (limitCheckInGroup == true))
+                    var limitCheckInGroup = GetAttributeValue( BemaAttributeKey.OnlyDisplayActiveGroups ).AsBoolean();
+                    if ( ( attributeCheckInGroupGuid.HasValue ) && ( limitCheckInGroup == true ) )
                     {
+                        ( ( DropDownList ) attributeControl ).Items.Clear();
+                        ( ( DropDownList ) attributeControl ).Items.Add( new ListItem( String.Empty, String.Empty ) );
 
-                        ((DropDownList)attributeControl).Items.Clear();
-                        ((DropDownList)attributeControl).Items.Add(new ListItem(String.Empty, String.Empty));
-
-                        foreach (var group in resultList)
+                        foreach ( var group in resultList )
                         {
-                            ((DropDownList)attributeControl).Items.Add(new ListItem(group.Name, group.Id.ToString()));
+                            ( ( DropDownList ) attributeControl ).Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
 
                             if ( groupMember != null && group.Id == groupMember.Group.Id )
                             {
-                                ( (DropDownList) attributeControl ).Items[( (DropDownList) attributeControl ).Items.Count - 1].Selected = true;
+                                ( ( DropDownList ) attributeControl ).Items[( ( DropDownList ) attributeControl ).Items.Count - 1].Selected = true;
                             }
                         }
-
                     }
-                    /* BEMA.FE1.End */
-
                 }
+                /* BEMA.FE1.End */
             }
         }
 
@@ -550,13 +580,13 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 BindFamilyMembersGrid();
                 CreateDynamicFamilyControls( EditFamilyState, true );
 
-                /* BEMA.UI1.Start */
+                /* BEMA.UI8.Start */
                 // not a new family, don't require address
                 acFamilyAddress.Visible = false;
                 acFamilyAddress.Required = false;
-                /* BEMA.UI1.End */
+                /* BEMA.UI8.End */
 
-                ShowFamilyView ();
+                ShowFamilyView();
             }
             else
             {
@@ -565,12 +595,12 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 hfGroupId.Value = "0";
                 mdEditFamily.Title = "Add Family";
 
-                /* BEMA.UI1.Start */
-                acFamilyAddress.Visible = GetAttributeValue ( BemaAttributeKey.ShowAddressForNewFamily ).AsBoolean () || GetAttributeValue ( BemaAttributeKey.RequireAddressForNewFamily ).AsBoolean ();
-                acFamilyAddress.Required = GetAttributeValue ( BemaAttributeKey.RequireAddressForNewFamily ).AsBoolean ();
-                /* BEMA.UI1.End */
+                /* BEMA.UI8.Start */
+                acFamilyAddress.Visible = GetAttributeValue( BemaAttributeKey.ShowAddressForNewFamily ).AsBoolean() || GetAttributeValue( BemaAttributeKey.RequireAddressForNewFamily ).AsBoolean();
+                acFamilyAddress.Required = GetAttributeValue( BemaAttributeKey.RequireAddressForNewFamily ).AsBoolean();
+                /* BEMA.UI8.End */
 
-                EditGroupMember ( null );
+                EditGroupMember( null );
             }
 
             _initialEditFamilyStateHash = this.EditFamilyState.GetStateHash();
@@ -699,24 +729,34 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             var rockContext = new RockContext();
 
             // Set the Campus for new families to the Campus of this Kiosk
-            int? kioskCampusId = null;
-            var deviceLocation = new DeviceService( rockContext ).GetSelect( CurrentCheckInState.Kiosk.Device.Id, a => a.Locations.FirstOrDefault() );
-            if ( deviceLocation != null )
+            int? kioskCampusId = CurrentCheckInState.Kiosk.CampusId;
+
+            /* BEMA.FE2.Start */
+            if ( GetAttributeValue( BemaAttributeKey.UseDeviceCampus ).AsBoolean() )
             {
-                kioskCampusId = deviceLocation.CampusId;
+                var deviceLocation = new DeviceService( rockContext ).GetSelect( CurrentCheckInState.Kiosk.Device.Id, a => a.Locations.FirstOrDefault() );
+                if ( deviceLocation != null )
+                {
+                    kioskCampusId = deviceLocation.CampusId;
+                }
+                else
+                {
+                    kioskCampusId = null;
+                }
             }
+            /* BEMA.FE2.End */
 
             /* BEMA.UI1.Start */
             // Check if Adult required in family 
-            if ( GetAttributeValue( BemaAttributeKey.RequireAdultInNewFamily ).AsBoolean() && EditFamilyState.FamilyPersonListState.AsQueryable ().Where ( a => a.IsAdult == true ).Count () == 0 )
+            if ( GetAttributeValue( BemaAttributeKey.RequireAdultInNewFamily ).AsBoolean() && EditFamilyState.FamilyPersonListState.AsQueryable().Where( a => a.IsAdult == true ).Count() == 0 )
             {
                 // Error message
-                maWarning.Show ( "At least one adult is required in the family.", Rock.Web.UI.Controls.ModalAlertType.None );
+                maWarning.Show( "At least one adult is required in the family.", Rock.Web.UI.Controls.ModalAlertType.None );
                 return;
             }
             /* BEMA.UI1.End */
 
-            UpdateFamilyAttributesState ();
+            UpdateFamilyAttributesState();
 
             SetEditableStateAttributes();
 
@@ -724,38 +764,58 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
 
             rockContext.WrapTransaction( () =>
             {
-                saveResult = SaveFamilyAndPersonsToDatabase ( EditFamilyState, kioskCampusId, rockContext );
+                saveResult = EditFamilyState.SaveFamilyAndPersonsToDatabase( kioskCampusId, rockContext );
+
+                /* BEMA.UI9.Start */
+                var personService = new PersonService( rockContext );
+                var defaultMaritalStatus = GetAttributeValue( BemaAttributeKey.NewPersonMaritalStatus ).AsGuidOrNull();
+                var showMaritalStatus = GetAttributeValue( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean();
+                var newPersonIds = saveResult.NewPersonList.Select( p => p.Id ).ToList();
+                foreach ( var familyPersonState in EditFamilyState.FamilyPersonListState.Where( a => !a.IsDeleted && a.PersonId.HasValue && newPersonIds.Contains( a.PersonId.Value ) ) )
+                {
+                    Person person;
+                    person = personService.Get( familyPersonState.PersonId.Value );
+                    if ( !showMaritalStatus && defaultMaritalStatus.HasValue && !familyPersonState.IsAdult )
+                    {
+                        var maritalStatusDefault = DefinedValueCache.Get( GetAttributeValue( BemaAttributeKey.NewPersonMaritalStatus ).AsGuid() );
+                        person.MaritalStatusValueId = maritalStatusDefault.Id;
+                    }
+                }
+
+                rockContext.SaveChanges();
+                /* BEMA.UI9.End */
             } );
+
 
             /* BEMA.FE1.Start */
             // If we are adding to a group as well, update group membership
             var attributeCheckInGroup = GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute );
-            if (attributeCheckInGroup.AsGuidOrNull() != null)
+            if ( attributeCheckInGroup.AsGuidOrNull() != null )
             {
-                var groupAttribute = AttributeCache.Get(GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute ).AsGuid());
-                var groupService = new GroupService(rockContext);
+                var groupAttribute = AttributeCache.Get( GetAttributeValue( BemaAttributeKey.CheckInGroupAttribute ).AsGuid() );
+                var groupService = new GroupService( rockContext );
 
-                foreach (var editPerson in EditFamilyState.FamilyPersonListState)
+                foreach ( var editPerson in EditFamilyState.FamilyPersonListState )
                 {
-                    var groupId = editPerson.PersonAttributeValuesState.GetValueOrNull(groupAttribute.Key);
-                    if (groupId.Value.AsIntegerOrNull() != null)
+                    var groupId = editPerson.PersonAttributeValuesState.GetValueOrNull( groupAttribute.Key );
+                    if ( groupId.Value.AsIntegerOrNull() != null )
                     {
-                        var group = groupService.Get(groupId.Value.AsInteger());
+                        var group = groupService.Get( groupId.Value.AsInteger() );
                         // ensure that the person is not already in the group with role
-                        if (group.Members.Where(m => m.PersonId == editPerson.PersonId && m.GroupRoleId == group.GroupType.DefaultGroupRole.Id).Count() == 0)
+                        if ( group.Members.Where( m => m.PersonId == editPerson.PersonId && m.GroupRoleId == group.GroupType.DefaultGroupRole.Id ).Count() == 0 )
                         {
                             GroupMember groupMember = new GroupMember();
                             groupMember.GroupId = group.Id;
                             groupMember.PersonId = editPerson.PersonId.Value;
                             groupMember.GroupRoleId = group.GroupType.DefaultGroupRole.Id;
                             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                            group.Members.Add(groupMember);
+                            group.Members.Add( groupMember );
 
                             try
                             {
                                 rockContext.SaveChanges();
                             }
-                            catch (Exception ex)
+                            catch ( Exception ex )
                             {
                             }
 
@@ -763,7 +823,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                     }
                 }
             }
-            /* BEMA.UI1.End */
+            /* BEMA.FE1.End */
 
             // Queue up any Workflows that are configured to fire after a new person and/or family is added
             if ( saveResult.NewFamilyList.Any() )
@@ -781,22 +841,22 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                     }
                 }
 
-                /* BEMA.UI1.Start */
+                /* BEMA.UI8.Start */
                 // Add address if given
                 if ( acFamilyAddress.IsValid && acFamilyAddress.Street1.Length > 0 && acFamilyAddress.City.Length > 0 && acFamilyAddress.PostalCode.Length > 0 )
                 {
-                    var family = new GroupService ( rockContext ).Get ( newPrimaryFamily.Id );
-                    var location = new LocationService(rockContext).Get(acFamilyAddress.Street1, acFamilyAddress.Street2, acFamilyAddress.City , acFamilyAddress.State , 
-                        acFamilyAddress.PostalCode , acFamilyAddress.Country );
-                    var groupLocation = new GroupLocation (  );
-                    groupLocation.GroupLocationTypeValueId = DefinedValueCache.Get ( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid () ).Id;
+                    var family = new GroupService( rockContext ).Get( newPrimaryFamily.Id );
+                    var location = new LocationService( rockContext ).Get( acFamilyAddress.Street1, acFamilyAddress.Street2, acFamilyAddress.City, acFamilyAddress.State,
+                        acFamilyAddress.PostalCode, acFamilyAddress.Country );
+                    var groupLocation = new GroupLocation();
+                    groupLocation.GroupLocationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
                     groupLocation.LocationId = location.Id;
                     groupLocation.GroupId = family.Id;
 
-                    family.GroupLocations.Add ( groupLocation );
-                    rockContext.SaveChanges ();
+                    family.GroupLocations.Add( groupLocation );
+                    rockContext.SaveChanges();
                 }
-                /* BEMA.UI1.End */
+                /* BEMA.UI8.End */
             }
 
             if ( saveResult.NewPersonList.Any() )
@@ -841,7 +901,7 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                     if ( !string.IsNullOrEmpty( workflowActivity ) )
                     {
                         // just in case this is a new family, or family name or phonenumber was changed, update the search to match the updated values
-                        if (  CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid())
+                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
                         {
                             var firstFamilyPerson = EditFamilyState.FamilyPersonListState.OrderBy( a => a.IsAdult ).FirstOrDefault();
                             if ( firstFamilyPerson != null )
@@ -850,9 +910,9 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                             }
                         }
 
-                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid())
+                        if ( CurrentCheckInState.CheckIn.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
                         {
-                            var firstFamilyPersonWithPhone = EditFamilyState.FamilyPersonListState.Where(a => a.MobilePhoneNumber.IsNotNullOrWhiteSpace()).OrderBy( a => a.IsAdult ).FirstOrDefault();
+                            var firstFamilyPersonWithPhone = EditFamilyState.FamilyPersonListState.Where( a => a.MobilePhoneNumber.IsNotNullOrWhiteSpace() ).OrderBy( a => a.IsAdult ).FirstOrDefault();
                             if ( firstFamilyPersonWithPhone != null )
                             {
                                 CurrentCheckInState.CheckIn.SearchValue = firstFamilyPersonWithPhone.MobilePhoneNumber;
@@ -1070,15 +1130,12 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             {
                 bgGender.SetValue( familyPersonState.Gender.ConvertToInt() );
             }
+            tglAdultMaritalStatus.Checked = familyPersonState.IsMarried;
 
-            /* BEMA.UI1.Start */
-            var showMaritalStatus = GetAttributeValue ( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean ();
-            tglAdultMaritalStatus.Visible = familyPersonState.IsAdult & showMaritalStatus;
-            if (showMaritalStatus)
-            {
-                tglAdultMaritalStatus.Checked = familyPersonState.IsMarried;
-            }
-            /* BEMA.UI1.End */
+            /* BEMA.UI9.Start */
+            tglAdultMaritalStatus.Visible = familyPersonState.IsAdult & GetAttributeValue( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean();
+            ;
+            /* BEMA.UI9.End */
 
             ddlChildRelationShipToAdult.Items.Clear();
 
@@ -1165,26 +1222,44 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
                 return;
             }
 
-            /* BEMA.UI1.Start */
-            pnMobilePhone.Visible = isAdult | GetAttributeValue ( BemaAttributeKey.ShowMobileForChild ).AsBoolean (); ;
-            pnMobilePhone.Required = isAdult & GetAttributeValue ( BemaAttributeKey.RequireMobileForAdult ).AsBoolean ();
-            tbEmail.Required = isAdult & GetAttributeValue ( BemaAttributeKey.RequireEmailForAdult ).AsBoolean ();
-            tbEmail.Visible = isAdult;
-            var showMaritalStatus = GetAttributeValue ( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean ();
-            tglAdultMaritalStatus.Visible = isAdult & showMaritalStatus;
-
-
-            //tglAdultMaritalStatus.Visible = isAdult; 
-            dpBirthDate.Required = (!isAdult & GetAttributeValue ( BemaAttributeKey.RequireBirthdateForChild ).AsBoolean ()) || ( isAdult & GetAttributeValue ( BemaAttributeKey.RequireBirthdateForAdult ).AsBoolean () );
-            dpBirthDate.Visible = !isAdult | GetAttributeValue ( BemaAttributeKey.ShowBirthdateForAdult ).AsBoolean (); 
-            gpGradePicker.Required = !isAdult & GetAttributeValue ( BemaAttributeKey.RequireGradeForChild ).AsBoolean ();
+            tglAdultMaritalStatus.Visible = isAdult;
+            dpBirthDate.Visible = !isAdult;
             gpGradePicker.Visible = !isAdult;
+            tbEmail.Visible = isAdult;
             pnlChildRelationshipToAdult.Visible = !isAdult;
 
             tbAlternateID.Visible = ( isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforAdults ) || ( !isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforChildren );
             phAdultAttributes.Visible = isAdult;
             phChildAttributes.Visible = !isAdult;
-            /* BEMA.UI1.End */
+
+            /* BEMA.UI6.Start */
+            pnMobilePhone.Visible = isAdult | GetAttributeValue( BemaAttributeKey.ShowMobileForChild ).AsBoolean();
+            /* BEMA.UI6.End */
+
+            /* BEMA.UI2.Start */
+            pnMobilePhone.Required = isAdult & GetAttributeValue( BemaAttributeKey.RequireMobileForAdult ).AsBoolean();
+            /* BEMA.UI2.End */
+
+            /* BEMA.UI3.Start */
+            tbEmail.Required = isAdult & GetAttributeValue( BemaAttributeKey.RequireEmailForAdult ).AsBoolean();
+            /* BEMA.UI3.End */
+
+            /* BEMA.UI9.Start */
+            var showMaritalStatus = GetAttributeValue( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean();
+            tglAdultMaritalStatus.Visible = isAdult & showMaritalStatus;
+            /* BEMA.UI9.End */
+
+            /* BEMA.UI5.Start */
+            dpBirthDate.Required = ( !isAdult & GetAttributeValue( BemaAttributeKey.RequireBirthdateForChild ).AsBoolean() ) || ( isAdult & GetAttributeValue( BemaAttributeKey.RequireBirthdateForAdult ).AsBoolean() );
+            /* BEMA.UI5.End */
+
+            /*BEMA.UI4.Start */
+            dpBirthDate.Visible = !isAdult | GetAttributeValue( BemaAttributeKey.ShowBirthdateForAdult ).AsBoolean();
+            /* BEMA.UI4.End */
+
+            /* BEMA.UI7.Start */
+            gpGradePicker.Required = !isAdult & GetAttributeValue( BemaAttributeKey.RequireGradeForChild ).AsBoolean();
+            /* BEMA.UI7.End */
         }
 
         /// <summary>
@@ -1254,18 +1329,20 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             familyPersonState.CanCheckIn = ( familyPersonState.InPrimaryFamily == false )
                 && CurrentCheckInState.CheckInType.Registration.KnownRelationshipsCanCheckin.Any( k => k.Key == familyPersonState.ChildRelationshipToAdult );
 
-            var showMaritalStatus = GetAttributeValue ( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean ();
+            /* BEMA.UI9.Start */
+            var showMaritalStatus = GetAttributeValue( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean();
             if ( showMaritalStatus )
             {
                 familyPersonState.IsMarried = tglAdultMaritalStatus.Checked;
             }
+            /* BEMA.UI9.End */
 
             familyPersonState.FirstName = tbFirstName.Text.FixCase();
             /* BEMA.UI1.Start */
             // Format Initials
             if ( familyPersonState.FirstName[1] == '.' && familyPersonState.FirstName[3] == '.' )
             {
-                familyPersonState.FirstName = tbFirstName.Text.ToUpper ();
+                familyPersonState.FirstName = tbFirstName.Text.ToUpper();
             }
             /* BEMA.UI1.End */
 
@@ -1304,312 +1381,6 @@ namespace RockWeb.Plugins.com_bemaservices.Checkin
             ShowFamilyView();
 
             BindFamilyMembersGrid();
-        }
-        /// <summary>
-        /// Saves the family and persons to the database
-        /// </summary>
-        /// <param name="kioskCampusId">The kiosk campus identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public FamilyRegistrationState.SaveResult SaveFamilyAndPersonsToDatabase( FamilyRegistrationState editFamilyState, int? kioskCampusId, RockContext rockContext )
-        {
-            FamilyRegistrationState.SaveResult saveResult = new FamilyRegistrationState.SaveResult ();
-
-            var personService = new PersonService ( rockContext );
-            var groupService = new GroupService ( rockContext );
-            var recordTypePersonId = DefinedValueCache.Get ( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid () ).Id;
-            var maritalStatusMarried = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
-            var maritalStatusSingle = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid() );
-
-            /* BEMA.UI1.Start */
-            var defaultMaritalStatus = GetAttributeValue ( BemaAttributeKey.NewPersonMaritalStatus ).AsGuidOrNull ();
-            var showMaritalStatus = GetAttributeValue ( BemaAttributeKey.ShowMaritalStatusForAdult ).AsBoolean ();
-            /* BEMA.UI1.End */
-
-            var numberTypeValueMobile = DefinedValueCache.Get ( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid () );
-            int groupTypeRoleAdultId = GroupTypeCache.GetFamilyGroupType ().Roles.FirstOrDefault ( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid () ).Id;
-            int groupTypeRoleChildId = GroupTypeCache.GetFamilyGroupType ().Roles.FirstOrDefault ( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid () ).Id;
-            int? groupTypeRoleCanCheckInId = null;
-            if (
-                GroupTypeCache.Get ( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid () ) != null &&
-                GroupTypeCache.Get ( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid () ).Roles.FirstOrDefault ( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid () ) != null
-            )
-            {
-                groupTypeRoleCanCheckInId = GroupTypeCache.Get ( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid () ).Roles.FirstOrDefault ( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid () ).Id;
-            }
-
-            Group primaryFamily = null;
-
-            if ( editFamilyState.GroupId.HasValue )
-            {
-                primaryFamily = groupService.Get ( editFamilyState.GroupId.Value );
-            }
-
-            // see if we can find matches for new people that were added, and also set the primary family if this is a new family, but a matching family was found
-            foreach ( var familyPersonState in editFamilyState.FamilyPersonListState.Where ( a => !a.PersonId.HasValue && !a.IsDeleted ) )
-            {
-                var personQuery = new PersonService.PersonMatchQuery ( familyPersonState.FirstName, familyPersonState.LastName, familyPersonState.Email, familyPersonState.MobilePhoneNumber, familyPersonState.Gender, familyPersonState.BirthDate, familyPersonState.SuffixValueId );
-                var matchingPerson = personService.FindPerson ( personQuery, true );
-                if ( matchingPerson != null )
-                {
-                    // newly added person, but a match was found, so set the PersonId, GroupId, and ConnectionStatusValueID to the matching person instead of creating a new person
-                    familyPersonState.PersonId = matchingPerson.Id;
-                    if ( matchingPerson.GetFamily ( rockContext ) != null )
-                    {
-                        familyPersonState.GroupId = matchingPerson.GetFamily ( rockContext ).Id;
-                    }
-
-                    familyPersonState.RecordStatusValueId = matchingPerson.RecordStatusValueId;
-                    familyPersonState.ConnectionStatusValueId = matchingPerson.ConnectionStatusValueId;
-                    familyPersonState.ConvertedToMatchedPerson = true;
-                    if ( primaryFamily == null && familyPersonState.IsAdult )
-                    {
-                        // if this is a new family, but we found a matching adult person, use that person's family as the family
-                        primaryFamily = matchingPerson.GetFamily ( rockContext );
-                    }
-                }
-            }
-
-            // loop thru all people and add/update as needed
-            foreach ( var familyPersonState in editFamilyState.FamilyPersonListState.Where ( a => !a.IsDeleted ) )
-            {
-                Person person;
-                if ( !familyPersonState.PersonId.HasValue )
-                {
-                    person = new Person ();
-                    personService.Add ( person );
-                    saveResult.NewPersonList.Add ( person );
-                    person.RecordTypeValueId = recordTypePersonId;
-                    if ( !showMaritalStatus && defaultMaritalStatus.HasValue && !familyPersonState.IsAdult )
-                    {
-                        var maritalStatusDefault = DefinedValueCache.Get ( GetAttributeValue ( BemaAttributeKey.NewPersonMaritalStatus ).AsGuid () );
-                        person.MaritalStatusValueId = maritalStatusDefault.Id;
-                    }
-                }
-                else
-                {
-                    person = personService.Get ( familyPersonState.PersonId.Value );
-                }
-
-                // NOTE, Gender, MaritalStatusValueId, NickName, LastName are required fields so, always updated them to match the UI (even if a matched person was found)
-                person.Gender = familyPersonState.Gender;
-                person.NickName = familyPersonState.FirstName;
-                person.LastName = familyPersonState.LastName;
-
-                // if the familyPersonState was converted to a Matched Person, don't overwrite existing values with blank values
-                var saveEmptyValues = !familyPersonState.ConvertedToMatchedPerson;
-
-                if ( familyPersonState.SuffixValueId.HasValue || saveEmptyValues )
-                {
-                    person.SuffixValueId = familyPersonState.SuffixValueId;
-                }
-
-                if ( familyPersonState.BirthDate.HasValue || saveEmptyValues )
-                {
-                    person.SetBirthDate ( familyPersonState.BirthDate );
-                }
-
-                if ( familyPersonState.Email.IsNotNullOrWhiteSpace () || saveEmptyValues )
-                {
-                    person.Email = familyPersonState.Email;
-                }
-
-                if ( familyPersonState.GradeOffset.HasValue || saveEmptyValues )
-                {
-                    person.GradeOffset = familyPersonState.GradeOffset;
-                }
-
-                // if a matching person was found, the familyPersonState's RecordStatusValueId and ConnectinoStatusValueId was already updated to match the matched person
-                person.RecordStatusValueId = familyPersonState.RecordStatusValueId;
-                person.ConnectionStatusValueId = familyPersonState.ConnectionStatusValueId;
-
-                rockContext.SaveChanges ();
-
-                bool isNewPerson = !familyPersonState.PersonId.HasValue;
-                if ( !familyPersonState.PersonId.HasValue )
-                {
-                    // if we added a new person, we know now the personId after SaveChanges, so set it
-                    familyPersonState.PersonId = person.Id;
-                }
-
-                if ( familyPersonState.AlternateID.IsNotNullOrWhiteSpace () )
-                {
-                    PersonSearchKey personAlternateValueIdSearchKey;
-                    PersonSearchKeyService personSearchKeyService = new PersonSearchKeyService ( rockContext );
-                    if ( isNewPerson )
-                    {
-                        // if we added a new person, a default AlternateId was probably added in the service layer. If a specific Alternate ID was specified, make sure that their SearchKey is updated
-                        personAlternateValueIdSearchKey = person.GetPersonSearchKeys ( rockContext ).Where ( a => a.SearchTypeValueId == _personSearchAlternateValueId ).FirstOrDefault ();
-                    }
-                    else
-                    {
-                        // see if the key already exists. If if it doesn't already exist, let a new one get created
-                        personAlternateValueIdSearchKey = person.GetPersonSearchKeys ( rockContext ).Where ( a => a.SearchTypeValueId == _personSearchAlternateValueId && a.SearchValue == familyPersonState.AlternateID ).FirstOrDefault ();
-                    }
-
-                    if ( personAlternateValueIdSearchKey == null )
-                    {
-                        personAlternateValueIdSearchKey = new PersonSearchKey ();
-                        personAlternateValueIdSearchKey.PersonAliasId = person.PrimaryAliasId;
-                        personAlternateValueIdSearchKey.SearchTypeValueId = _personSearchAlternateValueId;
-                        personSearchKeyService.Add ( personAlternateValueIdSearchKey );
-                    }
-
-                    if ( personAlternateValueIdSearchKey.SearchValue != familyPersonState.AlternateID )
-                    {
-                        personAlternateValueIdSearchKey.SearchValue = familyPersonState.AlternateID;
-                        rockContext.SaveChanges ();
-                    }
-                }
-
-                person.LoadAttributes ();
-                foreach ( var attributeValue in familyPersonState.PersonAttributeValuesState )
-                {
-                    // only set attribute values that are editable so we don't accidently delete any attribute values
-                    if ( familyPersonState.EditableAttributes.Contains ( attributeValue.Value.AttributeId ) )
-                    {
-                        if ( attributeValue.Value.Value.IsNotNullOrWhiteSpace () || saveEmptyValues )
-                        {
-                            person.SetAttributeValue ( attributeValue.Key, attributeValue.Value.Value );
-                        }
-                    }
-                }
-
-                person.SaveAttributeValues ( rockContext );
-
-                if ( familyPersonState.MobilePhoneNumber.IsNotNullOrWhiteSpace () || saveEmptyValues )
-                {
-                    person.UpdatePhoneNumber ( numberTypeValueMobile.Id, familyPersonState.MobilePhoneCountryCode, familyPersonState.MobilePhoneNumber, true, false, rockContext );
-                }
-
-                rockContext.SaveChanges ();
-            }
-
-            if ( primaryFamily == null )
-            {
-                // new family and no family found by looking up matching adults, so create a new family
-                primaryFamily = new Group ();
-                var familyLastName = editFamilyState.FamilyPersonListState.OrderByDescending ( a => a.IsAdult ).Where ( a => !a.IsDeleted ).Select ( a => a.LastName ).FirstOrDefault ();
-                primaryFamily.Name = familyLastName + " Family";
-                primaryFamily.GroupTypeId = GroupTypeCache.GetFamilyGroupType ().Id;
-
-                // Set the Campus to the Campus of this Kiosk
-                primaryFamily.CampusId = kioskCampusId;
-
-                groupService.Add ( primaryFamily );
-                saveResult.NewFamilyList.Add ( primaryFamily );
-                rockContext.SaveChanges ();
-            }
-
-            if ( !editFamilyState.GroupId.HasValue )
-            {
-                editFamilyState.GroupId = primaryFamily.Id;
-            }
-
-            primaryFamily.LoadAttributes ();
-            foreach ( var familyAttribute in editFamilyState.FamilyAttributeValuesState )
-            {
-                // only set attribute values that are editable so we don't accidently delete any attribute values
-                if ( editFamilyState.EditableFamilyAttributes.Contains ( familyAttribute.Value.AttributeId ) )
-                {
-                    primaryFamily.SetAttributeValue ( familyAttribute.Key, familyAttribute.Value.Value );
-                }
-            }
-
-            primaryFamily.SaveAttributeValues ( rockContext );
-
-            var groupMemberService = new GroupMemberService ( rockContext );
-
-            // loop thru all people that are part of the same family (in the UI) and ensure they are all in the same primary family (in the database)
-            foreach ( var familyPersonState in editFamilyState.FamilyPersonListState.Where ( a => !a.IsDeleted && a.InPrimaryFamily ) )
-            {
-                var currentFamilyMember = primaryFamily.Members.FirstOrDefault ( m => m.PersonId == familyPersonState.PersonId.Value );
-
-                if ( currentFamilyMember == null )
-                {
-                    currentFamilyMember = new GroupMember
-                    {
-                        GroupId = primaryFamily.Id,
-                        PersonId = familyPersonState.PersonId.Value,
-                        GroupMemberStatus = GroupMemberStatus.Active
-                    };
-
-                    if ( familyPersonState.IsAdult )
-                    {
-                        currentFamilyMember.GroupRoleId = groupTypeRoleAdultId;
-                    }
-                    else
-                    {
-                        currentFamilyMember.GroupRoleId = groupTypeRoleChildId;
-                    }
-
-                    groupMemberService.Add ( currentFamilyMember );
-
-                    rockContext.SaveChanges ();
-                }
-            }
-
-            // make a dictionary of new related families (by lastname) so we can combine any new related children into a family with the same last name
-            Dictionary<string, Group> newRelatedFamilies = new Dictionary<string, Group> ( StringComparer.OrdinalIgnoreCase );
-
-            // loop thru all people that are NOT part of the same family
-            foreach ( var familyPersonState in editFamilyState.FamilyPersonListState.Where ( a => !a.IsDeleted && a.InPrimaryFamily == false ) )
-            {
-                if ( !familyPersonState.GroupId.HasValue )
-                {
-                    // related person not in a family yet
-                    Group relatedFamily = newRelatedFamilies.GetValueOrNull ( familyPersonState.LastName );
-                    if ( relatedFamily == null )
-                    {
-                        relatedFamily = new Group ();
-                        relatedFamily.Name = familyPersonState.LastName + " Family";
-                        relatedFamily.GroupTypeId = GroupTypeCache.GetFamilyGroupType ().Id;
-
-                        // Set the Campus to the Campus of this Kiosk
-                        relatedFamily.CampusId = kioskCampusId;
-
-                        newRelatedFamilies.Add ( familyPersonState.LastName, relatedFamily );
-                        groupService.Add ( relatedFamily );
-                        saveResult.NewFamilyList.Add ( relatedFamily );
-                    }
-
-                    rockContext.SaveChanges ();
-
-                    familyPersonState.GroupId = relatedFamily.Id;
-
-                    var familyMember = new GroupMember
-                    {
-                        GroupId = relatedFamily.Id,
-                        PersonId = familyPersonState.PersonId.Value,
-                        GroupMemberStatus = GroupMemberStatus.Active
-                    };
-
-                    if ( familyPersonState.IsAdult )
-                    {
-                        familyMember.GroupRoleId = groupTypeRoleAdultId;
-                    }
-                    else
-                    {
-                        familyMember.GroupRoleId = groupTypeRoleChildId;
-                    }
-
-                    groupMemberService.Add ( familyMember );
-                }
-
-                // ensure there are known relationships between each adult in the primary family to this person that isn't in the primary family
-                foreach ( var primaryFamilyAdult in editFamilyState.FamilyPersonListState.Where ( a => a.IsAdult && a.InPrimaryFamily ) )
-                {
-                    groupMemberService.CreateKnownRelationship ( primaryFamilyAdult.PersonId.Value, familyPersonState.PersonId.Value, familyPersonState.ChildRelationshipToAdult );
-
-                    // if this is something other than the CanCheckIn relationship, but is a relationship that should ensure a CanCheckIn relationship, create a CanCheckinRelationship
-                    if ( groupTypeRoleCanCheckInId.HasValue && familyPersonState.CanCheckIn && groupTypeRoleCanCheckInId != familyPersonState.ChildRelationshipToAdult )
-                    {
-                        groupMemberService.CreateKnownRelationship ( primaryFamilyAdult.PersonId.Value, familyPersonState.PersonId.Value, groupTypeRoleCanCheckInId.Value );
-                    }
-                }
-            }
-
-            return saveResult;
         }
 
         #endregion Edit Person

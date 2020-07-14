@@ -104,7 +104,6 @@
             });
         </script>
 
-
         <%-- Edit Family Modal --%>
         <Rock:ModalDialog ID="mdEditFamily" runat="server" Title="Add Family" CancelLinkVisible="false">
             <Content>
@@ -113,7 +112,11 @@
                 <asp:UpdatePanel ID="upEditFamily" runat="server">
                     <ContentTemplate>
                         <%-- Edit Family View --%>
+						
+						<%-- BEMA.UI.Start --%>
                         <Rock:ModalAlert ID="maWarning" runat="server" />
+						<%-- BEMA.UI.End --%>
+						
                         <asp:Panel ID="pnlEditFamily" runat="server">
                             <asp:ValidationSummary ID="vsEditFamily" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgEditFamily" />
                             <%-- Grid --%>
@@ -135,11 +138,13 @@
                             </Rock:Grid>
 
                             <%-- Family Attributes --%>
+							<%-- BEMA.UI8.Start --%>
                             <div class="row">
-                            <div class="col-sm-6">
-                                <Rock:AddressControl ID="acFamilyAddress" Label="Address" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+	                            <div class="col-sm-6">
+	                                <Rock:AddressControl ID="acFamilyAddress" Label="Address" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+	                            </div>
                             </div>
-                            </div>
+							<%-- BEMA.UI8.End --%>
 
                             <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
 
@@ -190,13 +195,13 @@
                                     <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" Label="Suffix" ValidationGroup="vgEditPerson" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:ButtonGroup ID="bgGender" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="Gender" Required="true" ValidationGroup="vgEditPerson" RequiredErrorMessage="Gender is required.">
+                                    <Rock:ButtonGroup ID="bgGender" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="&nbsp;" Required="true" ValidationGroup="vgEditPerson" RequiredErrorMessage="Gender is required.">
                                         <asp:ListItem Text="Male" Value="1" />
                                         <asp:ListItem Text="Female" Value="2" />
                                     </Rock:ButtonGroup>
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:DatePartsPicker ID="dpBirthDate" runat="server" Label="Birthdate"  Required="true" AllowFutureDateSelection="False" RequireYear="True" ShowOnFocus="false" StartView="decade" ValidationGroup="vgEditPerson" />
+                                    <Rock:DatePicker ID="dpBirthDate" runat="server" Label="Birthdate" AllowFutureDateSelection="False" RequireYear="True" ShowOnFocus="false" StartView="decade" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:GradePicker ID="gpGradePicker" runat="server" Label="Grade" UseGradeOffsetAsValue="true" UseAbbreviation="true" ValidationGroup="vgEditPerson" />
@@ -210,6 +215,7 @@
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbAlternateID" runat="server" Label="Alternate ID" CssClass="js-alternate-id" ValidationGroup="vgEditPerson" />
                                 </div>
+
                             </div>
 
                             <%-- Person Attributes editing an Adult --%>
@@ -221,7 +227,7 @@
                             <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
                                 <Rock:DynamicPlaceholder ID="phChildAttributes" runat="server" />
                             </Rock:HtmlGenericContainer>
-                           
+
                             <%-- Person Actions --%>
                             <div class="actions">
                             <asp:LinkButton ID="btnDonePerson" runat="server" CssClass="btn btn-primary" Text="Done" CausesValidation="true" ValidationGroup="vgEditPerson" OnClick="btnDonePerson_Click" />
