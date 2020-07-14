@@ -65,5 +65,8 @@
       <Name>DotLiquid</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
