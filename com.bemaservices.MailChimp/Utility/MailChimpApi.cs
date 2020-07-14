@@ -54,7 +54,12 @@ namespace com.bemaservices.MailChimp.Utility
 
         public List<DefinedValue> GetMailChimpLists()
         {
+            RockContext rockContext = new RockContext();
+            DefinedValueService definedValueService = new DefinedValueService( rockContext );
+            AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+
             List<DefinedValue> mailChimpListValues = null;
+            List<int?> mailChimpListDefinedValueIds = new List<int?>();
 
             if ( _mailChimpAccount is null || _apiKey.IsNullOrWhiteSpace() )
             {
@@ -63,15 +68,22 @@ namespace com.bemaservices.MailChimp.Utility
             }
             else
             {
-                RockContext rockContext = new RockContext();
-                DefinedValueService definedValueService = new DefinedValueService( rockContext );
-                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+                try
+                {
+                    mailChimpListDefinedValueIds = attributeValueService.GetByAttributeId( AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE ).Id )
+                                                  .Where( av => av.Value.Equals( _mailChimpAccount.Guid.ToString() ) ).Select( av => av.EntityId )
+                                                  .ToList();
 
-                var mailChimpListDefinedValueIds = attributeValueService.GetByAttributeId( AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE ).Id )
-                                                    .Where( av => av.Value.Equals( _mailChimpAccount.Guid.ToString() ) ).Select( av => av.EntityId )
-                                                    .ToList();
+                    mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() )
+                        .Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
 
-                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
+                }
+                catch ( Exception ex )
+                {
+                    string message = String.Format( "Error Grabbing Mailchimp Audiences from Rock" );
+                    ExceptionLogService.LogException( new Exception( message, ex ) );
+                }
+
                 try
                 {
                     var mailChimpListCollection = _mailChimpManager.Lists.GetAllAsync().Result;
@@ -79,45 +91,77 @@ namespace com.bemaservices.MailChimp.Utility
                     // Loop over each List from Mail Chimp and attempt to find the related Defined Value in Rock.  Then Update / Add those defined values into Rock
                     foreach ( var mailChimpList in mailChimpListCollection )
                     {
-                        var mailChimpListValue = mailChimpListValues.Where( x => x.ForeignId == mailChimpList.WebId &&
+                        try
+                        {
+                            var mailChimpListValue = mailChimpListValues.Where( x => x.ForeignId == mailChimpList.WebId &&
                                                                                 x.ForeignKey == MailChimp.Constants.ForeignKey )
                                                                     .FirstOrDefault();
-                        if ( mailChimpListValue is null )
-                        {
+                            if ( mailChimpListValue is null )
+                            {
+                                try
+                                {
+                                    mailChimpListValue = new DefinedValue();
+                                    mailChimpListValue.ForeignId = mailChimpList.WebId;
+                                    mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
+                                    mailChimpListValue.IsSystem = true;
+                                    mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Id;
+                                    mailChimpListValue.Value = mailChimpList.Name;
 
-                            mailChimpListValue = new DefinedValue();
-                            mailChimpListValue.ForeignId = mailChimpList.WebId;
-                            mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
-                            mailChimpListValue.IsSystem = true;
-                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Id;
-                            mailChimpListValue.Value = mailChimpList.Name;
+                                    definedValueService.Add( mailChimpListValue );
 
-                            definedValueService.Add( mailChimpListValue );
+                                    rockContext.SaveChanges();
+                                }
+                                catch ( Exception ex )
+                                {
+                                    string message = String.Format( "Error Adding {0} to Rock", mailChimpList.Name );
+                                    ExceptionLogService.LogException( new Exception( message, ex ) );
+                                }
+                            }
 
-                            rockContext.SaveChanges();
-
+                            try
+                            {
+                                UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, rockContext );
+                            }
+                            catch ( Exception ex )
+                            {
+                                string message = String.Format( "Error Updating {0}'s Defined Value", mailChimpList.Name );
+                                ExceptionLogService.LogException( new Exception( message, ex ) );
+                            }
                         }
-                        UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, rockContext );
+                        catch ( Exception ex )
+                        {
+                            string message = String.Format( "Error Loading {0}", mailChimpList.Name );
+                            ExceptionLogService.LogException( new Exception( message, ex ) );
+                        }
+
                     }
 
-                    // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.
-                    var mailChimpListValuesToRemove = mailChimpListValues
-                                                       .Where( x => !mailChimpListCollection.Any( y => y.WebId == x.ForeignId && x.ForeignKey == MailChimp.Constants.ForeignKey )
-                                                       && mailChimpListDefinedValueIds.Contains( x.Id )
-                                                       );
+                    try
+                    {
+                        // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.
+                        var mailChimpListValuesToRemove = mailChimpListValues
+                                                           .Where( x => !mailChimpListCollection.Any( y => y.WebId == x.ForeignId && x.ForeignKey == MailChimp.Constants.ForeignKey )
+                                                           && mailChimpListDefinedValueIds.Contains( x.Id )
+                                                           );
 
-                    definedValueService.DeleteRange( mailChimpListValuesToRemove );
+                        definedValueService.DeleteRange( mailChimpListValuesToRemove );
 
-                    rockContext.SaveChanges();
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception ex )
+                    {
+                        string message = String.Format( "Error Removing deleted lists from Rock" );
+                        ExceptionLogService.LogException( new Exception( message, ex ) );
+                    }
 
                     return definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() )
-                                                .Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) )
-                                                .ToList();
-
+                                           .Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) )
+                                           .ToList();
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( ex );
+                    string message = String.Format( "Error Grabbing Mailchimp Lists from Mailchimp" );
+                    ExceptionLogService.LogException( new Exception( message, ex ) );
                 }
             }
 
@@ -366,8 +410,8 @@ namespace com.bemaservices.MailChimp.Utility
             RockContext rockContext = new RockContext();
             PersonService personService = new PersonService( rockContext );
 
-            var firstName = member.MergeFields["FNAME"].ToString().Left(50);
-            var lastName = member.MergeFields["LNAME"].ToString().Left(50);
+            var firstName = member.MergeFields["FNAME"].ToString().Left( 50 );
+            var lastName = member.MergeFields["LNAME"].ToString().Left( 50 );
             var email = member.EmailAddress;
             var mailchimpForeignKey = String.Format( "Mailchimp_{0}", member.Id );
 

@@ -14,9 +14,9 @@ using Rock.Web.Cache;
 
 namespace com.bemaservices.MailChimp.Jobs
 {
-
+    [DefinedValueField( "0ED80CA8-987E-4A00-8CA5-56D0A4BDD629", "Audiences", "The Audiences whose members should by synced. Leave blank if you would like all audiences synced.", false, true, false, "", "", 0 )]
     [DisallowConcurrentExecution]
-    public class MailChimpSync: IJob
+    public class MailChimpSync : IJob
     {
         public virtual void Execute( IJobExecutionContext context )
         {
@@ -24,14 +24,18 @@ namespace com.bemaservices.MailChimp.Jobs
 
             var accounts = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS.AsGuid() );
 
-            foreach( var account in accounts.DefinedValues )
+            var audienceGuids = dataMap.GetString( "Audiences" ).SplitDelimitedValues().AsGuidList();
+            foreach ( var account in accounts.DefinedValues )
             {
                 Utility.MailChimpApi mailChimpApi = new Utility.MailChimpApi( account );
                 var mailChimpLists = mailChimpApi.GetMailChimpLists();
 
-                foreach( var list in mailChimpLists )
+                foreach ( var list in mailChimpLists )
                 {
-                    mailChimpApi.SyncMembers( DefinedValueCache.Get( list.Guid ) );
+                    if ( !audienceGuids.Any() || audienceGuids.Contains( list.Guid ) )
+                    {
+                        mailChimpApi.SyncMembers( DefinedValueCache.Get( list.Guid ) );
+                    }
                 }
             }
         }
