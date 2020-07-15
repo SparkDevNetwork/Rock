@@ -453,18 +453,8 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                                 using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) )
                                 {
                                     string html = reader.ReadToEnd();
-                                    Regex regex = new Regex( String.Format( ".plugin\">(?<name>ClientPackage-{0}-v........plugin)</A>", isBasePackage ? "BEMA" : acronym ) );
-                                    MatchCollection matches = regex.Matches( html );
-                                    if ( matches.Count > 0 )
-                                    {
-                                        foreach ( System.Text.RegularExpressions.Match match in matches )
-                                        {
-                                            if ( match.Success )
-                                            {
-                                                fileNames.Add( match.Groups["name"].ToString() );
-                                            }
-                                        }
-                                    }
+                                    AddRegexMatches( fileNames, html, String.Format( ".plugin\">(?<name>ClientPackage-{0}-v........plugin)</A>", isBasePackage ? "BEMA" : acronym ) );
+                                    AddRegexMatches( fileNames, html, String.Format( ".plugin\">(?<name>ClientPackage-{0}-v.........plugin)</A>", isBasePackage ? "BEMA" : acronym ) );
                                 }
                             }
 
@@ -520,6 +510,22 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             }
 
 
+        }
+
+        private static void AddRegexMatches( List<string> fileNames, string html, string regexString )
+        {
+            Regex regex = new Regex( regexString );
+            MatchCollection matches = regex.Matches( html );
+            if ( matches.Count > 0 )
+            {
+                foreach ( System.Text.RegularExpressions.Match match in matches )
+                {
+                    if ( match.Success )
+                    {
+                        fileNames.Add( match.Groups["name"].ToString() );
+                    }
+                }
+            }
         }
 
         private void CleanUpPackage( string packageFile )
