@@ -14,7 +14,7 @@ using Rock.Web.Cache;
 
 namespace com.bemaservices.MailChimp.Jobs
 {
-    [DefinedValueField( "0ED80CA8-987E-4A00-8CA5-56D0A4BDD629", "Audiences", "The Audiences whose members should by synced. Leave blank if you would like all audiences synced.", false, true, false, "", "", 0 )]
+    [DefinedValueField( "0ED80CA8-987E-4A00-8CA5-56D0A4BDD629", "Audiences", "The Audiences whose members should by synced. Leave blank if you would like all audiences synced.", false, true, false, "", "", 0, "Audiences" )]
     [DisallowConcurrentExecution]
     public class MailChimpSync : IJob
     {
