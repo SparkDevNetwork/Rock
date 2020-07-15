@@ -52,7 +52,8 @@ namespace com.bemaservices.GroupTools.Controllers
             string categoryIds = "",
             string age = "",
             int? offset = null,
-            int? limit = null )
+            int? limit = null,
+            int characterLimit = 150 )
         {
             var rockContext = new RockContext();
             var groupInfoList = new List<GroupInformation>();
@@ -97,7 +98,7 @@ namespace com.bemaservices.GroupTools.Controllers
                 groupInfo.CampusId = group.CampusId;
                 groupInfo.Campus = group.CampusId.HasValue ? group.Campus.Name : "";
                 groupInfo.Name = group.Name;
-                groupInfo.Description = group.Description;
+                groupInfo.Description = group.Description.Truncate( characterLimit );
                 groupInfo.Color = "#428bca";
 
                 group.LoadAttributes();
