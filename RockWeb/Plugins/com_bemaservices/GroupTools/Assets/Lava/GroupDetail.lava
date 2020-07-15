@@ -98,7 +98,13 @@
       <tr>
         <td style="width: 50%">
           <strong>Schedule</strong> <br>
-          {{group.Schedule.FriendlyScheduleText}}
+          {{group.Schedule.FriendlyScheduleText}}</br>
+          {% assign groupImage = group | Attribute:'Image' %}
+          {% if groupImage != empty %}
+          </br>
+          <strong>Image</strong> <br>
+          {{groupImage}}</br>
+          {% endif %}
         </td>
         <td style="width: 50%">
           <strong>Leaders</strong>
