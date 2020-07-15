@@ -259,7 +259,7 @@
       </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="form-group">
         <label class="control-label">Meeting Day</label>
         <div class="control-wrapper">
@@ -270,7 +270,7 @@
       </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="form-group">
         <label class="control-label">Category</label>
         <div class="control-wrapper">
@@ -281,13 +281,26 @@
       </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-1">
       <div class="form-group">
         <label class="control-label">Age</label>
         <div class="control-wrapper">
           <div tabindex="-1" class="multiselect">
             <div class="multiselect__tags">
               <input v-model.number="age" @input="ageFilterChange()" class="multiselect__input" placeholder="" type="number" autocomplete="off">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="form-group">
+        <label class="control-label">Keywords</label>
+        <div class="control-wrapper">
+          <div tabindex="-1" class="multiselect">
+            <div class="multiselect__tags">
+              <input v-model.number="keywords" @input="keywordFilterChange()" class="multiselect__input" placeholder="" autocomplete="off">
             </div>
           </div>
         </div>
@@ -337,7 +350,8 @@ var app = new Vue({
       groups: [],
       limit: 10,
       groupCount: 0,
-      age: "{{'Global' | PageParameter:'Age' | ToString | AsInteger}}",
+      age: "{{'Global' | PageParameter:'Age' | ToString | AsInteger }}",
+      keywords: "{{'Global' | PageParameter:'Keywords' | ToString }}",
       meetingDayValues: [{{selectedMeetingDays | ReplaceLast:',','' }}],
       meetingDayOptions: [
                       { value:0, text:'Sunday'},
@@ -435,6 +449,10 @@ var app = new Vue({
       this.insertParam("Age", this.age);
       this.filterChange();
     },
+    keywordFilterChange(){
+      this.insertParam("Keywords", this.keywords);
+      this.filterChange();
+    },
     campusFilterChange(){
       var campusIdsString = "";
       this.campusValues.forEach(function(campusValue){
@@ -497,6 +515,13 @@ var app = new Vue({
       if(ageString != ""){
         url += '&Age='+ageString;
       }
+
+      var keywordString = "";
+      keywordString = this.keywords;
+      if(keywordString != ""){
+        url += '&Keywords='+keywordString;
+      }
+
       return url;
     }
 

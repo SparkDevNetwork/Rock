@@ -53,14 +53,15 @@ namespace com.bemaservices.GroupTools.Controllers
             string age = "",
             int? offset = null,
             int? limit = null,
-            int characterLimit = 150 )
+            int characterLimit = 150,
+            string keywords = "" )
         {
             var rockContext = new RockContext();
             var groupInfoList = new List<GroupInformation>();
             var definedValueService = new DefinedValueService( rockContext );
             int entityTypeId = EntityTypeCache.GetId( typeof( Group ) ) ?? 0;
 
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, rockContext );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, rockContext );
 
             var categoryValues = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
                 .Where( a => a.Attribute.Key == "Category" )
@@ -213,7 +214,7 @@ namespace com.bemaservices.GroupTools.Controllers
             return groupInfoQry;
         }
 
-        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, RockContext rockContext )
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, string keywords, RockContext rockContext )
         {
             var groupService = new GroupService( rockContext );
             var qry = groupService.Queryable().AsNoTracking();
@@ -264,6 +265,11 @@ namespace com.bemaservices.GroupTools.Controllers
                 qry = qry.Where( g => !excludedMaximumAgeIds.Contains( g.Id ) && !excludedMinimumAgeIds.Contains( g.Id ) );
             }
 
+            if ( keywords.IsNotNullOrWhiteSpace() )
+            {
+                qry = qry.Where( g => g.Description.Contains( keywords ) );
+            }
+
             return qry;
         }
 
@@ -283,9 +289,10 @@ namespace com.bemaservices.GroupTools.Controllers
             string campusIds = "",
             string meetingDays = "",
             string categoryIds = "",
-            string age = "" )
+            string age = "",
+            string keywords = "" )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, new RockContext() );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, new RockContext() );
 
             return qry.Count();
         }
