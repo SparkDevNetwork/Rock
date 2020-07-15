@@ -49,7 +49,14 @@ namespace Rock.DownhillCss
             StringBuilder frameworkCss = new StringBuilder();
 
             // Apply Reset & Base CSS First - It is import that this is first so that the utility classes outrank the base CSS
-            frameworkCss.Append(baseStylesMobile);
+            if (settings.Platform == DownhillPlatform.Mobile)
+            {
+                frameworkCss.Append( baseStylesMobile );
+            }
+            else
+            {
+                frameworkCss.Append( baseStylesWeb );
+            }
 
             // Alerts
             AlertStyles( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
@@ -75,15 +82,7 @@ namespace Rock.DownhillCss
             // Build Border Width Utilities
             BorderWidths( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
-            // Add base styles that are not generated
-            if ( settings.Platform == DownhillPlatform.Mobile )
-            {
-                frameworkCss.Append( baseStylesMobile );
-            }
-            else
-            {
-                frameworkCss.Append( baseStylesWeb );
-            }
+            
 
             return CssUtilities.ParseCss( frameworkCss.ToString(), settings );
         }
