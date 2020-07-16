@@ -57,7 +57,7 @@ namespace Rock.Attribute
             else
             {
                 // If the name parameter was a guid, then the name and guid are out-of-order and we need to swap them.
-                name = groupTypeGuid;
+                Name = groupTypeGuid;
             }
 
             if ( groupType != null )
