@@ -59,7 +59,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
     [WorkflowTextOrAttribute( "Approval State", "Attribute Value", "The Approval State or an attribute that contains the Approval State of the pto request. <span class='tip tip-lava'></span>",
         true, "", "", 7, APPROVAL_STATE_KEY, new string[] { "Rock.Field.Types.SelectSingleFieldType" } )]
     [WorkflowTextOrAttribute( "Exclude Weekends", "Attribute Value", "Whether to Include weekends, or an attribute that contains whether or not to incldue weekends. <span class='tip tip-lava'></span>",
-        true, "False", "", 8, EXCLUDE_WEEKENDS_KEY, new string[] { "Rock.Field.Types.Boolean" } )]
+        true, "False", "", 8, EXCLUDE_WEEKENDS_KEY, new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
     public class PtoRequestUpdate : ActionComponent
     {
