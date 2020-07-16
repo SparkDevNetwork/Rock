@@ -54,6 +54,11 @@ namespace Rock.Attribute
             {
                 groupType = groupTypeGuid.AsGuidOrNull();
             }
+            else
+            {
+                // If the name parameter was a guid, then the name and guid are out-of-order and we need to swap them.
+                name = groupTypeGuid;
+            }
 
             if ( groupType != null )
             {
