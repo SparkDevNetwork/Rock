@@ -58,6 +58,8 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         false, "", "", 6, APPROVER_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowTextOrAttribute( "Approval State", "Attribute Value", "The Approval State or an attribute that contains the Approval State of the pto request. <span class='tip tip-lava'></span>",
         true, "", "", 7, APPROVAL_STATE_KEY, new string[] { "Rock.Field.Types.SelectSingleFieldType" } )]
+    [WorkflowTextOrAttribute( "Exclude Weekends", "Attribute Value", "Whether to Include weekends, or an attribute that contains whether or not to incldue weekends. <span class='tip tip-lava'></span>",
+        true, "False", "", 8, EXCLUDE_WEEKENDS_KEY, new string[] { "Rock.Field.Types.Boolean" } )]
 
     public class PtoRequestUpdate : ActionComponent
     {
@@ -69,6 +71,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
         private const string ALLOCATION_KEY = "ALLOCATION_KEY";
         private const string APPROVER_KEY = "APPROVER_KEY";
         private const string APPROVAL_STATE_KEY = "APPROVAL_STATE_KEY";
+        private const string EXCLUDE_WEEKENDS_KEY = "EXCLUDE_WEEKENDS_KEY";
 
         /// <summary>
         /// Executes the specified workflow.
@@ -163,6 +166,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
             var endDate = GetAttributeValue( action, ENDDATE_KEY, true ).ResolveMergeFields( mergeFields ).AsDateTime();
             string reason = GetAttributeValue( action, PTO_REASON_KEY, true ).ResolveMergeFields( mergeFields );
             var approvalState = GetAttributeValue( action, APPROVAL_STATE_KEY, true ).ResolveMergeFields( mergeFields ).ConvertToEnum<PtoRequestApprovalState>( PtoRequestApprovalState.Pending );
+            var excludeWeekends = GetAttributeValue( action, EXCLUDE_WEEKENDS_KEY, true ).ResolveMergeFields( mergeFields ).AsBoolean();
 
             if ( ptoAllocation != null && hours.HasValue && startDate.HasValue )
             {
@@ -192,24 +196,30 @@ namespace com.bemaservices.HrManagement.Workflow.Action
 
                     if ( endDate.HasValue && endDate > startDate )
                     {
+
                         var requestDate = startDate.Value.AddDays( 1 );
                         while ( requestDate <= endDate.Value )
                         {
-                            var additionalPtoRequest = new PtoRequest();
-                            additionalPtoRequest.PtoAllocation = ptoAllocation;
-                            additionalPtoRequest.PtoAllocationId = ptoAllocation.Id;
-                            additionalPtoRequest.RequestDate = requestDate;
-                            additionalPtoRequest.Hours = hours.Value;
-                            additionalPtoRequest.Reason = reason;
-                            additionalPtoRequest.PtoRequestApprovalState = approvalState;
-
-                            if ( approver != null && additionalPtoRequest.PtoRequestApprovalState == PtoRequestApprovalState.Approved )
+                            if( !excludeWeekends || ( requestDate.DayOfWeek != DayOfWeek.Saturday && requestDate.DayOfWeek != DayOfWeek.Sunday ) )
                             {
-                                ptoRequest.ApproverPersonAlias = approver.PrimaryAlias;
-                                ptoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
-                            }
 
-                            ptoRequestService.Add( additionalPtoRequest );
+                                var additionalPtoRequest = new PtoRequest();
+                                additionalPtoRequest.PtoAllocation = ptoAllocation;
+                                additionalPtoRequest.PtoAllocationId = ptoAllocation.Id;
+                                additionalPtoRequest.RequestDate = requestDate;
+                                additionalPtoRequest.Hours = hours.Value;
+                                additionalPtoRequest.Reason = reason;
+                                additionalPtoRequest.PtoRequestApprovalState = approvalState;
+
+                                if ( approver != null && additionalPtoRequest.PtoRequestApprovalState == PtoRequestApprovalState.Approved )
+                                {
+                                    ptoRequest.ApproverPersonAlias = approver.PrimaryAlias;
+                                    ptoRequest.ApproverPersonAliasId = approver.PrimaryAliasId.Value;
+                                }
+
+                                ptoRequestService.Add( additionalPtoRequest );
+
+                            }
 
                             requestDate = requestDate.AddDays( 1 );
                         }
