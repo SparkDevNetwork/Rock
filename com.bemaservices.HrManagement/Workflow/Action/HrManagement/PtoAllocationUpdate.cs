@@ -194,6 +194,7 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                     ptoAllocation.PtoAllocationStatus = status;
                     
                     rockContext.SaveChanges();
+
                 }
                 else
                 {
@@ -201,7 +202,15 @@ namespace com.bemaservices.HrManagement.Workflow.Action
                 }
             }
 
+            // Update the Workflow Attribute with the Pto Allocation.  This will allow you to pass a null allocation to the action, and get it returned to the workflow.
+            if ( ptoAllocation != null )
+            {
+                SetWorkflowAttributeValue( action, ptoAllocationAttributeGuid, ptoAllocation.Guid.ToString() );
+            }
+
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
+
+
 
             return true;
         }
