@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.Finance
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
-        #region Attribute Keys
+        #region Block Keys
 
         private static class CategoryKey
         {
@@ -563,7 +563,20 @@ TransactionAccountDetails: [
 ]</pre>";
         }
 
-        #endregion Attribute Keys
+        private static class PageParameterKey
+        {
+            public const string AccountGlCodes = "AccountGlCodes";
+            public const string AccountIds = "AccountIds";
+            public const string AmountLimit = "AmountLimit";
+            public const string AttributePrefix = "Attribute_";
+            public const string Frequency = "Frequency";
+            public const string Person = "Person";
+            public const string ScheduledTransactionId = "ScheduledTransactionId";
+            public const string StartDate = "StartDate";
+            public const string Transfer = "Transfer";
+        }
+
+        #endregion Block Keys
 
         #region Fields
 
@@ -774,9 +787,9 @@ TransactionAccountDetails: [
                 string accountParameterType = string.Empty;
                 using ( var rockContext = new RockContext() )
                 {
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountIds" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.AccountIds ) ) )
                     {
-                        var accountIds = Server.UrlDecode( PageParameter( "AccountIds" ) );
+                        var accountIds = Server.UrlDecode( PageParameter( PageParameterKey.AccountIds ) );
                         var financialAccountService = new FinancialAccountService( rockContext );
 
                         accountParameterType = "invalid";
@@ -811,9 +824,9 @@ TransactionAccountDetails: [
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountGlCodes" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.AccountGlCodes ) ) )
                     {
-                        var accountCodes = Server.UrlDecode( PageParameter( "AccountGlCodes" ) );
+                        var accountCodes = Server.UrlDecode( PageParameter( PageParameterKey.AccountGlCodes ) );
                         var financialAccountService = new FinancialAccountService( rockContext );
 
                         Dictionary<string, decimal> glAccountParameter = new Dictionary<string, decimal>();
@@ -902,9 +915,9 @@ TransactionAccountDetails: [
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "Transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Transfer ) ) && !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ScheduledTransactionId ) ) )
             {
-                InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
+                InitializeTransfer( PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull() );
             }
 
             if ( !Page.IsPostBack )
@@ -1464,7 +1477,7 @@ TransactionAccountDetails: [
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             if ( GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false )
             {
-                string personKey = PageParameter( "Person" );
+                string personKey = PageParameter( PageParameterKey.Person );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
                 {
                     var incrementKeyUsage = !this.IsPostBack;
@@ -1535,18 +1548,18 @@ TransactionAccountDetails: [
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.StartDate ) ) )
                     {
-                        dtpStartDate.SelectedDate = PageParameter( "StartDate" ).AsDateTime() ?? RockDateTime.Today;
+                        dtpStartDate.SelectedDate = PageParameter( PageParameterKey.StartDate ).AsDateTime() ?? RockDateTime.Today;
                         if ( dtpStartDate.SelectedDate < RockDateTime.Today )
                         {
                             dtpStartDate.SelectedDate = RockDateTime.Today;
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Frequency ) ) )
                     {
-                        var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
+                        var frequencyValues = PageParameter( PageParameterKey.Frequency ).Split( new char[] { '^' } );
                         if ( btnFrequency.Items.FindByValue( frequencyValues[0] ) != null )
                         {
                             btnFrequency.SelectedValue = frequencyValues[0];
@@ -1723,7 +1736,7 @@ TransactionAccountDetails: [
                     mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
                 }
 
-                mergeFields.Add( "AmountLimit", this.PageParameter( "AmountLimit" ).AsDecimalOrNull() );
+                mergeFields.Add( "AmountLimit", this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull() );
 
                 if ( hfTransactionGuid.Value.AsGuidOrNull().HasValue )
                 {
@@ -2491,7 +2504,7 @@ TransactionAccountDetails: [
                 errorMessages.Add( "Make sure you've entered an amount for at least one account" );
             }
 
-            var amountLimit = this.PageParameter( "AmountLimit" ).AsDecimalOrNull();
+            var amountLimit = this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull();
             if ( amountLimit.HasValue && SelectedAccounts.Sum( a => a.Amount ) > amountLimit.Value )
             {
                 errorMessages.Add( string.Format( "The maximum amount it limited to {0}", amountLimit.FormatAsCurrency() ) );
@@ -3357,9 +3370,9 @@ TransactionAccountDetails: [
 
             foreach ( KeyValuePair<string, AttributeValueCache> attr in transaction.AttributeValues )
             {
-                if ( PageParameters().ContainsKey( "Attribute_" + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
+                if ( PageParameters().ContainsKey( PageParameterKey.AttributePrefix + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
                 {
-                    attr.Value.Value = Server.UrlDecode( PageParameter( "Attribute_" + attr.Key ) );
+                    attr.Value.Value = Server.UrlDecode( PageParameter( PageParameterKey.AttributePrefix + attr.Key ) );
                 }
             }
 
