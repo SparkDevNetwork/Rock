@@ -147,11 +147,11 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
             }
 
-            qry = qry.Where( m => m.PersonId == CurrentPersonId
-                        && m.GroupMemberStatus == GroupMemberStatus.Active );
+            qry = qry.Where( m => m.PersonId == CurrentPersonId );
 
             if ( _hideInactive )
             {
+                qry = qry.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
                 qry = qry.Where( m => m.Group.IsActive == true && !m.Group.IsArchived );
             }
 
