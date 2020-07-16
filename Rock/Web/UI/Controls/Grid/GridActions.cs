@@ -313,7 +313,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbBusinessMerge );
             _lbBusinessMerge.ID = "lbBusinessMerge";
             _lbBusinessMerge.CssClass = "btn btn-grid-action btn-merge btn-default btn-sm";
-            _lbBusinessMerge.ToolTip = "Merge Person Records";
+            _lbBusinessMerge.ToolTip = "Merge Business Records";
             _lbBusinessMerge.Click += lbPersonMerge_Click;
             _lbBusinessMerge.CausesValidation = false;
             _lbBusinessMerge.PreRender += lb_PreRender;

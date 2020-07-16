@@ -494,7 +494,7 @@ namespace Rock.Web.UI
             if ( registrantFields != null )
             {
                 // This needs to be a unique list to prevent FindControl() getting an exception on PersonFields in grid events.
-                var distinctRegistrantFields = registrantFields.DistinctBy( f => new { f.AttributeId, f.FieldSource, f.PersonFieldType } ).ToArray();
+                var distinctRegistrantFields = registrantFields.DistinctBy( f => new { f.AttributeId, f.FieldSource, f.PersonFieldType } );
                 foreach ( var field in distinctRegistrantFields )
                 {
                     if ( field.FieldSource == RegistrationFieldSource.PersonField && field.PersonFieldType.HasValue )
