@@ -88,7 +88,7 @@
                             <div id="divRss" runat="server" class="js-content-channel-rss">
                                 <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel URL" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />
                                 <Rock:NotificationBox ID="nbRssMessage" runat="server" NotificationBoxType="Info" Dismissable="false"
-                                    Text="The Item Publishing Point will be used for the Item URL in the RSS feed." />
+                                    Text="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
                                 <Rock:NumberBox ID="nbTimetoLive" runat="server" Label="Time to Live (TTL)" NumberType="Integer" MinimumValue="0"
                                     Help="The number of minutes a feed can stay cached before it is refreshed from the source."/>
                             </div>
