@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -60,17 +61,22 @@ namespace RockWeb.Blocks.Core
     <h4 class=""panel-title"">Followed {{ EntityType | Pluralize }}</h4>
 </div>
 <div class=""panel-body"">
-    <ul>
+    <ul style=""list-style-type: none;"">
     {% for item in FollowingItems %}
+        {% if EntityType == 'Person' %}
+            {% assign itemName = item.NickName | Append:' ' | Append:item.LastName %}
+        {% else %}
+            {% assign itemName = item.Name %}
+        {% endif %}
         {% if LinkUrl != '' %}
-            <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a> 
+            <li><a href = ""{{ LinkUrl | Replace:'[Id]',item.Id }}"" >{{ itemName }}</a> 
             <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
-            <i class=""fa fa-pencil""></i>
+            <i class=""fa fa-times""></i>
 			</a></li>
         {% else %}
-            <li>{{ item.Name }}
+            <li>{{ itemName }}
             <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
-            <i class=""fa fa-pencil""></i>
+            <i class=""fa fa-times""></i>
 			</a></li>
         {% endif %}
     {% endfor %}
@@ -234,10 +240,31 @@ namespace RockWeb.Blocks.Core
 
             RockContext rockContext = new RockContext();
             var followingService = new FollowingService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+
+            List<int> Ids = new List<int>();
+            int entityTypeId;
+
+            if ( entityType.Id == 15 )
+            {
+                var personAliases = personAliasService.Queryable()
+                                    .Where(p => p.PersonId == entityId);
+                foreach( PersonAlias personAlias in personAliases)
+                {
+                    Ids.Add(personAlias.Id);
+                }
+
+                entityTypeId = 226; // Change the entityTypeId to PersonAlias
+            }
+            else
+            {
+                Ids.Add(entityId);
+                entityTypeId = entityType.Id;
+            }
 
             var followings = followingService.Queryable()
-                        .Where( a => a.EntityId == entityId &&
-                        a.EntityId == entityId &&
+                        .Where( a => Ids.Contains(a.EntityId) &&
+                        a.EntityTypeId == entityTypeId &&
                         a.PersonAlias.PersonId == personId );
 
             foreach ( var following in followings )
