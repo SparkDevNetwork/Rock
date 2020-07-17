@@ -155,8 +155,8 @@ namespace RockWeb.Blocks.Administration
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types
-            EntityTypeService.RegisterEntityTypes( webAppPath );
-            FieldTypeService.RegisterFieldTypes( webAppPath );
+            EntityTypeService.RegisterEntityTypes();
+            FieldTypeService.RegisterFieldTypes();
             BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 
