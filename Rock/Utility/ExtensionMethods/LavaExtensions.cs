@@ -716,7 +716,7 @@ namespace Rock
         private static Template GetTemplate(string content)
         {
             // Do not cache any content over 100 characters in length
-            if ( content.Length > 100 )
+            if ( content?.Length > 100 )
             {
                 return Template.Parse( content );
             }
