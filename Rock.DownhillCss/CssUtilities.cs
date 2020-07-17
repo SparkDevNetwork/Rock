@@ -574,6 +574,7 @@ namespace Rock.DownhillCss
 ^editor {
     background-color: transparent;
     color: ?color-text;
+    margin: -5, -10;
 }
 
 ^frame {
@@ -591,6 +592,10 @@ NavigationPage {
 ^label {
     font-size: default;
     color: ?color-text;
+}
+
+.flyout {
+    background-color: ?color-brand;
 }
 
 /*
@@ -965,22 +970,6 @@ NavigationPage {
     height: 8;
 }
 
-/* Forms Styling */
-.form-group {
-    margin: 0 0 12 0;
-}
-
-.form-group .form-group-title {
-    margin: 0 0 5 0;
-    color: ?color-primary;
-    font-size: 12;
-}
-
-.form-field {
-    padding: 12;
-    color: #282828;
-}
-
 /* Buttons */
 .btn {
     border-radius: ?radius-base;
@@ -1234,6 +1223,10 @@ NavigationPage {
     color: rgba(255,255,255,0.5);
 }
 
+.calendar-monthcalendar {
+    margin-bottom: 32;
+}
+
 .calendar-header {
     font-style: bold;
 }
@@ -1253,7 +1246,7 @@ NavigationPage {
 }
 
 .calendar-events-heading {
-    margin-top: 32;
+    margin-top: 0;
     text-align: center;
     margin-bottom: 16;
 }
@@ -1321,12 +1314,28 @@ NavigationPage {
 }
 
 /* Forms Styles */
+
+.form-group {
+    margin: 0 0 12 0;
+}
+
+.form-group .form-group-title {
+    margin: 0 0 5 0;
+    color: ?color-primary;
+    font-size: 12;
+}
+
+.form-field {
+    padding: 12;
+    color: #282828;
+}
 ^borderlessentry,
 ^datepicker,
 ^checkbox, 
 ^picker,
 ^entry, 
-^switch {
+^switch,
+^editor {
     color: ?color-text;
     font-size: default;
 }
