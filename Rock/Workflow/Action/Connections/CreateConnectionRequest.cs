@@ -48,7 +48,6 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
-   
 
     public class CreateConnectionRequest : ActionComponent
     {

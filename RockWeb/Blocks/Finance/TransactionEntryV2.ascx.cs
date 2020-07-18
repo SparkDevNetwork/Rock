@@ -135,6 +135,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.AnonymousGivingTooltip,
         Description = "The tool-tip for the 'Give Anonymously' check box.",
         Category = AttributeCategory.None,
+        IsRequired = false,
         Order = 25 )]
 
     #region Scheduled Transactions
@@ -488,7 +489,7 @@ mission. We are so grateful for your commitment.</p>
                     {% for scheduledTransactionDetail in scheduledTransaction.ScheduledTransactionDetails %}
                         <div class='account-details'>
                             <span class='scheduled-transaction-account control-label'>
-                                {{ scheduledTransactionDetail.Account.Name }}
+                                {{ scheduledTransactionDetail.Account.PublicName }}
                             </span>
                             <br />
                             <span class='scheduled-transaction-amount'>

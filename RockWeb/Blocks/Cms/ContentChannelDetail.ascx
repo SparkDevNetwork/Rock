@@ -62,10 +62,11 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
+                            <Rock:RockCheckBox ID="cbIsStructuredContent" runat="server" Label="Is Structured Content" AutoPostBack="true" OnCheckedChanged="cbIsStructuredContent_CheckedChanged"/>
+                            <Rock:DefinedValuePicker ID="dvEditorTool" runat="server" Label="Editor Tool Configuration" />
                             <Rock:RockDropDownList ID="ddlContentControlType" runat="server" Label="Default Content Control" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentControlType_SelectedIndexChanged" />
                             <Rock:RockTextBox ID="tbRootImageDirectory" runat="server" Label="Root Image Directory" Help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
-
                             <Rock:RockCheckBox ID="cbIndexChannel" runat="server" Label="Indexing Enabled" Text="Yes" />
                             <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
 

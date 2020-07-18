@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="StepParticipantList.ascx.cs" Inherits="RockWeb.Blocks.Steps.StepParticipantList" %>
-
 <script type="text/javascript">
     Sys.Application.add_load(function () {
         $('.js-member-note').tooltip();
@@ -37,6 +36,7 @@
                                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                         <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" />
+                                        <Rock:CampusPicker ID="cpCampusFilter" runat="server" Label="Campus" />
                                     </div>
                                     <div class="col-lg-6">
                                         <Rock:DateRangePicker ID="drpDateStarted" runat="server" Label="Date Started" />
@@ -46,13 +46,14 @@
                                 </div>
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gSteps" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gSteps_Edit" CssClass="js-grid-group-members" OnRowDataBound="gSteps_RowDataBound" ExportSource="ColumnOutput" >
+                            <Rock:Grid ID="gSteps" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gSteps_Edit" CssClass="js-grid-step-list" OnRowDataBound="gSteps_RowDataBound" ExportSource="ColumnOutput" >
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude" />
                                     <Rock:DateTimeField HeaderText="Date Started" DataField="StartedDateTime" SortExpression="StartedDateTime" DataFormatString="{0:d}"  />
                                     <Rock:DateTimeField HeaderText="Date Completed" DataField="CompletedDateTime" SortExpression="CompletedDateTime" DataFormatString="{0:d}" />
+                                    <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ExcelExportBehavior="AlwaysInclude"/>
                                     <Rock:RockLiteralField ID="lStepStatusHtml" HeaderText="Status" SortExpression="StepStatus.Name" ExcelExportBehavior="NeverInclude" />
                                     <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
                                 </Columns>

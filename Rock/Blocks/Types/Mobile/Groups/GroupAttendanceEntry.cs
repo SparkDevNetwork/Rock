@@ -221,7 +221,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             return group.Members
                 .Select( a => new Attendee
                 {
-                    PersonId = a.PersonId,
+                    PersonGuid = a.Person.Guid,
                     Attended = attendedIds.Contains( a.PersonId ),
                     Name = a.Person.FullName
                 } )
@@ -236,7 +236,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             return $@"<StackLayout Orientation=""Horizontal"" Spacing=""20"">
     <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"">
-        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""heading1"" />
+        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""h2"" />
         <Label Text=""{ group.Members.Count } members"" />
     </StackLayout>
     <Rock:Icon IconClass=""user-check"" FontSize=""24"" />
@@ -283,7 +283,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             if ( group.Schedule == null )
             {
-                return new List<DateTime>();
+                return null;
             }
 
             if ( group.Schedule.ScheduleType == ScheduleType.Weekly )
@@ -351,12 +351,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 foreach ( var attendee in attendees )
                 {
                     var attendance = existingAttendees
-                        .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
+                        .Where( a => a.PersonAlias.Person.Guid == attendee.PersonGuid )
                         .FirstOrDefault();
 
                     if ( attendance == null )
                     {
-                        int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
+                        int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonGuid );
                         if ( personAliasId.HasValue )
                         {
                             attendance = new Attendance
@@ -392,11 +392,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <returns>A collection of string/string pairs.</returns>
         [BlockAction]
-        public BlockActionResult GetGroupData( int groupId, DateTime? date = null )
+        public BlockActionResult GetGroupData( Guid groupGuid, DateTime? date = null )
         {
             using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupId );
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null )
                 {
@@ -404,9 +404,23 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !date.HasValue || ( !AllowAnyDateSelection && !dates.Contains( date.Value ) ) )
+
+                if ( !AllowAnyDateSelection && dates != null )
                 {
-                    date = dates.Where( a => a <= DateTime.Now.Date ).LastOrDefault();
+                    if ( !date.HasValue || !dates.Contains( date.Value ) )
+                    {
+                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                    }
+                }
+
+                if ( !date.HasValue )
+                {
+                    if ( dates != null )
+                    {
+                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                    }
+
+                    date = date ?? RockDateTime.Now.Date;
                 }
 
                 var occurrence = GetOccurrence( rockContext, group, date ?? DateTime.MinValue, false );
@@ -425,19 +439,19 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Saves a single attendance record.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupGuid">The group identifier.</param>
         /// <param name="date">The date.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personGuid">The person identifier.</param>
         /// <param name="attended">if set to <c>true</c> the person is marked as attended.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveSingleAttendance( int groupId, DateTime date, int personId, bool attended )
+        public BlockActionResult SaveSingleAttendance( Guid groupGuid, DateTime date, Guid personGuid, bool attended )
         {
-            return SaveAttendance( groupId, date, new List<Attendee>
+            return SaveAttendance( groupGuid, date, new List<Attendee>
             {
                 new Attendee
                 {
-                    PersonId = personId,
+                    PersonGuid = personGuid,
                     Attended = attended
                 }
             }, false );
@@ -446,17 +460,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Saves the attendance.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupGuid">The group identifier.</param>
         /// <param name="date">The date.</param>
         /// <param name="attendees">The attendees.</param>
         /// <param name="didNotMeet">if set to <c>true</c> the group did not meet.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveAttendance( int groupId, DateTime date, List<Attendee> attendees, bool didNotMeet )
+        public BlockActionResult SaveAttendance( Guid groupGuid, DateTime date, List<Attendee> attendees, bool didNotMeet )
         {
             using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupId );
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null )
                 {
@@ -464,7 +478,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
                 {
                     return ActionNotFound();
                 }
@@ -479,17 +493,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Marks the attendance for the group as having met or not met. This is only used
         /// in the "no save button" mode.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupGuid">The group identifier.</param>
         /// <param name="date">The date.</param>
         /// <param name="didNotMeet">if set to <c>true</c> then the group did not meet.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult DidNotMeet( int groupId, DateTime date, bool didNotMeet )
+        public BlockActionResult DidNotMeet( Guid groupGuid, DateTime date, bool didNotMeet )
         {
             using ( var rockContext = new RockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
-                var group = new GroupService( rockContext ).Get( groupId );
+                var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null )
                 {
@@ -497,14 +511,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
                 {
                     return ActionNotFound();
                 }
 
                 SaveAttendanceData( rockContext, group, date, new List<Attendee>(), didNotMeet );
 
-                return ActionOk( GetGroupData( groupId, date ) );
+                return GetGroupData( groupGuid, date );
             }
         }
 

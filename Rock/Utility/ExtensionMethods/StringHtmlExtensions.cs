@@ -176,6 +176,31 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all lava markup from the string including short codes.
+        /// </summary>
+        /// <param name="lava">The lava.</param>
+        /// <returns></returns>
+        public static string SanitizeLava( this string lava )
+        {
+            // Don't choke on nulls
+            if ( string.IsNullOrWhiteSpace( lava ) )
+            {
+                return string.Empty;
+            }
+
+            var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
+            lava = doubleBracesRegex.Replace( lava, string.Empty );
+
+            var bracePercentRegex = new Regex( @"\{%([^\}]+)%\}" );
+            lava = bracePercentRegex.Replace( lava, string.Empty );
+
+            var bracBracketRegex = new Regex( @"\{\[([^\}]+)\]\}" );
+            lava = bracBracketRegex.Replace( lava, string.Empty );
+
+            return lava;
+        }
+
+        /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
         /// </summary>
         /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
@@ -261,7 +286,16 @@ namespace Rock
             var settings = CommonMark.CommonMarkSettings.Default.Clone();
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
 
-            return CommonMark.CommonMarkConverter.Convert( markdown, settings );
+            /*
+	            6/9/2020 - JME 
+	            Added the .Trim() to the return below. Without it CommonMark was converting strings
+                like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
+                when other filters were being applied in Lava to make line breaks '<br>'.
+
+                Reason: Notes Lava was having extra <br>'s at the end.
+            */
+            
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
         }
 
         /// <summary>

@@ -178,6 +178,7 @@
                         <Rock:RockCheckBox ID="cbActivityTypeIsActive" runat="server" Label="Is Active" ValidationGroup="ConnectionActivityType" />
                     </div>
                 </div>
+                <Rock:AttributeValuesContainer ID="avcActivityAttributes" runat="server" />
             </Content>
         </Rock:ModalDialog>
 

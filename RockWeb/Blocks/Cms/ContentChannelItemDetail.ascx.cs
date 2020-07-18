@@ -273,7 +273,15 @@ namespace RockWeb.Blocks.Cms
                 ( IsUserAuthorized( Authorization.EDIT ) || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 contentItem.Title = tbTitle.Text;
-                contentItem.Content = htmlContent.Text;
+                if ( htmlContent.Visible )
+                {
+                    contentItem.Content = htmlContent.Text;
+                }
+                else
+                {
+                    contentItem.StructuredContent = sceContent.StructuredContent;
+                    contentItem.Content = sceContent.HtmlContent;
+                }
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.ItemGlobalKey = contentItem.Id != 0 ? lblItemGlobalKey.Text : CreateItemGlobalKey();
 
@@ -488,6 +496,11 @@ namespace RockWeb.Blocks.Cms
             ShowDialog( "AddChildItem", true );
         }
 
+        /// <summary>
+        /// Handles the GridReorder event of the gChildItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gChildItems_GridReorder( object sender, GridReorderEventArgs e )
         {
             using ( var rockContext = new RockContext() )
@@ -496,13 +509,13 @@ namespace RockWeb.Blocks.Cms
                 if ( contentItem != null )
                 {
                     bool isFiltered = false;
-                    var items = GetChildItems( contentItem, out isFiltered ).OrderBy( a => a.Order ).ToList();
+                    var childItemAssociationList = GetChildItemAssociationList( contentItem, out isFiltered ).OrderBy( a => a.Order ).ToList();
 
                     // If the list was filtered due to VIEW security, don't sort it
                     if ( !isFiltered )
                     {
-                        var service = new ContentChannelItemService( rockContext );
-                        service.Reorder( items, e.OldIndex, e.NewIndex );
+                        var service = new ContentChannelItemAssociationService( rockContext );
+                        service.Reorder( childItemAssociationList, e.OldIndex, e.NewIndex );
                         rockContext.SaveChanges();
                     }
                 }
@@ -553,6 +566,11 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddExistingChildItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddExistingChildItem_Click( object sender, EventArgs e )
         {
             int? itemId = hfId.Value.AsIntegerOrNull();
@@ -908,23 +926,37 @@ namespace RockWeb.Blocks.Cms
                 rSlugs.DataSource =  contentItem.ContentChannelItemSlugs;
                 rSlugs.DataBind();
 
-                htmlContent.Visible = !contentItem.ContentChannelType.DisableContentField;
-                htmlContent.Text = contentItem.Content;
-                htmlContent.MergeFields.Clear();
-                htmlContent.MergeFields.Add( "GlobalAttribute" );
-                htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
-                htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
-                htmlContent.MergeFields.Add( "Campuses" );
-                htmlContent.MergeFields.Add( "RockVersion" );
-
-                if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
+                htmlContent.Visible = false;
+                sceContent.Visible = false;
+                if ( !contentItem.ContentChannelType.DisableContentField )
                 {
-                    htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
-                    htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                    if ( contentItem.ContentChannel.IsStructuredContent )
+                    {
+                        sceContent.StructuredContent = contentItem.StructuredContent;
+                        sceContent.StructuredContentToolValueId = contentItem.ContentChannel.StructuredContentToolValueId;
+                        sceContent.Visible = true;
+                    }
+                    else
+                    {
+                        htmlContent.Text = contentItem.Content;
+                        htmlContent.Visible = true;
+                        htmlContent.MergeFields.Clear();
+                        htmlContent.MergeFields.Add( "GlobalAttribute" );
+                        htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
+                        htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
+                        htmlContent.MergeFields.Add( "Campuses" );
+                        htmlContent.MergeFields.Add( "RockVersion" );
+
+                        if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
+                        {
+                            htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                            htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                        }
+
+                        htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
+                    }
                 }
-
-                htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
-
+               
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
                     dpStart.Visible = false;
@@ -1113,13 +1145,13 @@ namespace RockWeb.Blocks.Cms
         private void BindChildItemsGrid( ContentChannelItem contentItem )
         {
             bool isFiltered = false;
-            var items = GetChildItems( contentItem, out isFiltered );
+            var childItemAssociationList = GetChildItemAssociationList( contentItem, out isFiltered );
 
             if ( contentItem.ContentChannel.ChildItemsManuallyOrdered && !isFiltered )
             {
                 gChildItems.Columns[0].Visible = true;
                 gChildItems.AllowSorting = false;
-                items = items.OrderBy( i => i.Order ).ToList();
+                childItemAssociationList = childItemAssociationList.OrderBy( i => i.Order ).ToList();
             }
             else
             {
@@ -1129,18 +1161,19 @@ namespace RockWeb.Blocks.Cms
                 SortProperty sortProperty = gChildItems.SortProperty;
                 if ( sortProperty != null )
                 {
-                    items = items.AsQueryable().Sort( sortProperty ).ToList();
+                    childItemAssociationList = childItemAssociationList.AsQueryable().Sort( sortProperty ).ToList();
                 }
                 else
                 {
-                    items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+                    childItemAssociationList = childItemAssociationList.OrderByDescending( p => p.ContentChannelItem.StartDateTime ).ToList();
                 }
             }
 
             gChildItems.ObjectList = new Dictionary<string, object>();
-            items.ForEach( i => gChildItems.ObjectList.Add( i.Id.ToString(), i ) );
+            var childItemList = childItemAssociationList.Select( a => a.ChildContentChannelItem ).ToList();
+            childItemList.ForEach( i => gChildItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-            gChildItems.DataSource = items.Select( i => new
+            gChildItems.DataSource = childItemList.Select( i => new
             {
                 i.Id,
                 i.Guid,
@@ -1186,16 +1219,17 @@ namespace RockWeb.Blocks.Cms
             gParentItems.DataBind();
         }
 
-        private List<ContentChannelItem> GetChildItems( ContentChannelItem contentItem, out bool isFiltered )
+        private List<ContentChannelItemAssociation> GetChildItemAssociationList( ContentChannelItem contentItem, out bool isFiltered )
         {
             isFiltered = false;
-            var items = new List<ContentChannelItem>();
+            var contentChannelItemAssociationList = new List<ContentChannelItemAssociation>();
 
-            foreach ( var item in contentItem.ChildItems.Select( a => a.ChildContentChannelItem ).ToList() )
+            foreach ( ContentChannelItemAssociation contentChannelItemAssociation in contentItem.ChildItems.ToList() )
             {
-                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                // see if the ContentChannel item of the ContentChannelItemAssociation is authorized
+                if ( contentChannelItemAssociation.ContentChannelItem.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    items.Add( item );
+                    contentChannelItemAssociationList.Add( contentChannelItemAssociation );
                 }
                 else
                 {
@@ -1203,7 +1237,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            return items;
+            return contentChannelItemAssociationList;
         }
 
         private List<ContentChannelItem> GetParentItems( ContentChannelItem contentItem )
@@ -1286,6 +1320,10 @@ namespace RockWeb.Blocks.Cms
             hfActiveDialog.Value = string.Empty;
         }
 
+        /// <summary>
+        /// When navigating to child items of childitems of childitems, the "Hierarchy" will be a list of how to navigate backwards thru the parents
+        /// </summary>
+        /// <returns></returns>
         private List<string> GetNavHierarchy()
         {
             var qryParam = PageParameter( "Hierarchy" );

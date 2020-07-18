@@ -124,13 +124,12 @@ namespace Rock.Badge.Component
             // Need a list of primitive types for assessmentTestsTaken linq
             var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
 
-            int personAliasId = Person.PrimaryAliasId.Value;
-
             var assessmentTestsTaken = new AssessmentService( new RockContext() )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.PersonAliasId == personAliasId )
-                .Where( a => availableTypes.Contains( a.AssessmentTypeId ) )
+                .Where( a => a.PersonAlias != null
+                             && a.PersonAlias.PersonId == Person.Id
+                             && availableTypes.Contains( a.AssessmentTypeId ) )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
                 .ToList();
@@ -224,6 +223,8 @@ namespace Rock.Badge.Component
 
                     if ( assessmentTest.Status == AssessmentRequestStatus.Pending && previouslyCompletedAssessmentTest == null )
                     {
+                        badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+
                         // set the request string and requested datetime to the merged lava
                         mergedBadgeSummaryLava = $"Requested: {assessmentTest.RequestedDateTime.ToShortDateString()}";
                     }

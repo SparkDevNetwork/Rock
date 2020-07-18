@@ -365,9 +365,12 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Update the step properties. Person cannot be changed (only set when the step is added)
+            step.CampusId = cpCampus.SelectedCampusId;
             step.StartDateTime = rdpStartDate.SelectedDate;
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
+
+            step.CampusId = cpCampus.SelectedCampusId;
 
             // Update the completed date time, which is based on the start, end, and status
             if ( !step.StepStatusId.HasValue )
@@ -466,6 +469,15 @@ namespace RockWeb.Blocks.Steps
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets a flag indicating if the user can edit the current record.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanEdit()
+        {
+            return UserCanAdministrate && _step != null;
+        }
 
         /// <summary>
         /// Sets the edit mode.
@@ -574,9 +586,11 @@ namespace RockWeb.Blocks.Steps
             var step = GetStep();
             if ( step != null )
             {
+                cpCampus.SelectedCampusId = step.CampusId;
                 rdpStartDate.SelectedDate = step.StartDateTime;
                 rdpEndDate.SelectedDate = step.EndDateTime;
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
+                cpCampus.SelectedCampusId = step.CampusId;
             }
 
             BuildDynamicControls( true );
@@ -635,6 +649,12 @@ namespace RockWeb.Blocks.Steps
 
             descriptionListMain.Add( "Person", step.PersonAlias.Person.FullName );
 
+            var campusCount = CampusCache.All().Count;
+            if ( campusCount > 1 )
+            {
+                descriptionListMain.Add( "Campus", step.Campus == null ? string.Empty : step.Campus.Name );
+            }
+
             if ( stepType.HasEndDate )
             {
                 descriptionListMain.Add( "Start Date", step.StartDateTime, "d" );
@@ -646,13 +666,19 @@ namespace RockWeb.Blocks.Steps
                 descriptionListMain.Add( "Date", step.StartDateTime, "d" );
             }
 
-            descriptionListMain.Add( "Status", step.StepStatus.Name );
+            descriptionListMain.Add( "Status", step.StepStatus == null ? string.Empty : step.StepStatus.Name );
 
             lStepDescription.Text = descriptionListMain.Html;
 
             BuildDynamicControls( false );
 
             BindWorkflows();
+
+            // Set the available actions according to current user permissions.
+            var canEdit = CanEdit();
+
+            btnEdit.Visible = canEdit;
+            btnDelete.Visible = canEdit;
         }
 
         /// <summary>

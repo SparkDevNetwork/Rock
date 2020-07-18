@@ -202,6 +202,7 @@ BEGIN
     SELECT 
         PD.[PersonId],
         PD.[CampusId],
+		CA.[Name] AS [CampusName],
         PD.[GroupId],
         PD.[GroupName],
         PD.[ScheduleId],
@@ -266,4 +267,5 @@ BEGIN
     ) R
     LEFT OUTER JOIN [Location] L
         ON L.[Id] = PD.[LocationId]
+	LEFT OUTER JOIN [Campus] CA ON PD.[CampusId] = CA.[Id]
 END

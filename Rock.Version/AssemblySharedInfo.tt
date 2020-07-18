@@ -2,11 +2,11 @@
 <#@ import namespace="System.IO" #>
 <#@ output extension=".cs" #>
 <#
-     int major = 1;
-     int minor = 10;
-     int build = 2;
-     int revision = 0;
-
+     int major = 1; 
+     int minor = 10; 
+     int build = 3; 
+     int revision = 0; 
+  
      try
      {
          using(var f = File.OpenText(Host.ResolvePath("AssemblySharedInfo.cs")))

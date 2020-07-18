@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -69,6 +70,11 @@ namespace Rock.Reporting.DataFilter.Person
             /// The completed in period
             /// </summary>
             public TimePeriod CompletedInPeriod = new TimePeriod();
+
+            /// <summary>
+            /// The step campus guids
+            /// </summary>
+            public List<Guid> StepCampusGuids = new List<Guid>();
 
             /// <summary>
             /// Initializes a new instance of the <see cref="FilterSettings"/> class.
@@ -117,6 +123,8 @@ namespace Rock.Reporting.DataFilter.Person
                 var periodCompletedSettings = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 4 );
 
                 CompletedInPeriod = new TimePeriod( periodCompletedSettings, "," );
+
+                StepCampusGuids = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 5 ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
             }
 
             /// <summary>
@@ -135,6 +143,7 @@ namespace Rock.Reporting.DataFilter.Person
                 settings.Add( StepStatusGuids.AsDelimited( "," ) );
                 settings.Add( StartedInPeriod.ToDelimitedString( "," ) );
                 settings.Add( CompletedInPeriod.ToDelimitedString( "," ) );
+                settings.Add( StepCampusGuids.AsDelimited( "," ) );
 
                 return settings;
             }
@@ -147,6 +156,7 @@ namespace Rock.Reporting.DataFilter.Person
         private SingleEntityPicker<StepProgram> _stepProgramPicker = null;
         private RockCheckBoxList _cblStepType = null;
         private RockCheckBoxList _cblStepStatus = null;
+        private RockCheckBoxList _cblStepCampus = null;
 
         #endregion
 
@@ -231,6 +241,12 @@ function() {
         if (dateCompletedText) {
             result += ', with Date Completed: ' + dateCompletedText
         }
+
+        var checkedCampuses = $('.js-rockcheckboxlist .js-step-campus', $content).find(':checked').closest('label');
+        if (checkedCampuses.length > 0) {
+            var campusesDelimitedList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
+            result += ', at Campus: ' + campusesDelimitedList;
+        }
     }
 
     return result;
@@ -293,6 +309,18 @@ function() {
                 stepStatuses = new List<StepStatus>();
             }
 
+            // Step Campuses
+            List<CampusCache> stepCampuses;
+
+            if ( settings.StepCampusGuids != null )
+            {
+                stepCampuses = CampusCache.All().Where( a => settings.StepCampusGuids.Contains( a.Guid ) ).ToList();
+            }
+            else
+            {
+                stepCampuses = new List<CampusCache>();
+            }
+
             result += string.Format( " in Program: {0}", stepProgram.Name );
 
             if ( stepTypes.Any() )
@@ -317,6 +345,11 @@ function() {
                  && settings.CompletedInPeriod.Range != TimePeriodRangeSpecifier.All )
             {
                 result += string.Format( ", with Date Completed: {0}", settings.CompletedInPeriod.GetDescription() );
+            }
+
+            if ( stepCampuses.Any() )
+            {
+                result += string.Format( ", at Campus: {0}", stepCampuses.Select( a => a.Name ).ToList().AsDelimited( "," ) );
             }
 
             return result;
@@ -398,10 +431,20 @@ function() {
 
             filterControl.Controls.Add( drpCompleted );
 
+            // Step Campus selection
+            _cblStepCampus = new RockCheckBoxList();
+            _cblStepCampus.ID = filterControl.ID + "_cblStepCampus";
+            _cblStepCampus.AddCssClass( "js-step-campus" );
+            _cblStepCampus.Label = "Campuses";
+            _cblStepCampus.Help = "Select the campuses that the steps were completed at. Not selecting a value will select all campuses.";
+
+            filterControl.Controls.Add( _cblStepCampus );
+
             // Populate lists
             PopulateStepProgramRelatedSelectionLists( selectedStepProgramId );
+            PopulateStepCampuses();
 
-            return new Control[] { _stepProgramPicker, _cblStepType, _cblStepStatus, drpStarted, drpCompleted };
+            return new Control[] { _stepProgramPicker, _cblStepType, _cblStepStatus, drpStarted, drpCompleted, _cblStepCampus };
         }
 
         /// <summary>
@@ -414,6 +457,17 @@ function() {
             int stepProgramId = _stepProgramPicker.SelectedValueAsId() ?? 0;
 
             PopulateStepProgramRelatedSelectionLists( stepProgramId );
+        }
+
+        /// <summary>
+        /// Populates the step campuses.
+        /// </summary>
+        private void PopulateStepCampuses()
+        {
+            _cblStepCampus.DataSource = CampusCache.All();
+            _cblStepCampus.DataTextField = "Name";
+            _cblStepCampus.DataValueField = "Guid";
+            _cblStepCampus.DataBind();
         }
 
         /// <summary>
@@ -518,6 +572,7 @@ function() {
             var cblStepStatuses = ( controls[2] as RockCheckBoxList );
             var sdpDateStarted = ( controls[3] as SlidingDateRangePicker );
             var sdpDateCompleted = ( controls[4] as SlidingDateRangePicker );
+            var cblStepCampuses = ( controls[5] as RockCheckBoxList );
 
             var settings = new FilterSettings();
 
@@ -540,6 +595,8 @@ function() {
 
             settings.CompletedInPeriod.FromDelimitedString( sdpDateCompleted.DelimitedValues );
 
+            settings.StepCampusGuids = cblStepCampuses.SelectedValues.AsGuidList();
+
             return settings.ToSelectionString();
         }
 
@@ -556,6 +613,7 @@ function() {
             var cblStepStatuses = ( controls[2] as RockCheckBoxList );
             var sdpDateStarted = ( controls[3] as SlidingDateRangePicker );
             var sdpDateCompleted = ( controls[4] as SlidingDateRangePicker );
+            var cblStepCampuses = ( controls[5] as RockCheckBoxList );
 
             var settings = new FilterSettings( selection );
 
@@ -593,6 +651,13 @@ function() {
             sdpDateStarted.DelimitedValues = settings.StartedInPeriod.ToDelimitedString();
 
             sdpDateCompleted.DelimitedValues = settings.CompletedInPeriod.ToDelimitedString();
+
+            PopulateStepCampuses();
+
+            foreach ( var item in cblStepCampuses.Items.OfType<ListItem>() )
+            {
+                item.Selected = settings.StepCampusGuids.Contains( item.Value.AsGuid() );
+            }
         }
 
         /// <summary>
@@ -680,6 +745,18 @@ function() {
                 {
                     stepQuery = stepQuery.Where( x => x.CompletedDateTime < completedDateRange.End.Value );
                 }
+            }
+
+            // Filter by Step Campus
+            if ( settings.StepCampusGuids.Count() > 0 )
+            {
+                var campusService = new CampusService( dataContext );
+
+                var stepCampusIds = campusService.Queryable()
+                                        .Where( a => settings.StepCampusGuids.Contains( a.Guid ) )
+                                        .Select( a => a.Id ).ToList();
+
+                stepQuery = stepQuery.Where( x => x.CampusId.HasValue && stepCampusIds.Contains( x.CampusId.Value ) );
             }
 
             // Create Person Query.
