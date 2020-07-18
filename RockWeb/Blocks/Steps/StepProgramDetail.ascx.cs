@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -312,24 +313,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentstepProgram = GetStepProgram();
-
-            if ( currentstepProgram != null )
-            {
-                ShowReadonlyDetails( currentstepProgram );
-            }
-            else
-            {
-                string stepProgramId = PageParameter( PageParameterKey.StepProgramId );
-                if ( !string.IsNullOrWhiteSpace( stepProgramId ) )
-                {
-                    ShowDetail( stepProgramId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
@@ -947,9 +931,10 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Workflow Triggers: Remove deleted triggers.
+            // Note that we need to be careful not to remove triggers related to a specific Step Type here, because they are managed separately in the Step Type Detail block.
             var uiWorkflows = WorkflowsState.Select( l => l.Guid );
 
-            var deletedTriggers = stepProgram.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
+            var deletedTriggers = stepProgram.StepWorkflowTriggers.Where( l => l.StepTypeId == null && !uiWorkflows.Contains( l.Guid ) ).ToList();
 
             foreach ( var trigger in deletedTriggers )
             {
@@ -1159,7 +1144,10 @@ namespace RockWeb.Blocks.Steps
             // Workflow Triggers
             WorkflowsState = new List<StepWorkflowTriggerViewModel>();
 
-            foreach ( var trigger in stepProgram.StepWorkflowTriggers )
+            // Only show triggers that are not related to a specific Step Type.
+            var stepTypeTriggers = stepProgram.StepWorkflowTriggers.Where( x => x.StepTypeId == null );
+
+            foreach ( var trigger in stepTypeTriggers )
             {
                 var newItem = new StepWorkflowTriggerViewModel( trigger );
 
@@ -1346,7 +1334,7 @@ namespace RockWeb.Blocks.Steps
 
             // Set the visibility of the Activity Summary chart.
             bool showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            
+
             if ( showActivitySummary )
             {
                 // If the Program does not have any Step activity, hide the Activity Summary.
@@ -1423,9 +1411,6 @@ namespace RockWeb.Blocks.Steps
                 stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime < compareDate );
             }
 
-            // Materialize the result so we can use a newly-constructed DateTime object in the Group function.
-            var steps = stepsCompletedQuery.ToList();
-
             List<StepTypeActivityDataPoint> stepTypeDataPoints;
 
             // Get the Data Points, scaled according to the currently selected range.
@@ -1436,16 +1421,26 @@ namespace RockWeb.Blocks.Steps
                 // Group by Month
                 chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
 
-                stepTypeDataPoints = steps
-                    .GroupBy( x => new { Month = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ), DatasetName = x.StepType.Name, Order = x.StepType.Order } )
+                stepTypeDataPoints = stepsCompletedQuery
+                    .GroupBy( x => new
+                    {
+                        Year = x.CompletedDateTime.Value.Year,
+                        Month = x.CompletedDateTime.Value.Month,
+                        DatasetName = x.StepType.Name,
+                        SortKey1 = x.StepType.Order,
+                        SortKey2 = x.StepTypeId
+                    } )
+                    .ToList()
                     .Select( x => new StepTypeActivityDataPoint
                     {
                         StepTypeName = x.Key.DatasetName,
-                        DateTime = x.Key.Month,
-                        SortKey = x.Key.Order.ToString(),
+                        DateTime = new DateTime( x.Key.Year, x.Key.Month, 1 ),
+                        SortKey1 = x.Key.SortKey1,
+                        SortKey2 = x.Key.SortKey2,
                         CompletedCount = x.Count()
                     } )
-                    .OrderBy( x => x.SortKey )
+                    .OrderBy( x => x.SortKey1 )
+                    .ThenBy( x => x.SortKey2 )
                     .ToList();
             }
             else
@@ -1453,20 +1448,35 @@ namespace RockWeb.Blocks.Steps
                 // Group by Day
                 chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
 
-                stepTypeDataPoints = steps
-                    .GroupBy( x => new { Day = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, x.CompletedDateTime.Value.Day ), DatasetName = x.StepType.Name, Order = x.StepType.Order } )
+                stepTypeDataPoints = stepsCompletedQuery
+                    .GroupBy( x => new
+                    {
+                        Year = x.CompletedDateTime.Value.Year,
+                        Month = x.CompletedDateTime.Value.Month,
+                        Day = x.CompletedDateTime.Value.Day,
+                        DatasetName = x.StepType.Name,
+                        SortKey1 = x.StepType.Order,
+                        SortKey2 = x.StepTypeId
+                    } )
+                    .ToList()
                     .Select( x => new StepTypeActivityDataPoint
                     {
                         StepTypeName = x.Key.DatasetName,
-                        DateTime = x.Key.Day,
-                        SortKey = x.Key.Order.ToString(),
+                        DateTime = new DateTime( x.Key.Year, x.Key.Month, x.Key.Day ),
+                        SortKey1 = x.Key.SortKey1,
+                        SortKey2 = x.Key.SortKey2,
                         CompletedCount = x.Count()
                     } )
-                    .OrderBy( x => x.SortKey )
+                    .OrderBy( x => x.SortKey1 )
+                    .ThenBy( x => x.SortKey2 )
                     .ToList();
             }
 
-            var stepTypeDatasets = stepTypeDataPoints.Select( x => x.StepTypeName ).Distinct().ToList();
+            var stepTypeDatasets = stepTypeDataPoints
+                .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
+                .Select( x => x.StepTypeName )
+                .Distinct()
+                .ToList();
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
@@ -1514,7 +1524,7 @@ namespace RockWeb.Blocks.Steps
             var programId = GetActiveStepProgramId();
 
             // Get all of the completed Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = stepService.Queryable()
+            var stepsCompletedQuery = stepService.Queryable().AsNoTracking()
                 .Where( x => x.StepType.StepProgramId == programId
                                 && x.StepType.IsActive
                                 && x.CompletedDateTime != null );
@@ -1585,7 +1595,12 @@ namespace RockWeb.Blocks.Steps
             /// <summary>
             /// A value used to sort the datapoint within the set of values for this Step Type.
             /// </summary>
-            public string SortKey { get; set; }
+            public int SortKey1 { get; set; }
+
+            /// <summary>
+            /// A value used to sort the datapoint within the set of values for this Step Type.
+            /// </summary>
+            public int SortKey2 { get; set; }
         }
 
         #endregion

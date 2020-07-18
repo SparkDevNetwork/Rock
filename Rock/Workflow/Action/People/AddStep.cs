@@ -24,16 +24,17 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
     /// <summary>
     /// Creates a step for the person
     /// </summary>
-    [ActionCategory( "Steps" )]
+    [ActionCategory( "People" )]
     [Description( "Adds a step for a person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Step" )]
+    [ExportMetadata( "ComponentName", "Step Add" )]
 
     #region Attributes
 
@@ -93,6 +94,25 @@ namespace Rock.Workflow.Action
             "Rock.Field.Types.TextFieldType"
         } )]
 
+    [WorkflowAttribute(
+        name: "Step Attribute",
+        description: "An optional step attribute to store the item that is created.",
+        required: false,
+        order: 5,
+        key: AttributeKey.StepAttribute,
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.StepFieldType" } )]
+
+    [WorkflowTextOrAttribute(
+        textLabel: "Campus",
+        attributeLabel: "Attribute Value",
+        description: "The campus where the step was completed.",
+        required: false,
+        order: 6,
+        key: AttributeKey.Campus,
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.CampusFieldType",
+            "Rock.Field.Types.TextFieldType" } )]
+
     #endregion Attributes
 
     public class AddStep : ActionComponent
@@ -102,30 +122,13 @@ namespace Rock.Workflow.Action
         /// </summary>
         private static class AttributeKey
         {
-            /// <summary>
-            /// The person
-            /// </summary>
             public const string Person = "Person";
-
-            /// <summary>
-            /// The step program and step type
-            /// </summary>
             public const string StepProgramStepType = "StepProgramStepType";
-
-            /// <summary>
-            /// The step program and step status
-            /// </summary>
             public const string StepProgramStepStatus = "StepProgramStepStatus";
-
-            /// <summary>
-            /// The start date
-            /// </summary>
             public const string StartDate = "StartDate";
-
-            /// <summary>
-            /// The end date
-            /// </summary>
             public const string EndDate = "EndDate";
+            public const string StepAttribute = "StepAttribute";
+            public const string Campus = "Campus";
         }
 
         /// <summary>
@@ -200,6 +203,19 @@ namespace Rock.Workflow.Action
             var startDate = GetLavaAttributeValue( action, AttributeKey.StartDate ).AsDateTime() ?? RockDateTime.Now;
             var endDate = GetLavaAttributeValue( action, AttributeKey.EndDate ).AsDateTime();
 
+            var campusAttributeValue = GetLavaAttributeValue( action, AttributeKey.Campus );
+            var campusId = campusAttributeValue.AsIntegerOrNull();
+            var campusGuid = campusAttributeValue.AsGuidOrNull();
+
+            if ( campusGuid != null )
+            {
+                var campus = CampusCache.Get( campusGuid.Value );
+                if ( campus != null )
+                {
+                    campusId = campus.Id;
+                }
+            }
+
             // The completed date is today or the end date if the status is a completed status
             var completedDate = stepStatus.IsCompleteStatus ? ( endDate ?? RockDateTime.Now ) : ( DateTime? ) null;
 
@@ -211,7 +227,8 @@ namespace Rock.Workflow.Action
                 StartDateTime = startDate,
                 EndDateTime = endDate,
                 CompletedDateTime = completedDate,
-                StepStatusId = stepStatus.Id
+                StepStatusId = stepStatus.Id,
+                CampusId = campusId
             };
 
             // Validate the step
@@ -239,6 +256,8 @@ namespace Rock.Workflow.Action
                 {
                     stepService.Add( step );
                     rockContext.SaveChanges();
+
+                    SetCreatedItemAttribute( action, AttributeKey.StepAttribute, step, rockContext );
                 }
                 catch ( Exception exception )
                 {
@@ -399,5 +418,30 @@ namespace Rock.Workflow.Action
             return value.ResolveMergeFields( _mergeFields );
         }
         private Dictionary<string, object> _mergeFields = null;
+
+        /// <summary>
+        /// Sets the Guid of the created item as the Workflow value of the attribute specified by the attributeKey.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="action">The <see cref="WorkflowAction"/>.</param>
+        /// <param name="attributeKey">The key of the attribute.</param>
+        /// <param name="entity">Any Rock entity.</param>
+        /// <param name="rockContext">The DB context.</param>
+        private void SetCreatedItemAttribute<T>( WorkflowAction action, string attributeKey, T entity, RockContext rockContext ) where T : Entity<T>, new()
+        {
+            // If request attribute was specified, requery the request and set the attribute's value
+            Guid? attributeGuid = GetAttributeValue( action, attributeKey ).AsGuidOrNull();
+            if ( attributeGuid.HasValue )
+            {
+                // Ensure the entity has been added to the database before setting the attribute value.
+                var entityService = new Service<T>( rockContext );
+                entity = entityService.Get( entity.Id );
+                if ( entity != null )
+                {
+                    SetWorkflowAttributeValue( action, attributeGuid.Value, entity.Guid.ToString() );
+                }
+            }
+        }
+
     }
 }

@@ -172,6 +172,11 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gConnectionRequestAttributes.GridRebind += gConnectionRequestAttributes_GridRebind;
             gConnectionRequestAttributes.GridReorder += gConnectionRequestAttributes_GridReorder;
+            var securityField = gConnectionRequestAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             lvDefaultConnectors.ItemDataBound += lvDefaultConnectors_ItemDataBound;
 
@@ -348,7 +353,6 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-                ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
                 ConnectionOpportunityGroupConfigService connectionOpportunityGroupConfigService = new ConnectionOpportunityGroupConfigService( rockContext );
@@ -379,25 +383,16 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
 
                 int? orphanedPhotoId = null;
-                if ( imgupPhoto.BinaryFileId != null )
+                if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
                 {
-                    if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
-                    {
-                        orphanedPhotoId = connectionOpportunity.PhotoId;
-                    }
-                    connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
+                    orphanedPhotoId = connectionOpportunity.PhotoId;
                 }
+                connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId;
 
                 // remove any workflows that removed in the UI
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
                 foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    foreach( var requestWorkflow in connectionRequestWorkflowService.Queryable()
-                        .Where( w => w.ConnectionWorkflowId == connectionWorkflow.Id ) )
-                    {
-                        connectionRequestWorkflowService.Delete( requestWorkflow );
-                    }
-
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionWorkflow );
                     connectionWorkflowService.Delete( connectionWorkflow );
                 }
@@ -1505,6 +1500,8 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
             var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
+            bool isPrimaryQualifierVisible = false;
+            bool isSecondaryQualifierVisible = false;
             switch ( connectionWorkflowTriggerType )
             {
                 case ConnectionWorkflowTriggerType.RequestStarted:
@@ -1514,9 +1511,9 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                 case ConnectionWorkflowTriggerType.Manual:
                     {
-                        ddlPrimaryQualifier.Visible = false;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = false;
                         ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = false;
                         ddlSecondaryQualifier.Items.Clear();
                         break;
                     }
@@ -1524,11 +1521,11 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.StateChanged:
                     {
                         ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.BindToEnum<ConnectionState>();
                         ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                         ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = true;
                         ddlSecondaryQualifier.BindToEnum<ConnectionState>();
                         ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                         if ( !connectionType.EnableFutureFollowup )
@@ -1543,7 +1540,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).OrderBy( a => a.Name ).ToList();
                         ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.Items.Clear();
                         ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var status in statusList )
@@ -1551,7 +1548,7 @@ namespace RockWeb.Blocks.Connection
                             ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
                         }
                         ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = true;
                         ddlSecondaryQualifier.Items.Clear();
                         ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var status in statusList )
@@ -1569,14 +1566,14 @@ namespace RockWeb.Blocks.Connection
                             .OrderBy( a => a.Name )
                             .ToList();
                         ddlPrimaryQualifier.Label = "Activity Type";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.Items.Clear();
                         ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var activity in activityList )
                         {
                             ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
                         }
-                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = false;
                         ddlSecondaryQualifier.Items.Clear();
                         break;
                     }
@@ -1587,12 +1584,18 @@ namespace RockWeb.Blocks.Connection
                 if ( workflowTypeStateObj.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                 {
                     qualifierValues = workflowTypeStateObj.QualifierValue.SplitDelimitedValues();
-                    if ( ddlPrimaryQualifier.Visible && qualifierValues.Length > 0 )
+                    /*
+                        3/31/2020 - SK 
+                        Visible property of ddlPrimaryQualifier and ddlSecondaryQualifier don't reflect the new assigned value till the request complete.
+                        That is the reason isPrimaryQualifierVisible & isSecondaryQualifierVisible are introduced to potentially fix the issue raised in #2029
+                        https://github.com/SparkDevNetwork/Rock/issues/2029
+                    */
+                    if ( isPrimaryQualifierVisible && qualifierValues.Length > 0 )
                     {
                         ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
                     }
 
-                    if ( ddlSecondaryQualifier.Visible && qualifierValues.Length > 1 )
+                    if ( isSecondaryQualifierVisible && qualifierValues.Length > 1 )
                     {
                         ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
                     }

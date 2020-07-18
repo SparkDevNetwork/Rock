@@ -104,7 +104,7 @@ namespace Rockweb.Blocks.Crm
    You will rank high, medium or low in each of the following five modes.
 </p>
 
-{[ chart type:'bar' ]}
+{[ chart type:'bar' yaxismin:'0' ]}
     [[ dataitem label:'Winning' value:'{{Winning}}' fillcolor:'#E15759' ]] [[ enddataitem ]]
     [[ dataitem label:'Resolving' value:'{{Resolving}}' fillcolor:'#5585B7' ]] [[ enddataitem ]]
     [[ dataitem label:'Compromising' value:'{{Compromising}}' fillcolor:'#6399D1' ]] [[ enddataitem ]]
@@ -540,17 +540,15 @@ namespace Rockweb.Blocks.Crm
             Assessment assessment = null;
             Assessment previouslyCompletedAssessment = null;
 
-            // This is a computed property so it cannot be in the linq query
-            int primaryAliasId = _targetPerson.PrimaryAliasId.Value;
-
             // A "0" value indicates that the block should create a new assessment instead of looking for an existing one, so keep assessment null. e.g. a user directed re-take
             if ( _assessmentId != 0 )
             {
                 var assessments = new AssessmentService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.PersonAliasId == primaryAliasId )
-                .Where( a => a.AssessmentTypeId == assessmentType.Id )
+                .Where( a => a.PersonAlias != null
+                             && a.PersonAlias.PersonId == _targetPerson.Id
+                             && a.AssessmentTypeId == assessmentType.Id )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .ToList();
 

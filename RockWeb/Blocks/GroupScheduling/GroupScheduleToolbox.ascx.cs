@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.GroupScheduling
 </div>",
         Order = 2
          )]
+
+    [LinkedPage("Decline Reason Page",
+        Description = "If the group type has enabled 'RequiresReasonIfDeclineSchedule' then specify the page to provide that reason here.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.SCHEDULE_CONFIRMATION,
+        Key = AttributeKey.DeclineReasonPage )]
+
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey
@@ -87,6 +94,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string FutureWeeksToShow = "FutureWeeksToShow";
             public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
+            public const string DeclineReasonPage = "DeclineReasonPage";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -474,12 +482,25 @@ $('#{0}').tooltip();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
+                var attendanceService = new AttendanceService( rockContext );
+                var requiresDeclineReason = attendanceService.Get( attendanceId.Value ).Occurrence.Group.GroupType.RequiresReasonIfDeclineSchedule;
 
-                // TODO: Need to provide a way to indicate the reason a pending schedule was declined.
-                int? declineReasonValueId = null;
+                if ( requiresDeclineReason )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        { "attendanceId", attendanceId.Value.ToString() },
+                        { "isConfirmed", "false" },
+                        { "ReturnUrl", this.RockPage.Guid.ToString() }
+                    };
 
-                new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
-                rockContext.SaveChanges();
+                    NavigateToLinkedPage( AttributeKey.DeclineReasonPage, queryParams );
+                }
+                else
+                {
+                    attendanceService.ScheduledPersonDecline( attendanceId.Value, null );
+                    rockContext.SaveChanges();
+                }
             }
 
             UpdateMySchedulesTab();

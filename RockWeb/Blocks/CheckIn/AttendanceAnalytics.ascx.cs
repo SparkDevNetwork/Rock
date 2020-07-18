@@ -1546,6 +1546,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -1646,6 +1647,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -2584,6 +2586,8 @@ function(item) {
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
+
+            public string CampusName { get; set; }
 
             public int? GroupId { get; set; }
 

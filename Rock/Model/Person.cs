@@ -2286,6 +2286,7 @@ namespace Rock.Model
             {
                 var rockContext = new RockContext();
                 var topSignal = Signals
+                    .Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now )
                     .Select( s => new
                     {
                         Id = s.Id,
@@ -2319,14 +2320,14 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this Person can receive emails; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanReceiveEmail(bool isBulk = true)
+        public bool CanReceiveEmail( bool isBulk = true )
         {
             var userAllowsBulk = EmailPreference != EmailPreference.NoMassEmails;
 
             return Email.IsNotNullOrWhiteSpace()
                     && IsEmailActive
                     && EmailPreference != EmailPreference.DoNotEmail
-                    && (!isBulk || userAllowsBulk);
+                    && ( !isBulk || userAllowsBulk );
         }
         #endregion
 

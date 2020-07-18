@@ -25,6 +25,12 @@ namespace Rock.Attribute
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityFieldAttribute"/> class.
+        /// If using Object Initializer syntax include all properties in the obj init syntax.
+        /// </summary>
+        public ConnectionOpportunityFieldAttribute() : base( string.Empty, string.Empty, true, string.Empty, string.Empty, 0, null, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName ) { }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -34,6 +40,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "1.10" )]
+        [System.Obsolete( "Use the constructor with the 'includeInactive' parameter or the default constructor with object initializer syntax instead." )]
         public ConnectionOpportunityFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName )
         {

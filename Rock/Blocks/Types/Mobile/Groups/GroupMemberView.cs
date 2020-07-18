@@ -103,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// <summary>
             /// The member identifier key.
             /// </summary>
-            public const string GroupMemberId = "GroupMemberId";
+            public const string GroupMemberGuid = "GroupMemberGuid";
         }
 
         #endregion
@@ -152,7 +152,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var member = new GroupMemberService( rockContext ).Get( RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId ).AsInteger() );
+                var memberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
+                var member = new GroupMemberService( rockContext ).Get( memberGuid );
 
                 if ( member == null )
                 {

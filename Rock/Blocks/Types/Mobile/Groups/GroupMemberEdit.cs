@@ -42,13 +42,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #region Block Attributes
 
+    [BooleanField( "Show Header",
+        Description = "If enabled, a 'Group Member Edit' header will be displayed.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.ShowHeader,
+        Order = 0 )]
+
     [BooleanField( "Allow Role Change",
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowRoleChange,
-        Order = 0 )]
+        Order = 1 )]
 
     [BooleanField( "Allow Member Status Change",
         Description = "",
@@ -56,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowMemberStatusChange,
-        Order = 1 )]
+        Order = 2 )]
 
     [BooleanField( "Allow Note Edit",
         Description = "",
@@ -64,20 +72,20 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowNoteEdit,
-        Order = 2 )]
+        Order = 3 )]
 
     [AttributeCategoryField( "Attribute Category",
         Description = "Category of attributes to show and allow editing on.",
         IsRequired = false,
         EntityType = typeof( GroupMember ),
         Key = AttributeKeys.AttributeCategory,
-        Order = 3 )]
+        Order = 4 )]
 
     [LinkedPage( "Member Detail Page",
         Description = "The group member page to return to, if not set then the edit page is popped off the navigation stack.",
         IsRequired = false,
         Key = AttributeKeys.MemberDetailPage,
-        Order = 4 )]
+        Order = 5 )]
 
     #endregion
 
@@ -88,6 +96,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The show header
+            /// </summary>
+            public const string ShowHeader = "EnableHeader";
+
             /// <summary>
             /// The allow role change
             /// </summary>
@@ -122,10 +135,18 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// <summary>
             /// The group member identifier
             /// </summary>
-            public const string GroupMemberId = "GroupMemberId";
+            public const string GroupMemberGuid = "GroupMemberGuid";
         }
 
         #region Attribute Properties
+
+        /// <summary>
+        /// Gets a value indicating whether [show header].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show header]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowHeader => GetAttributeValue( AttributeKeys.ShowHeader ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether [allow role change].
@@ -217,8 +238,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             string content = @"
 <StackLayout>
-    <Label Text=""Group Member Edit"" StyleClass=""heading1"" />
-    <BoxView Color=""#888"" HeightRequest=""1"" Margin=""0 0 12 0"" />
+    ##HEADER##
 
     ##FIELDS##
     
@@ -244,8 +264,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberId = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId ).AsInteger();
-                var member = new GroupMemberService( rockContext ).Get( groupMemberId );
+                var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
+                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
                 if ( member == null )
                 {
@@ -273,6 +293,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             else
             {
                 content = content.Replace( "##CANCEL##", "Command=\"{Binding PopPage}\"" );
+            }
+
+            if ( ShowHeader )
+            {
+                content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Member Edit"" />
+<Rock:Divider />" );
             }
 
             return content.Replace( "##FIELDS##", fieldsContent )
@@ -341,8 +367,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberId = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId ).AsInteger();
-                var member = new GroupMemberService( rockContext ).Get( groupMemberId );
+                var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
+                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
                 if ( member == null || (!member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
                 {
@@ -392,7 +418,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return new CallbackResponse
                 {
                     Command = "ReplacePage",
-                    CommandParameter = $"{MemberDetailPage}?GroupMemberId={RequestContext.GetPageParameter( PageParameterKeys.GroupMemberId )}"
+                    CommandParameter = $"{MemberDetailPage}?GroupMemberGuid={RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid )}"
                 };
             }
             else

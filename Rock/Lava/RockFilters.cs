@@ -2166,6 +2166,39 @@ namespace Rock.Lava
                 }
             }
 
+            /*
+                04/28/2020 - Shaun
+                The "SystemSetting" filter argument does not retrieve the Attribute from the database
+                or perform any authorization checks.  It simply returns the value of the of the specified
+                SystemSetting attribute (with any merge fields evaluated).  This is intentional.
+            */
+
+            // If Input is "SystemSetting" then look for a SystemSetting attribute with key
+            else if ( input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
+            {
+                string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
+                if ( theValue.HasMergeFields() )
+                {
+                    // SystemSetting attributes may reference other global attributes, so try to resolve this value again
+                    var mergeFields = new Dictionary<string, object>();
+                    if ( context.Environments.Count > 0 )
+                    {
+                        foreach ( var keyVal in context.Environments[0] )
+                        {
+                            mergeFields.Add( keyVal.Key, keyVal.Value );
+                        }
+                    }
+
+                    rawValue = theValue.ResolveMergeFields( mergeFields );
+                }
+                else
+                {
+                    rawValue = theValue;
+                }
+
+                return rawValue;
+            }
+
             // If input is an object that has attributes, find its attribute value
             else
             {
@@ -3968,7 +4001,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson( Formatting.Indented );
+            return input.ToJson( Formatting.Indented, ignoreErrors: true );
         }
 
         /// <summary>

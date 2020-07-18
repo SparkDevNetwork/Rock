@@ -29,3 +29,5 @@
 </div>
 
 <Rock:CodeEditor ID="ceNoNetworkContent" runat="server" Label="No Network Content" EditorMode="Xml" />
+
+<Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Block Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements inside this block." />

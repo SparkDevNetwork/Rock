@@ -7,6 +7,7 @@
 
     <div class="row flex-row">
 
+{% comment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1880"  class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
@@ -23,7 +24,6 @@
                 </div>
             </a>
         </div>
-{% comment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1882"  class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
@@ -117,7 +117,7 @@
                             {%- if dates != '' -%}
                                    <span class="detail detail-start">Dates: {{ dates }}</span>
                             {%- endif -%}
-                            {% for GroupLocation in group.GroupLocations %} 
+                            {% for GroupLocation in group.GroupLocations %}
                                 <span class="detail detail-start">Location: {{ GroupLocation.Location.City }}</span>
                             {% endfor %}
                             {%- if leaderCount > 0 -%}

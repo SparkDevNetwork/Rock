@@ -102,5 +102,34 @@ namespace Rock.Tests.Integration
 
             return recordsDeleted;
         }
+
+        /// <summary>
+        /// Get a known Person who has been assigned a security role of Administrator.
+        /// </summary>
+        /// <param name="personService"></param>
+        /// <returns></returns>
+        public Person GetAdminPersonOrThrow( RockContext dataContext )
+        {
+            var personService = new PersonService( dataContext );
+
+            return GetAdminPersonOrThrow( personService );
+        }
+
+        /// <summary>
+        /// Get a known Person who has been assigned a security role of Administrator.
+        /// </summary>
+        /// <param name="personService"></param>
+        /// <returns></returns>
+        public Person GetAdminPersonOrThrow( PersonService personService )
+        {
+            var adminPerson = personService.Queryable().FirstOrDefault( x => x.FirstName == "Alisha" && x.LastName == "Marble" );
+
+            if ( adminPerson == null )
+            {
+                throw new Exception( "Admin Person not found in test data set." );
+            }
+
+            return adminPerson;
+        }
     }
 }

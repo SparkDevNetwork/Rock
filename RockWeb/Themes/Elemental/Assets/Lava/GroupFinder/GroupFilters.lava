@@ -96,30 +96,35 @@ function ToggleParameter(param, id) {
 }
 </script>
 
-<p class="text-muted">Select your interests, campus and location to search for groups near you.</p>
-
-<div class="tag-list-label">Campus</div>
-<div class="tag-list">
-{%- for campus in Campuses -%}
-  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
-{%- endfor -%}
-</div>
-
-<div class="tag-list-label">Featured Tags</div>
-{%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
-<div class="tag-list">
-  {%- for item in FilterOne.DefinedValues -%}
-  <a href="?FilterOneValue={{ item.Id }}" onclick="ToggleParameter('FilterOneValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
-  {%- endfor -%}
-</div>
-
+{% comment %} Group Type {% endcomment %}
 {%- assign FilterTwo = FilterTwoDefinedTypeId | FromCache:'DefinedType' -%}
-<div class="tag-list-label">{{ FilterTwo.Name }}</div>
-<div class="tag-list">
+<p class="tag-list-label-">{{ FilterTwo.Name }}</p>
+<div class="tag-list form-group">
   {%- for item in FilterTwo.DefinedValues -%}
   {% if item.IsActive %}
   <a href="?FilterTwoValue={{ item.Id }}" onclick="ToggleParameter('FilterTwoValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
   {% endif %}
   {%- endfor -%}
 </div>
+
+{% comment %} Tags {% endcomment %}
+<p class="tag-list-label-">Use the tags below to find a group that fits your interest. </p>
+{%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
+<div class="tag-list form-group">
+  {%- for item in FilterOne.DefinedValues -%}
+  <a href="?FilterOneValue={{ item.Id }}" onclick="ToggleParameter('FilterOneValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {%- endfor -%}
+</div>
+
+{% comment %} Campus {% endcomment %}
+<p class="text-muted-">Stay connected online with others who attend your location. Search by location you attend or live near!</p>
+<div class="tag-list-label hidden">Campus</div>
+<div class="tag-list form-group">
+{%- for campus in Campuses -%}
+  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
+{%- endfor -%}
+</div>
+
+
+
 

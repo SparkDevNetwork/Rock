@@ -11,9 +11,13 @@
         width: 100%;
     }
 
-        .chart-banner canvas {
-            height: 350px;
-        }
+    .chart-banner canvas {
+        height: 350px;
+    }
+
+    .clickable {
+        cursor: pointer
+    }
 </style>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
@@ -54,7 +58,7 @@
                                 <%-- Actions Summary --%>
                                 <div class="recipient-status row">
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-pending js-actions-statistic" title="The number of recipients that have not yet received the communication">
+                                        <div id="pnlPendingSummary" runat="server" class="metric-tile metric-pending clickable js-actions-statistic" title="The number of recipients that have not yet received the communication">
                                             <div class="metric-icon"><i class="fa fa-clock"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lPending" runat="server"></asp:Literal>
@@ -63,7 +67,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-delivered js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
+                                        <div id="pnlDeliveredSummary" runat="server" class="metric-tile metric-delivered clickable js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
                                             <div class="metric-icon"><i class="fa fa-inbox"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lDelivered" runat="server"></asp:Literal>
@@ -72,7 +76,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-failed js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
+                                        <div id="pnlFailedSummary" runat="server" class="metric-tile metric-failed clickable js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
                                             <div class="metric-icon"><i class="fa fa-comment-slash"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal>
@@ -81,7 +85,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-cancelled js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
+                                        <div id="pnlCancelledSummary" runat="server" class="metric-tile metric-cancelled clickable js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
                                             <div class="metric-icon"><i class="fa fa-ban"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lCancelled" runat="server"></asp:Literal>

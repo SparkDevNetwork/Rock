@@ -906,7 +906,8 @@ namespace RockWeb.Blocks.Groups
 
             lvMembers.DataBind();
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = string.Format( "Add New {0}", GetAttributeValue( "AddPersonAs" ) );
         }
 

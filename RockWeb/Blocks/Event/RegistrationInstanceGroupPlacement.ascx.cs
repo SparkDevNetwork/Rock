@@ -1654,16 +1654,22 @@ namespace RockWeb.Blocks.Event
             foreach ( var field in registrantAttributeFields )
             {
                 var attribute = field.Attribute;
-                var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                var filterControlWrapper = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() + "_wrapper" );
-                filterControl.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
-                if ( filterControlWrapper != null )
+                if ( attribute.FieldType.Field.HasFilterControl() )
                 {
-                    filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                    var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                    var filterControlWrapper = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() + "_wrapper" );
+                    if ( filterControl != null && filterControlWrapper != null )
+                    {
+                        filterControl.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                        if ( filterControlWrapper != null )
+                        {
+                            filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                        }
+                    }
                 }
             }
 
-            // hide the registrant filters secition if there aren't any visible
+            // hide the registrant filters section if there aren't any visible
             rcwRegistrantFilters.Visible = registrantAttributeFields.Where( a => displayedRegistrantAttributes.Contains( a.AttributeId ) ).Any();
         }
 
