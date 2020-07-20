@@ -32,9 +32,9 @@ body {
   color: @dark-text-color;
   background-color: @dark-background-color;
 
-  & when not (@dark-logo-image-url = ~"") {
+  & when not (@dark-logo-image = ~"") {
     &::before {
-      background: url(@dark-logo-image-url);
+      background: url(@dark-logo-image);
       border-bottom: 1px solid #e2e8f0;
     }
   }
