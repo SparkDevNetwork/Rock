@@ -136,7 +136,8 @@ namespace com.bemaservices.HrManagement.Model
     public enum PtoAllocationSourceType
     {
         Automatic = 1,
-        Manual = 2
+        Manual = 2,
+        Request = 3
     }
 
     public enum PtoAllocationStatus
