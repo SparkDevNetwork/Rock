@@ -175,8 +175,8 @@ namespace Rock.CheckIn
         {
             DeviceId = localDeviceConfiguration.CurrentKioskId ?? 0;
             CheckinTypeId = localDeviceConfiguration.CurrentCheckinTypeId;
-            AllowCheckout = localDeviceConfiguration.AllowCheckout ?? this.CheckInType.AllowCheckoutDefault;
-            ConfiguredGroupTypes = localDeviceConfiguration.CurrentGroupTypeIds.ToList();
+            AllowCheckout = localDeviceConfiguration.AllowCheckout ?? this.CheckInType?.AllowCheckoutDefault ?? false;
+            ConfiguredGroupTypes = ( localDeviceConfiguration.CurrentGroupTypeIds == null ) ? new List<int>() : localDeviceConfiguration.CurrentGroupTypeIds.ToList();
             CheckIn = new CheckInStatus();
             Messages = new List<CheckInMessage>();
         }
