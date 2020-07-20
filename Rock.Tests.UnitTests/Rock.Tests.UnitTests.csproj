@@ -93,6 +93,7 @@
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
     <Compile Include="Rock\Model\CommunicationTemplateTests.cs" />
+    <Compile Include="Rock\Model\ScheduleTests.cs" />
     <Compile Include="Rock\Model\StreakTypeServiceTests.cs" />
     <Compile Include="Rock\Model\ScheduleCheckInTests.cs" />
     <Compile Include="Rock\Model\HtmlContentTests.cs" />
