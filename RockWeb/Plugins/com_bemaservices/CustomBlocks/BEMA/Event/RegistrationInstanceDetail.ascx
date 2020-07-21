@@ -82,7 +82,7 @@
                         <%/* BEMA.FE1.Start */ %>
                         <div class="row" runat="server" id="divProjectCodeContainer" visible="true">
                             <div class="col-md-4">
-                                <Rock:RockTextBox ID="tbProjectCode" runat="server" Label="Project Code"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="tbProjectCode" runat="server" Label="Project Code" Visible="false"></Rock:RockTextBox>
                             </div>
                         </div>
                         <%/* BEMA.FE1.End */ %>
@@ -130,6 +130,10 @@
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-instance-has-payments" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-instance" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                 <%/* BEMA.FE2.Start */ %>
+                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" Visible="false" />
+                                <%/* BEMA.FE2.End */ %>
+                                <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-link" OnClick="btnPreview_Click" Visible="false" />
                                 <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminders" CssClass="btn btn-link" OnClick="btnSendPaymentReminder_Click" Visible="false" />
                             </span>
                         </div>
