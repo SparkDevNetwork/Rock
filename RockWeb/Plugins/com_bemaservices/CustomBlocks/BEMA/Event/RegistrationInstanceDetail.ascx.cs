@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.FE2.Start */
     [BooleanField(
         "Allow Copying of Registration Instances",
-        Key = AttributeKey.AllowRegistrationInstanceCopy,
+        Key = BemaAttributeKey.AllowRegistrationInstanceCopy,
         Description = "Is copying Registration Instances allowed?",
         DefaultValue = "False",
         Category = "BEMA Additional Features",
@@ -98,23 +98,17 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
     [BooleanField(
         "Allow Copying of Registration Linkages",
-        Key = AttributeKey.AllowRegistrationLinkageCopy,
+        Key = BemaAttributeKey.AllowRegistrationLinkageCopy,
         Description = "When copying registration instances, should Rock also copy any linkages?",
         DefaultValue = "False",
         Category = "BEMA Additional Features",
         Order = 3 )]
     /* BEMA.FE2.End */
 
-    public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock, IDetailBlock
     {
         #region Attribute Keys
-        public static class AttributeKey
-        {
-            public const string UseProjectCodes = "UseProjectCodes";
-            public const string ProjectCodeAttribute = "ProjectCodeAttribute";
-            public const string AllowRegistrationInstanceCopy = "AllowRegistrationInstanceCopy";
-            public const string AllowRegistrationLinkageCopy = "AllowRegistrationLinkageCopy";
-        }
+
         /// <summary>
         /// Keys to use for Block Attributes.
         /// </summary>
@@ -153,6 +147,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public const string UseProjectCodes = "UseProjectCodes";
             public const string ProjectCodeAttribute = "ProjectCodeAttribute";
+            public const string AllowRegistrationInstanceCopy = "AllowRegistrationInstanceCopy";
+            public const string AllowRegistrationLinkageCopy = "AllowRegistrationLinkageCopy";
         }
 
         #endregion
@@ -349,7 +345,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            if ( GetAttributeValue( AttributeKey.AllowRegistrationInstanceCopy ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.AllowRegistrationInstanceCopy ).AsBoolean() )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -392,7 +388,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         newRegistrationInstance.MaxAttendees = registrationInstance.MaxAttendees;
                         newRegistrationInstance.MinimumInitialPayment = registrationInstance.MinimumInitialPayment;
 
-                        if ( GetAttributeValue( AttributeKey.AllowRegistrationLinkageCopy ).AsBoolean() )
+                        if ( GetAttributeValue( BemaAttributeKey.AllowRegistrationLinkageCopy ).AsBoolean() )
                         {
                             var newLinkageState = new List<EventItemOccurrenceGroupMap>();
 
@@ -693,6 +689,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 }
 
                 /* BEMA.FE1.Start */
+				lProjectCode.Visible = false;
                 if ( GetAttributeValue( BemaAttributeKey.UseProjectCodes ).AsBoolean() )
                 {
                     var projectCodeGuid = GetAttributeValue( BemaAttributeKey.ProjectCodeAttribute ).AsGuidOrNull();
@@ -701,6 +698,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         var projectCodeAttributeKey = AttributeCache.Get( projectCodeGuid.Value ).Key;
                         registrationInstance.LoadAttributes( rockContext );
                         lProjectCode.Text = registrationInstance.GetAttributeValue( projectCodeAttributeKey );
+						lProjectCode.Visible = true;
                     }
                 }
                 /* BEMA.FE1.End */
@@ -750,6 +748,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             rieDetails.SetValue( instance );
 
             /* BEMA.FE1.Start */
+			tbProjectCode.Visible = false;
             if ( GetAttributeValue( BemaAttributeKey.UseProjectCodes ).AsBoolean() )
             {
                 var projectCodeGuid = GetAttributeValue( BemaAttributeKey.ProjectCodeAttribute ).AsGuidOrNull();
@@ -758,6 +757,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     var projectCodeAttributeKey = AttributeCache.Get( projectCodeGuid.Value ).Key;
                     instance.LoadAttributes( rockContext );
                     tbProjectCode.Text = instance.GetAttributeValue( projectCodeAttributeKey );
+					tbProjectCode.Visible = true;
                 }
             }
             /* BEMA.FE1.End */
