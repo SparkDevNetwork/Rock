@@ -679,7 +679,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-menu dropdown-menu js-personpicker-menu" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row no-gutters" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // column1
