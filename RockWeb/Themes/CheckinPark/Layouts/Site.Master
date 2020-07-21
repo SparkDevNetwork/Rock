@@ -32,12 +32,12 @@
     <script>
         function checkinSounds() {
             var tapSound = new Howl({
-                src: ['/Assets/Sounds/CheckIn/tap.mp3'],
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
                 volume: 0.4
             });
 
             var successSound = new Howl({
-                src: ['/Assets/Sounds/CheckIn/success.mp3'],
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
                 volume: 0.8
             });
 

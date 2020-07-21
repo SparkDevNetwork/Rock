@@ -38,12 +38,39 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Allows a person to edit their account information." )]
 
-    [BooleanField("Show Address", "Allows hiding the address field.", false, order: 0)]
-    [BooleanField( "Address Required", "Whether the address is required.", false, order: 2 )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
-        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
+    #region Block Attributes
+
+    [BooleanField( "Show Address",
+        Key = AttributeKey.ShowAddress,
+        Description = "Allows hiding the address field.",
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
+    [BooleanField( "Address Required",
+        Key = AttributeKey.AddressRequired,
+        Description = "Whether the address is required.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
+
+    [GroupLocationTypeField( "Location Type",
+        Key = AttributeKey.LocationType,
+        Description = "The type of location that address should use.",
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        IsRequired = false,
+        Order = 2 )]
+
+    #endregion Block Attributes
+
     public partial class AccountEdit : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string ShowAddress = "ShowAddress";
+            public const string AddressRequired = "AddressRequired";
+            public const string LocationType = "LocationType";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -278,7 +305,7 @@ namespace RockWeb.Blocks.Security
                                                 .FirstOrDefault();
                                 if ( familyGroup != null )
                                 {
-                                    Guid? addressTypeGuid = GetAttributeValue("LocationType").AsGuidOrNull();
+                                    Guid? addressTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuidOrNull();
                                     if ( addressTypeGuid.HasValue )
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
@@ -369,8 +396,8 @@ namespace RockWeb.Blocks.Security
         {
             RockContext rockContext = new RockContext();
 
-            pnlAddress.Visible = GetAttributeValue( "ShowAddress" ).AsBoolean();
-            acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
+            pnlAddress.Visible = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
+            acAddress.Required = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean();
 
             var person = CurrentPerson;
             if ( person != null )
@@ -387,7 +414,7 @@ namespace RockWeb.Blocks.Security
                 tbEmail.Text = person.Email;
                 rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
-                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                Guid? locationTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
                     var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );

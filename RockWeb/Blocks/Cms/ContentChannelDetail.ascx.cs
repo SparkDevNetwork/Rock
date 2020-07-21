@@ -336,7 +336,6 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
                 contentChannel.ChannelUrl = tbChannelUrl.Text;
-                contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
@@ -795,7 +794,6 @@ namespace RockWeb.Blocks.Cms
                 divTag.Attributes["style"] = cbEnableTag.Checked ? "display:block" : "display:none";
 
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
-                tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
 
                 ChildContentChannelsList = new List<int>();

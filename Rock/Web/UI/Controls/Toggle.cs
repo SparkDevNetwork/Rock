@@ -270,7 +270,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ActiveButtonCssClass"] as string ?? "";
+                return ViewState["ActiveButtonCssClass"] as string ?? "btn-primary";
             }
 
             set

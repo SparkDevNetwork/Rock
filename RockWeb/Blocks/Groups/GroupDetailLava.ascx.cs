@@ -531,6 +531,15 @@ namespace RockWeb.Blocks.Groups
                         groupLocation.LocationId = groupLocation.Location.Id;
                         groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
                     }
+                    else
+                    {
+                        var groupLocation = group.GroupLocations.FirstOrDefault();
+
+                        if ( groupLocation != null )
+                        {
+                            rockContext.GroupLocations.Remove( groupLocation );
+                        }
+                    }
                 }
 
                 rockContext.WrapTransaction( () => {

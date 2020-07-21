@@ -115,7 +115,7 @@ namespace Rock.Transactions
                 LaunchWorkflow( achievementTypeCache.AchievementStartWorkflowTypeId.Value );
             }
 
-            if ( IsNowEnding && achievementTypeCache.AchievementFailureWorkflowTypeId.HasValue )
+            if ( IsNowEnding && !IsNowSuccessful && achievementTypeCache.AchievementFailureWorkflowTypeId.HasValue )
             {
                 LaunchWorkflow( achievementTypeCache.AchievementFailureWorkflowTypeId.Value );
             }
