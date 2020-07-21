@@ -36,20 +36,39 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public GroupLocationTypeFieldAttribute( string groupTypeGuid, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public GroupLocationTypeFieldAttribute( string name, string groupTypeGuid = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupLocationTypeFieldType ).FullName )
         {
-            var configValue = new Field.ConfigurationValue( groupTypeGuid );
-            FieldConfigurationValues.Add( "groupTypeGuid", configValue );
+            /*
+             * 07/13/2020 - Shaun
+             * This is a workaround because the original constructor for this
+             * class was built to accept groupTypeGuid as the only parameter,
+             * so if any plugins were using the constructor in this manner,
+             * they would be passing the guid into the name parameter, so we
+             * will check there, first.
+             *
+             * Reason: Maintaining backwards compatibility for plugins.
+             */
+            Guid? groupType = name.AsGuidOrNull();
+            if ( groupType == null )
+            {
+                groupType = groupTypeGuid.AsGuidOrNull();
+            }
+            else
+            {
+                // If the name parameter was a guid, then the name and guid are out-of-order and we need to swap them.
+                Name = groupTypeGuid;
+            }
+
+            if ( groupType != null )
+            {
+                var configValue = new Field.ConfigurationValue( groupType.ToString() );
+                FieldConfigurationValues.Add( "groupTypeGuid", configValue );
+            }
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {
                 Name = "Group Location Type";
-            }
-
-            if ( string.IsNullOrWhiteSpace( Key ) )
-            {
-                Key = Name.Replace( " ", string.Empty );
             }
         }
 

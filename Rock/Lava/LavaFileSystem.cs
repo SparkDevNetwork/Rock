@@ -16,14 +16,11 @@
 //
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Web;
 
 using DotLiquid;
 using DotLiquid.Exceptions;
 using DotLiquid.FileSystems;
-
-using Rock;
 using Rock.Web.Cache;
 
 namespace Rock.Lava
@@ -44,7 +41,7 @@ namespace Rock.Lava
         /// <summary>
         /// Initializes a new instance of the <see cref="LavaFileSystem"/> class.
         /// </summary>
-        public LavaFileSystem() {}
+        public LavaFileSystem() { }
 
         /// <summary>
         /// Called by Liquid to retrieve a template file
@@ -55,13 +52,13 @@ namespace Rock.Lava
         /// <exception cref="FileSystemException">LavaFileSystem Template Not Found</exception>
         public string ReadTemplateFile( Context context, string templateName )
         {
-            string templatePath = (string)context[templateName];
+            string templatePath = ( string ) context[templateName];
 
             // Try to find exact file specified
-            var file = new FileInfo( FullPath( templatePath ));
-            if ( file.Exists)
+            var file = new FileInfo( FullPath( templatePath ) );
+            if ( file.Exists )
             {
-                return File.ReadAllText(file.FullName);
+                return File.ReadAllText( file.FullName );
             }
 
             // If requested template file does not include an extension
@@ -69,25 +66,25 @@ namespace Rock.Lava
             {
                 // Try to find file with .lava extension
                 string filePath = file.FullName + ".lava";
-                if ( File.Exists( filePath) )
+                if ( File.Exists( filePath ) )
                 {
-                    return File.ReadAllText(filePath);
+                    return File.ReadAllText( filePath );
                 }
 
                 // Try to find file with .liquid extension
                 filePath = file.FullName + ".liquid";
-                if ( File.Exists( filePath) )
+                if ( File.Exists( filePath ) )
                 {
-                    return File.ReadAllText(filePath);
+                    return File.ReadAllText( filePath );
                 }
 
                 // If file still not found, try prefixing filename with an underscore
-                if ( !file.Name.StartsWith("_") )
+                if ( !file.Name.StartsWith( "_" ) )
                 {
-                    filePath = Path.Combine( file.DirectoryName, string.Format("_{0}.lava", file.Name));
-                    if ( File.Exists( filePath) )
+                    filePath = Path.Combine( file.DirectoryName, string.Format( "_{0}.lava", file.Name ) );
+                    if ( File.Exists( filePath ) )
                     {
-                        return File.ReadAllText(filePath);
+                        return File.ReadAllText( filePath );
                     }
                     filePath = Path.Combine( file.DirectoryName, string.Format( "_{0}.liquid", file.Name ) );
                     if ( File.Exists( filePath ) )
@@ -108,7 +105,21 @@ namespace Rock.Lava
         /// <exception cref="FileSystemException">LavaFileSystem Illegal Template Name</exception>
         public string FullPath( string templatePath )
         {
-            if ( templatePath != null && HttpContext.Current != null )
+            if ( templatePath == null )
+            {
+                throw new FileSystemException( "LavaFileSystem Illegal Template Name", templatePath );
+            }
+
+            /*
+	            07/07/2020 - MSB 
+
+                We need to be careful here because if this is being run from a job or workflow the HttpContext.Current will
+                most likely be null. We shouldn't be relying on HttpContext.Current for information here unless we know it will not be null.
+	
+	            Reason: Update Persisted Datasets Job with Lava includes.
+            */
+
+            if ( HttpContext.Current != null )
             {
                 if ( templatePath.StartsWith( "~~" ) &&
                     HttpContext.Current.Items != null &&
@@ -122,14 +133,11 @@ namespace Rock.Lava
                         templatePath = "~/Themes/" + rockPage.Layout.Site.Theme + ( templatePath.Length > 2 ? templatePath.Substring( 2 ) : string.Empty );
                     }
                 }
+
+                return HttpContext.Current.Server.MapPath( templatePath );
             }
 
-            if ( templatePath == null )
-            {
-                throw new FileSystemException( "LavaFileSystem Illegal Template Name", templatePath );
-            }
-
-            return HttpContext.Current.Server.MapPath( templatePath );
+            return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, templatePath.Replace( "~~", "Themes/Rock" ).Replace( "~/", "" ) );
         }
     }
 }

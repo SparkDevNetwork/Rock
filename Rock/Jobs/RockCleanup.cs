@@ -931,10 +931,10 @@ namespace Rock.Jobs
 
                     var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
                         .Where( i => i.InteractionSessionId != null )
-                        .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
                         .Select( i => ( int ) i.InteractionSessionId )
                         .Distinct()
-                        .ToList();
+                        .ToList()
+                        .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i ) );
 
                     interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
 
