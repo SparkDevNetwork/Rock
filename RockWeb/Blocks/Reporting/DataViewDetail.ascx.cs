@@ -1036,6 +1036,15 @@ $(document).ready(function() {
         /// <returns></returns>
         private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
+            // Making an unsaved copy of the DataView so the runs do not get counted.
+            var dv = new DataView
+            {
+                Name = dataView.Name,
+                TransformEntityTypeId = dataView.TransformEntityTypeId,
+                EntityTypeId = dataView.EntityTypeId,
+                DataViewFilter = dataView.DataViewFilter
+            };
+
             grid.DataSource = null;
 
             // Only respect the ShowResults option if fetchRowCount is null
@@ -1046,9 +1055,9 @@ $(document).ready(function() {
 
             var errorMessages = new List<string>();
 
-            if ( dataView.EntityTypeId.HasValue )
+            if ( dv.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( dv.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -1058,9 +1067,8 @@ $(document).ready(function() {
                         try
                         {
                             grid.CreatePreviewColumns( entityType );
-                            var dbContext = dataView.GetDbContext();
-                            Stopwatch stopwatch = Stopwatch.StartNew();
-                            var qry = dataView.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
+                            var dbContext = dv.GetDbContext();
+                            var qry = dv.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                             if ( fetchRowCount.HasValue )
                             {
@@ -1069,9 +1077,6 @@ $(document).ready(function() {
 
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
-                            stopwatch.Stop();
-                            DataViewService.AddRunDataViewTransaction( dataView.Id,
-                                                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                         }
                         catch ( Exception ex )
                         {
@@ -1118,14 +1123,14 @@ $(document).ready(function() {
                 errorBox.Visible = false;
             }
 
-            if ( dataView.EntityTypeId.HasValue )
+            if ( dv.EntityTypeId.HasValue )
             {
-                grid.RowItemText = EntityTypeCache.Get( dataView.EntityTypeId.Value ).FriendlyName;
+                grid.RowItemText = EntityTypeCache.Get( dv.EntityTypeId.Value ).FriendlyName;
             }
 
             if ( grid.DataSource != null )
             {
-                grid.ExportFilename = dataView.Name;
+                grid.ExportFilename = dv.Name;
                 return true;
             }
 
