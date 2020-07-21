@@ -1184,7 +1184,11 @@ namespace RockWeb.Blocks.Groups
                 // Bind the grid
                 gGroups.DataSource = groups.Select( g =>
                 {
-                    var qryMembers = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == g.Id );
+                    var qryMembers = new GroupMemberService( rockContext )
+                        .Queryable()
+                        .Where( a => a.GroupId == g.Id )
+                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+
                     var groupType = GroupTypeCache.Get( g.GroupTypeId );
 
                     return new
