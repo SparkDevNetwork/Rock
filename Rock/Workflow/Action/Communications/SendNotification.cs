@@ -227,7 +227,7 @@ namespace Rock.Workflow.Action
                     string urlAttributeValue = action.GetWorkflowAttributeValue(urlGuid);
                     if (!string.IsNullOrWhiteSpace(urlAttributeValue))
                     {
-                        if (attribute.FieldType.Class == "Rock.Field.Types.BooleanFieldType")
+                        if (attribute.FieldType.Class == "Rock.Field.Types.TextFieldType")
                         {
                             url = urlAttributeValue;
                         }
