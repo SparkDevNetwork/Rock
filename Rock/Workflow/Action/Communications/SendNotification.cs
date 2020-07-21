@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute("Sound", "The choice of sound or an attribute that contains the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.BooleanFieldType" })]
     [WorkflowTextOrAttribute("Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
         new string[] { "Rock.Field.Types.TextFieldType" })]
+    [WorkflowTextOrAttribute("Url", "Attribute Value", "The URL or an attribute that contains the URL that the notification should link to.", false, "", "", 4, "Url", new string[] { "Rock.Field.Types.TextFieldType" })]
     public class SendPushNotification : ActionComponent
     {
         /// <summary>
@@ -216,6 +217,26 @@ namespace Rock.Workflow.Action
             }
             sound = sound.AsBoolean() ? "default" : "";
 
+            string url = GetAttributeValue(action, "Url");
+            Guid urlGuid = url.AsGuid();
+            if (!urlGuid.IsEmpty())
+            {
+                var attribute = AttributeCache.Get(urlGuid, rockContext);
+                if (attribute != null)
+                {
+                    string urlAttributeValue = action.GetWorkflowAttributeValue(urlGuid);
+                    if (!string.IsNullOrWhiteSpace(urlAttributeValue))
+                    {
+                        if (attribute.FieldType.Class == "Rock.Field.Types.TextFieldType")
+                        {
+                            url = urlAttributeValue;
+                        }
+                    }
+                }
+            }
+            PushData pushData = new PushData();
+            pushData.Url = url;
+
             if ( recipients.Any() && !string.IsNullOrWhiteSpace(message) )
             {
                 var pushMessage = new RockPushMessage();
@@ -223,6 +244,7 @@ namespace Rock.Workflow.Action
                 pushMessage.Title = title;
                 pushMessage.Message = message;
                 pushMessage.Sound = sound;
+                pushMessage.Data = pushData;
                 pushMessage.Send();
             }
 
