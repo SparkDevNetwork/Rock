@@ -1,4 +1,4 @@
-﻿namespace com.bemaservices.Support.SystemGuid
+﻿namespace com.bemaservices.ClientTools.SystemGuid
 {
     /// <summary>
     /// System Entity Types

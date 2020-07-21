@@ -10,7 +10,7 @@ namespace com.bemaservices.Support
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, "", "", "BEMA Code Package Version", "Currently installed BEMA Code version number", 0, "0.0.0.0", com.bemaservices.Support.SystemGuid.Attribute.CLIENT_CODE_VERSION_ATTRIBUTE_GUID );
+            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, "", "", "BEMA Code Package Version", "Currently installed BEMA Code version number", 0, "0.0.0.0", com.bemaservices.Support.SystemGuid.Attribute.BEMA_CLIENT_PACKAGE_VERSION_ATTRIBUTE_GUID );
 
             // Page: Internal Homepage
             RockMigrationHelper.UpdateBlockType( "BEMA Plugin Installer", "Allows a client to download the latest copy of their BEMA Code.", "~/Plugins/com_bemaservices/Support/BemaPluginInstaller.ascx", "BEMA Services > Support", "82360F6E-7D0B-4EAC-9371-A55ACE0F512C" );
@@ -26,7 +26,7 @@ namespace com.bemaservices.Support
             RockMigrationHelper.DeleteAttribute( "1B8097C0-8409-4166-89A8-970E0B1FFD27" );
             RockMigrationHelper.DeleteBlock( "18A61600-6147-47DE-B543-472E7953905E" );
             RockMigrationHelper.DeleteBlockType( "82360F6E-7D0B-4EAC-9371-A55ACE0F512C" );
-            RockMigrationHelper.DeleteAttribute( com.bemaservices.Support.SystemGuid.Attribute.CLIENT_CODE_VERSION_ATTRIBUTE_GUID );
+            RockMigrationHelper.DeleteAttribute( com.bemaservices.Support.SystemGuid.Attribute.BEMA_CLIENT_PACKAGE_VERSION_ATTRIBUTE_GUID );
         }
     }
 }

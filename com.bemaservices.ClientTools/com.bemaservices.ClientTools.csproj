@@ -5,14 +5,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7102F1C8-9B6A-40B8-B692-B9A455313004}</ProjectGuid>
+    <ProjectGuid>{8233726C-9303-4784-84C7-EE9379F668DF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.bemaservices.ClientPackage.BEMA</RootNamespace>
-    <AssemblyName>com.bemaservices.ClientPackage.BEMA</AssemblyName>
+    <RootNamespace>com.bemaservices.ClientTools</RootNamespace>
+    <AssemblyName>com.bemaservices.ClientTools</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -73,33 +72,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\001_InitialSetup.cs" />
-    <Compile Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs" />
-    <Compile Include="Migrations\003_GivingHistoryByMonthLineGraph.cs" />
-    <Compile Include="Migrations\004_StaffGivingSQLReport.cs" />
-    <Compile Include="Migrations\005_GiversWithoutPledges.cs" />
-    <Compile Include="Migrations\006_AlternateBusinessList.cs" />
-    <Compile Include="Migrations\007_PersonAuthorizedOnPage.cs" />
-    <Compile Include="Migrations\008_LargeDonations.cs" />
-    <Compile Include="Migrations\009_DuplicateContentChannelItemSlugs.cs" />
-    <Compile Include="Migrations\010_DuplicateEmails.cs" />
-    <Compile Include="Migrations\011_PledgeProgressReport.cs" />
-    <Compile Include="Migrations\012_ConnectionRequestsChart.cs" />
-    <Compile Include="Migrations\013_BaptismOverTimeChart.cs" />
-    <Compile Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs" />
-    <Compile Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs" />
-    <Compile Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs" />
-    <Compile Include="Migrations\017_FamilyCampusNotLastTransaction.cs" />
-    <Compile Include="Migrations\018_GivingByFinancialAccount.cs" />
-    <Compile Include="Migrations\019_PledgeAnalytics.cs" />
+    <Compile Include="Migrations\001_AddBemaPackageInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <!-- There may be a better way of building this reference, but I don't see it -->
@@ -123,8 +104,8 @@
   <!-- Prepare the files to be zipped -->
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
-      <CopyFiles Include="$(OutputPath)com.bemaservices.ClientPackage.BEMA.dll;" />
-      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\BEMA\**\*.*" />
+      <CopyFiles Include="$(OutputPath)com.bemaservices.ClientTools.dll;" />
+      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\ClientTools\**\*.*" />
       <VersionFile Include="builds\.version" />
     </ItemGroup>
     <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
@@ -134,7 +115,7 @@
     <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
     <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
-    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\CustomBlocks\BEMA\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\ClientTools\%(RecursiveDir)%(Filename)%(Extension)')" />
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
@@ -155,7 +136,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
     <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
-    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\ClientPackage-BEMA-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
+    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\ClientTools-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
   </Target>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
