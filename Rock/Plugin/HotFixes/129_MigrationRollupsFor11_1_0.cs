@@ -29,9 +29,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdatePodcastTwitterUrl();
-            UpdateRockMobileTemplate();
-            UpdateChannelTypeNamesForMessages();
+            //UpdatePodcastTwitterUrl();
+            //UpdateRockMobileTemplate();
+            //UpdateChannelTypeNamesForMessages();
         }
 
         /// <summary>
