@@ -412,7 +412,8 @@ namespace RockWeb.Blocks.Finance
         Order = 8 )]
 
     [CodeEditorField( "Transaction Header",
-        "The Lava template which will be displayed prior to the Amount entry",
+        Key = AttributeKey.TransactionHeader,
+        Description = "The Lava template which will be displayed prior to the Amount entry",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
@@ -3290,11 +3291,6 @@ TransactionAccountDetails: [
                     }
                     catch { }
                     rockContext.SaveChanges();
-                    //content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
-                }
-                else
-                {
-                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
         }
