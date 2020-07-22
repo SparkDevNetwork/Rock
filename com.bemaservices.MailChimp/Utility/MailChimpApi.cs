@@ -168,11 +168,17 @@ namespace com.bemaservices.MailChimp.Utility
             return null;
         }
 
-        public void SyncMembers( DefinedValueCache mailChimpList )
+        public void SyncMembers( DefinedValueCache mailChimpList, int? daysToSyncUpdates = null )
         {
             Dictionary<int, MCModels.Member> mailChimpMemberLookUp = new Dictionary<int, MCModels.Member>();
             var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ID_ATTRIBUTE.AsGuid() ).Key;
             var mailChimpListId = mailChimpList.GetAttributeValue( mailChimpListIdAttributeKey );
+
+            DateTime? dateLimit = null;
+            if ( daysToSyncUpdates.HasValue )
+            {
+                dateLimit = RockDateTime.Now.AddDays( daysToSyncUpdates.Value * -1 );
+            }
 
             try
             {
@@ -182,6 +188,10 @@ namespace com.bemaservices.MailChimp.Utility
                 var mailChimpMembers = new List<MCModels.Member>();
                 memberRequest.Limit = 1000;
 
+                if ( dateLimit.HasValue )
+                {
+                    memberRequest.SinceLastChanged = dateLimit.ToISO8601DateString();
+                }
                 try
                 {
                     while ( moreRecordsToFetch )
@@ -298,7 +308,8 @@ namespace com.bemaservices.MailChimp.Utility
                                 .Where( g => g.Id == groupId.Value )
                                 .SelectMany( g => g.Members )
                                 .Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive &&
-                                             !gm.IsArchived )
+                                             !gm.IsArchived &&
+                                             ( !dateLimit.HasValue || gm.ModifiedDateTime >= dateLimit ) )
                                 .ToList();
 
                             if ( memberList.Any() )
@@ -393,7 +404,6 @@ namespace com.bemaservices.MailChimp.Utility
 
         private void UpdateMailChimpListDefinedValue( MCModels.List mailChimpList, ref DefinedValue mailChimpListValue, RockContext rockContext )
         {
-
             mailChimpListValue.Value = mailChimpList.Name;
             mailChimpListValue.Description = mailChimpList.SubscribeUrlLong;
 
@@ -502,14 +512,18 @@ namespace com.bemaservices.MailChimp.Utility
             try
             {
                 if ( mailChimpMember.IsNotNull() )
-                {
+                {                   
+                    var firstName = mailChimpMember.MergeFields.ContainsKey("FNAME") ? mailChimpMember.MergeFields["FNAME"].ToString().Left( 50 ) : "";
+                    var lastName = mailChimpMember.MergeFields.ContainsKey("LNAME") ? mailChimpMember.MergeFields["LNAME"].ToString().Left( 50 ): "";
 
-                    // Update Mail Chimp with the Rock Person's First And Last Name
-                    mailChimpMember.MergeFields.AddOrReplace( "FNAME", rockPerson.NickName );
-                    mailChimpMember.MergeFields.AddOrReplace( "LNAME", rockPerson.LastName );
+                    if ( firstName != rockPerson.NickName || lastName != rockPerson.LastName )
+                    {
+                        // Update Mail Chimp with the Rock Person's First And Last Name
+                        mailChimpMember.MergeFields.AddOrReplace( "FNAME", rockPerson.NickName );
+                        mailChimpMember.MergeFields.AddOrReplace( "LNAME", rockPerson.LastName );
 
-                    var result = _mailChimpManager.Members.AddOrUpdateAsync( mailChimpListId, mailChimpMember ).Result;
-
+                        var result = _mailChimpManager.Members.AddOrUpdateAsync( mailChimpListId, mailChimpMember ).Result;
+                    }
                 }
             }
             catch ( System.AggregateException e )
