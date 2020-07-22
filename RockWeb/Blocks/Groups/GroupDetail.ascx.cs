@@ -1731,7 +1731,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // The inactivate child groups checkbox should only be visible if there are children to inactivate. js on the page will consume this.
-            hfHasChildGroups.Value = groupService.GetAllDescendentGroupIds( group.Id, false ).Any() ? "true" : "false";
+            hfHasChildGroups.Value = groupService.HasDescendantGroups( group.Id, false ) ? "true" : "false";
 
             LoadDropDowns( rockContext );
 
