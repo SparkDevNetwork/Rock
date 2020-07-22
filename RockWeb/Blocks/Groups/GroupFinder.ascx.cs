@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Groups
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
     [BooleanField( "Sort By Distance", "", false, "CustomSetting" )]
     [TextField( "Page Sizes", "To show a dropdown of page sizes, enter a comma delimited list of page sizes. For example: 10,20 will present a drop down with 10,20,All as options with the default as 10", false, "", "CustomSetting" )]
-    [BooleanField( "Include Pending", "", false, "CustomSetting" )]
+    [BooleanField( "Include Pending", "", true, "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
