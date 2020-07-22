@@ -37,50 +37,81 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
 
-    [GroupTypeField( "Group Type",
-        description: "The group type to display groups for (default is Family)",
-        required: false,
-        defaultGroupTypeGuid: Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
-        order: 0,
-        key: "GroupType" )]
-    [BooleanField( "Auto Create Group",
-        description: "If person doesn't belong to a group of this type, should one be created for them (default is Yes).",
-        defaultValue: true,
-        order: 1,
-        key: "AutoCreateGroup" )]
-    [LinkedPage( "Group Edit Page",
-        description: "Page used to edit the members of the selected group.",
-        required: true,
-        order: 2,
-        key: "GroupEditPage" )]
-    [LinkedPage( "Location Detail Page",
-        description: "Page used to edit the settings for a particular location.",
-        required: false,
-        order: 3,
-        key: "LocationDetailPage" )]
-    [BooleanField( "Show County",
-        description: "Should County be displayed when editing an address?.",
-        defaultValue: false,
-        order: 4,
-        key: "ShowCounty" )]
-    [CodeEditorField( "Group Header Lava",
-        description: "Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
-        mode: CodeEditorMode.Lava,
-        theme: CodeEditorTheme.Rock,
-        height: 200,
-        required: false,
-        order: 5,
-        key: "GroupHeaderLava" )]
-    [CodeEditorField( "Group Footer Lava",
-        description: "Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
-        mode: CodeEditorMode.Lava,
-        theme: CodeEditorTheme.Rock,
-        height: 200,
-        required: false,
-        order: 6,
-        key: "GroupFooterLava" )]
+    #region Block Attributes
+
+    [GroupTypeField(
+        "Group Type",
+        Key = AttributeKey.GroupType,
+        Description = "The group type to display groups for (default is Family)",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        Order = 0 )]
+
+    [BooleanField(
+        "Auto Create Group",
+        Key = AttributeKey.AutoCreateGroup,
+        Description = "If person doesn't belong to a group of this type, should one be created for them (default is Yes).",
+        DefaultBooleanValue = true,
+        Order = 1 )]
+
+    [LinkedPage(
+        "Group Edit Page",
+        Key = AttributeKey.GroupEditPage,
+        Description = "Page used to edit the members of the selected group.",
+        IsRequired = true,
+        Order = 2 )]
+
+    [LinkedPage(
+        "Location Detail Page",
+        Key = AttributeKey.LocationDetailPage,
+        Description = "Page used to edit the settings for a particular location.",
+        IsRequired = false,
+        Order = 3 )]
+
+    [BooleanField(
+        "Show County",
+        Key = AttributeKey.ShowCounty,
+        Description = "Should County be displayed when editing an address?.",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [CodeEditorField(
+        "Group Header Lava",
+        Key = AttributeKey.GroupHeaderLava,
+        Description = "Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        Order = 5 )]
+
+    [CodeEditorField(
+        "Group Footer Lava",
+        Key = AttributeKey.GroupFooterLava,
+        Description = "Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        Order = 6 )]
+
+    #endregion Block Attributes
+
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string GroupType = "GroupType";
+            public const string AutoCreateGroup = "AutoCreateGroup";
+            public const string GroupEditPage = "GroupEditPage";
+            public const string LocationDetailPage = "LocationDetailPage";
+            public const string ShowCounty = "ShowCounty";
+            public const string GroupHeaderLava = "GroupHeaderLava";
+            public const string GroupFooterLava = "GroupFooterLava";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private GroupTypeCache _groupType = null;
@@ -104,7 +135,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            _groupType = GroupTypeCache.Get( GetAttributeValue( "GroupType" ).AsGuid() );
+            _groupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             if ( _groupType == null )
             {
                 _groupType = GroupTypeCache.GetFamilyGroupType();
@@ -114,7 +145,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
-            _showCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
+            _showCounty = GetAttributeValue( AttributeKey.ShowCounty ).AsBoolean();
 
             RegisterScripts();
         }
@@ -210,7 +241,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var pageParams = new Dictionary<string, string>();
                         pageParams.Add( "PersonId", Person.Id.ToString() );
                         pageParams.Add( "GroupId", group.Id.ToString() );
-                        hlEditGroup.NavigateUrl = LinkedPageUrl( "GroupEditPage", pageParams );
+                        hlEditGroup.NavigateUrl = LinkedPageUrl( AttributeKey.GroupEditPage, pageParams );
                     }
 
                     var lReorderIcon = e.Item.FindControl( "lReorderIcon" ) as Control;
@@ -227,8 +258,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
-                        var groupHeaderLava = GetAttributeValue( "GroupHeaderLava" );
-                        var groupFooterLava = GetAttributeValue( "GroupFooterLava" );
+                        var groupHeaderLava = GetAttributeValue( AttributeKey.GroupHeaderLava );
+                        var groupFooterLava = GetAttributeValue( AttributeKey.GroupFooterLava );
 
                         if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
                         {
@@ -451,7 +482,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                             case "settings":
                                 {
-                                    NavigateToLinkedPage( "LocationDetailPage",
+                                    NavigateToLinkedPage( AttributeKey.LocationDetailPage,
                                         new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
                                     break;
                                 }
@@ -478,7 +509,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
 
-            // If this is a Family GroupType and they belong to multiple families, 
+            // If this is a Family GroupType and they belong to multiple families,
             // first make sure that the GroupMember.GroupOrder is set for this Person's Families.
             // This will ensure that other spots that rely on the GroupOrder provide consistent results.
             if ( this._IsFamilyGroupType )
@@ -513,7 +544,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .AsNoTracking()
                     .ToList();
 
-                if ( !groups.Any() && GetAttributeValue( "AutoCreateGroup" ).AsBoolean( true ) )
+                if ( !groups.Any() && GetAttributeValue( AttributeKey.AutoCreateGroup ).AsBoolean( true ) )
                 {
                     // ensure that the person is in a group
 
@@ -659,7 +690,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void RegisterScripts()
         {
             string script = @"
-    $('.js-show-more-family-attributes').click(function (e) {
+    $('.js-show-more-family-attributes').on('click', function (e) {
         var $pnl = $(this).closest('.js-persondetails-group');
         var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
         if ( $moreAttributes.is(':visible') ) {

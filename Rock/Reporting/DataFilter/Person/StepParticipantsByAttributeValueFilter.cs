@@ -41,13 +41,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Step Participants By Attribute Value Filter" )]
     public class StepParticipantsByAttributeValueFilter : EntityFieldFilter
     {
-
-        #region Fields
-
-        private List<EntityField> _entityFields = null;
-
-        #endregion Fields
-
         #region Properties
 
         /// <summary>
@@ -190,6 +183,7 @@ namespace Rock.Reporting.DataFilter.Person
             StepTypePicker stepTypePicker = new StepTypePicker
             {
                 ID = filterControl.ID + "_stepTypePicker",
+                CssClass = "js-step-type-picker",
                 Label = "Step Type",
                 Required = true
             };
@@ -261,7 +255,7 @@ namespace Rock.Reporting.DataFilter.Person
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
             // Get the EntityFields for the attributes associated with the selected StepType.
-            _entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
+            var entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
 
             // Create the attribute selection dropdown.
             string propertyControlId = string.Format( "{0}_ddlProperty", containerControl.ID );
@@ -283,7 +277,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlProperty.Items.Add( new ListItem() );
 
             // Add a ListItem for each of the attributes.
-            foreach ( var entityField in _entityFields )
+            foreach ( var entityField in entityFields )
             {
                 ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
             }
@@ -295,7 +289,7 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             // Add the filter controls (comparison type and value).
-            foreach ( var entityField in _entityFields )
+            foreach ( var entityField in entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
@@ -319,8 +313,10 @@ namespace Rock.Reporting.DataFilter.Person
             var ddlProperty = sender as RockDropDownList;
             var containerControl = ddlProperty.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
+            StepTypePicker stepTypePicker = filterControl.ControlsOfTypeRecursive<StepTypePicker>().Where( a => a.HasCssClass( "js-step-type-picker" ) ).FirstOrDefault();
+            var entityFields = GetStepAttributes( stepTypePicker.SelectedValueAsId() );
 
-            var entityField = _entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );

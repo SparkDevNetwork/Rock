@@ -123,7 +123,7 @@ begin
 
 		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
 		if (@AttendanceOccurrenceId is null) begin
-			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, newid());
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), newid());
 			set @AttendanceOccurrenceId = @@IDENTITY;
 		end
 

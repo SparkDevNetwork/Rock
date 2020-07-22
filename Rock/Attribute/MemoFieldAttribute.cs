@@ -48,11 +48,45 @@ namespace Rock.Attribute
             int order = 0, string key = null, int numberOfRows = 3, bool allowHtml = false )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.MemoFieldType ).FullName)
         {
-            var rowConfig = new Field.ConfigurationValue( numberOfRows.ToString() );
-            FieldConfigurationValues.Add( NUMBER_OF_ROWS, rowConfig );
+            NumberOfRows = numberOfRows;
+            AllowHtml = allowHtml;
+        }
 
-            var htmlConfig = new Field.ConfigurationValue( allowHtml.ToString() );
-            FieldConfigurationValues.Add( ALLOW_HTML, htmlConfig );
+        /// <summary>
+        /// Sets a value indicating whether [allow HTML].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow HTML]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowHtml
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_HTML ).AsBoolean();
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_HTML, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the height of the editor.
+        /// </summary>
+        /// <value>
+        /// The height of the editor.
+        /// </value>
+        public int NumberOfRows
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( NUMBER_OF_ROWS ).AsIntegerOrNull() ?? 3;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( NUMBER_OF_ROWS, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
 
     }

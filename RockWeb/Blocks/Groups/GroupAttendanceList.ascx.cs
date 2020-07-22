@@ -658,7 +658,7 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( occurrence.Schedule.Name.IsNotNullOrWhiteSpace() )
                 {
-                    ScheduleName = occurrence.Schedule.Name;
+                    ScheduleName = occurrence.Schedule.Name.EncodeHtml();
                 }
                 else
                 {

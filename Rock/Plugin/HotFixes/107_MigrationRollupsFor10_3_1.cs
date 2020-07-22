@@ -28,11 +28,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RemoveCommunicationPreference();
-            UpdateEmailMediumAttributeNonHtmlContent();
-            UpdateCheckinSuccessMessage();
-            UpdateEventListTemplateType();
-            UpdatePrayerSessionTemplateType();
+            //RemoveCommunicationPreference();
+            //UpdateEmailMediumAttributeNonHtmlContent();
+            //UpdateCheckinSuccessMessage();
+            //UpdateEventListTemplateType();
+            //UpdatePrayerSessionTemplateType();
 
         }
 

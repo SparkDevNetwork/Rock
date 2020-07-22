@@ -125,7 +125,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        public IEnumerable<EntityType> GetReportableEntities(Person currentPerson)
+        public IEnumerable<EntityType> GetReportableEntities( Person currentPerson )
         {
             return this.GetEntities()
                 .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
@@ -233,7 +233,7 @@ namespace Rock.Model
                     Type[] modelType = { entityType };
                     Type genericServiceType = typeof( Rock.Data.Service<> );
                     Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { (RockContext)this.Context } ) as IService;
+                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { ( RockContext ) this.Context } ) as IService;
 
                     MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
                     return qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
@@ -244,102 +244,149 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of ISecured and IEntity entities (all models) that have not yet been registered and adds them
-        /// as an <see cref="Rock.Model.EntityType"/>.
+        /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
+        /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
         /// </summary>
-        /// <param name="physWebAppPath">A <see cref="System.String"/> that represents the physical path of the web application</param>
+        [Obsolete( "Use the RegisterEntityTypes() that doesn't have any parameters (physWebAppPath is never used)" )]
+        [RockObsolete( "1.11" )]
         public static void RegisterEntityTypes( string physWebAppPath )
         {
-            var entityTypes = new Dictionary<string, EntityType>();
+            RegisterEntityTypes();
+        }
 
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ) ) )
+        /// <summary>
+        /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
+        /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
+        /// </summary>
+        public static void RegisterEntityTypes()
+        {
+            List<Type> reflectedTypes = new List<Type>();
+
+            // we'll auto-register anything that implements IEntity, ISecured or IRockBlockType
+            reflectedTypes.AddRange( Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ) ).Values );
+            reflectedTypes.AddRange( Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ) ).Values );
+            reflectedTypes.AddRange( Rock.Reflection.FindTypes( typeof( Rock.Blocks.IRockBlockType ) ).Values );
+
+            // do a distinct since some of the types implement both IEntity and ISecured
+            reflectedTypes = reflectedTypes.Distinct().OrderBy( a => a.FullName ).ToList();
+
+            Dictionary<string, EntityType> entityTypesFromReflection = new Dictionary<string, EntityType>( StringComparer.OrdinalIgnoreCase );
+            foreach ( var reflectedType in reflectedTypes )
             {
                 var entityType = new EntityType();
-                entityType.Name = type.Key;
-                entityType.FriendlyName = type.Value.Name.SplitCase();
-                entityType.AssemblyName = type.Value.AssemblyQualifiedName;
-                entityType.IsEntity = !type.Value.GetCustomAttributes( typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute), false ).Any();
-                entityType.IsSecured = false;
-                entityTypes.Add( type.Key.ToLower(), entityType );
-            }
-
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ) ) )
-            {
-                string key = type.Key.ToLower();
-
-                if ( entityTypes.ContainsKey( key ) )
+                entityType.Name = reflectedType.FullName;
+                entityType.FriendlyName = reflectedType.Name.SplitCase();
+                entityType.AssemblyName = reflectedType.AssemblyQualifiedName;
+                if ( typeof( IEntity ).IsAssignableFrom( reflectedType ) )
                 {
-                    entityTypes[key].IsSecured = true;
+                    entityType.IsEntity = reflectedType.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute>() == null;
                 }
                 else
                 {
-                    var entityType = new EntityType();
-                    entityType.Name = type.Key;
-                    entityType.FriendlyName = type.Value.Name.SplitCase();
-                    entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
-                    entityType.IsSecured = true;
-                    entityTypes.Add( key, entityType );
                 }
-            }
+
+                entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( reflectedType );
+
+                entityTypesFromReflection.AddOrIgnore( reflectedType.FullName, entityType );
+            };
 
             using ( var rockContext = new RockContext() )
             {
                 var entityTypeService = new EntityTypeService( rockContext );
 
-                // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
-                foreach ( var oldEntityType in entityTypeService.Queryable()
-                    .Where( e => e.IsEntity || e.IsSecured )
-                    .ToList() )
+                var reflectedTypeNames = reflectedTypes.Select( a => a.FullName ).ToArray();
+
+                // Get all the EntityType records from the Database without filtering them (we'll have to deal with them all)
+                // Then we'll split them into a list of ones that don't exist and ones that still exist
+                var entityTypeInDatabaseList = entityTypeService.Queryable().ToList();
+
+                // Find any existing self-discovered EntityType records that no longer exist in reflectedTypes
+                // but have C# narrow it down to ones that aren't in the reflectedTypeNames list
+                var reflectedEntityTypesThatNoLongerExist = entityTypeInDatabaseList
+                    .Where( e => !string.IsNullOrEmpty( e.AssemblyName ) )
+                    .ToList()
+                    .Where( e => !reflectedTypeNames.Contains( e.Name ) )
+                    .OrderBy( a => a.Name )
+                    .ToList();
+
+                foreach ( var oldEntityType in reflectedEntityTypesThatNoLongerExist )
                 {
-                    if ( !entityTypes.Keys.Contains( oldEntityType.Name.ToLower() ) )
+
+                    Type foundType = null;
+                    // if this isn't one of the EntityTypes that we self-register,
+                    // see if it was manually registered first (with EntityTypeCache.Get(Type type, bool createIfNotExists))
+                    try
                     {
+                        foundType = Type.GetType( oldEntityType.AssemblyName, false );
+                    }
+                    catch
+                    {
+                        /* 2020-05-22 MDP
+                         * GetType (string typeName, bool throwOnError) can throw exceptions even if throwOnError is false!
+                         * see https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype?view=netframework-4.5.2#System_Type_GetType_System_String_System_Boolean_
+
+                          so, if this happens, we'll ignore any error it returns in those cases too
+                         */
+                    }
+                    
+                    if ( foundType == null )
+                    {
+                        // it was manually registered but we can't create a Type from it
+                        // so we'll update the EntityType.AssemblyName to null
+                        // and set IsSecured and IsEntity to False (since a NULL type doesn't implement ISecured or IEntity)
+                        oldEntityType.AssemblyName = null;
                         oldEntityType.IsSecured = false;
                         oldEntityType.IsEntity = false;
-                        oldEntityType.AssemblyName = null;
                     }
                 }
 
+                // Now get the entityType records that are still in the list of types we found thru reflection
+                // but we'll have C# narrow it down to ones that aren't in the reflectedTypeNames list
+                var reflectedEntityTypesThatStillExist = entityTypeInDatabaseList
+                    .Where( e => reflectedTypeNames.Contains( e.Name ) )
+                    .ToList();
+
                 // Update any existing entities
-                foreach ( var existingEntityType in entityTypeService.Queryable()
-                    .Where( e => entityTypes.Keys.Contains( e.Name ) )
-                    .ToList() )
+                foreach ( var existingEntityType in reflectedEntityTypesThatStillExist )
                 {
-                    var key = existingEntityType.Name.ToLower();
-
-                    var entityType = entityTypes[key];
-
-                    if ( existingEntityType.Name != entityType.Name ||
-                        existingEntityType.IsEntity != entityType.IsEntity ||
-                        existingEntityType.IsSecured != entityType.IsSecured ||
-                        existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
-                        existingEntityType.AssemblyName != entityType.AssemblyName )
+                    var entityTypeFromReflection = entityTypesFromReflection.GetValueOrNull( existingEntityType.Name );
+                    if ( entityTypeFromReflection == null )
                     {
-                        existingEntityType.Name = entityType.Name;
-                        existingEntityType.IsEntity = entityType.IsEntity;
-                        existingEntityType.IsSecured = entityType.IsSecured;
-                        existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
-                        existingEntityType.AssemblyName = entityType.AssemblyName;
+                        continue;
                     }
 
-                    entityTypes.Remove( key );
+                    if ( existingEntityType.Name != entityTypeFromReflection.Name ||
+                        existingEntityType.IsEntity != entityTypeFromReflection.IsEntity ||
+                        existingEntityType.IsSecured != entityTypeFromReflection.IsSecured ||
+                        existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityTypeFromReflection.FriendlyName ) ||
+                        existingEntityType.AssemblyName != entityTypeFromReflection.AssemblyName )
+                    {
+                        existingEntityType.Name = entityTypeFromReflection.Name;
+                        existingEntityType.IsEntity = entityTypeFromReflection.IsEntity;
+                        existingEntityType.IsSecured = entityTypeFromReflection.IsSecured;
+                        existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityTypeFromReflection.FriendlyName;
+                        existingEntityType.AssemblyName = entityTypeFromReflection.AssemblyName;
+                    }
+
+                    entityTypesFromReflection.Remove( existingEntityType.Name );
                 }
 
                 // Add the newly discovered entities 
-                foreach ( var entityTypeInfo in entityTypes )
+                foreach ( var entityType in entityTypesFromReflection.Values )
                 {
                     // Don't add the EntityType entity as it will probably have been automatically 
                     // added by the audit on a previous save in this method.
-                    if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                    if ( entityType.Name != "Rock.Model.EntityType" )
                     {
-                        entityTypeService.Add( entityTypeInfo.Value );
+                        entityTypeService.Add( entityType );
                     }
                 }
 
                 rockContext.SaveChanges();
 
                 // make sure the EntityTypeCache is synced up with any changes that were made
-                foreach (var entityTypeModel in entityTypeService.Queryable())
+                foreach ( var entityTypeModel in entityTypeService.Queryable().AsNoTracking() )
                 {
                     EntityTypeCache.Get( entityTypeModel );
                 }

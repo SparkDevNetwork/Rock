@@ -131,7 +131,7 @@ namespace Rock.Communication.Medium
                             string responseCode = match.ToString();
 
                             var recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication" )
-                                                .Where( r => r.ResponseCode == responseCode )
+                                                .Where( r => r.ResponseCode == responseCode && r.CreatedDateTime.HasValue )
                                                 .OrderByDescending( r => r.CreatedDateTime ).FirstOrDefault();
 
                             if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
@@ -381,7 +381,8 @@ namespace Rock.Communication.Medium
             //
             var activeCodes = new CommunicationRecipientService( rockContext ).Queryable()
                                     .Where( c => c.MediumEntityTypeId == smsEntityTypeId )
-                                    .Where( c => System.Data.Entity.DbFunctions.Left( c.ResponseCode, 1 ) == "@" && c.CreatedDateTime > tokenStartDate )
+                                    .Where( c => System.Data.Entity.DbFunctions.Left( c.ResponseCode, 1 ) == "@")
+                                    .Where( c => c.CreatedDateTime.HasValue && c.CreatedDateTime > tokenStartDate )
                                     .Select( c => c.ResponseCode )
                                     .ToList();
 
@@ -438,7 +439,8 @@ namespace Rock.Communication.Medium
                     // Verify that the code is still unused.
                     //
                     var isUsed = communicationRecipientService.Queryable()
-                            .Where( c => c.ResponseCode == code && c.CreatedDateTime > tokenStartDate )
+                            .Where( c => c.ResponseCode == code )
+                            .Where( c => c.CreatedDateTime.HasValue  && c.CreatedDateTime > tokenStartDate )
                             .Any();
 
                     if ( !isUsed )
@@ -493,51 +495,5 @@ namespace Rock.Communication.Medium
 
             return null;
         }
-
-        #region Obsolete 
-
-        /// <summary>
-        /// Gets the HTML preview.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "The GetCommunication now creates the HTML Preview directly", true )]
-        public override string GetHtmlPreview( Model.Communication communication, Person person )
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Gets the read-only message details.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "The CommunicationDetail block now creates the details", true )]
-        public override string GetMessageDetails( Model.Communication communication )
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [supports bulk communication].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "All mediums now support bulk communications", true )]
-        public override bool SupportsBulkCommunication
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        #endregion
-
     }
 }

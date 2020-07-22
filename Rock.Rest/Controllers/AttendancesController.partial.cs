@@ -252,17 +252,35 @@ namespace Rock.Rest.Controllers
         #region RSVP Related
 
         /// <summary>
-        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// This method is deprecated and should not be used as it is subject to the limits of the maximum URL length of the browser.
+        /// Use the method which accepts the list of Person Ids in the body of the request, instead.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIds">A comma-delimited list of Person IDs.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/RegisterRSVPRecipients" )]
         [HttpPost]
+        [Obsolete( "Use the method which accepts a List<string> parameter instead." )]
+        [RockObsolete( "1.10.4" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {
             new AttendanceService( new RockContext() )
                 .RegisterRSVPRecipients( occurrenceId, personIds );
+        }
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIds">A list of Person IDs.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/RegisterRSVPRecipients" )]
+        [HttpPost]
+        public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
+        {
+            var personIdList = personIds.Select( int.Parse ).ToList();
+            new AttendanceService( new RockContext() )
+                .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 
 

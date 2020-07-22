@@ -25,6 +25,7 @@
                     type: options.type || 'single', // Choose slider type, could be 'single' for one handle, or 'double' for two handles
                     min: options.min || 0,
                     max: options.max || 100,
+                    step: options.step || 1,
                     from: options.from || null, // for 'single' the position of the slider. for 'double' the lower position of the selected range
                     to: options.to || null, // if 'double' the upper position of the selected range
                     disable: options.disable || false // if 'true', the control will render as read-only

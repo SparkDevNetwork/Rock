@@ -209,7 +209,6 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
             //htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
-            this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
             htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
@@ -381,6 +380,8 @@ namespace Rock.Web.UI.Controls.Communication
                 htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
                 htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             }
+            this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
+
             htmlMessage.RenderControl( writer );
 
             writer.RenderEndTag();

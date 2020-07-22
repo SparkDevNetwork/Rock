@@ -33,6 +33,7 @@ namespace Rock.Web.Cache
         /// </summary>
         private LavaTemplateCache()
         {
+            DefaultLifespan = TimeSpan.FromMinutes( 10 );
         }
 
         #endregion
@@ -58,7 +59,7 @@ namespace Rock.Web.Cache
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed" )]
+        [Obsolete( "No longer needed", true )]
         public static new LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
         {
             return ItemCache<LavaTemplateCache>.GetOrAddExisting( key, null );
@@ -81,7 +82,7 @@ namespace Rock.Web.Cache
         /// <param name="content">The content.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static LavaTemplateCache Read( string content )
         {
             return Get( content );
@@ -102,12 +103,25 @@ namespace Rock.Web.Cache
                 return Load( content );
             }
 
-            return GetOrAddExisting( key, () => Load( content ), new TimeSpan( 0, 10, 0 ) );
+            return ItemCache<LavaTemplateCache>.GetOrAddExisting( key, () => Load( content ) );
         }
 
         private static LavaTemplateCache Load( string content )
         {
-            var lavaTemplate = new LavaTemplateCache { Template = Template.Parse( content ) };
+            var template = Template.Parse( content );
+
+            /* 
+             * 2/19/2020 - JPH
+             * The DotLiquid library's Template object was not originally designed to be thread safe, but a PR has since
+             * been merged into that repository to add this functionality (https://github.com/dotliquid/dotliquid/pull/220).
+             * We have cherry-picked the PR's changes into our DotLiquid project, allowing the Template to operate safely
+             * in a multithreaded context, which can happen often with our cached Template instances.
+             *
+             * Reason: Rock Issue #4084, Weird Behavior with Lava Includes
+             */
+            template.MakeThreadSafe();
+
+            var lavaTemplate = new LavaTemplateCache { Template = template };
             return lavaTemplate;
         }
 

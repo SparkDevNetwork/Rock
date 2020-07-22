@@ -44,13 +44,26 @@
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbEngagementStrength" runat="server" Label="Engagement Strength" NumberType="Integer" />
                         </div>
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:NumberBox ID="nbComponentCacheDuration" runat="server" Label="Component Cache Duration" NumberType="Integer" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustom1Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustom1Label" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustom2Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustom2Label" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustomIndexed1Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="InteractionCustomIndexed1Label" />
                         </div>
                     </div>
 

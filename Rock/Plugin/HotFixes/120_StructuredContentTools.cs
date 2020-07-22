@@ -28,7 +28,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateStructuredContentTools();
+            //UpdateStructuredContentTools();
         }
 
         /// <summary>

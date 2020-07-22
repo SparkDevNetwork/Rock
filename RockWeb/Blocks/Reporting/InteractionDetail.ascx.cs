@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Reporting
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.AddOrIgnore( "Person", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
-                    mergeFields.Add( "InteractionChannel", interaction.InteractionComponent.Channel );
+                    mergeFields.Add( "InteractionChannel", interaction.InteractionComponent.InteractionChannel );
                     mergeFields.Add( "InteractionComponent", interaction.InteractionComponent );
                     mergeFields.Add( "InteractionEntity", interactionEntity );
 
@@ -163,8 +163,8 @@ namespace RockWeb.Blocks.Reporting
                     
                     mergeFields.Add( "Interaction", interaction );
 
-                    lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
-                        interaction.InteractionComponent.Channel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
+                    lContent.Text = interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
+                        interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }
             }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Reporting
         private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
         {
             IEntity interactionEntity = null;
-            var interactionEntityType = EntityTypeCache.Get( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
+            var interactionEntityType = EntityTypeCache.Get( interaction.InteractionComponent.InteractionChannel.InteractionEntityTypeId.Value ).GetEntityType();
             IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
             if ( serviceInstance != null )
             {

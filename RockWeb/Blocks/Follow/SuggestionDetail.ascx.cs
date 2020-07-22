@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Follow
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "eventId" ).AsInteger() );
+                ShowDetail( PageParameter( "EventId" ).AsInteger() );
             }
         }
 

@@ -55,10 +55,20 @@ namespace Rock.Web.UI.Adapters
                 writer.WriteLine();
 
                 // always render the label tag for the checkbox, even if the checkbox doesn't have text
-                bool renderCheckboxLabel = true;
-                var textCssClass = "label-text";
-                if ( renderCheckboxLabel )
+
+                bool renderAsCheckbox = true;
+
+                var cbSwitch = cb as Rock.Web.UI.Controls.Switch;
+                if ( cbSwitch != null )
                 {
+                    renderAsCheckbox = false;
+                }
+
+                var textCssClass = "";
+                var controlCssClass = "";
+                if ( renderAsCheckbox )
+                {
+                    textCssClass = "label-text";
                     var containerCssClass = "checkbox";
 
 
@@ -79,6 +89,15 @@ namespace Rock.Web.UI.Adapters
 
                     writer.AddAttribute( "title", cb.ToolTip );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
+                    controlCssClass = cb.CssClass;
+                }
+                else
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control custom-switch" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    controlCssClass = "custom-control-input " + cb.CssClass;
                 }
 
                 writer.AddAttribute( "id", cb.ClientID );
@@ -89,9 +108,9 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( "checked", "checked" );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( cb.CssClass ) )
+                if ( !string.IsNullOrWhiteSpace( controlCssClass ) )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, cb.CssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, controlCssClass );
                 }
 
                 foreach ( var inputAttributeKey in cb.InputAttributes.Keys )
@@ -120,7 +139,9 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                if ( renderCheckboxLabel )
+                
+
+                if ( renderAsCheckbox )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, textCssClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
@@ -136,6 +157,30 @@ namespace Rock.Web.UI.Adapters
 
                     writer.RenderEndTag();      // Span
                     writer.RenderEndTag();      // Label
+                }
+                else
+                {
+                    // If the switch does not have a lable make the text bold
+                    if ( cbSwitch.BoldText )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label custom-control-label-bold" );
+                    }
+                    else
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label" );
+                    }
+                    writer.AddAttribute( HtmlTextWriterAttribute.For, cb.ClientID );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
+                    if ( cb.Text.Length > 0 )
+                    {
+                        writer.Write( cb.Text );
+                    }
+                    else
+                    {
+                        writer.Write( "&nbsp;" );
+                    }
+                    writer.RenderEndTag();
                 }
 
                 var rockCb = cb as Rock.Web.UI.Controls.RockCheckBox;
@@ -156,10 +201,7 @@ namespace Rock.Web.UI.Adapters
                     }
                 }
 
-                if ( renderCheckboxLabel )
-                {
-                    writer.RenderEndTag();      // Div
-                }
+                writer.RenderEndTag();      // Div
 
                 if ( Page != null && Page.ClientScript != null )
                 {

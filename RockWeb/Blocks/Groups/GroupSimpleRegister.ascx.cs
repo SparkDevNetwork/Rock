@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Groups
                                         mergeFields.Add( "Member", member );
 
                                         var pageParams = new Dictionary<string, string>();
-                                        pageParams.Add( "gm", member.UrlEncodedKey );
+                                        pageParams.Add( "GM", member.UrlEncodedKey );
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                         mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Groups
                                 else
                                 {
                                     var pageParams = new Dictionary<string, string>();
-                                    pageParams.Add( "gm", member.UrlEncodedKey );
+                                    pageParams.Add( "GM", member.UrlEncodedKey );
                                     var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                     Response.Redirect( pageReference.BuildUrl(), false );
                                 }

@@ -20,6 +20,7 @@
                             <Rock:RockBoundField DataField="Page.Layout.Site.Name" HeaderText="Site" SortExpression="Page.Layout.Site.Name" />
                             <Rock:RockBoundField DataField="Page.InternalName" HeaderText="Page Name" SortExpression="Page.InternalName" />
                             <Rock:RockBoundField DataField="Page.Id" HeaderText="Page Id" SortExpression="Page.Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:BoolField DataField="IsGlobal" HeaderText="Global Route" SortExpression="IsGlobal" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                         </Columns>
                     </Rock:Grid>

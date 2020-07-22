@@ -1,6 +1,8 @@
 @import "_rock-variables";
+@import "_rock-mixins";
 
 @import "rock-components/picker-date.less";
+@import "rock-components/checkbox.less";
 
 /*
   Used to style the check-in screens
@@ -17,12 +19,18 @@
 
 // 1. Check-in specific variables
 // -------------------------
-@checkin-scrollbar-bg: fade(@text-color, 50%);
+@checkin-scrollbar-bg: fade(@text-color, 40%);
+
+@checkin-container-padding: 30px;
 
 @checkin-keypad-width: 260px;
 
+@header-letter-spacing: -.03em;
+
 @font-size-base: 18px;
 @font-size-h1: 28px;
+
+@checkin-button-alttext-font-size: 20px;
 
 // 2. Bootstrap Overrides
 // -------------------------
@@ -44,16 +52,16 @@ select.form-control {
 
 // Fix to allow SVGs inside of buttons.
 .btn svg {
+  display: block;
   width: auto;
   height: 1em;
   fill: currentColor;
-  display: block;
 }
 
 h1,
 h2,
 h3 {
-  letter-spacing: -.03em;
+  letter-spacing: @header-letter-spacing;
 }
 
 h1 {
@@ -66,6 +74,10 @@ h1 {
 
 .form-group label {
   margin-bottom: 6px;
+}
+
+.btn-block + .btn-block {
+  margin-top: 12px;
 }
 
 .btn-checkin-select {
@@ -90,6 +102,34 @@ h1 {
     &::after {
       content: normal;
     }
+  }
+
+  .checkbox-container,
+  .photo-container,
+  .name-container {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+
+  .checkbox-container,
+  .photo-container {
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+  }
+
+  .checkbox-container {
+    margin-right: 5px;
+  }
+
+  .name-container,
+  .col {
+    -ms-flex-preferred-size: 0;
+    flex-basis: 0;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    max-width: 100%;
   }
 }
 
@@ -173,10 +213,7 @@ a.help {
 }
 
 // turn off configuration items
-#cms-admin-footer {
-  display: none;
-}
-
+#cms-admin-footer,
 .config-bar {
   display: none;
 }
@@ -212,8 +249,7 @@ body {
 // checkin header items
 
 .checkin-header {
-  margin-top: 45px;
-  margin-bottom: 24px;
+  margin: 45px @checkin-container-padding 24px;
 
   h1 {
     font-size: 48px;
@@ -223,7 +259,6 @@ body {
   .checkin-sub-title {
     margin-top: 12px;
     font-size: 24px;
-    font-weight: @subheader-font-weight;
     color: @subheader-text-color;
   }
 }
@@ -231,7 +266,7 @@ body {
 // button sub-text
 .btn .checkin-sub-title {
   margin-left: 20px;
-  font-size: 20px;
+  font-size: @checkin-button-alttext-font-size;
   font-weight: @checkin-button-alttext-weight;
   white-space: normal;
 }
@@ -252,11 +287,14 @@ body {
   padding: 0 0 @padding-base-vertical 0;
 }
 
-.checkin-search-actions{
+.checkin-search-actions {
   text-align: center;
   a {
+    display: inline-flex;
+    justify-content: center;
+    width: 520px;
     max-width: 100%;
-    padding: 20px 200px;
+    padding: 20px;
     font-size: 48px;
     font-weight: @checkin-button-text-weight;
     line-height: 48px;
@@ -281,8 +319,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding: 0 ((@grid-gutter-width / 2) + @checkin-container-padding);
   margin-top: 6px;
   margin-bottom: 12px;
 
@@ -393,7 +430,6 @@ body {
   &.photo-round-md {
     width: 60px;
     height: 60px;
-    margin-left: 10px;
     border-radius: 50%;
   }
 }
@@ -425,7 +461,7 @@ input.checkin-phone-entry {
   width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
@@ -434,13 +470,13 @@ input.namesearch {
   width: 360px;
   height: 60px;
   padding: 6px 20px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
 
 .checkin-phone-keypad {
-  margin: 0 auto 24px auto;
+  margin: 0 auto 24px;
 }
 
 // time select
@@ -470,6 +506,11 @@ input.namesearch {
     font-size: 22px;
     color: @text-color;
   }
+}
+
+.checkin-error {
+  padding: 0;
+  list-style-type: none;
 }
 
 // closed page
@@ -504,9 +545,11 @@ input.namesearch {
 
 .family-personselect {
   font-size: 26px;
+  text-align: left;
 }
 
 .family-auto-select {
+  padding-left: 10px !important;
   font-size: 16px;
   text-align: left;
 }
@@ -608,6 +651,33 @@ input.namesearch {
   }
 }
 
+.qr-code-container {
+  width: 60vw;
+  max-width: 75%;
+  margin: 0 auto 32px;
+  position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border-radius: @border-radius-large;
+
+    &:before {
+      display: block;
+    content: "";
+      padding-top: 100%;
+    }
+
+  .qr-code {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+
 //
 
 // 6. Scroll Container
@@ -626,7 +696,7 @@ input.namesearch {
   position: absolute;
   z-index: 1;
   width: 100%;
-  padding: 0 40px 0 40px;
+  padding: 0 @checkin-container-padding;
   -webkit-text-size-adjust: none;
   -ms-text-size-adjust: none;
   -webkit-user-select: none;
@@ -653,10 +723,7 @@ input.namesearch {
   width: 100%;
   min-height: 100px;
   background-color: @checkin-scrollbar-bg;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-  border-bottom-left-radius: 3px;
+  border-radius: 20px;
   -webkit-transition: 0ms cubic-bezier(.1, .57, .1, 1);
   transition: 0ms cubic-bezier(.1, .57, .1, 1);
   transform: translate(0, 0) translateZ(0);
@@ -669,7 +736,7 @@ input.namesearch {
   right: 1px;
   bottom: 2px;
   z-index: 1;
-  width: 30px;
+  width: 20px;
   overflow: hidden;
 }
 

@@ -20,7 +20,6 @@
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <fieldset>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
@@ -30,20 +29,16 @@
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
+                                <Rock:RockCheckBox ID="cbIncludeDeceased" runat="server" Label="Include Deceased" Visible="false" />
 
                                 <%-- Persistence Schedule Settings --%>
                                 <asp:UpdatePanel runat="server" UpdateMode="Conditional">
                                     <ContentTemplate>
                                         <h5>Speed Settings</h5>
-                                        <Rock:RockCheckBox ID="cbPersistDataView" runat="server" Label="Persist Data View" AutoPostBack="true" OnCheckedChanged="cbPersistDataView_CheckedChanged"
-                                            Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed." />
-                                        <asp:Panel runat="server" ID="pnlSpeedSettings">
-                                            <Rock:RangeSlider ID="rsPersistedScheduleInterval" runat="server" Label="Persistence Interval" MaxValue="24" MinValue="1" SelectedValue="12" />
-                                            <Rock:ButtonGroup ID="bgPersistedScheduleUnit" runat="server" CssClass="pull-right margin-b-md" UnselectedItemClass="btn btn-xs btn-default" SelectedItemClass="btn btn-xs btn-primary" AutoPostBack="true" OnSelectedIndexChanged="bgPersistedScheduleUnit_SelectedIndexChanged">
-                                                <asp:ListItem Text="Mins" Value="1" />
-                                                <asp:ListItem Text="Hours" Value="2" Selected="True" />
-                                                <asp:ListItem Text="Days" Value="3" />
-                                            </Rock:ButtonGroup>
+                                        <Rock:Switch ID="swPersistDataView" runat="server" Text="Enable Persistence" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed."  />
+
+                                        <asp:Panel runat="server" ID="pnlSpeedSettings" class="mt-4">
+                                            <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" />
                                         </asp:Panel>
                                     </ContentTemplate>
                                 </asp:UpdatePanel>
@@ -54,6 +49,8 @@
                     </fieldset>
 
                     <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
+
+                    <Rock:NotificationBox ID="nbPersistError" runat="server" NotificationBoxType="Warning" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -79,6 +76,13 @@
                     <div class="panel-body">
 
                         <fieldset>
+                            <div class="text-right">
+                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlRunSince" /><Rock:BootstrapButton CssClass="label btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
+
+                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                            </div>
 
                             <div class="description">
                                 <asp:Literal ID="lDescription" runat="server"></asp:Literal>

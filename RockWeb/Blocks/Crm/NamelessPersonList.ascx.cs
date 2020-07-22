@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Crm
 
         #endregion PageParameterKeys
 
-
         #region Base Control Methods
 
         /// <summary>

@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( InteractionComponent item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.InteractionComponentId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionComponent.FriendlyTypeName, Interaction.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -94,12 +88,18 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this InteractionComponent target, InteractionComponent source )
         {
             target.Id = source.Id;
+            target.ChannelCustom1 = source.ChannelCustom1;
+            target.ChannelCustom2 = source.ChannelCustom2;
+            target.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
+            #pragma warning disable 612, 618
             target.ChannelId = source.ChannelId;
+            #pragma warning restore 612, 618
             target.ComponentData = source.ComponentData;
             target.ComponentSummary = source.ComponentSummary;
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionChannelId = source.InteractionChannelId;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -12,13 +12,19 @@ _ReSharper.*
 
 #specific files
 web.[Cc]onnectionStrings.config
+app.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
 Quartz.xml
 StyleCop.Cache
 
+#build artifacts
+**/[Bb]in/[Dd]ebug
+**/[Bb]in/[Rr]elease
+**/[Oo]bj/[Dd]ebug
+**/[Oo]bj/[Rr]elease
+
 #specific folders
-[Oo]bj/
 RockWeb/Cache/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging

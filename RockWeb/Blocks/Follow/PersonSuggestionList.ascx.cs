@@ -63,20 +63,20 @@ namespace RockWeb.Blocks.Follow
 
             var lbFollow = new LinkButton();
             lbFollow.ID = "lbFollow";
-            lbFollow.CssClass = "btn btn-default btn-sm pull-left";
+            lbFollow.CssClass = "btn btn-primary btn-sm pull-left margin-v-sm";
             lbFollow.Text = "<i class='fa fa-flag'></i> Follow";
             lbFollow.Click += lbFollow_Click;
             gSuggestions.Actions.AddCustomActionControl( lbFollow );
 
             var lbIgnore = new LinkButton();
             lbIgnore.ID = "lbIgnore";
-            lbIgnore.CssClass = "btn btn-default btn-sm pull-left js-ignore";
+            lbIgnore.CssClass = "btn btn-default btn-sm pull-left margin-v-sm js-ignore";
             lbIgnore.Text = "<i class='fa fa-flag-o'></i> Ignore";
             lbIgnore.Click += lbIgnore_Click;
             gSuggestions.Actions.AddCustomActionControl( lbIgnore );
 
             string ignoreScript = @"
-    $('a.js-ignore').click(function( e ){
+    $('a.js-ignore').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to ignore the selected people?', function (result) {
             if (result) {
@@ -98,6 +98,7 @@ namespace RockWeb.Blocks.Follow
 
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
         }
@@ -184,7 +185,7 @@ namespace RockWeb.Blocks.Follow
                         suggestion.Status = FollowingSuggestedStatus.Ignored;
                     }
 
-                    rockContext.SaveChanges(); 
+                    rockContext.SaveChanges();
                 }
             }
 
@@ -210,9 +211,38 @@ namespace RockWeb.Blocks.Follow
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            if ( cbIncludeIgnored.Checked )
+            {
+                gfFilter.SaveUserPreference( FilterSetting.IncludeIgnored, cbIncludeIgnored.Checked.ToString() );
+            }
+            else
+            {
+                // Set to string.Empty instead of "false" to prevent the filter from showing up as enabled.
+                gfFilter.SaveUserPreference( FilterSetting.IncludeIgnored, string.Empty );
+            }
+
+            BindGrid();
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds data to the filter controls.
+        /// </summary>
+        private void BindFilter()
+        {
+            cbIncludeIgnored.Checked = gfFilter.GetUserPreference( FilterSetting.IncludeIgnored ).AsBoolean();
+        }
+
 
         /// <summary>
         /// Binds the grid.
@@ -237,14 +267,15 @@ namespace RockWeb.Blocks.Follow
 
                 // Get all the person suggestions for the current person that they are not already following
                 var qry = new FollowingSuggestedService( rockContext )
-                    .Queryable("SuggestionType")
+                    .Queryable( "SuggestionType" )
+                    .Where( s => cbIncludeIgnored.Checked || s.Status != FollowingSuggestedStatus.Ignored )
                     .Where( s =>
                         s.SuggestionType != null &&
                         s.EntityTypeId == personAliasEntityType.Id &&
                         s.PersonAliasId == CurrentPersonAlias.Id )
                     .Join( personAliasQry, s => s.EntityId, p => p.Id, ( s, p ) => new { s, p } )
                     .Where( j => !followedPersonIds.Contains( j.p.PersonId ) )
-                    .Select( j => new 
+                    .Select( j => new
                     {
                         j.s.Id,
                         j.s.LastPromotedDateTime,
@@ -286,5 +317,13 @@ namespace RockWeb.Blocks.Follow
         }
 
         #endregion
-}
+
+        /// <summary>
+        /// Constant like string-key-settings that are tied to user saved filter preferences.
+        /// </summary>
+        public static class FilterSetting
+        {
+            public static readonly string IncludeIgnored = "Include Ignored";
+        }
+    }
 }

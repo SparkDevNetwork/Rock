@@ -659,7 +659,7 @@ namespace Rock.Model
         {
             if ( ImageId.HasValue )
             {
-                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
                 var binaryFile = binaryFileService.Get( ImageId.Value );
                 if ( binaryFile != null && binaryFile.IsTemporary )
                 {
@@ -710,14 +710,25 @@ namespace Rock.Model
         /// </returns>
         public bool IsMinimumViableAddress()
         {
-            if (this.Street1.IsNullOrWhiteSpace() &&
+            if ( this.Street1.IsNullOrWhiteSpace() &&
                 this.Street2.IsNullOrWhiteSpace() &&
-                this.City.IsNullOrWhiteSpace())
+                this.City.IsNullOrWhiteSpace() )
             {
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets <seealso cref="DbGeography">GeoPoint</seealso> from the specified latitude and longitude
+        /// </summary>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        /// <returns></returns>
+        public static DbGeography GetGeoPoint( double latitude, double longitude )
+        {
+            return DbGeography.FromText( $"POINT({longitude} {latitude})" );
         }
 
         /// <summary>
@@ -747,7 +758,7 @@ namespace Rock.Model
             }
 
             // Remove blank lines
-            while (result.Contains( Environment.NewLine + Environment.NewLine))
+            while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
             {
                 result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
             }
@@ -775,19 +786,19 @@ namespace Rock.Model
 
             if ( this.GeoFence != null )
             {
-                var encodeDiff = (Action<int>)( diff =>
-                {
-                    int shifted = diff << 1;
-                    if ( diff < 0 )
-                        shifted = ~shifted;
-                    int rem = shifted;
-                    while ( rem >= 0x20 )
-                    {
-                        str.Append( (char)( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
-                        rem >>= 5;
-                    }
-                    str.Append( (char)( rem + 63 ) );
-                } );
+                var encodeDiff = ( Action<int> ) ( diff =>
+                   {
+                       int shifted = diff << 1;
+                       if ( diff < 0 )
+                           shifted = ~shifted;
+                       int rem = shifted;
+                       while ( rem >= 0x20 )
+                       {
+                           str.Append( ( char ) ( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
+                           rem >>= 5;
+                       }
+                       str.Append( ( char ) ( rem + 63 ) );
+                   } );
 
                 int lastLat = 0;
                 int lastLng = 0;
@@ -796,8 +807,8 @@ namespace Rock.Model
                 {
                     if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
                     {
-                        int lat = (int)Math.Round( coordinate.Latitude.Value * 1E5 );
-                        int lng = (int)Math.Round( coordinate.Longitude.Value * 1E5 );
+                        int lat = ( int ) Math.Round( coordinate.Latitude.Value * 1E5 );
+                        int lng = ( int ) Math.Round( coordinate.Longitude.Value * 1E5 );
                         encodeDiff( lat - lastLat );
                         encodeDiff( lng - lastLng );
                         lastLat = lat;
@@ -881,7 +892,7 @@ namespace Rock.Model
                                 return GeoFence.Coordinates()
                                     .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
                                     .ToList()
-                                    .AsDelimited("|");
+                                    .AsDelimited( "|" );
                             }
                             break;
                         }
@@ -894,7 +905,7 @@ namespace Rock.Model
                 return string.Empty;
             }
         }
-        
+
         #endregion
 
         #region constants

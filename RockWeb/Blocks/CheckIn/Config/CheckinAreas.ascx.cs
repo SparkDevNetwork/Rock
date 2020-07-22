@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentGroupType.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-                    
+
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-                    
+
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.Groups.Add( checkinGroup );
 
                     rockContext.SaveChanges();
-                    
+
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectGroup( newGuid );
@@ -564,7 +564,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                             }
 
                             rockContext.SaveChanges();
-                            
+
                             Rock.CheckIn.KioskDevice.Clear();
 
                             nbSaveSuccess.Visible = true;
@@ -1110,7 +1110,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             string script = string.Format( @"
     window.addEventListener('beforeunload', function(e) {{
         if ( $('#{0}').val() == 'true' ) {{
-            return 'You have not saved your changes. Are you sure you want to continue?';    
+            return 'You have not saved your changes. Are you sure you want to continue?';
         }}
         return;
     }});
@@ -1129,7 +1129,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         return false;
     }}
 
-    $('#{1}').click( function() {{
+    $('#{1}').on('click', function() {{
         if ( isDirty() ) {{
             return false;
         }}

@@ -288,7 +288,6 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( page != null )
                     {
                         page.PageNavigate += page_PageNavigate;
-                        page.AddScriptLink( "~/Scripts/moment.min.js" );
                         page.AddScriptLink( "~/Scripts/moment-with-locales.min.js" );
                     }
 
@@ -331,85 +330,95 @@ achieve our mission.  We are so grateful for your commitment.
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
 
-            if ( ScheduledTransactionId.HasValue )
-            {
-                if ( Gateway != null )
-                {
-                    // Save amounts from controls to the viewstate list
-                    foreach ( RepeaterItem item in rptAccountList.Items )
-                    {
-                        var hfAccountId = item.FindControl( "hfAccountId" ) as HiddenField;
-                        var txtAccountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
-                        if ( hfAccountId != null && txtAccountAmount != null )
-                        {
-                            var selectedAccount = SelectedAccounts.FirstOrDefault( a => a.Id == hfAccountId.ValueAsInt() );
-                            if ( selectedAccount != null )
-                            {
-                                selectedAccount.Amount = txtAccountAmount.Text.AsDecimal();
-                            }
-                        }
-                    }
-
-                    // Update the total amount
-                    lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
-
-                    liNone.RemoveCssClass( "active" );
-                    liCreditCard.RemoveCssClass( "active" );
-                    liACH.RemoveCssClass( "active" );
-                    divNonePaymentInfo.RemoveCssClass( "active" );
-                    divCCPaymentInfo.RemoveCssClass( "active" );
-                    divACHPaymentInfo.RemoveCssClass( "active" );
-
-                    if ( !Gateway.IsUpdatingSchedulePaymentMethodSupported )
-                    {
-                        divPaymentMethodModification.Visible = false;
-                    }
-
-                    switch ( hfPaymentTab.Value )
-                    {
-                        case "ACH":
-                            {
-                                liACH.AddCssClass( "active" );
-                                divACHPaymentInfo.AddCssClass( "active" );
-                                break;
-                            }
-
-                        case "CreditCard":
-                            {
-                                liCreditCard.AddCssClass( "active" );
-                                divCCPaymentInfo.AddCssClass( "active" );
-                                break;
-                            }
-
-                        default:
-                            {
-                                liNone.AddCssClass( "active" );
-                                divNonePaymentInfo.AddCssClass( "active" );
-                                break;
-                            }
-                    }
-
-                    // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-                    divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
-
-                    if ( !Page.IsPostBack )
-                    {
-                        SetPage( 1 );
-
-                        // Get the list of accounts that can be used
-                        BindAccounts();
-                    }
-                }
-                else
-                {
-                    SetPage( 0 );
-                    ShowMessage( NotificationBoxType.Danger, "Transaction/Configuration Error", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
-                }
-            }
-            else
+            if ( !ScheduledTransactionId.HasValue )
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Invalid Transaction", "The transaction you've selected either does not exist or is not valid." );
+                return;
+            }
+
+            var hostedGatewayComponent = this.Gateway as IHostedGatewayComponent;
+            bool isHostedGateway = false;
+            if ( hostedGatewayComponent != null )
+            {
+                var scheduledTransaction = GetScheduledTransaction( false );
+                if ( scheduledTransaction != null )
+                {
+                    isHostedGateway = hostedGatewayComponent.GetSupportedHostedGatewayModes( scheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted );
+                }
+            }
+
+            if ( isHostedGateway )
+            {
+                SetPage( 0 );
+                ShowMessage( NotificationBoxType.Danger, "Configuration", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
+                return;
+            }
+
+            // Save amounts from controls to the viewstate list
+            foreach ( RepeaterItem item in rptAccountList.Items )
+            {
+                var hfAccountId = item.FindControl( "hfAccountId" ) as HiddenField;
+                var txtAccountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                if ( hfAccountId != null && txtAccountAmount != null )
+                {
+                    var selectedAccount = SelectedAccounts.FirstOrDefault( a => a.Id == hfAccountId.ValueAsInt() );
+                    if ( selectedAccount != null )
+                    {
+                        selectedAccount.Amount = txtAccountAmount.Text.AsDecimal();
+                    }
+                }
+            }
+
+            // Update the total amount
+            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+
+            liNone.RemoveCssClass( "active" );
+            liCreditCard.RemoveCssClass( "active" );
+            liACH.RemoveCssClass( "active" );
+            divNonePaymentInfo.RemoveCssClass( "active" );
+            divCCPaymentInfo.RemoveCssClass( "active" );
+            divACHPaymentInfo.RemoveCssClass( "active" );
+
+            if ( !Gateway.IsUpdatingSchedulePaymentMethodSupported || Gateway is IThreeStepGatewayComponent )
+            {
+                // This block doesn't support ThreeStepGateway payment entry, but the "No Change" option is OK
+                divPaymentMethodModification.Visible = false;
+            }
+
+            switch ( hfPaymentTab.Value )
+            {
+                case "ACH":
+                    {
+                        liACH.AddCssClass( "active" );
+                        divACHPaymentInfo.AddCssClass( "active" );
+                        break;
+                    }
+
+                case "CreditCard":
+                    {
+                        liCreditCard.AddCssClass( "active" );
+                        divCCPaymentInfo.AddCssClass( "active" );
+                        break;
+                    }
+
+                default:
+                    {
+                        liNone.AddCssClass( "active" );
+                        divNonePaymentInfo.AddCssClass( "active" );
+                        break;
+                    }
+            }
+
+            // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
+            divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+
+            if ( !Page.IsPostBack )
+            {
+                SetPage( 1 );
+
+                // Get the list of accounts that can be used
+                BindAccounts();
             }
         }
 
@@ -1237,7 +1246,8 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                paymentInfo = new PaymentInfo();
+                // no change
+                paymentInfo = new ReferencePaymentInfo();
             }
 
             if ( paymentInfo != null )
@@ -1447,12 +1457,12 @@ achieve our mission.  We are so grateful for your commitment.
         }});
 
         // Set the date prompt based on the frequency value entered
-        $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $when = $(this).parents('div.form-group:first').next();
+        $('#ButtonDropDown_btnFrequency .dropdown-menu a').on('click', function () {{
+            var $when = $(this).parents('div.form-group').first().next();
             if ($(this).attr('data-id') == '{3}') {{
-                $when.find('label:first').html('When');
+                $when.find('label').first().html('When');
             }} else {{
-                $when.find('label:first').html('First Gift');
+                $when.find('label').first().html('First Gift');
 
                 // Set date to tomorrow if it is equal or less than today's date
                 var $dateInput = $when.find('input');
@@ -1487,7 +1497,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
-            var $content = $(this).parents('div.form-group:first').next('.radio-content')
+            var $content = $(this).parents('div.form-group').first().next('.radio-content')
             var radioDisplay = $content.css('display');
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();
@@ -1503,10 +1513,10 @@ achieve our mission.  We are so grateful for your commitment.
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
-        $('a[id$=""btnNext""]').click(function() {{
+        $('a[id$=""btnNext""]').on('click', function() {{
 			$(this).addClass('disabled');
 			$(this).unbind('click');
-			$(this).click(function () {{
+			$(this).on('click', function () {{
 				return false;
 			}});
         }});

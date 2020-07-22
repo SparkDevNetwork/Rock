@@ -159,6 +159,21 @@ namespace Rock.Model
         }
         private DateTime? _lastPaymentReminderDateTime;
 
+        /// <summary>
+        /// Gets the created date key.
+        /// </summary>
+        /// <value>
+        /// The created date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? CreatedDateKey
+        {
+            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
+                        ( int? ) null :
+                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion
 
         #region Virtual Properties
@@ -329,6 +344,15 @@ namespace Rock.Model
                 return this.GetPayments();
             }
         }
+
+        /// <summary>
+        /// Gets or sets the created source date.
+        /// </summary>
+        /// <value>
+        /// The created source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate CreatedSourceDate { get; set; }
 
         #endregion
 
@@ -603,6 +627,10 @@ Registration By: {0} Total Cost/Fees:{1}
             this.HasRequired( r => r.RegistrationInstance ).WithMany( t => t.Registrations ).HasForeignKey( r => r.RegistrationInstanceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Group ).WithMany().HasForeignKey( r => r.GroupId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.CreatedSourceDate ).WithMany().HasForeignKey( r => r.CreatedDateKey ).WillCascadeOnDelete( false );
         }
     }
 

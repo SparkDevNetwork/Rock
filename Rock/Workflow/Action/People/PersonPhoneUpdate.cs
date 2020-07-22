@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         Guid personAliasGuid = attributePersonValue.AsGuid();
@@ -97,7 +97,7 @@ namespace Rock.Workflow.Action
 
             // determine the phone type to edit
             DefinedValueCache phoneType = null;
-            var phoneTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "PhoneTypeAttribute" ).AsGuid() );
+            var phoneTypeAttributeValue = action.GetWorkflowAttributeValue( GetAttributeValue( action, "PhoneTypeAttribute" ).AsGuid() );
             if ( phoneTypeAttributeValue != null )
             {
                 phoneType = DefinedValueCache.Get( phoneTypeAttributeValue.AsGuid() );
@@ -120,7 +120,7 @@ namespace Rock.Workflow.Action
             Guid? phoneNumberValueGuid = phoneNumberValue.AsGuidOrNull();
             if ( phoneNumberValueGuid.HasValue )
             {
-                phoneNumberValue = action.GetWorklowAttributeValue( phoneNumberValueGuid.Value );
+                phoneNumberValue = action.GetWorkflowAttributeValue( phoneNumberValueGuid.Value );
             }
             else
             {
@@ -133,7 +133,7 @@ namespace Rock.Workflow.Action
             Guid? unlistedValueGuid = unlistedValue.AsGuidOrNull();
             if ( unlistedValueGuid.HasValue )
             {
-                unlistedValue = action.GetWorklowAttributeValue( unlistedValueGuid.Value );
+                unlistedValue = action.GetWorkflowAttributeValue( unlistedValueGuid.Value );
             }
             else
             {
@@ -146,7 +146,7 @@ namespace Rock.Workflow.Action
             Guid? smsEnabledValueGuid = smsEnabledValue.AsGuidOrNull();
             if ( smsEnabledValueGuid.HasValue )
             {
-                smsEnabledValue = action.GetWorklowAttributeValue( smsEnabledValueGuid.Value );
+                smsEnabledValue = action.GetWorkflowAttributeValue( smsEnabledValueGuid.Value );
             }
             else
             {

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
 using System.Web.Http;
 
 using Rock.Data;
@@ -46,7 +47,7 @@ namespace Rock.Rest.Controllers
             if ( block != null && block.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
             {
                 var htmlContentService = (HtmlContentService)Service;
-                var htmlContent = htmlContentService.GetActiveContent( blockId, htmlContents.EntityValue );
+                var htmlContent = htmlContentService.GetActiveContentQueryable( blockId, htmlContents.EntityValue ).FirstOrDefault();
                 if ( htmlContent != null )
                 {
                     htmlContent.Content = htmlContents.Content;

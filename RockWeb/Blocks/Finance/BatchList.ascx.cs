@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Finance
             ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
 
             string deleteScript = @"
-                $('table.js-grid-batch-list a.grid-delete-button').click(function( e ){
+                $('table.js-grid-batch-list a.grid-delete-button').on('click', function( e ){
                     var $btn = $(this);
                     e.preventDefault();
                     Rock.dialogs.confirm('Are you sure you want to delete this batch?', function (result) {
@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Finance
         private void RegisterJavaScriptForGridActions()
         {
             string scriptFormat = @"
-                $('#{0}').change(function( e ){{
+                $('#{0}').on('change', function( e ){{
                     var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
                     if (count == 0) {{
                         $('#{3}').val($ddl.val());
@@ -220,8 +220,8 @@ namespace RockWeb.Blocks.Finance
                     }}
                 }});";
 
-            string script = string.Format( 
-                scriptFormat, 
+            string script = string.Format(
+                scriptFormat,
                 ddlAction.ClientID, // {0}
                 gBatchList.ClientID,  // {1}
                 Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ),  // {2}
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.Finance
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the RowDataBound event of the gBatchList control.
         /// </summary>
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Finance
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var batchRow = e.Row.DataItem as BatchRow;
-                
+
                 if ( batchRow != null )
                 {
                     if ( batchRow.TransactionCount > 0 )
@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "batchId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "BatchId", e.RowKeyId );
         }
 
         /// <summary>
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "batchId", 0 );
+            NavigateToLinkedPage( "DetailPage", "BatchId", 0 );
         }
 
         /// <summary>
@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.Finance
                             errorMessage = string.Format( "{0} is an automated batch and the status can not be modified when the status is pending. The system will automatically set this batch to OPEN when all transactions have been downloaded.", batch.Name );
                             maWarningDialog.Show( errorMessage, ModalAlertType.Warning );
                             return;
-                        } 
+                        }
 
                         batch.Status = newStatus;
 
@@ -683,7 +683,7 @@ namespace RockWeb.Blocks.Finance
             {
                 lVarianceAmount.Text = string.Format( "<span class=''>{0}</span>", batchRow.AmountVariance.FormatAsCurrency() );
             }
-            
+
         }
 
         /// <summary>
@@ -1135,7 +1135,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
 
             int entityTypeId = new FinancialBatch().TypeId;

@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "restUserId" ).AsInteger() );
+                ShowDetail( PageParameter( "RestUserId" ).AsInteger() );
             }
         }
 

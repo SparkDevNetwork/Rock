@@ -28,7 +28,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [RockObsolete( "1.8" )]
-    [Obsolete("Use EntityCache instead")]
+    [Obsolete("Use EntityCache instead", true )]
     public abstract class CachedEntity<T>  
         where T : Rock.Data.Entity<T>, new()
     {

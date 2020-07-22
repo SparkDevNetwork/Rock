@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -404,11 +405,9 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
+            var values = RockSerializableList.FromUriEncodedString( this.Value );
 
-            var values = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsEnumerable();
-            values = values.Select( s => HttpUtility.UrlDecode( s ) );
-
-            foreach ( string value in values )
+            foreach ( string value in values.List )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

@@ -150,6 +150,14 @@
                     </div>
                 </Rock:PanelWidget>
 
+                <Rock:PanelWidget ID="pnlPushNotification" Title="Push" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-push-template" runat="server">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:PlaceHolder ID="phPushNotification" runat="server" />
+                        </div>
+                    </div>
+                </Rock:PanelWidget>
+
                 <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
                 <div class="actions">

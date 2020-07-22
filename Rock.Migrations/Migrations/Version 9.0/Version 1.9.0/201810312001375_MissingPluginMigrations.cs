@@ -638,7 +638,7 @@ and [Markup] = '{%- javascript url:''https://cdnjs.cloudflare.com/ajax/libs/jara
             // Attrib Value for Block:Edit Family, Attribute:Workflow Type Page: Search, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "7FBE00BD-7A4E-4F2D-89F1-D62348F4F146", "C7C8C51E-B5A0-49A5-96F3-CB23BB5F81AB", Rock.SystemGuid.WorkflowType.UNATTENDED_CHECKIN );
             // Attrib Value for Block:Edit Family, Attribute:Home Page Page: Search, Site: Rock Check-in
-            RockMigrationHelper.AddBlockAttributeValue( true, "7FBE00BD-7A4E-4F2D-89F1-D62348F4F146", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.WELCOME );
+            RockMigrationHelper.AddBlockAttributeValue( true, "7FBE00BD-7A4E-4F2D-89F1-D62348F4F146", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.CHECKIN_WELCOME );
 
             // Add Block to Page: Family Select, Site: Rock Check-in
             RockMigrationHelper.AddBlock( true, "10C97379-F719-4ACB-B8C6-651957B660A4", "", "06DF448A-684E-4B64-8E1B-EA1727BA9233", "Add Family", "Main", @"", @"", 2, "829998AD-2992-4A11-932F-5C3AE5B09895" );
@@ -647,7 +647,7 @@ and [Markup] = '{%- javascript url:''https://cdnjs.cloudflare.com/ajax/libs/jara
             // Attrib Value for Block:Edit Family, Attribute:Workflow Type Page: Family Select, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "829998AD-2992-4A11-932F-5C3AE5B09895", "C7C8C51E-B5A0-49A5-96F3-CB23BB5F81AB", Rock.SystemGuid.WorkflowType.UNATTENDED_CHECKIN );
             // Attrib Value for Block:Edit Family, Attribute:Home Page Page: Family Select, Site: Rock Check-in
-            RockMigrationHelper.AddBlockAttributeValue( true, "829998AD-2992-4A11-932F-5C3AE5B098956", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.WELCOME );
+            RockMigrationHelper.AddBlockAttributeValue( true, "829998AD-2992-4A11-932F-5C3AE5B098956", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.CHECKIN_WELCOME );
 
             // Add Block to Page: Person Select, Site: Rock Check-in
             RockMigrationHelper.AddBlock( true, "BB8CF87F-680F-48F9-9147-F4951E033D17", "", "06DF448A-684E-4B64-8E1B-EA1727BA9233", "Edit Family", "Main", @"", @"", 2, "5E00309E-EC0D-4B99-A1C7-FD644361E5DD" );
@@ -656,7 +656,7 @@ and [Markup] = '{%- javascript url:''https://cdnjs.cloudflare.com/ajax/libs/jara
             // Attrib Value for Block:Edit Family, Attribute:Workflow Type Page: Person Select, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "5E00309E-EC0D-4B99-A1C7-FD644361E5DD", "C7C8C51E-B5A0-49A5-96F3-CB23BB5F81AB", Rock.SystemGuid.WorkflowType.UNATTENDED_CHECKIN );
             // Attrib Value for Block:Edit Family, Attribute:Home Page Page: Person Select, Site: Rock Check-in
-            RockMigrationHelper.AddBlockAttributeValue( true, "5E00309E-EC0D-4B99-A1C7-FD644361E5DD", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.WELCOME );
+            RockMigrationHelper.AddBlockAttributeValue( true, "5E00309E-EC0D-4B99-A1C7-FD644361E5DD", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.CHECKIN_WELCOME );
 
             // Add Block to Page: Person Select (Family Check-in), Site: Rock Check-in
             RockMigrationHelper.AddBlock( true, "D14154BA-2F2C-41C3-B380-F833252CBB13", "", "06DF448A-684E-4B64-8E1B-EA1727BA9233", "Edit Family", "Main", @"", @"", 2, "07BC8F00-2925-4CDC-8F9E-DB431B822770" );
@@ -665,7 +665,7 @@ and [Markup] = '{%- javascript url:''https://cdnjs.cloudflare.com/ajax/libs/jara
             // Attrib Value for Block:Edit Family, Attribute:Workflow Type Page: Person Select (Family Check-in), Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "07BC8F00-2925-4CDC-8F9E-DB431B822770", "C7C8C51E-B5A0-49A5-96F3-CB23BB5F81AB", Rock.SystemGuid.WorkflowType.UNATTENDED_CHECKIN );
             // Attrib Value for Block:Edit Family, Attribute:Home Page Page: Person Select (Family Check-in), Site: Rock Check-in
-            RockMigrationHelper.AddBlockAttributeValue( true, "07BC8F00-2925-4CDC-8F9E-DB431B822770", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.WELCOME );
+            RockMigrationHelper.AddBlockAttributeValue( true, "07BC8F00-2925-4CDC-8F9E-DB431B822770", "808EA130-EDED-45FD-9683-A5A26859128F", Rock.SystemGuid.Page.CHECKIN_WELCOME );
 
             // update default Search text for search blocktype
             RockMigrationHelper.UpdateBlockTypeAttribute( "E3A99534-6FD9-49AD-AC52-32D53B2CEDD7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Title", "Title", "", "Title to display. Use {0} for search type.", 5, @"Search", "837B34E3-D140-44CD-8456-9D222325E42E" );

@@ -28,7 +28,7 @@ namespace Rock.Transactions
     /// Tracks when a page is viewed.
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete("Use InteractionTransaction Instead")]
+    [Obsolete("Use InteractionTransaction Instead", true )]
     public class PageViewTransaction : ITransaction
     {
         /// <summary>
@@ -160,7 +160,7 @@ namespace Rock.Transactions
                 }
 
                 // check that the page exists as a component
-                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId.Value, PageId.Value, PageTitle );
+                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByChannelIdAndEntityId( interactionChannelId.Value, PageId, PageTitle );
                 if ( interactionComponent.Id == 0 )
                 {
                     rockContext.SaveChanges();

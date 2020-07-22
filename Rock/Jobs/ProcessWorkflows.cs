@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -30,6 +31,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the persisted active workflows
     /// </summary>
+    [DisplayName( "Process Workflows" )]
+    [Description( "Runs continuously to process in workflows activities/actions in progress." )]
+
     [DisallowConcurrentExecution]
     public class ProcessWorkflows : IJob
     {

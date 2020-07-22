@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -192,19 +193,29 @@ namespace RockWeb.Blocks.Steps
             }
 
             var stepType = GetStepType();
+
+            // Step Type is required for the step
+            if ( stepType == null )
+            {
+                ShowBulkLevelError( "The step type is required to save a step record." );
+                return false;
+            }
+
+            // Verify current user has permission.
+            var userCanEdit = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+            if ( !userCanEdit )
+            {
+                ShowNonBulkLevelError( "Sorry, you don't have sufficient permission to add Steps for this Step Type." );
+                return false;
+            }
+
             var person = GetPerson();
 
             // Person is required for the step
             if ( person == null )
             {
                 ShowNonBulkLevelError( "The person is required to save a step record." );
-                return false;
-            }
-
-            // Step Type is required for the step
-            if ( stepType == null )
-            {
-                ShowBulkLevelError( "The step type is required to save a step record." );
                 return false;
             }
 

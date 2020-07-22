@@ -51,6 +51,14 @@ namespace Rock.Model
         public bool CanDelete( DataView item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring DataViewFilter,DataViewId 
+ 
+            if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.RelatedDataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
@@ -136,10 +144,16 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IncludeDeceased = source.IncludeDeceased;
             target.IsSystem = source.IsSystem;
+            target.LastRunDateTime = source.LastRunDateTime;
             target.Name = source.Name;
             target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            target.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
+            target.RunCount = source.RunCount;
+            target.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
+            target.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

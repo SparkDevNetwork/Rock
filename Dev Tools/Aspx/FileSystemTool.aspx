@@ -7,7 +7,7 @@
     <title>Rock Tester FileSystem Tool</title>
 
     <script src="Scripts/modernizr.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="Scripts/bootstrap.min.js"></script>
 
     <script type="text/javascript">

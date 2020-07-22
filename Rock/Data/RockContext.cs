@@ -30,7 +30,7 @@ namespace Rock.Data
     /// Helper class to set view cache
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed," )]
+    [Obsolete( "Does nothing. No longer needed,", true )]
     public static class RockInteractiveViews
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="path">The path.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,")]
+        [Obsolete("Does nothing. No longer needed,", true )]
         public static void SetViewFactory( string path )
         {
         }
@@ -236,6 +236,14 @@ namespace Rock.Data
         /// The attendances.
         /// </value>
         public DbSet<Attendance> Attendances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance check in sessions.
+        /// </summary>
+        /// <value>
+        /// The attendance check in sessions.
+        /// </value>
+        public DbSet<AttendanceCheckInSession> AttendanceCheckInSessions { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance codes.
@@ -1134,6 +1142,14 @@ namespace Rock.Data
         public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
+        /// Gets or sets the SMS pipeline.
+        /// </summary>
+        /// <value>
+        /// The SMS pipelines.
+        /// </value>
+        public DbSet<SmsPipeline> SmsPipelines { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interactions.
         /// </summary>
         /// <value>
@@ -1460,6 +1476,22 @@ namespace Rock.Data
         /// the Phone Numbers.
         /// </value>
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone verifications.
+        /// </summary>
+        /// <value>
+        /// The phone verifications.
+        /// </value>
+        public DbSet<IdentityVerification> IdentityVerifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone verification codes.
+        /// </summary>
+        /// <value>
+        /// The phone verification codes.
+        /// </value>
+        public DbSet<IdentityVerificationCode> IdentityVerificationCodes { get; set; }
 
         /// <summary>
         /// Gets or sets the plugin migrations.

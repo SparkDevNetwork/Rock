@@ -133,7 +133,7 @@ namespace Rock.SystemGuid
         /// The role Guid.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GROUPROLE_PEER_NETWORK_OWNER instead.", false )]
+        [Obsolete( "Use GROUPROLE_PEER_NETWORK_OWNER instead.", true )]
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER= "CB9A0E14-6FCF-4C07-A49A-D7873F45E196";
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Rock.SystemGuid
         /// The role Guid.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GROUPROLE_PEER_NETWORK_RELATED instead.", false )]
+        [Obsolete( "Use GROUPROLE_PEER_NETWORK_RELATED instead.", true )]
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED= "FEA75948-97CB-4DE9-8A0D-43FA2646F55B";
 
         /// <summary>
@@ -198,6 +198,20 @@ namespace Rock.SystemGuid
         /// The Participant group member roles for Fundraising Opportunity
         /// </summary>
         public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_PARTICIPANT = "F82DF077-9664-4DA8-A3D9-7379B690124D";
+
+        #endregion
+
+        #region GROUPTYPE_CAMPUSTEAM
+
+        /// <summary>
+        /// The Administrator group member role for a Campus Team
+        /// </summary>
+        public const string GROUPROLE_CAMPUS_TEAM_ADMINISTRATOR = "07F857ED-C0D7-47B4-AB6C-9AFDFAE2ADD9";
+
+        /// <summary>
+        /// The Pastor group member role for a Campus Team
+        /// </summary>
+        public const string GROUPROLE_CAMPUS_TEAM_PASTOR = "F8C6289B-0E68-4121-A595-A51369404EBA";
 
         #endregion
     }

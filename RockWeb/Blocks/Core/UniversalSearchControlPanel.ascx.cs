@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Core
                         nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                         nbMessages.Text = string.Format( "Could not connect to the {0} server at {1}.", component.EntityType.FriendlyName, component.IndexLocation );
 
-                        // add friendly check to see if the url provided is valid
+                        // add friendly check to see if the URL provided is valid
                         Uri uriTest;
                         bool isValidUrl = Uri.TryCreate( component.IndexLocation, UriKind.Absolute, out uriTest )
                             && (uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps);

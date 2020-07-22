@@ -379,13 +379,13 @@ namespace Rock.Rest.Controllers
             // Filter by the channel guid if set
             if ( interactionChannelGuid.HasValue )
             {
-                query = query.Where( i => i.InteractionComponent.Channel.Guid == interactionChannelGuid.Value );
+                query = query.Where( i => i.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid.Value );
             }
 
             // Filter by the channel id if set
             if ( interactionChannelId.HasValue )
             {
-                query = query.Where( i => i.InteractionComponent.Channel.Id == interactionChannelId.Value );
+                query = query.Where( i => i.InteractionComponent.InteractionChannel.Id == interactionChannelId.Value );
             }
 
             // Filter by the component guid if set
@@ -982,21 +982,6 @@ namespace Rock.Rest.Controllers
             var connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
             var searchDetailsFormat = @"{0}{1}<div class='contents'>{2}</div>";
             personSearchResult.SearchDetailsHtml = string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, connectionStatusHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
-        }
-
-        /// <summary>
-        /// Obsolete: Gets the search details
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
-        public string GetImpersonationParameterObsolete( int personId )
-        {
-            throw new NotSupportedException();
         }
 
         /// <summary>

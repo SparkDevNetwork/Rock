@@ -179,6 +179,14 @@
                     </div>
                 </Rock:PanelWidget>
 
+                <Rock:PanelWidget ID="pnlPushNotification" Title="Push" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-push-template" runat="server">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:PlaceHolder ID="phPushNotification" runat="server" />
+                        </div>
+                    </div>
+                </Rock:PanelWidget>
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />

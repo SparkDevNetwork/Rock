@@ -19,7 +19,7 @@ using System.Web.UI;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class RangeSlider : RockTextBox
     {
@@ -38,6 +38,14 @@ namespace Rock.Web.UI.Controls
         /// The maximum.
         /// </value>
         public int? MaxValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step value (defaults to 1)
+        /// </summary>
+        /// <value>
+        /// The maximum.
+        /// </value>
+        public decimal? StepValue { get; set; }
 
         /// <summary>
         /// Gets or sets the selected value.
@@ -80,13 +88,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', from: '{3}', disable: {4} }});",
-                this.ClientID,
-                this.MinValue ?? 0,
-                this.MaxValue ?? 100,
-                this.SelectedValue ?? 0,
-                ( !this.Enabled || this.ReadOnly ) ? "true" : "false" );
+            string disable = ( !this.Enabled || this.ReadOnly ) ? "true" : "false";
+            var script = $@"Rock.controls.rangeSlider.initialize({{ controlId: '{ClientID}', min: '{MinValue ?? 0}', max: '{MaxValue ?? 100}', step:'{StepValue ?? 1}', from: '{SelectedValue ?? 0}', disable: {disable} }});";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "range_slider-" + this.ClientID, script, true );
         }

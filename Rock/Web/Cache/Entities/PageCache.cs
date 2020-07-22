@@ -222,10 +222,10 @@ namespace Rock.Web.Cache
         public int Order { get; private set; }
 
         /// <summary>
-        /// Gets or sets the duration of the output cache.
+        /// Gets or sets the duration (in seconds) of the output cache.
         /// </summary>
         /// <value>
-        /// The duration of the output cache.
+        /// The duration (in seconds) of the output cache.
         /// </value>
         [DataMember]
         public int OutputCacheDuration { get; private set; }
@@ -310,6 +310,16 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string AdditionalSettings { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the median page load time in seconds. Typically calculated from a set of
+        /// <see cref="Interaction.InteractionTimeToServe"/> values.
+        /// </summary>
+        /// <value>
+        /// The median page load time in seconds.
+        /// </value>
+        [DataMember]
+        public double? MedianPageLoadTimeDurationSeconds { get; private set; }
 
         /// <summary>
         /// Gets the parent page.
@@ -470,6 +480,15 @@ namespace Rock.Web.Cache
             /// </summary>
             [DataMember]
             public string Route { get; internal set; }
+
+            /// <summary>
+            /// If true then the route should work on all sites regardless of the site exclusive setting.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
+            /// </value>
+            [DataMember]
+            public bool IsGlobal { get; internal set; }
         }
 
         /// <summary>
@@ -601,12 +620,13 @@ namespace Rock.Web.Cache
             BodyCssClass = page.BodyCssClass;
             IconBinaryFileId = page.IconBinaryFileId;
             AdditionalSettings = page.AdditionalSettings;
+            MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
 
             PageRoutes = new List<PageRouteInfo>();
-            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route } ) );
+            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route, IsGlobal = r.IsGlobal } ) );
         }
 
         /// <summary>
@@ -847,7 +867,7 @@ namespace Rock.Web.Cache
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete("No longer needed", true )]
         public static string CacheKey( int pageId )
         {
             return string.Format( "Rock:Page:{0}", pageId );
@@ -938,6 +958,17 @@ namespace Rock.Web.Cache
                     PageCache.FlushItem( page.Id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Flushes the page from the cache without removing it from AllIds.
+        /// Call this to force the cache to reload the page from the database the next time it is requested.
+        /// This is needed when a change is made to a PageRoute (which is not an ICacheable)
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        public static void FlushPage( int pageId )
+        {
+            PageCache.FlushItem( pageId );
         }
 
         #endregion

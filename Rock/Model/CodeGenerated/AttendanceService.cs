@@ -88,27 +88,22 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attendance target, Attendance source )
         {
             target.Id = source.Id;
+            target.AttendanceCheckInSessionId = source.AttendanceCheckInSessionId;
             target.AttendanceCodeId = source.AttendanceCodeId;
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
+            target.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
             target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
-            #pragma warning disable 612, 618
-            target.DidNotOccur = source.DidNotOccur;
-            #pragma warning restore 612, 618
             target.EndDateTime = source.EndDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            #pragma warning disable 612, 618
-            target.GroupId = source.GroupId;
-            #pragma warning restore 612, 618
-            #pragma warning disable 612, 618
-            target.LocationId = source.LocationId;
-            #pragma warning restore 612, 618
             target.Note = source.Note;
             target.OccurrenceId = source.OccurrenceId;
             target.PersonAliasId = source.PersonAliasId;
+            target.PresentByPersonAliasId = source.PresentByPersonAliasId;
+            target.PresentDateTime = source.PresentDateTime;
             target.Processed = source.Processed;
             target.QualifierValueId = source.QualifierValueId;
             target.RequestedToAttend = source.RequestedToAttend;
@@ -117,17 +112,11 @@ namespace Rock.Model
             target.ScheduleConfirmationSent = source.ScheduleConfirmationSent;
             target.ScheduledByPersonAliasId = source.ScheduledByPersonAliasId;
             target.ScheduledToAttend = source.ScheduledToAttend;
-            #pragma warning disable 612, 618
-            target.ScheduleId = source.ScheduleId;
-            #pragma warning restore 612, 618
             target.ScheduleReminderSent = source.ScheduleReminderSent;
             target.SearchResultGroupId = source.SearchResultGroupId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.SearchValue = source.SearchValue;
             target.StartDateTime = source.StartDateTime;
-            #pragma warning disable 612, 618
-            target.SundayDate = source.SundayDate;
-            #pragma warning restore 612, 618
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

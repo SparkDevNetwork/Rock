@@ -138,6 +138,7 @@ namespace Rock.Reporting.DataFilter.Workflow
             WorkflowTypePicker workflowTypePicker = new WorkflowTypePicker();
             workflowTypePicker.ID = filterControl.ID + "_workflowTypePicker";
             workflowTypePicker.Label = "Workflow Type";
+            workflowTypePicker.AddCssClass( "js-workflow-type-picker" );
             workflowTypePicker.SelectItem += workflowTypePicker_SelectItem;
             workflowTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
             containerControl.Controls.Add( workflowTypePicker );
@@ -178,8 +179,8 @@ namespace Rock.Reporting.DataFilter.Workflow
             // add Empty option first
             ddlProperty.Items.Add( new ListItem() );
 
-            this.entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
-            foreach ( var entityField in this.entityFields )
+            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
+            foreach ( var entityField in entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
@@ -214,8 +215,11 @@ namespace Rock.Reporting.DataFilter.Workflow
             var ddlEntityField = sender as RockDropDownList;
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
+            WorkflowTypePicker workflowTypePicker = filterControl.ControlsOfTypeRecursive<WorkflowTypePicker>().Where( a => a.HasCssClass( "js-workflow-type-picker" ) ).FirstOrDefault();
 
-            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
+            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
+
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
@@ -230,8 +234,6 @@ namespace Rock.Reporting.DataFilter.Workflow
                 }
             }
         }
-
-        private List<EntityField> entityFields = null;
 
         /// <summary>
         /// Renders the controls.

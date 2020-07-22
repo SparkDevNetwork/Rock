@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -31,9 +32,10 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job send list of new pending group members to the group's leaders.
+    /// This job sends a list of new, pending group members to the group's leaders.
     /// </summary>
-    /// 
+    [DisplayName( "Group Leader Pending Notifications" )]
+    [Description( "This job sends a list of new, pending group members to the group's leaders." )]
 
     [GroupTypeField( "Group Type", "The group type to look for new pending registrations", true, "", "", 0 )]
     [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]

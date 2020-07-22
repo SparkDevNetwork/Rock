@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -195,15 +196,19 @@ namespace Rock.Reporting.DataFilter
             var ddlEntityField = new RockDropDownList();
             ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
             ddlEntityField.ClientIDMode = ClientIDMode.Predictable;
+
+            var entityTypeCache = EntityTypeCache.Get( entityType, true );
+            ddlEntityField.Attributes["EntityTypeId"] = entityTypeCache?.Id.ToString();
+
             containerControl.Controls.Add( ddlEntityField );
 
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
-            var entityTypeCache = EntityTypeCache.Get( entityType, true );
 
-            this.entityFields = this.GetEntityFields( entityType );
-            foreach ( var entityField in this.entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
+
+            var entityFields = this.GetEntityFields( entityType );
+            foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
             {
                 bool isAuthorized = true;
                 bool includeField = true;
@@ -277,7 +282,18 @@ namespace Rock.Reporting.DataFilter
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
 
-            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
+            int? entityTypeId = ddlEntityField.Attributes["EntityTypeId"]?.AsIntegerOrNull();
+            if ( !entityTypeId.HasValue )
+            {
+                // shouldn't happen;
+                return;
+            }
+
+            var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
+
+            var entityFields = this.GetEntityFields( entityType );
+
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
@@ -292,8 +308,6 @@ namespace Rock.Reporting.DataFilter
                 }
             }
         }
-
-        private List<EntityField> entityFields = null;
 
         /// <summary>
         /// Renders the controls.
@@ -356,7 +370,39 @@ namespace Rock.Reporting.DataFilter
         /// <value>
         /// The entity.
         /// </value>
-        public IEntity Entity { get; set; }
+        public IEntity Entity
+        {
+            get
+            {
+                if ( HttpContext.Current != null )
+                {
+                    return HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] as IEntity;
+                }
+
+                return _nonHttpContextEntity;
+            }
+
+            set
+            {
+                if ( HttpContext.Current != null )
+                {
+                    HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] = value;
+                }
+                else
+                {
+                    _nonHttpContextEntity = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Thread safe storage of property when HttpContext.Current is null
+        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
+        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
+        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
+        /// </summary>
+        [ThreadStatic]
+        private static IEntity _nonHttpContextEntity;
 
         /// <summary>
         /// Gets the entity fields.

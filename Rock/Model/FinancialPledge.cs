@@ -53,7 +53,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
-        public int? GroupId { get; set;}
+        public int? GroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
@@ -108,6 +108,33 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime EndDate { get; set; }
 
+        /// <summary>
+        /// Gets the start date key.
+        /// </summary>
+        /// <value>
+        /// The start date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int StartDateKey
+        {
+            get => StartDate.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the end date key.
+        /// </summary>
+        /// <value>
+        /// The end date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int EndDateKey
+        {
+            get => EndDate.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion
 
         #region Virtual Properties
@@ -149,6 +176,23 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue PledgeFrequencyValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the start source date.
+        /// </summary>
+        /// <value>
+        /// The start source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate StartSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end source date.
+        /// </summary>
+        /// <value>
+        /// The end source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate EndSourceDate { get; set; }
         #endregion
 
         #region Public Methods
@@ -175,7 +219,7 @@ namespace Rock.Model
             get
             {
                 var result = base.IsValid;
-                if ( result && TotalAmount<0 )
+                if ( result && TotalAmount < 0 )
                 {
                     this.ValidationResults.Add( new ValidationResult( "Total Amount can't be negative." ) );
                     return false;
@@ -205,6 +249,11 @@ namespace Rock.Model
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Account ).WithMany().HasForeignKey( p => p.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PledgeFrequencyValue ).WithMany().HasForeignKey( p => p.PledgeFrequencyValueId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasRequired( r => r.StartSourceDate ).WithMany().HasForeignKey( r => r.StartDateKey ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.EndSourceDate ).WithMany().HasForeignKey( r => r.EndDateKey ).WillCascadeOnDelete( false );
         }
 
     }

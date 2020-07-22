@@ -29,6 +29,11 @@
                                     <asp:Label ID="lblKey" runat="server" />
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
+                            <Rock:RockTemplateField HeaderText="Status" SortExpression="RecordStatusValueId">
+                                <ItemTemplate>
+                                    <asp:Label ID="lblStatus" runat="server" />
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gRestKeyList_Delete" />
                         </Columns>
                     </Rock:Grid>

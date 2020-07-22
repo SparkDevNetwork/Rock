@@ -40,44 +40,220 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
+    #region Block Attributes
 
-    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel.", required: true, defaultValue: "", category: "CustomSetting" )]
-    [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
-    [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this content channel item block.",
+        IsRequired = false,
+        Key = AttributeKey.EnabledLavaCommands )]
 
-    [CodeEditorField( "Lava Template", description: "The template to use when formatting the content channel item.", mode: CodeEditorMode.Lava, theme: CodeEditorTheme.Rock, height: 200, required: false, category: "CustomSetting", defaultValue: @"
-<h1>{{ Item.Title }}</h1>
-{{ Item.Content }}" )]
+    [ContentChannelField(
+        "Content Channel",
+        Description = "Limits content channel items to a specific channel.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "CustomSetting",
+        Key = AttributeKey.ContentChannel )]
 
-    [IntegerField( "Output Cache Duration", OUTPUT_CACHE_DURATION_DESCRIPTION, required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
-    [IntegerField( "Item Cache Duration", description: "Number of seconds to cache the content item specified by the parameter.", required: false, defaultValue: 3600, category: "CustomSetting", order: 0, key: "ItemCacheDuration" )]
-    [CustomCheckboxListField( "Cache Tags", description: "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
+    [EnumsField(
+        "Status",
+        Description = "Include items with the following status.",
+        EnumSourceType = typeof( ContentChannelItemStatus ),
+        IsRequired = false,
+        DefaultValue = "2",
+        Category = "CustomSetting",
+        Key = AttributeKey.Status)]
 
-    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava template engine.", false, "CustomSetting" )]
-    [BooleanField( "Set Page Title", description: "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
-    [LinkedPage( "Detail Page", description: "Page used to view a content item.", order: 1, category: "CustomSetting", key: "DetailPage" )]
+    [TextField(
+        "Content Channel Query Parameter",
+        Description = ContentChannelQueryParameterDescription,
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.ContentChannelQueryParameter )]
 
-    [BooleanField( "Log Interactions", category: "CustomSetting" )]
-    [BooleanField( "Write Interaction Only If Individual Logged In", description: "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.", category: "CustomSetting" )]
+    [CodeEditorField(
+        "Lava Template",
+        Description = "The template to use when formatting the content channel item.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        Category = "CustomSetting",
+        DefaultValue = LavaTemplateDefaultValue,
+        Key = AttributeKey.LavaTemplate )]
 
-    [WorkflowTypeField( "Workflow Type", description: "The workflow type to launch when the content is viewed.", category: "CustomSetting" )]
-    [BooleanField( "Launch Workflow Only If Individual Logged In", description: "Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users.", category: "CustomSetting" )]
-    [EnumField( "Launch Workflow Condition", "", enumSourceType: typeof( LaunchWorkflowCondition ), defaultValue: "1", category: "CustomSetting" )]
+    [IntegerField(
+        "Output Cache Duration",
+        Description = OutputCacheDurationDescription,
+        IsRequired = false,
+        Key = AttributeKey.OutputCacheDuration,
+        Category = "CustomSetting" )]
 
-    [TextField( "Meta Description Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Open Graph Type", required: false, category: "CustomSetting" )]
-    [TextField( "Open Graph Title Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Open Graph Description Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Open Graph Image Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Title Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Description Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Image Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Card", required: false, defaultValue: "none", category: "CustomSetting" )]
+    [IntegerField(
+        "Item Cache Duration",
+        Description = "Number of seconds to cache the content item specified by the parameter.",
+        IsRequired = false,
+        DefaultIntegerValue = 3600,
+        Category = "CustomSetting",
+        Order = 0,
+        Key = AttributeKey.ItemCacheDuration )]
+
+    [CustomCheckboxListField(
+        "Cache Tags",
+        Description = "Cached tags are used to link cached content so that it can be expired as a group",
+        IsRequired = false,
+        Key = AttributeKey.CacheTags,
+        Category = "CustomSetting" )]
+
+    [BooleanField(
+        "Merge Content",
+        Description = "Should the content data and attribute values be merged using the Lava template engine.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.MergeContent )]
+
+    [BooleanField(
+        "Set Page Title",
+        Description = "Determines if the block should set the page title with the channel name or content item.",
+        Category = "CustomSetting",
+        Key = AttributeKey.SetPageTitle )]
+
+    [LinkedPage(
+        "Detail Page",
+        Description = "Page used to view a content item.",
+        Order = 1,
+        Category = "CustomSetting",
+        Key = AttributeKey.DetailPage )]
+
+    [BooleanField(
+        "Log Interactions",
+        Category = "CustomSetting",
+        Key = AttributeKey.LogInteractions )]
+
+    [BooleanField(
+        "Write Interaction Only If Individual Logged In",
+        Description = "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.",
+        Category = "CustomSetting",
+        Key = AttributeKey.WriteInteractionOnlyIfIndividualLoggedIn )]
+
+    [WorkflowTypeField(
+        "Workflow Type",
+        Description = "The workflow type to launch when the content is viewed.",
+        Category = "CustomSetting",
+        Key = AttributeKey.WorkflowType )]
+
+    [BooleanField(
+        "Launch Workflow Only If Individual Logged In",
+        Description = "Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users.",
+        Category = "CustomSetting",
+        Key = AttributeKey.LaunchWorkflowOnlyIfIndividualLoggedIn )]
+
+    [EnumField(
+        "Launch Workflow Condition",
+        EnumSourceType = typeof( LaunchWorkflowCondition ),
+        DefaultValue = "1",
+        Category = "CustomSetting",
+        Key = AttributeKey.LaunchWorkflowCondition )]
+
+    [TextField(
+        "Meta Description Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.MetaDescriptionAttribute )]
+
+    [TextField(
+        "Open Graph Type",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.OpenGraphType )]
+
+    [TextField(
+        "Open Graph Title Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.OpenGraphTitleAttribute )]
+
+    [TextField(
+        "Open Graph Description Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.OpenGraphDescriptionAttribute )]
+
+    [TextField(
+        "Open Graph Image Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.OpenGraphImageAttribute )]
+
+    [TextField(
+        "Twitter Title Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.TwitterTitleAttribute )]
+
+    [TextField(
+        "Twitter Description Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.TwitterDescriptionAttribute )]
+
+    [TextField(
+        "Twitter Image Attribute",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.TwitterImageAttribute )]
+
+    [TextField(
+        "Twitter Card",
+        IsRequired = false,
+        DefaultValue = "none",
+        Category = "CustomSetting",
+        Key = AttributeKey.TwitterCard )]
+
+    #endregion Block Attributes
     public partial class ContentChannelItemView : RockBlockCustomSettings
     {
-        #region Block Property Constants
-        private const string CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION = @"
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ContentChannel = "ContentChannel";
+            public const string Status = "Status";
+            public const string ContentChannelQueryParameter = "ContentChannelQueryParameter";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string OutputCacheDuration = "OutputCacheDuration";
+            public const string ItemCacheDuration = "ItemCacheDuration";
+            public const string CacheTags = "CacheTags";
+            public const string MergeContent = "MergeContent";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string DetailPage = "DetailPage";
+            public const string LogInteractions = "LogInteractions";
+            public const string WriteInteractionOnlyIfIndividualLoggedIn = "WriteInteractionOnlyIfIndividualLoggedIn";
+            public const string WorkflowType = "WorkflowType";
+            public const string LaunchWorkflowCondition = "LaunchWorkflowCondition";
+            public const string LaunchWorkflowOnlyIfIndividualLoggedIn = "LaunchWorkflowOnlyIfIndividualLoggedIn";
+            public const string MetaDescriptionAttribute = "MetaDescriptionAttribute";
+            public const string OpenGraphType = "OpenGraphType";
+            public const string OpenGraphTitleAttribute = "OpenGraphTitleAttribute";
+            public const string OpenGraphDescriptionAttribute = "OpenGraphDescriptionAttribute";
+            public const string OpenGraphImageAttribute = "OpenGraphImageAttribute";
+            public const string TwitterTitleAttribute = "TwitterTitleAttribute";
+            public const string TwitterDescriptionAttribute = "TwitterDescriptionAttribute";
+            public const string TwitterImageAttribute = "TwitterImageAttribute";
+            public const string TwitterCard = "TwitterCard";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+        }
+
+        #endregion Attribute Keys
+
+        #region constants
+
+        protected const string LavaTemplateDefaultValue = @"
+<h1>{{ Item.Title }}</h1>
+{{ Item.Content }}";
+
+        private const string ContentChannelQueryParameterDescription = @"
 Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
 The type of the value will determine how the content channel item will be determined as follows:
 
@@ -86,9 +262,10 @@ String - ContentChannelItem Slug
 Guid - ContentChannelItem Guid
 
 ";
-        private const string OUTPUT_CACHE_DURATION_DESCRIPTION = @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.";
 
-        #endregion Block Property Constants
+        private const string OutputCacheDurationDescription = @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.";
+
+        #endregion constants
 
         #region Fields
 
@@ -215,12 +392,12 @@ Guid - ContentChannelItem Guid
                 ddlLaunchWorkflowCondition.Items.Add( new ListItem( launchWorkflowCondition.ConvertToString( true ), launchWorkflowCondition.ConvertToInt().ToString() ) );
             }
 
-            var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            var channelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ddlContentChannel.SetValue( channelGuid );
             UpdateSocialMediaDropdowns( channelGuid );
 
             cblStatus.BindToEnum<ContentChannelItemStatus>();
-            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
+            foreach ( string status in GetAttributeValue( AttributeKey.Status ).SplitDelimitedValues() )
             {
                 var li = cblStatus.Items.FindByValue( status );
                 if ( li != null )
@@ -230,29 +407,29 @@ Guid - ContentChannelItem Guid
             }
 
             var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
-            tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
-            ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
-            nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
-            nbItemCacheDuration.Text = this.GetAttributeValue( "ItemCacheDuration" );
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( AttributeKey.DetailPage ) );
+            tbContentChannelQueryParameter.Text = this.GetAttributeValue( AttributeKey.ContentChannelQueryParameter );
+            ceLavaTemplate.Text = this.GetAttributeValue( AttributeKey.LavaTemplate );
+            nbOutputCacheDuration.Text = this.GetAttributeValue( AttributeKey.OutputCacheDuration );
+            nbItemCacheDuration.Text = this.GetAttributeValue( AttributeKey.ItemCacheDuration );
 
             DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
-            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            string[] selectedCacheTags = this.GetAttributeValue( AttributeKey.CacheTags ).SplitDelimitedValues();
             foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
 
-            cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
-            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
+            cbSetPageTitle.Checked = this.GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
 
-            if ( this.GetAttributeValue( "LogInteractions" ).AsBoolean() )
+            if ( this.GetAttributeValue( AttributeKey.LogInteractions ).AsBoolean() )
             {
                 cbLogInteractions.Checked = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
-                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( AttributeKey.WriteInteractionOnlyIfIndividualLoggedIn ).AsBoolean();
             }
             else
             {
@@ -264,7 +441,7 @@ Guid - ContentChannelItem Guid
             var rockContext = new RockContext();
 
             // Workflow
-            Guid? workflowTypeGuid = this.GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
+            Guid? workflowTypeGuid = this.GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
                 wtpWorkflowType.SetValue( new WorkflowTypeService( rockContext ).GetNoTracking( workflowTypeGuid.Value ) );
@@ -276,20 +453,20 @@ Guid - ContentChannelItem Guid
 
             ShowHideControls();
 
-            cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
-            ddlLaunchWorkflowCondition.SetValue( this.GetAttributeValue( "LaunchWorkflowCondition" ) );
+            cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( AttributeKey.LaunchWorkflowOnlyIfIndividualLoggedIn ).AsBoolean();
+            ddlLaunchWorkflowCondition.SetValue( this.GetAttributeValue( AttributeKey.LaunchWorkflowCondition ) );
 
             // Social Media
-            ddlMetaDescriptionAttribute.SetValue( this.GetAttributeValue( "MetaDescriptionAttribute" ) );
-            ddlOpenGraphType.SetValue( this.GetAttributeValue( "OpenGraphType" ) );
-            ddlOpenGraphTitleAttribute.SetValue( this.GetAttributeValue( "OpenGraphTitleAttribute" ) );
-            ddlOpenGraphDescriptionAttribute.SetValue( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ) );
-            ddlOpenGraphImageAttribute.SetValue( this.GetAttributeValue( "OpenGraphImageAttribute" ) );
+            ddlMetaDescriptionAttribute.SetValue( this.GetAttributeValue( AttributeKey.MetaDescriptionAttribute ) );
+            ddlOpenGraphType.SetValue( this.GetAttributeValue( AttributeKey.OpenGraphType ) );
+            ddlOpenGraphTitleAttribute.SetValue( this.GetAttributeValue( AttributeKey.OpenGraphTitleAttribute ) );
+            ddlOpenGraphDescriptionAttribute.SetValue( this.GetAttributeValue( AttributeKey.OpenGraphDescriptionAttribute ) );
+            ddlOpenGraphImageAttribute.SetValue( this.GetAttributeValue( AttributeKey.OpenGraphImageAttribute ) );
 
-            ddlTwitterTitleAttribute.SetValue( this.GetAttributeValue( "TwitterTitleAttribute" ) );
-            ddlTwitterDescriptionAttribute.SetValue( this.GetAttributeValue( "TwitterDescriptionAttribute" ) );
-            ddlTwitterImageAttribute.SetValue( this.GetAttributeValue( "TwitterImageAttribute" ) );
-            ddlTwitterCard.SetValue( this.GetAttributeValue( "TwitterCard" ) );
+            ddlTwitterTitleAttribute.SetValue( this.GetAttributeValue( AttributeKey.TwitterTitleAttribute ) );
+            ddlTwitterDescriptionAttribute.SetValue( this.GetAttributeValue( AttributeKey.TwitterDescriptionAttribute ) );
+            ddlTwitterImageAttribute.SetValue( this.GetAttributeValue( AttributeKey.TwitterImageAttribute ) );
+            ddlTwitterCard.SetValue( this.GetAttributeValue( AttributeKey.TwitterCard ) );
 
             mdSettings.Show();
         }
@@ -301,19 +478,19 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdSettings_SaveClick( object sender, EventArgs e )
         {
-            this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
-            this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
+            this.SetAttributeValue( AttributeKey.ContentChannel, ddlContentChannel.SelectedValue );
+            this.SetAttributeValue( AttributeKey.Status, cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
             var ppFieldType = new PageReferenceFieldType();
-            this.SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
-            this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
-            this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
-            this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
-            this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
-            this.SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
-            this.SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
-            this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
-            this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
-            this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
+            this.SetAttributeValue( AttributeKey.DetailPage, ppFieldType.GetEditValue( ppDetailPage, null ) );
+            this.SetAttributeValue( AttributeKey.ContentChannelQueryParameter, tbContentChannelQueryParameter.Text );
+            this.SetAttributeValue( AttributeKey.LavaTemplate, ceLavaTemplate.Text );
+            this.SetAttributeValue( AttributeKey.OutputCacheDuration, nbOutputCacheDuration.Text );
+            this.SetAttributeValue( AttributeKey.ItemCacheDuration, nbItemCacheDuration.Text );
+            this.SetAttributeValue( AttributeKey.CacheTags, cblCacheTags.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( AttributeKey.MergeContent, cbMergeContent.Checked.ToString() );
+            this.SetAttributeValue( AttributeKey.SetPageTitle, cbSetPageTitle.Checked.ToString() );
+            this.SetAttributeValue( AttributeKey.LogInteractions, cbLogInteractions.Checked.ToString() );
+            this.SetAttributeValue( AttributeKey.WriteInteractionOnlyIfIndividualLoggedIn, cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
             int? selectedWorkflowTypeId = wtpWorkflowType.SelectedValueAsId();
             Guid? selectedWorkflowTypeGuid = null;
             if ( selectedWorkflowTypeId.HasValue )
@@ -321,18 +498,18 @@ Guid - ContentChannelItem Guid
                 selectedWorkflowTypeGuid = WorkflowTypeCache.Get( selectedWorkflowTypeId.Value ).Guid;
             }
 
-            this.SetAttributeValue( "WorkflowType", selectedWorkflowTypeGuid.ToString() );
-            this.SetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn", cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked.ToString() );
-            this.SetAttributeValue( "LaunchWorkflowCondition", ddlLaunchWorkflowCondition.SelectedValue );
-            this.SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
-            this.SetAttributeValue( "OpenGraphType", ddlOpenGraphType.SelectedValue );
-            this.SetAttributeValue( "OpenGraphTitleAttribute", ddlOpenGraphTitleAttribute.SelectedValue );
-            this.SetAttributeValue( "OpenGraphDescriptionAttribute", ddlOpenGraphDescriptionAttribute.SelectedValue );
-            this.SetAttributeValue( "OpenGraphImageAttribute", ddlOpenGraphImageAttribute.SelectedValue );
-            this.SetAttributeValue( "TwitterTitleAttribute", ddlTwitterTitleAttribute.SelectedValue );
-            this.SetAttributeValue( "TwitterDescriptionAttribute", ddlTwitterDescriptionAttribute.SelectedValue );
-            this.SetAttributeValue( "TwitterImageAttribute", ddlTwitterImageAttribute.SelectedValue );
-            this.SetAttributeValue( "TwitterCard", ddlTwitterCard.SelectedValue );
+            this.SetAttributeValue( AttributeKey.WorkflowType, selectedWorkflowTypeGuid.ToString() );
+            this.SetAttributeValue( AttributeKey.LaunchWorkflowOnlyIfIndividualLoggedIn, cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked.ToString() );
+            this.SetAttributeValue( AttributeKey.LaunchWorkflowCondition, ddlLaunchWorkflowCondition.SelectedValue );
+            this.SetAttributeValue( AttributeKey.MetaDescriptionAttribute, ddlMetaDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.OpenGraphType, ddlOpenGraphType.SelectedValue );
+            this.SetAttributeValue( AttributeKey.OpenGraphTitleAttribute, ddlOpenGraphTitleAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.OpenGraphDescriptionAttribute, ddlOpenGraphDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.OpenGraphImageAttribute, ddlOpenGraphImageAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.TwitterTitleAttribute, ddlTwitterTitleAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.TwitterDescriptionAttribute, ddlTwitterDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.TwitterImageAttribute, ddlTwitterImageAttribute.SelectedValue );
+            this.SetAttributeValue( AttributeKey.TwitterCard, ddlTwitterCard.SelectedValue );
 
             SaveAttributeValues();
 
@@ -403,7 +580,7 @@ Guid - ContentChannelItem Guid
         /// </summary>
         private void ShowView()
         {
-            int? outputCacheDuration = GetAttributeValue( "OutputCacheDuration" ).AsIntegerOrNull();
+            int? outputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
 
             string outputContents = null;
             string pageTitle = null;
@@ -425,8 +602,8 @@ Guid - ContentChannelItem Guid
                 pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
             }
 
-            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
-            bool setPageTitle = GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            bool isMergeContentEnabled = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
+            bool setPageTitle = GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean();
 
             if ( outputContents == null )
             {
@@ -441,7 +618,7 @@ Guid - ContentChannelItem Guid
                 if ( contentChannelItem.ContentChannel.RequiresApproval )
                 {
                     var statuses = new List<ContentChannelItemStatus>();
-                    foreach ( var status in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    foreach ( var status in ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                     {
                         var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
                         if ( statusEnum != null )
@@ -458,7 +635,7 @@ Guid - ContentChannelItem Guid
                 }
 
                 // if a Channel was specified, verify that the ChannelItem is part of the channel
-                var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+                var channelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
                 {
                     var channel = ContentChannelCache.Get( channelGuid.Value );
@@ -479,7 +656,7 @@ Guid - ContentChannelItem Guid
                 {
                     var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
 
-                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
                     itemMergeFields.AddOrReplace( "Item", contentChannelItem );
                     contentChannelItem.Content = contentChannelItem.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
@@ -495,7 +672,7 @@ Guid - ContentChannelItem Guid
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
                 int detailPage = 0;
-                var page = PageCache.Get( GetAttributeValue( "DetailPage" ) );
+                var page = PageCache.Get( GetAttributeValue( AttributeKey.DetailPage ) );
                 if ( page != null )
                 {
                     detailPage = page.Id;
@@ -503,7 +680,7 @@ Guid - ContentChannelItem Guid
 
                 mergeFields.Add( "DetailPage", detailPage );
 
-                string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
+                string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.MetaDescriptionAttribute ), contentChannelItem );
 
                 if ( !string.IsNullOrWhiteSpace( metaDescriptionValue ) )
                 {
@@ -511,20 +688,20 @@ Guid - ContentChannelItem Guid
                     RockPage.Header.Description = metaDescriptionValue.SanitizeHtml( true );
                 }
 
-                AddHtmlMetaProperty( "og:type", this.GetAttributeValue( "OpenGraphType" ) );
-                AddHtmlMetaProperty( "og:title", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphTitleAttribute" ), contentChannelItem ) );
-                AddHtmlMetaProperty( "og:description", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ), contentChannelItem ) );
-                AddHtmlMetaProperty( "og:image", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphImageAttribute" ), contentChannelItem ) );
-                AddHtmlMetaName( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
-                AddHtmlMetaName( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
-                AddHtmlMetaName( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
-                var twitterCard = this.GetAttributeValue( "TwitterCard" );
+                AddHtmlMetaProperty( "og:type", this.GetAttributeValue( AttributeKey.OpenGraphType ) );
+                AddHtmlMetaProperty( "og:title", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.OpenGraphTitleAttribute ), contentChannelItem ) );
+                AddHtmlMetaProperty( "og:description", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.OpenGraphDescriptionAttribute ), contentChannelItem ) );
+                AddHtmlMetaProperty( "og:image", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.OpenGraphImageAttribute ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.TwitterTitleAttribute ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.TwitterDescriptionAttribute ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.TwitterImageAttribute ), contentChannelItem ) );
+                var twitterCard = this.GetAttributeValue( AttributeKey.TwitterCard );
                 if ( twitterCard.IsNotNullOrWhiteSpace() && twitterCard != "none" )
                 {
                     AddHtmlMetaName( "twitter:card", twitterCard );
                 }
-                string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
-                string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
+                string lavaTemplate = this.GetAttributeValue( AttributeKey.LavaTemplate );
+                string enabledLavaCommands = this.GetAttributeValue( AttributeKey.EnabledLavaCommands );
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
 
                 if ( setPageTitle )
@@ -534,7 +711,7 @@ Guid - ContentChannelItem Guid
 
                 if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
                 {
-                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                     var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
                     cacheKeys.Add( outputCacheKey );
                     cacheKeys.Add( pageTitleCacheKey );
@@ -574,8 +751,8 @@ Guid - ContentChannelItem Guid
         /// <returns></returns>
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
-            int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            Guid? contentChannelGuid = GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            int? itemCacheDuration = GetAttributeValue( AttributeKey.ItemCacheDuration ).AsIntegerOrNull();
+            Guid? contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
 
             ContentChannelItem contentChannelItem = null;
 
@@ -625,7 +802,7 @@ Guid - ContentChannelItem Guid
 
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                 var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
                 cacheKeys.Add( itemCacheKey );
                 AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
@@ -644,7 +821,7 @@ Guid - ContentChannelItem Guid
             string contentChannelItemKey = null;
 
             // Determine the ContentChannelItem from the ContentChannelQueryParameter or the first parameter
-            string contentChannelQueryParameter = this.GetAttributeValue( "ContentChannelQueryParameter" );
+            string contentChannelQueryParameter = this.GetAttributeValue( AttributeKey.ContentChannelQueryParameter );
             if ( !string.IsNullOrEmpty( contentChannelQueryParameter ) )
             {
                 contentChannelItemKey = this.PageParameter( contentChannelQueryParameter );
@@ -689,13 +866,13 @@ Guid - ContentChannelItem Guid
                 return;
             }
 
-            bool logInteractions = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
+            bool logInteractions = this.GetAttributeValue( AttributeKey.LogInteractions ).AsBoolean();
             if ( !logInteractions )
             {
                 return;
             }
 
-            bool writeInteractionOnlyIfIndividualLoggedIn = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
+            bool writeInteractionOnlyIfIndividualLoggedIn = this.GetAttributeValue( AttributeKey.WriteInteractionOnlyIfIndividualLoggedIn ).AsBoolean();
             if ( writeInteractionOnlyIfIndividualLoggedIn && this.CurrentPerson == null )
             {
                 // don't log interaction if WriteInteractionOnlyIfIndividualLoggedIn = true and nobody is logged in
@@ -707,9 +884,7 @@ Guid - ContentChannelItem Guid
             var interactionTransaction = new InteractionTransaction(
                 DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
                 contentChannelItem.ContentChannel,
-                contentChannelItem );
-
-            interactionTransaction.InteractionSummary = contentChannelItem.Title;
+                contentChannelItem, new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title } );
 
             interactionTransaction.Enqueue();
         }
@@ -721,7 +896,7 @@ Guid - ContentChannelItem Guid
         {
             // Check to see if a workflow should be launched when viewed
             WorkflowTypeCache workflowType = null;
-            Guid? workflowTypeGuid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
+            Guid? workflowTypeGuid = GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull();
             if ( !workflowTypeGuid.HasValue )
             {
                 return;
@@ -734,14 +909,14 @@ Guid - ContentChannelItem Guid
                 return;
             }
 
-            bool launchWorkflowOnlyIfIndividualLoggedIn = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
+            bool launchWorkflowOnlyIfIndividualLoggedIn = this.GetAttributeValue( AttributeKey.LaunchWorkflowOnlyIfIndividualLoggedIn ).AsBoolean();
             if ( launchWorkflowOnlyIfIndividualLoggedIn && this.CurrentPerson == null )
             {
                 // don't launch a workflow if LaunchWorkflowOnlyIfIndividualLoggedIn = true and nobody is logged in
                 return;
             }
 
-            var launchWorkflowCondition = this.GetAttributeValue( "LaunchWorkflowCondition" ).ConvertToEnum<LaunchWorkflowCondition>();
+            var launchWorkflowCondition = this.GetAttributeValue( AttributeKey.LaunchWorkflowCondition ).ConvertToEnum<LaunchWorkflowCondition>();
 
             if ( launchWorkflowCondition != LaunchWorkflowCondition.Always && this.CurrentPerson == null )
             {
@@ -867,7 +1042,7 @@ Guid - ContentChannelItem Guid
                 mergeObject = contentChannelItem;
             }
 
-            // use Lava to get the Attribute value formatted for the MetaValue, and specify the Url param in case the Attribute supports rendering the value as a Url (for example, Image)
+            // use Lava to get the Attribute value formatted for the MetaValue, and specify the URL param in case the Attribute supports rendering the value as a URL (for example, Image)
             string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}':'Url' }}}}", attributeKey );
 
             string resolvedValue = metaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "mergeObject", mergeObject } } );

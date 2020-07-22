@@ -36,13 +36,52 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Active Users" )]
     [Category( "CMS" )]
     [Description( "Displays a list of active users of a website." )]
-    [SiteField( "Site", "Site to show current active users for.", true )]
-    [BooleanField( "Show Site Name As Title", "Determine whether to show the name of the site as a title above the list.", true )]
-    [BooleanField( "Show Guest Visitors", "Displays the number of guests visiting the site. (Guests are considered users not logged in.)", true )]
-    [LinkedPage( "Person Profile Page", "Page reference to the person profile page you would like to use as a link. Not providing a reference will suppress the creation of a link.", false )]
-    [IntegerField( "Page View Count", "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.", true, 5 )]
+
+    #region Block Attributes
+
+    [SiteField(
+        "Site",
+        Description = "Site to show current active users for.",
+        IsRequired = true,
+        Key = AttributeKey.Site )]
+    [BooleanField(
+        "Show Site Name As Title",
+        Description = "Determine whether to show the name of the site as a title above the list.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowSiteNameAsTitle )]
+    [BooleanField(
+        "Show Guest Visitors",
+        Description = "Displays the number of guests visiting the site. (Guests are considered users not logged in.)",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowGuestVisitors )]
+    [LinkedPage(
+        "Person Profile Page",
+        Description = "Page reference to the person profile page you would like to use as a link. Not providing a reference will suppress the creation of a link.",
+        IsRequired = false,
+        Key = AttributeKey.PersonProfilePage )]
+    [IntegerField(
+        "Page View Count",
+        Description = "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.",
+        IsRequired = true,
+        DefaultIntegerValue = 5,
+        Key = AttributeKey.PageViewCount )]
+
+    #endregion Block Attributes
     public partial class ActiveUsers : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Site = "Site";
+            public const string ShowSiteNameAsTitle = "ShowSiteNameAsTitle";
+            public const string ShowGuestVisitors = "ShowGuestVisitors";
+            public const string PersonProfilePage = "PersonProfilePage";
+            public const string PageViewCount = "PageViewCount";
+        }
+
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -92,7 +131,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ShowActiveUsers()
         {
-            int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
+            int? siteId = GetAttributeValue( AttributeKey.Site ).AsIntegerOrNull();
             if ( !siteId.HasValue || SiteCache.Get(siteId.Value) == null )
             {
                 lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
@@ -100,13 +139,13 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                int pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull() ?? 0;
+                int pageViewCount = GetAttributeValue( AttributeKey.PageViewCount ).AsIntegerOrNull() ?? 0;
 
                 StringBuilder sbUsers = new StringBuilder();
 
                 var site = SiteCache.Get( siteId.Value );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
-                lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
+                lSiteName.Visible = GetAttributeValue( AttributeKey.ShowSiteNameAsTitle ).AsBoolean();
 
                 if ( !site.EnablePageViews )
                 {
@@ -131,7 +170,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             PersonAliasPersonId = pa.PersonId,
                             pv.InteractionDateTime,
-                            pv.InteractionComponent.Channel.ChannelEntityId,
+                            pv.InteractionComponent.InteractionChannel.ChannelEntityId,
                             pv.InteractionSessionId,
                             PagePageTitle = pv.InteractionComponent.Name
                         } );
@@ -200,9 +239,9 @@ namespace RockWeb.Blocks.Cms
                         string personFullName = Person.FormatFullName( login.Person.NickName, login.Person.LastName, login.Person.SuffixValueId );
                         string personLink = personFullName;
 
-                        if ( GetAttributeValue( "PersonProfilePage" ) != null )
+                        if ( GetAttributeValue( AttributeKey.PersonProfilePage ) != null )
                         {
-                            string personProfilePage = GetAttributeValue( "PersonProfilePage" );
+                            string personProfilePage = GetAttributeValue( AttributeKey.PersonProfilePage );
                             var pageParams = new Dictionary<string, string>();
                             pageParams.Add( "PersonId", login.PersonId.ToString() );
                             var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
@@ -210,7 +249,7 @@ namespace RockWeb.Blocks.Cms
                         }
 
                         // determine whether to show last page views
-                        if ( GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
+                        if ( GetAttributeValue( AttributeKey.PageViewCount ).AsInteger() > 0 )
                         {
                             string activeLoginFormat = @"
 <li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
@@ -237,7 +276,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     // get the 'show guests' attribute and if it's true, determine how many guests there are.
-                    bool showGuestVisitors = GetAttributeValue( "ShowGuestVisitors" ).AsBoolean();
+                    bool showGuestVisitors = GetAttributeValue( AttributeKey.ShowGuestVisitors ).AsBoolean();
                     if ( showGuestVisitors )
                     {
                         // build a list of unique sessions views in the past 15 minutes.
@@ -248,7 +287,7 @@ namespace RockWeb.Blocks.Cms
 
                         var qryGuests = new InteractionService( rockContext ).Queryable().AsNoTracking()
                                         .Where(
-                                            i => i.InteractionComponent.Channel.ChannelEntityId == site.Id
+                                            i => i.InteractionComponent.InteractionChannel.ChannelEntityId == site.Id
                                             && i.InteractionDateTime > last15Minutes
                                             && i.PersonAliasId == null
                                             && i.InteractionSession.DeviceType.ClientType != "Other"

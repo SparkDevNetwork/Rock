@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Web.UI.RockBlock" />
     [DisplayName( "Group Schedule Status Board" )]
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             List<int> selectedGroupIds = GetSelectedGroupIds();
             var rockContext = new RockContext();
-            var groupsQuery = new GroupService( rockContext ).GetByIds( selectedGroupIds ).Where( a => a.GroupType.IsSchedulingEnabled == true );
+            var groupsQuery = new GroupService( rockContext ).GetByIds( selectedGroupIds ).Where( a => a.GroupType.IsSchedulingEnabled == true && a.DisableScheduling == false );
 
             nbGroupsWarning.Visible = false;
             if ( !groupsQuery.Any() )
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.GroupScheduling
 <th scope='col'></th>
 {% for scheduleOccurrenceDate in ScheduleOccurrenceDateList %}
     <th scope='col'>
-        <span class='date'>{{ scheduleOccurrenceDate.ScheduledDateTime | Date:'MMM d, yyyy'  }}</span>
+        <span class='date'>{{ scheduleOccurrenceDate.ScheduledDateTime | Date:'MMM d, yyyy' }}</span>
         <br />
         <span class='day-time'>{{ scheduleOccurrenceDate.Schedule.Name }}</span>
     </th>

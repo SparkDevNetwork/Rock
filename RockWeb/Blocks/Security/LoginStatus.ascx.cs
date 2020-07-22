@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Security
                         }
                         else
                         {
-                            sbPageMarkup.Append( string.Format( "<li><a href='{0}'>{1}</a>", Page.ResolveUrl(page.Link.ResolveMergeFields(mergeFields)), page.Title ) );
+                            sbPageMarkup.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", Page.ResolveUrl(page.Link.ResolveMergeFields(mergeFields)), page.Title ) );
                         }
                     }
 

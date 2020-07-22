@@ -962,7 +962,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( Guid.TryParse( GetAttributeValue( "AnonymousPerson" ), out anonymousPersonAliasGuid ) )
             {
-                anonymousPerson = new PersonAliasService( rockContext ).Get(anonymousPersonAliasGuid ).Person;
+                anonymousPerson = new PersonAliasService( rockContext ).Get( anonymousPersonAliasGuid ).Person;
             } 
             
             if ( anonymousPerson != null )

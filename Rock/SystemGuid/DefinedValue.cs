@@ -197,6 +197,40 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_ANDROID_PAY = "6151F6E0-3223-46BA-A59E-E091BE4AF75C";
 
+        #endregion Financial Currency Type
+
+        #region Credit Card Types
+
+        /// <summary>
+        /// The creditcard type amex
+        /// </summary>
+        public const string CREDITCARD_TYPE_AMEX = "696A54E3-352C-49FB-88A1-BCDBD81AA9EC";
+
+        /// <summary>
+        /// The creditcard type diners club
+        /// </summary>
+        public const string CREDITCARD_TYPE_DINERS_CLUB = "1A9A4DB9-AFF3-4773-875C-C10346BD1CA7";
+
+        /// <summary>
+        /// The creditcard type discover
+        /// </summary>
+        public const string CREDITCARD_TYPE_DISCOVER = "4B746601-E9EB-4660-BA13-C0B66B24E248";
+
+        /// <summary>
+        /// The creditcard type JCB
+        /// </summary>
+        public const string CREDITCARD_TYPE_JCB = "	4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
+
+        /// <summary>
+        /// The creditcard type mastercard
+        /// </summary>
+        public const string CREDITCARD_TYPE_MASTERCARD = "6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621";
+
+        /// <summary>
+        /// The creditcard type visa
+        /// </summary>
+        public const string CREDITCARD_TYPE_VISA = "FC66B5F8-634F-4800-A60D-436964D27B64";
+
         #endregion
 
         #region Financial Non-Cash Asset Type
@@ -258,13 +292,13 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The financial source of Kiosk
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_KIOSK	= "260EEA80-821A-4F79-973F-49DF79C955F7";
-        
+        public const string FINANCIAL_SOURCE_TYPE_KIOSK = "260EEA80-821A-4F79-973F-49DF79C955F7";
+
         /// <summary>
         /// The financial source of Mobile Application
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION	= "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
-        
+        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
+
         /// <summary>
         /// The financial source of On-site Collection
         /// </summary>
@@ -643,7 +677,7 @@ namespace Rock.SystemGuid
         /// Flot Chart Style
         /// </summary>
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
-        
+
         /// <summary>
         /// Rock Chart Style
         /// </summary>
@@ -993,5 +1027,68 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_POSITIONAL_THEME = "84322020-4E27-44EF-88F2-EAFDB7286A01";
 
         #endregion Motivator Theme
+
+        #region Logging
+        /// <summary>
+        /// The logging domain CMS
+        /// </summary>
+        public const string LOGGING_DOMAIN_CMS = "C8A94BA4-9450-459C-B32E-E34C153AD02F";
+        /// <summary>
+        /// The logging domain event
+        /// </summary>
+        public const string LOGGING_DOMAIN_EVENT = "EF558F8A-08DA-4001-BBAA-83390613D20E";
+        /// <summary>
+        /// The logging domain reporting
+        /// </summary>
+        public const string LOGGING_DOMAIN_REPORTING = "A2960B6B-0DF5-458B-906C-F64521CB8C83";
+        /// <summary>
+        /// The logging domain communications
+        /// </summary>
+        public const string LOGGING_DOMAIN_COMMUNICATIONS = "8EE2657E-FF42-4E04-A5DA-15B14C8086B8";
+        /// <summary>
+        /// The logging domain finance
+        /// </summary>
+        public const string LOGGING_DOMAIN_FINANCE = "24230441-AE17-4F8B-ABF7-DA32CC5F2571";
+        /// <summary>
+        /// The logging domain steps
+        /// </summary>
+        public const string LOGGING_DOMAIN_STEPS = "0FE30F0C-E503-4DE6-A8EE-1E86B141967B";
+        /// <summary>
+        /// The logging domain connection
+        /// </summary>
+        public const string LOGGING_DOMAIN_CONNECTION = "E5125727-8361-4BBB-A615-28B3F045BA7E";
+        /// <summary>
+        /// The logging domain group
+        /// </summary>
+        public const string LOGGING_DOMAIN_GROUP = "134088B7-A12A-4ED8-AA18-E059FB5D17B5";
+        /// <summary>
+        /// The logging domain streaks
+        /// </summary>
+        public const string LOGGING_DOMAIN_STREAKS = "E7D3D04F-7BB8-4FE4-B2C2-924D8C0CA62B";
+        /// <summary>
+        /// The logging domain core
+        /// </summary>
+        public const string LOGGING_DOMAIN_CORE = "3B4F21DC-C169-453E-B119-8F33E122C84C";
+        /// <summary>
+        /// The logging domain jobs
+        /// </summary>
+        public const string LOGGING_DOMAIN_JOBS = "2741A4A3-8E57-4B58-ABCC-56C0A31C3A25";
+        /// <summary>
+        /// The logging domain workflow
+        /// </summary>
+        public const string LOGGING_DOMAIN_WORKFLOW = "FF8CBA1B-5DAF-4C0E-A7DA-A0277F7AA1E5";
+        /// <summary>
+        /// The logging domain CRM
+        /// </summary>
+        public const string LOGGING_DOMAIN_CRM = "5D737243-E7E0-4981-87A5-0787E52631C6";
+        /// <summary>
+        /// The logging domain prayer
+        /// </summary>
+        public const string LOGGING_DOMAIN_PRAYER = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781";
+        /// <summary>
+        /// The logging domain other
+        /// </summary>
+        public const string LOGGING_DOMAIN_OTHER = "83CFDA4F-5867-4D4B-853F-D9B535EC5131";
+        #endregion
     }
 }

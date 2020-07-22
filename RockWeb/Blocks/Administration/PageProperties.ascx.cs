@@ -42,9 +42,55 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
 
-    [BooleanField( "Enable Full Edit Mode", "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.", false )]
+    [BooleanField(
+        name: "Enable Full Edit Mode",
+        description: "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.",
+        defaultValue: false,
+        order: 1,
+        key: AttributeKey.EnableFullEditMode )]
+
+    [LinkedPage(
+        name: "Median Time to Serve Detail Page",
+        description: "The page that shows details about about the median time to serve was calculated.",
+        defaultValue: Rock.SystemGuid.Page.PAGE_VIEWS,
+        order: 2,
+        key: AttributeKey.MedianTimeDetailPage )]
+
     public partial class PageProperties : RockBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys for attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The enable full edit mode
+            /// </summary>
+            public const string EnableFullEditMode = "EnableFullEditMode";
+
+            /// <summary>
+            /// The load time detail page
+            /// </summary>
+            public const string MedianTimeDetailPage = "MedianTimeDetailPage";
+        }
+
+        /// <summary>
+        /// Page Parameter Keys
+        /// </summary>
+        private static class PageParamKey
+        {
+            /// <summary>
+            /// The page identifier
+            /// This is Page rather than PageId because the route /page/{pageId} uses the PageId param.
+            /// So this block and page end up being /page/{pageId}?page={page}
+            /// </summary>
+            public const string Page = "Page";
+        }
+
+        #endregion Keys
+
         #region Fields
 
         //// Import/Export hidden until we have time to get it working again.
@@ -237,6 +283,8 @@ namespace RockWeb.Blocks.Administration
                 .Add( "Layout", page.Layout )
                 .Add( "Url", pageLink )
                 .Html;
+
+            RenderMedianPageLoadTime( page );
         }
 
         /// <summary>
@@ -295,6 +343,18 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbMedianTimeDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMedianTimeDetails_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.MedianTimeDetailPage, new Dictionary<string, string> {
+                { PageParamKey.Page, hfPageId.Value }
+            } );
+        }
 
         /// <summary>
         /// Handles the Click event of the lbProperty control.
@@ -369,7 +429,7 @@ namespace RockWeb.Blocks.Administration
             aChildPages.HRef = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
 
             // this will be true when used in the Page Builder page, and false when used in the System Dialog
-            var enableFullEditMode = this.GetAttributeValue( "EnableFullEditMode" ).AsBooleanOrNull() ?? false;
+            var enableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBooleanOrNull() ?? false;
 
             pnlEditModeActions.Visible = enableFullEditMode;
             pnlReadOnlyModeActions.Visible = enableFullEditMode;
@@ -399,11 +459,6 @@ namespace RockWeb.Blocks.Administration
                 {
                     ShowEditDetails( page );
                 }
-            }
-
-            if ( btnDelete.Visible && btnDelete.Enabled )
-            {
-                btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Rock.Model.Page.FriendlyTypeName.ToLower() );
             }
         }
 
@@ -872,6 +927,26 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         /// <summary>
+        /// Renders the median page load time.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        private void RenderMedianPageLoadTime( Rock.Model.Page page )
+        {
+            var cssClass =
+                !page.MedianPageLoadTimeDurationSeconds.HasValue ? "default" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 1 ? "success" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 3 ? "warning" :
+                "danger";
+
+            var seconds = !page.MedianPageLoadTimeDurationSeconds.HasValue ? "Not Measured" :
+                string.Format( "{0:n2}s", page.MedianPageLoadTimeDurationSeconds.Value );
+
+            lMedianTime.Text = string.Format( "<span class='label label-{0} padding-l-md padding-r-md'>{1}</span>",
+                cssClass,
+                seconds );
+        }
+
+        /// <summary>
         /// Loads the sites.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -986,6 +1061,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            mdDeleteModal.Show();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the mdDeleteModal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdDeleteModal_DeleteClick( object sender, EventArgs e )
+        {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
             var siteService = new SiteService( rockContext );
@@ -1025,6 +1110,13 @@ namespace RockWeb.Blocks.Administration
                 int? parentPageId = page.ParentPageId;
 
                 pageService.Delete( page );
+
+                if ( cbDeleteInteractions.Checked )
+                {
+                    var interactionComponentService = new InteractionComponentService( rockContext );
+                    var componentQuery = interactionComponentService.QueryByPage( page );
+                    interactionComponentService.DeleteRange( componentQuery );
+                }
 
                 rockContext.SaveChanges();
 

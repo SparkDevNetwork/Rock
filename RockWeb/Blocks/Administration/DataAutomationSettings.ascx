@@ -73,6 +73,15 @@
 
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbSiteLogin" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbSiteLogin" runat="server" Label="Any family member has logged into Rock in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbPrayerRequest" runat="server" />
                                 </div>
                                 <div class="pull-left">
@@ -192,6 +201,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoSiteLogin" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbNoSiteLogin" runat="server" Label="No family member has logged into Rock in the last" AppendText="days" CssClass="input-width-md" Text="500" />
                                 </div>
                             </div>
 

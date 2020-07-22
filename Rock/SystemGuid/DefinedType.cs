@@ -313,7 +313,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry background package types
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
@@ -400,5 +400,10 @@ namespace Rock.SystemGuid
         /// The group RSVP decline reason.
         /// </summary>
         public const string GROUP_RSVP_DECLINE_REASON = "1E339D24-3DF3-4628-91C3-DA9300D21ACE";
+
+        /// <summary>
+        /// Logging Domain.
+        /// </summary>
+        public const string LOGGING_DOMAINS = "60487370-DE7E-4962-B58F-1865303F0414";
     }
 }

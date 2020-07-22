@@ -23,6 +23,8 @@ using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
+using System.Web.Http.OData.Routing;
+using System.Web.Http.OData.Routing.Conventions;
 using System.Web.Routing;
 
 using Rock;
@@ -42,6 +44,7 @@ namespace Rock.Rest
         {
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
+            config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
             config.Formatters.Insert( 0, new Rock.Utility.RockJsonMediaTypeFormatter() );
@@ -338,7 +341,12 @@ namespace Rock.Rest
                 var entitySetConfig = builder.AddEntitySet( name, entityTypeConfig );
             }
 
-            config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel() );
+            var defaultConventions = ODataRoutingConventions.CreateDefault();
+            // Disable the api/$metadata route
+            var conventions = defaultConventions.Except( defaultConventions.OfType<MetadataRoutingConvention>() );
+
+            config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
+
             new Transactions.RegisterControllersTransaction().Enqueue();
         }
     }

@@ -1,0 +1,58 @@
+// Common values
+
+@zindex-fixed: @zindex-modal;
+
+.display-position(@position) {
+  .position-@{position} { position: @position !important; }
+}
+
+.display-position(static);
+.display-position(relative);
+.display-position(absolute);
+.display-position(fixed);
+
+// Shorthand
+
+.fixed-top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: @zindex-fixed;
+}
+
+.fixed-bottom {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: @zindex-fixed;
+}
+
+// Responsive Sticky Top
+// Responsive variations also exist for .sticky-top utility.
+
+.util-mix-sticky-top(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-sticky-top(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-sticky-top(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+
+.display-sticky-top(@infix) {
+  .sticky@{infix}-top {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+  }
+}

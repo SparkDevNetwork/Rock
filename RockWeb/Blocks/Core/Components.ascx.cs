@@ -39,11 +39,33 @@ namespace RockWeb.Blocks.Core
     [System.ComponentModel.Category( "Core" )]
     [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
 
-    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'", true, "", "", 1 )]
-    [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2 )]
-    [BooleanField("Support Security", "Should the user be allowed to configure security for the components?", true, "", 3)]
+    [TextField( "Component Container",
+        Description = "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.ComponentContainer )]
+
+    [BooleanField( "Support Ordering",
+        Description = "Should user be allowed to re-order list of components?",
+        DefaultValue = "true",
+        Order = 2,
+        Key = AttributeKey.SupportOrdering )]
+
+    [BooleanField( "Support Security",
+        Description = "Should the user be allowed to configure security for the components?",
+        DefaultValue = "true",
+        Order = 3,
+        Key = AttributeKey.SupportSecurity )]
+
     public partial class Components : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string ComponentContainer = "ComponentContainer";
+            public const string SupportOrdering = "SupportOrdering";
+            public const string SupportSecurity = "SupportSecurity";
+        }
+
         #region Private Variables
 
         private bool _supportOrdering = true;
@@ -65,10 +87,10 @@ namespace RockWeb.Blocks.Core
 
             _isAuthorizedToConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
-            _supportOrdering = GetAttributeValue( "SupportOrdering" ).AsBoolean( true );
-            _supportSecurity = GetAttributeValue( "SupportSecurity" ).AsBoolean( true );
+            _supportOrdering = GetAttributeValue( AttributeKey.SupportOrdering ).AsBoolean( true );
+            _supportSecurity = GetAttributeValue( AttributeKey.SupportSecurity ).AsBoolean( true );
 
-            Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
+            Type containerType = Type.GetType( GetAttributeValue( AttributeKey.ComponentContainer ) );
             if ( containerType != null )
             {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
@@ -262,7 +284,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdEditComponent_SaveClick( object sender, EventArgs e )
         {
-            int serviceId = (int)ViewState["serviceId"];
+            int serviceId = ( int ) ViewState["serviceId"];
             Component component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );

@@ -186,9 +186,17 @@ namespace RockWeb
             string untrustedFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
             string encryptedRootFolder = context.Request.QueryString["rootFolder"];
 
-            /* Scrub the file name */
+            // Scrub the file name 
 
-            string scrubedFileName = ScrubFileName( untrustedFileName );
+            /*
+	            3/17/2020 - JME 
+	            And remove spaces, I did not add the removal of spaces to the scrub as the scrub logic
+                has existed for a while and is used in other places that may not want that. We can move
+                this to the scrub should we desire in the future.
+
+                Reason: The theme editor needs files with no spaces to be used in CSS
+            */
+            string scrubedFileName = ScrubFileName( untrustedFileName ).Replace(" ", "_");
 
             if ( string.IsNullOrWhiteSpace( scrubedFileName ) )
             {
@@ -287,7 +295,7 @@ namespace RockWeb
         /// <summary>
         /// Dictionary of deprecated or incorrect mime types and what they should be mapped to instead
         /// </summary>
-        private Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
         {
             { "text/directory", "text/vcard" },
             { "text/directory; profile=vCard", "text/vcard" },
@@ -424,7 +432,17 @@ namespace RockWeb
             // Get the base filename
             string baseFileName = Path.GetFileName( untrustedFileName );
 
-            // Scrub invalid file characters
+            /*
+             * 2020-03-25 JME
+             *
+             * While C# has a listing of invalid file characters (used below), we added a few more of our own to help
+             * with dealing with linking easily to files that have been uploaded.
+             *
+             * Specific Use Case: Theme Editor was having issues when using uploaded files from the Image Upload control
+             */
+            baseFileName = baseFileName.Replace( "(", "" ).Replace( ")", "" );
+
+            // Scrub base invalid file characters
             return Regex.Replace( baseFileName, "[" + Regex.Escape( Path.GetInvalidFileNameChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
 

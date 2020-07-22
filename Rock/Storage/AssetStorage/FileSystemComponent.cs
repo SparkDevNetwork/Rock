@@ -98,7 +98,7 @@ namespace Rock.Storage.AssetStorage
             {
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
-                string domainName = FileSystemCompontHttpContext.Request.Url.GetLeftPart( UriPartial.Authority );
+                string domainName = FileSystemComponentHttpContext.Request.Url.GetLeftPart( UriPartial.Authority );
                 string uriKey = asset.Key.TrimStart( '~' );
                 return domainName + uriKey;
             }
@@ -121,8 +121,8 @@ namespace Rock.Storage.AssetStorage
             HasRequirementsFolder( asset );
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
-            
-            string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+
+            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
             try
             {
@@ -149,7 +149,7 @@ namespace Rock.Storage.AssetStorage
             {
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
-                string physicalPath = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+                string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
                 if ( asset.Type == AssetType.File )
                 {
@@ -202,7 +202,7 @@ namespace Rock.Storage.AssetStorage
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
                 asset.Key = FixKey( asset, rootFolder );
-                string physicalFile = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+                string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
                 FileInfo fileInfo = new FileInfo( physicalFile );
 
                 var objAsset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, createThumbnail );
@@ -248,7 +248,7 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
-            string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
             return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File );
         }
@@ -279,7 +279,7 @@ namespace Rock.Storage.AssetStorage
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
-            string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
             var assets = new List<Asset>();
             if ( !HiddenFolders.Any( a => physicalFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
             {
@@ -318,7 +318,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             var assets = new List<Asset>();
 
-            string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.Folder ) );
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.File ) );
@@ -342,7 +342,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             var assets = new List<Asset>();
 
-            string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder ) );
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File ) );
@@ -359,7 +359,7 @@ namespace Rock.Storage.AssetStorage
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-            
+
             if ( !IsFileTypeAllowedByBlackAndWhiteLists( newName ) )
             {
                 string ext = System.IO.Path.GetExtension( asset.Key );
@@ -372,8 +372,8 @@ namespace Rock.Storage.AssetStorage
             {
                 asset.Key = FixKey( asset, rootFolder );
                 string filePath = GetPathFromKey( asset.Key );
-                string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( filePath );
-                string physicalFile = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+                string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( filePath );
+                string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
                 string newPhysicalFile = Path.Combine( physicalFolder, newName );
 
                 File.Move( physicalFile, newPhysicalFile );
@@ -411,7 +411,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                string physicalPath = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+                string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
                 using ( FileStream fs = new FileStream( physicalPath, FileMode.Create ) )
                 using ( asset.AssetStream )
@@ -455,10 +455,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();
@@ -524,7 +524,7 @@ namespace Rock.Storage.AssetStorage
             {
                 var fileInfos = baseDirectory.GetFiles( "*", searchOption );
 
-                foreach( var fileInfo in fileInfos )
+                foreach ( var fileInfo in fileInfos )
                 {
                     var asset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, true );
                     assets.Add( asset );
@@ -625,7 +625,7 @@ namespace Rock.Storage.AssetStorage
             return new Asset
             {
                 Name = directoryInfo.Name,
-                Key = ReverseMapPath( directoryInfo.FullName ) +"/",
+                Key = ReverseMapPath( directoryInfo.FullName ) + "/",
                 Uri = string.Empty,
                 Type = AssetType.Folder,
                 IconPath = "fa fa-folder",
@@ -650,7 +650,7 @@ namespace Rock.Storage.AssetStorage
             {
                 Name = fileInfo.Name,
                 Key = relativePath,
-                Uri = $"{FileSystemCompontHttpContext.Request.Url.GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
+                Uri = $"{FileSystemComponentHttpContext.Request.Url.GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
                 Type = AssetType.File,
                 IconPath = createThumbnail ? GetThumbnail( assetStorageProvider, relativePath, fileInfo.LastWriteTime ) : string.Empty,
                 FileSize = fileInfo.Length,

@@ -41,31 +41,118 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Block used to update a person's information from a kiosk." )]
 
-    [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 2 )]
-    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4, "", 6 )]
-    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
-    [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
-    [MemoField( "Update Message", "Message to show on the profile form. Leaving this blank will hide the message.", false, "Please provide only the information that needs to be updated.", "", 9 )]
-    [CodeEditorField("Complete Message Lava", "Message to display when complete.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>", "", 10)]
-    [SystemCommunicationField( "Update Email", "The system email to use to send the updated information.", false, "", "", 11 )]
-    [WorkflowTypeField("Workflow Type", @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
-                            <ul>
-                                <li>PersonId (Integer)</li>
-                                <li>FirstName (Text)</li>
-                                <li>LastName (Text)</li>
-                                <li>Email (Email)</li>
-                                <li>BirthDate (Date)</li>
-                                <li>StreetAddress (Text)</li>
-                                <li>City (Text)</li>
-                                <li>State (Text)</li>
-                                <li>PostalCode (Text)</li>
-                                <li>Country (Text - optional)</li>
-                                <li>HomePhone (Text)</li>
-                                <li>MobilePhone (Text)</li>
-                                <li>OtherUpdates (Memo)</li>
-                            </ul>", false, false, "", "", 12)]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Homepage",
+        Key = AttributeKey.Homepage,
+        Description = "Homepage of the kiosk.",
+        IsRequired = true,
+        Order = 0 )]
+
+    [IntegerField(
+        "Minimum Phone Number Length",
+        Key = AttributeKey.MinimumPhoneNumberLength,
+        Description = "Minimum length for phone number searches (defaults to 4).",
+        IsRequired = false,
+        DefaultIntegerValue = 4,
+        Order = 1 )]
+
+    [IntegerField(
+        "Maximum Phone Number Length",
+        Key = AttributeKey.MaximumPhoneNumberLength,
+        Description = "Maximum length for phone number searches (defaults to 10).",
+        IsRequired = false,
+        DefaultIntegerValue = 10,
+        Order = 2 )]
+
+    [TextField(
+        "Search Regex",
+        Key = AttributeKey.SearchRegex,
+        Description = "Regular Expression to run the search input through before searching. Useful for stripping off characters.",
+        IsRequired = false,
+        Order = 3 )]
+
+    [MemoField(
+        "Update Message",
+        Key = AttributeKey.UpdateMessage,
+        Description = "Message to show on the profile form. Leaving this blank will hide the message.",
+        IsRequired = false,
+        DefaultValue = "Please provide only the information that needs to be updated.",
+        Order = 4 )]
+
+    [CodeEditorField(
+        "Complete Message Lava",
+        Key = AttributeKey.CompleteMessageLava,
+        Description = "Message to display when complete.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = true,
+        DefaultValue = DefaultValue.CompleteMessageLava,
+        Order = 5 )]
+
+    [SystemCommunicationField(
+        "Update Email",
+        Key = AttributeKey.UpdateEmail,
+        Description = "The system email to use to send the updated information.",
+        IsRequired = false,
+        Order = 6 )]
+
+    [WorkflowTypeField(
+        "Workflow Type",
+        Key = AttributeKey.WorkflowType,
+        Description = BlockAttributeDescription.WorkflowType,
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 7 )]
+
+    #endregion Block Attributes
+
     public partial class PersonUpdateKiosk : Rock.Web.UI.RockBlock
     {
+
+        #region Attribute Keys and Values
+
+        private static class AttributeKey
+        {
+            public const string Homepage = "Homepage";
+            public const string MinimumPhoneNumberLength = "MinimumPhoneNumberLength";
+            public const string MaximumPhoneNumberLength = "MaximumPhoneNumberLength";
+            public const string SearchRegex = "SearchRegex";
+            public const string UpdateMessage = "UpdateMessage";
+            public const string CompleteMessageLava = "CompleteMessageLava";
+            public const string UpdateEmail = "UpdateEmail";
+            public const string WorkflowType = "WorkflowType";
+        }
+
+        private static class DefaultValue
+        {
+            public const string CompleteMessageLava = @"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>";
+        }
+
+        private static class BlockAttributeDescription
+        {
+            public const string WorkflowType = @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
+                <ul>
+                    <li>PersonId (Integer)</li>
+                    <li>FirstName (Text)</li>
+                    <li>LastName (Text)</li>
+                    <li>Email (Email)</li>
+                    <li>BirthDate (Date)</li>
+                    <li>StreetAddress (Text)</li>
+                    <li>City (Text)</li>
+                    <li>State (Text)</li>
+                    <li>PostalCode (Text)</li>
+                    <li>Country (Text - optional)</li>
+                    <li>HomePhone (Text)</li>
+                    <li>MobilePhone (Text)</li>
+                    <li>OtherUpdates (Memo)</li>
+                </ul>";
+        }
+
+        #endregion Attribute Keys and Values
+
         #region Fields
 
         // used for private variables
@@ -163,7 +250,7 @@ namespace RockWeb.Blocks.Crm
         // redirects to the homepage
         private void GoHome()
         {
-            NavigateToLinkedPage( "Homepage" );
+            NavigateToLinkedPage( AttributeKey.Homepage );
         }
 
         private void HidePanels()
@@ -182,16 +269,16 @@ namespace RockWeb.Blocks.Crm
         // show person select panel
         private void ShowPersonSelectPanel()
         {
-            int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
-            int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
+            int minLength = int.Parse( GetAttributeValue( AttributeKey.MinimumPhoneNumberLength ) );
+            int maxLength = int.Parse( GetAttributeValue( AttributeKey.MaximumPhoneNumberLength ) );
 
             if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
             {
                 // run regex expression on input if provided
                 string searchInput = tbPhone.Text;
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SearchRegex" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.SearchRegex ) ) )
                 {
-                    Regex regex = new Regex( GetAttributeValue( "SearchRegex" ) );
+                    Regex regex = new Regex( GetAttributeValue( AttributeKey.SearchRegex ) );
                     Match match = regex.Match( searchInput );
                     if ( match.Success )
                     {
@@ -301,9 +388,9 @@ namespace RockWeb.Blocks.Crm
             HidePanels();
             pnlProfilePanel.Visible = true;
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "UpdateMessage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.UpdateMessage ) ) )
             {
-                lUpdateMessage.Text = GetAttributeValue( "UpdateMessage" );
+                lUpdateMessage.Text = GetAttributeValue( AttributeKey.UpdateMessage );
             }
             else
             {
@@ -348,10 +435,9 @@ namespace RockWeb.Blocks.Crm
 
             // if an email was provided email results
             RockContext rockContext = new RockContext();
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "UpdateEmail" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.UpdateEmail ) ) )
             {
                 var receiptEmail = new SystemCommunicationService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
-
                 if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhiteSpace() )
                 {
                     var errorMessages = new List<string>();
@@ -365,10 +451,10 @@ namespace RockWeb.Blocks.Crm
             }
 
             // launch workflow if configured
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.WorkflowType ) ) )
             {
                 var workflowService = new WorkflowService( rockContext );
-                var workflowType = WorkflowTypeCache.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
+                var workflowType = WorkflowTypeCache.Get( new Guid( GetAttributeValue( AttributeKey.WorkflowType ) ) );
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
@@ -398,7 +484,7 @@ namespace RockWeb.Blocks.Crm
             HidePanels();
             pnlComplete.Visible = true;
 
-            lCompleteMessage.Text = GetAttributeValue( "CompleteMessageLava" ).ResolveMergeFields( mergeFields );
+            lCompleteMessage.Text = GetAttributeValue( AttributeKey.CompleteMessageLava ).ResolveMergeFields( mergeFields );
 
         }
 
@@ -418,7 +504,7 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-}
+    }
 
     [Serializable]
     class PersonDto

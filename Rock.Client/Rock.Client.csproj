@@ -61,6 +61,7 @@
     <Compile Include="CodeGenerated\AssessmentType.cs" />
     <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
+    <Compile Include="CodeGenerated\AttendanceCheckInSession.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\AttendanceData.cs" />
     <Compile Include="CodeGenerated\AttendanceImport.cs" />
@@ -260,6 +261,7 @@
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SmsAction.cs" />
+    <Compile Include="CodeGenerated\SmsPipeline.cs" />
     <Compile Include="CodeGenerated\Step.cs" />
     <Compile Include="CodeGenerated\StepProgram.cs" />
     <Compile Include="CodeGenerated\StepStatus.cs" />

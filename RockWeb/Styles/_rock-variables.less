@@ -112,17 +112,27 @@
 
 @custom-control-indicator-offset:       0;
 
+@custom-control-indicator-disabled-bg:          @input-bg-disabled;
+@custom-control-label-disabled-color:           @text-muted;
+
 @custom-control-indicator-checked-color: @brand-primary;
 @custom-control-indicator-checked-border-color: @brand-primary;
+@custom-control-indicator-checked-disabled-bg:  fade(@brand-primary, 50%);
 
 @custom-control-indicator-active-color: #fff;
 @custom-control-indicator-active-bg: lighten(@brand-primary, 30%);
 
 @custom-control-indicator-focus-box-shadow: 0 0 0 1px #fff, 0 0 0 3px fade(@brand-primary, 20%);
+@custom-control-indicator-focus-border-color:   @input-border-focus;
 
 @custom-checkbox-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
 @custom-radio-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
 
+@custom-switch-indicator-padding: 2px;
+@custom-switch-width:                           (@custom-control-indicator-size * 1.4);
+@custom-control-switch-border-width:            1px;
+@custom-switch-indicator-border-radius:         (@custom-control-indicator-size / 2);
+@custom-switch-indicator-size:                  (@custom-control-indicator-size  - (@custom-control-indicator-border-width * 4));
 
 //// Scroll Bars
 @scroll-track-color:          #aaa; // Color of the scrollbar track line.
@@ -158,6 +168,31 @@
 @panel-following-active-bg:   @panel-top-border-color; // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
 @panel-footer-color:          @panel-text; // The color text of the panel's footer.
+
+
+// Cards
+
+@enable-rounded: false;
+
+@card-spacer-y:                     1.25rem;
+@card-spacer-x:                     1.25rem;
+@card-title-spacer-y:               .75rem;
+@card-border-width:                 1px;
+@card-border-radius:                @panel-border-radius; // $border-radius
+@card-border-color:                 @panel-default-border;
+@card-inner-border-radius:          ~"calc(@{card-border-radius} - @{card-border-width})";
+@card-cap-padding-y:                .75rem;
+@card-cap-padding-x:                1.25rem;
+@card-cap-bg:                       rgba(0,0,0,.03);
+@card-cap-color:                    ~""; // LESS PORT: Sass version uses `null`
+@card-height:                       ~""; // LESS PORT: Sass version uses `null`
+@card-color:                        ~""; // LESS PORT: Sass version uses `null`
+@card-bg:                           @panel-bg;
+
+@card-img-overlay-padding:          1.25rem;
+
+@card-group-margin:                 @grid-gutter-width / 2;
+@card-deck-margin:                  @card-group-margin;
 
 
 // Grid
@@ -287,7 +322,7 @@
 // Autocomplete Styles
 @autocomplete-bg:             @theme-4;
 @autocomplete-border:         darken(@autocomplete-bg, 10%);
-@autocomplete-text:           @theme-4;
+@autocomplete-text:           @theme-4-text;
 @autocomplete-rollover-bg:    darken(@autocomplete-bg, 10%); // the background color of the rollover for autocompletes.
 @autocomplete-rollover-color: @text-color;
 
@@ -433,6 +468,13 @@
 @spacing-md:                  .5;
 @spacing-lg:                  1;
 @spacing-xl:                  2;
+
+@spacer: 1rem;
+@spacing-1: .25;
+@spacing-2: .5;
+@spacing-3: 1;
+@spacing-4: 1.5;
+@spacing-5: 3;
 
 @spacing-sm-px: @grid-gutter-width * @spacing-sm;
 @spacing-md-px: @grid-gutter-width * @spacing-md;

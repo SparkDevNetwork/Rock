@@ -27,7 +27,7 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// Sends Group Scheduling Confirmation and Reminder emails to people that haven't been notified yet.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]

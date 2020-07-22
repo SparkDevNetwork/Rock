@@ -22,6 +22,21 @@ namespace Rock.SystemGuid
     public static class Block
     {
         /// <summary>
+        /// The Campus Detail page Campus Detail block guid
+        /// </summary>
+        public const string CAMPUS_DETAIL_CAMPUS_DETAIL = "176FFC6F-6B55-4319-A781-A2F7F1F85F24";
+
+        /// <summary>
+        /// The Campus Detail > Group Member Detail page Group Member Detail block guid
+        /// </summary>
+        public const string CAMPUS_DETAIL_GROUP_MEMBER_DETAIL = "96361229-3CF1-4713-84B5-E913AECDC804";
+
+        /// <summary>
+        /// The Campus Detail page Group Member List block guid
+        /// </summary>
+        public const string CAMPUS_DETAIL_GROUP_MEMBER_LIST = "318B80EE-7349-4BF4-82F2-64FC38A5AB0B";
+
+        /// <summary>
         /// The bio block
         /// </summary>
         public const string BIO = "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A";
@@ -56,5 +71,14 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_CATEGORIES = "550D7229-2788-4C0E-BFE6-4AAE95D28267";
 
+        /// <summary>
+        /// The log viewer
+        /// </summary>
+        public const string LOG_VIEWER = "BDEF9AA0-55FC-4A66-8938-2AB2E075521B";
+
+        /// <summary>
+        /// The phone number lookup
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP = "86BFD8F5-C55C-417C-B625-69AB84296637";        
     }
 }
