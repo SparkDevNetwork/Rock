@@ -53,7 +53,7 @@
                                         Help="Number of seconds to cache the content items returned by the selected filter. Only cache the items if they are NOT secured, otherwise you will have unexpected results. (use '0' for no caching)." />
                                     <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" MinimumValue="0" CssClass="input-width-sm" Label="Output Cache Duration"
                                         Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value. (use '0' for no caching)." />
-                                    <Rock:RockCheckBoxList ID="cblCacheTags" runat="server" Label="Cache Tags" Help="Cached tags are used to link cached content so that it can be expired as a group" RepeatDirection="Horizontal" />
+                                    <Rock:RockCheckBoxList ID="cblCacheTags" runat="server" Label="Cache Tags" EmptyListMessage="<div class='text-muted small'>No cache tags defined.</div>" Help="Cached tags are used to link cached content so that it can be expired as a group" RepeatDirection="Horizontal" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
