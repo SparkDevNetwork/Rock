@@ -29,11 +29,12 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block( v10.3.1)
+ * BEMA Modified Core Block( v10.3.2)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  *
  * Additional Features:
  * - FE1) Added Ability to hide Event Registration payments
+ * - FE2) Added Ability to limit what transactions can be edited based on gateway
  * 
  */
 namespace RockWeb.Plugins.com_bemaservices.Finance
@@ -104,16 +105,21 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         IsRequired = false,
         Order = 10 )]
 
-	/* BEMA.FE1.Start */
+    /* BEMA.FE1.Start */
     [BooleanField( "Show Event Registration Payments", "Whether Event Registration Payments should be displayed or not.", true, "", 11, BemaAttributeKeys.ShowEventRegistrationPayments )]
-	/* BEMA.FE1.End */
-	
+    /* BEMA.FE1.End */
+
+    /* BEMA.FE2.Start */
+    [CustomCheckboxListField( "Non-Editable Gateways", "Which gateways should have the edit button hidden.", "Select Id as Value, Name as Text from [FinancialGateway]", false, "", "", 12, BemaAttributeKeys.NonEditableGateways )]
+    /* BEMA.FE2.End */
+
     public partial class ScheduledTransactionListLiquid : RockBlock
     {
         /* BEMA.Start */
         protected static class BemaAttributeKeys
         {
             public const string ShowEventRegistrationPayments = "ShowEventRegistrationPayments";
+            public const string NonEditableGateways = "NonEditableGateways";
         }
         /* BEMA.End*/
 
@@ -227,6 +233,15 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     HiddenField hfTransfer = ( HiddenField ) e.Item.FindControl( "hfTransfer" );
                     hfTransfer.Value = TRANSFER;
                 }
+
+                /* BEMA.FE2.Start */
+                var nonEditableGatewayIds = GetAttributeValue( BemaAttributeKeys.NonEditableGateways ).SplitDelimitedValues().AsIntegerList();
+                if ( transactionSchedule.FinancialGatewayId.HasValue && nonEditableGatewayIds.Contains( transactionSchedule.FinancialGatewayId.Value ) )
+                {
+                    Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
+                    btnEdit.Visible = false;
+                }
+                /* BEMA.FE2.End */
 
                 if ( transactionSchedule.NextPaymentDate.HasValue )
                 {
