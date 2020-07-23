@@ -171,6 +171,8 @@
                                             Help="Should the number of active members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowAge" runat="server" Label="Show Average Age" Text="Yes"
                                             Help="Should the average active group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbIncludePending" runat="server" Label="Include Pending" Text="Yes"
+                                            Help="Should Pending members be included in the member count and average age calculations?" ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbShowCampus" runat="server" Label="Show Campus" Text="Yes"
