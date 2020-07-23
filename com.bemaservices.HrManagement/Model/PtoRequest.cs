@@ -113,20 +113,13 @@ namespace com.bemaservices.HrManagement.Model
     #region Enumerations
     public enum PtoRequestApprovalState
     {
-        /// <summary>
-        /// The <see cref="Rock.Model.GroupMember"/> is not an active member of the <see cref="Rock.Model.Group"/>.
-        /// </summary>
         Pending = 0,
-
-        /// <summary>
-        /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
-        /// </summary>
+        
         Approved = 1,
-
-        /// <summary>
-        /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
-        /// </summary>
-        Denied = 2
+        
+        Denied = 2,
+        
+        Cancelled = 3
     }
 
     #endregion
