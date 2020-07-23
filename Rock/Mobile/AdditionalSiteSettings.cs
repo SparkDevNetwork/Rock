@@ -63,7 +63,8 @@ namespace Rock.Mobile
                             HorizontalOptions=""FillAndExpand"" />
                     </ContentView>
 
-                    <BoxView HeightRequest=""1"" BackgroundColor=""rgba(255, 255, 255, 0.4)""
+                    <BoxView HeightRequest=""1""
+                        BackgroundColor=""rgba(255, 255, 255, 0.4)""
                         HorizontalOptions=""FillAndExpand"" />
 
                 </StackLayout>
