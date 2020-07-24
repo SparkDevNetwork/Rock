@@ -1204,6 +1204,17 @@ namespace RockWeb.Blocks.CheckIn
                     person.LastName = tbLastName.Text;
                     person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+
+                    if ( pnlEmail.Visible )
+                    {
+                        person.Email = tbEmail.Text.Trim();
+                        person.IsEmailActive = cbIsEmailActive.Checked;
+                        if ( rblCommunicationPreference.Visible )
+                        {
+                            person.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+                        }
+                    }
+
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
                     var birthYear = person.BirthYear;
