@@ -42,6 +42,12 @@ namespace RockWeb.Blocks.Cms
 
     #region Block Attributes
 
+    [BooleanField(
+        "Display Most Recent",
+        Description: "Should the most recent item for the configured Content Channel be displayed if no query parameter value is provided.",
+        IsRequired = false,
+        Key = AttributeKey.DisplayMostRecent )]
+
     [LavaCommandsField(
         "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this content channel item block.",
@@ -848,6 +854,26 @@ Guid - ContentChannelItem Guid
                 else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
+                }
+            }
+
+            if ( GetAttributeValue( "DisplayMostRecent" ).AsBoolean() && contentChannelItemKey.IsNullOrWhiteSpace() )
+            {
+                // if a Channel was specified, verify that the ChannelItem is part of the channel
+                var contentChannelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+                if ( contentChannelGuid.HasValue )
+                {
+                    var now = RockDateTime.Now;
+                    var contentChannelItem = new ContentChannelItemService( new RockContext() )
+                        .Queryable()
+                        .Where( c => c.ContentChannel.Guid == contentChannelGuid.Value && c.StartDateTime <= now && c.Status == ContentChannelItemStatus.Approved )
+                        .OrderByDescending( c => c.StartDateTime )
+                        .FirstOrDefault();
+                    
+                    if ( contentChannelItem != null )
+                    {
+                        contentChannelItemKey = contentChannelItem.Id.ToString();
+                    }
                 }
             }
 
