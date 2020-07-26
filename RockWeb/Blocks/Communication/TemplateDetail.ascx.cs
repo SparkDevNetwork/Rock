@@ -32,6 +32,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.UI.Controls.Communication;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -42,16 +43,49 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
-    [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 0 )]
-    [BinaryFileTypeField( "Attachment Binary File Type",
-        description: "The FileType to use for files that are attached to an sms or email communication",
-        required: true,
-        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        order: 1,
-        key: "AttachmentBinaryFileType" )]
+    #region Block Attributes
+    [BooleanField(
+        "Personal Templates View",
+        Description = "Is this block being used to display personal templates (only templates that current user is allowed to edit)?",
+        DefaultBooleanValue = false,
+        Order = 0,
+        Key = AttributeKey.PersonalTemplatesView )]
+    [BinaryFileTypeField(
+        "Attachment Binary File Type",
+        Description = "The FileType to use for files that are attached to an sms or email communication",
+        IsRequired = true,
+        DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
+        Order = 1,
+        Key = AttributeKey.AttachmentBinaryFileType )]
+    #endregion Block Attributes
     public partial class TemplateDetail : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string PersonalTemplatesView = "PersonalTemplatesView";
+            public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
+        }
+
+        #endregion
+
         #region Base Control Methods
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            var mediumControl = MediumControl.GetMediumControl(CommunicationType.PushNotification);
+
+            mediumControl.ID = "mediumControl";
+            mediumControl.IsTemplate = false;
+            mediumControl.ValidationGroup = btnSave.ValidationGroup;
+
+            phPushNotification.Controls.Add( mediumControl );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -217,9 +251,23 @@ namespace RockWeb.Blocks.Communication
 
             communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
 
+            var pushCommunication = new CommunicationDetails();
+            var pushNotificationControl = phPushNotification.Controls[0] as PushNotification;
+            if ( pushNotificationControl != null )
+            {
+                pushNotificationControl.UpdateCommunication( pushCommunication );
+            }
+
+            communicationTemplate.PushData = pushCommunication.PushData;
+            communicationTemplate.PushImageBinaryFileId = pushCommunication.PushImageBinaryFileId;
+            communicationTemplate.PushMessage = pushCommunication.PushMessage;
+            communicationTemplate.PushOpenAction = pushCommunication.PushOpenAction;
+            communicationTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+            communicationTemplate.PushTitle = pushCommunication.PushTitle;
+
             rockContext.SaveChanges();
 
-            var personalView = GetAttributeValue( "PersonalTemplatesView" ).AsBoolean();
+            var personalView = GetAttributeValue( AttributeKey.PersonalTemplatesView ).AsBoolean();
             if ( newTemplate )
             {
                 communicationTemplate = communicationTemplateService.Get( communicationTemplate.Id );
@@ -322,6 +370,7 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationTemplate communicationTemplate = null;
             var newTemplate = false;
+            var pushCommunication = new CommunicationDetails();
 
             if ( !templateId.Equals( 0 ) )
             {
@@ -331,6 +380,16 @@ namespace RockWeb.Blocks.Communication
                     lTitle.Text = communicationTemplate.Name.FormatAsHtmlTitle();
                     pdAuditDetails.SetEntity( communicationTemplate, ResolveRockUrl( "~" ) );
                 }
+
+                pushCommunication = new CommunicationDetails
+                {
+                    PushData = communicationTemplate.PushData,
+                    PushImageBinaryFileId = communicationTemplate.PushImageBinaryFileId,
+                    PushMessage = communicationTemplate.PushMessage,
+                    PushTitle = communicationTemplate.PushTitle,
+                    PushOpenMessage = communicationTemplate.PushOpenMessage,
+                    PushOpenAction = communicationTemplate.PushOpenAction
+                };
             }
 
             if ( communicationTemplate == null )
@@ -411,8 +470,7 @@ namespace RockWeb.Blocks.Communication
             tbBCCList.ReadOnly = restrictedEdit;
             tbEmailSubject.ReadOnly = restrictedEdit;
             fupAttachments.Visible = !restrictedEdit;
-            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
-
+            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
             tbDescription.ReadOnly = readOnly;
             imgTemplatePreview.Enabled = !readOnly;
@@ -426,6 +484,13 @@ namespace RockWeb.Blocks.Communication
             btnSave.Enabled = !readOnly;
 
             tglPreviewAdvanced.Checked = true;
+
+            var pushNotificationControl = phPushNotification.Controls[0] as PushNotification;
+            if ( pushNotificationControl != null )
+            {
+                pushNotificationControl.SetFromCommunication( pushCommunication );
+            }
+
             SetEmailMessagePreviewModeEnabled( tglPreviewAdvanced.Checked );
         }
 
@@ -672,7 +737,6 @@ namespace RockWeb.Blocks.Communication
                 rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }
-
         #endregion
     }
 }

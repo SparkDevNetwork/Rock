@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
@@ -71,6 +72,16 @@ namespace Rock.Model
         public int SmsActionComponentEntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the SMS pipeline identifier.
+        /// </summary>
+        /// <value>
+        /// The SMS pipeline identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int SmsPipelineId { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether further actions should be processed.
         /// </summary>
         /// <value>
@@ -103,6 +114,19 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.SmsPipeline"/> representing the SmsPipeline.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.SmsPipeline"/> representing the SmsPipeline for this SmsAction.
+        /// </value>
+        [DataMember]
+        public virtual Model.SmsPipeline SmsPipeline { get; set; }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -117,6 +141,7 @@ namespace Rock.Model
         /// </summary>
         public SmsActionConfiguration()
         {
+            this.HasRequired( p => p.SmsPipeline ).WithMany( p => p.SmsActions ).HasForeignKey( p => p.SmsPipelineId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -114,7 +114,7 @@ namespace Rock.Model
         {
             var query = Queryable();
 
-            if ( entityTypeId.HasValue )
+            if ( entityTypeId.HasValue && entityTypeId != 0 )
             {
                 query = query.Where( t => t.EntityTypeId == entityTypeId );
             }
@@ -164,6 +164,21 @@ namespace Rock.Model
         {
             var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true);
             return query.Where( t => t.Key == key ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Return true if there is already an attribute for the specified parameters
+        /// This can be used this to prevent duplicate attributes;
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool AlreadyExists( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key)
+        {
+            var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true );
+            return query.Where( t => t.Key == key ).Any();
         }
         
         /// <summary>

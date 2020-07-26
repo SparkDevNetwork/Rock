@@ -251,7 +251,7 @@ namespace Rock.Lava.Blocks
                         }
 
                         // if there was a dynamic expression add it now
-                        if ( parms.Any( p => p.Key == "expression" ) ) 
+                        if ( parms.Any( p => p.Key == "expression" ) )
                         {
                             queryResult = queryResult.Where( parms["expression"] );
                             hasFilter = true;
@@ -337,6 +337,9 @@ namespace Rock.Lava.Blocks
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
+                        // limit, default to 1000
+                        var recordLimit = ( parms.GetValueOrNull( "limit" ) ?? "1000" ).AsInteger();
+
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
                             int countResult = queryResult.Count();
@@ -358,6 +361,11 @@ namespace Rock.Lava.Blocks
                                     if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
                                     {
                                         itemsSecured.Add( item );
+                                        if ( itemsSecured.Count >= recordLimit )
+                                        {
+                                            // if we have already met the recordlimit, we don't have to check IsAuthorized anymore since no more records will be included
+                                            break;
+                                        }
                                     }
                                 }
 
@@ -370,15 +378,7 @@ namespace Rock.Lava.Blocks
                                 queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                             }
 
-                            // limit, default to 1000
-                            if ( parms.Any( p => p.Key == "limit" ) )
-                            {
-                                queryResult = queryResult.Take( parms["limit"].AsInteger() );
-                            }
-                            else
-                            {
-                                queryResult = queryResult.Take( 1000 );
-                            }
+                            queryResult = queryResult.Take( recordLimit );
 
                             var resultList = queryResult.ToList();
 

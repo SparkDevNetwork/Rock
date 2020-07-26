@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('a.btn-checkin-select').click(function () {
+        $('a.btn-checkin-select').on('click', function () {
             $(this).siblings().attr('onclick', 'return false;');
         });
     });
@@ -28,15 +28,15 @@
                     <div class="controls checkin-person-list" >
                         <asp:Repeater ID="rSelection" runat="server" >
                             <ItemTemplate>
-                                <a person-id='<%# Eval("Person.Id") %>' Class="btn btn-primary btn-checkin-select btn-block js-person-select" style="text-align:left">
+                                <a person-id='<%# Eval("Person.Id") %>' Class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("Selected") ) %>" style="text-align:left">
                                     <div class="row">
-                                        <div class="col-md-1 col-sm-2 col-xs-3" >
+                                        <div class="checkbox-container" >
                                             <i class='<%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
                                         </div>
-                                        <asp:panel id="pnlPhoto" runat="server" CssClass="col-md-1 col-sm-2 col-xs-3" >
+                                        <asp:panel id="pnlPhoto" runat="server" CssClass="photo-container">
                                             <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                         </asp:panel>
-                                        <asp:Panel ID="pnlPerson" runat="server"><%# Container.DataItem.ToString() %></asp:Panel>
+                                        <asp:Panel ID="pnlPerson" CssClass="name-container" runat="server"><div class="family-personselect"><%# Container.DataItem.ToString() %></div></asp:Panel>
                                     </div>
                                 </a>
                             </ItemTemplate>

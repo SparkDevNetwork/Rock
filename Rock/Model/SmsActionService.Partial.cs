@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Rock.Communication.SmsActions;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -32,11 +33,71 @@ namespace Rock.Model
         /// <returns>If not null, identifies the response that should be sent back to the sender.</returns>
         static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message )
         {
+            return ProcessIncomingMessage( message, null );
+        }
+
+        /// <summary>
+        /// Processes the incoming message.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="smsPipelineId">
+        /// The SMS pipeline identifier. When null the active pipeline with the lowest SmsPipelineId will be used.
+        /// </param>
+        /// <returns></returns>
+        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int? smsPipelineId )
+        {
+            if ( smsPipelineId == null )
+            {
+                var minSmsPipelineId = new SmsPipelineService( new RockContext() )
+                                        .Queryable()
+                                        .Where( p => p.IsActive )
+                                        .Select( p => ( int? ) p.Id )
+                                        .Min( p => p );
+
+                if ( minSmsPipelineId == null )
+                {
+                    var errorMessage = string.Format( "No default SMS Pipeline could be found." );
+                    return CreateErrorOutcomesWithLogging( errorMessage );
+                }
+
+                return ProcessIncomingMessage( message, minSmsPipelineId.Value );
+            }
+
+            return ProcessIncomingMessage( message, smsPipelineId.Value );
+        }
+
+        /// <summary>
+        /// Processes the incoming message.
+        /// </summary>
+        /// <param name="message">The message received by the communications component.</param>
+        /// <param name="smsPipelineId">The SMS pipeline identifier.</param>
+        /// <returns>
+        /// If not null, identifies the response that should be sent back to the sender.
+        /// </returns>
+        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int smsPipelineId )
+        {
             var errorMessage = string.Empty;
             var outcomes = new List<SmsActionOutcome>();
+            var smsPipelineService = new SmsPipelineService( new RockContext() );
+            var smsPipeline = smsPipelineService.Get( smsPipelineId );
+
+            if ( smsPipeline == null )
+            {
+                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was null.", smsPipelineId );
+                return CreateErrorOutcomesWithLogging( errorMessage );
+            }
+
+            if ( !smsPipeline.IsActive )
+            {
+                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was inactive.", smsPipelineId );
+                return CreateErrorOutcomesWithLogging( errorMessage );
+            }
 
             var smsActions = SmsActionCache.All()
                 .Where( a => a.IsActive )
+                .Where( a => a.SmsPipelineId == smsPipelineId )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Id );
 
@@ -79,7 +140,7 @@ namespace Rock.Model
                     if ( outcome.Response != null )
                     {
                         LogIfError( errorMessage );
-                    }                    
+                    }
                 }
                 catch ( Exception exception )
                 {
@@ -97,6 +158,23 @@ namespace Rock.Model
             }
 
             return outcomes;
+        }
+
+        /// <summary>
+        /// Creates the error outcomes with logging.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private static List<SmsActionOutcome> CreateErrorOutcomesWithLogging( string errorMessage )
+        {
+            LogIfError( errorMessage );
+            return new List<SmsActionOutcome>
+            {
+                new SmsActionOutcome
+                {
+                    ErrorMessage = errorMessage
+                }
+            };
         }
 
         /// <summary>

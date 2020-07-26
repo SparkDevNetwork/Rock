@@ -135,7 +135,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
                 HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialScheduledTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.ScheduledTransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }

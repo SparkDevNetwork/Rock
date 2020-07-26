@@ -13,43 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity;
-using System.Data.Entity.Migrations.Infrastructure;
-using System.Data.SqlClient;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
-using System.Web.Configuration;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
 
 using DotLiquid;
 
-using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Matchers;
-
 using Rock;
 using Rock.Communication;
-using Rock.Configuration;
 using Rock.Data;
-using Rock.Jobs;
+using Rock.Logging;
 using Rock.Model;
-using Rock.Plugin;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.WebStartup;
 
 namespace RockWeb
 {
@@ -61,22 +50,12 @@ namespace RockWeb
         #region Fields
 
         /// <summary>
-        /// global Quartz scheduler for jobs 
-        /// </summary>
-        IScheduler sched = null;
-
-        /// <summary>
         /// The queue in use
         /// </summary>
-        public static bool QueueInUse = false;
+        public static bool QueueInUse { get; set; }
 
         // cache callback object
-        private static CacheItemRemovedCallback OnCacheRemove = null;
-
-        /// <summary>
-        /// The Application log filename
-        /// </summary>
-        private const string APP_LOG_FILENAME = "RockApplication";
+        private static CacheItemRemovedCallback _onCacheRemove = null;
 
         #endregion
 
@@ -93,7 +72,7 @@ namespace RockWeb
             bool useFrameDomains = false;
             string allowedDomains = string.Empty;
 
-            int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+            int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 
             // We only care about protecting content served up through Rock, not the static
             // content assets on the file system. Only Rock pages would have a site.
@@ -107,7 +86,7 @@ namespace RockWeb
                 if ( siteId.HasValue )
                 {
                     var site = SiteCache.Get( siteId.Value );
-                    if ( site != null && ! String.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
+                    if ( site != null && !string.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
                     {
                         useFrameDomains = true;
                         allowedDomains = site.AllowedFrameDomains;
@@ -115,7 +94,9 @@ namespace RockWeb
                 }
             }
             catch
-            { }
+            {
+                // ignore any exception that might have occurred
+            }
 
             if ( useFrameDomains )
             {
@@ -126,7 +107,7 @@ namespace RockWeb
             {
                 Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
-            }            
+            }
         }
 
         /// <summary>
@@ -136,211 +117,66 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
+            RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
+
+            QueueInUse = false;
+
+            /* 2020-05-20 MDP
+                * Prior to Application_Start, Rock.WebStartup has an AssemblyInitializer class that runs as a PreApplicationStartMethod.
+                *
+                * This will call RockApplicationStartupHelper which will take care of the following
+                *   -- EF Migrations
+                *   -- Rock Plugin Migrations (except for ones that are in App_Code)
+                *   -- Sending Version update notifications to Spark
+                *   -- Pre-loading EntityTypeCache, FieldTypeCache, and AttributeCache
+                *   -- Loading any attributes defined in web.config
+                *   -- Registering HttpModules
+                *   -- Initializing Lava
+                *   -- Starting the Job Scheduler (if configured to run)
+             */
+
+            /* 2020-05-20 MDP
+             * The remaining items need to be run here in Application_Start since they depend on things that don't happen until now
+             * like Routes, plugin stuff in App_Code
+             */
+
             try
             {
+                // AssemblyInitializer will catch any exception that it gets and sets AssemblyInitializerException.
+                // Doing this lets us do any error handling (now that RockWeb has started)
+                if ( AssemblyInitializer.AssemblyInitializerException != null )
+                {
+                    throw AssemblyInitializer.AssemblyInitializerException;
+                }
+
                 // register the App_Code assembly in the Rock.Reflection helper so that Reflection methods can search for types in it
                 var appCodeAssembly = typeof( Global ).Assembly;
                 Rock.Reflection.SetAppCodeAssembly( appCodeAssembly );
 
-                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
-                
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-                }
+                // Probably won't be any, but run any migrations that might be in App_Code. (Any that are dll's get run in RockApplicationStartupHelper.RunApplicationStartup())
+                RockApplicationStartupHelper.RunPluginMigrations( appCodeAssembly );
 
-                // Indicate to always log to file during initialization.
-                ExceptionLogService.AlwaysLogToFile = true;
+                // Register Routes
+                RouteTable.Routes.Clear();
+                Rock.Web.RockRouteHandler.RegisterRoutes();
 
-                try
-                {
-                    // if there is a Run.Migration, skip this so we don't get an exception.
-                    // if Run.Migration does not exist, check for PendingEFMigrations
-                    if ( File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) || HasPendingEFMigrations() )
-                    {
-                        // don't try to clear the cache if there was either a Run.Migration or HasPendingEFMigration detected migrations
-                        // we skip this because it might throw an exception if there are pending schema changes
-                    }
-                    else
-                    {
-                        // if we there wasn't a RunMigration and HasPendingEFMigration didn't detect any either, clear all cached items
-                        RockCache.ClearAllCachedItems( false );
-                    }
-                }
-                catch
-                {
-                    // ignore just in case there we tried to run ClearAllCacheItems even though there were pending migration
-                }
+                // Configure Rock Rest API
+                GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
 
-                // Get a db context
-                using ( var rockContext = new RockContext() )
-                {
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        try
-                        {
-                            System.Diagnostics.Debug.WriteLine( string.Format( "Database: {0}/{1}", rockContext.Database.Connection.DataSource, rockContext.Database.Connection.Database ) );
-                        }
-                        catch
-                        {
-                            // Intentionally Blank
-                        }
-                    }
+                // set the encryption protocols that are permissible for external SSL connections
+                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
 
-                    //// Run any needed Rock and/or plugin migrations
-                    bool anyMigrations = MigrateDatabase( rockContext );
-                    
-                    // Run any plugin migrations
-                    stopwatch.Restart();
-                    bool anyPluginMigrations = MigratePlugins( rockContext );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "EF Migrations and MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
-                    
-                    if ( anyMigrations || anyPluginMigrations )
-                    {
-                        // If any migrations ran (version was likely updated)
-                        try
-                        {
-                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
-                        }
-                        catch ( Exception ex )
-                        {
-                            // Just catch any exceptions, log it, and keep moving... 
-                            try
-                            {
-                                ExceptionLogService.LogException( ex, null );
-                            }
-                            catch { }
-                        }
-                    }
+                RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
-                    // Preload the commonly used objects
-                    stopwatch.Restart();
-                    LoadCacheObjects( rockContext );
-                    LoadComponenetData( rockContext );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
+                // Perform any Rock startups
+                RunStartups();
 
-                    // Register Routes
-                    RouteTable.Routes.Clear();
-                    Rock.Web.RockRouteHandler.RegisterRoutes();
+                // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+                AddCallBack();
 
-                    // Configure Rock Rest API
-                    stopwatch.Restart();
-                    GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
-
-                    // setup and launch the jobs infrastructure if running under IIS
-                    bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-                    if ( runJobsInContext )
-                    {
-                        ISchedulerFactory sf;
-
-                        // create scheduler
-                        sf = new StdSchedulerFactory();
-                        sched = sf.GetScheduler();
-
-                        // get list of active jobs
-                        ServiceJobService jobService = new ServiceJobService( rockContext );
-                        foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
-                        {
-                            const string errorLoadingStatus = "Error Loading Job";
-
-                            try  
-                            {
-                                IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                                ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
-
-                                // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
-                                if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
-                                {
-                                    sched.ScheduleJob( jobDetail, jobTrigger );
-                                }
-
-                                //// if the last status was an error, but we now loaded successful, clear the error
-                                // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
-                                if ( job.LastStatus == errorLoadingStatus || job.LastStatus == "Running" )
-                                {
-                                    job.LastStatusMessage = string.Empty;
-                                    job.LastStatus = string.Empty;
-                                    rockContext.SaveChanges();
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                // log the error
-                                LogError( ex, null );
-
-                                // create a friendly error message
-                                string message = string.Format( "Error loading the job: {0}.\n\n{2}", job.Name, job.Assembly, ex.Message );
-                                job.LastStatusMessage = message;
-                                job.LastStatus = errorLoadingStatus;
-                                rockContext.SaveChanges();
-
-                                var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                                var jobHistory = new ServiceJobHistory()
-                                {
-                                    ServiceJobId = job.Id,
-                                    StartDateTime = RockDateTime.Now,
-                                    StopDateTime = RockDateTime.Now,
-                                    Status = job.LastStatus,
-                                    StatusMessage = job.LastStatusMessage
-                                };
-                                jobHistoryService.Add( jobHistory );
-                                rockContext.SaveChanges();
-
-                            }
-                        }
-
-                        // set up the listener to report back from jobs as they complete
-                        sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
-                        // set up a trigger listener that can prevent a job from running if another scheduler is
-                        // already running it (i.e., someone running it manually).
-                        sched.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
-
-                        // start the scheduler
-                        sched.Start();
-                    }
-
-                    // set the encryption protocols that are permissible for external SSL connections
-                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
-
-                    // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
-                    // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
-                    // Date filter.
-                    Liquid.UseRubyDateFormat = false;
-
-                    //// NOTE: This means that template filters will also use CSharpNamingConvention
-                    //// For example the dotliquid documentation says to do this for formatting dates: 
-                    //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                    //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                    //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                    Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                    Template.FileSystem = new RockWeb.LavaFileSystem();
-                    Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
-                    Template.RegisterSafeType( typeof( DBNull ), o => null );
-                    Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-
-                    // Perform any Rock startups
-                    RunStartups();
-
-                    // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
-                    AddCallBack();
-                    
-                    // Force authorizations to be cached
-                    Rock.Security.Authorization.Get();
-                }
-
-                EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
-                FieldTypeService.RegisterFieldTypes( Server.MapPath( "~" ) );
+                // register any EntityTypes or FieldTypes that are discovered in Rock or any plugins (including ones in ~/App_Code)
+                EntityTypeService.RegisterEntityTypes();
+                FieldTypeService.RegisterFieldTypes();
 
                 BundleConfig.RegisterBundles( BundleTable.Bundles );
 
@@ -349,15 +185,17 @@ namespace RockWeb
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
 
-                LogMessage( APP_LOG_FILENAME, "Application Started Successfully" );
+                RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
+
+                RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApplicationStartupHelper.StartDateTime ).TotalMilliseconds ) );
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
@@ -365,20 +203,22 @@ namespace RockWeb
                 }
 
                 SetError66();
-                var startupException = new Exception( "Error occurred during application startup", ex );
+                var startupException = new RockStartupException( "Error occurred during application startup", ex );
                 LogError( startupException, null );
                 throw startupException;
             }
 
-            // Update attributes for new workflow actions
+            // Update attributes for new workflow actions, instead of doing them on demand
+            // Not sure why we did this but this is the commit c23a4021d2ce7be96a30bae8c431c113f942f26f
             new Thread( () =>
             {
                 Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
             } ).Start();
-            
+
             // compile less files
             new Thread( () =>
             {
+                var stopwatchCompileLess = Stopwatch.StartNew();
                 Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 RockTheme.CompileAll( out messages );
@@ -386,16 +226,14 @@ namespace RockWeb
                 {
                     if ( messages.IsNullOrWhiteSpace() )
                     {
-                        System.Diagnostics.Debug.WriteLine( "Less files compiled successfully." );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less files compiled successfully. ", + stopwatchCompileLess.Elapsed.TotalSeconds ) );
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
                     }
                 }
-
             } ).Start();
-            
         }
 
         /// <summary>
@@ -403,11 +241,11 @@ namespace RockWeb
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Application_EndRequest( object sender, EventArgs e )
+        protected void Application_EndRequest( object sender, EventArgs e )
         {
             /*
-	        4/28/2019 - JME 
-	        The goal of the code below is to ensure that all cookies are set to be secured if
+            4/28/2019 - JME 
+            The goal of the code below is to ensure that all cookies are set to be secured if
             the request is HTTPS. This is a bit tricky as we don't want to always make them
             secured as the server may not support SSL (development or small organizations).
             https://www.hanselman.com/blog/HowToForceAllCookiesToSecureUnderASPNET11.aspx
@@ -415,11 +253,10 @@ namespace RockWeb
             Also, if the Request starts as HTTP and then the site redirects to HTTPS because it
             is required the Session cookie will have been created as unsecured. The code that does
             this redirection has been updated to clear the session cookie so it will be recreated
-            as secured.	
-	
+            as secured.    
+    
             Reason: Life.Church Request to increase security
             */
-
 
             // Set cookies to be secured if the site has SSL
             // https://www.hanselman.com/blog/HowToForceAllCookiesToSecureUnderASPNET11.aspx
@@ -443,9 +280,19 @@ namespace RockWeb
         {
             try
             {
-                UserLoginService.UpdateLastLogin( UserLogin.GetCurrentUserName() );
+                // get a current context so that we can set it inside the thread (which doesn't have a context)
+                var thisContext = HttpContext.Current;
+                Task.Run( () =>
+                {
+                    HttpContext.Current = thisContext;
+                    var currentUserName = UserLogin.GetCurrentUserName();
+                    UserLoginService.UpdateLastLogin( currentUserName );
+                } );
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
 
             // add new session id
             Session["RockSessionId"] = Guid.NewGuid();
@@ -467,14 +314,17 @@ namespace RockWeb
                     {
                         var userLoginService = new UserLoginService( rockContext );
 
-                        var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                        var user = userLoginService.Get( int.Parse( this.Session["RockUserId"].ToString() ) );
                         user.IsOnLine = false;
 
                         rockContext.SaveChanges();
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
         }
 
         /// <summary>
@@ -517,7 +367,7 @@ namespace RockWeb
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
-                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean())
+                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean() )
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 404;
@@ -527,10 +377,10 @@ namespace RockWeb
                     }
                     catch
                     {
-                        //
+                        // ignore exception
                     }
 
-                    while (ex is HttpUnhandledException && ex.InnerException != null )
+                    while ( ex is HttpUnhandledException && ex.InnerException != null )
                     {
                         ex = ex.InnerException;
                     }
@@ -540,7 +390,7 @@ namespace RockWeb
                     {
                         try
                         {
-                            throw new Exception( "An error occurred in Entity Framework when attempting to connect to your database. This could be caused by a missing 'MultipleActiveResultSets=true' parameter in your connection string settings.", ex );
+                            throw new RockStartupException( "An error occurred in Entity Framework when attempting to connect to your database. This could be caused by a missing 'MultipleActiveResultSets=true' parameter in your connection string settings.", ex );
                         }
                         catch ( Exception newEx )
                         {
@@ -548,7 +398,7 @@ namespace RockWeb
                         }
                     }
 
-                    if ( !(ex is HttpRequestValidationException ) )
+                    if ( !( ex is HttpRequestValidationException ) )
                     {
                         SendNotification( ex );
                     }
@@ -574,7 +424,10 @@ namespace RockWeb
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
         }
 
         /// <summary>
@@ -588,19 +441,19 @@ namespace RockWeb
             {
                 // Log the reason that the application end was fired
                 var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
-                
-                // Send debug info to debug window
-                System.Diagnostics.Debug.WriteLine( String.Format( "shutdownReason:{0}", shutdownReason ) );
 
-                LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutdownReason );
+                // Send debug info to debug window
+                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
+
+                RockApplicationStartupHelper.LogShutdownMessage( "Application Ended: " + shutdownReason );
 
                 // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                 if ( runJobsInContext )
                 {
-                    if ( sched != null )
+                    if ( RockApplicationStartupHelper.QuartzScheduler != null )
                     {
-                        sched.Shutdown();
+                        RockApplicationStartupHelper.QuartzScheduler.Shutdown();
                     }
                 }
 
@@ -617,6 +470,8 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
+
+                RockLogger.Log.Close();
             }
             catch
             {
@@ -627,78 +482,6 @@ namespace RockWeb
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// uses Reflection and a query on __MigrationHistory to determine whether we need to check for pending EF Migrations
-        /// </summary>
-        /// <returns>
-        ///   <c>true</c> if [has pending ef migrations]; otherwise, <c>false</c>.
-        /// </returns>
-        public bool HasPendingEFMigrations()
-        {
-            /* MDP 2020-03-20
-             * We had previously used the presence of a "~/App_Data/Run.Migration" file to see if there are migrations to run.
-             * We did this to avoid the ~5 second delay that asking EF if there were pending migrations.
-             * However, we ran into a few cases where the Run.Migration method may have gotten deleted even though there were still migrations that needed to be run.
-             * To avoid this problem, we use Reflection plus querying the __MigrationHistory table to see if migrations need to be run. This only takes a few milliseconds
-             * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
-             */
-
-            // use reflection to find the last EF Migration (last Rock.Migrations.RockMigration since that is what all of Rock's EF migrations are based on)
-            var migrationTypes = Rock.Reflection.SearchAssembly( typeof( Rock.Migrations.RockMigration ).Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
-            var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
-            var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
-
-            // now look in __MigrationHistory table to see what the last migration that ran was
-            var lastDbMigrationId = DbService.ExecuteScaler( "select max(MigrationId) from __MigrationHistory" ) as string;
-
-            // if they aren't the same, run EF Migrations
-            return ( lastDbMigrationId != lastRockMigrationId );
-        }
-
-        /// <summary>
-        /// If EF migrations need to be done, does MF Migrations on the database 
-        /// </summary>
-        /// <returns>True if at least one migration was run</returns>
-        public bool MigrateDatabase( RockContext rockContext )
-        {
-            bool result = false;
-
-            // if they aren't the same, run EF Migrations
-            var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-            if ( fileInfo.Exists || HasPendingEFMigrations() )
-            {
-                // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
-                var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                var pendingMigrations = migrator.GetPendingMigrations().OrderBy(a => a);
-
-                // double check if there are migrations to run
-                if ( pendingMigrations.Any() )
-                {
-                    LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
-                    
-                    var lastMigration = pendingMigrations.Last();
-
-                    // create a logger, but don't enable any of the logs
-                    var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
-
-                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
-
-                    // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
-                    migratorLoggingDecorator.Update( lastMigration );
-                    result = true;
-                }
-
-                if ( fileInfo.Exists )
-                {
-                    // fileInfo.Delete() won't do anything if the file doesn't exist (it doesn't throw an exception if it is not there
-                    // but do the fileInfo.Exists to make this logic more readable
-                    fileInfo.Delete();
-                }
-            }
-
-            return result;
-        }
 
         /// <summary>
         /// Run any custom startup methods
@@ -730,193 +513,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Migrates the plugins.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Exception">
-        /// Could not connect to the SQL database! Please check the 'RockContext' connection string in the web.ConnectionString.config file.
-        /// or
-        /// </exception>
-        public bool MigratePlugins( RockContext rockContext )
-        {
-            bool result = false;
-
-            // Migrate any plugins that have pending migrations
-            List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Migration ) ).Select( a => a.Value ).ToList();
-
-            // If any plugin migrations types were found
-            if ( migrationList.Any() )
-            {
-                // Create EF service for plugin migrations
-                var pluginMigrationService = new PluginMigrationService( rockContext );
-
-                // Get the current rock version
-                var rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-
-                // Create dictionary for holding migrations specific to an assembly
-                var assemblies = new Dictionary<string, Dictionary<int, Type>>();
-
-                // Iterate plugin migrations
-                foreach ( var migrationType in migrationList )
-                {
-                    // Get the MigrationNumberAttribute for the migration
-                    var migrationNumberAttr = System.Attribute.GetCustomAttribute( migrationType, typeof( MigrationNumberAttribute ) ) as MigrationNumberAttribute;
-                    if ( migrationNumberAttr != null )
-                    {
-                        // If the migration's minimum Rock version is less than or equal to the current rock version, add it to the list
-                        var minRockVersion = new Version( migrationNumberAttr.MinimumRockVersion );
-                        if ( minRockVersion.CompareTo( rockVersion ) <= 0 )
-                        {
-                            string assemblyName = migrationType.Assembly.GetName().Name;
-                            if ( !assemblies.ContainsKey( assemblyName ) )
-                            {
-                                assemblies.Add( assemblyName, new Dictionary<int, Type>() );
-                            }
-
-                            // Check to make sure no another migration has same number
-                            if ( assemblies[assemblyName].ContainsKey( migrationNumberAttr.Number ) )
-                            {
-                                throw new Exception( string.Format( "The '{0}' plugin assembly contains duplicate migration numbers ({1}).", assemblyName, migrationNumberAttr.Number ) );
-                            }
-                            assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
-                        }
-                    }
-                }
-
-                var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
-                if ( configConnectionString != null )
-                {
-                    string connectionString = configConnectionString.ConnectionString;
-                    if ( !string.IsNullOrWhiteSpace( connectionString ) )
-                    {
-                        using ( SqlConnection con = new SqlConnection( connectionString ) )
-                        {
-                            try
-                            {
-                                con.Open();
-                            }
-                            catch ( SqlException ex )
-                            {
-                                throw new Exception( "Could not connect to the SQL database! Please check the 'RockContext' connection string in the web.ConnectionString.config file.", ex );
-                            }
-
-                            // Iterate each assembly that contains plugin migrations
-                            foreach ( var assemblyMigrations in assemblies )
-                            {
-                                try
-                                {
-                                    // Get the versions that have already been installed
-                                    var installedVersions = pluginMigrationService.Queryable()
-                                        .Where( m => m.PluginAssemblyName == assemblyMigrations.Key )
-                                        .ToList();
-
-                                    // Iterate each migration in the assembly in MigrationNumber order 
-                                    foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )
-                                    {
-                                        // Check to make sure migration has not already been run
-                                        if ( !installedVersions.Any( v => v.MigrationNumber == migrationType.Key ) )
-                                        {
-                                            using ( var sqlTxn = con.BeginTransaction() )
-                                            {
-                                                bool transactionActive = true;
-                                                try
-                                                {
-                                                    // Create an instance of the migration and run the up migration
-                                                    var migration = Activator.CreateInstance( migrationType.Value ) as Rock.Plugin.Migration;
-                                                    migration.SqlConnection = con;
-                                                    migration.SqlTransaction = sqlTxn;
-                                                    migration.Up();
-                                                    sqlTxn.Commit();
-                                                    transactionActive = false;
-
-                                                    // Save the plugin migration version so that it is not run again
-                                                    var pluginMigration = new PluginMigration();
-                                                    pluginMigration.PluginAssemblyName = assemblyMigrations.Key;
-                                                    pluginMigration.MigrationNumber = migrationType.Key;
-                                                    pluginMigration.MigrationName = migrationType.Value.Name;
-                                                    pluginMigrationService.Add( pluginMigration );
-                                                    rockContext.SaveChanges();
-
-                                                    result = true;
-                                                }
-                                                catch ( Exception ex )
-                                                {
-                                                    if ( transactionActive )
-                                                    {
-                                                        sqlTxn.Rollback();
-                                                    }
-                                                    throw new Exception( string.Format( "##Plugin Migration error occurred in {0}, {1}##",
-                                                        assemblyMigrations.Key, migrationType.Value.Name ), ex );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                catch ( Exception ex )
-                                {
-                                    // If an exception occurs in an an assembly, log the error, and continue with next assembly
-                                    System.Diagnostics.Debug.WriteLine( ex.Message );
-                                    LogError( ex, null );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Loads the Component Data from Web.config.
-        /// </summary>
-        private void LoadComponenetData( RockContext rockContext )
-        {
-            var rockConfig = RockConfig.Config;
-            if ( rockConfig.AttributeValues.Count > 0 )
-            {
-                foreach ( AttributeValueConfig attributeValueConfig in rockConfig.AttributeValues )
-                {
-                    AttributeService attributeService = new AttributeService( rockContext );
-                    AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                    var attribute = attributeService.Get( attributeValueConfig.EntityTypeId.AsInteger(),
-                                           attributeValueConfig.EntityTypeQualifierColumm,
-                                           attributeValueConfig.EntityTypeQualifierValue,
-                                           attributeValueConfig.AttributeKey );
-                    if ( attribute == null )
-                    {
-                        attribute = new Rock.Model.Attribute();
-                        attribute.FieldTypeId = FieldTypeCache.Get( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
-                        attribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
-                        attribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
-                        attribute.Key = attributeValueConfig.AttributeKey;
-                        attribute.Name = attributeValueConfig.AttributeKey.SplitCase();
-                        attributeService.Add( attribute );
-                        rockContext.SaveChanges();
-                    }
-
-
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, attributeValueConfig.EntityId.AsInteger() );
-                    if ( attributeValue == null && !string.IsNullOrWhiteSpace( attributeValueConfig.Value ) )
-                    {
-
-                        attributeValue = new Rock.Model.AttributeValue();
-                        attributeValue.AttributeId = attribute.Id;
-                        attributeValue.EntityId = attributeValueConfig.EntityId.AsInteger();
-                        attributeValueService.Add( attributeValue );
-                    }
-                    if ( attributeValue.Value != attributeValueConfig.Value )
-                    {
-                        attributeValue.Value = attributeValueConfig.Value;
-                        rockContext.SaveChanges();
-                    }
-
-                }
-            }
-        }
-
-        /// <summary>
         /// Adds the call back.
         /// </summary>
         private void MarkOnlineUsersOffline()
@@ -933,72 +529,6 @@ namespace RockWeb
                 rockContext.SaveChanges();
             }
         }
-
-        /// <summary>
-        /// Loads the cache objects.
-        /// </summary>
-        private void LoadCacheObjects( RockContext rockContext )
-        {
-            // Flush the Cache just in case Migrations updated any cached items thru SQL
-            RockCache.ClearAllCachedItems( false );
-
-            // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                EntityTypeCache.Get( entityType );
-            }
-
-            // Cache all the Field Types
-            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                FieldTypeCache.Get( fieldType );
-            }
-
-            var all = FieldTypeCache.All();
-
-            // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
-            var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
-            {
-                try
-                {
-                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    {
-                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                    }
-
-                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
-                }
-                catch ( Exception ex )
-                {
-                    LogError( ex, null );
-                }
-            }
-
-            // Cache all the attributes, except for user preferences
-            
-            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
-            int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
-            if (personUserValueEntityTypeId.HasValue)
-            {
-                attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
-            }
-
-            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
-            {
-                if ( qualifiers.ContainsKey( attribute.Id ) )
-                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
-                else
-                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
-            }
-
-            // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
-            {
-                DefinedValueCache.Get( definedValue );
-            }
-        }
-
 
         /// <summary>
         /// Sets flag for serious error
@@ -1026,8 +556,9 @@ namespace RockWeb
         /// <param name="ex">The ex.</param>
         private void SendNotification( Exception ex )
         {
-            int? pageId = ( Context.Items["Rock:PageId"] ?? "" ).ToString().AsIntegerOrNull(); ;
-            int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();;
+            int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
+            int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
+
             PersonAlias personAlias = null;
             Person person = null;
 
@@ -1040,13 +571,19 @@ namespace RockWeb
                     personAlias = user.Person.PrimaryAlias;
                 }
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
 
             try
             {
                 ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
 
             try
             {
@@ -1075,32 +612,40 @@ namespace RockWeb
                                             {
                                                 sendNotification = false;
                                             }
+
                                             break;
                                         }
+
                                     case "source":
                                         {
                                             if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
                                             {
                                                 sendNotification = false;
                                             }
+
                                             break;
                                         }
+
                                     case "message":
                                         {
                                             if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
                                             {
                                                 sendNotification = false;
                                             }
+
                                             break;
                                         }
+
                                     case "stacktrace":
                                         {
                                             if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
                                             {
                                                 sendNotification = false;
                                             }
+
                                             break;
                                         }
+
                                     default:
                                         {
                                             var serverValue = serverVarList[nameAndValue[0]];
@@ -1108,6 +653,7 @@ namespace RockWeb
                                             {
                                                 sendNotification = false;
                                             }
+
                                             break;
                                         }
                                 }
@@ -1121,57 +667,68 @@ namespace RockWeb
                     }
                 }
 
-                if ( sendNotification )
+                if ( !sendNotification )
                 {
-                    // get email addresses to send to
-                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                    return;
+                }
+
+                // get email addresses to send to
+                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                {
+                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( emailAddresses.Length > 0 )
                     {
-                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                        if ( emailAddresses.Length > 0 )
+                        string siteName = "Rock";
+                        if ( siteId.HasValue )
                         {
-                            string siteName = "Rock";
-                            if ( siteId.HasValue )
+                            var site = SiteCache.Get( siteId.Value );
+                            if ( site != null )
                             {
-                                var site = SiteCache.Get( siteId.Value );
-                                if ( site != null )
-                                {
-                                    siteName = site.Name;
-                                }
+                                siteName = site.Name;
                             }
+                        }
 
-                            // setup merge codes for email
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                            mergeFields.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
-                                person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+                        var exceptionDetails = string.Format(
+                            "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                                person != null ? " for " + person.FullName : string.Empty,
+                                siteName,
+                                Context.Request.Url.OriginalString,
+                                FormatException( ex, string.Empty ) );
 
-                            try
-                            {
-                                mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
-                            }
-                            catch
-                            {
-                                // ignore
-                            }
+                        // setup merge codes for email
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                        mergeFields.Add( "ExceptionDetails", exceptionDetails );
 
-                            mergeFields.Add( "Person", person );
-                            var recipients = new List<RockEmailMessageRecipient>();
-                            foreach ( string emailAddress in emailAddresses )
-                            {
-                                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( emailAddress, mergeFields ) );
-                            }
+                        try
+                        {
+                            mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
 
-                            if ( recipients.Any() )
-                            {
-                                var message = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
-                                message.SetRecipients( recipients );
-                                message.Send();
-                            }
+                        mergeFields.Add( "Person", person );
+                        var recipients = new List<RockEmailMessageRecipient>();
+                        foreach ( string emailAddress in emailAddresses )
+                        {
+                            recipients.Add( RockEmailMessageRecipient.CreateAnonymous( emailAddress, mergeFields ) );
+                        }
+
+                        if ( recipients.Any() )
+                        {
+                            var message = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
+                            message.SetRecipients( recipients );
+                            message.Send();
                         }
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+            }
         }
 
         /// Formats the exception.
@@ -1190,16 +747,13 @@ namespace RockWeb
             // check for inner exception
             if ( ex.InnerException != null )
             {
-                //lErrorInfo.Text += "<p /><p />";
                 message += FormatException( ex.InnerException, "-" + exLevel );
             }
 
             return message;
-        } 
+        }
 
         #region Static Methods
-
-
 
         /// <summary>
         /// Adds the call back.
@@ -1208,10 +762,15 @@ namespace RockWeb
         {
             if ( HttpRuntime.Cache["IISCallBack"] == null )
             {
-                OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
-                HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
-                    DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
-                    CacheItemPriority.NotRemovable, OnCacheRemove );
+                _onCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
+                HttpRuntime.Cache.Insert(
+                    "IISCallBack",
+                    60,
+                    null,
+                    DateTime.Now.AddSeconds( 60 ),
+                    Cache.NoSlidingExpiration,
+                    CacheItemPriority.NotRemovable,
+                    _onCacheRemove );
             }
         }
 
@@ -1248,9 +807,9 @@ namespace RockWeb
             else
             {
                 var pid = context.Items["Rock:PageId"];
-                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
+                pageId = pid != null ? int.Parse( pid.ToString() ) : ( int? ) null;
                 var sid = context.Items["Rock:SiteId"];
-                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
+                siteId = sid != null ? int.Parse( sid.ToString() ) : ( int? ) null;
                 try
                 {
                     var user = UserLoginService.GetCurrentUser();
@@ -1266,27 +825,6 @@ namespace RockWeb
             }
 
             ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
-        }
-
-        private static void LogMessage( string fileName, string message )
-        {
-            try
-            {
-                string directory = AppDomain.CurrentDomain.BaseDirectory;
-                directory = Path.Combine( directory, "App_Data", "Logs" );
-
-                if ( !Directory.Exists( directory ) )
-                {
-                    Directory.CreateDirectory( directory );
-                }
-
-                string filePath = Path.Combine( directory, fileName +  ".csv" );
-                string when = RockDateTime.Now.ToString();
-
-                File.AppendAllText( filePath, string.Format( "{0},{1}\r\n", when, message ) );
-            }
-            catch { }
-
         }
 
         #endregion
@@ -1333,9 +871,7 @@ namespace RockWeb
                 {
                     if ( r != CacheItemRemovedReason.Removed )
                     {
-                        throw new Exception(
-                            string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}",
-                                r.ConvertToString() ) );
+                        throw new Exception( string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}", r.ConvertToString() ) );
                     }
                 }
             }
@@ -1362,6 +898,5 @@ namespace RockWeb
         }
 
         #endregion
-
     }
 }

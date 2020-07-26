@@ -95,6 +95,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;
+            target.SmsPipelineId = source.SmsPipelineId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

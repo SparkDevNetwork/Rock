@@ -56,7 +56,7 @@ namespace Rock.Field.Types
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Columns";
-            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.Help = $"Select how many columns the list should use before going to the next row. If blank or 0 then {LavaCommandsPicker.DefaultRepeatColumns} columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
             tbRepeatColumns.MinimumValue = "0";
             tbRepeatColumns.AutoPostBack = true;
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
@@ -74,13 +74,13 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
-            string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+            string description = $"Select how many columns the list should use before going to the next row. If blank {LavaCommandsPicker.DefaultRepeatColumns} is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, LavaCommandsPicker.DefaultRepeatColumns.ToString() ) );
 
             if ( controls != null && controls.Count > 0 )
             {
                 var tbRepeatColumns = controls[0] as NumberBox;
-                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : LavaCommandsPicker.DefaultRepeatColumns.ToString();
             }
 
             return configurationValues;
@@ -98,7 +98,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count > 0 && configurationValues != null )
             {
                 var tbRepeatColumns = controls[0] as NumberBox;
-                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : LavaCommandsPicker.DefaultRepeatColumns.ToString();
             }
         }
 

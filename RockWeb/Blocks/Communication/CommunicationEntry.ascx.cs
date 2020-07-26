@@ -43,6 +43,8 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
+    #region Block Attributes
+
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [BooleanField( "Enable Lava",
@@ -151,6 +153,7 @@ namespace RockWeb.Blocks.Communication
         Category = "HTML Editor Settings",
         Order = 2 )]
 
+    #endregion Block Attributes
     public partial class CommunicationEntry : RockBlock
     {
         #region Attribute Keys
@@ -325,7 +328,7 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             string script = @"
-    $('a.remove-all-recipients').click(function( e ){
+    $('a.remove-all-recipients').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the pending recipients from this communication?', function (result) {
             if (result) {
@@ -955,7 +958,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If a template guid was passed in, it overrides any default template.
-            string templateGuid = PageParameter( "templateGuid" );
+            string templateGuid = PageParameter( "TemplateGuid" );
             if ( !string.IsNullOrEmpty( templateGuid ) )
             {
                 var guid = new Guid( templateGuid );
@@ -1270,7 +1273,7 @@ namespace RockWeb.Blocks.Communication
             var mediumControl = GetMediumControl();
             if ( mediumControl != null )
             {
-                // If using simple mode, the control should be re-initialized from sender since sender fields 
+                // If using simple mode, the control should be re-initialized from sender since sender fields
                 // are not presented for editing and user shouldn't be able to change them
                 if ( !_fullMode && CurrentPerson != null )
                 {
@@ -1324,8 +1327,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="communication">The communication.</param>
         private void ShowActions( Rock.Model.Communication communication )
         {
-            // Determine if user is allowed to save changes, if not, disable 
-            // submit and save buttons 
+            // Determine if user is allowed to save changes, if not, disable
+            // submit and save buttons
             if ( IsUserAuthorized( "Approve" ) ||
                 ( CurrentPersonAliasId.HasValue && CurrentPersonAliasId == communication.SenderPersonAliasId ) ||
                 IsUserAuthorized( Authorization.EDIT ) )

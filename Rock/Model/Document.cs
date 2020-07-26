@@ -275,6 +275,7 @@ namespace Rock.Model
             var binaryFile = binaryFileService.Get( binaryFileId );
             if ( binaryFile != null )
             {
+                binaryFile.IsTemporary = false;
                 this.BinaryFile = binaryFile;
             }
         }

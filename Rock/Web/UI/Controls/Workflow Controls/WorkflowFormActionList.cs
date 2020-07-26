@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class WorkflowFormActionList : CompositeControl
     {
@@ -260,25 +260,25 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _actionControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Button Type
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _buttonHtmlControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Activity Value
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _activityControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Response
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _responseControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Remove Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
@@ -337,20 +337,20 @@ namespace Rock.Web.UI.Controls
             return input;
         };
 
-        $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
+        $actionList.find('div.form-action-rows').first().children('div.form-row').each(function( index ) {
                 newValue +=
-                    replaceDelimiters( $(this).find('.form-action-key:first').val() ) + '^' + 
-                    replaceDelimiters( $(this).find('.form-action-button:first').val() ) + '^' + 
-                    replaceDelimiters( $(this).find('.form-action-value:first').val() ) + '^' + 
-                    replaceDelimiters( $(this).find('.form-action-response:first').val() ) + '|'
+                    replaceDelimiters( $(this).find('.form-action-key').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-button').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-value').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-response').first().val() ) + '|'
         });
-        $actionList.children('input:first').val(newValue);
+        $actionList.children('input').first().val(newValue);
     }
 
-    $('a.form-action-add').click(function (e) {
+    $('a.form-action-add').on('click', function (e) {
         e.preventDefault();
         var $actionList = $(this).closest('.form-action-list');
-        $actionList.find('div.form-action-rows:first').append($actionList.find('.js-value-html').val());
+        $actionList.find('div.form-action-rows').first().append($actionList.find('.js-value-html').val());
     });
 
     $(document).on('click', 'a.form-action-remove', function (e) {

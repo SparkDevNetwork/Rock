@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "siteId" ).AsInteger() );
+                ShowDetail( PageParameter( "SiteId" ).AsInteger() );
             }
 
             if ( dlgPageAttribute.Visible )
@@ -244,26 +244,15 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgPageAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtPageAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtPageAttributes, PageAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;
             }
-
-            if ( PageAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = PageAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                PageAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = PageAttributesState.Any() ? PageAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            PageAttributesState.Add( attribute );
 
             BindPageAttributesGrid();
 
@@ -463,6 +452,14 @@ namespace RockWeb.Blocks.Cms
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
+                avcAttributes.GetEditValues( site );
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    site.SaveAttributeValues();
+                } );
+
                 int? existingIconId = null;
                 if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
                 {
@@ -614,7 +611,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 var qryParams = new Dictionary<string, string>();
-                qryParams["siteId"] = site.Id.ToString();
+                qryParams["SiteId"] = site.Id.ToString();
 
                 NavigateToPage( RockPage.Guid, qryParams );
             }
@@ -935,6 +932,9 @@ namespace RockWeb.Blocks.Cms
             BindPageAttributesGrid();
 
             SetControlsVisiblity();
+
+            site.LoadAttributes();
+            avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -982,6 +982,50 @@ namespace RockWeb.Blocks.Cms
             nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
 
             tbIndexStartingLocation.Visible = cbEnableIndexing.Checked;
+        }
+
+        #endregion
+
+        #region Obsolete Code
+
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
         }
 
         #endregion

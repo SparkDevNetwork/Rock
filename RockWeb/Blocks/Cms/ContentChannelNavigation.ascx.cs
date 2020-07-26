@@ -71,6 +71,20 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Order = 4 )]
 
+    [BooleanField(
+        "Show Category Filter",
+        Description = "Should block add an option to allow filtering by category?",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowCategoryFilter,
+        Order = 5 )]
+
+    [CategoryField( "Parent Category",
+        Description = "The parent category to use as the root category available for the user to pick from.",
+        IsRequired = true,
+        EntityType = typeof( Rock.Model.ContentChannel ),
+        Key = AttributeKey.ParentCategory,
+        Order = 6 )]
+
     #endregion Block Attributes
 
     public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
@@ -84,6 +98,8 @@ namespace RockWeb.Blocks.Cms
             public const string ContentChannelTypesInclude = "ContentChannelTypesInclude";
             public const string ContentChannelTypesExclude = "ContentChannelTypesExclude";
             public const string ContentChannelsFilter = "ContentChannelsFilter";
+            public const string ShowCategoryFilter = "ShowCategoryFilter";
+            public const string ParentCategory = "ParentCategory";
         }
 
         #endregion Attribute Keys
@@ -91,6 +107,7 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         private const string STATUS_FILTER_SETTING = "ContentChannelNavigation_StatusFilter";
+        private const string CATEGORY_FILTER_SETTING = "ContentChannelNavigation_CategoryFilter";
         private const string SELECTED_CHANNEL_SETTING = "ContentChannelNavigation_SelectedChannelId";
 
         #endregion
@@ -139,6 +156,12 @@ namespace RockWeb.Blocks.Cms
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
             gContentChannelItems.GridReorder += GContentChannelItems_GridReorder;
 
+            ddlCategory.Visible = GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean();
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                BindCategories();
+            }
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -161,11 +184,11 @@ namespace RockWeb.Blocks.Cms
 
                 tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
 
-                SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                SelectedChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
 
                 if ( !SelectedChannelId.HasValue )
                 {
-                    var selectedChannelGuid = PageParameter( "contentChannelGuid" ).AsGuidOrNull();
+                    var selectedChannelGuid = PageParameter( "ContentChannelGuid" ).AsGuidOrNull();
 
                     if ( selectedChannelGuid.HasValue )
                     {
@@ -176,6 +199,11 @@ namespace RockWeb.Blocks.Cms
                 if ( !SelectedChannelId.HasValue )
                 {
                     SelectedChannelId = GetUserPreference( SELECTED_CHANNEL_SETTING ).AsIntegerOrNull();
+                }
+
+                if ( ddlCategory.Visible )
+                {
+                    ddlCategory.SetValue( GetUserPreference( CATEGORY_FILTER_SETTING ).AsIntegerOrNull() );
                 }
 
                 GetData();
@@ -210,6 +238,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ddlCategory.Visible = GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean();
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                BindCategories();
+            }
+
+            GetData();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the ddlCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCategory_OnSelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( CATEGORY_FILTER_SETTING, ddlCategory.SelectedValue );
             GetData();
         }
 
@@ -358,7 +403,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( SelectedChannelId.HasValue )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", 0, "ContentChannelId", SelectedChannelId.Value );
             }
         }
 
@@ -372,7 +417,7 @@ namespace RockWeb.Blocks.Cms
             var contentItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", contentItem.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", contentItem.Id );
             }
         }
 
@@ -511,6 +556,22 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 contentChannelsQry = contentChannelsQry.Where( a => a.ContentChannelType.ShowInChannelList );
+            }
+
+
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                var categoryId = ddlCategory.SelectedValueAsId();
+                var parentCategoryGuid = GetAttributeValue( AttributeKey.ParentCategory ).AsGuidOrNull();
+                if ( ddlCategory.Visible && categoryId.HasValue )
+                {
+                    contentChannelsQry = contentChannelsQry.Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+                }
+                else if ( parentCategoryGuid.HasValue )
+                {
+                    var parentCategoryId = CategoryCache.GetId( parentCategoryGuid.Value );
+                    contentChannelsQry = contentChannelsQry.Where( a => a.Categories.Any( c => c.ParentCategoryId == parentCategoryId ) );
+                }
             }
 
             var contentChannelsList = contentChannelsQry.OrderBy( w => w.Name ).ToList();
@@ -963,6 +1024,27 @@ namespace RockWeb.Blocks.Cms
             }
 
             return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, contentItemStatus.ConvertToString() );
+        }
+
+        /// <summary>
+        /// Bind the category selector to the correct set of categories.
+        /// </summary>
+        private void BindCategories()
+        {
+            var parentCategoryGuid = GetAttributeValue( AttributeKey.ParentCategory ).AsGuidOrNull();
+
+            var categories = new CategoryService( new RockContext() )
+                .GetByEntityTypeId( EntityTypeCache.GetId( typeof( Rock.Model.ContentChannel ).FullName ) )
+                .Where( c => ( !parentCategoryGuid.HasValue && !c.ParentCategoryId.HasValue ) ||
+                             ( parentCategoryGuid.HasValue && c.ParentCategory != null && c.ParentCategory.Guid == parentCategoryGuid ) )
+                .AsQueryable()
+                .ToList();
+            ddlCategory.Visible = categories.Any();
+            ddlCategory.DataSource = categories;
+            ddlCategory.DataTextField = "Name";
+            ddlCategory.DataValueField = "Id";
+            ddlCategory.DataBind();
+            ddlCategory.Items.Insert( 0, new ListItem() );
         }
 
         #endregion

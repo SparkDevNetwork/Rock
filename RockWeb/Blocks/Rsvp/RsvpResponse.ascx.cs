@@ -550,7 +550,7 @@ $(document).ready(function () {
                 groupMember.LoadAttributes();
 
                 // This collection object is created to limit attribute values to those marked "IsPublic".
-                var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+                var publicAttributes = new GroupMemberPublicAttributeCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
                 {
                     Helper.AddEditControls( publicAttributes, phAttributes, true );
@@ -576,7 +576,7 @@ $(document).ready(function () {
                     groupMember.GroupId = occurrence.Group.Id;
                     groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
                 }
-                var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+                var publicAttributes = new GroupMemberPublicAttributeCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
                 {
                     Helper.AddEditControls( publicAttributes, phAttributes, false );
@@ -605,7 +605,7 @@ $(document).ready(function () {
                 }
 
                 groupMember.LoadAttributes();
-                var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+                var publicAttributes = new GroupMemberPublicAttributeCollection( groupMember );
                 return publicAttributes.Attributes.Any();
             }
         }
@@ -785,7 +785,7 @@ $(document).ready(function () {
         {
             public string Title { get; set; }
             public string OccurrenceId { get; set; }
-            public GroupMemberPublicAttriuteCollection PublicAttributes { get; set; }
+            public GroupMemberPublicAttributeCollection PublicAttributes { get; set; }
         };
 
         /// <summary>
@@ -844,7 +844,7 @@ $(document).ready(function () {
                     groupMember.LoadAttributes();
 
                     // This collection object is created to limit attribute values to those marked "IsPublic".
-                    var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+                    var publicAttributes = new GroupMemberPublicAttributeCollection( groupMember );
 
                     // Add item to collection for data binding.
                     repeaterItems.Add(
@@ -897,7 +897,7 @@ $(document).ready(function () {
                     groupMember.LoadAttributes();
 
                     // This collection object is created to limit attribute values to those marked "IsPublic".
-                    var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+                    var publicAttributes = new GroupMemberPublicAttributeCollection( groupMember );
 
                     // Add item to collection for data binding.
                     repeaterItems.Add(
@@ -1127,7 +1127,7 @@ $(document).ready(function () {
     /// <summary>
     /// This class is used to obtain a list of attributes which are marked IsPublic.
     /// </summary>
-    public class GroupMemberPublicAttriuteCollection : IHasAttributes
+    public class GroupMemberPublicAttributeCollection : IHasAttributes
     {
         /// <summary>
         /// Gets the id.
@@ -1219,9 +1219,9 @@ $(document).ready(function () {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberPublicAttriuteCollection"/> class.
+        /// Initializes a new instance of the <see cref="GroupMemberPublicAttributeCollection"/> class.
         /// </summary>
-        public GroupMemberPublicAttriuteCollection( GroupMember groupMember )
+        public GroupMemberPublicAttributeCollection( GroupMember groupMember )
         {
             Id = groupMember.Id;
             groupMember.LoadAttributes();
@@ -1229,7 +1229,7 @@ $(document).ready(function () {
             AttributeValues = groupMember.AttributeValues.Where( a => Attributes.Keys.Contains( a.Value.AttributeKey ) ).ToDictionary( a => a.Key, a => a.Value );
         }
 
-        public GroupMemberPublicAttriuteCollection() { }
+        public GroupMemberPublicAttributeCollection() { }
     }
 
     public static class DateEndOfDayStaticFunction

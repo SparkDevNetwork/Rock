@@ -49,7 +49,7 @@ namespace Rock.Financial
         /// <value>
         /// The error message.
         /// </value>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; set;  }
 
         /// <summary>
         /// If <see cref="IsValid"/> is true, this is the token that was received

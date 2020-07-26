@@ -41,17 +41,72 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to manage and display content." )]
 
-    [ContentChannelField( "Content Channel", category: "CustomSetting" )]
+    #region Block Attributes
 
-    [IntegerField( "Item Cache Duration", "Number of seconds to cache the content item specified by the parameter.", false, 0, "CustomSetting", 0, "ItemCacheDuration" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CONTENT_COMPONENT_TEMPLATE, "Content Component Template" )]
-    [BooleanField( "Allow Multiple Content Items", category: "CustomSetting" )]
-    [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
-    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
+    [ContentChannelField(
+        "Content Channel",
+        Category = "CustomSetting",
+        Key = AttributeKey.ContentChannel )]
 
-    [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
+    [IntegerField(
+        "Item Cache Duration",
+        Description = "Number of seconds to cache the content item specified by the parameter.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Category = "CustomSetting",
+        Order = 0,
+        Key = AttributeKey.ItemCacheDuration )]
+
+    [DefinedValueField(
+        "Content Component Template",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CONTENT_COMPONENT_TEMPLATE,
+        Key = AttributeKey.ContentComponentTemplate )]
+
+    [BooleanField(
+        "Allow Multiple Content Items",
+        Category = "CustomSetting",
+        Key = AttributeKey.AllowMultipleContentItems )]
+
+    [IntegerField(
+        "Output Cache Duration",
+        Description = "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.",
+        IsRequired = false,
+        Key = AttributeKey.OutputCacheDuration,
+        Category = "CustomSetting" )]
+
+    [CustomCheckboxListField(
+        "Cache Tags",
+        Description = "Cached tags are used to link cached content so that it can be expired as a group",
+        IsRequired = false,
+        Key = AttributeKey.CacheTags,
+        Category = "CustomSetting" )]
+
+    [IntegerField(
+        "Filter Id",
+        Description = "The data filter that is used to filter items",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Category = "CustomSetting",
+        Key = AttributeKey.FilterId )]
+
+    #endregion Block Attributes
     public partial class ContentComponent : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ContentChannel = "ContentChannel";
+            public const string ItemCacheDuration = "ItemCacheDuration";
+            public const string ContentComponentTemplate = "ContentComponentTemplate";
+            public const string AllowMultipleContentItems = "AllowMultipleContentItems";
+            public const string OutputCacheDuration = "OutputCacheDuration";
+            public const string FilterId = "FilterId";
+            public const string CacheTags = "CacheTags";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         /// <summary>
@@ -169,7 +224,7 @@ namespace RockWeb.Blocks.Cms
                 configControls.Add( lbEditContent );
 
                 HtmlGenericControl iEditContent = new HtmlGenericControl( "i" );
-                iEditContent.Attributes.Add( "class", "fa fa-pencil-square-o" );
+                iEditContent.Attributes.Add( "class", "fa fa-edit" );
 
                 lbEditContent.Controls.Add( iEditContent );
                 lbEditContent.CausesValidation = false;
@@ -195,7 +250,7 @@ namespace RockWeb.Blocks.Cms
                 lbConfigure.Click += lbConfigure_Click;
                 configControls.Add( lbConfigure );
                 HtmlGenericControl iConfigure = new HtmlGenericControl( "i" );
-                iConfigure.Attributes.Add( "class", "fa fa fa-cog" );
+                iConfigure.Attributes.Add( "class", "fa fa-cog" );
 
                 lbConfigure.Controls.Add( iConfigure );
                 lbConfigure.CausesValidation = false;
@@ -229,8 +284,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ShowView()
         {
-            int? outputCacheDuration = GetAttributeValue( "OutputCacheDuration" ).AsIntegerOrNull();
-            int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
+            int? outputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
+            int? itemCacheDuration = GetAttributeValue( AttributeKey.ItemCacheDuration ).AsIntegerOrNull();
 
             string outputContents = null;
 
@@ -253,7 +308,7 @@ namespace RockWeb.Blocks.Cms
                 mergeFields.Add( "CurrentPage", this.PageCache );
 
                 DefinedValueCache contentComponentTemplate = null;
-                var contentComponentTemplateValueGuid = this.GetAttributeValue( "ContentComponentTemplate" ).AsGuidOrNull();
+                var contentComponentTemplateValueGuid = this.GetAttributeValue( AttributeKey.ContentComponentTemplate ).AsGuidOrNull();
                 if ( contentComponentTemplateValueGuid.HasValue )
                 {
                     contentComponentTemplate = DefinedValueCache.Get( contentComponentTemplateValueGuid.Value );
@@ -277,7 +332,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
                 {
-                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                     AddCacheItem( outputCacheKey, outputContents, outputCacheDuration.Value, cacheTags );
                 }
             }
@@ -315,7 +370,7 @@ namespace RockWeb.Blocks.Cms
             var contentChannelItemService = new ContentChannelItemService( rockContext );
             IQueryable<ContentChannelItem> contentChannelItemsQuery = contentChannelItemService.Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
 
-            var allowMultipleContentItems = this.GetAttributeValue( "AllowMultipleContentItems" ).AsBoolean();
+            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
             if ( !allowMultipleContentItems )
             {
                 // if allowMultipleContentItems = false, just get the first one
@@ -323,7 +378,7 @@ namespace RockWeb.Blocks.Cms
                 contentChannelItemsQuery = contentChannelItemsQuery.Take( 1 );
             }
 
-            int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+            int? dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
             if ( dataFilterId.HasValue )
             {
                 var dataFilterService = new DataViewFilterService( rockContext );
@@ -340,7 +395,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentChannelItems != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                 AddCacheItem( itemCacheKey, contentChannelItems, itemCacheDuration.Value, cacheTags );
             }
 
@@ -353,7 +408,7 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         public ContentChannelCache GetContentChannel()
         {
-            Guid? contentChannelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            Guid? contentChannelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ContentChannelCache contentChannel = null;
             if ( contentChannelGuid.HasValue )
             {
@@ -377,7 +432,7 @@ namespace RockWeb.Blocks.Cms
             pnlContentComponentConfig.Visible = true;
             mdContentComponentConfig.Show();
 
-            Guid? contentChannelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            Guid? contentChannelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ContentChannel contentChannel = null;
             if ( contentChannelGuid.HasValue )
             {
@@ -395,7 +450,7 @@ namespace RockWeb.Blocks.Cms
             avcContentChannelAttributes.ValidationGroup = mdContentComponentConfig.ValidationGroup;
             avcContentChannelAttributes.AddEditControls( contentChannel );
 
-            nbItemCacheDuration.Text = this.GetAttributeValue( "ItemCacheDuration" );
+            nbItemCacheDuration.Text = this.GetAttributeValue( AttributeKey.ItemCacheDuration );
 
             DefinedTypeCache contentComponentTemplateType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CONTENT_COMPONENT_TEMPLATE.AsGuid() );
             if ( contentComponentTemplateType != null )
@@ -404,7 +459,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             DefinedValueCache contentComponentTemplate = null;
-            var contentComponentTemplateValueGuid = this.GetAttributeValue( "ContentComponentTemplate" ).AsGuidOrNull();
+            var contentComponentTemplateValueGuid = this.GetAttributeValue( AttributeKey.ContentComponentTemplate ).AsGuidOrNull();
             if ( contentComponentTemplateValueGuid.HasValue )
             {
                 contentComponentTemplate = DefinedValueCache.Get( contentComponentTemplateValueGuid.Value );
@@ -412,15 +467,15 @@ namespace RockWeb.Blocks.Cms
 
             dvpContentComponentTemplate.SetValue( contentComponentTemplate );
 
-            cbAllowMultipleContentItems.Checked = this.GetAttributeValue( "AllowMultipleContentItems" ).AsBoolean();
+            cbAllowMultipleContentItems.Checked = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
 
-            nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
+            nbOutputCacheDuration.Text = this.GetAttributeValue( AttributeKey.OutputCacheDuration );
 
             // Cache Tags
             cblCacheTags.DataSource = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             cblCacheTags.Visible = cblCacheTags.Items.Count > 0;
-            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            string[] selectedCacheTags = this.GetAttributeValue( AttributeKey.CacheTags ).SplitDelimitedValues();
             foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
@@ -429,7 +484,7 @@ namespace RockWeb.Blocks.Cms
             cePreHtml.Text = this.BlockCache.PreHtml;
             cePostHtml.Text = this.BlockCache.PostHtml;
 
-            hfDataFilterId.Value = GetAttributeValue( "FilterId" );
+            hfDataFilterId.Value = GetAttributeValue( AttributeKey.FilterId );
 
             int? filterId = hfDataFilterId.Value.AsIntegerOrNull();
             var rockContext = new RockContext();
@@ -474,7 +529,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !dataViewFilter.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -493,7 +548,7 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
 
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-            Guid? contentChannelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            Guid? contentChannelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ContentChannel contentChannel = null;
 
             if ( contentChannelGuid.HasValue )
@@ -581,7 +636,7 @@ namespace RockWeb.Blocks.Cms
             pnlContentComponentEditContentChannelItems.Visible = true;
             mdContentComponentEditContentChannelItems.Show();
 
-            var allowMultipleContentItems = this.GetAttributeValue( "AllowMultipleContentItems" ).AsBoolean();
+            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
             pnlContentChannelItemsList.Visible = allowMultipleContentItems;
             pnlContentChannelItemEdit.CssClass = allowMultipleContentItems ? "col-md-8" : "col-md-12";
 
@@ -615,7 +670,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
         private void EditContentChannelItem( int? contentChannelItemId )
         {
-            var allowMultipleContentItems = this.GetAttributeValue( "AllowMultipleContentItems" ).AsBoolean();
+            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
             var rockContext = new RockContext();
             ContentChannelItem contentChannelItem = null;
             if ( contentChannelItemId.HasValue )
@@ -638,7 +693,7 @@ namespace RockWeb.Blocks.Cms
             contentChannelItem.LoadAttributes();
 
             AttributeCache[] includedAttributes = new AttributeCache[0];
-            var contentComponentTemplateValueGuid = this.GetAttributeValue( "ContentComponentTemplate" ).AsGuidOrNull();
+            var contentComponentTemplateValueGuid = this.GetAttributeValue( AttributeKey.ContentComponentTemplate ).AsGuidOrNull();
             if ( contentComponentTemplateValueGuid.HasValue )
             {
                 var contentComponentTemplate = DefinedValueCache.Get( contentComponentTemplateValueGuid.Value );
@@ -874,7 +929,7 @@ namespace RockWeb.Blocks.Cms
 
         #region Filter Related stuff
 
-        #endregion 
+        #endregion
 
         /// <summary>
         /// Creates the filter control.
@@ -1083,6 +1138,6 @@ namespace RockWeb.Blocks.Cms
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
-        
+
     }
 }

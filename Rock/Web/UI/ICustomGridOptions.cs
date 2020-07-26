@@ -19,7 +19,8 @@ using System;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// Interface for Blocks that have a grid that support sticky headers from Block Configuration.
+    /// Interface for Blocks that have a grid that support custom grid options, like sticky headers
+    /// from Block Configuration.
     /// NOTE: If the grid also supports Custom Columns, use <see cref="ICustomGridColumns"/> instead
     /// </summary>
     public interface ICustomGridOptions
@@ -27,7 +28,7 @@ namespace Rock.Web.UI
     }
 
     /// <summary>
-    /// Config Class for blocks that support sticky headers for grids
+    /// Config Class for blocks that support custom grid options, like sticky headers
     /// </summary>
     public class CustomGridOptionsConfig
     {
@@ -35,12 +36,22 @@ namespace Rock.Web.UI
         /// The enable sticker headers attribute key
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EnableStickyHeadersAttributeKey instead") ]
+        [Obsolete( "Use EnableStickyHeadersAttributeKey instead", true ) ]
         public const string EnableStickerHeadersAttributeKey = "core.CustomGridEnableStickerHeaders";
 
         /// <summary>
         /// The enable sticky headers attribute key
         /// </summary>
         public const string EnableStickyHeadersAttributeKey = "core.CustomGridEnableStickyHeaders";
+
+        /// <summary>
+        /// The custom actions configs attribute key
+        /// </summary>
+        public const string CustomActionsConfigsAttributeKey = "core.CustomActionsConfigs";
+
+        /// <summary>
+        /// The enable default workflow launcher attribute key
+        /// </summary>
+        public const string EnableDefaultWorkflowLauncherAttributeKey = "core.EnableDefaultWorkflowLauncher";
     }
 }

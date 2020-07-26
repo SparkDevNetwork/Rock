@@ -479,13 +479,21 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
-            LocationService locationService = new LocationService( new RockContext() );
-            var location = locationService.Get( _acAddress.Street1, _acAddress.Street2, _acAddress.City, _acAddress.State, _acAddress.PostalCode, _acAddress.Country );
-            Location = location;
+            var editedLocation = new Location();
+
+            _acAddress.GetValues( editedLocation );
+
+            var locationService = new LocationService( new RockContext() );
+
+            var location = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.PostalCode, editedLocation.Country );
+
+            this.Location = location;
+
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+
             ShowDropDown = false;
 
-            if ( SelectGeography != null )
+            if ( this.SelectGeography != null )
             {
                 SelectGeography( sender, e );
             }

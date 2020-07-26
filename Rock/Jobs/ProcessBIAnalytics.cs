@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -38,6 +39,9 @@ namespace Rock.Jobs
     /// Job to take care of schema changes ( dynamic attribute value fields ) and data updates to the BI related analytic tables
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Process BI Analytics" )]
+    [Description( "Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to the BI related analytic tables." )]
+
     [DisallowConcurrentExecution]
     [BooleanField( "Process Person BI Analytics", "Do the BI Analytics tasks related to the Person Analytics tables", true, "", 1 )]
     [BooleanField( "Process Family BI Analytics", "Do the BI Analytics tasks related to the Family Analytics tables", true, "", 2 )]
@@ -283,7 +287,7 @@ namespace Rock.Jobs
             const string NumericSqlFieldType = "[decimal](29,4)";
             const string DefaultSqlFieldType = "nvarchar(250)";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 // add any AttributeFields that aren't already fields on Analytics table
                 foreach ( var modelAttribute in modelAnalyticAttributes )
@@ -405,7 +409,7 @@ namespace Rock.Jobs
         /// <param name="hasCurrentRowIndicator">if set to <c>true</c> [has current row indicator].</param>
         private void UpdateModelAttributeValues( List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
@@ -458,6 +462,19 @@ UPDATE [{analyticsTableName}]
             }
         }
 
+        /// <summary>
+        /// Get a new instance of the Rock data context that is configured for the current job settings.
+        /// </summary>
+        /// <returns>A configured RockContext instance.</returns>
+        private RockContext GetNewConfiguredDataContext()
+        {
+            var dataContext = new RockContext();
+
+            dataContext.Database.CommandTimeout = _commandTimeout;
+
+            return dataContext;
+        }
+
         #endregion Shared Methods
 
         #region Person Analytics
@@ -504,7 +521,7 @@ UPDATE [{analyticsTableName}]
 
                 // refresh the view definitions just in case the schema changed
                 // NOTE: Order is important!
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = GetNewConfiguredDataContext() )
                 {
                     rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
                     rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
@@ -540,7 +557,7 @@ UPDATE [{analyticsTableName}]
             List<SqlCommand> markAsHistoryUsingFormattedValueScripts = new List<SqlCommand>();
 
             // Compare "IsAnalyticHistory" attribute values to see if they have changed since the last ETL, using the FormatValue function
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
@@ -597,7 +614,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
         private void UpdatePersonAttributeValueUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
         {
             // Update Attributes using GetFormattedValue...
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
@@ -674,7 +691,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
             const int maxAttributeValueLength = 250;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 // add any AttributeFields that aren't already fields on AnalyticsSourcePersonHistorical
                 foreach ( var personAttribute in personAnalyticAttributes.Where( a => !UseFormatValueForUpdate( a ) ) )
@@ -954,7 +971,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 // Ensure that the Schema of AnalyticsSourceFamilyHistorical matches the current fields for Attributes that are marked as IsAnalytic
                 UpdateAnalyticsSchemaForModel( analyticsSourceFamilyHistoricalFields, familyAnalyticAttributes, "AnalyticsSourceFamilyHistorical", _familyJobStats );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = GetNewConfiguredDataContext() )
                 {
                     // refresh the view definitions just in case the schema changed
                     // NOTE: Order is important!
@@ -992,7 +1009,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// <param name="familyAnalyticAttributes">The family analytic attributes.</param>
         private void MarkFamilyAsHistoryUsingAttributeValues( List<AttributeCache> familyAnalyticAttributes )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = GetNewConfiguredDataContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 

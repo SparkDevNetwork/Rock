@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -32,11 +33,37 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that can be used to browse and manage files on the web server" )]
 
-    [TextField( "Relative File Path", "The relative path to file", false, "" )]
+    #region Block Attributes
+
+    [TextField(
+        "Relative File Path",
+        Description = "The relative path to file",
+        IsRequired = false,
+        Key = AttributeKey.RelativeFilePath )]
+
+    #endregion Block Attributes
     public partial class FileEditor : RockBlock
     {
+        #region Page Parameter Keys
 
-        private const string RELATIVE_FILE_PATH = "RelativeFilePath";
+        /// <summary>
+        /// Just in case something passes in specific configuration in the URL
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string RelativeFilePath = "RelativeFilePath";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RelativeFilePath = "RelativeFilePath";
+        }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -133,7 +160,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            Dictionary<string, string> queryString = new Dictionary<string, string>();
+            var relativePath = PageParameter( PageParameterKey.RelativeFilePath );
+            if ( relativePath.IsNotNullOrWhiteSpace() )
+            {
+                queryString.Add( PageParameterKey.RelativeFilePath, relativePath );
+            }
+            NavigateToParentPage( queryString );
         }
 
         #endregion
@@ -180,12 +213,12 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private string GetRelativePath()
         {
-            string relativePath = GetAttributeValue( RELATIVE_FILE_PATH );
+            string relativePath = GetAttributeValue( AttributeKey.RelativeFilePath );
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( string.IsNullOrWhiteSpace( relativePath ) )
             {
-                relativePath = PageParameter( RELATIVE_FILE_PATH );
+                relativePath = PageParameter( PageParameterKey.RelativeFilePath );
             }
 
             return relativePath;

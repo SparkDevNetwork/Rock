@@ -38,6 +38,9 @@ namespace Rock.Client
         public string ApiId { get; set; }
 
         /// <summary />
+        public string CacheControlHeaderSettings { get; set; }
+
+        /// <summary />
         public int ControllerId { get; set; }
 
         /// <summary />
@@ -91,6 +94,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ApiId = source.ApiId;
+            this.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             this.ControllerId = source.ControllerId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

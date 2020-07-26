@@ -41,6 +41,9 @@ namespace Rock.Client
         public DateTime EndDate { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate EndSourceDate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -62,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime StartDate { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate StartSourceDate { get; set; }
 
         /// <summary />
         public decimal TotalAmount { get; set; }
@@ -101,6 +107,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AccountId = source.AccountId;
             this.EndDate = source.EndDate;
+            this.EndSourceDate = source.EndSourceDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
@@ -108,6 +115,7 @@ namespace Rock.Client
             this.PersonAliasId = source.PersonAliasId;
             this.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             this.StartDate = source.StartDate;
+            this.StartSourceDate = source.StartSourceDate;
             this.TotalAmount = source.TotalAmount;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -125,7 +133,13 @@ namespace Rock.Client
     public partial class FinancialPledge : FinancialPledgeEntity
     {
         /// <summary />
+        public int EndDateKey { get; set; }
+
+        /// <summary />
         public DefinedValue PledgeFrequencyValue { get; set; }
+
+        /// <summary />
+        public int StartDateKey { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

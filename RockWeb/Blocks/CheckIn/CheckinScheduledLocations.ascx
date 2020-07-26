@@ -14,7 +14,7 @@
                 right: 20px;
             }
 
-            
+
         </style>
 
         <div class="checkin-header">
@@ -27,7 +27,7 @@
                 <div class="scroller">
 
                     <div class="kioskmanager-schedules">
-                        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" ShowHeader="true">
+                        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" ShowHeader="true" ShowWorkflowOrCustomActionButtons="false">
                             <Columns>
                                 <Rock:RockTemplateField HeaderText="Group" SortExpression="Group.Name">
                                     <ItemTemplate>

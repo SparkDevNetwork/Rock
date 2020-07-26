@@ -94,7 +94,7 @@
                     return ui;
                 };
 
-                $('section.checkin-item').click(function () {
+                $('section.checkin-item').on('click', function () {
                     if (!isDirty()) {
                         var dataKeyValue = $(this).closest('li').attr('data-key');
                         var isCheckinArea = $(this).hasClass('checkin-area');

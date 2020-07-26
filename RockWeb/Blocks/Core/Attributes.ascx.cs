@@ -41,16 +41,66 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Allows for the managing of attributes." )]
 
-    [EntityTypeField( "Entity", "Entity Name", false, "Applies To", 0 )]
-    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
-    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
-    [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, order: 3 )]
-    [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, order: 4 )]
-    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, order: 5 )]
-    [TextField( "Category Filter", "A comma separated list of category GUIDs to limit the display of attributes to.", false, "", order: 6 )]
+    [EntityTypeField( "Entity",
+        Description = "Entity Name",
+        IsRequired = false,
+        Category = "Applies To",
+        Order = 0,
+        Key = AttributeKey.Entity )]
+
+    [TextField( "Entity Qualifier Column",
+        Description = "The entity column to evaluate when determining if this attribute applies to the entity",
+        IsRequired = false,
+        Category = "Applies To",
+        Order = 1,
+        Key = AttributeKey.EntityQualifierColumn )]
+
+    [TextField( "Entity Qualifier Value",
+        Description = "The entity column value to evaluate.  Attributes will only apply to entities with this value",
+        IsRequired = false,
+        Category = "Applies To",
+        Order = 2,
+        Key = AttributeKey.EntityQualifierValue )]
+
+    [BooleanField( "Allow Setting of Values",
+        Description = "Should UI be available for setting values of the specified Entity ID?",
+        DefaultValue = "false",
+        Order = 3,
+        Key = AttributeKey.AllowSettingofValues )]
+
+    [IntegerField( "Entity Id",
+        Description = "The entity id that values apply to",
+        IsRequired = false,
+        DefaultValue = "0",
+        Order = 4,
+        Key = AttributeKey.EntityId )]
+
+    [BooleanField( "Enable Show In Grid",
+        Description = "Should the 'Show In Grid' option be displayed when editing attributes?",
+        DefaultValue = "false",
+        Order = 5,
+        Key = AttributeKey.EnableShowInGrid )]
+
+    [TextField( "Category Filter",
+        Description = "A comma separated list of category GUIDs to limit the display of attributes to.",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.CategoryFilter )]
+
 
     public partial class Attributes : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string Entity = "Entity";
+            public const string EntityQualifierColumn = "EntityQualifierColumn";
+            public const string EntityQualifierValue = "EntityQualifierValue";
+            public const string AllowSettingofValues = "AllowSettingofValues";
+            public const string EntityId = "EntityId";
+            public const string EnableShowInGrid = "EnableShowInGrid";
+            public const string CategoryFilter = "CategoryFilter";
+        }
+
         #region Fields
 
         private int? _entityTypeId = null;
@@ -74,7 +124,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             // if limiting by category list hide the filters
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CategoryFilter ) ) )
             {
                 rFilter.Visible = false;
             }
@@ -83,9 +133,9 @@ namespace RockWeb.Blocks.Core
                 cpCategoriesFilter.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             }
 
-            edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
+            edtAttribute.IsShowInGridVisible = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBooleanOrNull() ?? false;
 
-            Guid? entityTypeGuid = GetAttributeValue( "Entity" ).AsGuidOrNull();
+            Guid? entityTypeGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
                 _isEntityTypeConfigured = true;
@@ -107,11 +157,11 @@ namespace RockWeb.Blocks.Core
                 ddlEntityType.SetValue( _entityTypeId );
             }
 
-            _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
-            _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
-            _displayValueEdit = GetAttributeValue( "AllowSettingofValues" ).AsBooleanOrNull() ?? false;
+            _entityQualifierColumn = GetAttributeValue( AttributeKey.EntityQualifierColumn );
+            _entityQualifierValue = GetAttributeValue( AttributeKey.EntityQualifierValue );
+            _displayValueEdit = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false;
 
-            _entityId = GetAttributeValue( "EntityId" ).AsIntegerOrNull();
+            _entityId = GetAttributeValue( AttributeKey.EntityId ).AsIntegerOrNull();
             if ( _entityId == 0 )
             {
                 _entityId = null;
@@ -675,11 +725,11 @@ namespace RockWeb.Blocks.Core
             }
 
             // if filtering by block setting of categories
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CategoryFilter ) ) )
             {
                 try
                 {
-                    var categoryGuids = GetAttributeValue( "CategoryFilter" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                    var categoryGuids = GetAttributeValue( AttributeKey.CategoryFilter ).Split( ',' ).Select( Guid.Parse ).ToList();
 
                     query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
                 }

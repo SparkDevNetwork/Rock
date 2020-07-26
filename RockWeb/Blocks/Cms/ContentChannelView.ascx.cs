@@ -48,30 +48,174 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display dynamic content channel items." )]
 
+    #region Block Attributes
+
     // Block Properties
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel block.", false, order: 0 )]
-    [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 1 )]
-    [BooleanField( "Enable Legacy Global Attribute Lava", "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.", false, "", 2, "SupportLegacy" )]
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this content channel block.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EnabledLavaCommands )]
+    [LinkedPage(
+        "Detail Page",
+        Description = "The page to navigate to for details.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.DetailPage )]
+    [BooleanField(
+        "Enable Legacy Global Attribute Lava",
+        Description = "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = AttributeKey.SupportLegacy )]
 
     // Custom Settings
-    [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
-    [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "CustomSetting" )]
-    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
-    [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
-    [IntegerField( "Item Cache Duration", "Number of seconds to cache the content items returned by the selected filter.", false, 3600, "CustomSetting", 0, "CacheDuration" )]
-    [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", false, 0, "CustomSetting", 0, "OutputCacheDuration" )]
-    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
-    [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
-    [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
-    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava template engine.", false, "CustomSetting" )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "CustomSetting" )]
-    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "CustomSetting" )]
-    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
-    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "CustomSetting" )]
+    [ContentChannelField(
+        "Channel",
+        Description = "The channel to display items from.",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.Channel )]
+    [EnumsField(
+        "Status",
+        Description = "Include items with the following status.",
+        IsRequired = false,
+        EnumSourceType = typeof( ContentChannelItemStatus ),
+        DefaultValue = "2",
+        Category = "CustomSetting",
+        Key = AttributeKey.Status )]
+    [CodeEditorField(
+        "Template",
+        Description = "The template to use when formatting the list of items.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 600,
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.Template )]
+    [IntegerField(
+        "Count",
+        Description = "The maximum number of items to display.",
+        IsRequired = false,
+        DefaultIntegerValue = 5,
+        Category = "CustomSetting",
+        Key = AttributeKey.Count )]
+    [IntegerField(
+        "Item Cache Duration",
+        Description = "Number of seconds to cache the content items returned by the selected filter.",
+        IsRequired = false,
+        DefaultIntegerValue = 3600,
+        Category = "CustomSetting",
+        Order = 0,
+        Key = AttributeKey.CacheDuration )]
+    [IntegerField(
+        "Output Cache Duration",
+        Description = "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Category = "CustomSetting",
+        Order = 0,
+        Key = AttributeKey.OutputCacheDuration )]
+    [CustomCheckboxListField(
+        "Cache Tags",
+        Description = "Cached tags are used to link cached content so that it can be expired as a group",
+        IsRequired = false,
+        Key = AttributeKey.CacheTags,
+        Category = "CustomSetting" )]
+    [IntegerField(
+        "Filter Id",
+        Description = "The data filter that is used to filter items",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Category = "CustomSetting",
+        Key = AttributeKey.FilterId)]
+    [BooleanField(
+        "Query Parameter Filtering",
+        Description = "Determines if block should evaluate the query string parameters for additional filter criteria.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.QueryParameterFiltering )]
+    [TextField(
+        "Order",
+        Description = "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.Order )]
+    [BooleanField(
+        "Merge Content",
+        Description = "Should the content data and attribute values be merged using the Lava template engine.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.MergeContent )]
+    [BooleanField(
+        "Set Page Title",
+        Description = "Determines if the block should set the page title with the channel name or content item.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.SetPageTitle )]
+    [BooleanField(
+        "Rss Autodiscover",
+        Description = "Determines if a RSS autodiscover link should be added to the page head.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.RssAutodiscover )]
+    [TextField(
+        "Meta Description Attribute",
+        Description = "Attribute to use for storing the description attribute.",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.MetaDescriptionAttribute )]
+    [TextField(
+        "Meta Image Attribute",
+        Description = "Attribute to use for storing the image attribute.",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.MetaImageAttribute )]
 
+    #endregion Block Attributes
     public partial class ContentChannelView : RockBlockCustomSettings
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string DetailPage = "DetailPage";
+            public const string SupportLegacy = "SupportLegacy";
+            public const string Channel = "Channel";
+            public const string Status = "Status";
+            public const string Template = "Template";
+            public const string Count = "Count";
+            public const string CacheDuration = "CacheDuration";
+            public const string OutputCacheDuration = "OutputCacheDuration";
+            public const string CacheTags = "CacheTags";
+            public const string FilterId = "FilterId";
+            public const string QueryParameterFiltering = "QueryParameterFiltering";
+            public const string Order = "Order";
+            public const string MergeContent = "MergeContent";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string RssAutodiscover = "RssAutodiscover";
+            public const string MetaDescriptionAttribute = "MetaDescriptionAttribute";
+            public const string MetaImageAttribute = "MetaImageAttribute";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string Page = "Page";
+            public const string Item = "Item";
+        }
+
+        #endregion
+
         #region Fields
 
         private readonly string ITEM_TYPE_NAME = "Rock.Model.ContentChannelItem";
@@ -133,8 +277,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            ItemCacheDuration = GetAttributeValue( "CacheDuration" ).AsIntegerOrNull();
-            OutputCacheDuration = GetAttributeValue( "OutputCacheDuration" ).AsIntegerOrNull();
+            ItemCacheDuration = GetAttributeValue( AttributeKey.CacheDuration ).AsIntegerOrNull();
+            OutputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
 
             this.BlockUpdated += ContentDynamic_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -297,7 +441,7 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
 
             var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
+            SetAttributeValue( AttributeKey.DetailPage, ppFieldType.GetEditValue( ppDetailPage, null ) );
 
             SaveAttributeValues();
 
@@ -322,7 +466,7 @@ namespace RockWeb.Blocks.Cms
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
-            Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
+            Guid? channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
             if ( channelGuid.HasValue )
             {
                 var contentChannel = ContentChannelCache.Get( channelGuid.Value );
@@ -422,11 +566,11 @@ $(document).ready(function() {
                 .ToList();
             ddlChannel.DataBind();
             ddlChannel.Items.Insert( 0, new ListItem( "", "" ) );
-            ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
+            ddlChannel.SetValue( GetAttributeValue( AttributeKey.Channel ) );
             ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
 
             cblStatus.BindToEnum<ContentChannelItemStatus>();
-            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
+            foreach ( string status in GetAttributeValue( AttributeKey.Status ).SplitDelimitedValues() )
             {
                 var li = cblStatus.Items.FindByValue( status );
                 if ( li != null )
@@ -435,35 +579,35 @@ $(document).ready(function() {
                 }
             }
 
-            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
-            cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
-            cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
-            ceTemplate.Text = GetAttributeValue( "Template" );
-            nbCount.Text = GetAttributeValue( "Count" );
-            nbItemCacheDuration.Text = GetAttributeValue( "CacheDuration" );
-            nbOutputCacheDuration.Text = GetAttributeValue( "OutputCacheDuration" );
+            cbMergeContent.Checked = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
+            cbSetRssAutodiscover.Checked = GetAttributeValue( AttributeKey.RssAutodiscover ).AsBoolean();
+            cbSetPageTitle.Checked = GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean();
+            ceTemplate.Text = GetAttributeValue( AttributeKey.Template );
+            nbCount.Text = GetAttributeValue( AttributeKey.Count );
+            nbItemCacheDuration.Text = GetAttributeValue( AttributeKey.CacheDuration );
+            nbOutputCacheDuration.Text = GetAttributeValue( AttributeKey.OutputCacheDuration );
 
             DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
-            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            string[] selectedCacheTags = this.GetAttributeValue( AttributeKey.CacheTags ).SplitDelimitedValues();
             foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
 
-            hfDataFilterId.Value = GetAttributeValue( "FilterId" );
-            cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
+            hfDataFilterId.Value = GetAttributeValue( AttributeKey.FilterId );
+            cbQueryParamFiltering.Checked = GetAttributeValue( AttributeKey.QueryParameterFiltering ).AsBoolean();
 
             var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( AttributeKey.DetailPage ) );
 
             var directions = new Dictionary<string, string>();
             directions.Add( "", "" );
             directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
             directions.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
             kvlOrder.CustomValues = directions;
-            kvlOrder.Value = GetAttributeValue( "Order" );
+            kvlOrder.Value = GetAttributeValue( AttributeKey.Order );
             kvlOrder.Required = true;
 
             ShowEdit();
@@ -489,13 +633,13 @@ $(document).ready(function() {
 
             string outputContents = null;
 
-            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
-            bool isSetPageTitleEnabled = GetAttributeValue( "SetPageTitle" ).AsBoolean();
-            bool isRssAutodiscoverEnabled = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
-            bool isQueryParameterFilteringEnabled = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
-            string metaDescriptionAttributeValue = GetAttributeValue( "MetaDescriptionAttribute" );
-            string metaImageAttributeValue = GetAttributeValue( "MetaImageAttribute" );
-            int pageNumber = PageParameter( "Page" ).AsIntegerOrNull() ?? 1;
+            bool isMergeContentEnabled = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
+            bool isSetPageTitleEnabled = GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean();
+            bool isRssAutodiscoverEnabled = GetAttributeValue( AttributeKey.RssAutodiscover ).AsBoolean();
+            bool isQueryParameterFilteringEnabled = GetAttributeValue( AttributeKey.QueryParameterFiltering ).AsBoolean( false );
+            string metaDescriptionAttributeValue = GetAttributeValue( AttributeKey.MetaDescriptionAttribute );
+            string metaImageAttributeValue = GetAttributeValue( AttributeKey.MetaImageAttribute );
+            int pageNumber = PageParameter( PageParameterKey.Page ).AsIntegerOrNull() ?? 1;
 
             // Try fetching from cache if it's OK to do so. 
             // For now, we'll only cache if pagination is page 1. When our cache supports caching as a region (set)
@@ -514,7 +658,7 @@ $(document).ready(function() {
                 pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
+                linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
 
                 var errorMessages = new List<string>();
                 List<ContentChannelItem> contentItemList;
@@ -545,13 +689,13 @@ $(document).ready(function() {
 
                 var pagination = new Pagination();
                 pagination.ItemCount = contentItemList.Count();
-                pagination.PageSize = GetAttributeValue( "Count" ).AsInteger();
+                pagination.PageSize = GetAttributeValue( AttributeKey.Count ).AsInteger();
                 pagination.CurrentPage = pageNumber;
                 pagination.UrlTemplate = pageRef.BuildUrl();
                 var currentPageContent = pagination.GetCurrentPageItems( contentItemList );
 
                 var mergeFieldOptions = new Rock.Lava.CommonMergeFieldsOptions();
-                mergeFieldOptions.GetLegacyGlobalMergeFields = GetAttributeValue( "SupportLegacy" ).AsBoolean();
+                mergeFieldOptions.GetLegacyGlobalMergeFields = GetAttributeValue( AttributeKey.SupportLegacy ).AsBoolean();
                 var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, mergeFieldOptions );
 
                 // Merge content and attribute fields if block is configured to do so.
@@ -564,7 +708,7 @@ $(document).ready(function() {
                         itemMergeFields.Add( "Person", CurrentPerson );
                     }
 
-                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
                     foreach ( var item in currentPageContent )
                     {
                         itemMergeFields.AddOrReplace( "Item", item );
@@ -588,7 +732,7 @@ $(document).ready(function() {
                 // set page title
                 if ( isSetPageTitleEnabled && contentItemList.Count > 0 )
                 {
-                    if ( string.IsNullOrWhiteSpace( PageParameter( "Item" ) ) )
+                    if ( string.IsNullOrWhiteSpace( PageParameter(  PageParameterKey.Item ) ) )
                     {
                         // set title to channel name
                         string channelName = contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault();
@@ -671,7 +815,7 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                     // When our cache supports regions, add the pagination page to the cache key and set them all with the same region.
                     AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value, cacheTags );
                 }
@@ -724,15 +868,15 @@ $(document).ready(function() {
 
                 if ( template == null )
                 {
-                    template = Template.Parse( GetAttributeValue( "Template" ) );
+                    template = Template.Parse( GetAttributeValue( AttributeKey.Template ) );
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                         AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
                     }
 
-                    var enabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    var enabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
                     template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
                 }
             }
@@ -763,7 +907,7 @@ $(document).ready(function() {
 
             if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) )
             {
-                Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
+                Guid? channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -787,7 +931,7 @@ $(document).ready(function() {
                         .Include( a => a.ContentChannelItemSlugs )
                         .Where( i => i.ContentChannelId == contentChannelInfo.Id );
 
-                    int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
+                    int? itemId = PageParameter( PageParameterKey.Item ).AsIntegerOrNull();
                     if ( isQueryParameterFilteringEnabled && itemId.HasValue )
                     {
                         contentChannelItemQuery = contentChannelItemQuery.Where( i => i.Id == itemId.Value );
@@ -797,7 +941,7 @@ $(document).ready(function() {
                     {
                         // Check for the configured status and limit query to those
                         var statuses = new List<ContentChannelItemStatus>();
-                        var statusValList = ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                        var statusValList = ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                         foreach ( string statusVal in statusValList )
                         {
                             var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
@@ -814,7 +958,7 @@ $(document).ready(function() {
 
                     try
                     {
-                        int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                        int? dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
                         if ( dataFilterId.HasValue )
                         {
                             var dataFilterService = new DataViewFilterService( rockContext );
@@ -841,7 +985,7 @@ $(document).ready(function() {
                     }
 
                     // Order the items
-                    string orderBy = GetAttributeValue( "Order" );
+                    string orderBy = GetAttributeValue( AttributeKey.Order );
                     if ( !string.IsNullOrWhiteSpace( orderBy ) )
                     {
                         var fieldDirection = new List<string>();
@@ -926,7 +1070,7 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !isQueryParameterFilteringEnabled )
                     {
-                        string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                         AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );
                     }
 
@@ -1052,8 +1196,8 @@ $(document).ready(function() {
                     ddlMetaDescriptionAttribute.Items.Add( "" );
                     ddlMetaImageAttribute.Items.Add( "" );
 
-                    string currentMetaDescriptionAttribute = GetAttributeValue( "MetaDescriptionAttribute" ) ?? string.Empty;
-                    string currentMetaImageAttribute = GetAttributeValue( "MetaImageAttribute" ) ?? string.Empty;
+                    string currentMetaDescriptionAttribute = GetAttributeValue( AttributeKey.MetaDescriptionAttribute ) ?? string.Empty;
+                    string currentMetaImageAttribute = GetAttributeValue( AttributeKey.MetaImageAttribute ) ?? string.Empty;
 
                     // add channel attributes
                     channel.LoadAttributes();

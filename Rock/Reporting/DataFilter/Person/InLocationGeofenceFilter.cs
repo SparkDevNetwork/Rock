@@ -121,19 +121,12 @@ function() {
         }
 
         /// <summary>
-        /// The LocationPicker
-        /// </summary>
-        private LocationPicker lp = null;
-
-        private DefinedValuePicker dvpLocationType = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            lp = new LocationPicker();
+            var lp = new LocationPicker();
             lp.ID = filterControl.ID + "_lp";
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
@@ -145,7 +138,7 @@ function() {
             panel.CssClass = "col-lg-8";
             filterControl.Controls.Add( panel );
 
-            dvpLocationType = new DefinedValuePicker();
+            var dvpLocationType = new DefinedValuePicker();
             dvpLocationType.ID = filterControl.ID + "_dvpLocationType";
             dvpLocationType.Label = "Location Type";
             dvpLocationType.DataValueField = "Id";

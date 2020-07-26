@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public static class PageRoute
     {
         /// <summary>
+        /// Gets the Campus Detail > Group Member Detail page route guid
+        /// </summary>
+        public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "9660B9FB-C90F-4AFE-9D58-C0EC271C1377";
+
+        /// <summary>
         /// Gets the Text To Give Setup page route guid
         /// </summary>
         public const string TEXT_TO_GIVE_SETUP = "58592279-6CD7-47FD-BD0C-E35784FF69FF";
@@ -35,5 +40,10 @@ namespace Rock.SystemGuid
         /// Gets the RSVP Response page route guid.
         /// </summary>
         public const string RSVP = "6BE4EE11-694A-4D3E-B3A7-F6B2946012B9";
+        
+        /// <summary>
+        /// The phone number lookup
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP = "1FB5A224-9E26-47E6-9A20-5B5A59B5C7CF";
     }
 }

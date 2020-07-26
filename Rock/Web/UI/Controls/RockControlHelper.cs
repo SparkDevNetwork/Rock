@@ -78,6 +78,13 @@ namespace Rock.Web.UI.Controls
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
             bool renderWarning = ( rockControl.WarningBlock != null && !string.IsNullOrWhiteSpace( rockControl.Warning ) );
 
+            /* 2020-02-11 MDP
+             * If renderLabel is false (the label is blank), required inputs won't get highlighted if they are blank. 
+             * This is due to the lack of form-group around input that don't have label.
+             * There isn't a fix for this yet. Adding a form-group div around these would cause styling and javascript hook problems (since the dom is different)
+             * In the meantime, you could manually add a form-group div around these required inputs, but be careful so it doesn't break styling (even on custom themes)
+             */
+
             if ( renderLabel )
             {
                 var cssClass = new StringBuilder();

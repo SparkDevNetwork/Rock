@@ -39,10 +39,6 @@ namespace Rock.Reporting.DataSelect.Person
     [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
     public class PhoneNumberSelect : DataSelectComponent
     {
-        #region
-        Rock.Model.Person _currentPerson = null;
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -86,6 +82,21 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 return "PhoneNumber";
             }
+        }
+
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // disable sorting on this column since it is an IEnumerable
+            return string.Empty;
         }
 
         /// <summary>
@@ -141,7 +152,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             string[] selectionValues = selection.Split( '|' );
             Guid? phoneNumberTypeValueGuid = null;
-            if ( selectionValues.Length >= 1)
+            if ( selectionValues.Length >= 1 )
             {
                 phoneNumberTypeValueGuid = selectionValues[0].AsGuidOrNull();
             }
@@ -171,7 +182,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach (var value in DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 phoneNumberTypeList.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }
@@ -253,18 +264,17 @@ namespace Rock.Reporting.DataSelect.Person
             Guid? phoneType = null;
             bool enableOrigination = false;
 
-            if ( _currentPerson == null )
+            Rock.Model.Person _currentPerson = null;
+
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
-                }
+                _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
             }
 
             var selectionParts = selection.Split( '|' );
             if ( selectionParts.Length > 0 )
             {
-                phoneType =  selectionParts[0].AsGuidOrNull();
+                phoneType = selectionParts[0].AsGuidOrNull();
             }
 
             if ( selectionParts.Length > 1 )

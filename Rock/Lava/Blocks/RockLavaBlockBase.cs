@@ -50,17 +50,7 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         protected bool IsAuthorized( Context context )
         {
-            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
-            {
-                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
-
-                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return LavaHelper.IsAuthorized( context, this.GetType().Name );
         }
 
         /// <summary>

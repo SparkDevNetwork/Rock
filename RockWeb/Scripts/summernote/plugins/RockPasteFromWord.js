@@ -6,7 +6,7 @@
 
   // remove the summernote clipboard keydown handler since this can cause problems on FF and IE, and we are handling it here anyways
   $(context.layoutInfo.note).off('summernote.keydown');
-  
+
   // from https://github.com/StudioJunkyard/summernote-cleaner
   var cleanText = function (txt) {
     var sS = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
@@ -93,7 +93,7 @@
       cleanedContent = pastedContent.match(wordPastedFragment)[0];
     }
     else if (containsHtmlTags) {
-      // the pastedContent seems to contain HTML tags and probably isn't from a Word Document, so let's start with the raw paste 
+      // the pastedContent seems to contain HTML tags and probably isn't from a Word Document, so let's start with the raw paste
       cleanedContent = pastedContent;
     }
     else {
@@ -117,7 +117,7 @@
 
     $dialog.find('.js-paste-area').html('');
     ui.showDialog($dialog);
-    $dialog.find('.js-paste-area').focus();
+    $dialog.find('.js-paste-area').trigger("focus");
 
     var clipboardData = pasteEvent.originalEvent && ((typeof (pasteEvent.originalEvent.clipboardData) != 'undefined' && pasteEvent.originalEvent.clipboardData) || (typeof (window.clipboardData) != 'undefined' && window.clipboardData));
 
@@ -126,14 +126,14 @@
       if (((types instanceof DOMStringList) && types.contains(mimeType)) || (types.indexOf && types.indexOf(mimeType) !== -1)) {
         var htmlPasteContent = clipboardData.getData(mimeType)
         $dialog.find('.js-paste-area').html(htmlPasteContent);
-        $dialog.find('.js-paste-word-btn').click();
+        $dialog.find('.js-paste-word-btn').trigger('click');
         return;
       }
     }
 
     // if we are not allowed to directly call a Paste, prompt in the dialog
     if (document.execCommand('Paste')) {
-      $dialog.find('.js-paste-word-btn').click();
+      $dialog.find('.js-paste-word-btn').trigger('click');
       return;
     };
 
@@ -151,5 +151,5 @@
     }
   });
 
-  return button.render();   // return button as jquery object 
+  return button.render();   // return button as jquery object
 }

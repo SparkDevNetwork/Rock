@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -80,7 +81,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return (RockPage)this.Page;
+                return ( RockPage ) this.Page;
             }
         }
 
@@ -262,7 +263,7 @@ namespace Rock.Web.UI
             IEntity entity = ContextEntity( typeof( T ).FullName );
             if ( entity != null )
             {
-                return (T)entity;
+                return ( T ) entity;
             }
             else
             {
@@ -302,6 +303,20 @@ namespace Rock.Web.UI
                 return null;
             }
         }
+
+        /* 2020-06-12 MDP/DL
+         * If this block has custom admin controls, the Pages Configuration page ( Home > CMS Configuration > Pages)
+         * needs to load this block onto the page (but hide it off screen). This can sometimes cause an issue
+         * because the block still thinks it needs to render its content. To avoid this issue,
+         * we added the ConfigurationRenderModeIsEnabled so the block can use that flag to not render
+         * its content
+         */
+
+        /// <summary>
+        /// Indicates if the block should be rendered in configuration-only mode.
+        /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
+        /// </summary>
+        public bool ConfigurationRenderModeIsEnabled { get; set; }
 
         #endregion
 
@@ -394,7 +409,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.", true )]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -426,7 +441,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
+        [Obsolete( "Use RemoveCacheItem( string key ) instead.", true )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -439,7 +454,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.")]
+        [Obsolete( "Method is no longer supported.", true )]
         protected virtual void FlushSharedBlock( int blockId )
         {
         }
@@ -515,6 +530,18 @@ namespace Rock.Web.UI
                 foreach ( var grid in gridsOnBlock )
                 {
                     grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                    grid.EnableDefaultLaunchWorkflow = this.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
+
+                    var userDefinedCustomActions = this.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
+
+                    if ( userDefinedCustomActions != null && userDefinedCustomActions.Any() )
+                    {
+                        // This is coded this way because the getter might return a new list if the property was null. And if there are any existing
+                        // configs (from the developer perhaps), these user defined configs should supplement, not overwrite
+                        var customActionConfigs = grid.CustomActionConfigs;
+                        customActionConfigs.AddRange( userDefinedCustomActions );
+                        grid.CustomActionConfigs = customActionConfigs;
+                    }
                 }
             }
         }
@@ -533,16 +560,17 @@ namespace Rock.Web.UI
                     var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
                     if ( lblShowDebugTimings != null )
                     {
-                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["PointInTimeMS"]?.AsDoubleOrNull();
+                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
                         if ( previousPointInTimeMS.HasValue )
                         {
-                            var lastDurationMS = Math.Round(tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 3);
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "</pre>", $"  [{lastDurationMS}ms]</pre>" );
+                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
+                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
+                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
                         }
 
-                        lblShowDebugTimings.Text += string.Format( "<pre>Start OnLoad {0} @ {1}</pre>", this.BlockName, tsDuration.TotalMilliseconds );
+                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>({2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache.BlockType );
 
-                        lblShowDebugTimings.Attributes["PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
+                        lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
                     }
                 }
             }
@@ -840,7 +868,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="additionalQueryParameters">The additional query parameters.</param>
         /// <returns></returns>
-        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null)
+        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null )
         {
             var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
@@ -1390,29 +1418,6 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
             return Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
-        }
-
-        /// <summary>
-        /// Reads the security action attributes for this <see cref="Rock.Model.Block" />
-        /// </summary>
-        /// <returns>
-        /// A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see> SecurityActionAttributes.
-        /// </returns>
-        internal Dictionary<string, string> GetSecurityActionAttributes()
-        {
-            var securityActions = new Dictionary<string, string>();
-
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( SecurityActionAttribute ), true );
-            foreach ( var customAttribute in customAttributes )
-            {
-                var securityActionAttribute = customAttribute as SecurityActionAttribute;
-                if ( securityActionAttribute != null )
-                {
-                    securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
-                }
-            }
-
-            return securityActions;
         }
 
         /// <summary>

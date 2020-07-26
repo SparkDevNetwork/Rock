@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Event
                         var lbtnLinkExisting = new LinkButton();
                         lbtnLinkExisting.Attributes.Add( "title", "Link Existing Item" );
                         lbtnLinkExisting.CommandArgument = contentChannel.Id.ToString();
-                        lbtnLinkExisting.CssClass = "btn btn-default btn-sm";
+                        lbtnLinkExisting.CssClass = "btn btn-grid-action btn-default btn-sm";
                         lbtnLinkExisting.Click += lbtnLinkExisting_Click;
                         lbtnLinkExisting.Text = "<i class='fa fa-link'></i>";
 

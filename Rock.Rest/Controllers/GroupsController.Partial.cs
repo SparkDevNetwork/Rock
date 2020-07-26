@@ -91,8 +91,14 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
+            // fetch the parentGroup so that Auth doesn't have do lazy load the ParentGroup for every group
+            var parentGroup = groupService.Get( id > 0 ? id : rootGroupId );
+
             foreach ( var group in qry.OrderBy( g => g.Order ).ThenBy( g => g.Name ) )
             {
+                // we already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth
+                group.ParentGroup = parentGroup;
+
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );

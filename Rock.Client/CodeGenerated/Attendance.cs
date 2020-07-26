@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? AttendanceCheckInSessionId { get; set; }
+
+        /// <summary />
         public int? AttendanceCodeId { get; set; }
 
         /// <summary />
@@ -42,6 +45,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? CheckedInByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? CheckedOutByPersonAliasId { get; set; }
 
         /// <summary />
         public int? DeclineReasonValueId { get; set; }
@@ -54,7 +60,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
+        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
         public bool? DidNotOccur { get; set; }
 
         /// <summary />
@@ -68,12 +74,12 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
+        [Obsolete( "Use Occurrence.GroupId instead", true )]
         public int? GroupId { get; set; }
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.LocationId instead", false )]
+        [Obsolete( "Use Occurrence.LocationId instead", true )]
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -89,6 +95,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public int? PresentByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? PresentDateTime { get; set; }
 
         /// <summary />
         public bool? Processed { get; set; }
@@ -116,7 +128,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
+        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -136,7 +148,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.SundayDate instead", false )]
+        [Obsolete( "Use Occurrence.SundayDate instead", true )]
         public DateTime SundayDate { get; set; }
 
         /// <summary>
@@ -172,28 +184,23 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Attendance source )
         {
             this.Id = source.Id;
+            this.AttendanceCheckInSessionId = source.AttendanceCheckInSessionId;
             this.AttendanceCodeId = source.AttendanceCodeId;
             this.CampusId = source.CampusId;
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
+            this.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
             this.DeclineReasonValueId = source.DeclineReasonValueId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
-            #pragma warning disable 612, 618
-            this.DidNotOccur = source.DidNotOccur;
-            #pragma warning restore 612, 618
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            #pragma warning disable 612, 618
-            this.GroupId = source.GroupId;
-            #pragma warning restore 612, 618
-            #pragma warning disable 612, 618
-            this.LocationId = source.LocationId;
-            #pragma warning restore 612, 618
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.OccurrenceId = source.OccurrenceId;
             this.PersonAliasId = source.PersonAliasId;
+            this.PresentByPersonAliasId = source.PresentByPersonAliasId;
+            this.PresentDateTime = source.PresentDateTime;
             this.Processed = source.Processed;
             this.QualifierValueId = source.QualifierValueId;
             this.RequestedToAttend = source.RequestedToAttend;
@@ -202,17 +209,11 @@ namespace Rock.Client
             this.ScheduleConfirmationSent = source.ScheduleConfirmationSent;
             this.ScheduledByPersonAliasId = source.ScheduledByPersonAliasId;
             this.ScheduledToAttend = source.ScheduledToAttend;
-            #pragma warning disable 612, 618
-            this.ScheduleId = source.ScheduleId;
-            #pragma warning restore 612, 618
             this.ScheduleReminderSent = source.ScheduleReminderSent;
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
             this.StartDateTime = source.StartDateTime;
-            #pragma warning disable 612, 618
-            this.SundayDate = source.SundayDate;
-            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -232,10 +233,16 @@ namespace Rock.Client
         public AttendanceCode AttendanceCode { get; set; }
 
         /// <summary />
+        public PersonAlias CheckedOutByPersonAlias { get; set; }
+
+        /// <summary />
         public DefinedValue DeclineReasonValue { get; set; }
 
         /// <summary />
         public Device Device { get; set; }
+
+        /// <summary />
+        public PersonAlias PresentByPersonAlias { get; set; }
 
         /// <summary />
         public DefinedValue Qualifier { get; set; }

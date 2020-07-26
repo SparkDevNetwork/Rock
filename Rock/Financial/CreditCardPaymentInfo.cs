@@ -27,12 +27,14 @@ namespace Rock.Financial
     public class CreditCardPaymentInfo : PaymentInfo
     {
         /// <summary>
-        /// The name on card
+        /// Either the FullName on the card or the FirstName.
+        /// If the gateway has first and last name as seperate fields, set this to the first name;
         /// </summary>
         public string NameOnCard { get; set; }
 
         /// <summary>
-        /// The last name on card (Only used if gateway provider requires split first name and last name fields
+        /// The last name on card (Only used if gateway provider requires split first name and last name fields).
+        /// If so, the FirstNameOnCard is <see cref="NameOnCard" />
         /// </summary>
         public string LastNameOnCard { get; set; }
 
@@ -134,16 +136,29 @@ namespace Rock.Financial
         {
             get
             {
-                return GetCreditCardType( Number.AsNumeric() );
+                return GetCreditCardTypeFromCreditCardNumber( Number.AsNumeric() );
             }
         }
 
         /// <summary>
-        /// Gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value and returning the first match
+        /// Attempts to gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value and returning the first match
         /// </summary>
         /// <param name="ccNumber">The cc number.</param>
         /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use GetCreditCardTypeFromName or GetCreditCardTypeFromCreditCardNumber" )]
         public static DefinedValueCache GetCreditCardType( string ccNumber )
+        {
+            return GetCreditCardTypeFromCreditCardNumber( ccNumber );
+        }
+
+        /// <summary>
+        /// Attempts to gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value.
+        /// Note: If you know the credit card name (Amex, Visa, etc), use <seealso cref="GetCreditCardTypeFromName"/> instead
+        /// </summary>
+        /// <param name="ccNumber">The cc number.</param>
+        /// <returns></returns>
+        public static DefinedValueCache GetCreditCardTypeFromCreditCardNumber( string ccNumber )
         {
             foreach ( var dv in DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
             {
@@ -161,5 +176,34 @@ namespace Rock.Financial
             return null;
         }
 
+        /// <summary>
+        /// Attempts to get Credit Card Type Value from the Credit Card Type Name (Visa, MasterCard, Amex, American Express, etc)
+        /// </summary>
+        /// <param name="creditCardTypeName">Name of the credit card type.</param>
+        /// <returns></returns>
+        public static DefinedValueCache GetCreditCardTypeFromName( string creditCardTypeName )
+        {
+            switch ( creditCardTypeName.ToUpper() )
+            {
+                case "VISA":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA );
+                case "AMEX":
+                case "AMERICAN EXPRESS":
+                case "AMERICANEXPRESS":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_AMEX );
+                case "DINERS CLUB":
+                case "DINER'S CLUB":
+                case "DINERSCLUB":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_DINERS_CLUB );
+                case "DISCOVER":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_DISCOVER );
+                case "JCB":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_JCB );
+                case "MASTERCARD":
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_MASTERCARD );
+                default:
+                    return DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) )?.GetDefinedValueFromValue( creditCardTypeName );
+            }
+        }
     }
 }

@@ -1263,9 +1263,9 @@ namespace RockWeb.Blocks.Steps
             if ( person != null )
             {
                 NavigateToLinkedPage( AttributeKey.StepPage, new Dictionary<string, string> {
-                    { "personId", person.Id.ToString() },
-                    { "stepTypeId", stepTypeId.ToString() },
-                    { "stepId", (stepId ?? 0).ToString() }
+                    { "PersonId", person.Id.ToString() },
+                    { "StepTypeId", stepTypeId.ToString() },
+                    { "StepId", (stepId ?? 0).ToString() }
                 } );
             }
         }

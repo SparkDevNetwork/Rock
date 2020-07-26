@@ -39,8 +39,8 @@ namespace Rock.Security.Authentication
     [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
     public class Database : AuthenticationComponent
     {
-        private static byte[] _encryptionKey;
-        private static List<byte[]> _oldEncryptionKeys;
+        private readonly static byte[] _encryptionKey;
+        private readonly static List<byte[]> _oldEncryptionKeys;
 
         /// <summary>
         /// Gets the type of the service.

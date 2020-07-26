@@ -34,10 +34,10 @@ namespace Rock.Communication.Transport
     [TextField( "SMTP Hostname", "", true, "smtp.mailgun.org", "", 0, "Server" )]
     [TextField( "Domain Login", "The SMTP login provided by Mailgun", true, "", "", 1, "Username" )]
     [TextField( "Domain Password", "The SMTP password provided by Mailgun", true, "", "", 2, "Password", true )]
-    [TextField( "API Key", "The API Key provided by Mailgun " )]
+    [TextField( "API Key", "The Private API Key provided by Mailgun." )]
     [IntegerField( "Port", "", false, 587, "", 3 )]
     [BooleanField( "Use SSL", "", true, "", 4 )]
-    [BooleanField( "Track Clicks", "", true, "", 5 )]
+    [BooleanField( "Track Clicks", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 5 )]
     public class MailgunSmtp : SMTPComponent
     {
         /// <summary>

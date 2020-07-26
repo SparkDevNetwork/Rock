@@ -63,8 +63,8 @@
     <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.1.5\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
@@ -125,6 +125,7 @@
     <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceCheckInSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
@@ -153,9 +154,10 @@
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
@@ -193,6 +195,7 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="HeaderTokens.cs" />
     <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Jwt\JwtHelper.cs" />

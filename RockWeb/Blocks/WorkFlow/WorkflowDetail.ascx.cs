@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "workflowId" ).AsInteger() );
+                ShowDetail( PageParameter( "WorkflowId" ).AsInteger() );
             }
             else
             {

@@ -20,11 +20,12 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Web;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -53,183 +54,191 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
-            if ( checkInState != null )
+            if ( checkInState == null )
             {
-                AttendanceCode attendanceCode = null;
+                return false;
+            }
 
-                bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
-                int securityCodeAlphaNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaNumericLength : 3;
-                int securityCodeAlphaLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaLength : 0;
-                int securityCodeNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericLength : 0;
-                bool securityCodeNumericRandom = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericRandom : true;
+            AttendanceCode attendanceCode = null;
 
+            bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
+            int securityCodeAlphaNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaNumericLength : 3;
+            int securityCodeAlphaLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaLength : 0;
+            int securityCodeNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericLength : 0;
+            bool securityCodeNumericRandom = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericRandom : true;
 
-                var attendanceCodeService = new AttendanceCodeService( rockContext );
-                var attendanceService = new AttendanceService( rockContext );
-                var groupMemberService = new GroupMemberService( rockContext );
-                var personAliasService = new PersonAliasService( rockContext );
-                var attendanceRecords = new List<Attendance>();
+            var attendanceCodeService = new AttendanceCodeService( rockContext );
+            var attendanceService = new AttendanceService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+            var attendanceRecords = new List<Attendance>();
 
-                checkInState.Messages.Clear();
+            AttendanceCheckInSession attendanceCheckInSession = new AttendanceCheckInSession()
+            {
+                DeviceId = checkInState.DeviceId,
+                ClientIpAddress = RockPage.GetClientIpAddress()
+            };
 
-                var family = checkInState.CheckIn.CurrentFamily;
-                if ( family != null )
+            checkInState.Messages.Clear();
+
+            var family = checkInState.CheckIn.CurrentFamily;
+            if ( family != null )
+            {
+                var currentOccurrences = new List<OccurrenceRecord>();
+                foreach ( var person in family.GetPeople( true ) )
                 {
-                    var currentOccurrences = new List<OccurrenceRecord>();
-                    foreach ( var person in family.GetPeople( true ) )
+                    if ( reuseCodeForFamily && attendanceCode != null )
                     {
-                        if ( reuseCodeForFamily && attendanceCode != null )
-                        {
-                            person.SecurityCode = attendanceCode.Code;
-                        }
-                        else
-                        {
-                            attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaNumericLength, securityCodeAlphaLength, securityCodeNumericLength, securityCodeNumericRandom );
-                            person.SecurityCode = attendanceCode.Code;
-                        }
+                        person.SecurityCode = attendanceCode.Code;
+                    }
+                    else
+                    {
+                        attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaNumericLength, securityCodeAlphaLength, securityCodeNumericLength, securityCodeNumericRandom );
+                        person.SecurityCode = attendanceCode.Code;
+                    }
 
-                        foreach ( var groupType in person.GetGroupTypes( true ) )
+                    foreach ( var groupType in person.GetGroupTypes( true ) )
+                    {
+                        foreach ( var group in groupType.GetGroups( true ) )
                         {
-                            foreach ( var group in groupType.GetGroups( true ) )
+                            if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
+                                groupType.GroupType.DefaultGroupRoleId.HasValue &&
+                                !groupMemberService.GetByGroupIdAndPersonId( group.Group.Id, person.Person.Id, true ).Any() )
                             {
-                                if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
-                                    groupType.GroupType.DefaultGroupRoleId.HasValue &&
-                                    !groupMemberService.GetByGroupIdAndPersonId( group.Group.Id, person.Person.Id, true ).Any() )
+                                var groupMember = new GroupMember();
+                                groupMember.GroupId = group.Group.Id;
+                                groupMember.PersonId = person.Person.Id;
+                                groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
+                                groupMemberService.Add( groupMember );
+                            }
+
+                            foreach ( var location in group.GetLocations( true ) )
+                            {
+                                bool isCheckedIntoLocation = false;
+                                foreach ( var schedule in location.GetSchedules( true ) )
                                 {
-                                    var groupMember = new GroupMember();
-                                    groupMember.GroupId = group.Group.Id;
-                                    groupMember.PersonId = person.Person.Id;
-                                    groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
-                                    groupMemberService.Add( groupMember );
+                                    var startDateTime = schedule.CampusCurrentDateTime;
+
+                                    // If we're enforcing strict location thresholds, then before we create an attendance record
+                                    // we need to check the location-schedule's current count.
+                                    if ( GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
+                                    {
+                                        var thresHold = location.Location.SoftRoomThreshold.Value;
+                                        if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
+                                        {
+                                            thresHold = location.Location.FirmRoomThreshold.Value;
+                                        }
+
+                                        var currentOccurrence = GetCurrentOccurrence( currentOccurrences, location, schedule, startDateTime.Date );
+
+                                        // The totalAttended is the number of people still checked in (not people who have been checked-out)
+                                        // not counting the current person who may already be checked in,
+                                        // + the number of people we have checked in so far (but haven't been saved yet).
+                                        var attendanceQry = attendanceService.GetByDateOnLocationAndSchedule( startDateTime.Date, location.Location.Id, schedule.Schedule.Id )
+                                            .AsNoTracking()
+                                            .Where( a => a.EndDateTime == null );
+
+                                        // Only process if the current person is NOT already checked-in to this location and schedule
+                                        if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
+                                        {
+                                            var totalAttended = attendanceQry.Count() + ( currentOccurrence == null ? 0 : currentOccurrence.Count );
+
+                                            // If over capacity, remove the schedule and add a warning message.
+                                            if ( totalAttended >= thresHold )
+                                            {
+                                                // Remove the schedule since the location was full for this schedule.  
+                                                location.Schedules.Remove( schedule );
+
+                                                var message = new CheckInMessage()
+                                                {
+                                                    MessageType = MessageType.Warning
+                                                };
+
+                                                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
+                                                mergeFields.Add( "Person", person.Person );
+                                                mergeFields.Add( "Group", group.Group );
+                                                mergeFields.Add( "Location", location.Location );
+                                                mergeFields.Add( "Schedule", schedule.Schedule );
+                                                message.MessageText = GetAttributeValue( action, "NotChecked-InMessageFormat" ).ResolveMergeFields( mergeFields );
+
+                                                // Now add it to the check-in state message list for others to see.
+                                                checkInState.Messages.Add( message );
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                // Keep track of anyone who was checked in so far.
+                                                if ( currentOccurrence == null )
+                                                {
+                                                    currentOccurrence = new OccurrenceRecord()
+                                                    {
+                                                        Date = startDateTime.Date,
+                                                        LocationId = location.Location.Id,
+                                                        ScheduleId = schedule.Schedule.Id
+                                                    };
+                                                    currentOccurrences.Add( currentOccurrence );
+                                                }
+
+                                                currentOccurrence.Count += 1;
+                                            }
+                                        }
+                                    }
+
+                                    // Only create one attendance record per day for each person/schedule/group/location
+                                    var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
+                                    if ( attendance == null )
+                                    {
+                                        var primaryAlias = personAliasService.GetPrimaryAlias( person.Person.Id );
+                                        if ( primaryAlias != null )
+                                        {
+                                            attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
+                                                location.Location.Id, schedule.Schedule.Id, location.CampusId,
+                                                checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id,
+                                                checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
+
+                                            attendance.PersonAlias = primaryAlias;
+                                        }
+                                    }
+
+                                    attendance.AttendanceCheckInSession = attendanceCheckInSession;
+
+                                    attendance.DeviceId = checkInState.Kiosk.Device.Id;
+                                    attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                    attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                    attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
+                                    attendance.SearchResultGroupId = family.Group.Id;
+                                    attendance.AttendanceCodeId = attendanceCode.Id;
+                                    attendance.StartDateTime = startDateTime;
+                                    attendance.EndDateTime = null;
+                                    attendance.DidAttend = true;
+                                    attendance.Note = group.Notes;
+
+                                    KioskLocationAttendance.AddAttendance( attendance );
+                                    isCheckedIntoLocation = true;
+
+                                    // Keep track of attendance (Ids) for use by other actions later in the workflow pipeline
+                                    attendanceRecords.Add( attendance );
                                 }
 
-                                foreach ( var location in group.GetLocations( true ) )
+                                // If the person was NOT checked into the location for any schedule then remove the location
+                                if ( !isCheckedIntoLocation )
                                 {
-                                    bool isCheckedIntoLocation = false;
-                                    foreach ( var schedule in location.GetSchedules( true ) )
-                                    {
-                                        var startDateTime = schedule.CampusCurrentDateTime;
-
-                                        // If we're enforcing strict location thresholds, then before we create an attendance record
-                                        // we need to check the location-schedule's current count.
-                                        if ( GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
-                                        {
-                                            var thresHold = location.Location.SoftRoomThreshold.Value;
-                                            if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
-                                            {
-                                                thresHold = location.Location.FirmRoomThreshold.Value;
-                                            }
-
-                                            var currentOccurrence = GetCurrentOccurrence( currentOccurrences, location, schedule, startDateTime.Date );
-
-                                            // The totalAttended is the number of people still checked in (not people who have been checked-out)
-                                            // not counting the current person who may already be checked in,
-                                            // + the number of people we have checked in so far (but haven't been saved yet).
-                                            var attendanceQry = attendanceService.GetByDateOnLocationAndSchedule( startDateTime.Date, location.Location.Id, schedule.Schedule.Id )
-                                                .AsNoTracking()
-                                                .Where( a => a.EndDateTime == null );
-
-                                            // Only process if the current person is NOT already checked-in to this location and schedule
-                                            if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
-                                            {
-                                                var totalAttended = attendanceQry.Count() + ( currentOccurrence == null ? 0 : currentOccurrence.Count );
-
-                                                // If over capacity, remove the schedule and add a warning message.
-                                                if ( totalAttended >= thresHold )
-                                                {
-                                                    // Remove the schedule since the location was full for this schedule.  
-                                                    location.Schedules.Remove( schedule );
-
-                                                    var message = new CheckInMessage()
-                                                    {
-                                                        MessageType = MessageType.Warning
-                                                    };
-
-                                                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
-                                                    mergeFields.Add( "Person", person.Person );
-                                                    mergeFields.Add( "Group", group.Group );
-                                                    mergeFields.Add( "Location", location.Location );
-                                                    mergeFields.Add( "Schedule", schedule.Schedule );
-                                                    message.MessageText = GetAttributeValue( action, "NotChecked-InMessageFormat" ).ResolveMergeFields( mergeFields );
-
-                                                    // Now add it to the check-in state message list for others to see.
-                                                    checkInState.Messages.Add( message );
-                                                    continue;
-                                                }
-                                                else
-                                                {
-                                                    // Keep track of anyone who was checked in so far.
-                                                    if ( currentOccurrence == null )
-                                                    {
-                                                        currentOccurrence = new OccurrenceRecord()
-                                                        {
-                                                            Date = startDateTime.Date,
-                                                            LocationId = location.Location.Id,
-                                                            ScheduleId = schedule.Schedule.Id
-                                                        };
-                                                        currentOccurrences.Add( currentOccurrence );
-                                                    }
-
-                                                    currentOccurrence.Count += 1;
-                                                }
-                                            }
-                                        }
-
-                                        // Only create one attendance record per day for each person/schedule/group/location
-                                        var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
-                                        if ( attendance == null )
-                                        {
-                                            var primaryAlias = personAliasService.GetPrimaryAlias( person.Person.Id );
-                                            if ( primaryAlias != null )
-                                            {
-                                                attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
-                                                    location.Location.Id, schedule.Schedule.Id, location.CampusId,
-                                                    checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id,
-                                                    checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
-
-                                                attendance.PersonAlias = primaryAlias;
-                                            }
-                                        }
-
-                                        attendance.DeviceId = checkInState.Kiosk.Device.Id;
-                                        attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
-                                        attendance.SearchValue = checkInState.CheckIn.SearchValue;
-                                        attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
-                                        attendance.SearchResultGroupId = family.Group.Id;
-                                        attendance.AttendanceCodeId = attendanceCode.Id;
-                                        attendance.StartDateTime = startDateTime;
-                                        attendance.EndDateTime = null;
-                                        attendance.DidAttend = true;
-                                        attendance.Note = group.Notes;
-
-                                        KioskLocationAttendance.AddAttendance( attendance );
-                                        isCheckedIntoLocation = true;
-
-                                        // Keep track of attendance (Ids) for use by other actions later in the workflow pipeline
-                                        attendanceRecords.Add( attendance );
-                                    }
-
-                                    // If the person was NOT checked into the location for any schedule then remove the location
-                                    if ( ! isCheckedIntoLocation )
-                                    {
-                                        group.Locations.Remove( location );
-                                    }
+                                    group.Locations.Remove( location );
                                 }
                             }
                         }
                     }
                 }
-
-                rockContext.SaveChanges();
-
-                // Now that the records are persisted, take the Ids and save them to the temp CheckInFamliy object
-                family.AttendanceIds = attendanceRecords.Select( a => a.Id ).ToList();
-                attendanceRecords = null;
-
-                return true;
             }
 
-            return false;
+            rockContext.SaveChanges();
+
+            // Now that the records are persisted, take the Ids and save them to the temp CheckInFamliy object
+            family.AttendanceIds = attendanceRecords.Select( a => a.Id ).ToList();
+            family.AttendanceCheckinSessionGuid = attendanceCheckInSession.Guid;
+            attendanceRecords = null;
+
+            return true;
         }
 
         /// <summary>

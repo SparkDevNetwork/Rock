@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupTypeId", 0 );
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "GroupTypeId", e.RowKeyId );
         }
 
         /// <summary>

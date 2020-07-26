@@ -102,6 +102,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
+            target.OccurrenceSourceDate = source.OccurrenceSourceDate;
             target.ScheduleId = source.ScheduleId;
             target.ShowDeclineReasons = source.ShowDeclineReasons;
             target.StepTypeId = source.StepTypeId;

@@ -402,12 +402,19 @@ btnCopyToClipboard.ClientID );
             pnlResourceFilterDataView.Visible = resourceListSourceType == SchedulerResourceListSourceType.DataView;
 
             bool filterIsValid = groupId > 0 && scheduleId > 0 && cblGroupLocations.SelectedValues.Any();
-
-            pnlScheduler.Visible = filterIsValid;
+            pnlScheduler.Visible = filterIsValid && !group.DisableScheduling;
             nbFilterInstructions.Visible = !filterIsValid;
+
+            var disableScheduling = group != null && group.DisableScheduling;
+            nbSchedulingDisabled.Visible = disableScheduling;
+
+            if ( disableScheduling )
+            {
+                nbSchedulingDisabled.Text = string.Format( "Scheduling is disabled for the {0} group.", group.Name );
+            }
             pnlGroupScheduleLocations.Visible = groupId > 0;
 
-            if ( filterIsValid )
+            if ( filterIsValid && !group.DisableScheduling )
             {
                 InitResourceList();
                 BindAttendanceOccurrences();

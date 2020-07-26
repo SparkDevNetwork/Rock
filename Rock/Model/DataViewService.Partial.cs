@@ -110,7 +110,7 @@ namespace Rock.Model
         /// </returns>
         public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
         {
-            var dataViewFilterEntityId = new EntityTypeService( (RockContext)this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
+            var dataViewFilterEntityId = new EntityTypeService( ( RockContext ) this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
 
             return IsViewInFilter( dataViewId, filter, dataViewFilterEntityId );
         }
@@ -148,7 +148,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Data View and reset the properties that connect it to the permanent store.
-            var newItem = (DataView)( item.Clone( true ) );
+            var newItem = ( DataView ) ( item.Clone( true ) );
 
             newItem.Id = 0;
             newItem.Guid = Guid.NewGuid();
@@ -162,6 +162,94 @@ namespace Rock.Model
 
             return newItem;
         }
+
+        /// <summary>
+        /// Gets the data views referenced by this data view's filters.
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public List<DataView> GetReferencedDataViews( int dataViewId, RockContext context )
+        {
+            var dataViewFilterService = new DataViewFilterService( context );
+
+            var relatedDataViews = GetDistinctRelatedDataViews( dataViewId, dataViewFilterService )
+                .ToDictionary( dvf => dvf.RelatedDataView.Id, dvf => dvf.RelatedDataView );
+
+            var relatedDataViewIds = relatedDataViews.Keys.ToList();
+            for ( var i = 0; i < relatedDataViewIds.Count; i++ )
+            {
+                var key = relatedDataViewIds[i];
+                var relatedDataView = relatedDataViews[key];
+
+                var relatedChildDataViews = GetDistinctRelatedDataViews( dataViewId, dataViewFilterService )
+                    .Select( dvf => dvf.RelatedDataView )
+                    .ToList();
+
+                foreach ( var dv in relatedChildDataViews )
+                {
+                    if ( relatedDataViewIds.Contains( dv.Id ) )
+                    {
+                        continue;
+                    }
+
+                    relatedDataViewIds.Add( dv.Id );
+                    relatedDataViews[dv.Id] = dv;
+                }
+            }
+
+            return relatedDataViews.Values.ToList();
+        }
+
+        private IEnumerable<DataViewFilter> GetDistinctRelatedDataViews( int dataViewId, DataViewFilterService dataViewFilterService )
+        {
+            return dataViewFilterService
+                            .Queryable()
+                            .Where( dvf => dvf.DataViewId != null && dvf.DataViewId == dataViewId && dvf.RelatedDataViewId != null )
+                            .Include( "RelatedDataView" )
+                            .DistinctBy( dvf => dvf.RelatedDataView.Id );
+        }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Adds AddRunDataViewTransaction to transaction queue
+        /// </summary>
+        /// <param name="dataViewId">The unique identifier of a Data View.</param>
+        /// <param name="timeToRunDurationMilliseconds">The time to run dataview in milliseconds.</param>
+        /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
+        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
+        {
+            var transaction = new Rock.Transactions.RunDataViewTransaction();
+            transaction.DataViewId = dataViewId;
+            transaction.LastRunDateTime = RockDateTime.Now;
+            transaction.ShouldIncrementRunCount = true;
+
+            if ( timeToRunDurationMilliseconds.HasValue )
+            {
+                transaction.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
+                /*
+                 * If the run duration is set that means this was called after the expression was
+                 * already evaluated, which in turn already counted the run so we don't want to double count it here.
+                 */
+                transaction.ShouldIncrementRunCount = false;
+            }
+
+            if ( persistedLastRunDurationMilliseconds.HasValue )
+            {
+                transaction.PersistedLastRefreshDateTime = RockDateTime.Now;
+                transaction.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
+                /*
+                 * If the persisted last run duration is set that means this was called after the expression was
+                 * already evaluated, which in turn already counted the run so we don't want to double count it here.
+                 */
+                transaction.ShouldIncrementRunCount = false;
+            }
+
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+        }
+
+        #endregion Static Methods
 
         /// <summary>
         /// Reset all of the identifiers on a DataViewFilter that uniquely identify it in the permanent store.

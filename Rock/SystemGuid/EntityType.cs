@@ -238,6 +238,71 @@ namespace Rock.SystemGuid
         public const string MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE = "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Cms.Hero
+        /// </summary>
+        public const string MOBILE_CMS_HERO_BLOCK_TYPE = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
+        /// </summary>
+        public const string MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarView
+        /// </summary>
+        public const string MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE = "5A26F32F-892E-4E76-B64A-0F54A77C863D";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CommunicationListSubscribe
+        /// </summary>
+        public const string MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE = "C4B81A58-6380-4C38-85E8-0536E584310E";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSession
+        /// </summary>
+        public const string MOBILE_EVENTS_PRAYER_SESSION_BLOCK_TYPE = "BCAF9B7B-2ADE-496B-9303-150F495851FC";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup
+        /// </summary>
+        public const string MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_ATTENDANCE_ENTRY_BLOCK_TYPE = "1655E6A9-2BD6-4FA0-8886-D64DCA177FBB";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupEdit
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_EDIT_BLOCK_TYPE = "DE46759A-CE15-4F27-9FC8-154CD30D4637";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberEdit
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_MEMBER_EDIT_BLOCK_TYPE = "61208516-9051-4E0E-AC46-6C8E1F104F3A";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberList
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_MEMBER_LIST_BLOCK_TYPE = "70652D98-9285-4707-8F46-B7FC48B6503D";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberView
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_MEMBER_VIEW_BLOCK_TYPE = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_VIEW_BLOCK_TYPE = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails
+        /// </summary>
+        public const string MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE = "F8E56BC0-E9D1-44A4-9900-46589A1FB784";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
@@ -256,6 +321,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.PersonAlias entity
         /// </summary>
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
+
+        /// <summary>
+        /// The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity
+        /// </summary>
+        public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
@@ -280,12 +350,17 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The LiquidSelect DataSelect field for Reporting
         /// </summary>
-        public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";        
-        
+        public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";
+
         /// <summary>
         /// The guid for the Rock.Model.Schedule entity
         /// </summary>
         public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
+
+        /// <summary>
+        /// The guid for the Rock.Workflow.Action.SendEmail entity
+        /// </summary>
+        public const string SEND_EMAIL = "66197B01-D1F0-4924-A315-47AD54E030DE";
 
         /// <summary>
         /// The Service Job entity type
@@ -308,9 +383,29 @@ namespace Rock.SystemGuid
         public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
 
         /// <summary>
-        /// The guid for the filesystem storage provider entity
+        /// The guid for the file-system storage provider entity (Rock.Storage.Provider.FileSystem)
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
+
+        /// <summary>
+        /// The asset storage 'Amazon S3' component (Rock.Storage.AssetStorage.AmazonS3Component)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_AMAZONS3 = "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8";
+
+        /// <summary>
+        /// The asset storage 'Azure Cloud Storage' component (Rock.Storage.AssetStorage.AzureCloudStorageComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_AZURECLOUD = "1576800F-BFD2-4309-A2C9-AE6DF6C0A1A5";
+
+        /// <summary>
+        /// The asset storage 'Google Cloud Storage' component (Rock.Storage.AssetStorage.GoogleCloudStorageComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_GOOGLECLOUD = "71344FA8-4210-4B6C-ADC1-9F63C4CA15CA";
+
+        /// <summary>
+        /// The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
         /// The guid for the Rock.Model.WorkflowType entity
@@ -336,5 +431,16 @@ namespace Rock.SystemGuid
         /// The guid for the Step program entity
         /// </summary>
         public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
+
+        /// <summary>
+        /// The MyWell financial gateway
+        /// </summary>
+        public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
+
+
+        /// <summary>
+        /// The SMS Conversation Action
+        /// </summary>
+        public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
     }
 }

@@ -120,7 +120,7 @@ namespace Rock.Workflow.Action.People
 
             if ( !familyRoles.Any( a => a.Guid == familyRoleGuid ) )
             {
-                var workflowAttributeValue = action.GetWorklowAttributeValue( familyRoleGuid );
+                var workflowAttributeValue = action.GetWorkflowAttributeValue( familyRoleGuid );
 
                 if ( workflowAttributeValue != null )
                 {
@@ -170,7 +170,7 @@ namespace Rock.Workflow.Action.People
             var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
             if ( attributePerson != null )
             {
-                string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );
+                string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute );
                 if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                 {
                     Guid personAliasGuid = attributePersonValue.AsGuid();
@@ -199,7 +199,7 @@ namespace Rock.Workflow.Action.People
             }
             else
             {
-                var workflowAttributeValue = action.GetWorklowAttributeValue( guid );
+                var workflowAttributeValue = action.GetWorkflowAttributeValue( guid );
 
                 if ( workflowAttributeValue != null )
                 {

@@ -30,6 +30,8 @@ namespace Rock.Attribute
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+        private const string ALLOW_ADDING_NEW_VALUES_KEY = "AllowAddingNewValues";
+        private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
 
@@ -88,6 +90,8 @@ namespace Rock.Attribute
                 Key = Name?.Replace( " ", string.Empty );
             }
 
+            this.AllowAddingNewValues = false;
+            this.RepeatColumns = null;
         }
 
         /// <summary>
@@ -198,6 +202,44 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow adding new values].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow adding new values]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowAddingNewValues
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_ADDING_NEW_VALUES_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_ADDING_NEW_VALUES_KEY, new Field.ConfigurationValue( value.ToTrueFalse() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the repeat columns, null values will be saved as a 4.
+        /// </summary>
+        /// <value>
+        /// The repeat columns.
+        /// </value>
+        public int? RepeatColumns
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( REPEAT_COLUMNS_KEY ).AsIntegerOrNull();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( REPEAT_COLUMNS_KEY, new Field.ConfigurationValue( value?.ToString() ) );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [include inactive].
         /// </summary>
         /// <value>
@@ -234,5 +276,6 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( DISPLAY_DESCRIPTION, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
+
     }
 }

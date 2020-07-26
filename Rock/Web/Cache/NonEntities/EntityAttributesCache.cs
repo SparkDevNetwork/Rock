@@ -209,7 +209,7 @@ namespace Rock.Web.Cache
                 var cache = EntityAttributesCache.Get();
                 cache.EntityAttributes = entityAttributesList;
                 cache.EntityAttributesByEntityTypeId = entityAttributesList.Where( a => a.EntityTypeId.HasValue ).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() );
-                EntityAttributesCache.UpdateCacheItem( KEY, cache, TimeSpan.MaxValue );
+                EntityAttributesCache.UpdateCacheItem( KEY, cache );
             }
 
         }

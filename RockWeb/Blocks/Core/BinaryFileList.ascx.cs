@@ -33,10 +33,19 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Shows a list of all binary files." )]
 
-    [LinkedPage("Detail Page")]
-    [BinaryFileTypeField]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    [BinaryFileTypeField( "Binary File Type",
+        Key = AttributeKey.BinaryFileType)]
     public partial class BinaryFileList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string BinaryFileType = "BinaryFileType";
+        }
+
         private BinaryFileType binaryFileType = null;
 
         #region Control Methods
@@ -50,7 +59,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             Guid binaryFileTypeGuid = Guid.NewGuid();
-            if ( Guid.TryParse( GetAttributeValue( "BinaryFileType" ), out binaryFileTypeGuid ) )
+            if ( Guid.TryParse( GetAttributeValue( AttributeKey.BinaryFileType ), out binaryFileTypeGuid ) )
             {
                 var service = new BinaryFileTypeService( new RockContext() );
                 binaryFileType = service.Get( binaryFileTypeGuid );
@@ -58,7 +67,7 @@ namespace RockWeb.Blocks.Core
 
             BindFilter();
             fBinaryFile.ApplyFilterClick += fBinaryFile_ApplyFilterClick;
-            
+
             gBinaryFile.DataKeyNames = new string[] { "Id" };
             gBinaryFile.Actions.ShowAdd = true;
             gBinaryFile.Actions.AddClick += gBinaryFile_Add;
@@ -110,7 +119,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BinaryFileId", 0, "BinaryFileTypeId", binaryFileType != null ? binaryFileType.Id : 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BinaryFileId", 0, "BinaryFileTypeId", binaryFileType != null ? binaryFileType.Id : 0 );
         }
 
         /// <summary>
@@ -120,7 +129,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BinaryFileId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BinaryFileId", e.RowKeyId );
         }
 
         /// <summary>
@@ -183,8 +192,8 @@ namespace RockWeb.Blocks.Core
                 tbName.Text = fBinaryFile.GetUserPreference( "File Name" );
                 tbType.Text = fBinaryFile.GetUserPreference( "Mime Type" );
                 bool includeTemp = false;
-                dbIncludeTemporary.Checked = bool.TryParse(fBinaryFile.GetUserPreference("Include Temporary"), out includeTemp) && includeTemp;
-            }            
+                dbIncludeTemporary.Checked = bool.TryParse( fBinaryFile.GetUserPreference( "Include Temporary" ), out includeTemp ) && includeTemp;
+            }
         }
 
         /// <summary>
@@ -197,7 +206,7 @@ namespace RockWeb.Blocks.Core
             var queryable = binaryFileService.Queryable().Where( f => f.BinaryFileType.Guid == binaryFileTypeGuid );
 
             bool includeTemp = false;
-            if (!bool.TryParse( fBinaryFile.GetUserPreference( "Include Temporary" ), out includeTemp ) || !includeTemp)
+            if ( !bool.TryParse( fBinaryFile.GetUserPreference( "Include Temporary" ), out includeTemp ) || !includeTemp )
             {
                 queryable = queryable.Where( f => f.IsTemporary == false );
             }

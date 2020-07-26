@@ -165,19 +165,37 @@ namespace RockWeb.Blocks.Store
 
         #region Methods
 
+        private int GetCurrentlyInstalledPackageVersion( string packageName )
+        {
+            var installedPackages = InstalledPackageService.GetInstalledPackages().OrderBy( p => p.PackageName ).OrderByDescending( p => p.InstallDateTime );
+            foreach ( var installedPackage in installedPackages )
+            {
+                if ( installedPackage.PackageName == packageName )
+                {
+                    return installedPackage.VersionId;
+                }
+            }
+            return -1;
+        }
+
         private void ProcessInstall( PurchaseResponse purchaseResponse )
         {
+            var currentlyInstalledPackageVersion = GetCurrentlyInstalledPackageVersion( purchaseResponse.PackageName );
 
             if ( purchaseResponse.PackageInstallSteps != null )
             {
                 RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
 
-                foreach ( var installStep in purchaseResponse.PackageInstallSteps.Where( s => s.RequiredRockSemanticVersion <= rockVersion ))
+                var packageInstallSteps = purchaseResponse.PackageInstallSteps
+                    .Where( s => s.RequiredRockSemanticVersion <= rockVersion )
+                    .Where( s => s.VersionId > currentlyInstalledPackageVersion );
+
+                foreach ( var installStep in packageInstallSteps )
                 {
                     string appRoot = Server.MapPath( "~/" );
                     string rockShopWorkingDir = appRoot + "App_Data/RockShop";
                     string packageDirectory = string.Format( "{0}/{1} - {2}", rockShopWorkingDir, purchaseResponse.PackageId, purchaseResponse.PackageName );
-                    string sourceFile = installStep.InstallPackageUrl; 
+                    string sourceFile = installStep.InstallPackageUrl;
                     string destinationFile = string.Format("{0}/{1} - {2}.plugin", packageDirectory, installStep.VersionId, installStep.VersionLabel);
 
                     // check that the RockShop directory exists
@@ -250,7 +268,7 @@ namespace RockWeb.Blocks.Store
 
                                         entry.ExtractToFile( fullpath, true );
                                     }
-                                    
+
                                 }
                             }
 
@@ -282,7 +300,7 @@ namespace RockWeb.Blocks.Store
                                 var deleteListEntry = packageZip.Entries.Where( e => e.FullName == "install/deletefile.lst" ).FirstOrDefault();
                                 if ( deleteListEntry != null )
                                 {
-                                
+
                                     string deleteList = System.Text.Encoding.Default.GetString( deleteListEntry.Open().ReadBytesToEnd() );
 
                                     string[] itemsToDelete = deleteList.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
@@ -304,7 +322,7 @@ namespace RockWeb.Blocks.Store
                                             }
                                         }
                                     }
-                                
+
                                 }
                             }
                             catch ( Exception ex )
@@ -312,7 +330,7 @@ namespace RockWeb.Blocks.Store
                                 lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {0}</em></div>", ex.Message );
                                 return;
                             }
-                            
+
                         }
                     }
                     catch ( Exception ex )
@@ -323,10 +341,16 @@ namespace RockWeb.Blocks.Store
 
                     // update package install json file
                     InstalledPackageService.SaveInstall( purchaseResponse.PackageId, purchaseResponse.PackageName, installStep.VersionId, installStep.VersionLabel, purchaseResponse.VendorId, purchaseResponse.VendorName, purchaseResponse.InstalledBy );
-                
+
                     // Clear all cached items
                     RockCache.ClearAllCachedItems();
 
+                    // Hide store login on success
+                    lInstallMessage.Visible = false;
+                    txtUsername.Visible = false;
+                    txtPassword.Visible = false;
+                    cbAgreeToTerms.Visible = false;
+                    btnInstall.Visible = false;
                     // show result message
                     lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
                 }
@@ -359,7 +383,7 @@ namespace RockWeb.Blocks.Store
             // check that store is configured
             if ( StoreService.OrganizationIsConfigured() )
             {
-                
+
                 PackageService packageService = new PackageService();
                 var package = packageService.GetPackage( packageId, out errorResponse );
 
@@ -401,7 +425,7 @@ namespace RockWeb.Blocks.Store
 
                 }
             }
-            else 
+            else
             {
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "ReturnUrl", Request.RawUrl );

@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
-                    string toAttributeValue = action.GetWorklowAttributeValue( guid );
+                    string toAttributeValue = action.GetWorkflowAttributeValue( guid );
                     if ( !string.IsNullOrWhiteSpace( toAttributeValue ) )
                     {
                         switch ( attribute.FieldType.Class )
@@ -168,7 +168,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( messageGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid );
+                    string messageAttributeValue = action.GetWorkflowAttributeValue( messageGuid );
                     if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
@@ -186,7 +186,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( titleGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string titleAttributeValue = action.GetWorklowAttributeValue( titleGuid );
+                    string titleAttributeValue = action.GetWorkflowAttributeValue( titleGuid );
                     if ( !string.IsNullOrWhiteSpace( titleAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
@@ -204,7 +204,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( soundGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string soundAttributeValue = action.GetWorklowAttributeValue( soundGuid );
+                    string soundAttributeValue = action.GetWorkflowAttributeValue( soundGuid );
                     if ( !string.IsNullOrWhiteSpace( soundAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.BooleanFieldType" )

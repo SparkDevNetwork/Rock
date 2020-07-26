@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Finance
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
-    $('.transaction-image-thumbnail').click( function() {{
+    $('.transaction-image-thumbnail').on('click', function() {{
         var $primaryHyperlink = $('.transaction-image a');
         var $primaryImg = $('.transaction-image a img');
         var primarySrc = $primaryHyperlink.attr('href');

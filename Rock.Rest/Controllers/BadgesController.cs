@@ -232,7 +232,7 @@ namespace Rock.Rest.Controllers
                 return -1;
             }
             Interaction mostRecentPageView = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
-                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.ChannelId == interactionChannel.Id )
+                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.InteractionChannelId == interactionChannel.Id )
                                                 .OrderByDescending( p => p.InteractionDateTime )
                                                 .FirstOrDefault();
 
@@ -316,7 +316,7 @@ namespace Rock.Rest.Controllers
         public int InteractionsInRange( int personId, int interactionChannelId, string delimitedDateRange )
         {
             var interactionQry = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
-                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.ChannelId == interactionChannelId );
+                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.InteractionChannelId == interactionChannelId );
 
             if ( !string.IsNullOrEmpty( delimitedDateRange ) )
             {

@@ -52,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.ChannelId == item.Id ) )
+            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.InteractionChannelId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionComponent.FriendlyTypeName );
                 return false;
@@ -100,12 +100,18 @@ namespace Rock.Model
             target.ChannelListTemplate = source.ChannelListTemplate;
             target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             target.ComponentCacheDuration = source.ComponentCacheDuration;
+            target.ComponentCustom1Label = source.ComponentCustom1Label;
+            target.ComponentCustom2Label = source.ComponentCustom2Label;
+            target.ComponentCustomIndexed1Label = source.ComponentCustomIndexed1Label;
             target.ComponentDetailTemplate = source.ComponentDetailTemplate;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
             target.ComponentListTemplate = source.ComponentListTemplate;
             target.EngagementStrength = source.EngagementStrength;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionCustom1Label = source.InteractionCustom1Label;
+            target.InteractionCustom2Label = source.InteractionCustom2Label;
+            target.InteractionCustomIndexed1Label = source.InteractionCustomIndexed1Label;
             target.InteractionDetailTemplate = source.InteractionDetailTemplate;
             target.InteractionEntityTypeId = source.InteractionEntityTypeId;
             target.InteractionListTemplate = source.InteractionListTemplate;

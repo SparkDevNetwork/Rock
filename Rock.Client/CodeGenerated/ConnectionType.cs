@@ -47,6 +47,9 @@ namespace Rock.Client
         public bool EnableFutureFollowup { get; set; }
 
         /// <summary />
+        public bool EnableRequestSecurity { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.EnableFullActivityList = source.EnableFullActivityList;
             this.EnableFutureFollowup = source.EnableFutureFollowup;
+            this.EnableRequestSecurity = source.EnableRequestSecurity;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;

@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? siteId = PageParameter( pageReference, "siteId" ).AsIntegerOrNull();
+            int? siteId = PageParameter( pageReference, "SiteId" ).AsIntegerOrNull();
             if ( siteId != null )
             {
                 var site = new SiteService( new RockContext() ).Get( siteId.Value );
@@ -496,6 +496,7 @@ namespace RockWeb.Blocks.Mobile
                 cpPrimary.Value = additionalSettings.DownhillSettings.ApplicationColors.Primary;
                 cpSecondary.Value = additionalSettings.DownhillSettings.ApplicationColors.Secondary;
                 cpSuccess.Value = additionalSettings.DownhillSettings.ApplicationColors.Success;
+                cpInfo.Value = additionalSettings.DownhillSettings.ApplicationColors.Info;
                 cpDanger.Value = additionalSettings.DownhillSettings.ApplicationColors.Danger;
                 cpWarning.Value = additionalSettings.DownhillSettings.ApplicationColors.Warning;
                 cpLight.Value = additionalSettings.DownhillSettings.ApplicationColors.Light;
@@ -913,6 +914,7 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Success = ParseColor( cpSuccess.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Danger = ParseColor( cpDanger.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );

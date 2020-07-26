@@ -19,7 +19,7 @@ Before completing your first issue we highly recommend reading this post https:/
 
 ### Description
 
-A clear and concise description of what the bug is, include screenshots if applicable.
+Write a clear and concise description and include **full window** (non-partial) screenshots.
 
 ### Steps to Reproduce
 

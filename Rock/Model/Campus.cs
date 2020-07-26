@@ -263,6 +263,52 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state of the entity.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        {
+            var rockContext = ( RockContext ) dbContext;
+
+            /*
+            * 1/15/2020 - JPH
+            * Upon saving a Campus, ensure it has a TeamGroup defined (GroupType = 'Team Group',
+            * IsSystem = true). We are creating this Campus-to-Group relationship behind the scenes
+            * so that we can assign GroupRoles to a Campus, and place people into those roles.
+            *
+            * Reason: Campus Team Feature
+            */
+            var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
+            if ( state != EntityState.Deleted && campusTeamGroupTypeId.HasValue )
+            {
+                if ( this.TeamGroup == null || this.TeamGroup.GroupTypeId != campusTeamGroupTypeId.Value )
+                {
+                    // this Campus does not yet have a Group of the correct GroupType: create one and assign it
+                    var teamGroup = new Group
+                    {
+                        IsSystem = true,
+                        GroupTypeId = campusTeamGroupTypeId.Value,
+                        Name = string.Format( "{0} Team", this.Name ),
+                        Description = "Are responsible for leading and administering the Campus."
+                    };
+
+                    new GroupService( rockContext ).Add( teamGroup );
+
+                    this.TeamGroup = teamGroup;
+                }
+
+                if ( !this.TeamGroup.IsSystem )
+                {
+                    // this Campus already had a Group of the correct GroupType, but the IsSystem value was incorrect
+                    this.TeamGroup.IsSystem = true;
+                }
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> containing the Location's Name that represents this instance.
         /// </summary>
         /// <returns>

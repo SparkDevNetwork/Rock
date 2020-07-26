@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
 
             if ( !campusAttributeGuid.IsEmpty() )
             {
-                campusGuid = action.GetWorklowAttributeValue( campusAttributeGuid ).AsGuidOrNull();
+                campusGuid = action.GetWorkflowAttributeValue( campusAttributeGuid ).AsGuidOrNull();
 
                 if ( campusGuid.HasValue )
                 {
