@@ -526,7 +526,9 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
+    <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
