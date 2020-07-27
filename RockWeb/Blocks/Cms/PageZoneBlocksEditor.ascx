@@ -69,7 +69,8 @@
 
             <%--  This will hold blocks that need to be added to the page so that Custom Admin actions will work --%>
             <%-- Display -9999 offscreen. This will hopefully hide everything except for any modals that get shown with the Custom Action --%>
-            <asp:Panel ID="pnlBlocksHolder" runat="server" Style="position: absolute; left: -9999px">
+            <asp:Panel ID="pnlBlocksHolderDiv" runat="server" Style="position: absolute; left: -9999px">
+                <Rock:DynamicPlaceholder ID="phBlockHolder" runat="server" />
             </asp:Panel>
 
         </asp:Panel>

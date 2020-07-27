@@ -77,6 +77,7 @@ namespace Rock.CheckIn
                 if ( CheckinTypeId.HasValue )
                 {
                     _checkinType = new CheckinType( CheckinTypeId.Value );
+
                     return _checkinType;
                 }
 
@@ -99,6 +100,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public bool ManagerLoggedIn { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether checkout is allowed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow checkout]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowCheckout { get; private set; }
 
         /// <summary>
         /// Gets or sets the configured group types (Checkin Areas)
@@ -146,6 +156,8 @@ namespace Rock.CheckIn
         /// <param name="deviceId">The device id.</param>
         /// <param name="checkinTypeId">The checkin type identifier.</param>
         /// <param name="configuredGroupTypes">The configured group types.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the other constructor" )]
         public CheckInState( int deviceId, int? checkinTypeId, List<int> configuredGroupTypes )
         {
             DeviceId = deviceId;
@@ -163,7 +175,8 @@ namespace Rock.CheckIn
         {
             DeviceId = localDeviceConfiguration.CurrentKioskId ?? 0;
             CheckinTypeId = localDeviceConfiguration.CurrentCheckinTypeId;
-            ConfiguredGroupTypes = localDeviceConfiguration.CurrentGroupTypeIds.ToList();
+            AllowCheckout = localDeviceConfiguration.AllowCheckout ?? this.CheckInType?.AllowCheckoutDefault ?? false;
+            ConfiguredGroupTypes = ( localDeviceConfiguration.CurrentGroupTypeIds == null ) ? new List<int>() : localDeviceConfiguration.CurrentGroupTypeIds.ToList();
             CheckIn = new CheckInStatus();
             Messages = new List<CheckInMessage>();
         }
@@ -179,102 +192,5 @@ namespace Rock.CheckIn
         {
             return json.FromJsonOrNull<CheckInState>();
         }
-    }
-
-    /// <summary>
-    /// Checkin Device Configuration
-    /// Used for the Checkin Cookie and REST status operations
-    /// </summary>
-    [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}" )]
-    public class LocalDeviceConfiguration
-    {
-        /// <summary>
-        /// Gets or sets the current theme.
-        /// </summary>
-        /// <value>
-        /// The current theme.
-        /// </value>
-        public string CurrentTheme { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current kiosk identifier.
-        /// </summary>
-        /// <value>
-        /// The current kiosk identifier.
-        /// </value>
-        public int? CurrentKioskId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current checkin type identifier.
-        /// </summary>
-        /// <value>
-        /// The current checkin type identifier.
-        /// </value>
-        public int? CurrentCheckinTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current group type ids.
-        /// </summary>
-        /// <value>
-        /// The current group type ids.
-        /// </value>
-        public List<int> CurrentGroupTypeIds { get; set; }
-
-        /// <summary>
-        /// Determines whether this instance is configured.
-        /// </summary>
-        /// <returns>
-        ///   <c>true</c> if this instance is configured; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsConfigured()
-        {
-            return this.CurrentKioskId.HasValue && this.CurrentGroupTypeIds.Any() && this.CurrentCheckinTypeId.HasValue;
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class LocalDeviceConfigurationStatus
-    {
-        /// <summary>
-        /// Gets or sets the configuration hash.
-        /// </summary>
-        /// <value>
-        /// The configuration hash.
-        /// </value>
-        public string ConfigurationHash { get; set; }
-
-        /// <summary>
-        /// Gets or sets the next active date time.
-        /// </summary>
-        /// <value>
-        /// The next active date time.
-        /// </value>
-        public DateTime NextActiveDateTime { get; set; }
-
-        /// <summary>
-        /// Gets the campus date time.
-        /// </summary>
-        /// <value>
-        /// The campus date time.
-        /// </value>
-        public DateTime CampusDateTime { get; set; }
-
-        /// <summary>
-        /// Gets the server current date time.
-        /// </summary>
-        /// <value>
-        /// The server current date time.
-        /// </value>
-        public DateTime ServerCurrentDateTime { get; set; }
-
-        /// <summary>
-        /// Gets the campus current date time.
-        /// </summary>
-        /// <value>
-        /// The campus current date time.
-        /// </value>
-        public DateTime CampusCurrentDateTime { get; set; }
     }
 }

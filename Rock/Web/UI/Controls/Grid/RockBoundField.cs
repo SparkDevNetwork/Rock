@@ -90,7 +90,19 @@ namespace Rock.Web.UI.Controls
                 return base.FormatDataValue( ( (string)dataValue ).Truncate( TruncateLength ), encode );
             }
 
-            return base.FormatDataValue( dataValue, encode );
+            /*
+             * [2020-07-04] DL - If dataValue.ToString() returns null, avoid calling
+             * System.Web.UI.WebControls.BoundField.FormatDataValue because it will throw an Exception.
+             */
+            if ( dataValue != null
+                 && string.IsNullOrEmpty( dataValue.ToString() ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return base.FormatDataValue( dataValue, encode );
+            }
         }
 
         /// <summary>

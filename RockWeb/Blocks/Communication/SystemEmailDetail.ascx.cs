@@ -33,10 +33,12 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for editing a system email
     /// </summary>
+#pragma warning disable CS0618
     [Obsolete( "Use SystemCommunicationDetail instead." )]
+#pragma warning restore CS0618
     [RockObsolete( "1.10" )]
 
-    [DisplayName( "System Email Detail" )]
+    [DisplayName( "System Email Detail (Obsolete. Use SystemCommunicationDetail instead)" )]
     [Category( "Communication" )]
     [Description( "Allows the administration of a system email." )]
     public partial class SystemEmailDetail : RockBlock

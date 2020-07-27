@@ -73,9 +73,9 @@ namespace RockWeb.Blocks.CheckIn
                 string searchType = "Phone";
 
                 // If mobile and the last phone number is saved in the cookie
-                if ( Request.Cookies[CheckInCookie.ISMOBILE] != null && Request.Cookies[CheckInCookie.PHONENUMBER] != null )
+                if ( Request.Cookies[CheckInCookieKey.IsMobile] != null && Request.Cookies[CheckInCookieKey.PhoneNumber] != null )
                 {
-                    tbPhone.Text = Request.Cookies[CheckInCookie.PHONENUMBER].Value;
+                    tbPhone.Text = Request.Cookies[CheckInCookieKey.PhoneNumber].Value;
                 }
 
                 if ( CurrentCheckInType != null && this.CurrentCheckInState.Kiosk.RegistrationModeEnabled )
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.CheckIn
                 CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 CurrentCheckInState.CheckIn.SearchValue = searchInput;
 
-                if ( ProcessSelection() && Request.Cookies[CheckInCookie.ISMOBILE] != null )
+                if ( ProcessSelection() && Request.Cookies[CheckInCookieKey.IsMobile] != null )
                 {
                     SavePhoneCookie( tbPhone.Text );
                 }
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="kiosk"></param>
         private void SavePhoneCookie( string phoneNumber )
         {
-            HttpCookie phoneCookie = new HttpCookie( CheckInCookie.PHONENUMBER, phoneNumber );
+            HttpCookie phoneCookie = new HttpCookie( CheckInCookieKey.PhoneNumber, phoneNumber );
             Response.Cookies.Set( phoneCookie );
         }
 

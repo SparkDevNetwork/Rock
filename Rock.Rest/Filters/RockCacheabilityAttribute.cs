@@ -50,7 +50,7 @@ namespace Rock.Rest.Filters
 
             var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
             var restActionCache = RestActionCache.Get( apiId );
-            if ( restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
+            if ( restActionCache != null && restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
             {
                 actionExecutedContext.Response.Headers.Add( "Cache-Control", restActionCache.CacheControlHeader );
             }

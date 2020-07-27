@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Communication;
@@ -96,5 +97,26 @@ namespace Rock.Web.UI.Controls.Communication
         {
         }
 
+        /// <summary>
+        /// Gets the control for the specified communication type.
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns></returns>
+        public static MediumControl GetMediumControl(CommunicationType communicationType)
+        {
+            var pushNotificationComponent = MediumContainer
+                                                .Instance
+                                                .Components
+                                                .Where( c => c.Value.Value.CommunicationType == communicationType )
+                                                .Select( c => c.Value )
+                                                .FirstOrDefault();
+
+            if ( pushNotificationComponent == null || pushNotificationComponent.Value == null )
+            {
+                return null;
+            }
+
+            return pushNotificationComponent.Value.GetControl( true );
+        }
     }
 }

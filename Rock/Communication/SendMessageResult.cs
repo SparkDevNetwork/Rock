@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rock.Jobs
+using System.Collections.Generic;
+
+namespace Rock.Communication
 {
     /// <summary>
     /// This is the list of results that a task can have.

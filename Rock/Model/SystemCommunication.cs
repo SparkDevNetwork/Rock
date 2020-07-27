@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -61,7 +62,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Title of the EmailTemplate 
         /// </summary>
@@ -72,7 +73,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the From email address.
         /// </summary>
@@ -114,7 +115,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Cc { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
         /// can remain empty.
@@ -125,7 +126,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Bcc { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the subject of an email that uses this template.
         /// </summary>
@@ -136,7 +137,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Subject { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Body template that is used for emails that use this template.
         /// </summary>
@@ -229,6 +230,41 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PushSound { get; set; }
 
+        /// <summary>
+        /// Gets or sets the push image file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image file identifier.
+        /// </value>
+        [DataMember]
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        [DataMember]
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        [DataMember]
+        public string PushData { get; set; }
         #endregion
 
         #endregion
@@ -282,7 +318,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-        
+
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>

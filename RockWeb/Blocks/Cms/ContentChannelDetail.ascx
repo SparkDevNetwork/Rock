@@ -122,6 +122,8 @@
                 </div>
 
                 <fieldset id="fieldsetViewSummary" runat="server" >
+                    <Rock:NotificationBox ID="nbRoleMessage" runat="server" NotificationBoxType="Warning" />
+
                     <p class="description">
                         <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
                     </p>

@@ -115,6 +115,19 @@ namespace Rock.Web.UI.Controls
             if ( metric != null )
             {
                 ItemId = metric.Id.ToString();
+
+                string parentCategoryIds = string.Empty;
+                foreach ( var metricCategory in metric.MetricCategories )
+                {
+                    var parentCategory = metricCategory.Category;
+                    while ( parentCategory != null )
+                    {
+                        parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
+                        parentCategory = parentCategory.ParentCategory;
+                    }
+                }
+
+                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemName = metric.Title;
             }
             else
@@ -136,6 +149,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
+                var parentCategoryIds = string.Empty;
 
                 foreach ( var metric in metricList )
                 {
@@ -143,9 +157,22 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( metric.Id.ToString() );
                         names.Add( metric.Title );
+
+                        foreach ( var metricCategory in metric.MetricCategories )
+                        {
+
+                            var parentCategory = metricCategory.Category;
+
+                            while ( parentCategory != null )
+                            {
+                                parentCategoryIds += parentCategory.Id.ToString() + ",";
+                                parentCategory = parentCategory.ParentCategory;
+                            }
+                        }
                     }
                 }
 
+                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemIds = ids;
                 ItemNames = names;
             }

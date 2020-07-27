@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -29,13 +30,22 @@ namespace Rock.CheckIn
     public class CheckInFamily : DotLiquid.Drop
     {
         /// <summary>
-        /// A list of attendance records for the family check-in.
+        /// A list of <see cref="Rock.Model.Attendance"/> records for the family check-in 
         /// </summary>
         /// <value>
         /// A list of attendance Ids.
         /// </value>
         [DataMember]
         public List<int> AttendanceIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCheckInSession"/> for this family check-in
+        /// </summary>
+        /// <value>
+        /// The attendance checkin session unique identifier.
+        /// </value>
+        [DataMember]
+        public Guid? AttendanceCheckinSessionGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the group.
@@ -130,6 +140,8 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public List<string> FirstNames { get; set; }
+
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.

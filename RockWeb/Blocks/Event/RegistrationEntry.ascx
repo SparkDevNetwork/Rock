@@ -234,7 +234,7 @@
                                 <strong>Description</strong>
                             </div>
                                 
-                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
+                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
                                 <strong>Discounted Amount</strong>
                             </div>
 
@@ -250,12 +250,13 @@
                                 <%# Eval("Description") %>
                             </div>
                                 
-                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
+                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
+                                <Rock:HelpBlock runat="server" Text='This item is not eligible for the discount.' Visible='<%# ((RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) && ((decimal)Eval("Cost") == (decimal)Eval("DiscountedCost")) && ((decimal)Eval("Cost") > 0.0m)) %>'></Rock:HelpBlock>
                                 <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
                             </div>
 
                             <div class="col-sm-3 fee-value">
-                                <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %> 
+                                <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
                             </div>
                                     
                         </div>

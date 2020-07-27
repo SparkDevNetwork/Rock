@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock.Communication;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -233,6 +234,7 @@ namespace Rock.Model
         /// The send date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? SendDateKey
         {
             get => ( SendDateTime == null || SendDateTime.Value == default ) ?
@@ -375,6 +377,43 @@ namespace Rock.Model
         public string PushSound { get; set; }
 
         /// <summary>
+        /// Gets or sets the push image file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image file identifier.
+        /// </value>
+        [DataMember]
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        [DataMember]
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        [DataMember]
+        public string PushData { get; set; }
+        #endregion
+
+        /// <summary>
         /// Option to prevent communications from being sent to people with the same email/SMS addresses.
         /// This will mean two people who share an address will not receive a personalized communication, only one of them will.
         /// </summary>
@@ -383,8 +422,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool ExcludeDuplicateRecipientAddress { get; set; }
-
-        #endregion
 
         #endregion
 
@@ -759,6 +796,7 @@ namespace Rock.Model
 
             var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
             foreach ( var newMember in newMemberInList )
             {
@@ -769,7 +807,10 @@ namespace Rock.Model
                     CommunicationId = Id
                 };
 
-                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id, smsMediumEntityType.Id, CommunicationType,
+                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id,
+                                                                smsMediumEntityType.Id,
+                                                                pushMediumEntityType.Id,
+                                                                CommunicationType,
                                                                 newMember.CommunicationPreference,
                                                                 newMember.Person.CommunicationPreference );
 
@@ -797,10 +838,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
         /// <param name="recipientPreference">The recipient preference.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - recipientPreference</exception>
         /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
-        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] recipientPreference )
         {
             for ( var i = 0; i < recipientPreference.Length; i++ )
             {
@@ -813,6 +856,8 @@ namespace Rock.Model
                         return emailMediumEntityTypeId;
                     case CommunicationType.SMS:
                         return smsMediumEntityTypeId;
+                    case CommunicationType.PushNotification:
+                        return pushMediumEntityTypeId;
                     case CommunicationType.RecipientPreference:
                         if ( hasNextCommunicaitonPreference )
                         {
@@ -825,6 +870,23 @@ namespace Rock.Model
             }
 
             return emailMediumEntityTypeId;
+        }
+
+        /// <summary>
+        /// Determines the medium entity type identifier.
+        /// Given the email and sms medium entity type ids and the available communication preferences
+        /// this method will determine which medium entity type id should be used and return that id.
+        /// If a preference could not be determined the email medium entity type id will be returned.
+        /// </summary>
+        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
+        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="recipientPreference">The recipient preference.</param>
+        /// <returns></returns>
+        [Obsolete("Use the override that includes 'pushMediumEntityTypeId' instead.")]
+        [RockObsolete("1.11")]
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        {
+            return DetermineMediumEntityTypeId( emailMediumEntityTypeId, smsMediumEntityTypeId, 0, recipientPreference );
         }
 
         /// <summary>

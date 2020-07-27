@@ -18,18 +18,20 @@
     <Ignore>auth</Ignore>
     <Ignore>birthdate</Ignore>
     <Ignore>birthyear</Ignore>
+    <Ignore>Checkin</Ignore>
     <Ignore>deserialize</Ignore>
     <Ignore>deserialized</Ignore>
+    <Ignore>geocode</Ignore>
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
     <Ignore>Queryable</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
-    <Ignore>geocode</Ignore>
-    <Ignore>Checkin</Ignore>
+    <Ignore>Guid</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
     <FilePattern>*\CodeGenerated\*.cs</FilePattern>
   </IgnoredFilePatterns>
+  <IgnoredWordsFile></IgnoredWordsFile>
 </SpellCheckerConfiguration>

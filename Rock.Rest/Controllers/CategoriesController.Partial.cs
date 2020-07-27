@@ -69,10 +69,50 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
+                categoryItem.Children = new List<Web.UI.Controls.TreeViewItem>();
+                categoryItem.Children.AddRange( GetAllMetricDescendants( categoryItem, includedCategoryIds, metricCategoryService ) );
+
                 convertedMetrics.Add( categoryItem );
             }
 
             return convertedMetrics.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets all category and non-category item decendents for the provided <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.
+        /// </summary>
+        /// <param name="categoryItem">The <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.</param>
+        /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <param name="metricCategoryService">The <see cref="MetricCategoryService"/>.</param>
+        /// <returns></returns>
+        private List<CategoryItem> GetAllMetricDescendants( CategoryItem categoryItem, string includedCategoryIds, MetricCategoryService metricCategoryService )
+        {
+            var childCategories = GetChildren(
+                id: categoryItem.Id.AsInteger(),
+                rootCategoryId: 0,
+                getCategorizedItems: true,
+                entityTypeId: EntityTypeCache.Get<MetricCategory>().Id,
+                includedCategoryIds: includedCategoryIds
+            ).ToList();
+
+            foreach ( var childCategory in childCategories )
+            {
+                if ( !childCategory.IsCategory )
+                {
+                    // Load the MetricCategory.
+                    var metricCategory = metricCategoryService.Get( childCategory.Id.AsInteger() );
+                    if ( metricCategory != null )
+                    {
+                        // Swap the Id to the Metric Id (instead of MetricCategory.Id).
+                        childCategory.Id = metricCategory.MetricId.ToString();
+                    }
+                }
+
+                childCategory.Children = new List<Web.UI.Controls.TreeViewItem>();
+                childCategory.Children.AddRange( GetAllMetricDescendants( childCategory, includedCategoryIds, metricCategoryService ) );
+            }
+
+            return childCategories;
         }
 
         /// <summary>
@@ -302,7 +342,7 @@ namespace Rock.Rest.Controllers
                             item.Children = new List<Web.UI.Controls.TreeViewItem>();
                         }
 
-                        GetAllDecendents( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                        GetAllDescendants( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                     }
                 }
             }
@@ -317,7 +357,7 @@ namespace Rock.Rest.Controllers
                         item.Children = new List<Web.UI.Controls.TreeViewItem>();
                     }
 
-                    GetAllDecendents( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                    GetAllDescendants( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                 }
             }
 
@@ -344,7 +384,7 @@ namespace Rock.Rest.Controllers
         /// <param name="itemFilterPropertyName">Name of the item filter property.</param>
         /// <param name="itemFilterPropertyValue">The item filter property value.</param>
         /// <returns></returns>
-        private CategoryItem GetAllDecendents( CategoryItem categoryItem, Person currentPerson, bool getCategorizedItems, string defaultIconCssClass, bool hasActiveFlag, IService serviceInstance, bool showUnnamedEntityItems, bool excludeInactiveItems, string itemFilterPropertyName = null, string itemFilterPropertyValue = null )
+        private CategoryItem GetAllDescendants( CategoryItem categoryItem, Person currentPerson, bool getCategorizedItems, string defaultIconCssClass, bool hasActiveFlag, IService serviceInstance, bool showUnnamedEntityItems, bool excludeInactiveItems, string itemFilterPropertyName = null, string itemFilterPropertyValue = null )
         {
             if ( categoryItem.IsCategory )
             {
@@ -375,7 +415,7 @@ namespace Rock.Rest.Controllers
                             }
                         }
 
-                        var childCategorizedItemBranch = GetAllDecendents( childCategoryItem, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                        var childCategorizedItemBranch = GetAllDescendants( childCategoryItem, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                         if ( categoryItem.Children == null )
                         {
                             categoryItem.Children = new List<Web.UI.Controls.TreeViewItem>();

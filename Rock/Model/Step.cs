@@ -94,6 +94,7 @@ namespace Rock.Model
         /// The start date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? StartDateKey
         {
             get => ( StartDateTime == null || StartDateTime.Value == default ) ?
@@ -109,6 +110,7 @@ namespace Rock.Model
         /// The end date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? EndDateKey
         {
             get => ( EndDateTime == null || EndDateTime.Value == default ) ?
@@ -124,6 +126,7 @@ namespace Rock.Model
         /// The completed date key.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int? CompletedDateKey
         {
             get => ( CompletedDateTime == null || CompletedDateTime.Value == default ) ?

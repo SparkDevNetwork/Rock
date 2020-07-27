@@ -34,6 +34,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -93,7 +94,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/Process/{scheduledTransactionId}" )]
-        public virtual System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri]bool enableDuplicateChecking = true, [FromUri]bool enableScheduleAdherenceProtection = true, [FromUri]string idempotencyKey = null )
+        public virtual System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri] bool enableDuplicateChecking = true, [FromUri] bool enableScheduleAdherenceProtection = true, [FromUri] string idempotencyKey = null )
         {
             var financialScheduledTransactionService = Service as FinancialScheduledTransactionService;
             var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
@@ -121,13 +122,18 @@ namespace Rock.Rest.Controllers
                 }
             ).ToList();
 
+            var sourceGuid = financialScheduledTransaction.SourceTypeValueId.HasValue ?
+                DefinedValueCache.Get( financialScheduledTransaction.SourceTypeValueId.Value ).Guid :
+                ( Guid? ) null;
+
             var automatedPaymentArgs = new AutomatedPaymentArgs
             {
                 ScheduledTransactionId = scheduledTransactionId,
                 AuthorizedPersonAliasId = financialScheduledTransaction.AuthorizedPersonAliasId,
                 AutomatedGatewayId = financialScheduledTransaction.FinancialGatewayId.Value,
                 AutomatedPaymentDetails = details,
-                IdempotencyKey = idempotencyKey
+                IdempotencyKey = idempotencyKey,
+                FinancialSourceGuid = sourceGuid
             };
 
             var errorMessage = string.Empty;
@@ -188,7 +194,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/WithPreviousTransaction" )]
-        public virtual System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri]int skip, [FromUri]int top )
+        public virtual System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri] int skip, [FromUri] int top )
         {
             var now = RockDateTime.Now;
 

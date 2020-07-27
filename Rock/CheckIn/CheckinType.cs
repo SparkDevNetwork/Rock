@@ -28,17 +28,20 @@ namespace Rock.CheckIn
     public class CheckinType
     {
         /// <summary>
-        /// The checkin type identifier
-        /// </summary>
-        private int _checkinTypeId;
-
-        /// <summary>
         /// Gets the type of the checkin.
         /// </summary>
         /// <value>
         /// The type of the checkin.
         /// </value>
-        private GroupTypeCache _checkinType => GroupTypeCache.Get( _checkinTypeId );
+        private GroupTypeCache _checkinType => GroupTypeCache.Get( this.Id );
+
+        /// <summary>
+        /// Gets the CheckinTypeId (GroupTypeCache.Id) for this CheckinType
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public readonly int Id;
 
         /// <summary>
         /// Gets the type of checkin.
@@ -110,7 +113,18 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckout => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use CheckinState.AllowCheckout instead" )]
+        public bool AllowCheckout => AllowCheckoutDefault;
+
+        /// <summary>
+        /// Returns the AllowCheckout setting for this Checkout Type
+        /// Note: Use <see cref="CheckInState.AllowCheckout"/> to see if Checkout is allowed in the current state
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowCheckoutDefault => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [use same options].
@@ -589,7 +603,7 @@ namespace Rock.CheckIn
         /// <param name="checkinTypeId">The checkin type identifier.</param>
         public CheckinType( int checkinTypeId )
         {
-            _checkinTypeId = checkinTypeId;
+            this.Id = checkinTypeId;
 
             Registration = new RegistrationSettings( this );
         }

@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Edit Events
 
@@ -153,12 +153,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var campusLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
-
-            if ( campusLocationType.Id != lpLocation.Location.LocationTypeValueId )
+            
+            if ( !ValidateCampus() )
             {
-                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                nbEditModeMessage.Text = "The selected named location is not a 'Campus' location type. Please update this before continuing.";
+                // Error messaging handled by ValidateCampus
                 return;
             }
 
@@ -550,6 +548,39 @@ namespace RockWeb.Blocks.Core
             return sbServiceTimes.ToString();
         }
 
-        #endregion
+        #endregion Edit Events
+
+        #region Private Methods
+
+        private bool ValidateCampus()
+        {
+            var campusLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+
+            if ( campusLocationType.Id != lpLocation.Location.LocationTypeValueId )
+            {
+                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbEditModeMessage.Text = string.Format( @"The named location ""{0}"" is not a 'Campus' location type.", lpLocation.Location.Name );
+                return false;
+            }
+
+            int campusId = int.Parse( hfCampusId.Value );
+
+            var existingCampus = campusId == 0 ?
+                CampusCache.All( true ).Where( c => c.Name == tbCampusName.Text ).FirstOrDefault() :
+                CampusCache.All( true ).Where( c => c.Name == tbCampusName.Text && c.Id != campusId ).FirstOrDefault();
+
+            if ( existingCampus != null )
+            {
+                string activeString = existingCampus.IsActive ?? false ? "active" : "inactive";
+                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbEditModeMessage.Text = string.Format( @"The campus name ""{0}"" is already in use for an existing {1} campus.", tbCampusName.Text, activeString );
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion Private Methods
+
     }
 }

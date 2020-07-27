@@ -7,13 +7,33 @@
 {% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
 
-{% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now or Item == null %}
-    {% if CurrentPersonCanEdit %}
-        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
-    {% else %}
-        {{ '/page-not-found' | PageRedirect }}
+{% if Item.ChannelId == 17 %}
+    {% if expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
+    {% endif %}
+{% else %}
+    {% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
     {% endif %}
 {% endif %}
+
+{% comment %}
+    Write content channel item interaction
+{% endcomment %}
+{% assign currentUrl = 'Global'| Page:'Url' %}
+{% assign siteId = 'Global' | Page:'SiteId' %}
+{% assign source = 'Global'| PageParameter:'utm_source' %}
+{% assign medium = 'Global'| PageParameter:'utm_medium' %}
+{% assign campaign = 'Global'| PageParameter:'utm_campaign' %}
+{% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ Item.ChannelId }}' channelname:'{{ Item.ChannelName }}' componententitytypeid:'209' componententityid:'{{ Item.Id }}' componentname:'{{ Item.Title }}' operation:'View' summary:'Viewed "{{ Item.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
 
 {% comment %}
     Set item properties

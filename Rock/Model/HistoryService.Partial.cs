@@ -479,7 +479,7 @@ namespace Rock.Model
             /// <value>
             /// The created by person.
             /// </value>
-            public Person CreatedByPerson => this.FirstHistoryRecord?.CreatedByPersonAlias.Person;
+            public Person CreatedByPerson => this.FirstHistoryRecord?.CreatedByPersonAlias?.Person;
 
             /// <summary>
             /// Gets the name of the created by person.
@@ -914,7 +914,7 @@ namespace Rock.Model
         /// <param name="changes"></param>
         /// <param name="newSourceOfChange"></param>
         /// <param name="overrideExisting"></param>
-        private static void SetHistoryEntriesSourceOfChange( History.HistoryChangeList changes, string newSourceOfChange, bool overrideExisting)
+        private static void SetHistoryEntriesSourceOfChange( History.HistoryChangeList changes, string newSourceOfChange, bool overrideExisting )
         {
             // Set the SourceOfChange property for any entries that do not have an existing value, or for all entries if the override flag is set.
             changes.Where( x => x.SourceOfChange == null || overrideExisting )

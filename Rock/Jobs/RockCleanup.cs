@@ -1800,9 +1800,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             var updateCount = 0;
 
             // Get interaction components to page map - this eliminates some joins for the query within the loop
-            var interactionComponentService = new InteractionComponentService( rockContext );
-            var pageIdToComponentIdMap = interactionComponentService.Queryable()
-                .AsNoTracking()
+            var pageIdToComponentIdMap = InteractionComponentCache.All()
                 .Where( ic => ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
                 .Where( ic => ic.EntityId.HasValue )
                 .GroupBy( ic => ic.EntityId.Value )
@@ -1816,7 +1814,10 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 // Get the components for this page
                 var componentIds = pageIdToComponentIdMap.GetValueOrNull( pageId );
 
-                if ( componentIds == null || !componentIds.Any() )
+                // Get the page (sometimes it doesn't exist if the page was deleted)
+                var page = pageService.Get( pageId );
+
+                if ( componentIds == null || !componentIds.Any() || page == null )
                 {
                     continue;
                 }
@@ -1825,7 +1826,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 // than one big query to get all pages, which was timing out.
                 var hasViewsSinceMinDate = interactionService.Queryable().AsNoTracking().Any( i =>
                     componentIds.Contains( i.InteractionComponentId ) &&
-                    i.InteractionTimeToServe.HasValue &&
                     i.InteractionDateTime >= minDate );
 
                 if ( !hasViewsSinceMinDate )
@@ -1836,10 +1836,12 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 // We want the last 100 interactions included in the median calculation **(reguardless of the minDate)**
                 var recentTimesToServe = interactionService.Queryable().AsNoTracking()
                     .Where( i => componentIds.Contains( i.InteractionComponentId ) )
-                    .Where( i => i.InteractionTimeToServe.HasValue )
                     .OrderByDescending( i => i.InteractionDateTime )
                     .Take( 100 )
-                    .Select( i => i.InteractionTimeToServe.Value )
+                    .Select( i => i.InteractionTimeToServe )
+                    .ToList()
+                    .Where( i => i.HasValue )
+                    .Select( i => i.Value )
                     .OrderBy( i => i )
                     .ToList();
 
@@ -1852,8 +1854,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 var firstMiddleValue = recentTimesToServe.ElementAt( ( count - 1 ) / 2 );
                 var secondMiddleValue = recentTimesToServe.ElementAt( count / 2 );
                 var median = ( firstMiddleValue + secondMiddleValue ) / 2;
-
-                var page = pageService.Get( pageId );
                 page.MedianPageLoadTimeDurationSeconds = median;
 
                 rockContext.SaveChanges();

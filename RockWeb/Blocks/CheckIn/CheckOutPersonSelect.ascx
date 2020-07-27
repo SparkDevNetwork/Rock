@@ -28,7 +28,7 @@
                     <div class="controls checkin-person-list" >
                         <asp:Repeater ID="rSelection" runat="server" >
                             <ItemTemplate>
-                                <a person-id='<%# Eval("Person.Id") %>' Class="btn btn-primary btn-checkin-select btn-block js-person-select" style="text-align:left">
+                                <a person-id='<%# Eval("Person.Id") %>' Class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("Selected") ) %>" style="text-align:left">
                                     <div class="row">
                                         <div class="checkbox-container" >
                                             <i class='<%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
