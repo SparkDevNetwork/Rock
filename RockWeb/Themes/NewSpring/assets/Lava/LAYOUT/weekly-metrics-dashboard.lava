@@ -311,6 +311,49 @@
 </div>
 
 
+
+{% if currentCampus == empty %}
+    {[ rockCard title:'Attendance Totals By Campus' iconclass:'' ]}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Campus</th>
+                        <th>Services</th>
+                        <th>Adult Attendance</th>
+                        <th>KidSpring</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campus in campuses %}
+                        {% assign adultCampusValues = adultAttendanceValues | Where:'Date',currentWeekString | Where:'CampusId',campus.Id %}
+                        {% assign schedules = valuesObject | Where:'Date',currentWeekString | First | Property:'Schedules' %}
+
+                        {% assign campusAdultTotal = 0 %}
+                        {% assign campusKidSpringTotal = 0 %}
+
+                        {% for value in adultCampusValues %}
+                            {% assign campusAdultTotal = campusAdultTotal | Plus:value.AdultAttendance %}
+                        {% endfor %}
+
+                        {% for schedule in schedules %}
+                            {% assign ksvalue = schedule.Campuses | Where:'Name',campus.Name | First | Property:'KidSpringAttendance' %}
+                            {% assign campusKidSpringTotal = campusKidSpringTotal | Plus:ksvalue %}
+                        {% endfor %}
+
+                        <tr>
+                            <td>{{ campus.ShortCode }}</td>
+                            <td>{{ adultAttendanceValues | Where:'Date',currentWeekString | Where:'CampusId',campus.Id | Size }}</td>
+                            <td>{{ campusAdultTotal | Format:'###,###,###' }}</td>
+                            <td>{{ campusKidSpringTotal | Format:'###,###,###' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {[ endrockCard ]}
+{% endif %}
+
 {[ rockCard title:'Total Attendance - Last 12 Weeks' iconclass:'' ]}
     <canvas id="myChart" width="400" height="150"></canvas>
 {[ endrockCard ]}

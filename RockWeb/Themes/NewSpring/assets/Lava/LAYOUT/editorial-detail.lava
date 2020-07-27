@@ -26,6 +26,16 @@
 {% endif %}
 
 {% comment %}
+    Write content channel item interaction
+{% endcomment %}
+{% assign currentUrl = 'Global'| Page:'Url' %}
+{% assign siteId = 'Global' | Page:'SiteId' %}
+{% assign source = 'Global'| PageParameter:'utm_source' %}
+{% assign medium = 'Global'| PageParameter:'utm_medium' %}
+{% assign campaign = 'Global'| PageParameter:'utm_campaign' %}
+{% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ Item.ChannelId }}' channelname:'{{ Item.ChannelName }}' componententitytypeid:'209' componententityid:'{{ Item.Id }}' componentname:'{{ Item.Title }}' operation:'View' summary:'Viewed "{{ Item.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
+{% comment %}
     Set item properties
 {% endcomment %}
 {% capture date %}{[ formatDate date:'{{ Item.PublishDateTime }}' ]}{% endcapture %}
