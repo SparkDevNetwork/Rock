@@ -144,7 +144,8 @@ namespace com.bemaservices.HrManagement.Model
     {
         Inactive = 0,
         Active = 1,
-        Pending = 2
+        Pending = 2,
+        Denied = 3
     }
     #endregion
 }

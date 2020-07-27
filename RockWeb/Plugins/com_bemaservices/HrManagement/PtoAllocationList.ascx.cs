@@ -798,6 +798,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                             return "label label-info";
                         case PtoAllocationStatus.Pending:
                             return "label label-warning";
+                        case PtoAllocationStatus.Pending:
+                            return "label label-danger";
                     }
 
                     return string.Empty;

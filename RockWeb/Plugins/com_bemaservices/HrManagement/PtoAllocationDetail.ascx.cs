@@ -226,6 +226,14 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 ptoAllocation.PersonAliasId = ppPerson.PersonAliasId.Value;
                 ptoAllocation.Note = tbNote.Text;
 
+                if ( ptoAllocation.PtoAllocationStatus == PtoAllocationStatus.Denied )
+                {
+                    foreach ( var ptoRequest in ptoAllocation.PtoRequests )
+                    {
+                        ptoRequest.PtoRequestApprovalState = PtoRequestApprovalState.Denied;
+                    }
+                }
+
                 if ( !ptoAllocation.IsValid )
                 {
                     // Controls will render the error messages
@@ -442,6 +450,9 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     break;
                 case PtoAllocationStatus.Pending:
                     statusLabelClass = "label label-warning";
+                    break;
+                case PtoAllocationStatus.Denied:
+                    statusLabelClass = "label label-danger";
                     break;
             }
 
