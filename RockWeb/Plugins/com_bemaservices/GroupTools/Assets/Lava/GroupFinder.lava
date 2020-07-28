@@ -286,7 +286,7 @@
         <label class="control-label">Age</label>
         <div class="control-wrapper">
           <div tabindex="-1" class="multiselect">
-            <div class="multiselect__tags">
+            <div class="multiselect__tags" style='padding-right:8px !important;'>
               <input v-model.number="age" @input="ageFilterChange()" class="multiselect__input" placeholder="" type="number" autocomplete="off">
             </div>
           </div>
@@ -299,7 +299,7 @@
         <label class="control-label">Keywords</label>
         <div class="control-wrapper">
           <div tabindex="-1" class="multiselect">
-            <div class="multiselect__tags">
+            <div class="multiselect__tags" style='padding-right:8px !important;'>
               <input v-model.number="keywords" @input="keywordFilterChange()" class="multiselect__input" placeholder="" autocomplete="off">
             </div>
           </div>
