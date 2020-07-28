@@ -349,6 +349,7 @@ var app = new Vue({
     return {
       bottom: false,
       groups: [],
+      groupIds:[],
       limit: 10,
       groupCount: 0,
       age: "{{'Global' | PageParameter:'Age' | ToString | AsInteger }}",
@@ -415,7 +416,10 @@ var app = new Vue({
         .then(response => {
           response.data.forEach((value, index) => {
             if(this.groupCount> this.groups.length){
-              this.groups.push(value);
+              if(!this.groupIds.includes(value.Id)){
+                  this.groupIds.push(value.Id);
+                  this.groups.push(value);
+                }
             }
           });
           if (this.bottomVisible()) {
@@ -481,6 +485,7 @@ var app = new Vue({
     },
     filterChange(){
       this.groups = [];
+      this.groupIds = [];
       this.getGroupCount();
       this.addGroups();
     },
