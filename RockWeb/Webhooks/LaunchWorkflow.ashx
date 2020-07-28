@@ -152,15 +152,10 @@ public class LaunchWorkflow : IHttpHandler
     protected void PopulateWorkflowAttributes( Workflow workflow, DefinedValueCache hook, Dictionary<string, object> mergeFields )
     {
         // Set workflow attributes
-        string workflowAttributes = hook.GetAttributeValue( "WorkflowAttributes" );
-        string[] attributes = workflowAttributes.Split( '|' );
-        foreach ( string attribute in attributes )
+        Dictionary<string, string> attributes = hook.GetAttributeValue( "WorkflowAttributes" ).AsDictionary();
+        foreach ( KeyValuePair<string, string> attribute in attributes )
         {
-            if ( attribute.Contains( '^' ) )
-            {
-                string[] settings = attribute.Split( '^' );
-                workflow.SetAttributeValue( settings[0], settings[1].ResolveMergeFields( mergeFields ) );
-            }
+            workflow.SetAttributeValue( attribute.Key, attribute.Value.ResolveMergeFields( mergeFields ) );
         }
 
         // set workflow name
