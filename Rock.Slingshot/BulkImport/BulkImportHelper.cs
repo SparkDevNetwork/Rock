@@ -152,7 +152,7 @@ namespace Rock.Slingshot
                     a.GroupForeignId,
                     a.LocationForeignId,
                     a.ScheduleForeignId,
-                    OccurrenceDate = a.StartDateTime.Date
+                    OccurrenceDate = a.StartDateTime.ToSQLSafeDate().Date
                 } )
                 .Select( a => a.Key )
                 .ToList();
@@ -229,13 +229,13 @@ namespace Rock.Slingshot
                     attendance.ForeignKey = foreignSystemKey;
 
                     attendance.CampusId = attendanceImport.CampusId;
-                    attendance.StartDateTime = attendanceImport.StartDateTime;
-                    attendance.EndDateTime = attendanceImport.EndDateTime;
+                    attendance.StartDateTime = attendanceImport.StartDateTime.ToSQLSafeDate();
+                    attendance.EndDateTime = attendanceImport.EndDateTime.ToSQLSafeDate();
 
                     int? groupId = null;
                     int? locationId = null;
                     int? scheduleId = null;
-                    var occurrenceDate = attendanceImport.StartDateTime.Date;
+                    var occurrenceDate = attendanceImport.StartDateTime.ToSQLSafeDate().Date;
 
                     if ( attendanceImport.GroupForeignId.HasValue )
                     {
@@ -577,10 +577,10 @@ namespace Rock.Slingshot
                             Name = financialBatchImport.Name,
                             CampusId = financialBatchImport.CampusId,
                             ControlAmount = financialBatchImport.ControlAmount,
-                            CreatedDateTime = financialBatchImport.CreatedDateTime ?? importDateTime,
-                            BatchEndDateTime = financialBatchImport.EndDate,
-                            ModifiedDateTime = financialBatchImport.ModifiedDateTime ?? importDateTime,
-                            BatchStartDateTime = financialBatchImport.StartDate
+                            CreatedDateTime = financialBatchImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            BatchEndDateTime = financialBatchImport.EndDate.ToSQLSafeDate(),
+                            ModifiedDateTime = financialBatchImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            BatchStartDateTime = financialBatchImport.StartDate.ToSQLSafeDate()
                         };
 
                         if ( financialBatchImport.Name.Length > 50 )
@@ -654,22 +654,22 @@ namespace Rock.Slingshot
 
                         if ( financialBatchImport.CreatedDateTime.HasValue && financialBatchImport.CreatedDateTime != existingFinancialBatch.CreatedDateTime )
                         {
-                            existingFinancialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime;
+                            existingFinancialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime.ToSQLSafeDate();
                             isBatchUpdated = true;
                         }
                         if ( financialBatchImport.ModifiedDateTime.HasValue && financialBatchImport.ModifiedDateTime != existingFinancialBatch.ModifiedDateTime )
                         {
-                            existingFinancialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime;
+                            existingFinancialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime.ToSQLSafeDate();
                             isBatchUpdated = true;
                         }
                         if ( financialBatchImport.EndDate != existingFinancialBatch.BatchEndDateTime )
                         {
-                            existingFinancialBatch.BatchEndDateTime = financialBatchImport.EndDate;
+                            existingFinancialBatch.BatchEndDateTime = financialBatchImport.EndDate.ToSQLSafeDate();
                             isBatchUpdated = true;
                         }
                         if ( financialBatchImport.StartDate != existingFinancialBatch.BatchStartDateTime )
                         {
-                            existingFinancialBatch.BatchStartDateTime = financialBatchImport.StartDate;
+                            existingFinancialBatch.BatchStartDateTime = financialBatchImport.StartDate.ToSQLSafeDate();
                             isBatchUpdated = true;
                         }
 
@@ -762,8 +762,8 @@ namespace Rock.Slingshot
                     financialPaymentDetail.CurrencyTypeValueId = financialTransactionImport.CurrencyTypeValueId;
                     financialPaymentDetail.ForeignId = financialTransactionImport.FinancialTransactionForeignId;
                     financialPaymentDetail.ForeignKey = foreignSystemKey;
-                    financialPaymentDetail.CreatedDateTime = financialTransactionImport.CreatedDateTime ?? importDateTime;
-                    financialPaymentDetail.ModifiedDateTime = financialTransactionImport.ModifiedDateTime ?? importDateTime;
+                    financialPaymentDetail.CreatedDateTime = financialTransactionImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime;
+                    financialPaymentDetail.ModifiedDateTime = financialTransactionImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime;
                     return financialPaymentDetail;
                 } );
 
@@ -801,11 +801,11 @@ namespace Rock.Slingshot
 
                     financialTransaction.Summary = financialTransactionImport.Summary;
                     financialTransaction.TransactionCode = financialTransactionImport.TransactionCode;
-                    financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate;
+                    financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate.ToSQLSafeDate();
                     financialTransaction.SourceTypeValueId = financialTransactionImport.TransactionSourceValueId;
                     financialTransaction.TransactionTypeValueId = financialTransactionImport.TransactionTypeValueId;
-                    financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime ?? importDateTime;
-                    financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime ?? importDateTime;
+                    financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime;
+                    financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime;
 
                     if ( financialTransactionImport.CreatedByPersonForeignId.HasValue )
                     {
@@ -848,8 +848,8 @@ namespace Rock.Slingshot
                             Amount = financialTransactionDetailImport.Amount,
                             AccountId = financialAccountIdLookup[financialTransactionDetailImport.FinancialAccountForeignId.Value],
                             Summary = financialTransactionDetailImport.Summary,
-                            CreatedDateTime = financialTransactionDetailImport.CreatedDateTime ?? importDateTime,
-                            ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime ?? importDateTime
+                            CreatedDateTime = financialTransactionDetailImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime
                         };
 
                         if ( financialTransactionDetailImport.CreatedByPersonForeignId.HasValue )
@@ -890,11 +890,11 @@ namespace Rock.Slingshot
 
                     financialTransaction.Summary = financialTransactionImport.Summary;
                     financialTransaction.TransactionCode = financialTransactionImport.TransactionCode;
-                    financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate;
+                    financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate.ToSQLSafeDate();
                     financialTransaction.SourceTypeValueId = financialTransactionImport.TransactionSourceValueId;
                     financialTransaction.TransactionTypeValueId = financialTransactionImport.TransactionTypeValueId;
-                    financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime;
-                    financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime;
+                    financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime.ToSQLSafeDate();
+                    financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime.ToSQLSafeDate();
 
                     if ( financialTransactionImport.CreatedByPersonForeignId.HasValue )
                     {
@@ -919,8 +919,8 @@ namespace Rock.Slingshot
                             financialTransactionDetail.Amount = financialTransactionDetailImport.Amount;
                             financialTransactionDetail.AccountId = financialAccountIdLookup[financialTransactionDetailImport.FinancialAccountForeignId.Value];
                             financialTransactionDetail.Summary = financialTransactionDetailImport.Summary;
-                            financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime ?? importDateTime;
-                            financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime ?? importDateTime;
+                            financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime;
+                            financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime;
 
                             if ( financialTransactionDetailImport.CreatedByPersonForeignId.HasValue )
                             {
@@ -1834,8 +1834,8 @@ WHERE gta.GroupTypeId IS NULL" );
                             CampusId = personImport.CampusId,
                             ForeignId = personImport.FamilyForeignId,
                             ForeignKey = foreignSystemKey,
-                            CreatedDateTime = personImport.CreatedDateTime ?? importDateTime,
-                            ModifiedDateTime = personImport.ModifiedDateTime ?? importDateTime
+                            CreatedDateTime = personImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            ModifiedDateTime = personImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime
                         };
 
                         if ( string.IsNullOrWhiteSpace( familyGroup.Name ) )
@@ -1979,8 +1979,8 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         GroupRoleId = ppi.PersonImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
-                                                        CreatedDateTime = ppi.PersonImport.CreatedDateTime ?? importDateTime,
-                                                        ModifiedDateTime = ppi.PersonImport.ModifiedDateTime ?? importDateTime,
+                                                        CreatedDateTime = ppi.PersonImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                                                        ModifiedDateTime = ppi.PersonImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                     };
 
                 return groupMemberRecordsToInsertQry.ToList();
@@ -2111,8 +2111,8 @@ WHERE gta.GroupTypeId IS NULL" );
                             EntityId = personsIds.PersonId,
                             AttributeId = attributeValueImport.AttributeId,
                             Value = attributeValueImport.Value,
-                            CreatedDateTime = personsIds.PersonImport.CreatedDateTime ?? importDateTime,
-                            ModifiedDateTime = personsIds.PersonImport.ModifiedDateTime ?? importDateTime
+                            CreatedDateTime = personsIds.PersonImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            ModifiedDateTime = personsIds.PersonImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime
                         };
                     } );
                     attributeValuesToInsert.Add( newAttributeValue );
@@ -2150,7 +2150,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             person.RecordTypeValueId = personImport.RecordTypeValueId ?? _recordTypePersonId;
             person.RecordStatusValueId = personImport.RecordStatusValueId;
-            person.RecordStatusLastModifiedDateTime = personImport.RecordStatusLastModifiedDateTime;
+            person.RecordStatusLastModifiedDateTime = personImport.RecordStatusLastModifiedDateTime.ToSQLSafeDate();
             person.RecordStatusReasonValueId = personImport.RecordStatusReasonValueId;
             person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
             person.ReviewReasonValueId = personImport.ReviewReasonValueId;
@@ -2177,7 +2177,7 @@ WHERE gta.GroupTypeId IS NULL" );
             person.BirthYear = personImport.BirthYear;
             person.Gender = ( Gender ) personImport.Gender;
             person.MaritalStatusValueId = personImport.MaritalStatusValueId;
-            person.AnniversaryDate = personImport.AnniversaryDate;
+            person.AnniversaryDate = personImport.AnniversaryDate.ToSQLSafeDate();
             person.GraduationYear = personImport.GraduationYear;
             person.Email = personImport.Email.Left( 75 );
 
@@ -2190,8 +2190,8 @@ WHERE gta.GroupTypeId IS NULL" );
             person.EmailNote = personImport.EmailNote.Left( 250 );
             person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote.Left( 1000 );
-            person.CreatedDateTime = personImport.CreatedDateTime;
-            person.ModifiedDateTime = personImport.ModifiedDateTime;
+            person.CreatedDateTime = personImport.CreatedDateTime.ToSQLSafeDate();
+            person.ModifiedDateTime = personImport.ModifiedDateTime.ToSQLSafeDate();
             person.SystemNote = personImport.Note;
             person.ForeignId = personImport.PersonForeignId;
             person.ForeignKey = foreignSystemKey;
@@ -2495,8 +2495,8 @@ WHERE gta.GroupTypeId IS NULL" );
                             CampusId = businessImport.CampusId,
                             ForeignId = businessImport.FamilyForeignId,
                             ForeignKey = foreignSystemKey,
-                            CreatedDateTime = businessImport.CreatedDateTime ?? importDateTime,
-                            ModifiedDateTime = businessImport.ModifiedDateTime ?? importDateTime
+                            CreatedDateTime = businessImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            ModifiedDateTime = businessImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime
                         };
 
                         if ( string.IsNullOrWhiteSpace( familyGroup.Name ) )
@@ -2642,8 +2642,8 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         GroupRoleId = ppi.BusinessImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
-                                                        CreatedDateTime = ppi.BusinessImport.CreatedDateTime ?? importDateTime,
-                                                        ModifiedDateTime = ppi.BusinessImport.ModifiedDateTime ?? importDateTime,
+                                                        CreatedDateTime = ppi.BusinessImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                                                        ModifiedDateTime = ppi.BusinessImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                     };
 
                 return groupMemberRecordsToInsertQry.ToList();
@@ -2783,7 +2783,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             business.RecordTypeValueId = businessImport.RecordTypeValueId ?? _recordTypeBusinessId;
             business.RecordStatusValueId = businessImport.RecordStatusValueId;
-            business.RecordStatusLastModifiedDateTime = businessImport.RecordStatusLastModifiedDateTime;
+            business.RecordStatusLastModifiedDateTime = businessImport.RecordStatusLastModifiedDateTime.ToSQLSafeDate();
             business.RecordStatusReasonValueId = businessImport.RecordStatusReasonValueId;
             business.ConnectionStatusValueId = businessImport.ConnectionStatusValueId;
             business.ReviewReasonValueId = businessImport.ReviewReasonValueId;
@@ -2803,8 +2803,8 @@ WHERE gta.GroupTypeId IS NULL" );
             business.EmailNote = businessImport.EmailNote.Left( 250 );
             business.EmailPreference = ( EmailPreference ) businessImport.EmailPreference;
             business.InactiveReasonNote = businessImport.InactiveReasonNote.Left( 1000 );
-            business.CreatedDateTime = businessImport.CreatedDateTime;
-            business.ModifiedDateTime = businessImport.ModifiedDateTime;
+            business.CreatedDateTime = businessImport.CreatedDateTime.ToSQLSafeDate();
+            business.ModifiedDateTime = businessImport.ModifiedDateTime.ToSQLSafeDate();
             business.SystemNote = businessImport.Note;
             business.ForeignId = businessImport.PersonForeignId;
             business.ForeignKey = foreignSystemKey;
@@ -3278,10 +3278,10 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                             PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId ),
                             TotalAmount = financialPledgeImport.TotalAmount,
                             PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId,
-                            StartDate = financialPledgeImport.StartDate,
-                            EndDate = financialPledgeImport.EndDate,
-                            CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime,
-                            ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime
+                            StartDate = financialPledgeImport.StartDate.ToSQLSafeDate(),
+                            EndDate = financialPledgeImport.EndDate.ToSQLSafeDate(),
+                            CreatedDateTime = financialPledgeImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
+                            ModifiedDateTime = financialPledgeImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime
                         };
 
                         if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
@@ -3321,11 +3321,11 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                         financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
 
                         financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
-                        financialPledge.StartDate = financialPledgeImport.StartDate;
-                        financialPledge.EndDate = financialPledgeImport.EndDate;
+                        financialPledge.StartDate = financialPledgeImport.StartDate.ToSQLSafeDate();
+                        financialPledge.EndDate = financialPledgeImport.EndDate.ToSQLSafeDate();
 
-                        financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
-                        financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
+                        financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime;
+                        financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime;
                     }
                 }
             }
@@ -3433,8 +3433,8 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                         IsAlert = noteImport.IsAlert,
                         IsPrivateNote = noteImport.IsPrivateNote,
                         Text = noteImport.Text,
-                        CreatedDateTime = noteImport.DateTime ?? importDateTime,
-                        ModifiedDateTime = noteImport.DateTime ?? importDateTime
+                        CreatedDateTime = noteImport.DateTime.ToSQLSafeDate() ?? importDateTime,
+                        ModifiedDateTime = noteImport.DateTime.ToSQLSafeDate() ?? importDateTime
                     };
 
                     if ( note.Caption.Length > 200 )
