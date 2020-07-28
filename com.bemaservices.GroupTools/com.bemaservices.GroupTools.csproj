@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Controllers\GroupToolsController.cs" />
     <Compile Include="Migrations\001_DefinedTypes.cs" />
+    <Compile Include="Migrations\008_RegistrationAttributes.cs" />
     <Compile Include="Migrations\002_Attributes.cs" />
     <Compile Include="Migrations\003_Workflows.cs" />
     <Compile Include="Migrations\004_Pages.cs" />
