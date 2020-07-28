@@ -80,7 +80,7 @@ namespace com.bemaservices.MailChimp.Utility
                 }
                 catch ( Exception ex )
                 {
-                    string message = String.Format( "Error Grabbing Mailchimp Audiences from Rock" );
+                    string message = String.Format( "Error Grabbing Mailchimp Audiences from Rock. This is most likely due to the configured Mailchimp account being invalid or closed. Please check your configuration to verify you are using an active Mailchimp account." );
                     ExceptionLogService.LogException( new Exception( message, ex ) );
                 }
 
