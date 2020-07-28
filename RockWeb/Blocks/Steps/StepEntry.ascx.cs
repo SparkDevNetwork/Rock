@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Steps
 
                     if ( workflow.Id != 0 )
                     {
-                        qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                        qryParam.Add( "WorkflowGuid", workflow.Guid.ToString() );
                     }
 
                     var entryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );

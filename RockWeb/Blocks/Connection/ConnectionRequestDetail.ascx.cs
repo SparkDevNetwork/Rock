@@ -1145,7 +1145,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     var qryParam = new Dictionary<string, string>();
                     qryParam.Add( "WorkflowTypeId", requestWorkflow.Workflow.WorkflowTypeId.ToString() );
-                    qryParam.Add( "WorkflowId", requestWorkflow.Workflow.Id.ToString() );
+                    qryParam.Add( "WorkflowGuid", requestWorkflow.Workflow.Guid.ToString() );
                     NavigateToLinkedPage( AttributeKeys.WorkflowEntryPage, qryParam );
                 }
                 else
@@ -2607,7 +2607,7 @@ namespace RockWeb.Blocks.Connection
                                 {
                                     var qryParam = new Dictionary<string, string>();
                                     qryParam.Add( "WorkflowTypeId", workflowType.Id.ToString() );
-                                    qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                                    qryParam.Add( "WorkflowGuid", workflow.Guid.ToString() );
                                     NavigateToLinkedPage( AttributeKeys.WorkflowEntryPage, qryParam );
                                 }
                                 else
