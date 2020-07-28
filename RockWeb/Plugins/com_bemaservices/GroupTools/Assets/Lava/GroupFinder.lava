@@ -327,7 +327,8 @@
                   <div class="fontSize-xxs">{{group.TimeOfDay}}</div>
                   <div class="fontSize-xxs">{{group.Frequency}}</div>
                 </div>
-                <div class="sg-card-info m-b-1" :style="'color:' + group.Color+';'">{{group.Category}}</div>
+                <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">{{group.Category}}</div>
+                <div v-for="secondaryCategory in group.SecondaryCategories.slice(0,3)" class="fontSize-xxs m-b-half sg-card-info-age">{{secondaryCategory}}</div>
                 <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.LifeStage}}</div>
               </div>
               <a class="more-info-text" :href="'/page/{% endraw%}{{linkedPage.Id}}{% raw %}?Group=' + group.Guid" target="_blank">More Info</a>

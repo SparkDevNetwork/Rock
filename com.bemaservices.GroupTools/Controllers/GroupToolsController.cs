@@ -137,6 +137,7 @@ namespace com.bemaservices.GroupTools.Controllers
                         var category = categories.OrderBy( c => c.Order ).First();
                         category.LoadAttributes();
                         groupInfo.Category = category.Value;
+                        groupInfo.SecondaryCategories = categories.Where( c => c.Id != category.Id ).OrderBy( c => c.Order ).Select( c => c.Value ).ToList();
 
                         var colorString = category.GetAttributeValue( "Color" );
                         if ( colorString.IsNotNullOrWhiteSpace() )
@@ -328,6 +329,8 @@ namespace com.bemaservices.GroupTools.Controllers
         public string LifeStage { get; set; }
 
         public string Category { get; set; }
+
+        public List<string> SecondaryCategories { get; set; }
 
         public string Color { get; set; }
 
