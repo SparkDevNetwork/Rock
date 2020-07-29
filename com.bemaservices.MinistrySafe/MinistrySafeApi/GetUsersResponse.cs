@@ -31,6 +31,6 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// The packages array.
         /// </value>
         [JsonProperty( "" )]
-        public List<GetUsersDataResponse> Data { get; set; }
+        public List<UserResponse> Data { get; set; }
     }
 }

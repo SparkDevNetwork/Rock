@@ -40,7 +40,7 @@ namespace com.bemaservices.MinistrySafe
     [ExportMetadata( "ComponentName", "MinistrySafe" )]
 
     [EncryptedTextField( "Access Token", "MinistrySafe Access Token", true, "", "", 0, null, true )]
-    public class MinistrySafe
+    public class MinistrySafeTraining
     {
         #region Private Fields
         /// <summary>
@@ -100,7 +100,7 @@ namespace com.bemaservices.MinistrySafe
 
                     string userId;
                     string directLoginUrl;
-                    if ( !CreateUser( workflow, person, personAliasId.Value, userTypeName, out userId, out directLoginUrl, errorMessages ) )
+                    if ( !GetOrCreateUser( workflow, person, personAliasId.Value, userTypeName, out userId, out directLoginUrl, errorMessages ) )
                     {
                         errorMessages.Add( "Unable to create user." );
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
@@ -131,7 +131,7 @@ namespace com.bemaservices.MinistrySafe
                         }
 
                         ministrySafeUser.PersonAliasId = personAliasId.Value;
-                        ministrySafeUser.ForeignId = 3;
+                        ministrySafeUser.ForeignId = 4;
                         ministrySafeUser.SurveyCode = surveyTypeName;
                         ministrySafeUser.UserType = userTypeName;
                         ministrySafeUser.RequestDate = RockDateTime.Now;
@@ -367,7 +367,7 @@ namespace com.bemaservices.MinistrySafe
                 {
                     ministrySafeUsers = ministrySafeUserService
                     .Queryable( "PersonAlias.Person" )
-                    .Where( m => m.PersonAliasId == externalId && m.ForeignId == 2 )
+                    .Where( m => m.PersonAliasId == externalId && ( m.ForeignId == 2 || m.ForeignId == 4 ) )
                     .ToList();
                 }
 
@@ -527,16 +527,25 @@ namespace com.bemaservices.MinistrySafe
         /// <param name="candidateId">The candidate identifier.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        public static bool CreateUser( Rock.Model.Workflow workflow, Person person, int personAliasId, string userTypeName, out string candidateId, out string directLoginUrl, List<string> errorMessages )
+        public static bool GetOrCreateUser( Rock.Model.Workflow workflow, Person person, int personAliasId, string userTypeName, out string candidateId, out string directLoginUrl, List<string> errorMessages )
         {
-            CreateUserResponse createUserResponse;
+            UserResponse userResponse;
             candidateId = null;
             directLoginUrl = null;
-            if ( MinistrySafeApiUtility.CreateUser( workflow, person, personAliasId, userTypeName, out createUserResponse, errorMessages ) )
+            if ( MinistrySafeApiUtility.GetUser( workflow, person, personAliasId, userTypeName, out userResponse, errorMessages ) )
             {
-                candidateId = createUserResponse.Id;
-                directLoginUrl = createUserResponse.DirectLoginUrl;
+                candidateId = userResponse.Id;
+                directLoginUrl = userResponse.DirectLoginUrl;
                 return true;
+            }
+            else
+            {
+                if ( MinistrySafeApiUtility.CreateUser( workflow, person, personAliasId, userTypeName, out userResponse, errorMessages ) )
+                {
+                    candidateId = userResponse.Id;
+                    directLoginUrl = userResponse.DirectLoginUrl;
+                    return true;
+                }
             }
 
             return false;
@@ -553,7 +562,7 @@ namespace com.bemaservices.MinistrySafe
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
         public static bool AssignTraining( string candidateId, string surveyCode, List<string> errorMessages )
         {
-            AssignTrainingResponse assignTrainingResponse;
+            TrainingResponse assignTrainingResponse;
             if ( MinistrySafeApiUtility.AssignTraining( candidateId, surveyCode, out assignTrainingResponse, errorMessages ) )
             {
                 candidateId = assignTrainingResponse.Id;

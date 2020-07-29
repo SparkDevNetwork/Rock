@@ -19,18 +19,18 @@ using Newtonsoft.Json;
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
     /// <summary>
-    /// JSON return structure for the get packages API call's response.
+    /// JSON return structure for the create candidate API call's response.
     /// </summary>
-    internal class GetUsersDataResponse
+    internal class UserResponse
     {
         /// <summary>
-        /// Gets or sets the slugified version of the package name.
+        /// Gets or sets the candidate ID.
         /// </summary>
         /// <value>
-        /// The slugified package name.
+        /// The candidate ID.
         /// </value>
         [JsonProperty( "id" )]
-        public int? Id { get; set; }
+        public string Id { get; set; }
 
         [JsonProperty( "first_name" )]
         public string FirstName { get; set; }
