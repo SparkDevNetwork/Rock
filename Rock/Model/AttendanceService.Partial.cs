@@ -947,7 +947,7 @@ namespace Rock.Model
                         if ( schedule != null )
                         {
                             var scheduleStartDateTimeOverride = groupMember.ScheduleStartDate.Value.Add( occurrenceScheduledTime );
-                            var matches = schedule.GetOccurrences( beginDateTime, endDateTime, scheduleStartDateTimeOverride );
+                            var matches = schedule.GetICalOccurrences( beginDateTime, endDateTime, scheduleStartDateTimeOverride );
                             if ( matches.Any() )
                             {
                                 matchingScheduleGroupMemberIdList.Add( groupMember.GroupMemberId );
@@ -1683,7 +1683,8 @@ namespace Rock.Model
                             OccurrenceId = occurrenceId,
                             PersonAliasId = personAliasId,
                             StartDateTime = startDateTime,
-                            RSVP = Rock.Model.RSVP.Unknown
+                            RSVP = Rock.Model.RSVP.Unknown,
+                            DidAttend = false
                         } );
                 }
             }

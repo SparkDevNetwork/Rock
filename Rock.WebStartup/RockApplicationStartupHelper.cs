@@ -387,6 +387,9 @@ namespace Rock.WebStartup
             // also include the plugins that are in Rock.dll
             pluginAssemblies.Add( typeof( Rock.Plugin.Migration ).Assembly );
 
+            // Iterate each thru each assembly, and run any migrations that it might have
+            // If an assembly has a plugin migration that throws an exception, the exception
+            // will be logged and stop running any more migrations for that assembly
             foreach ( var pluginMigration in pluginAssemblies )
             {
                 bool ranPluginMigration = RunPluginMigrations( pluginMigration );
@@ -469,23 +472,24 @@ namespace Rock.WebStartup
 
             var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
 
-            // Iterate each assembly that contains plugin migrations
-            foreach ( Type migrationType in migrationTypesToRun )
+            try
             {
-                try
+                using ( var sqlConnection = new SqlConnection( configConnectionString ) )
                 {
-                    int migrationNumber = migrationType.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>().Number;
-
-                    using ( var sqlConnection = new SqlConnection( configConnectionString ) )
+                    try
                     {
-                        try
-                        {
-                            sqlConnection.Open();
-                        }
-                        catch ( SqlException ex )
-                        {
-                            throw new RockStartupException( "Error connecting to the SQL database. Please check the 'RockContext' connection string in the web.ConnectionString.config file.", ex );
-                        }
+                        sqlConnection.Open();
+                    }
+                    catch ( SqlException ex )
+                    {
+                        throw new RockStartupException( "Error connecting to the SQL database. Please check the 'RockContext' connection string in the web.ConnectionString.config file.", ex );
+                    }
+
+                    // Iterate thru each plugin migration in this assembly, if one fails, will log the exception and stop running migrations for this assembly
+                    foreach ( Type migrationType in migrationTypesToRun )
+                    {
+
+                        int migrationNumber = migrationType.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>().Number;
 
                         using ( var sqlTxn = sqlConnection.BeginTransaction() )
                         {
@@ -522,20 +526,20 @@ namespace Rock.WebStartup
                         }
                     }
                 }
-                catch ( RockStartupException rockStartupException )
-                {
-                    // if a plugin migration got an error, it gets wrapped with a RockStartupException
-                    // If this occurs, we'll log the migration that occurred and keep going
-                    System.Diagnostics.Debug.WriteLine( rockStartupException.Message );
-                    LogError( rockStartupException, null );
-                }
-                catch ( Exception ex )
-                {
-                    // If an exception occurs in an an assembly, log the error, and continue with next assembly
-                    var startupException = new RockStartupException( $"Error running migrations from {pluginAssemblyName}" );
-                    System.Diagnostics.Debug.WriteLine( startupException.Message );
-                    LogError( ex, null );
-                }
+            }
+            catch ( RockStartupException rockStartupException )
+            {
+                // if a plugin migration got an error, it gets wrapped with a RockStartupException
+                // If this occurs, we'll log the migration that occurred,  and stop running migrations for this assembly
+                System.Diagnostics.Debug.WriteLine( rockStartupException.Message );
+                LogError( rockStartupException, null );
+            }
+            catch ( Exception ex )
+            {
+                // If an exception occurs in an an assembly, log the error, and stop running migrations for this assembly
+                var startupException = new RockStartupException( $"Error running migrations from {pluginAssemblyName}" );
+                System.Diagnostics.Debug.WriteLine( startupException.Message );
+                LogError( ex, null );
             }
 
             return result;

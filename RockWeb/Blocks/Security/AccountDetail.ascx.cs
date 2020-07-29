@@ -38,12 +38,37 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Public block for user to manager their account" )]
 
-    [LinkedPage("Detail Page", "Page to edit account details.", order: 0)]
-    [BooleanField("Show Home Address", "Shows/hides the home address.", order: 1)]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
-        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
+    #region Block Attributes
+
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "Page to edit account details.",
+        Order = 0 )]
+
+    [BooleanField( "Show Home Address",
+        Key = AttributeKey.ShowHomeAddress,
+        Description = "Shows/hides the home address.",
+        Order = 1 )]
+
+    [GroupLocationTypeField( "Location Type",
+        Key = AttributeKey.LocationType,
+        Description = "The type of location that address should use.",
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        IsRequired = false,
+        Order = 2 )]
+
+    #endregion Block Attributes
+
     public partial class AccountDetail : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string ShowHomeAddress = "ShowHomeAddress";
+            public const string LocationType = "LocationType";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -97,7 +122,7 @@ namespace RockWeb.Blocks.Security
 
                 lEmail.Text = CurrentPerson.Email;
 
-                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                Guid? locationTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
                     var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
@@ -122,7 +147,7 @@ namespace RockWeb.Blocks.Security
                     }
                 }
 
-                if ( GetAttributeValue( "ShowHomeAddress" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.ShowHomeAddress ).AsBoolean() )
                 {
                     var homeAddress = CurrentPerson.GetHomeLocation();
                     if ( homeAddress != null )
@@ -151,7 +176,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( CurrentPerson != null )
             {
-                NavigateToLinkedPage( "DetailPage" );
+                NavigateToLinkedPage( AttributeKey.DetailPage );
             }
         }
 

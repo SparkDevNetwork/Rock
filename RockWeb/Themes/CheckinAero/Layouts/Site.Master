@@ -7,6 +7,7 @@
     <title></title>
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
     <asp:ContentPlaceHolder ID="css" runat="server" />
@@ -26,8 +27,33 @@
         // add quick fade-in effect to the page
         $(document).ready(function () {
             welcomeBanner();
+            checkinSounds();
             $("#form1").rockFadeIn();
+
+            $(document).on("shown.bs.modal", function (event) {
+                checkinSounds();
+            });
         });
+
+        function checkinSounds() {
+            var tapSound = new Howl({
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
+                volume: 0.4
+            });
+
+            var successSound = new Howl({
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+                volume: 0.8
+            });
+
+            if ($('.block-instance.success').length){
+                successSound.play();
+            }
+
+            $("a, button").on("click", function(){
+                tapSound.play();
+            });
+        }
 
         function welcomeBanner() {
             if ($('.js-active').length){
