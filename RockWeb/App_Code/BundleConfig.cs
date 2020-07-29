@@ -32,10 +32,12 @@ public class BundleConfig
         bundles.ResetAll();
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
-            "~/Scripts/jquery-3.4.1.min.js",
-            "~/Scripts/jquery-migrate-3.0.0.min.js" ) );
+            "~/Scripts/jquery-3.5.1.min.js",
+            "~/Scripts/jquery-migrate-3.1.0.min.js" ) );
 
-        bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/WebFormsJs" ).Include(
+            "~/Scripts/WebForms/MsAjax/MicrosoftAjax.js",
+            "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js",
             "~/Scripts/WebForms/WebForms.js",
             "~/Scripts/WebForms/WebUIValidation.js",
             "~/Scripts/WebForms/MenuStandards.js",
@@ -46,7 +48,7 @@ public class BundleConfig
             "~/Scripts/WebForms/WebParts.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
-            "~/Scripts/jquery-ui-1.10.4.custom.min.js",
+            "~/Scripts/jquery-ui-1.12.1.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",

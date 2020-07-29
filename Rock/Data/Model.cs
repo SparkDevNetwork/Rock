@@ -271,7 +271,7 @@ namespace Rock.Data
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
-            if ( HistoryItems != null && HistoryItems.Any() )
+            if ( HistoryItems?.Any() == true )
             {
                 new SaveHistoryTransaction( HistoryItems ).Enqueue();
             }
@@ -308,20 +308,20 @@ namespace Rock.Data
         {
             var sb = new StringBuilder();
 
-            if ( personAlias != null &&
-                personAlias.Person != null )
+            if ( personAlias != null && personAlias.Person != null )
             {
-                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a>", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a> ", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+            }
 
-                if ( dateTime.HasValue )
-                {
-                    sb.AppendFormat( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", dateTime.Value.ToString(), dateTime.Value.ToRelativeDateString() );
-                }
+            if ( dateTime.HasValue )
+            {
+                sb.AppendFormat( "<small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", dateTime.Value.ToString(), dateTime.Value.ToRelativeDateString() );
             }
 
             return sb.ToString();
+
         }
-        
+
         #endregion
 
         #region ISecured implementation

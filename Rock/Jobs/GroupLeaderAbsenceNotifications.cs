@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +31,12 @@ namespace Rock.Jobs
 {
 
     /// <summary>
-    /// Runs the Group Leader Absence Notification Job
+    /// This job sends a list of group member absences to the group's leaders.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Group Leader Absence Notifications" )]
+    [Description( "This job sends a list of group member absences to the group's leaders." )]
+
     #region DataMap Field Attributes
     [GroupTypeField( "Group Type",
         Key = AttributeKey.GroupType,
@@ -45,12 +49,7 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 1 )]
 
-    [GroupRoleField(
-        Name = "Group Role Filter",
-        Key = AttributeKey.GroupRoleFilter,
-        Description = "Optional group role to filter the absent members by.To select the role you’ll need to select a group type.",
-        IsRequired = false,
-        Order = 2 )]
+    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the absent members by. To select the role you'll need to select a group type.", false, null, null, 2, AttributeKey.GroupRoleFilter )]
 
     [IntegerField( "Minimum Absences",
         Key = AttributeKey.MinimumAbsences,

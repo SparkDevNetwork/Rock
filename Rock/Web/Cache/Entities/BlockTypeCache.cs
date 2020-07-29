@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -34,8 +35,6 @@ namespace Rock.Web.Cache
     {
 
         #region Properties
-
-        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -123,7 +122,33 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
         public bool CheckedSecurityActions { get; private set; }
+
+        private ConcurrentDictionary<string, string> _securityActions = null;
+
+        /// <summary>
+        /// Gets the security action attributes for the <seealso cref="SecurityActionAttribute">SecurityAction</seealso> attributes on this <seealso cref="System.Type"/> of this block
+        /// </summary>
+        /// <returns></returns>
+        private ConcurrentDictionary<string, string> GetSecurityActionAttributes()
+        {
+            var securityActions = new ConcurrentDictionary<string, string>();
+            var blockType = this.GetCompiledType();
+
+            object[] customAttributes = blockType.GetCustomAttributes( typeof( SecurityActionAttribute ), true );
+            foreach ( var customAttribute in customAttributes )
+            {
+                var securityActionAttribute = customAttribute as SecurityActionAttribute;
+                if ( securityActionAttribute != null )
+                {
+                    securityActions.TryAdd( securityActionAttribute.Action, securityActionAttribute.Description );
+                }
+            }
+
+            return securityActions;
+        }
 
         /// <summary>
         /// Gets or sets the security actions.
@@ -132,7 +157,23 @@ namespace Rock.Web.Cache
         /// The security actions.
         /// </value>
         [DataMember]
-        public ConcurrentDictionary<string, string> SecurityActions { get; private set; }
+        public ConcurrentDictionary<string, string> SecurityActions
+        {
+            get
+            {
+                /* MDP 2020-03-17
+                This was changed to Load On Demand instead of getting set by RockPage.
+                This was done because nothing in core was using SecurityActions, and because loading them without needing them causes unneccessary overhead
+                 */
+
+                if ( _securityActions == null )
+                {
+                    _securityActions = GetSecurityActionAttributes();
+                }
+
+                return _securityActions;
+            }
+        }
 
         /// <summary>
         /// Gets the type of the entity.
@@ -150,48 +191,24 @@ namespace Rock.Web.Cache
         /// Sets the security actions.
         /// </summary>
         /// <param name="blockControl">The block control.</param>
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
         public void SetSecurityActions( Web.UI.RockBlock blockControl )
         {
-            lock ( _obj )
-            {
-                if ( CheckedSecurityActions ) return;
-
-                SecurityActions = new ConcurrentDictionary<string, string>();
-                foreach ( var action in blockControl.GetSecurityActionAttributes() )
-                {
-                    SecurityActions.TryAdd( action.Key, action.Value );
-                }
-                CheckedSecurityActions = true;
-            }
+            // SecurityActions is now loaded on demand, so we don't need to do anything here
+            return;
         }
 
         /// <summary>
         /// Sets the security actions.
         /// </summary>
         /// <param name="blockType">The block type.</param>
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
         public void SetSecurityActions( Type blockType )
         {
-            lock ( _obj )
-            {
-                if ( CheckedSecurityActions )
-                {
-                    return;
-                }
-
-                SecurityActions = new ConcurrentDictionary<string, string>();
-
-                object[] customAttributes = blockType.GetCustomAttributes( typeof( Security.SecurityActionAttribute ), true );
-                foreach ( var customAttribute in customAttributes )
-                {
-                    var securityActionAttribute = customAttribute as Security.SecurityActionAttribute;
-                    if ( securityActionAttribute != null )
-                    {
-                        SecurityActions.TryAdd( securityActionAttribute.Action, securityActionAttribute.Description );
-                    }
-                }
-
-                CheckedSecurityActions = true;
-            }
+            // SecurityActions is now loaded on demand, so we don't need to do anything here
+            return;
         }
 
         /// <summary>
@@ -203,7 +220,10 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var blockType = entity as BlockType;
-            if ( blockType == null ) return;
+            if ( blockType == null )
+            {
+                return;
+            }
 
             IsSystem = blockType.IsSystem;
             IsCommon = blockType.IsCommon;
@@ -245,7 +265,10 @@ namespace Rock.Web.Cache
             }
 
             var fileinfo = new FileInfo( physicalPath );
-            if ( !fileinfo.Exists ) return;
+            if ( !fileinfo.Exists )
+            {
+                return;
+            }
 
             // Create a new FileSystemWatcher and set its properties.
             var watcher = new FileSystemWatcher
@@ -270,7 +293,7 @@ namespace Rock.Web.Cache
         public void MarkInstancePropertiesVerified( bool verified )
         {
             IsInstancePropertiesVerified = verified;
-            UpdateCacheItem( this.Id.ToString(), this, TimeSpan.MaxValue );
+            UpdateCacheItem( this.Id.ToString(), this );
         }
 
         /// <summary>

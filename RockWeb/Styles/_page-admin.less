@@ -138,13 +138,13 @@
   z-index: @zindex-modal - 1;
   width: 100%;
   height: 36px;
-  padding: 8px 12px 0 12px;
+  padding: 8px 12px 0;
   margin-right: 0;
   color: @adminbar-text-color;
   background: @adminbar-bg;
   border-color: darken(@adminbar-bg, @const-border-darken-amt);
   border-style: solid;
-  border-width: 1px 1px 0 1px;
+  border-width: 1px 1px 0;
   transition: .5s;
 
   a.btn {
@@ -161,6 +161,16 @@
 
   > span.label {
     margin-top: 1px;
+  }
+
+  > span.cms-admin-footer-property {
+    padding: 0 6px;
+    background-color: lighten(@adminbar-bg, 10%);
+    border-radius: 2px;
+  }
+
+  a {
+    color: @adminbar-text-color;
   }
 
   a:hover {

@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
                             var qryParam = new Dictionary<string, string>();
-                            qryParam.Add( "batchId", "9999" );
+                            qryParam.Add( "BatchId", "9999" );
                             string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
 
                             string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );

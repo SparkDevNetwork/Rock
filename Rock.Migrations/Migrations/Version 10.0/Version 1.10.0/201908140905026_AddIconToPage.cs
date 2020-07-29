@@ -76,7 +76,10 @@ namespace Rock.Migrations
 
         private void AddMobileAppBundleBinaryFileType()
         {
+#pragma warning disable 0618
             RockMigrationHelper.UpdateBinaryFileType( "A97B6002-454E-4890-B529-B99F8F2F376A", "Mobile App Bundle", "File type for mobile app files.", "", "ED456BF6-78F4-4954-9043-CA6849DA2D7E", false, false );
+#pragma warning restore 0618
+            
             Sql( @"
                 DECLARE @BinaryFileTypeId INT = (SELECT [Id] FROM [BinaryFileType] WHERE [Guid]='ED456BF6-78F4-4954-9043-CA6849DA2D7E')
                 DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid]='3CAFA34D-9208-439B-A046-CB727FB729DE')

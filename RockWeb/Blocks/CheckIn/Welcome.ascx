@@ -95,7 +95,7 @@
                         timeout: 10000,
                         data: localDeviceConfiguration,
                         success: function (data) {
-                            
+
                             var localConfigurationStatus = data;
 
                             if ($configurationHash.val() != localConfigurationStatus.ConfigurationHash) {
@@ -201,6 +201,13 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
+                // Notify the host-app what check-in device we are.
+                if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.SetKioskId !== 'undefined') {
+                    var localDeviceConfiguration = JSON.parse($('.js-local-device-configuration').val());
+
+                    window.RockCheckinNative.SetKioskId(localDeviceConfiguration.CurrentKioskId);
+                }
+
                 // Install function the host-app can call to pass the scanned barcode.
                 window.PerformScannedCodeSearch = function (code) {
                     if (!swipeProcessing) {
@@ -232,15 +239,15 @@
                 }
 
                 if ($('.js-manager-login').length) {
-                    $('.tenkey a.digit').click(function () {
+                    $('.tenkey a.digit').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());
                     });
-                    $('.tenkey a.back').click(function () {
+                    $('.tenkey a.back').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val().slice(0, -1));
                     });
-                    $('.tenkey a.clear').click(function () {
+                    $('.tenkey a.clear').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val('');
                     });
@@ -249,7 +256,7 @@
                     var isTouchDevice = 'ontouchstart' in document.documentElement;
                     if (!isTouchDevice) {
                         if ($('.checkin-phone-entry').length) {
-                            $('.checkin-phone-entry').focus();
+                            $('.checkin-phone-entry').trigger('focus');
                         }
                     }
                 }
@@ -275,7 +282,7 @@
         </span>
 
         <%-- Panel for no schedules --%>
-        <asp:Panel ID="pnlNotActive" runat="server">
+        <asp:Panel ID="pnlNotActive" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
                 <h1><asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
             </div>
@@ -284,7 +291,7 @@
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p><h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1></p>
+                        <h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1>
                     </div>
                 </div>
 
@@ -292,7 +299,7 @@
         </asp:Panel>
 
         <%-- Panel for schedule not active yet --%>
-        <asp:Panel ID="pnlNotActiveYet" runat="server">
+        <asp:Panel ID="pnlNotActiveYet" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
                 <h1><asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
             </div>
@@ -313,7 +320,7 @@
         </asp:Panel>
 
         <%-- Panel for location closed --%>
-        <asp:Panel ID="pnlClosed" runat="server">
+        <asp:Panel ID="pnlClosed" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header checkin-closed-header">
                 <h1><asp:Literal ID="lClosedTitle" runat="server" /></h1>
             </div>
@@ -343,7 +350,7 @@
 
         </asp:Panel>
 
-        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
+        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i><span class="sr-only">Kiosk Manager</span></asp:LinkButton>
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">

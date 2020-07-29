@@ -32,25 +32,5 @@ namespace Rock.Model
         {
             return this.Queryable().Where( a => a.PersonAlias.PersonId == personId );
         }
-
-        /// <summary>
-        /// Deletes the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public override bool Delete( FinancialPersonSavedAccount item )
-        {
-            if ( item.FinancialPaymentDetailId.HasValue )
-            {
-                var paymentDetailsService = new FinancialPaymentDetailService( (Rock.Data.RockContext)this.Context );
-                var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
-                if ( paymentDetail != null )
-                {
-                    paymentDetailsService.Delete( paymentDetail );
-                }
-            }
-
-            return base.Delete( item );
-        }
     }
 }

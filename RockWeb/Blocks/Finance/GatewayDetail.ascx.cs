@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -72,13 +73,13 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            
+
             if ( !Page.IsPostBack )
             {
                 ddlBatchSchedule.DataSource = new[] { BatchDaily, BatchWeekly };
                 ddlBatchSchedule.DataBind();
 
-                ShowDetail( PageParameter( "gatewayId" ).AsInteger() );
+                ShowDetail( PageParameter( "GatewayId" ).AsInteger() );
             }
         }
 
@@ -324,6 +325,15 @@ namespace RockWeb.Blocks.Finance
             {
                 tb.AutoCompleteType = AutoCompleteType.Disabled;
                 tb.Attributes["autocomplete"] = "off";
+
+                // from https://stackoverflow.com/a/30976223/1755417
+                if ( tb is IRockControl )
+                {
+                    if ( ( tb as IRockControl ).Label.IndexOf( "password", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                    {
+                        tb.Attributes["autocomplete"] = "new-password";
+                    }
+                }
             }
         }
 

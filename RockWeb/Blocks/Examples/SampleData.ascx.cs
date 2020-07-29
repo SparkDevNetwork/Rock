@@ -272,7 +272,10 @@ namespace RockWeb.Blocks.Examples
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.1.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+
+            // from https://stackoverflow.com/a/30976223/1755417
+            tbPassword.Attributes["autocomplete"] = "new-password";
         }
 
         /// <summary>
@@ -522,7 +525,7 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                //// First delete any sample data that might exist already
+                //// First delete any sample data that might exist already 
                 // using RockContext in case there are multiple saves (like Attributes)
                 rockContext.WrapTransaction( () =>
                 {
@@ -659,7 +662,7 @@ namespace RockWeb.Blocks.Examples
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
-
+        
         /// <summary>
         /// Adds any registration templates given in the XML file.
         /// </summary>
@@ -719,7 +722,7 @@ namespace RockWeb.Blocks.Examples
 
                 int categoryId = CategoryCache.Get( element.Attribute( "categoryGuid" ).Value.Trim().AsGuid() ).Id;
 
-                // Find the group type and
+                // Find the group type and 
                 var groupType = GroupTypeCache.Get( element.Attribute( "groupTypeGuid" ).Value.Trim().AsGuid() );
 
                 RegistrantsSameFamily registrantsSameFamily;
@@ -866,7 +869,7 @@ namespace RockWeb.Blocks.Examples
                                         {
                                             attrState.FieldTypeId = fieldType.Id;
                                             var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrantAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
-
+                                            
                                             //rockContext.ChangeTracker.DetectChanges();
                                             rockContext.SaveChanges( disablePrePostProcessing: true );
 
@@ -973,7 +976,7 @@ namespace RockWeb.Blocks.Examples
                                     feeItem.Cost = option.Attribute( "cost" ).Value.AsDecimal();
                                     fee.FeeItems.Add( feeItem );
                                 }
-
+                                
                                 break;
                             case "single":
                                 {
@@ -989,7 +992,7 @@ namespace RockWeb.Blocks.Examples
                                 throw new NotSupportedException( string.Format( "unknown fee type: {0}", feeElement.Attribute( "type" ).Value ) );
                         }
 
-
+                        
                         fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
                         fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
                         fee.Order = feeOrder;
@@ -1220,7 +1223,7 @@ namespace RockWeb.Blocks.Examples
 
         /// <summary>
         /// Adds a KnownRelationship record between the two supplied GUIDs with the given 'is' relationship type:
-        ///
+        ///     
         ///     Role / inverse Role
         ///     ================================
         ///     step-parent     / step-child
@@ -1231,13 +1234,13 @@ namespace RockWeb.Blocks.Examples
         ///     sibling         / sibling
         ///     invited         / invited-by
         ///     related         / related
-        ///
+        ///     
         /// ...for XML such as:
         /// <relationships>
         ///     <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D"
         ///     has="step-parent" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
         ///  </relationships>
-        ///
+        ///  
         /// </summary>
         /// <param name="elemRelationships"></param>
         private void AddRelationships( XElement elemRelationships, RockContext rockContext )
@@ -1255,7 +1258,7 @@ namespace RockWeb.Blocks.Examples
 
             //// We have to create (or fetch existing) two groups for each relationship, adding the
             //// other person as a member of that group with the appropriate GroupTypeRole (GTR):
-            ////   * a group with person as owner (GTR) and forPerson as type/role (GTR)
+            ////   * a group with person as owner (GTR) and forPerson as type/role (GTR) 
             ////   * a group with forPerson as owner (GTR) and person as inverse-type/role (GTR)
 
             foreach ( var elemRelationship in elemRelationships.Elements( "relationship" ) )
@@ -1539,7 +1542,7 @@ namespace RockWeb.Blocks.Examples
                 .Where( a =>
                     _peopleDictionary.Keys.Contains( a.Person.Guid ) &&
                     a.PersonId == a.AliasPersonId ) )
-            {
+            { 
                 _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
             }
 
@@ -1916,7 +1919,7 @@ namespace RockWeb.Blocks.Examples
             if ( TimeSpan.TryParse( time, out timespan ))
             {
                 group.Schedule.WeeklyTimeOfDay = timespan;
-            }
+            }            
         }
 
         /// <summary>
@@ -2043,7 +2046,7 @@ namespace RockWeb.Blocks.Examples
                 Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
 
                 var connectionOpportunity = coService.Queryable( "ConnectionType" ).AsNoTracking().Where( co => co.ConnectionType.Name == connectionTypeName && co.Name == opportunityName ).FirstOrDefault();
-
+                
                 // make sure we found a matching connection opportunity
                 if ( connectionOpportunity != null )
                 {
@@ -2230,7 +2233,7 @@ namespace RockWeb.Blocks.Examples
                         // delete any connection requests tied to them
                         foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
                         {
-                            connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );
+                            connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );    
                             connectionRequestService.Delete( request );
                         }
 
@@ -2453,7 +2456,7 @@ namespace RockWeb.Blocks.Examples
             Frequency frequency;
             if ( elemGiving.Attribute( "frequency" ) != null )
             {
-                Enum.TryParse( elemGiving.Attribute( "frequency" ).Value.Trim(), out frequency );
+                Enum.TryParse( elemGiving.Attribute( "frequency" ).Value.Trim(), out frequency ); 
             }
             else
             {
@@ -2556,8 +2559,8 @@ namespace RockWeb.Blocks.Examples
                 }
                 else
                 {
-                    batch = new FinancialBatch {
-                        Id = 0,
+                    batch = new FinancialBatch { 
+                        Id = 0, 
                         Guid = Guid.NewGuid(),
                         BatchStartDateTime = date,
                         BatchEndDateTime = date,
@@ -2708,13 +2711,13 @@ namespace RockWeb.Blocks.Examples
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="altScheduleId">The alt schedule identifier.</param>
         /// <param name="attendanceData">The attendance data.</param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance,
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, 
             int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
             // for each weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
-                // set an additional factor
+                // set an additional factor 
                 int summerFactor = ( 7 <= date.Month && date.Month <= 9 ) ? summerPercentFactor : 0;
                 if ( _random.Next( 0, 100 ) > pctAttendance - summerFactor )
                 {
@@ -2815,7 +2818,7 @@ namespace RockWeb.Blocks.Examples
                     person = new Person();
                     person.CreatedByPersonAliasId = CurrentPersonAliasId;
                     person.CreatedDateTime = RockDateTime.Now;
-
+                    
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "suffix") != null )
@@ -2974,7 +2977,8 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
-                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() )
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() ),
+                            CountryCode = "1"
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -3364,7 +3368,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="state">The state.</param>
         /// <param name="postalCode">The zip.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid,
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, 
             string street1, string street2, string city, string state, string postalCode, string country,
             RockContext rockContext )
         {

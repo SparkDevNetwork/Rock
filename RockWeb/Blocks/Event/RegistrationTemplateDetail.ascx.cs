@@ -942,16 +942,18 @@ The logged-in person's information will be used to complete the registrar inform
 
             var rockContext = new RockContext();
 
-            // validate gateway
             int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
+
+            // validate gateway
             if ( gatewayId.HasValue )
             {
                 var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
                 if ( financialGateway != null )
                 {
-                    if ( financialGateway.GetGatewayComponent() is Rock.Financial.IHostedGatewayComponent )
+                    var hostedGatewayComponent = financialGateway.GetGatewayComponent() as Rock.Financial.IHostedGatewayComponent;
+                    if ( hostedGatewayComponent != null && !hostedGatewayComponent.GetSupportedHostedGatewayModes( financialGateway ).Contains( Rock.Financial.HostedGatewayMode.Unhosted ) )
                     {
-                        nbValidationError.Text = "Unsupported Gateway. Registration doesn't currently support Gateways that have a hosted payment interface.";
+                        nbValidationError.Text = "Unsupported Gateway. Registration currently only supports Gateways that have an un-hosted payment interface.";
                         nbValidationError.Visible = true;
                         return;
                     }
@@ -1361,6 +1363,7 @@ The logged-in person's information will be used to complete the registrar inform
                     fee.Order = feeUI.Order;
                     fee.IsActive = feeUI.IsActive;
                     fee.IsRequired = feeUI.IsRequired;
+                    fee.HideWhenNoneRemaining = feeUI.HideWhenNoneRemaining;
                 }
 
                 // Add/Update Registration Placements
@@ -2128,6 +2131,7 @@ The logged-in person's information will be used to complete the registrar inform
             fee.DiscountApplies = cbDiscountApplies.Checked;
             fee.IsActive = cbFeeIsActive.Checked;
             fee.IsRequired = cbFeeIsRequired.Checked;
+            fee.HideWhenNoneRemaining = cbHideWhenNoneRemaining.Checked;
 
             // set the FeeItems to what they are in the UI
             fee.FeeItems = new List<RegistrationTemplateFeeItem>();
@@ -3465,6 +3469,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbDiscountApplies.Checked = fee.DiscountApplies;
             cbFeeIsActive.Checked = fee.IsActive;
             cbFeeIsRequired.Checked = fee.IsRequired;
+            cbHideWhenNoneRemaining.Checked = fee.HideWhenNoneRemaining;
 
             ShowDialog( dlgFee );
         }
@@ -3788,7 +3793,7 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplatePlacement = new RegistrationTemplatePlacement();
                 registrationTemplatePlacement.Guid = registrationPlacementConfigurationGuid;
             }
-            
+
             tbPlacementConfigurationName.Text = registrationTemplatePlacement.Name;
             gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId = registrationTemplatePlacement.GroupTypeId;
 
@@ -3949,7 +3954,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
         {
-            
+
             pnlPlacementConfigurationAddSharedGroup.Visible = false;
         }
 
@@ -3965,6 +3970,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
-        
+
     }
 }

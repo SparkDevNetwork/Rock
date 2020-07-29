@@ -2,643 +2,72 @@
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Colors - creates utility classes for each of the accent colors
-  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  3. Even Height Columns - provides classes for making columns even heights
-  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
-  5. Utilities
-
 */
 
+// @import "_rock-variables";
+// @import (reference) "Bootstrap/bootstrap.less";
 
-// About Helper Variables
-// -------------------------
-// Spacing, sizing, and media query helpers can be found in _rock-variables.less
+@import "utilities/_deprecated.less";            //  Deprecated utilities and classes.
+@import "utilities/_align.less";                 //  Utilities for controlling the vertical alignment of an inline or table-cell box.
+@import "utilities/_background.less";            //  Utilities for controlling an element's background color.
+@import "utilities/_borders.less";               //  Utilities for controlling the style of an element's borders.
+@import "utilities/_card.less";                  //  Utilities for controlling the cursor style when hovering over an element.
+@import "utilities/_colors.less";                //  Utilities for controlling an element's background color.
+@import "utilities/_cursor.less";                //  Utilities for controlling the cursor style when hovering over an element.
+@import "utilities/_display.less";               //  Utilities for controlling the display box type of an element.
+@import "utilities/_flex.less";                  //  Utilities for controlling flex
+@import "utilities/_links.less";                 //  BS4 Stretched Link
+@import "utilities/_object-fit.less";            //  Utilities for controlling how a replaced element's content should be resized.
+@import "utilities/_opacity.less";               //  Utilities for controlling the opacity of an element.
+@import "utilities/_order.less";                 //  Utilities for controlling the order of flex items.
+@import "utilities/_position.less";              //  Utilities for controlling how an element is positioned in the DOM.
+@import "utilities/_shadows.less";               //  Utilities for controlling the box shadow of an element.
+@import "utilities/_sizing.less";                //  Utilities for setting the width and height of an element
+@import "utilities/_spacing.less";               //  Shorthand responsive margin and padding utility classes.
+@import "utilities/_text.less";                  //  Text utilities to control alignment, wrapping, weight, and more.
+@import "utilities/_userselect.less";            //  Utilities for controlling whether the user can select text in an element.
+@import "utilities/_zindex.less";                //  Utilities for controlling the stack order of an element.
 
-
-// 1. Colors
-// -------------------------
-
-// primary color
-.primary-color {
-  color: @btn-primary-color;
-  background-color: @btn-primary-bg;
-}
-
-// theme color 1
-.theme-color-1 {
-  color: @theme-1-text;
-  background-color: @theme-1;
-}
-
-.theme-color-1-bordered {
-  color: @theme-1-text;
-  background-color: @theme-1;
-  border: 1px solid darken(@theme-1, 10%);
-}
-
-// theme color 2
-.theme-color-2 {
-  color: @theme-2-text;
-  background-color: @theme-2;
-}
-
-.theme-color-2-bordered {
-  color: @theme-2-text;
-  background-color: @theme-2;
-  border: 1px solid darken(@theme-2, 10%);
-}
-
-// theme color 3
-.theme-color-3 {
-  color: @theme-3-text;
-  background-color: @theme-3;
-}
-
-.theme-color-3-bordered {
-  color: @theme-3-text;
-  background-color: @theme-3;
-  border: 1px solid darken(@theme-3, 10%);
-}
-
-// theme color 4
-.theme-color-4 {
-  color: @theme-4-text;
-  background-color: @theme-4;
-}
-
-.theme-color-4-bordered {
-  color: @theme-4-text;
-  background-color: @theme-4;
-  border: 1px solid darken(@theme-4, 10%);
-}
-
-// theme color 5
-.theme-color-5 {
-  color: @theme-5-text;
-  background-color: @theme-5;
-}
-
-.theme-color-5-bordered {
-  color: @theme-5-text;
-  background-color: @theme-5;
-  border: 1px solid darken(@theme-5, 10%);
-}
-
-// theme color 6
-.theme-color-6 {
-  color: @theme-6-text;
-  background-color: @theme-6;
-}
-
-.theme-color-6-bordered {
-  color: @theme-6-text;
-  background-color: @theme-6;
-  border: 1px solid darken(@theme-6, 10%);
-}
-
-// theme color 7
-.theme-color-7 {
-  color: @theme-7-text;
-  background-color: @theme-7;
-}
-
-.theme-color-7-bordered {
-  color: @theme-7-text;
-  background-color: @theme-7;
-  border: 1px solid darken(@theme-7, 10%);
-}
-
-.color-primary {
-  color: @brand-primary;
-}
-
-.color-success {
-  color: @brand-success;
-}
-
-.color-warning {
-  color: @brand-warning;
-}
-
-.color-info {
-  color: @brand-info;
-}
-
-.color-danger {
-  color: @brand-danger;
-}
-
-// background colors
-.bg-color {
-  background-color: @body-bg;
-}
-
-// font weights
-.text-color {
-  color: @text-color;
-}
-
-.text-normal {
-  font-weight: 400;
-}
-
-.text-light {
-  font-weight: @font-weight-light;
-}
-
-.text-semibold {
-  font-weight: @font-weight-semibold;
-}
-
-.text-bold {
-  font-weight: @font-weight-bold;
-}
-
-.text-shadow-light {
-  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-}
-
-.text-shadow {
-  text-shadow: -1px -1px 0 #777, 1px -1px 0 #777, -1px 1px 0 #777, 1px 1px 0 #777;
-}
-
-.text-shadow-dark {
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-}
 
 .is-inactive {
   opacity: .6;
 }
 
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.leading-tight {
-  line-height: .9;
-}
-
-.leading-snug {
-  line-height: 1;
-}
-
-.leading-normal {
-  line-height: 1.5;
-}
-
-.leading-relaxed {
-  line-height: 1.75;
-}
-
-.leading-loose {
-  line-height: 2;
-}
-
-// 2. Spacing (note: default @grid-gutter-width is 30px in BS3)
-// -------------------------
-// all (top, bottom, right, left)
-.padding-all-none {
-  padding: 0 !important;
-}
-.padding-all-sm {
-  padding: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-all-md {
-  padding: @grid-gutter-width * @spacing-md !important;
-}
-.padding-all-lg {
-  padding: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-all-xl {
-  padding: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-all-none {
-  margin: 0 !important;
-}
-.margin-all-sm {
-  margin: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-all-md {
-  margin: @grid-gutter-width * @spacing-md !important;
-}
-.margin-all-lg {
-  margin: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-all-xl {
-  margin: @grid-gutter-width * @spacing-xl !important;
-}
-
-// vertical (top, bottom)
-.padding-v-none {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-.padding-v-sm {
-  padding-top: @grid-gutter-width * @spacing-sm !important;
-  padding-bottom: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-v-md {
-  padding-top: @grid-gutter-width * @spacing-md !important;
-  padding-bottom: @grid-gutter-width * @spacing-md !important;
-}
-.padding-v-lg {
-  padding-top: @grid-gutter-width * @spacing-lg !important;
-  padding-bottom: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-v-xl {
-  padding-top: @grid-gutter-width * @spacing-xl !important;
-  padding-bottom: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-v-none {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-.margin-v-sm {
-  margin-top: @grid-gutter-width * @spacing-sm !important;
-  margin-bottom: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-v-md {
-  margin-top: @grid-gutter-width * @spacing-md !important;
-  margin-bottom: @grid-gutter-width * @spacing-md !important;
-}
-.margin-v-lg {
-  margin-top: @grid-gutter-width * @spacing-lg !important;
-  margin-bottom: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-v-xl {
-  margin-top: @grid-gutter-width * @spacing-xl !important;
-  margin-bottom: @grid-gutter-width * @spacing-xl !important;
-}
-
-// horizontal (right, left)
-.padding-h-none {
-  padding-right: 0 !important;
-  padding-left: 0 !important;
-}
-.padding-h-sm {
-  padding-right: @grid-gutter-width * @spacing-sm !important;
-  padding-left: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-h-md {
-  padding-right: @grid-gutter-width * @spacing-md !important;
-  padding-left: @grid-gutter-width * @spacing-md !important;
-}
-.padding-h-lg {
-  padding-right: @grid-gutter-width * @spacing-lg !important;
-  padding-left: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-h-xl {
-  padding-right: @grid-gutter-width * @spacing-xl !important;
-  padding-left: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-h-none {
-  margin-right: 0 !important;
-  margin-left: 0 !important;
-}
-.margin-h-sm {
-  margin-right: @grid-gutter-width * @spacing-sm !important;
-  margin-left: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-h-md {
-  margin-right: @grid-gutter-width * @spacing-md !important;
-  margin-left: @grid-gutter-width * @spacing-md !important;
-}
-.margin-h-lg {
-  margin-right: @grid-gutter-width * @spacing-lg !important;
-  margin-left: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-h-xl {
-  margin-right: @grid-gutter-width * @spacing-xl !important;
-  margin-left: @grid-gutter-width * @spacing-xl !important;
-}
-
-// top
-.padding-t-none {
-  padding-top: 0 !important;
-}
-.padding-t-sm {
-  padding-top: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-t-md {
-  padding-top: @grid-gutter-width * @spacing-md !important;
-}
-.padding-t-lg {
-  padding-top: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-t-xl {
-  padding-top: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-t-none {
-  margin-top: 0 !important;
-}
-.margin-t-sm {
-  margin-top: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-t-md {
-  margin-top: @grid-gutter-width * @spacing-md !important;
-}
-.margin-t-lg {
-  margin-top: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-t-xl {
-  margin-top: @grid-gutter-width * @spacing-xl !important;
-}
-
-// bottom
-.padding-b-none {
-  padding-bottom: 0 !important;
-}
-.padding-b-sm {
-  padding-bottom: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-b-md {
-  padding-bottom: @grid-gutter-width * @spacing-md !important;
-}
-.padding-b-lg {
-  padding-bottom: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-b-xl {
-  padding-bottom: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-b-none {
-  margin-bottom: 0 !important;
-}
-.margin-b-sm {
-  margin-bottom: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-b-md {
-  margin-bottom: @grid-gutter-width * @spacing-md !important;
-}
-.margin-b-lg {
-  margin-bottom: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-b-xl {
-  margin-bottom: @grid-gutter-width * @spacing-xl !important;
-}
-
-// right
-.padding-r-none {
-  padding-right: 0 !important;
-}
-.padding-r-sm {
-  padding-right: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-r-md {
-  padding-right: @grid-gutter-width * @spacing-md !important;
-}
-.padding-r-lg {
-  padding-right: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-r-xl {
-  padding-right: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-r-none {
-  margin-right: 0 !important;
-}
-.margin-r-sm {
-  margin-right: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-r-md {
-  margin-right: @grid-gutter-width * @spacing-md !important;
-}
-.margin-r-lg {
-  margin-right: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-r-xl {
-  margin-right: @grid-gutter-width * @spacing-xl !important;
-}
-
-// left
-.padding-l-none {
-  padding-left: 0 !important;
-}
-.padding-l-sm {
-  padding-left: @grid-gutter-width * @spacing-sm !important;
-}
-.padding-l-md {
-  padding-left: @grid-gutter-width * @spacing-md !important;
-}
-.padding-l-lg {
-  padding-left: @grid-gutter-width * @spacing-lg !important;
-}
-.padding-l-xl {
-  padding-left: @grid-gutter-width * @spacing-xl !important;
-}
-
-.margin-l-none {
-  margin-left: 0 !important;
-}
-.margin-l-sm {
-  margin-left: @grid-gutter-width * @spacing-sm !important;
-}
-.margin-l-md {
-  margin-left: @grid-gutter-width * @spacing-md !important;
-}
-.margin-l-lg {
-  margin-left: @grid-gutter-width * @spacing-lg !important;
-}
-.margin-l-xl {
-  margin-left: @grid-gutter-width * @spacing-xl !important;
-}
-
-
-// 3. Even Height Columns - provides classes for making columns even heights
-// -------------------------
-
-// usage row row-eq-height
-
-.row-eq-height {
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  height: 100%;
-}
-
-@media @md {
-  .row-eq-height-md {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    height: 100%;
-  }
-}
-
-
-// 4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
-// -------------------------
-
-@media (max-width: @screen-xs-max) {
-  .xs-text-center {
-    text-align: center;
-  }
-  .xs-text-left {
-    text-align: left;
-  }
-  .xs-text-right {
-    text-align: right;
-  }
-}
+.util-mix-display;
+.util-mix-flex;
+.util-mix-order;
+.util-mix-spacing;
+.util-mix-text-align;
 
 @media (min-width: @screen-sm-min) {
-  .sm-text-center {
-    text-align: center;
-  }
-  .sm-text-left {
-    text-align: left;
-  }
-  .sm-text-right {
-    text-align: right;
-  }
+  .util-mix-display("sm");
+  .util-mix-flex("sm");
+  .util-mix-order("sm");
+  .util-mix-spacing("sm");
+  .util-mix-text-align("sm");
 }
 
 @media (min-width: @screen-md-min) {
-  .md-text-center {
-    text-align: center;
-  }
-  .md-text-left {
-    text-align: left;
-  }
-  .md-text-right {
-    text-align: right;
-  }
+  .util-mix-display("md");
+  .util-mix-flex("md");
+  .util-mix-order("md");
+  .util-mix-spacing("md");
+  .util-mix-text-align("md");
 }
 
 @media (min-width: @screen-lg-min) {
-  .lg-text-center {
-    text-align: center;
-  }
-  .lg-text-left {
-    text-align: left;
-  }
-  .lg-text-right {
-    text-align: right;
-  }
+  .util-mix-display("lg");
+  .util-mix-flex("lg");
+  .util-mix-order("lg");
+  .util-mix-spacing("lg");
+  .util-mix-text-align("lg");
 }
 
-// 5. Utilities
-// -------------------------
-.width-full {
-  width: 100%;
-}
-
-.width-half {
-  width: 50%;
-}
-
-.width-quarter {
-  width: 25%;
-}
-
-.width-third {
-  width: 33.33333%;
-}
-
-.unselectable {
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.text-left           { text-align: left !important; }
-.text-right          { text-align: right !important; }
-.text-center         { text-align: center !important; }
-
-// BS4 Alignment Utilities
-.align-baseline    { vertical-align: baseline !important; } // Browser default
-.align-top         { vertical-align: top !important; }
-.align-middle      { vertical-align: middle !important; }
-.align-bottom      { vertical-align: bottom !important; }
-.align-text-bottom { vertical-align: text-bottom !important; }
-.align-text-top    { vertical-align: text-top !important; }
-
-
-// Opacity
-.o-00,
-.o-0 {
-  opacity: 0;
-}
-
-.o-10 {
-  opacity: .1;
-}
-
-.o-20 {
-  opacity: .2;
-}
-
-.o-30 {
-  opacity: .3;
-}
-
-.o-40 {
-  opacity: .4;
-}
-
-.o-50 {
-  opacity: .5;
-}
-
-.o-60 {
-  opacity: .6;
-}
-
-.o-70 {
-  opacity: .7;
-}
-
-.o-80 {
-  opacity: .8;
-}
-
-.o-90 {
-  opacity: .9;
+@media print {
+  .util-mix-display("print");
 }
 
 // Flex Utilities (Relocated in V11)
-
-.d-flex {
-  display: flex !important;
-}
-
-.d-inline {
-  display: inline !important;
-}
-
-.position-relative {
-  position: relative !important;
-}
-
-.h-100 {
-  height: 100% !important;
-}
-
-.align-items-center {
-  align-items: center !important;
-}
-
-.flex-column {
-  flex-direction: column !important;
-}
-
-.flex-grow-1 {
-  flex-grow: 1 !important;
-}
-
-.flex-shrink-1 {
-  flex-shrink: 1 !important;
-}
-
-.overflow-auto {
-  overflow: auto !important;
-}
 
 .no-gutters {
   margin-right: 0;

@@ -26,7 +26,7 @@ using Rock.Rest.Jwt;
 namespace Rock.Rest.Filters
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <seealso cref="System.Web.Http.Filters.AuthorizationFilterAttribute" />
     public class AuthenticateAttribute : AuthorizationFilterAttribute
@@ -41,7 +41,6 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !string.IsNullOrWhiteSpace( principal.Identity.Name ) )
             {
-
                 //var userLoginService = new UserLoginService();
                 //var user = userLoginService.GetByUserName(principal.Identity.Name);
                 //if ( user != null )

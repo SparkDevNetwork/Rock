@@ -90,13 +90,16 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CampusId = source.CampusId;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.CompletedSourceDate = source.CompletedSourceDate;
             target.EndDateTime = source.EndDateTime;
+            target.EndSourceDate = source.EndSourceDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Note = source.Note;
             target.Order = source.Order;
             target.PersonAliasId = source.PersonAliasId;
             target.StartDateTime = source.StartDateTime;
+            target.StartSourceDate = source.StartSourceDate;
             target.StepStatusId = source.StepStatusId;
             target.StepTypeId = source.StepTypeId;
             target.CreatedDateTime = source.CreatedDateTime;

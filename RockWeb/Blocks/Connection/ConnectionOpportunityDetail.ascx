@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     function clearActiveDialog() {
-        $('#<%= btnHideDialog.ClientID %>').click();
+        $('#<%= btnHideDialog.ClientID %>').trigger('click');
     }
 
     function updateField(obj) {
@@ -242,6 +242,7 @@
                             <asp:ListItem Value="3" Text="State Changed" />
                             <asp:ListItem Value="4" Text="Activity Added" />
                             <asp:ListItem Value="6" Text="Manual" />
+                            <asp:ListItem Value="9" Text="Future Follow-up Date Reached" />
                         </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">

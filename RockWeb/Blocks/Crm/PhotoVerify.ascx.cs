@@ -39,10 +39,23 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM > PhotoRequest" )]
     [Description( "Allows uploaded photos to be verified." )]
 
-    [IntegerField( "Photo Size", "The size of the preview photo. Default is 65.", false, 65 )]
+    [IntegerField(
+        "Photo Size",
+        Key = AttributeKey.PhotoSize,
+        Description = "The size of the preview photo. Default is 65.",
+        IsRequired = false,
+        DefaultIntegerValue = 65,
+        Order = 0 )]
 
     public partial class PhotoVerify : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string PhotoSize = "PhotoSize";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         // used for private variables
@@ -79,7 +92,7 @@ namespace RockWeb.Blocks.Crm
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
 
-            size = GetAttributeValue( "PhotoSize" ).AsInteger();
+            size = GetAttributeValue( AttributeKey.PhotoSize ).AsInteger();
             if ( size <= 0 )
             {
                 size = 65;

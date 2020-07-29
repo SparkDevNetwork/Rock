@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 
 using Rock;
@@ -73,9 +74,19 @@ namespace Rock.Workflow.Action
                             if ( dataView != null )
                             {
                                 var timeout = GetAttributeValue( action, "Timeout" ).AsIntegerOrNull();
+                                Stopwatch stopwatch = Stopwatch.StartNew();
                                 var qry = dataView.GetQuery( null, timeout, out errorMessages );
-                                if ( qry != null && qry.Where( e => e.Id == person.Id ).Any() )
+                                var isPersonFound = false;
+                                if ( qry != null )
                                 {
+                                    isPersonFound = qry.Where( e => e.Id == person.Id ).Any();
+                                    stopwatch.Stop();
+                                    DataViewService.AddRunDataViewTransaction( dataView.Id,
+                                                                    Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                                }
+
+                                if ( isPersonFound )
+                                { 
                                     SetWorkflowAttributeValue( action, booleanGuid, "True" );
                                 }
                                 else
@@ -110,7 +121,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if ( attributePerson != null )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         if ( attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )

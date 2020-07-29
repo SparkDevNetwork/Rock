@@ -141,7 +141,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.workflow-activity > header').click(function () {
+$('.workflow-activity > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -151,8 +151,8 @@ $('.workflow-activity > header').click(function () {
     $('i.workflow-activity-state', this).toggleClass('fa-chevron-up');
 });
 
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-activity a.js-activity-delete').click(function (event) {
+// fix so that the Remove button will fire its event, but not the parent event
+$('.workflow-activity a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
     return Rock.dialogs.confirmDelete(event, 'Activity' );
 });
@@ -218,13 +218,13 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             if (_ppAssignedToPerson.SelectedValue.HasValue)
             {
                 activity.AssignedPersonAliasId = _ppAssignedToPerson.PersonAliasId;
-            } 
+            }
             else
             {
                 activity.AssignedPersonAliasId = null;
             }
 
-            
+
             if (_gpAssignedToGroup.SelectedValueAsInt().HasValue)
             {
                 activity.AssignedGroupId = _gpAssignedToGroup.SelectedValueAsInt();
@@ -369,7 +369,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblActivityTypeName );
             _lblActivityTypeName.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeName.ID = this.ID + "_lblActivityTypeName";
-            
+
             _lblActivityTypeDescription = new Label();
             Controls.Add( _lblActivityTypeDescription );
             _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
@@ -603,8 +603,8 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             {
                 workflowActionEditor.ValidationGroup = ValidationGroup;
                 workflowActionEditor.RenderControl( writer );
-            } 
-            
+            }
+
             writer.RenderEndTag();  // tbody
 
             writer.RenderEndTag();  // table

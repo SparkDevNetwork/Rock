@@ -41,15 +41,16 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
 
-    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false )]
-    [LinkedPage( "Detail Page" )]
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
-    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
-    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
-    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6, SHOW_DATE_ADDED_KEY )]
-    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
+    [TextField( "Block Title", "The text used in the title/header bar for this block.", true, "Group Members", "", 0 )]
+    [LinkedPage( "Detail Page", order: 1 )]
+    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false, order: 2 )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
+    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 5 )]
+    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 6 )]
+    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
+    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
@@ -147,6 +148,30 @@ namespace RockWeb.Blocks.Groups
             if ( groupGuid == Guid.Empty )
             {
                 groupId = PageParameter( "GroupId" ).AsInteger();
+
+                /*
+                 * 1/15/2020 - JPH
+                 * Since we have established a relationship between Campuses and Groups (by way of the Campus.TeamGroup property),
+                 * it is now necessary keep a reference to any supplied "CampusId" query string parameter, so it can be passed to
+                 * any child Pages, in order for that child Page to pass the same value back to any parent Pages housing this Block.
+                 *
+                 * Reason: Campus Team Feature
+                 */
+                var campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
+                hfCampusId.Value = campusId.ToString();
+
+                // if we don't yet have a groupId, and a CampusId PageParameter is defined, attempt to determine the groupId from the Campus.TeamGroupId property
+                if ( groupId == 0 && campusId.HasValue )
+                {
+                    int? campusTeamGroupId = new CampusService( new RockContext() )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.Id == campusId.Value )
+                        .Select( c => c.TeamGroupId )
+                        .FirstOrDefault();
+
+                    groupId = campusTeamGroupId ?? 0;
+                }
             }
 
             if ( !( groupId == 0 && groupGuid == Guid.Empty ) )
@@ -416,7 +441,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( ! _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
+                if ( !_showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
                     sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
                 }
@@ -424,7 +449,7 @@ namespace RockWeb.Blocks.Groups
                 // If there is a required signed document that member has not signed, show an icon in the grid
                 if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
                 {
-                    sbNameHtml.Append( " <i class='fa fa-pencil-square-o text-danger'></i>" );
+                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();
@@ -734,7 +759,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
+            if ( hfCampusId.Value.AsIntegerOrNull().HasValue )
+            {
+                var qryString = new Dictionary<string, string>()
+                {
+                    { "GroupMemberId", "0" },
+                    { "GroupId", _group.Id.ToString() },
+                    { "CampusId", hfCampusId.Value }
+                };
+
+                NavigateToLinkedPage( "DetailPage", qryString );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
+            }
         }
 
         /// <summary>
@@ -744,7 +783,16 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
+            var campusId = hfCampusId.Value.AsIntegerOrNull();
+
+            if ( campusId.HasValue )
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId, "CampusId", campusId.Value );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
+            }
         }
 
         /// <summary>
@@ -831,7 +879,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
@@ -987,6 +1035,7 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ControlStyle.CssClass = "btn btn-default btn-sm";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
 
             /*
@@ -1001,8 +1050,11 @@ namespace RockWeb.Blocks.Groups
              *
              * Reason: XSS Prevention
              */
+
             hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
+
+            hlPersonProfileLink.DataTextFormatString = "<i class='fa fa-user'></i>";
+
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
@@ -1203,7 +1255,10 @@ namespace RockWeb.Blocks.Groups
             rFilter.Visible = true;
             gGroupMembers.Visible = true;
 
-            lHeading.Text = string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
+            string blockTitle = GetAttributeValue( "BlockTitle" );
+            lHeading.Text = !string.IsNullOrWhiteSpace( blockTitle )
+                ? blockTitle
+                : string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
 
             _fullNameField = gGroupMembers.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gGroupMembers.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lNameWithHtml" ).FirstOrDefault();

@@ -17,18 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Data.Entity;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -67,7 +65,20 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = true,
         Order = 3,
         Key = AttributeKey.MetricCategories )]
-    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 4 )]
+    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 4, AttributeKey.Campuses )]
+    [BooleanField(
+        "Insert 0 for Blank Items",
+        Description = "If enabled, a zero will be added to any metrics that are left empty when entering data.",
+        DefaultValue = "false",
+        Order = 5,
+        Key = AttributeKey.DefaultToZero )]
+    [CustomDropdownListField(
+        "Metric Date Determined By",
+        Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
+        DefaultValue = "0",
+        ListSource = "0^Sunday Date,1^Day from Schedule",
+        Order = 6,
+        Key = AttributeKey.MetricDateDeterminedBy )]
     public partial class ServiceMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -78,6 +89,9 @@ namespace RockWeb.Blocks.Reporting
             public const string WeeksBack = "WeeksBack";
             public const string WeeksAhead = "WeeksAhead";
             public const string MetricCategories = "MetricCategories";
+            public const string Campuses = "Campuses";
+            public const string DefaultToZero = "DefaultToZero";
+            public const string MetricDateDeterminedBy = "MetricDateDeterminedBy";
         }
 
         #endregion Attribute Keys
@@ -282,6 +296,8 @@ namespace RockWeb.Blocks.Reporting
                     var metricService = new MetricService( rockContext );
                     var metricValueService = new MetricValueService( rockContext );
 
+                    weekend = GetWeekendDate( scheduleId, weekend, rockContext );
+
                     foreach ( RepeaterItem item in rptrMetric.Items )
                     {
                         var hfMetricIId = item.FindControl( "hfMetricId" ) as HiddenField;
@@ -289,6 +305,14 @@ namespace RockWeb.Blocks.Reporting
 
                         if ( hfMetricIId != null && nbMetricValue != null )
                         {
+                            var metricYValue = nbMetricValue.Text.AsDecimalOrNull();
+
+                            // If no value was provided and the block is not configured to default to "0" then just skip this metric.
+                            if ( metricYValue == null && !GetAttributeValue( AttributeKey.DefaultToZero ).AsBoolean() )
+                            {
+                                continue;
+                            }
+
                             int metricId = hfMetricIId.ValueAsInt();
                             var metric = new MetricService( rockContext ).Get( metricId );
 
@@ -326,7 +350,15 @@ namespace RockWeb.Blocks.Reporting
                                     metricValue.MetricValuePartitions.Add( scheduleValuePartition );
                                 }
 
-                                metricValue.YValue = nbMetricValue.Text.AsDecimalOrNull();
+                                if ( metricYValue == null )
+                                {
+                                    metricValue.YValue = 0;
+                                }
+                                else
+                                {
+                                    metricValue.YValue = metricYValue;
+                                }
+
                                 metricValue.Note = tbNote.Text;
                             }
                         }
@@ -341,6 +373,17 @@ namespace RockWeb.Blocks.Reporting
 
                 BindMetrics();
             }
+        }
+
+        private static DateTime? GetFirstScheduledDate( DateTime? weekend, Schedule schedule )
+        {
+            var date = schedule.GetNextStartDateTime( weekend.Value );
+            if ( date.Value.Date > weekend.Value )
+            {
+                date = schedule.GetNextStartDateTime( weekend.Value.AddDays( -7 ) );
+            }
+
+            return date;
         }
 
         /// <summary>
@@ -471,7 +514,15 @@ namespace RockWeb.Blocks.Reporting
             // Load service times
             foreach ( var service in GetServices() )
             {
-                bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                var listItemText = service.Name;
+
+                if ( _selectedWeekend != null && GetAttributeValue( AttributeKey.MetricDateDeterminedBy ).AsInteger() == 1 )
+                {
+                    var date = GetFirstScheduledDate( _selectedWeekend, service );
+                    listItemText = string.Format( "{0} ({1})", service.Name, date.ToShortDateString() );
+                }
+
+                bddlService.Items.Add( new ListItem( listItemText, service.Id.ToString() ) );
             }
             bddlService.SetValue( _selectedServiceId );
         }
@@ -574,6 +625,8 @@ namespace RockWeb.Blocks.Reporting
                 var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
                 using ( var rockContext = new RockContext() )
                 {
+                    weekend = GetWeekendDate( scheduleId, weekend, rockContext );
+
                     var metricValueService = new MetricValueService( rockContext );
                     foreach ( var metric in new MetricService( rockContext )
                         .GetByGuids( metricGuids )
@@ -626,6 +679,18 @@ namespace RockWeb.Blocks.Reporting
             rptrMetric.DataBind();
 
             tbNote.Text = notes.AsDelimited( Environment.NewLine + Environment.NewLine );
+        }
+
+        private DateTime? GetWeekendDate( int? scheduleId, DateTime? weekend, RockContext rockContext )
+        {
+            if ( GetAttributeValue( AttributeKey.MetricDateDeterminedBy ).AsInteger() == 1 )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var schedule = scheduleService.Get( scheduleId.Value );
+                weekend = GetFirstScheduledDate( weekend, schedule );
+            }
+
+            return weekend;
         }
 
         #endregion

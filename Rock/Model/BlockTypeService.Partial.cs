@@ -76,7 +76,7 @@ namespace Rock.Model
             {
                 registeredTypes = new BlockTypeService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( b => b.EntityTypeId.HasValue )
+                    .Where( b => b.EntityTypeId.HasValue && !string.IsNullOrEmpty( b.EntityType.AssemblyName ) )
                     .ToList()
                     .Select( b => Type.GetType( b.EntityType.AssemblyName, false ) )
                     .Where( b => b != null )
@@ -145,7 +145,7 @@ namespace Rock.Model
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
+        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -231,11 +231,11 @@ namespace Rock.Model
                     catch ( Exception ex )
                     {
                         System.Diagnostics.Debug.WriteLine( $"RegisterBlockTypes failed for {path} with exception: {ex.Message}" );
-                        ExceptionLogService.LogException( new Exception( string.Format("Problem processing block with path '{0}'.", path ), ex ), null );
+                        ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", path ), ex ), null );
                     }
                 }
             }
-       
+
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Rock.Model
         {
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
             string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
-            
+
             // Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
             string virtualPath = string.Format( "~/{0}/", folder );
 

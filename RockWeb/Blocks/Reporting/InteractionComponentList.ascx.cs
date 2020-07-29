@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Reporting
 		<div class='panel-body'>
 			{% for component in InteractionComponents %}
 			
-				 {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+				 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
                 {% endif %}
                 
@@ -60,16 +60,16 @@ namespace RockWeb.Blocks.Reporting
                         <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
                     </div>
                 </div>
-                {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     </a>
                 {% endif %}
 				
 			{% endfor %}	
             <div class ='nav-paging'>
-            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
+            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != '' %}
                 <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i> Prev<a/>
             {% endif %}
-            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
+            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != '' %}
                 <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
             {% endif %}
             </div>
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "channelId" ).AsIntegerOrNull();
+            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Reporting
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.ChannelId == _channelId.Value );
+                            a.InteractionChannelId == _channelId.Value );
 
                     var personId = GetPersonId();
                     if ( personId.HasValue )

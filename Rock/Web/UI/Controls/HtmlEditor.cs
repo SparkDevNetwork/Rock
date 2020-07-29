@@ -300,28 +300,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the custom javascript that will get executed when the editor 'onKeyUp' event occurs.
-        /// Obsolete because it is misleading that this actually is triggered off of the onKeyUp event
-        /// </summary>
-        /// <value>
-        /// The custom on change press script.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead", true )]
-        public string OnChangeScript
-        {
-            get
-            {
-                return CallbackOnKeyupScript;
-            }
-
-            set
-            {
-               CallbackOnKeyupScript= value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the custom javascript that will get executed when the editor 'onChange' event occurs
         /// </summary>
         /// <value>
@@ -726,7 +704,7 @@ $(document).ready( function() {{
         popover: {{
           image: [
             ['custom1', ['rockimagelink']],
-            ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
+            ['imagesize', ['resizeFull', 'resizeHalf', 'resizeQuarter']],
             ['custom2', ['rockimagebrowser', 'rockassetmanager']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
@@ -742,7 +720,6 @@ $(document).ready( function() {{
             ['insert', ['link', 'picture']]
           ]
         }},
-
         callbacks: {{
            {callbacksOption}
         }},
@@ -786,7 +763,7 @@ $(document).ready( function() {{
     }});
 
     if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{
-        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).click();
+        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).trigger('click');
     }}
 
 }});

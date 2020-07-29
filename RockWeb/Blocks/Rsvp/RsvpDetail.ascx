@@ -133,8 +133,8 @@
 
         <asp:Panel ID="pnlAttendees" runat="server" CssClass="panel panel-block">
             <script type="text/javascript">
-                Sys.Application.add_load(function () {
-                    $('.js-rsvp-paired-checkbox').click(function (e) {
+            Sys.Application.add_load(function () {
+                $('.js-rsvp-paired-checkbox').on('click', function (e) {
                         if ($(this)[0].checked) {
                             var pairedCheckbox = $('#' + $(this).data('paired-checkbox'))[0];
                             pairedCheckbox.checked = false;

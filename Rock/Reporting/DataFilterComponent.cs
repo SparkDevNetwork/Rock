@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -83,8 +84,40 @@ namespace Rock.Reporting
         /// <value>
         /// A set of key-value pairs representing the option names and values.
         /// </value>
-        public virtual Dictionary<string, object> Options { get; set; }
+        public virtual Dictionary<string, object> Options
+        {
+            get
+            {
+                if ( HttpContext.Current != null )
+                {
+                    return HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] as Dictionary<string, object>;
+                }
 
+                return _nonHttpContextOptions;
+            }
+
+            set
+            {
+                if ( HttpContext.Current != null )
+                {
+                    HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] = value;
+                }
+                else
+                {
+                    _nonHttpContextOptions = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The _Options when HttpContext.Current is null
+        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
+        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
+        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
+        /// </summary>
+        [ThreadStatic]
+        private static Dictionary<string, object> _nonHttpContextOptions;
+   
         #endregion
 
         #region Public Methods

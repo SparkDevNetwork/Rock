@@ -57,11 +57,11 @@
                             <Rock:RockTextBox ID="txtType" runat="server" Label="Type" />
                             <Rock:SlidingDateRangePicker ID="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" EmptyDataText="No Exceptions Found">
+                        <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" EmptyDataText="No Exceptions Found" OnRowDataBound="gExceptionList_RowDataBound">
                             <Columns>
                                 <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                                 <Rock:RockBoundField DataField="ExceptionTypeName" HeaderText="Type" SortExpression="ExceptionTypeName" TruncateLength="255" HtmlEncode="false" />
-                                <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" TruncateLength="255" HtmlEncode="false" ItemStyle-CssClass="wrap-contents" />
+                                <Rock:RockLiteralField ID="lDescription" HeaderText="Description" SortExpression="Description" ItemStyle-CssClass="wrap-contents" />
                                 <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='fa fa-file-alt'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />

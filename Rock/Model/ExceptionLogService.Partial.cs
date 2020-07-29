@@ -165,7 +165,7 @@ namespace Rock.Model
         /// Logs new <see cref="Rock.Model.ExceptionLog" /> entities.  This method serves as an interface to asynchronously log exceptions.
         /// </summary>
         /// <param name="ex">A <see cref="System.Exception" /> object to log.</param>
-        /// <param name="request">The request.</param>
+        /// <param name="request">The <see cref="T:System.Net.HttpRequestMessage" /></param>
         /// <param name="personAlias">The person alias.</param>
         public static void LogApiException( Exception ex, HttpRequestMessage request, PersonAlias personAlias = null )
         {
@@ -271,19 +271,18 @@ namespace Rock.Model
                 // Recurse if inner exception is found
                 if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
                 {
-                    LogExceptions( ex.InnerException, exceptionLog, false );
-                }
-
-                if ( ex is AggregateException )
-                {
-                    // if an AggregateException occurs, log the exceptions individually
-                    var aggregateException = ( ex as AggregateException );
-                    foreach ( var innerException in aggregateException.InnerExceptions )
+                    if ( ex is AggregateException aggregateException )
                     {
-                        LogExceptions( innerException, exceptionLog, false );
+                        foreach ( var innerException in aggregateException.InnerExceptions )
+                        {
+                            LogExceptions( innerException, exceptionLog, false );
+                        }
+                    }
+                    else
+                    {
+                        LogExceptions( ex.InnerException, exceptionLog, false );
                     }
                 }
-
             }
             catch ( Exception )
             {
@@ -481,7 +480,7 @@ namespace Rock.Model
         /// Populates the <see cref="Rock.Model.ExceptionLog" /> entity with the exception data.
         /// </summary>
         /// <param name="ex">The <see cref="System.Exception" /> to log.</param>
-        /// <param name="request">The request.</param>
+        /// <param name="request">The <see cref="T:System.Net.HttpRequestMessage" />.</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         private static ExceptionLog PopulateExceptionLog( Exception ex, HttpRequestMessage request, PersonAlias personAlias )

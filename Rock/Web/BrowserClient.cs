@@ -56,6 +56,7 @@ namespace Rock.Web
     /// <seealso cref="DotLiquid.Drop" />
     public class BrowserInfo : Drop
     {
+        // NewPointe - Don't recreate UAParser object for every request
         static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
         private ClientInfo _client = null;
 
@@ -141,7 +142,7 @@ namespace Rock.Web
             {
                 if ( _browserUserAgent == null )
                 {
-                    _browserUserAgent = new BrowserUserAgent( _client.UserAgent.Family, _client.UserAgent.Major, _client.UserAgent.Minor, _client.UserAgent.Patch );
+                    _browserUserAgent = new BrowserUserAgent( _client.UA.Family, _client.UA.Major, _client.UA.Minor, _client.UA.Patch );
                 }
 
                 return _browserUserAgent;

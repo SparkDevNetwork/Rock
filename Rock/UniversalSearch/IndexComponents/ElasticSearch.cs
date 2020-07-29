@@ -178,7 +178,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            _client.DeleteByQueryAsync( new DeleteByQueryRequest( Indices.Index( indexName ), typeof( T ) ) );
+            _client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
-                typeMapping.Dynamic = true;
+                typeMapping.Dynamic = DynamicMapping.Allow;
                 typeMapping.Properties = new Properties();
                 
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
@@ -254,12 +254,12 @@ namespace Rock.UniversalSearch.IndexComponents
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
                         // rewrite non-string index option (would be nice if they made the enums match up...)
-                        bool nsIndexOption = true;
+                        NonStringIndexOption nsIndexOption = NonStringIndexOption.NotAnalyzed;
                         if ( attribute.Type != IndexFieldType.String )
                         {
                             if ( attribute.Index == IndexType.NotIndexed )
                             {
-                                nsIndexOption = false;
+                                nsIndexOption = NonStringIndexOption.No;
                             }
                         }
 
@@ -465,7 +465,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                         d.AllIndices().AllTypes()
                                         .Query( q =>
                                             q.Fuzzy( f => f.Value( query )
-                                            .Rewrite( RewriteMultiTerm.TopTermsN ) )
+                                                .Rewrite(MultiTermQueryRewrite.TopTerms(size ?? 10)) )
                                         )
                                     );
                             break;
@@ -593,7 +593,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 document["Explain"] = hit.Explanation.ToJson();
                             }
 
-                            document.Score = hit.Score ?? 0;
+                            document.Score = hit.Score;
 
                             documents.Add( document );
                         }
@@ -622,7 +622,7 @@ namespace Rock.UniversalSearch.IndexComponents
         }}
 }}", Char.ToLowerInvariant( propertyName[0] ) + propertyName.Substring( 1 ), propertyValue );
 
-            var response = _client.DeleteByQuery<IndexModelBase>( qd => new DeleteByQueryRequest( documentType.Name.ToLower(), documentType ) { Query = new RawQuery( jsonSearch ) } );
+            var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
         }
 
         /// <summary>

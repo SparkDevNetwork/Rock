@@ -117,7 +117,7 @@
                 }
             });
 
-            $('#' + options.aRemove).click(function () {
+            $('#' + options.aRemove).on('click', function () {
                 $(this).hide();
                 var $el = $('#' + options.aFileName);
                 $el.attr('href', '#');

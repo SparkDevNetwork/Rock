@@ -39,8 +39,10 @@ namespace Rockweb.Blocks.Crm
     [Description( "Allows you to take a EQ Inventory test and saves your EQ Inventory score." )]
 
     #region Block Attributes
-    [CodeEditorField( "Instructions",
-        Key = AttributeKeys.Instructions,
+
+    [CodeEditorField(
+        "Instructions",
+        Key = AttributeKey.Instructions,
         Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
         EditorTheme = CodeEditorTheme.Rock,
@@ -49,8 +51,9 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = InstructionsDefaultValue,
         Order = 0 )]
 
-    [CodeEditorField( "Results Message",
-        Key = AttributeKeys.ResultsMessage,
+    [CodeEditorField(
+        "Results Message",
+        Key = AttributeKey.ResultsMessage,
         Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
         EditorTheme = CodeEditorTheme.Rock,
@@ -59,27 +62,30 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = ResultsMessageDefaultValue,
         Order = 1 )]
 
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
+    [TextField(
+        "Set Page Title",
+        Key = AttributeKey.SetPageTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "EQ Inventory Assessment",
         Order = 2 )]
 
     [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
+        Key = AttributeKey.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "fa fa-theater-masks",
         Order = 3 )]
 
-    [IntegerField( "Number of Questions",
-        Key = AttributeKeys.NumberofQuestions,
+    [IntegerField(
+        "Number of Questions",
+        Key = AttributeKey.NumberOfQuestions,
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 7,
         Order = 4 )]
     #endregion Block Attributes
+
     public partial class EQInventory : Rock.Web.UI.RockBlock
     {
         #region Attribute Default values
@@ -239,9 +245,9 @@ namespace Rockweb.Blocks.Crm
         #endregion Attribute Default values
 
         #region Attribute Keys
-        private static class AttributeKeys
+        private static class AttributeKey
         {
-            public const string NumberofQuestions = "NumberofQuestions";
+            public const string NumberOfQuestions = "NumberofQuestions";
             public const string Instructions = "Instructions";
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
@@ -332,8 +338,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
-            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
+            get { return ViewState[AttributeKey.NumberOfQuestions] as int? ?? 0; }
+            set { ViewState[AttributeKey.NumberOfQuestions] = value; }
         }
 
         /// <summary>
@@ -749,13 +755,13 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            string panelTitle = this.GetAttributeValue( AttributeKey.SetPageTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            string panelIcon = this.GetAttributeValue( AttributeKey.SetPageIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -778,7 +784,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "Person", _targetPerson );
             }
 
-            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            lInstructions.Text = GetAttributeValue( AttributeKey.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -820,7 +826,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "EQUnderStress", result.EQ_UnderStressScale );
             }
 
-            lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );
+            lResult.Text = GetAttributeValue( AttributeKey.ResultsMessage ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -842,7 +848,7 @@ namespace Rockweb.Blocks.Crm
             if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
+                int numQuestions = this.GetAttributeValue( AttributeKey.NumberOfQuestions ).AsInteger();
                 QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 

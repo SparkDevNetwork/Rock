@@ -37,16 +37,91 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "RSS Feed" )]
     [Category( "CMS" )]
     [Description( "Gets and consumes and RSS Feed. The feed is rendered based on a provided lava template. " )]
-    [TextField( "RSS Feed Url", "The Url of the RSS Feed to retrieve and consume", true, "", "Feed" )]
-    [IntegerField( "Results per page", "How many results/articles to display on the page at a time. Default is 10.", false, 10, "Feed" )]
-    [IntegerField( "Cache Duration", "The length of time (in minutes) that the RSS Feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20, "Feed" )]
-    [TextField( "CSS File", "An optional CSS file to add to the page for styling. Example \"Styles/rss.css\" would point to the stylesheet in the current theme's styles folder.", false, "", "Layout" )]
-    [CodeEditorField( "Template", "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
-        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/RSSFeed.lava' %}", "Layout" )]
-    [BooleanField( "Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed" )]
-    [LinkedPage( "Detail Page" )]
+
+    #region Block Attributes
+
+    [TextField(
+        "RSS Feed URL",
+        Description = "The URL of the RSS Feed to retrieve and consume",
+        IsRequired = true,
+        Category = "Feed",
+        Key = AttributeKey.RSSFeedUrl )]
+
+    [IntegerField(
+        "Results per page",
+        Description = "How many results/articles to display on the page at a time. Default is 10.",
+        IsRequired = false,
+        DefaultIntegerValue =  10,
+        Category = "Feed",
+        Key = AttributeKey.Resultsperpage )]
+
+    [IntegerField(
+        "Cache Duration",
+        Description = "The length of time (in minutes) that the RSS Feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes",
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Category = "Feed",
+        Key = AttributeKey.CacheDuration )]
+
+    [TextField(
+        "CSS File",
+        Description = "An optional CSS file to add to the page for styling. Example \"Styles/rss.css\" would point to the stylesheet in the current theme's styles folder.",
+        IsRequired =false,
+        Category = "Layout",
+        Key = AttributeKey.CSSFile )]
+
+    [CodeEditorField(
+        "Template",
+        Description = "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/RSSFeed.lava' %}",
+        Category = "Layout",
+        Key = AttributeKey.Template )]
+
+    [BooleanField(
+        "Include RSS Link",
+        Description = "Flag indicating that an RSS link should be included in the page header.",
+        DefaultBooleanValue = true,
+        Category = "Feed",
+        Key = AttributeKey.IncludeRSSLink )]
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion
     public partial class RSSFeed : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string RSSFeedUrl = "RSSFeedUrl";
+            public const string Resultsperpage = "Resultsperpage";
+            public const string CacheDuration = "CacheDuration";
+            public const string CSSFile = "CSSFile";
+            public const string Template = "Template";
+            public const string IncludeRSSLink = "IncludeRSSLink";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ArticlePage = "ArticlePage";
+        }
+
+        #endregion Page Parameter Keys
+
         #region Private Properties
 
         private string TemplateCacheKey
@@ -58,16 +133,17 @@ namespace RockWeb.Blocks.Cms
         }
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
             BlockUpdated += RSSFeed_BlockUpdated;
             AddConfigurationUpdateTrigger( upContent );
 
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "CSSFile" ) ) )
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CSSFile ) ) )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ), false );
+                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( AttributeKey.CSSFile ) ), false );
             }
 
         }
@@ -80,27 +156,31 @@ namespace RockWeb.Blocks.Cms
 
             LoadFeed();
         }
-        #endregion
+
+        #endregion Base Control Methods
 
         #region Page Events
+
         protected void RSSFeed_BlockUpdated( object sender, EventArgs e )
         {
             ClearCache();
             pnlContent.Visible = false;
             LoadFeed();
         }
+
         #endregion
 
         #region Internal Methods
+
         private void ClearCache()
         {
-            SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
+            SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( AttributeKey.RSSFeedUrl ) );
             LavaTemplateCache.Remove( TemplateCacheKey );
         }
 
         private Template GetTemplate()
         {
-            var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( "Template" ) );
+            var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;
         }
 
@@ -163,7 +243,7 @@ namespace RockWeb.Blocks.Cms
         private void LoadFeed()
         {
 
-            string feedUrl = GetAttributeValue( "RSSFeedUrl" );
+            string feedUrl = GetAttributeValue( AttributeKey.RSSFeedUrl );
 
             Dictionary<string, string> messages = new Dictionary<string, string>();
             bool isError = false;
@@ -171,16 +251,16 @@ namespace RockWeb.Blocks.Cms
             try
             {
 
-                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, GetAttributeValue( "DetailPage" ), GetAttributeValue( "CacheDuration" ).AsInteger(), ref messages, ref isError );
+                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, GetAttributeValue( AttributeKey.DetailPage ), GetAttributeValue( AttributeKey.CacheDuration ).AsInteger(), ref messages, ref isError );
 
                 if ( feedDictionary != null )
                 {
 
-                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger();
+                    int articlesPerPage = GetAttributeValue( AttributeKey.Resultsperpage ).AsInteger();
                     int currentPage = 0;
                     string baseUrl = new PageReference( RockPage.PageId ).BuildUrl();
 
-                    int.TryParse( PageParameter( "articlepage" ), out currentPage );
+                    int.TryParse( PageParameter( PageParameterKey.ArticlePage ), out currentPage );
 
                     if ( feedDictionary.ContainsKey( "ResultsPerPage" ) )
                     {
@@ -211,11 +291,11 @@ namespace RockWeb.Blocks.Cms
                     }
 
 
-                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RSSFeedUrl ) ) && GetAttributeValue( AttributeKey.IncludeRSSLink ).AsBoolean() )
                     {
                         string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />",
                             feedDictionary.ContainsKey( "title" ) ? feedDictionary["title"].ToString() : "RSS",
-                            GetAttributeValue( "RSSFeedUrl" ) );
+                            GetAttributeValue( AttributeKey.RSSFeedUrl ) );
 
                         Page.Header.Controls.Add( new LiteralControl( rssLink ) );
                     }
@@ -251,7 +331,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( content.Contains( "No such template" ) )
                     {
-                        System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match( GetAttributeValue( "Template" ), @"'([^']*)" );
+                        System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match( GetAttributeValue( AttributeKey.Template ), @"'([^']*)" );
                         if ( match.Success )
                         {
                             messages.Add( "Warning", string.Format( "Could not find the template _{0}.liquid in {1}.", match.Groups[1].Value, ResolveRockUrl( "~~/Assets/Liquid" ) ) );

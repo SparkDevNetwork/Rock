@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -43,7 +44,7 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
-        DefaultValue = @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}",
+        DefaultValue = @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava' %}",
         Order = 1 )]
 
     [LinkedPage(
@@ -198,15 +199,38 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "EndDate", transactionSchedule.EndDate );
                 scheduleSummary.Add( "NextPaymentDate", transactionSchedule.NextPaymentDate );
 
+                Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
+
                 // If a Transfer-To gateway was set and this transaction is not using that gateway, change the Edit button to a Transfer button
                 if ( _transferToGatewayGuid != null && transactionSchedule.FinancialGateway.Guid != _transferToGatewayGuid )
                 {
-                    Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
+
                     btnEdit.Text = GetAttributeValue( AttributeKey.TransferButtonText );
 
                     HiddenField hfTransfer = ( HiddenField ) e.Item.FindControl( "hfTransfer" );
                     hfTransfer.Value = TRANSFER;
                 }
+
+                // if there isn't an Edit page defined for the transaction, don't show th button
+                bool showEditButton;
+                var hostedGatewayComponent = transactionSchedule.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                bool useHostedGatewayEditPage = false;
+                if ( hostedGatewayComponent != null )
+                {
+                    useHostedGatewayEditPage = hostedGatewayComponent.GetSupportedHostedGatewayModes( transactionSchedule.FinancialGateway ).Contains( HostedGatewayMode.Hosted );
+                }
+
+                if ( useHostedGatewayEditPage )
+                {
+                    showEditButton = this.GetAttributeValue( AttributeKey.ScheduledTransactionEditPageHosted ).IsNotNullOrWhiteSpace();
+                }
+                else
+                {
+                    showEditButton = this.GetAttributeValue( AttributeKey.ScheduledTransactionEditPage ).IsNotNullOrWhiteSpace();
+                }
+
+                btnEdit.Visible = showEditButton;
+
 
                 if ( transactionSchedule.NextPaymentDate.HasValue )
                 {
@@ -243,7 +267,7 @@ namespace RockWeb.Blocks.Finance
                 foreach ( FinancialScheduledTransactionDetail detail in transactionSchedule.ScheduledTransactionDetails )
                 {
                     Dictionary<string, object> detailSummary = new Dictionary<string, object>();
-                    detailSummary.Add( "AccountId", detail.Id );
+                    detailSummary.Add( "AccountId", detail.Account.Id );
                     detailSummary.Add( "AccountName", detail.Account.Name );
                     detailSummary.Add( "Amount", detail.Amount );
                     detailSummary.Add( "Summary", detail.Summary );
@@ -255,13 +279,22 @@ namespace RockWeb.Blocks.Finance
 
                 scheduleSummary.Add( "ScheduledAmount", totalAmount );
                 scheduleSummary.Add( "TransactionDetails", summaryDetails );
+                scheduleSummary.Add( "IsHostedGateway", useHostedGatewayEditPage );
+                if ( useHostedGatewayEditPage )
+                {
+                    scheduleSummary.Add( "EditPage", LinkedPageRoute( AttributeKey.ScheduledTransactionEditPageHosted ) );
+                }
+                else
+                {
+                    scheduleSummary.Add( "EditPage", LinkedPageRoute( AttributeKey.ScheduledTransactionEditPage ) );
+                }
 
-                Dictionary<string, object> schedule = new Dictionary<string, object>();
+                Dictionary<string, object> schedule = LavaHelper.GetCommonMergeFields( this.RockPage );
                 schedule.Add( "ScheduledTransaction", scheduleSummary );
 
                 // merge into content
-                Literal lLiquidContent = ( Literal ) e.Item.FindControl( "lLiquidContent" );
-                lLiquidContent.Text = GetAttributeValue( AttributeKey.Template ).ResolveMergeFields( schedule );
+                Literal lLavaContent = ( Literal ) e.Item.FindControl( "lLavaContent" );
+                lLavaContent.Text = GetAttributeValue( AttributeKey.Template ).ResolveMergeFields( schedule );
             }
         }
 
@@ -276,7 +309,7 @@ namespace RockWeb.Blocks.Finance
             RepeaterItem riItem = ( RepeaterItem ) bbtnDelete.NamingContainer;
 
             HiddenField hfScheduledTransactionId = ( HiddenField ) riItem.FindControl( "hfScheduledTransactionId" );
-            Literal content = ( Literal ) riItem.FindControl( "lLiquidContent" );
+            Literal lLavaContent = ( Literal ) riItem.FindControl( "lLavaContent" );
             Button btnEdit = ( Button ) riItem.FindControl( "btnEdit" );
 
             using ( var rockContext = new Rock.Data.RockContext() )
@@ -301,11 +334,11 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
-                    content.Text = string.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
+                    lLavaContent.Text = string.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
                 }
                 else
                 {
-                    content.Text = string.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
+                    lLavaContent.Text = string.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
 
@@ -349,7 +382,8 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                if ( financialScheduledTransaction.FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent )
+                var hostedGatewayComponent = financialScheduledTransaction.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                if ( hostedGatewayComponent != null && hostedGatewayComponent.GetSupportedHostedGatewayModes( financialScheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) )
                 {
                     NavigateToLinkedPage( AttributeKey.ScheduledTransactionEditPageHosted, qryParams );
                 }

@@ -39,16 +39,82 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays list of people that match a given search type and term." )]
 
-    [LinkedPage( "Person Detail Page", order: 0 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Number Types", "Types of phone numbers to include with person detail", false, true, "", "", 1 )]
-    [BooleanField( "Show Birthdate", "Should a birthdate column be displayed?", false, "", 2 )]
-    [BooleanField( "Show Age", "Should an age column be displayed?", true, "", 3 )]
-    [BooleanField( "Show Gender", "Should a gender column be displayed?", false, "", 4 )]
-    [BooleanField( "Show Spouse", "Should a spouse column be displayed?", false, "", 5 )]
-    [BooleanField( "Show Envelope Number", "Should an envelope # column be displayed?", false, "", 6 )]
-    [BooleanField( "Show Performance", "Displays how long the search took.", false, "", 7 )]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Person Detail Page",
+        Key = AttributeKey.PersonDetailPage,
+        Order = 0 )]
+
+    [DefinedValueField(
+        "Phone Number Types",
+        Key = AttributeKey.PhoneNumberTypes,
+        Description = "Types of phone numbers to include with person detail.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 1 )]
+
+    [BooleanField(
+        "Show Birthdate",
+        Key = AttributeKey.ShowBirthdate,
+        Description = "Should a birthdate column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+
+    [BooleanField(
+        "Show Age",
+        Key = AttributeKey.ShowAge,
+        Description = "Should an age column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 3 )]
+
+    [BooleanField(
+        "Show Gender",
+        Key = AttributeKey.ShowGender,
+        Description = "Should a gender column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [BooleanField(
+        "Show Spouse",
+        Key = AttributeKey.ShowSpouse,
+        Description = "Should a spouse column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
+    [BooleanField(
+        "Show Envelope Number",
+        Key = AttributeKey.ShowEnvelopeNumber,
+        Description = "Should an envelope # column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [BooleanField(
+        "Show Performance",
+        Key = AttributeKey.ShowPerformance,
+        Description = "Displays how long the search took.",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
+    #endregion Block Attributes
+
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string PersonDetailPage = "PersonDetailPage";
+            public const string PhoneNumberTypes = "PhoneNumberTypes";
+            public const string ShowBirthdate = "ShowBirthdate";
+            public const string ShowAge = "ShowAge";
+            public const string ShowGender = "ShowGender";
+            public const string ShowSpouse = "ShowSpouse";
+            public const string ShowEnvelopeNumber = "ShowEnvelopeNumber";
+            public const string ShowPerformance = "ShowPerformance";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private List<Guid> _phoneTypeGuids = new List<Guid>();
@@ -76,13 +142,13 @@ namespace RockWeb.Blocks.Crm
             gPeople.RowDataBound += gPeople_RowDataBound;
             gPeople.PersonIdField = "Id";
 
-            if ( GetAttributeValue( "ShowPerformance" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ShowPerformance ).AsBoolean() )
             {
                 gPeople.Actions.AddCustomActionControl( _lPerf );
             }
 
-            _phoneTypeGuids = GetAttributeValue( "PhoneNumberTypes" ).SplitDelimitedValues().AsGuidList();
-            _showSpouse = GetAttributeValue( "ShowSpouse" ).AsBoolean();
+            _phoneTypeGuids = GetAttributeValue( AttributeKey.PhoneNumberTypes ).SplitDelimitedValues().AsGuidList();
+            _showSpouse = GetAttributeValue( AttributeKey.ShowSpouse ).AsBoolean();
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -273,7 +339,7 @@ namespace RockWeb.Blocks.Crm
 
         protected void gPeople_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "PersonDetailPage", "PersonId", ( int ) e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.PersonDetailPage, "PersonId", ( int ) e.RowKeyId );
         }
 
         #endregion
@@ -299,7 +365,7 @@ namespace RockWeb.Blocks.Crm
                     case ( "name" ):
                         {
                             bool allowFirstNameOnly = false;
-                            if ( !bool.TryParse( PageParameter( "allowFirstNameOnly" ), out allowFirstNameOnly ) )
+                            if ( !bool.TryParse( PageParameter( "AllowFirstNameOnly" ), out allowFirstNameOnly ) )
                             {
                                 allowFirstNameOnly = false;
                             }
@@ -389,16 +455,16 @@ namespace RockWeb.Blocks.Crm
                 var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
                 if ( personGivingEnvelopeAttribute != null )
                 {
-                    envelopeNumberField.Visible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && this.GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
+                    envelopeNumberField.Visible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && this.GetAttributeValue( AttributeKey.ShowEnvelopeNumber ).AsBoolean();
                 }
                 else
                 {
                     envelopeNumberField.Visible = false;
                 }
 
-                birthDateCol.Visible = GetAttributeValue( "ShowBirthdate" ).AsBoolean();
-                ageCol.Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
-                genderCol.Visible = GetAttributeValue( "ShowGender" ).AsBoolean();
+                birthDateCol.Visible = GetAttributeValue( AttributeKey.ShowBirthdate ).AsBoolean();
+                ageCol.Visible = GetAttributeValue( AttributeKey.ShowAge ).AsBoolean();
+                genderCol.Visible = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
                 spouseCol.Visible = _showSpouse;
 
                 people = personService.Queryable( true ).Where( p => personIdList.Contains( p.Id ) );

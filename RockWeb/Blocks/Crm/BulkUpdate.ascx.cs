@@ -45,8 +45,9 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Bulk Update" )]
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
-    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected persons." )]
-    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected persons." )]
+
+    [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected persons." )]
+    [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected persons." )]
 
     #region Block Attributes
 
@@ -58,13 +59,15 @@ namespace RockWeb.Blocks.Crm
         EntityTypeName = "Rock.Model.Person",
         IsRequired = false,
         Order = 0 )]
+
     [IntegerField(
         "Display Count",
         Key = AttributeKey.DisplayCount,
-        Description = "The initial number of individuals to display prior to expanding the list",
-        DefaultIntegerValue = 0,
+        Description = "The initial number of individuals to display prior to expanding list",
         IsRequired = false,
+        DefaultIntegerValue = 0,
         Order = 1 )]
+
     [WorkflowTypeField(
         "Workflow Types",
         Key = AttributeKey.WorkflowTypes,
@@ -72,6 +75,7 @@ namespace RockWeb.Blocks.Crm
         AllowMultiple = true,
         IsRequired = false,
         Order = 2 )]
+
     [IntegerField(
         "Task Count",
         Key = AttributeKey.TaskCount,
@@ -79,6 +83,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 0,
         IsRequired = false,
         Order = 3 )]
+
     [IntegerField(
         "Batch Size",
         Key = AttributeKey.BatchSize,
@@ -91,7 +96,7 @@ namespace RockWeb.Blocks.Crm
 
     public partial class BulkUpdate : RockBlock
     {
-        #region Keys
+        #region Attribute Keys
 
         /// <summary>
         /// Keys for block attributes
@@ -105,6 +110,23 @@ namespace RockWeb.Blocks.Crm
             public const string BatchSize = "BatchSize";
         }
 
+        #endregion Attribute Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Security Actions
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditConnectionStatus = "EditConnectionStatus";
+            public const string EditRecordStatus = "EditRecordStatus";
+        }
+
+        #endregion Security Actions
+
+        #region Page Parameter Keys
+
         // <summary>
         // Keys for the page parameters
         // </summary>
@@ -113,7 +135,7 @@ namespace RockWeb.Blocks.Crm
             public const string Set = "Set";
         }
 
-        #endregion Keys
+        #endregion Page Parameter Keys
 
         #region Fields
 
@@ -144,7 +166,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.1.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
@@ -156,10 +178,10 @@ namespace RockWeb.Blocks.Crm
             dvpInactiveReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
             dvpReviewReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ).Id;
 
-            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
             dvpConnectionStatus.Visible = _canEditConnectionStatus;
 
-            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
             dvpRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
@@ -221,7 +243,7 @@ namespace RockWeb.Blocks.Crm
             pwNote.Visible = ddlNoteType.Items.Count > 0;
 
             string script = @"
-    $('a.remove-all-individuals').click(function( e ){
+    $('a.remove-all-individuals').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
             if (result) {
@@ -243,7 +265,7 @@ namespace RockWeb.Blocks.Crm
     }});
 
     // Handle the click event for any label that contains a 'js-select-span' span
-    $( 'label.control-label' ).has( 'span.js-select-item').click( function() {{
+    $( 'label.control-label' ).has( 'span.js-select-item').on('click', function() {{
 
         var formGroup = $(this).closest('.form-group');
         var selectIcon = formGroup.find('span.js-select-item').children('i');
@@ -547,8 +569,6 @@ namespace RockWeb.Blocks.Crm
             pnlConfirm.Visible = false;
         }
 
-        private long _errorCount;
-
         /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
@@ -622,8 +642,6 @@ namespace RockWeb.Blocks.Crm
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
             {
-                _errorCount = 0;
-
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {

@@ -29,9 +29,6 @@ namespace Rock.Field.Types
     /// </summary>
     public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType
     {
-        // internal configuration values needed since it is not passed to ListSource
-        private Dictionary<string, ConfigurationValue> _configurationValues = null;
-
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
@@ -95,7 +92,7 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
                 {
-                    configurationValues[INCLUDE_INACTIVE_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+                    configurationValues[INCLUDE_INACTIVE_KEY].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
                 }
 
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
@@ -118,7 +115,7 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
                 {
-                    ( (CheckBox)controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
                 }
 
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
@@ -140,7 +137,6 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            _configurationValues = configurationValues;
             return base.EditControl( configurationValues, id );
         }
 
@@ -150,20 +146,17 @@ namespace Rock.Field.Types
         /// <value>
         /// The list source.
         /// </value>
-        internal override Dictionary<string, string> ListSource
+        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            get
-            {
-                var allCampuses = CampusCache.All();
+            var allCampuses = CampusCache.All();
 
-                bool includeInactive = ( _configurationValues != null && _configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && _configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
+            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
 
-                var campusList = allCampuses
-                    .Where( c => !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
-                    .ToList();
+            var campusList = allCampuses
+                .Where( c => !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                .ToList();
 
-                return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
-            }
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
 
         /// <summary>

@@ -20,12 +20,12 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Net;
-using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Storage.V1;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-using Rock.Storage.AssetStorage.ApiClient;
+using Rock.Storage.Common;
+using GoogleObject = Google.Apis.Storage.v1.Data.Object;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -44,7 +44,7 @@ namespace Rock.Storage.AssetStorage
         Key = AttributeKey.BucketName )]
 
     [EncryptedTextField( "Service Account JSON Key",
-        Description = "The Service Account key JSON file contents that is used to access Google Cloud Storage. See https://console.cloud.google.com/iam-admin/serviceaccounts",
+        Description = "The Service Account key JSON file contents that is used to access Google Cloud Storage. See https://console.cloud.google.com/iam-admin/serviceaccounts to create a service account and its key. Paste the entire contents of the file here.",
         IsRequired = true,
         Order = 2,
         Key = AttributeKey.ServiceAccountKey )]
@@ -118,6 +118,7 @@ namespace Rock.Storage.AssetStorage
         {
             var rootFolder = GetRootFolder( assetStorageProvider );
             FixKey( asset, rootFolder );
+
             return GetAssetsFromGoogle( assetStorageProvider, asset.Key, null, false );
         }
 
@@ -145,6 +146,7 @@ namespace Rock.Storage.AssetStorage
         {
             var rootFolder = GetRootFolder( assetStorageProvider );
             FixKey( asset, rootFolder );
+
             return GetAssetsFromGoogle( assetStorageProvider, asset.Key, AssetType.File, false );
         }
 
@@ -172,6 +174,7 @@ namespace Rock.Storage.AssetStorage
         {
             var rootFolder = GetRootFolder( assetStorageProvider );
             FixKey( asset, rootFolder );
+
             return GetAssetsFromGoogle( assetStorageProvider, asset.Key, AssetType.Folder, false );
         }
 
@@ -195,6 +198,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             using ( var client = GetStorageClient( assetStorageProvider ) )
             {
                 var bucketName = GetBucketName( assetStorageProvider );
@@ -218,6 +224,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool UploadObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             var bucketName = GetBucketName( assetStorageProvider );
             var googleObject = TranslateRockAssetToGoogleObject( asset, bucketName );
 
@@ -237,6 +246,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool CreateFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             // https://stackoverflow.com/a/38417397
             // Google storage doesn't actually have folders, so we just upload an empty object ending with
             // a '/' to create the illusion of a directory.
@@ -254,29 +266,15 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool DeleteAsset( AssetStorageProvider assetStorageProvider, Asset asset )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             var bucketName = GetBucketName( assetStorageProvider );
-            var objectsToDelete = new List<Google.Apis.Storage.v1.Data.Object>();
+            var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
+            var isFolder = asset.Type == AssetType.Folder;
 
-            using ( var client = GetStorageClient( assetStorageProvider ) )
-            {
-                if ( asset.Type == AssetType.File )
-                {
-                    // Get the whole object so that the Generation property is set and the object is permanently deleted
-                    objectsToDelete.Add( client.GetObject( bucketName, asset.Key ) );
-                }
-                else
-                {
-                    // To delete a folder from Google, just delete everything inside
-                    objectsToDelete.AddRange( client.ListObjects( bucketName, asset.Key, string.Empty ) );
-                }
-
-                foreach ( var objectToDelete in objectsToDelete )
-                {
-                    client.DeleteObject( objectToDelete );
-                }
-
-                return true;
-            }
+            GoogleCloudStorage.DeleteObject( bucketName, accountKeyJson, isFolder, asset.Key );
+            return true;
         }
 
         /// <summary>
@@ -288,6 +286,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             var originalAsset = GetObject( assetStorageProvider, asset );
 
             var newAsset = originalAsset.Clone();
@@ -310,6 +311,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override string CreateDownloadLink( AssetStorageProvider assetStorageProvider, Asset asset )
         {
+            var rootFolder = GetRootFolder( assetStorageProvider );
+            FixKey( asset, rootFolder );
+
             using ( var client = GetStorageClient( assetStorageProvider ) )
             {
                 var bucketName = GetBucketName( assetStorageProvider );
@@ -332,6 +336,7 @@ namespace Rock.Storage.AssetStorage
         {
             var rootFolder = GetRootFolder( assetStorageProvider );
             FixKey( asset, rootFolder );
+
             return GetAssetsFromGoogle( assetStorageProvider, asset.Key, null, false );
         }
 
@@ -356,10 +361,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             var thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
 
             var virtualThumbPath = Path.Combine( thumbDir, name );
-            var physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+            var physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();
@@ -456,11 +461,10 @@ namespace Rock.Storage.AssetStorage
         /// </summary>
         /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <returns></returns>
-        private GoogleClient GetStorageClient( AssetStorageProvider assetStorageProvider )
+        private StorageClient GetStorageClient( AssetStorageProvider assetStorageProvider )
         {
             var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
-            var storageClient = new GoogleClient( accountKeyJson );
-            return storageClient;
+            return GoogleCloudStorage.GetStorageClient( accountKeyJson );
         }
 
         /// <summary>
@@ -471,19 +475,15 @@ namespace Rock.Storage.AssetStorage
         /// <exception cref="ArgumentException">The Google bucket name setting is not valid</exception>
         private string GetBucketName( AssetStorageProvider assetStorageProvider )
         {
-            if ( _bucketName == null )
-            {
-                _bucketName = GetAttributeValue( assetStorageProvider, AttributeKey.BucketName );
+            var bucketName = GetAttributeValue( assetStorageProvider, AttributeKey.BucketName );
 
-                if ( _bucketName.IsNullOrWhiteSpace() )
-                {
-                    throw new ArgumentException( "The Google bucket name setting is not valid", AttributeKey.BucketName );
-                }
+            if ( bucketName.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentException( "The Google bucket name setting is not valid", AttributeKey.BucketName );
             }
 
-            return _bucketName;
+            return bucketName;
         }
-        private string _bucketName = null;
 
         /// <summary>
         /// Gets the service account key JSON.
@@ -493,20 +493,16 @@ namespace Rock.Storage.AssetStorage
         /// <exception cref="System.ArgumentException">The Google Service Account Key JSON setting is not valid</exception>
         private string GetServiceAccountKeyJson( AssetStorageProvider assetStorageProvider )
         {
-            if ( _serviceAccountKeyJson == null )
-            {
-                var encryptedJson = GetAttributeValue( assetStorageProvider, AttributeKey.ServiceAccountKey );
-                _serviceAccountKeyJson = Encryption.DecryptString( encryptedJson );
+            var encryptedJson = GetAttributeValue( assetStorageProvider, AttributeKey.ServiceAccountKey );
+            var serviceAccountKeyJson = Encryption.DecryptString( encryptedJson );
 
-                if ( _serviceAccountKeyJson.IsNullOrWhiteSpace() )
-                {
-                    throw new ArgumentException( "The Google Service Account Key JSON setting is not valid", AttributeKey.ServiceAccountKey );
-                }
+            if ( serviceAccountKeyJson.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentException( "The Google Service Account Key JSON setting is not valid", AttributeKey.ServiceAccountKey );
             }
 
-            return _serviceAccountKeyJson;
+            return serviceAccountKeyJson;
         }
-        private string _serviceAccountKeyJson = null;
 
         /// <summary>
         /// Makes adjustments to the Key string based on the root folder, the name, and the AssetType.
@@ -539,59 +535,27 @@ namespace Rock.Storage.AssetStorage
         /// <param name="assetTypeToList">The asset type to list.</param>
         /// <param name="allowRecursion">if set to <c>true</c> [allow recursion].</param>
         /// <returns></returns>
-        private List<Asset> GetAssetsFromGoogle( AssetStorageProvider assetStorageProvider, string directory, AssetType? assetTypeToList, bool allowRecursion )
+        private List<GoogleObject> GetObjectsFromGoogle( AssetStorageProvider assetStorageProvider, string directory, AssetType? assetTypeToList, bool allowRecursion )
         {
-            using ( var client = GetStorageClient( assetStorageProvider ) )
-            {
-                var bucketName = GetBucketName( assetStorageProvider );
+            var bucketName = GetBucketName( assetStorageProvider );
+            var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
 
-                // The initial depth is within the "directory", which means it's the depth of the "directory" plus 1
-                var initialDepth = GetKeyDepth( directory ) + 1;
-
-                // Get the objects from Google and transform them into assets
-                var objects = client.ListObjects( bucketName, directory, assetTypeToList == AssetType.File ? "/" : string.Empty );
-
-                if ( assetTypeToList == AssetType.Folder )
-                {
-                    objects.RemoveAll( o => !o.Name.EndsWith( "/" ) );
-                }
-
-                // If recursion is not allowed, then remove objects that are beyond the initial depth
-                if ( !allowRecursion )
-                {
-                    objects.RemoveAll( o => GetKeyDepth( o.Name ) > initialDepth );
-                }
-
-                // Google includes the root directory of the listing request, but Rock does not expect to get "self" in the list
-                directory = directory.EndsWith( "/" ) ? directory : $"{directory}/";
-                objects.RemoveAll( o => o.Name == directory );
-
-                return objects.Select( o => TranslateGoogleObjectToRockAsset( assetStorageProvider, o ) ).ToList();
-            }
+            return GoogleCloudStorage.GetObjectsFromGoogle( bucketName, accountKeyJson, directory, assetTypeToList == AssetType.File,
+                assetTypeToList == AssetType.Folder, allowRecursion );
         }
 
         /// <summary>
-        /// Gets the key depth. For example a/b/c/d.txt would have a depth of 3.
+        /// Gets the assets from Google.
         /// </summary>
-        /// <param name="key">The key.</param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="directory">The directory.</param>
+        /// <param name="assetTypeToList">The asset type to list.</param>
+        /// <param name="allowRecursion">if set to <c>true</c> [allow recursion].</param>
         /// <returns></returns>
-        private int GetKeyDepth( string key )
+        private List<Asset> GetAssetsFromGoogle( AssetStorageProvider assetStorageProvider, string directory, AssetType? assetTypeToList, bool allowRecursion )
         {
-            if ( key.IsNullOrWhiteSpace() )
-            {
-                return 0;
-            }
-
-            key = key.Trim();
-
-            // Remove the last character because folders like "a/b/" are actually at depth 1 and sibling to files like "a/1.txt"
-            if ( key.EndsWith( "/" ) )
-            {
-                key.Substring( 0, key.Trim().Length - 1 );
-            }
-
-            var depth = key.Count( c => c == '/' );
-            return depth;
+            var objects = GetObjectsFromGoogle( assetStorageProvider, directory, assetTypeToList, allowRecursion );
+            return objects.Select( o => TranslateGoogleObjectToRockAsset( assetStorageProvider, o ) ).ToList();
         }
 
         /// <summary>

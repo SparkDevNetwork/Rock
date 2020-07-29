@@ -169,9 +169,15 @@ namespace Rock
                     contextType = contextTypeLookup.First().Value;
                 }
             }
-
-            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-            return dbContext;
+            if ( contextType == typeof( Rock.Data.RockContext ) )
+            {
+                return new Rock.Data.RockContext();
+            }
+            else
+            {
+                System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+                return dbContext;
+            }
         }
 
         /// <summary>

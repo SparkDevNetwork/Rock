@@ -22,6 +22,8 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -52,7 +54,7 @@ namespace RockWeb
             }
             else
             {
-                return new SendErrorDelegate( SendError ).BeginInvoke(context, 400, "File id key must be a guid or an int.", cb, extraData);
+                return new SendErrorDelegate( SendError ).BeginInvoke( context, 400, "File id key must be a guid or an int.", cb, extraData );
             }
         }
 
@@ -63,7 +65,7 @@ namespace RockWeb
         public void EndProcessRequest( IAsyncResult result )
         {
             // restore the context from the asyncResult.AsyncState 
-            HttpContext context = (HttpContext)result.AsyncState;
+            HttpContext context = ( HttpContext ) result.AsyncState;
 
             if ( context != null )
             {
@@ -80,20 +82,22 @@ namespace RockWeb
                     //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
                     if ( requiresViewSecurity )
                     {
+                        binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
                         var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                         Person currentPerson = currentUser != null ? currentUser.Person : null;
-                        binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
+
                         if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
-                            SendError(context, 403, "Not authorized to view file.");
+                            SendError( context, 403, "Not authorized to view file." );
                             return;
                         }
                     }
 
-                    SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString( "N" ) );
+                    var binaryFileType = BinaryFileTypeCache.Get( binaryFile.BinaryFileTypeId.Value );
+                    SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString( "N" ), binaryFileType.CacheControlHeader );
                     return;
                 }
-                
+
                 SendError( context, 404, "File could not be found." );
             }
         }
@@ -106,10 +110,10 @@ namespace RockWeb
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="eTag">The e tag.</param>
-        private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName, string eTag )
+        private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName, string eTag, RockCacheability rockCacheability )
         {
             int startIndex = 0;
-            int fileLength = (int)fileContents.Length;
+            int fileLength = ( int ) fileContents.Length;
             int responseLength = fileLength;
 
             // resumable logic from http://stackoverflow.com/a/6475414/1755417
@@ -118,7 +122,7 @@ namespace RockWeb
                 var match = Regex.Match( context.Request.Headers["Range"], @"bytes=(\d*)-(\d*)" );
                 startIndex = match.Groups[1].Value.AsInteger();
                 responseLength = ( match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
-                context.Response.StatusCode = (int)System.Net.HttpStatusCode.PartialContent;
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.PartialContent;
                 context.Response.Headers["Content-Range"] = "bytes " + startIndex + "-" + ( startIndex + responseLength - 1 ) + "/" + fileLength;
             }
 
@@ -130,7 +134,8 @@ namespace RockWeb
 
             context.Response.AddHeader( "content-disposition", string.Format( "{1};filename={0}", fileName.MakeValidFileName(), sendAsAttachment ? "attachment" : "inline" ) );
             context.Response.AddHeader( "content-length", responseLength.ToString() );
-            context.Response.Cache.SetCacheability( HttpCacheability.Public ); // required for etag output
+
+            rockCacheability.SetupHttpCachePolicy( context.Response.Cache );
 
             context.Response.Cache.SetETag( eTag ); // required for IE9 resumable downloads
             context.Response.ContentType = mimeType;

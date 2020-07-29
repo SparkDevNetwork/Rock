@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     [ToolboxData( "<{0}:NoteControl runat=server></{0}:NoteControl>" )]
     [RockObsolete( "1.8" )]
-    [Obsolete("No Longer Supported")]
+    [Obsolete("No Longer Supported", true )]
     public class NoteControl : CompositeControl
     {
 
@@ -536,14 +536,14 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             string script = @"
-    $('a.edit-note').click(function (e) {
+    $('a.edit-note').on('click', function (e) {
         e.preventDefault();
         $(this).closest('.note').children().slideToggle( 'slow' );
     });
-    $('a.edit-note-cancel').click(function () {
+    $('a.edit-note-cancel').on('click', function () {
         $(this).closest('.note').children().slideToggle( 'slow' );
     });
-    $('a.remove-note').click(function() {
+    $('a.remove-note').on('click', function() {
         return Rock.dialogs.confirmDelete( event, 'Note' );
     });
 ";

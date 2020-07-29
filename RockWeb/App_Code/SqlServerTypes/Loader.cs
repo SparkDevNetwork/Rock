@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 namespace SqlServerTypes
 {
     /// <summary>
-    /// Utility methods related to CLR Types for SQL Server
+    /// Utility methods related to CLR Types for SQL Server 
     /// </summary>
     internal class Utilities
     {
@@ -41,8 +41,8 @@ namespace SqlServerTypes
                 ? Path.Combine(rootApplicationPath, @"SqlServerTypes\x64\")
                 : Path.Combine(rootApplicationPath, @"SqlServerTypes\x86\");
 
-            LoadNativeAssembly(nativeBinaryPath, "msvcr120.dll");
-            LoadNativeAssembly(nativeBinaryPath, "SqlServerSpatial140.dll");
+            LoadNativeAssembly(nativeBinaryPath, "msvcr100.dll");
+            LoadNativeAssembly(nativeBinaryPath, "SqlServerSpatial110.dll");
         }
 
         private static void LoadNativeAssembly(string nativeBinaryPath, string assemblyName)

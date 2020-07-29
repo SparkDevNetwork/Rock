@@ -80,7 +80,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 
         /// <summary>
-        /// The list of phone country code formats and how to format their numbers
+        /// The list of phone country code formats and how to format their numbers 
         /// </summary>
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
@@ -123,11 +123,11 @@ namespace Rock.SystemGuid
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
-
+		
         /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
-        public const string FINANCIAL_CURRENCY_TYPE =  "1D1304DE-E83A-44AF-B11D-0C66DD600B81";
+        public const string FINANCIAL_CURRENCY_TYPE =  "1D1304DE-E83A-44AF-B11D-0C66DD600B81"; 
 
         /// <summary>
         /// Guid for Financial Credit Card Type
@@ -135,7 +135,7 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_CREDIT_CARD_TYPE =  "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
 
         /// <summary>
-        /// Guid for Financial Frequency
+        /// Guid for Financial Frequency 
         /// </summary>
         public const string FINANCIAL_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
@@ -313,7 +313,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry background package types
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
@@ -400,5 +400,10 @@ namespace Rock.SystemGuid
         /// The group RSVP decline reason.
         /// </summary>
         public const string GROUP_RSVP_DECLINE_REASON = "1E339D24-3DF3-4628-91C3-DA9300D21ACE";
+
+        /// <summary>
+        /// Logging Domain.
+        /// </summary>
+        public const string LOGGING_DOMAINS = "60487370-DE7E-4962-B58F-1865303F0414";
     }
 }

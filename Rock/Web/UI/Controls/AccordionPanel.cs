@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     [ToolboxData( "<{0}:AccordionPanel runat=server></{0}:AccordionPanel" )]
@@ -392,7 +392,7 @@ namespace Rock.Web.UI.Controls
             //
             var script = string.Format( @"
 (function () {{
-    $('.js-accordion-panel > .panel-heading,.js-accordion-panel > .panel-heading .js-accordion-panel-chevron').click(function (e) {{
+    $('.js-accordion-panel > .panel-heading,.js-accordion-panel > .panel-heading .js-accordion-panel-chevron').on('click', function (e) {{
         e.stopImmediatePropagation();
         e.preventDefault();
 

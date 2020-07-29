@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -35,6 +36,8 @@ namespace Rock.Web.Cache
     {
 
         #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _interactionChannelLookupFromChannelIdByEntityId = new ConcurrentDictionary<string, int>();
 
         private static ConcurrentDictionary<string, int> _interactionChannelIdLookupFromForeignKey = new ConcurrentDictionary<string, int>();
 
@@ -285,6 +288,10 @@ namespace Rock.Web.Cache
             // set componentIds to null so it load them all at once on demand
             InteractionComponentIds = null;
 
+            var lookupKey = $"{interactionChannel.ChannelTypeMediumValueId}|{interactionChannel.ChannelEntityId}";
+
+            _interactionChannelLookupFromChannelIdByEntityId.AddOrUpdate( lookupKey, interactionChannel.Id, ( k, v ) => interactionChannel.Id );
+
             if ( interactionChannel.ForeignKey.IsNotNullOrWhiteSpace() )
             {
                 _interactionChannelIdLookupFromForeignKey.AddOrUpdate( interactionChannel.ForeignKey, interactionChannel.Id, ( k, v ) => interactionChannel.Id );
@@ -300,6 +307,52 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Gets the channel identifier by type identifier and entity identifier, and creates it if it doesn't exist.
+        /// </summary>
+        /// <param name="channelTypeMediumValueId">The channel type medium value identifier.</param>
+        /// <param name="channelEntityId">The channel entity identifier.</param>
+        /// <param name="channelName">Name of the channel. This value will only be used if a new record is created.</param>
+        /// <param name="componentEntityTypeId">The component entity type identifier. This value will only be used if a new record is created.</param>
+        /// <param name="interactionEntityTypeId">The interaction entity type identifier. This value will only be used if a new record is created.</param>
+        /// <returns></returns>
+        public static int GetChannelIdByTypeIdAndEntityId( int? channelTypeMediumValueId, int? channelEntityId, string channelName, int? componentEntityTypeId, int? interactionEntityTypeId )
+        {
+            var lookupKey = $"{channelTypeMediumValueId}|{channelEntityId}";
+
+            if ( _interactionChannelLookupFromChannelIdByEntityId.TryGetValue( lookupKey, out int channelId ) )
+            {
+                return channelId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionChannelService = new InteractionChannelService( rockContext );
+                var interactionChannel = interactionChannelService.Queryable()
+                    .Where( a =>
+                        a.ChannelTypeMediumValueId == channelTypeMediumValueId &&
+                        a.ChannelEntityId == channelEntityId )
+                    .FirstOrDefault();
+
+                if ( interactionChannel == null )
+                {
+                    interactionChannel = new InteractionChannel();
+                    interactionChannel.Name = channelName;
+                    interactionChannel.ChannelTypeMediumValueId = channelTypeMediumValueId;
+                    interactionChannel.ChannelEntityId = channelEntityId;
+                    interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
+                    interactionChannel.InteractionEntityTypeId = interactionEntityTypeId;
+                    interactionChannelService.Add( interactionChannel );
+                    rockContext.SaveChanges();
+                }
+
+                var interactionChannelId = Get( interactionChannel ).Id;
+                _interactionChannelLookupFromChannelIdByEntityId.AddOrUpdate( lookupKey, interactionChannelId, ( k, v ) => interactionChannelId );
+
+                return interactionChannelId;
+            }
         }
 
         /// <summary>
@@ -345,6 +398,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

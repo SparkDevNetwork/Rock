@@ -13,14 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
-    public partial class BinaryFileType : Model<BinaryFileType>
+    public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {
 
         #region Entity Properties
@@ -90,8 +93,29 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching is allowed; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.11" )]
+        [System.Obsolete( "Use CacheToServerFileSystem instead." )]
+        [NotMapped]
+        public bool AllowCaching
+        {
+            get
+            {
+                return CacheToServerFileSystem;
+            }
+            set
+            {
+                CacheToServerFileSystem = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether the file on any <see cref="Rock.Model.BinaryFile"/> child entities should be cached to the server.
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching to the server is allowed; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
-        public bool AllowCaching { get; set; }
+        public bool CacheToServerFileSystem { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether security should be checked when displaying files of this type
@@ -156,6 +180,47 @@ namespace Rock.Model
         [DataMember]
         public bool PreferredRequired { get; set; }
 
+        private string _cacheControlHeaderSettings;
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [MaxLength( 500 )]
+        [DataMember]
+        public string CacheControlHeaderSettings
+        {
+            get => _cacheControlHeaderSettings;
+            set
+            {
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
+                _cacheControlHeaderSettings = value;
+            }
+        }
+
+        private RockCacheability _cacheControlHeader;
+        /// <summary>
+        /// Gets the cache control header.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+                return _cacheControlHeader;
+            }
+        }
         #endregion
 
         #region Constructors
@@ -229,9 +294,29 @@ namespace Rock.Model
         {
             return this.Name;
         }
-
         #endregion
 
+        #region ICacheable
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            BinaryFileTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return BinaryFileTypeCache.Get( this.Id );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

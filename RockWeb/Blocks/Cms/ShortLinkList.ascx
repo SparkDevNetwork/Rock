@@ -18,7 +18,7 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gShortLinks" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gShortLinks_Edit">
                             <Columns>
-                                <Rock:RockBoundField DataField="ShortLink" HeaderText="Shortened Url" SortExpression="ShortLink" />
+                                <Rock:RockBoundField DataField="ShortLink" HeaderText="Shortened URL" SortExpression="ShortLink" />
                                 <Rock:RockBoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" ColumnPriority="Tablet" />
                                 <Rock:RockBoundField DataField="Token" HeaderText="Token" SortExpression="Token" />
                                 <Rock:RockTemplateFieldUnselected HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" ColumnPriority="Tablet">

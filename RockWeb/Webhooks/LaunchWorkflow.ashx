@@ -152,6 +152,7 @@ public class LaunchWorkflow : IHttpHandler
     protected void PopulateWorkflowAttributes( Workflow workflow, DefinedValueCache hook, Dictionary<string, object> mergeFields )
     {
         // Set workflow attributes
+        // NewPointe - Use `.AsDictionary()` instead of manual string splitting to allow for "|" in the lava
         Dictionary<string, string> attributes = hook.GetAttributeValue( "WorkflowAttributes" ).AsDictionary();
         foreach ( KeyValuePair<string, string> attribute in attributes )
         {

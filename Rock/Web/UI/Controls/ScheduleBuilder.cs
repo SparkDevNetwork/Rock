@@ -29,7 +29,7 @@ using DDay.iCal.Serialization.iCalendar;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilder : CompositeControl, IRockControl
     {
@@ -265,7 +265,6 @@ namespace Rock.Web.UI.Controls
 
                 if ( rockPage != null )
                 {
-                    rockPage.AddScriptLink( "~/Scripts/moment.min.js" );
                     rockPage.AddScriptLink( "~/Scripts/moment-with-locales.min.js" );
                 }
 
@@ -488,7 +487,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilderPopupContents : CompositeControl
     {
@@ -697,6 +696,21 @@ END:VCALENDAR
         {
             EnsureChildControls();
 
+            var specificDateTimes = _hfSpecificDateListValues.Value.SplitDelimitedValues()
+                .Select( s => s.AsDateTime() )
+                .Where( d => d.HasValue )
+                .Select( d => d.Value.Add( _dpStartDateTime.SelectedTime.HasValue ?
+                    _dpStartDateTime.SelectedTime.Value :
+                    new TimeSpan() ) )
+                .OrderBy( d => d );
+
+            // if they set some specific dates but no start date, assume the min specific date is the start date
+            // https://app.asana.com/0/767023941425027/932463467734953/f
+            if ( !_dpStartDateTime.SelectedDateTime.HasValue && specificDateTimes.Any() )
+            {
+                _dpStartDateTime.SelectedDateTime = specificDateTimes.First();
+            }
+
             if ( !this.ShowStartDateTime && _dpStartDateTime.SelectedDateTimeIsBlank )
             {
                 _dpStartDateTime.SelectedDateTime = RockDateTime.Now;
@@ -747,19 +761,11 @@ END:VCALENDAR
                 if ( _radSpecificDates.Checked )
                 {
                     #region specific dates
-                    PeriodList recurrenceDates = new PeriodList();
-                    List<string> dateStringList = _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                    foreach ( var dateString in dateStringList )
+                    var recurrenceDates = new PeriodList();
+
+                    foreach ( var datetime in specificDateTimes )
                     {
-                        DateTime newDate;
-                        if ( DateTime.TryParse( dateString, out newDate ) )
-                        {
-                            if ( _dpStartDateTime.SelectedTime != null )
-                            {
-                                newDate = newDate.Add( _dpStartDateTime.SelectedTime.Value );
-                            }
-                            recurrenceDates.Add( new iCalDateTime( newDate ) );
-                        }
+                        recurrenceDates.Add( new iCalDateTime( datetime ) );
                     }
 
                     calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -940,16 +946,16 @@ END:VCALENDAR
             DDay.iCal.iCalendar calendar = new iCalendar();
             calendar.Events.Add( calendarEvent );
 
-            iCalendarSerializer s = new iCalendarSerializer( calendar );
+            iCalendarSerializer iCalendarSerializer = new iCalendarSerializer( calendar );
 
-            return s.SerializeToString( calendar );
+            return iCalendarSerializer.SerializeToString( calendar );
         }
 
         /// <summary>
         /// Gets or sets the content of the i calendar.
         /// </summary>
         /// <value>
-        /// The content of the i calendar. 
+        /// The content of the i calendar.
         /// </value>
         public string iCalendarContent
         {
@@ -962,7 +968,7 @@ END:VCALENDAR
             {
                 EnsureChildControls();
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.
                 //// We just need one Calendar and one Event
 
                 // set all rad to false to prevent multiple from being true

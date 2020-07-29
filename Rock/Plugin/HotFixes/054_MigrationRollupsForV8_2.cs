@@ -17,7 +17,7 @@
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 54, "1.8.1" )]
@@ -30,21 +30,21 @@ namespace Rock.Plugin.HotFixes
         {
 //            // SK: Update group view lava template to display schedule when exist (ISSUE #3188)
 //            // Update the default template
-//            Sql( @"
-//		  UPDATE
+//            Sql( @"		  
+//		  UPDATE 
 //	[GroupType]
-//SET
+//SET 
 //	[GroupViewLavaTemplate] = REPLACE([GroupViewLavaTemplate],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
-//WHERE
+//WHERE 
 //	[GroupViewLavaTemplate] Like '%{{ Group.Schedule.ToString()%'
 //" );
 
-//            // Update the system setting
-//            Sql( @"UPDATE
+//            // Update the system setting 
+//            Sql( @"UPDATE 
 //	[Attribute]
-//SET
+//SET 
 //	[DefaultValue] = REPLACE([DefaultValue],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
-//WHERE
+//WHERE 
 //	[Key]='core_templates_GroupViewTemplate'" );
 
 //            // SK: Added Other to Currency Type Defined Type

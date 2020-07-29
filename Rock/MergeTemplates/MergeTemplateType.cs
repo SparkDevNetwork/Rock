@@ -99,21 +99,21 @@ namespace Rock.MergeTemplates
         /// <summary>
         /// The RegEx for finding the "next" delimiter/indicator
         /// </summary>
-        protected Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
+        protected readonly Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
 
         /// <summary>
         /// The RegEx for finding the "next_empty" delimiter/indicator
         /// </summary>
-        protected Regex nextEmptyRecordRegEx = new Regex( @"{%\s*\bnext_empty\b\s*%}", RegexOptions.IgnoreCase );
+        protected readonly Regex nextEmptyRecordRegEx = new Regex( @"{%\s*\bnext_empty\b\s*%}", RegexOptions.IgnoreCase );
 
         /// <summary>
         /// The RegEx of "." that matches anything
         /// </summary>
-        protected Regex regExDot = new Regex( "." );
+        protected readonly Regex regExDot = new Regex( "." );
 
         /// <summary>
         /// The RegEx to detect if the text has {{ }} tags in it
         /// </summary>
-        protected Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
+        protected readonly Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
     }
 }

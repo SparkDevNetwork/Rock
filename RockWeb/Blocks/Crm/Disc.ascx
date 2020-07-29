@@ -43,7 +43,7 @@
     /// and moves to next question.
     ///</summary>
     function initQuestionValidation() {
-        $('.js-disc-questions input[type=radio]').change(function () {
+        $('.js-disc-questions input[type=radio]').on('change', function () {
             var selectedId = this.id;
             var selectedIdx = this.id.charAt(this.id.length - 1);
             var rowIdx = this.id.charAt(this.id.length - 3);

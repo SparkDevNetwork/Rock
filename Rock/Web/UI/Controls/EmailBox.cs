@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     public class EmailBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.ViewState["AllowMultiple"] as bool? ?? false;
             }
-            
+
             set
             {
                 this.ViewState["AllowMultiple"] = value;
@@ -116,11 +116,12 @@ namespace Rock.Web.UI.Controls
                 // then added a \s so that spaces are allowed between email addresses
                 if ( this.AllowLava )
                 {
+                    // NewPointe - Allow any lava in email boxes
                     _regexValidator.ValidationExpression = @".*";
                 }
                 else
                 {
-                  
+
                     _regexValidator.ValidationExpression = @"((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*";
                 }
             }
@@ -128,6 +129,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.AllowLava )
                 {
+                    // NewPointe - Allow any lava in email boxes
                     _regexValidator.ValidationExpression = @".*";
                 }
                 else

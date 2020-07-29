@@ -38,11 +38,32 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block that can be used to set a user specific date range preference." )]
 
-    [TextField( "No Date Range Text", "The text to show when there is no date range in the context.", true, "Select Date Range", order: 0 )]
-    [SlidingDateRangeField("Default Date Range","The default range to start with if context and query string have not been set", order: 1 )]
-    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", order: 2 )]
+    [TextField( "No Date Range Text",
+        Description = "The text to show when there is no date range in the context.",
+        IsRequired = true,
+        DefaultValue = "Select Date Range",
+        Order = 0,
+        Key = AttributeKey.NoDateRangeText )]
+
+    [SlidingDateRangeField( "Default Date Range",
+        Description = "The default range to start with if context and query string have not been set",
+        Order = 1,
+        Key = AttributeKey.DefaultDateRange )]
+
+    [BooleanField( "Display Query Strings",
+        Description = "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.",
+        Order = 2,
+        Key = AttributeKey.DisplayQueryStrings )]
+
     public partial class DateRangeContextSetter : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string NoDateRangeText = "NoDateRangeText";
+            public const string DefaultDateRange = "DefaultDateRange";
+            public const string DisplayQueryStrings = "DisplayQueryStrings";
+        }
+
         /// <summary>
         /// The context preference name
         /// </summary>
@@ -110,8 +131,8 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-            	lCurrentSelection.Text = GetAttributeValue( "NoDateRangeText" );
-                drpSlidingDateRange.DelimitedValues = GetAttributeValue( "DefaultDateRange" );
+                lCurrentSelection.Text = GetAttributeValue( AttributeKey.NoDateRangeText );
+                drpSlidingDateRange.DelimitedValues = GetAttributeValue( AttributeKey.DefaultDateRange );
             }
         }
 
@@ -129,7 +150,7 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "SlidingDateRange" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "SlidingDateRange" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "SlidingDateRange", dateRangeValues );

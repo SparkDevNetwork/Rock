@@ -95,7 +95,7 @@
                             <div class="form-group">
                                 <label for="inputEmail3" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
                                 </div>
                             </div>
                         </div>
@@ -110,45 +110,54 @@
                         <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
                         <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
                         <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+                        <li><strong>label-auto: </strong> Label and field widths determined by contents</li>
                     </ul>
 
                     <div runat="server" class="r-example">
                         <div class="form-horizontal label-sm">
                             <div class="form-group">
-                                <label for="inputEmail3" class="control-label">Email</label>
+                                <label for="inputEmail4" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-md">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                        <div class="form-horizontal label-md">
+                            <div class="form-group">
+                                <label for="inputEmail5" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-lg">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                        <div class="form-horizontal label-lg">
+                            <div class="form-group">
+                                <label for="inputEmail6" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-xl">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                        <div class="form-horizontal label-xl">
+                            <div class="form-group">
+                                <label for="inputEmail7" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
+                        <div class="form-horizontal label-auto">
+                            <div class="form-group">
+                                <label for="inputEmail8" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail8" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -290,6 +299,11 @@
                         <Rock:RockCheckBoxList ID="cblExampleHorizontal" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
                     </div>
 
+                    <a id="Rock List Box"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockListBox ID="lbExampleListBox" runat="server" Label="Rock:RockListBox" />
+                    </div>
+
                     <a id="RockRadioButtonList"></a>
                     <h2>Radio Button</h2>
                     <div runat="server" class="r-example">
@@ -299,6 +313,16 @@
                     <a id="RockRadioButtonListHorizontal"></a>
                     <div runat="server" class="r-example">
                         <Rock:RockRadioButtonList ID="rblExampleHorizontal" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal" />
+                    </div>
+
+                    <a id="RockSwitch"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:Switch ID="swExample" runat="server" Label="Rock:Switch" Text="Rock:Switch" />
+                    </div>
+
+                    <a id="RockListItems"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ListItems ID="liExample" runat="server" Label="Rock:ListItems"></Rock:ListItems>
                     </div>
 
                     <a id="NumberRangeEditor"></a>
@@ -316,7 +340,7 @@
                     <a id="RangeSlider"></a>
                     <h2>Range Slider</h2>
                     <div runat="server" class="r-example">
-                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" SelectedValue="200" />
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="5" SelectedValue="200" />
                         <br />
                     </div>
 
@@ -478,6 +502,11 @@
                         <Rock:FileUploader ID="fuprExampleBinaryFile" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
                     </div>
 
+                    <a id="FileUploaderLg"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FileUploader ID="fuprExampleUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="false" Label="Rock:FileUploader Large (BinaryFile mode)" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
+                    </div>
+
                     <a id="FileUploaderContentFileMode"></a>
                     <div runat="server" class="r-example">
                         <Rock:FileUploader ID="fuprExampleContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles" OnFileUploaded="fupContentFile_FileUploaded" />
@@ -523,6 +552,16 @@
                     <a id="GroupRolePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
+                    </div>
+
+                    <h2 runat="server">Interval</h2>
+                    <a id="IntervalPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:IntervalPicker ID="ipExample1" runat="server" Label="Rock:IntervalPicker" />
+                    </div>
+
+                    <div runat="server" class="r-example">
+                        <Rock:IntervalPicker ID="ipExample2" DefaultValue="2" DefaultInterval="Day" runat="server" Label="Rock:IntervalPicker (Default Value, Default Interval)" />
                     </div>
 
                     <h2 runat="server">Locations</h2>
@@ -801,7 +840,7 @@
                     <a id="AttributeEditor"></a>
                     <h2 runat="server">Rock:AttributeEditor</h2>
                     <div runat="server" class="r-example">
-                        <asp:LinkButton ID="lbExample" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
                         <asp:Panel ID="pnlAttributeEditor" runat="server" Visible="false" CssClass="well">
                             <Rock:AttributeEditor ID="edtExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
                         </asp:Panel>

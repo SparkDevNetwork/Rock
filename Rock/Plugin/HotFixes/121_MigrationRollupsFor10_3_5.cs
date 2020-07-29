@@ -28,11 +28,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixMarriedDefinedValue();
-            AddOnlineWatcherKnownRelationshipType();
-            UpdateCSSClassesInMobileTemplates();
-            MobileEventDetailBlock();
-            UpdateCardLavaTemplateInStepType();
+            //FixMarriedDefinedValue();
+            //AddOnlineWatcherKnownRelationshipType();
+            //UpdateCSSClassesInMobileTemplates();
+            //MobileEventDetailBlock();
+            //UpdateCardLavaTemplateInStepType();
         }
 
         /// <summary>

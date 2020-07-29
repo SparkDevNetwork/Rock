@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
     [CodeEditorField( "Map Info", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
-<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
+<h4 class='margin-t-none'>{{ Group.Name }}</h4>
 
 <div class='margin-b-sm'>
 {% for attribute in Group.AttributeValues %}
@@ -100,13 +100,11 @@ namespace RockWeb.Blocks.Groups
     {% endif %}
 {% endif %}
 ", "CustomSetting" )]
-    [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
     [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
-    [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
     // Grid Settings
     [BooleanField( "Show Grid", "", false, "CustomSetting" )]
@@ -436,7 +434,7 @@ namespace RockWeb.Blocks.Groups
 
             var rockContext = new RockContext();
             var groupTypes = new GroupTypeService( rockContext )
-                .Queryable().AsNoTracking().ToList();
+                .Queryable().AsNoTracking().OrderBy( t => t.Order ).ToList();
 
             BindGroupType( gtpGroupType, groupTypes, "GroupType" );
             BindGroupType( gtpGeofenceGroupType, groupTypes, "GeofencedGroupType" );
@@ -619,7 +617,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // Hide the search button and show the results immediately since there is 
+                    // Hide the search button and show the results immediately since there is
                     // no filter criteria to be entered
                     phFilterControls.Visible = false;
                     btnSearch.Visible = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
@@ -641,7 +639,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeFilters = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( "AttributeFilters" ).SplitDelimitedValues() )
             {
@@ -656,7 +654,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeColumns = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( "AttributeColumns" ).SplitDelimitedValues() )
             {
@@ -687,7 +685,7 @@ namespace RockWeb.Blocks.Groups
                 dowsFilterControl.Label = GetAttributeValue( "DayOfWeekLabel" );
                 dowsFilterControl.BindToEnum<DayOfWeek>();
                 dowsFilterControl.RepeatDirection = RepeatDirection.Horizontal;
-                
+
                 AddFilterControl( dowsFilterControl, "Days of Week", "The day of week that group meets on." );
             }
 
@@ -704,7 +702,7 @@ namespace RockWeb.Blocks.Groups
                 string timeOfDayLabel = GetAttributeValue( "TimeOfDayLabel" );
                 AddFilterControl( control, timeOfDayLabel, "The time of day that group meets." );
             }
-            
+
             if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
             {
 
@@ -1075,9 +1073,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
 
-                    bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
-                    lMapInfoDebug.Visible = showDebug;
-
                     double precision = GetAttributeValue( "MarkerPrecision" ).AsDoubleOrNull() ?? 1000;
 
                     // Add mapitems for all the remaining valid group locations
@@ -1116,12 +1111,6 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "AllowedActions", securityActions );
 
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-
-                            if ( showDebug )
-                            {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", string.Empty );
-                                showDebug = false;
-                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location, precision );
@@ -1180,13 +1169,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the summary info.</span>" );
-                }
 
                 pnlLavaOutput.Visible = true;
             }
@@ -1359,7 +1341,7 @@ namespace RockWeb.Blocks.Groups
 
         var locationData = {0};
         var fenceData = {1};
-        var groupData = {2}; 
+        var groupData = {2};
 
         var allMarkers = [];
 
@@ -1442,7 +1424,7 @@ namespace RockWeb.Blocks.Groups
 
             var items = [];
 
-            if (mapItem.Point) {{ 
+            if (mapItem.Point) {{
 
                 var position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
                 bounds.extend(position);
@@ -1470,11 +1452,11 @@ namespace RockWeb.Blocks.Groups
                     info_window: mapItem.InfoWindow,
                     label: String.fromCharCode(9679)
                 }});
-    
+
                 items.push(marker);
                 allMarkers.push(marker);
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                         return function () {{
                             openInfoWindow(marker);
@@ -1482,7 +1464,7 @@ namespace RockWeb.Blocks.Groups
                     }})(marker, i));
                 }}
 
-                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
+                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{
                     google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
@@ -1527,7 +1509,7 @@ namespace RockWeb.Blocks.Groups
                     polyBounds.extend(polygonPoints[j]);
                 }}
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(polygon, 'click', (function (polygon, i) {{
                         return function () {{
                             infoWindow.setContent( mapItem.InfoWindow );
@@ -1541,7 +1523,7 @@ namespace RockWeb.Blocks.Groups
             return items;
 
         }}
-        
+
         function setAllMap(markers, map) {{
             for (var i = 0; i < markers.length; i++) {{
                 markers[i].setMap(map);
@@ -1567,7 +1549,7 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function adjustOverlappedMarkers() {{
-            
+
             if (allMarkers.length > 1) {{
                 for(i=0; i < allMarkers.length-1; i++) {{
                     var marker1 = allMarkers[i];

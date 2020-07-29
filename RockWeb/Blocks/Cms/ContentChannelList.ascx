@@ -2,19 +2,20 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
+
         <asp:panel ID="pnlContent" runat="server" CssClass="panel panel-block">
-            
+
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-bullhorn"></i> Content Channels
                 </h1>
             </div>
-            
+
             <div class="panel-body">
                 <div class="grid grid-panel">
 
                     <Rock:GridFilter ID="gfFilter" runat="server">
+                        <Rock:CategoryPicker ID="cpCategories" runat="server" Label="Categories" AllowMultiSelect="true" EntityTypeName="Rock.Model.ContentChannel" />
                         <Rock:RockDropDownList ID="ddlType" runat="server" Label="Type" />
                     </Rock:GridFilter>
 
@@ -24,7 +25,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Channel" SortExpression="Name" />
                             <Rock:RockBoundField DataField="ContentChannelType" HeaderText="Type" SortExpression="ContentChannelType" />
-                            <asp:HyperLinkField DataNavigateUrlFields="ChannelUrl" DataNavigateUrlFormatString="{0}" DataTextField="ChannelUrl" SortExpression="ChannelUrl" HeaderText="Channel Url" />
+                            <asp:HyperLinkField DataNavigateUrlFields="ChannelUrl" DataNavigateUrlFormatString="{0}" DataTextField="ChannelUrl" SortExpression="ChannelUrl" HeaderText="Channel URL" />
                             <Rock:BadgeField InfoMin="1" DataField="TotalItems" HeaderText="Total Items" SortExpression="TotalItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BadgeField InfoMin="1" DataField="ActiveItems" HeaderText="Active Items" SortExpression="ActiveItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:DateField DataField="ItemLastCreated" HeaderText="Last Item Created" SortExpression="ItemLastCreated" FormatAsElapsedTime="true" />

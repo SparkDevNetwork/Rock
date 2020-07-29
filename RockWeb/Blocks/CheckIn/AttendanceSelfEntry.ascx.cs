@@ -812,7 +812,7 @@ ORDER BY [Text]",
 
             AddOrUpdateOtherWatchers( rockContext, person, family );
 
-            SetUnsecuredPersonIdentifier( person.PrimaryAlias.Guid );
+            Rock.Security.Authorization.SetUnsecurePersonIdentifier( person.PrimaryAlias.Guid );
 
             if ( isAccountRequired )
             {
@@ -1470,17 +1470,6 @@ ORDER BY [Text]",
         }
 
         /// <summary>
-        /// Set the unsecured person identifier to the cookie.
-        /// </summary>
-        private void SetUnsecuredPersonIdentifier( Guid personAliasGuid )
-        {
-            HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-            httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
-            Response.Cookies.Add( httpcookie );
-        }
-
-        /// <summary>
         /// Saves the phone number.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -1594,7 +1583,7 @@ ORDER BY [Text]",
             PrimaryWatcher = new Watcher( person, Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid(), string.Empty );
             PrimaryWatcher.Selected = true;
 
-            SetUnsecuredPersonIdentifier( person.PrimaryAlias.Guid );
+            Rock.Security.Authorization.SetUnsecurePersonIdentifier( person.PrimaryAlias.Guid );
 
             var familyMembers = personService
                 .GetFamilyMembers( family, person.Id )

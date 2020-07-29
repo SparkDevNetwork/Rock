@@ -240,8 +240,10 @@ namespace Rock.Model
         #region methods
 
         /// <summary>
-        /// Runs the <see cref="BuildScript" /> and sets <see cref="ResultData"/>
+        /// Runs the <see cref="BuildScript" /> and sets <see cref="ResultData"/> if it is valid.
         /// </summary>
+        /// <exception cref="System.Runtime.Serialization.InvalidDataContractException">Is thrown if the resulting data deserialized.</exception>
+        /// <exception cref="Rock.Model.PersistedDataset.UnsupportedBuildScriptTypeException">Is thrown if the BuildScriptType is not known/supported.</exception>
         public void UpdateResultData()
         {
             var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -250,15 +252,19 @@ namespace Rock.Model
                 case PersistedDatasetScriptType.Lava:
                     {
                         var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
-
-                        if ( this.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
+                        var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+                        
+                        // Ensure resulting output is valid for its defined format,
+                        // otherwise log the problem and throw an exception.
+                        if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
                         {
-                            this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+                            if ( output.FromJsonDynamicOrNull() == null )
+                            {
+                                throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                            }
                         }
-                        else
-                        {
-                            this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields );
-                        }
+                        
+                        this.ResultData = output;
                         break;
                     }
 

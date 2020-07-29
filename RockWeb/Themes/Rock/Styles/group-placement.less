@@ -31,7 +31,7 @@
 
 .dropzone {
   &.empty,
-  &:empty  {
+  &:empty {
     position: relative;
     padding: 41px 16px;
     outline-offset: -16px;
@@ -195,7 +195,10 @@
 
 .person {
   display: inline-flex;
+  -ms-flex: 0 0 33%;
+  flex: 0 0 33%;
   flex-direction: column;
+  max-width: ~"calc(33.333% - 8px)";
   margin: 0 8px 12px 0;
   font-family: @font-family-sans-serif;
   color: @btn-default-color;
@@ -206,9 +209,6 @@
   border: 1px solid @btn-default-border;
   border-radius: 4px;
   box-shadow: 0 1px 0 hsl(228, 7%, 83%);
-  -ms-flex: 0 0 33%;
-  flex: 0 0 33%;
-  max-width: ~"calc(33.333% - 8px)";
 
   .registrant-list & {
     display: flex;
@@ -316,9 +316,9 @@
   }
 
   &.gu-mirror {
-    cursor: grabbing !important;
     cursor: -moz-grabbing !important;
     cursor: -webkit-grabbing !important;
+    cursor: grabbing !important;
     background: rgba(255,255,255,.8);
     box-shadow: 0 5px 20px 0 rgba(21,27,38,.08);
     opacity: 1;

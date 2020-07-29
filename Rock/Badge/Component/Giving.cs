@@ -41,7 +41,7 @@ namespace Rock.Badge.Component
     [CodeEditorField( "Lava Template", "The lava template to use for the badge display", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, order: 4, defaultValue:
         @"
 {% if DateRange and DateRange.Summary != '' %}
-  {% capture dateRangeText %} in the {{ DateRange.Summary | Downcase  }}{% endcapture %}
+  {% capture dateRangeText %} in the {{ DateRange.Summary | Downcase }}{% endcapture %}
 {% else %}
   {% assign dateRangeText = '' %}
 {% endif %}

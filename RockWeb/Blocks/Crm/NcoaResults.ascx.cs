@@ -38,9 +38,23 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Display the Ncoa History Record" )]
 
-    [IntegerField( "Result Count", "Number of result to display per page (default 20).", false, 20 )]
+    [IntegerField(
+        "Result Count",
+        Key = AttributeKey.ResultCount,
+        Description = "Number of result to display per page (default 20).",
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Order = 0 )]
+
     public partial class NcoaResults : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string ResultCount = "ResultCount";
+        }
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -400,12 +414,12 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
 
-            int resultCount = Int32.Parse( GetAttributeValue( "ResultCount" ) );
+            int resultCount = Int32.Parse( GetAttributeValue( AttributeKey.ResultCount ) );
             int pageNumber = 0;
 
-            if ( !String.IsNullOrEmpty( PageParameter( "page" ) ) )
+            if ( !String.IsNullOrEmpty( PageParameter( "Page" ) ) )
             {
-                pageNumber = Int32.Parse( PageParameter( "page" ) );
+                pageNumber = Int32.Parse( PageParameter( "Page" ) );
             }
 
             var skipCount = pageNumber * resultCount;
@@ -635,7 +649,7 @@ namespace RockWeb.Blocks.Crm
             {
                 hlNext.Visible = hlNext.Enabled = true;
                 Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
-                queryStringNext.Add( "page", ( pageNumber + 1 ).ToString() );
+                queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
                 var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
                 hlNext.NavigateUrl = pageReferenceNext.BuildUrl();
             }
@@ -653,7 +667,7 @@ namespace RockWeb.Blocks.Crm
             {
                 hlPrev.Visible = hlPrev.Enabled = true;
                 Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
-                queryStringPrev.Add( "page", ( pageNumber - 1 ).ToString() );
+                queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
                 var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
                 hlPrev.NavigateUrl = pageReferencePrev.BuildUrl();
             }

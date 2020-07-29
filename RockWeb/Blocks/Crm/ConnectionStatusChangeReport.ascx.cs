@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Crm
 
     [LinkedPage(
         "Person Detail Page",
-        Key = AttributeKey.DetailPage,
+        Key = AttributeKey.PersonDetailPage,
         Category = AttributeCategory.LinkedPages,
         Order = 0 )]
 
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private static class AttributeKey
         {
-            public const string DetailPage = "PersonDetailPage";
+            public const string PersonDetailPage = "PersonDetailPage";
         }
 
         #endregion
@@ -81,11 +81,11 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private static class PageParameterKey
         {
-            public const string CampusId = "campusId";
-            public const string Period = "period";
-            public const string FromStatusId = "fromStatusId";
-            public const string ToStatusId = "toStatusId";
-            public const string ShowResults = "showResults";
+            public const string CampusId = "CampusId";
+            public const string Period = "Period";
+            public const string FromStatusId = "FromStatusId";
+            public const string ToStatusId = "ToStatusId";
+            public const string ShowResults = "ShowResults";
         }
 
         #endregion
@@ -623,7 +623,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            NavigateToLinkedPage( "PersonDetailPage", "PersonId", membership.PersonId );
+            NavigateToLinkedPage( AttributeKey.PersonDetailPage, "PersonId", membership.PersonId );
         }
 
         #endregion

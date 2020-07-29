@@ -438,7 +438,7 @@ namespace Rock.Model
             var rockContext = ( RockContext ) dbContext;
 
             // It is possible that we have a UserLogin without a PersonId, in these cases we don't want to save a person history record.
-            if ( HistoryChanges != null && HistoryChanges.Any() && this.PersonId.HasValue )
+            if ( HistoryChanges?.Any() == true && this.PersonId.HasValue )
             {
                 try
                 {

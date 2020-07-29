@@ -25,7 +25,6 @@ using System.Web.Routing;
 
 using Rock.Model;
 using Rock.Transactions;
-using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -36,242 +35,34 @@ namespace Rock.Web
     /// </summary>
     public sealed class RockRouteHandler : IRouteHandler
     {
-
-        private class PageCacheAndRouteId
-        {
-            public PageCache Page { get; set; }
-            public int RouteId { get; set; }
-        }
-
-        // Page Functions
-
-        private PageCache GetPageForDefaultRoute( RequestContext requestContext )
-        {
-            int? routeData_PageId = requestContext.RouteData.Values["PageId"]?.ToString()?.AsIntegerOrNull();
-            if ( routeData_PageId.HasValue )
-            {
-                return PageCache.Get( routeData_PageId.Value );
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private IEnumerable<PageCacheAndRouteId> GetPagesForRoute( RequestContext requestContext )
-        {
-            List<PageAndRouteId> matchedRoutes = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
-
-            if ( matchedRoutes != null )
-            {
-                return matchedRoutes.Select( r => new PageCacheAndRouteId { Page = PageCache.Get( r.PageId ), RouteId = r.RouteId } ).Where( p => p.Page != null ).ToList();
-            }
-            else
-            {
-                return new List<PageCacheAndRouteId>();
-            }
-        }
-
-        private IEnumerable<PageShortLink> GetShortLinksForRoute( RequestContext requestContext, RockContext rockContext = null )
-        {
-            if ( rockContext == null ) rockContext = new RockContext();
-
-            // Get the shortlink
-            string shortlink = (string)requestContext.RouteData.Values["shortlink"];
-
-            // The shortlink might have gotten matched as if it were a route, so test the route name too
-            if ( string.IsNullOrWhiteSpace( shortlink ) ) shortlink = (string)requestContext.RouteData.DataTokens["RouteName"];
-
-            if ( !string.IsNullOrWhiteSpace( shortlink ) )
-            {
-
-                return new PageShortLinkService( rockContext ).Queryable().Where( l => l.Token == shortlink ).ToList();
-
-            }
-            else
-            {
-                return new List<PageShortLink>();
-            }
-        }
-
-        // Site Functions
-
-        private SiteCache GetSiteByQueryString( RequestContext requestContext )
-        {
-            int? query_SiteId = requestContext.HttpContext.Request.QueryString["SiteId"].AsIntegerOrNull();
-            if ( query_SiteId.HasValue )
-            {
-                return SiteCache.Get( query_SiteId.Value );
-            }
-            return null;
-        }
-
-        private SiteCache GetSiteByDomainName( RequestContext requestContext )
-        {
-            return SiteCache.GetSiteByDomain( WebRequestHelper.GetHostNameFromRequest( HttpContext.Current ) );
-        }
-
-        private SiteCache GetSiteFromLastSite( RequestContext requestContext )
-        {
-            var siteCookie = requestContext.HttpContext.Request.Cookies["last_site"];
-            if ( siteCookie != null && siteCookie.Value != null )
-            {
-                return SiteCache.Get( siteCookie.Value.AsInteger() );
-            }
-            return null;
-        }
-
-        private SiteCache GetDefaultSite()
-        {
-            return SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
-        }
-
-        // Handlers
-
-        private System.Web.IHttpHandler GetHandlerForPage( RequestContext requestContext, PageCache page, int routeId = 0, bool checkMobile = true )
-        {
-            var site = page.Layout.Site;
-
-            // Check for a mobile redirect on the site
-            if ( checkMobile && site.EnableMobileRedirect )
-            {
-                var clientType = InteractionDeviceType.GetClientType( requestContext.HttpContext.Request.UserAgent );
-
-                if ( clientType == "Mobile" || ( site.RedirectTablets && clientType == "Tablet" ) )
-                {
-                    if ( site.MobilePageId.HasValue )
-                    {
-                        var mobilePage = PageCache.Get( site.MobilePageId.Value );
-                        if(mobilePage != null)
-                        {
-                            return GetHandlerForPage( requestContext, mobilePage, routeId, false );
-                        }
-
-                    }
-                    else if ( !string.IsNullOrWhiteSpace( site.ExternalUrl ) )
-                    {
-                        requestContext.HttpContext.Response.Redirect( site.ExternalUrl );
-                        return null;
-                    }
-                }
-            }
-
-            // Set the last site cookie
-            var siteCookie = requestContext.HttpContext.Request.Cookies["last_site"];
-            if ( siteCookie == null )
-            {
-                siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
-            }
-            else
-            {
-                siteCookie.Value = page.Layout.SiteId.ToString();
-            }
-            requestContext.HttpContext.Response.SetCookie( siteCookie );
-
-            // Get the Layout & Theme Details
-            string theme = page.Layout.Site.Theme;
-            string layout = page.Layout.FileName;
-            string layoutPath = PageCache.FormatPath( theme, layout );
-
-            // Get any route parameters
-            var parms = new Dictionary<string, string>();
-            foreach ( var routeParm in requestContext.RouteData.Values )
-            {
-                if(routeParm.Key != "PageId")
-                    parms.Add( routeParm.Key, (string)routeParm.Value );
-            }
-
-            try
-            {
-                // Return the page for the selected theme and layout
-                Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.SetPage( page );
-                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
-                return cmsPage;
-            }
-            catch ( System.Web.HttpException )
-            {
-                // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
-                theme = "Rock";
-
-                // If not using the default layout, verify that Layout exists in the default theme directory
-                if ( layout != "FullWidth" &&
-                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout ) ) ) )
-                {
-                    // If selected layout doesn't exist in the default theme, switch to the Default layout
-                    layout = "FullWidth";
-                }
-
-                // Build the path to the aspx file to
-                layoutPath = PageCache.FormatPath( theme, layout );
-
-                // Return the default layout and/or theme
-                Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.SetPage( page );
-                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
-                return cmsPage;
-            }
-        }
-
-        private System.Web.IHttpHandler GetHandlerFor404( RequestContext requestContext, SiteCache site )
-        {
-            // If we couldn't match a route because it's the root, use the home page
-            if ( site != null && requestContext.HttpContext.Request.Path == "/" ) return GetHandlerForPage( requestContext, site.DefaultPage, site.DefaultPageRouteId ?? 0 );
-
-            if ( site != null && site.PageNotFoundPageId.HasValue )
-            {
-                if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
-                {
-                    Rock.Model.ExceptionLogService.LogException(
-                        new Exception( string.Format( "404 Error: {0}", requestContext.HttpContext.Request.Url.AbsoluteUri ) ),
-                        requestContext.HttpContext.ApplicationInstance.Context );
-                }
-
-                var page = PageCache.Get( site.PageNotFoundPageId.Value );
-                requestContext.HttpContext.Response.StatusCode = 404;
-                requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
-
-                return GetHandlerForPage( requestContext, page );
-            }
-            else
-            {
-                // no 404 page found for the site, return the default 404 error page
-                return (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
-            }
-        }
-
-        private System.Web.IHttpHandler GetHandlerForShortLink( RequestContext requestContext, PageShortLink pageShortLink )
-        {
-            using ( var rockContext = new Rock.Data.RockContext() )
-            {
-                string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
-
-                RockQueue.TransactionQueue.Enqueue( new ShortLinkTransaction
-                {
-                    PageShortLinkId = pageShortLink.Id,
-                    Token = pageShortLink.Token,
-                    Url = trimmedUrl,
-                    UserName = requestContext.HttpContext.User?.Identity?.Name,
-                    DateViewed = RockDateTime.Now,
-                    IPAddress = UI.RockPage.GetClientIpAddress(),
-                    UserAgent = requestContext.HttpContext.Request.UserAgent ?? ""
-                } );
-
-                requestContext.HttpContext.Response.Redirect( trimmedUrl );
-
-                return null;
-            }
-        }
-
-
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and
         /// then loading the appropriate layout (ASPX) page
+        /// 
+        /// Pick url on the following priority order:
+        /// 1. PageId
+        /// 2. Route match and site match
+        /// 3. ShortLink match and site match
+        /// 4. Route and no site match
+        /// 5. ShortLink with no site match
+        /// 6. If there is no routing info in the request then set to default page
+        /// 7. 404 if route does not exist
+        /// 
         /// </summary>
         /// <param name="requestContext"></param>
         /// <returns></returns>
         System.Web.IHttpHandler IRouteHandler.GetHttpHandler( RequestContext requestContext )
         {
+            string pageId = string.Empty;
+            int routeId = 0;
+            bool isSiteMatch = false;
+            Dictionary<string, string> parms;
+            string host;
+            HttpRequestBase routeHttpRequest;
+            HttpCookie siteCookie;
+            SiteCache site;
+
+            // Context cannot be null
             if ( requestContext == null )
             {
                 throw new ArgumentNullException( "requestContext" );
@@ -279,177 +70,246 @@ namespace Rock.Web
 
             try
             {
+                routeHttpRequest = requestContext.HttpContext.Request;
+                siteCookie = routeHttpRequest.Cookies["last_site"];
+                parms = new Dictionary<string, string>();
+                host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                site = GetSite( host, siteCookie );
 
-                /*
-                 * By default, Rock allows accessing any page/route from any site (unless a more specific route is available).
-                 * We've found that causes issues when a search engine accidentaly finds a page from a different site - it'll
-                 * start indexing everything with the wrong domain! It also means it's impossible to completely seperate the
-                 * pages/routes for two different sites. If one site has an /about page, all of your sites have that page (unless they
-                 * overwrite it with their own route).
-                 *
-                 * Here we attempt to remedy that by enforcing a "strict mode" for pages when we can reliably determine the
-                 * site a person is requesting. In this mode, we require the page being matched to be a part of the site that
-                 * was requested. This causes a few issues with some system pages that need to be available on all sites, but
-                 * is otherwise effective.
-                 *
-                 *
-                 * Need to determine:
-                 * 1. The Site
-                 * 2. The Page OR Shortlink
-                 *
-                 * URL Formats:
-                 * 1. domain/page/{PageId}
-                 * 2. domain/route
-                 * 3. domain/shortlink
-                 *
-                 * We can get the Site from:
-                 * 1. The domain
-                 *
-                 * We can infer the Site from:
-                 * 1. The "last_site" cookie
-                 * 2. The default site
-                 *
-                 * We can get the Page from:
-                 * 1. The Page Id
-                 *
-                 * We can infer the Page from:
-                 * 1. The first matching site + route
-                 * 2. The first matching site + shortlink
-                 * 3. The Site's default page
-                 * 4. The first matching route
-                 * 5. The first matching shortlink
-                 *
-                 * What are the possibilities?
-                 *
-                 * - domain + page id
-                 * - domain + route
-                 * - domain + shortlink
-                 * - last site + page id
-                 * - last site + route
-                 * - last site + shortlink
-                 * - default site + page id
-                 * - default site + route
-                 * - default site + shortlink
-                 * - page id
-                 * - route
-                 * - shortlink
-                 *
-                 *
-                 * How are we prioritizing them?
-                 * - If site id or domain (strict matching mode)
-                 *   - domain + page id
-                 *   - domain + route
-                 *   - domain + shortlink
-                 *   - any site + page id + dialog layout
-                 *   - any site + route + dialog layout
-                 * - Else (loose matching mode)
-                 *   - any site + page id
-                 *   - last site + route
-                 *   - last site + shortlink
-                 *   - default site + shortlink
-                 *   - default site + route
-                 *   - any site + route
-                 *   - any site + shortlink
-                 *
-                 * Note 1: page id can't be restricted by matched site because that breaks Block Properties dialogs.
-                 * Note 2: restricting routes breaks the Child Pages dialog, grrr. Let's try prioritizing layout type == Dialog.
-                 * Note 3: page id can't be restricted by site id because that breaks the CMS -> Sites details page.
-                 * Note 4: the sites config block also uses the SiteId= parameter, which messes with things and can lock you out of those settings
-                 *
-                 * Conclusion: We either need a better way of deciding when to use "strict mode" (page or site setting?),
-                 * or we need to refactor how system pages work so they behave properly
-                 *
-                 */
-
-                // Get page id
-                var defaultRoutePage = GetPageForDefaultRoute( requestContext );
-
-
-                // Get possible routes
-                var routePages = GetPagesForRoute( requestContext );
-
-                // Get possible shortlinks
-                var routeShortLinks = GetShortLinksForRoute( requestContext );
-
-
-                // domain
-                var domainSite = GetSiteByDomainName( requestContext );
-                if ( domainSite != null )
+                if ( requestContext.RouteData.Values["PageId"] != null )
                 {
+                    // Pages using the default routing URL will have the page id in the RouteData.Values collection
+                    pageId = ( string ) requestContext.RouteData.Values["PageId"];
 
-                    // domain + page id
-                    if ( defaultRoutePage != null && domainSite.Id == defaultRoutePage.SiteId) return GetHandlerForPage( requestContext, defaultRoutePage );
+                    // Does the page ID exist on the requesting site
+                    isSiteMatch = IsSiteMatch( site, pageId.AsIntegerOrNull() );
 
-                    // domain + route
-                    var domainSiteRoutePage = routePages.Where( p => domainSite.Id == p.Page.SiteId ).FirstOrDefault();
-                    if ( domainSiteRoutePage != null ) return GetHandlerForPage( requestContext, domainSiteRoutePage.Page, domainSiteRoutePage.RouteId );
+                    if ( site.EnableExclusiveRoutes && !isSiteMatch )
+                    {
+                        // If the site has to match and does not then don't use the page ID. Set it to empty so the 404 can be returned.
+                        pageId = string.Empty;
+                    }
+                    else if ( !isSiteMatch )
+                    {
+                        // This page belongs to another site, make sure it is allowed to be loaded.
+                        if ( IsPageExclusiveToAnotherSite( site, pageId.AsIntegerOrNull(), null ) )
+                        {
+                            // If the page has to match the site and does not then don't use the page ID. Set it to empty so the 404 can be returned.
+                            pageId = string.Empty;
+                        }
+                    }
+                }
+                else if ( requestContext.RouteData.DataTokens["PageRoutes"] != null )
+                {
+                    // Pages that use a custom URL route will have the page id in the RouteData.DataTokens collection
+                    GetPageIdFromDataTokens( requestContext, site, out pageId, out routeId, out isSiteMatch );
 
-                    // domain + shortlink
-                    var domainSiteRouteShortLink = routeShortLinks.Where( l => domainSite.Id == l.SiteId ).FirstOrDefault();
-                    if ( domainSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, domainSiteRouteShortLink );
+                    foreach ( var routeParm in requestContext.RouteData.Values )
+                    {
+                        parms.Add( routeParm.Key, ( string ) routeParm.Value );
+                    }
+                }
+                else if ( ( ( System.Web.Routing.Route ) requestContext.RouteData.Route ).Url.IsNullOrWhiteSpace() )
+                {
+                    // if we don't have routing info then set the page ID to the default page for the site.
 
+                    // Get the site, if not found use the default site
+                    if ( site == null )
+                    {
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                    }
+
+                    if ( site.DefaultPageId.HasValue )
+                    {
+                        pageId = site.DefaultPageId.Value.ToString();
+                        isSiteMatch = true;
+                    }
+                    else
+                    {
+                        throw new SystemException( "Invalid Site Configuration" );
+                    }
                 }
 
-
-                // Match pages and routes with dialog layouts so dialogs still work properly
-
-                // any site + page id + dialog layout
-                if ( defaultRoutePage != null && defaultRoutePage.Layout.Name == "Dialog" ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
-                // any site + route + dialog layout
-                var anySiteRouteDialogPage = routePages.Where( p => p.Page.Layout.Name == "Dialog" ).FirstOrDefault();
-                if ( anySiteRouteDialogPage != null ) return GetHandlerForPage( requestContext, anySiteRouteDialogPage.Page, anySiteRouteDialogPage.RouteId );
-
-
-                // Strict matching for domain matches (We don't want routes from one domain to be accessible from all others - It makes a complete mess of SEO)
-                if ( domainSite != null ) return GetHandlerFor404( requestContext, domainSite );
-
-
-                // any site + page id
-                if ( defaultRoutePage != null ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
-                // last site
-                var lastSite = GetSiteFromLastSite( requestContext );
-                if ( lastSite != null )
+                // If the the page ID and site has not yet been matched
+                if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
+                    // if not found use the default site
+                    if ( site == null )
+                    {
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                    }
 
-                    // last site + route
-                    var lastSiteRoutePage = routePages.Where( p => lastSite.Id == p.Page.SiteId ).FirstOrDefault();
-                    if ( lastSiteRoutePage != null ) return GetHandlerForPage( requestContext, lastSiteRoutePage.Page, lastSiteRoutePage.RouteId );
+                    // Are shortlinks enabled for this site? If so, check for a matching shortlink route.
+                    if ( site != null )
+                    {
+                        if ( site.EnabledForShortening )
+                        {
+                            // Check to see if this is a short link route
+                            string shortlink = null;
+                            if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
+                            {
+                                shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                            }
+                            else
+                            {
+                                // Because we implemented shortlinks using a {shortlink} (catchall) route, it's
+                                // possible the organization added a custom {catchall} route (at root level; no slashes)
+                                // and it is overriding our shortlink route.  If they did, use it for a possible 'shortlink'
+                                // route match.
+                                if ( requestContext.RouteData.DataTokens["RouteName"] != null && requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().StartsWith( "{" ) )
+                                {
+                                    var routeName = requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().Trim( new Char[] { '{', '}' } );
+                                    shortlink = requestContext.RouteData.Values[routeName].ToStringSafe();
+                                }
+                            }
 
-                    // last site + shortlink
-                    var lastSiteRouteShortLink = routeShortLinks.Where( l => lastSite.Id == l.SiteId ).FirstOrDefault();
-                    if ( lastSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, lastSiteRouteShortLink );
+                            if ( shortlink.IsNullOrWhiteSpace() && requestContext.RouteData.DataTokens["RouteName"] != null )
+                            {
+                                shortlink = requestContext.RouteData.DataTokens["RouteName"].ToString();
+                            }
 
+                            if ( shortlink.IsNotNullOrWhiteSpace() )
+                            {
+                                using ( var rockContext = new Rock.Data.RockContext() )
+                                {
+                                    var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
+
+                                    // Use the short link if the site IDs match or the current site and shortlink site are not exclusive.
+                                    // Note: this is only a restriction based on the site chosen as the owner of the shortlink, the acutal URL can go anywhere.
+                                    if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || ( !site.EnableExclusiveRoutes && !pageShortLink.Site.EnableExclusiveRoutes ) ) )
+                                    {
+                                        if ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null )
+                                        {
+                                            pageId = string.Empty;
+                                            routeId = 0;
+
+                                            string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
+
+                                            var transaction = new ShortLinkTransaction
+                                            {
+                                                PageShortLinkId = pageShortLink.Id,
+                                                Token = pageShortLink.Token,
+                                                Url = trimmedUrl,
+                                                DateViewed = RockDateTime.Now,
+                                                IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
+                                                UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
+                                                UserName = requestContext.HttpContext.User?.Identity.Name
+                                            };
+
+                                            RockQueue.TransactionQueue.Enqueue( transaction );
+
+                                            requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
+                                            requestContext.HttpContext.ApplicationInstance.CompleteRequest();
+
+                                            // Global.asax.cs will throw and log an exception if null is returned, so just return a new page.
+                                            return new System.Web.UI.Page();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // If site has has been enabled for mobile redirect, then we'll need to check what type of device is being used
+                        if ( site.EnableMobileRedirect )
+                        {
+                            // get the device type
+                            string u = routeHttpRequest.UserAgent;
+
+                            var clientType = InteractionDeviceType.GetClientType( u );
+
+                            bool redirect = false;
+
+                            // first check if device is a mobile device
+                            if ( clientType == "Mobile" )
+                            {
+                                redirect = true;
+                            }
+
+                            // if not, mobile device and tables should be redirected also, check if device is a tablet
+                            if ( !redirect && site.RedirectTablets && clientType == "Tablet")
+                            {
+                                redirect = true;
+                            }
+
+                            if ( redirect )
+                            {
+                                if ( site.MobilePageId.HasValue )
+                                {
+                                    pageId = site.MobilePageId.Value.ToString();
+                                    routeId = 0;
+                                }
+                                else if ( !string.IsNullOrWhiteSpace( site.ExternalUrl ) )
+                                {
+                                    requestContext.HttpContext.Response.Redirect( site.ExternalUrl, false );
+                                    requestContext.HttpContext.ApplicationInstance.CompleteRequest();
+
+                                    // Global.asax.cs will throw and log an exception if null is returned, so just return a new page.
+                                    return new System.Web.UI.Page();
+                                }
+                            }
+                        }
+                    }
                 }
 
-
-                // default site
-                var defaultSite = GetDefaultSite();
-                if ( defaultSite != null )
+                PageCache page = null;
+                if ( !string.IsNullOrEmpty( pageId ) )
                 {
-
-                    // default site + route
-                    var defaultSiteRoutePage = routePages.Where( p => defaultSite.Id == p.Page.SiteId ).FirstOrDefault();
-                    if ( defaultSiteRoutePage != null ) return GetHandlerForPage( requestContext, defaultSiteRoutePage.Page, defaultSiteRoutePage.RouteId );
-
-                    // default site + shortlink
-                    var defaultSiteRouteShortLink = routeShortLinks.Where( l => defaultSite.Id == l.SiteId ).FirstOrDefault();
-                    if ( defaultSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, defaultSiteRouteShortLink );
-
+                    int pageIdNumber = 0;
+                    if ( int.TryParse( pageId, out pageIdNumber ) )
+                    {
+                        page = PageCache.Get( pageIdNumber );
+                    }
                 }
 
-                // any site + route
-                var firstRoutePage = routePages.FirstOrDefault();
-                if ( firstRoutePage != null ) return GetHandlerForPage( requestContext, firstRoutePage.Page, firstRoutePage.RouteId );
+                if ( page == null )
+                {
+                    // try to get site's 404 page
+                    if ( site != null && site.PageNotFoundPageId != null )
+                    {
+                        if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
+                        {
+                            Rock.Model.ExceptionLogService.LogException(
+                                new Exception( $"404 Error: {routeHttpRequest.Url.AbsoluteUri}" ),
+                                requestContext.HttpContext.ApplicationInstance.Context );
+                        }
 
-                // any site + shortlink
-                var firstRouteShortLink = routeShortLinks.FirstOrDefault();
-                if ( firstRouteShortLink != null ) return GetHandlerForShortLink( requestContext, firstRouteShortLink );
+                        page = PageCache.Get( site.PageNotFoundPageId ?? 0 );
+                        requestContext.HttpContext.Response.StatusCode = 404;
+                        requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
+                    }
+                    else
+                    {
+                        // no 404 page found for the site, return the default 404 error page
+                        return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
+                    }
+                }
 
-                // If we got this far without any matches, do a 404
-                return GetHandlerFor404( requestContext, lastSite ?? defaultSite );
+                CreateOrUpdateSiteCookie( siteCookie, requestContext, page );
 
+                string theme = page.Layout.Site.Theme;
+                string layout = page.Layout.FileName;
+                string layoutPath = PageCache.FormatPath( theme, layout );
+                
+                try
+                {
+                    return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
+                }
+                catch ( System.Web.HttpException )
+                {
+                    // The Selected theme and/or layout didn't exist so try to use the layout in the default theme.
+                    theme = "Rock";
+
+                    // Verify that Layout exists in the default theme directory and if not try use the default layout of the default theme
+                    string layoutPagePath = string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout );
+                    if ( !File.Exists( requestContext.HttpContext.Server.MapPath( layoutPagePath ) ) )
+                    {
+                        layout = "FullWidth";
+                    }
+
+                    layoutPath = PageCache.FormatPath( theme, layout );
+
+                    return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
+                }
             }
             catch ( Exception ex )
             {
@@ -459,12 +319,9 @@ namespace Rock.Web
                     requestContext.HttpContext.Cache["RockLastException"] = ex;
                 }
 
-                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
-                return errorPage;
+                return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
             }
         }
-
-
 
         /// <summary>
         /// Determines whether the given PageId or Route exists on the requesting site
@@ -496,17 +353,35 @@ namespace Rock.Web
         /// </summary>
         /// <param name="requestingSite">The requesting site.</param>
         /// <param name="pageId">The page identifier.</param>
+        /// <param name="routeId">The route identifier. Provide this to check the route's IsGlobal property.</param>
         /// <returns>
         ///   <c>true</c> if [is page exclusive to another site] [the specified requesting site]; otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId )
+        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId, int? routeId )
         {
             if ( pageId != null )
             {
-                var pageSite = PageCache.Get( pageId.Value )?.Layout.Site;
-                return pageSite == null ? false : pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
+                var pageCache = PageCache.Get( pageId.Value );
+                var pageSite = pageCache?.Layout.Site;
+
+                if ( pageSite == null )
+                {
+                    return false;
+                }
+
+                bool isGlobalRoute = routeId != null ? pageCache.PageRoutes.Where( r => r.Id == routeId ).Select( r => r.IsGlobal ).FirstOrDefault() : false;
+
+                // If pageRoute.IsGlobal then return false, this page is usable by all sites.
+                if ( isGlobalRoute )
+                {
+                    return false;
+                }
+
+                // See if the requesting site is exclusive and if the requesting site is different from the page's site
+                return pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
             }
 
+            // The default value is not to be exclusive
             return false;
         }
 
@@ -530,7 +405,7 @@ namespace Rock.Web
 
             var routesToInsert = new RouteCollection();
 
-            // Add ignore rule for asp.net ScriptManager files.
+            // Add ignore rule for asp.net ScriptManager files. 
             routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
 
             //Add page routes, order is very important here as IIS takes the first match
@@ -608,6 +483,184 @@ namespace Rock.Web
             }
         }
 
+        /// <summary>
+        /// Uses the DataTokens to contstruct a list of PageAndRouteIds
+        /// If any exist then set page and route ID to the first one found.
+        /// Then loop through the collection looking for a site match, if one is found then set the page and route ID to that
+        /// and the IsSiteMatch property to true.
+        /// </summary>
+        private void GetPageIdFromDataTokens( RequestContext routeRequestContext, SiteCache site, out string pageId, out int routeId, out bool isSiteMatch )
+        {
+            pageId = string.Empty;
+            routeId = 0;
+            isSiteMatch = false;
+
+            // Pages that use a custom URL route will have the page id in the RouteData.DataTokens collection
+            var pageAndRouteIds = ( List<PageAndRouteId> ) routeRequestContext.RouteData.DataTokens["PageRoutes"];
+
+            if ( pageAndRouteIds == null && !pageAndRouteIds.Any() )
+            {
+                return;
+            }
+
+            // First try to find a match for the site
+            if ( site != null )
+            {
+                // See if this is a possible shortlink
+                if ( routeRequestContext.RouteData.DataTokens["RouteName"] != null && routeRequestContext.RouteData.DataTokens["RouteName"].ToStringSafe().StartsWith( "{" ) )
+                {
+                    // Get the route value
+                    string routeValue = routeRequestContext.RouteData.Values.Values.FirstOrDefault().ToStringSafe();
+
+                    // See if the route value string matches a shortlink for this site.
+                    var pageShortLink = new PageShortLinkService( new Rock.Data.RockContext() ).GetByToken( routeValue, site.Id );
+                    if ( pageShortLink != null && pageShortLink.SiteId == site.Id )
+                    {
+                        // The route entered matches a shortlink for the site, so lets NOT set the page ID for a catch-all route and let the shortlink logic take over.
+                        return;
+                    }
+                }
+                
+                // Not a short link so cycle through the pages and routes to find a match for the site.
+                foreach ( var pageAndRouteId in pageAndRouteIds )
+                {
+                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
+                    if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
+                    {
+                        pageId = pageAndRouteId.PageId.ToStringSafe();
+                        routeId = pageAndRouteId.RouteId;
+                        isSiteMatch = true;
+                        return;
+                    }
+                }
+
+                // If the requesting site uses exclusive routes and we didn't find anything for the site then just return
+                if ( site.EnableExclusiveRoutes )
+                {
+                    return;
+                }
+            }
+
+            // Default to first site/page that is not Exclusive
+            foreach ( var pageAndRouteId in pageAndRouteIds )
+            {
+                if ( !IsPageExclusiveToAnotherSite( site, pageAndRouteId.PageId, pageAndRouteId.RouteId ) )
+                {
+                    // These are safe to assign as defaults
+                    pageId = pageAndRouteId.PageId.ToStringSafe();
+                    routeId = pageAndRouteId.RouteId;
+
+                    return;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets the site from the site cache in the following order:
+        /// 1. check the query string and try to get the site
+        /// 2. Get the site using the domain of the current request
+        /// 3. Get the last site from the site cookie
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete("The query string 'siteId' should not be used to specify the current site.")]
+        [RockObsolete("1.10")]
+        private SiteCache GetSite(HttpRequestBase routeHttpRequest, string host, HttpCookie siteCookie )
+        {
+            /*
+             * 2020-02-27 edrotning
+             * Keeping this version of the GetSite method in case it is needed later.
+             * Removed the option to use the SiteId parameter to determine what site the route belongs to.
+             * The intent of the parameter was to specify a site to use if multiple Rock sites are sharing a domain and route.
+             * This was removed because many blocks use the parameter name "SiteId" to specify the site the block should be using and not where the route should directed to (e.g. SiteDetails.ascx).
+             * It is believed this was put into place for debugging purposes where one domain name (localhost:6229) is the norm.
+            */
+
+            SiteCache site = null;
+
+            // First check to see if site was specified in querystring
+            int? siteId = routeHttpRequest.QueryString["SiteId"].AsIntegerOrNull();
+            if ( siteId.HasValue )
+            {
+                site = SiteCache.Get( siteId.Value );
+            }
+
+            // Then check to see if site can be determined by domain
+            if ( site == null )
+            {
+                site = SiteCache.GetSiteByDomain( host );
+            }
+
+            // Then check the last site
+            if ( site == null )
+            {
+                if ( siteCookie != null && siteCookie.Value != null )
+                {
+                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
+                }
+            }
+
+            return site;
+        }
+
+        /// <summary>
+        /// Gets the site from the site cache in the following order:
+        /// 1. Get the site using the domain of the current request
+        /// 2. Get the last site from the site cookie
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <param name="siteCookie">The site cookie.</param>
+        /// <returns></returns>
+        private SiteCache GetSite( string host, HttpCookie siteCookie )
+        {
+            // Check to see if site can be determined by domain
+            SiteCache site = SiteCache.GetSiteByDomain( host );
+
+            // Then check the last site
+            if ( site == null && siteCookie != null && siteCookie.Value != null)
+            {
+                site = SiteCache.Get( siteCookie.Value.AsInteger() );
+            }
+
+            return site;
+        }
+
+        /// <summary>
+        /// Creates the or updates site cookie with the last_site value using the site ID of the page
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="routeRequestContext">The routeRequestContext.</param>
+        /// <param name="siteCookie">The siteCookie.</param>
+        private void CreateOrUpdateSiteCookie( HttpCookie siteCookie, RequestContext routeRequestContext, PageCache page )
+        {
+            if ( siteCookie == null )
+            {
+                siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
+            }
+            else
+            {
+                siteCookie.Value = page.Layout.SiteId.ToString();
+            }
+
+            routeRequestContext.HttpContext.Response.SetCookie( siteCookie );
+        }
+
+        /// <summary>
+        /// Creates the rock page for the selected theme and layout.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="layoutPath">The layout path.</param>
+        /// <param name="routeHttpRequest">The routeHttpRequest.</param>
+        /// <param name="parms">The parms.</param>
+        /// /// <param name="routeId">The routeId.</param>
+        /// <returns></returns>
+        private Rock.Web.UI.RockPage CreateRockPage( PageCache page, string layoutPath, int routeId, Dictionary<string, string> parms, HttpRequestBase routeHttpRequest )
+        {
+            // Return the page for the selected theme and layout
+            Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage ) BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+            cmsPage.SetPage( page );
+            cmsPage.PageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
+            return cmsPage;
+        }
     }
 
     /// <summary>
@@ -671,5 +724,4 @@ namespace Rock.Web
             return;
         }
     }
-
 }

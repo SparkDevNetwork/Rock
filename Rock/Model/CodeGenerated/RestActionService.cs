@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ApiId = source.ApiId;
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.ControllerId = source.ControllerId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

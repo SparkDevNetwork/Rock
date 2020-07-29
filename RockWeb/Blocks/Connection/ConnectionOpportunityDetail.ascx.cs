@@ -41,9 +41,28 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection opportunity." )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
+
+    #region Block Attributes
+    [BooleanField(
+        "Show Edit",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = AttributeKey.ShowEdit )]
+    #endregion Block Attributes
     public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEdit = "ShowEdit";
+        }
+
+        #endregion
+
         #region Fields
 
         public int _connectionTypeId = 0;
@@ -187,10 +206,10 @@ namespace RockWeb.Blocks.Connection
             _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
 
             string script = string.Format( @"
-    $('a.js-toggle-on').click(function( e ){{
+    $('a.js-toggle-on').on('click', function( e ){{
         $('#{0}').show();
     }});
-    $('a.js-toggle-off').click(function( e ){{
+    $('a.js-toggle-off').on('click', function( e ){{
         $('#{0}').hide();
     }});
 ", divUseGroupsOfTypeNote.ClientID );
@@ -1510,6 +1529,7 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.RequestTransferred:
                 case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                 case ConnectionWorkflowTriggerType.Manual:
+                case ConnectionWorkflowTriggerType.FutureFollowupDateReached:
                     {
                         ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = false;
                         ddlPrimaryQualifier.Items.Clear();

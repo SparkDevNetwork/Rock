@@ -216,6 +216,11 @@ namespace Rock.SystemGuid
         public const string CURRENCY = "3EE69CBC-35CE-4496-88CC-8327A447603F";
 
         /// <summary>
+        /// A measure of necessity and/or availability of a data entry field.
+        /// </summary>
+        public const string DATA_ENTRY_REQUIREMENT_LEVEL = "0E989D0D-E07F-4460-B405-807588B36347";
+
+        /// <summary>
         /// Date field type
         /// </summary>
         public const string DATE = "6B6AA175-4758-453F-8D83-FCD8044B5F36";

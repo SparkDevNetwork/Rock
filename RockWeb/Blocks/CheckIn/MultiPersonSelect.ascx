@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('a.btn-checkin-select').click(function () {
+        $('a.btn-checkin-select').on('click', function () {
             $(this).siblings().attr('onclick', 'return false;');
         });
     });
@@ -35,13 +35,13 @@
                                                 <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12 checkin-person">
                                                     <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %>">
                                                         <div class="row">
-                                                            <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
+                                                            <div class="checkbox-container">
                                                                 <i class='fa fa-3x <%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
                                                             </div>
-                                                            <asp:Panel ID="pnlPhoto" runat="server" CssClass="col-md-1 col-sm-2 col-xs-3 photo-container">
+                                                            <asp:Panel ID="pnlPhoto" runat="server" CssClass="photo-container">
                                                                 <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                                             </asp:Panel>
-                                                            <asp:Panel ID="pnlPerson" runat="server"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
+                                                            <asp:Panel ID="pnlPerson" CssClass="name-container" runat="server"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
                                                         </div>
                                                     </a>
                                                 </asp:Panel>
@@ -95,10 +95,10 @@
                                             <a data-key='<%# Eval("Key") %>' data-schedule-id='<%# Eval("Schedule.Schedule.Id") %>'
                                                 class='btn btn-primary btn-checkin-select btn-block js-option-select <%# (bool)Eval("Disabled") ? "btn-dimmed" : "" %>' style="text-align: left">
                                                 <div class="row">
-                                                    <div class="col-md-1 col-sm-2 col-xs-3">
+                                                    <div class="checkbox-container">
                                                         <i class='fa fa-2x <%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
                                                     </div>
-                                                    <asp:Panel ID="pnlOption" runat="server"><%# GetOptionText( Container.DataItem ) %></asp:Panel>
+                                                    <asp:Panel ID="pnlOption" CssClass="col" runat="server"><%# GetOptionText( Container.DataItem ) %></asp:Panel>
                                                 </div>
                                             </a>
                                         </ItemTemplate>

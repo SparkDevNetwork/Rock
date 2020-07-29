@@ -39,8 +39,67 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of links." )]
 
-    [DefinedTypeField("Defined Type", "The defined type to use when saving link information.", true, Rock.SystemGuid.DefinedType.LINKLIST_DEFAULT_LIST, "", 0)]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
+    #region Block Attributes
+
+    [DefinedTypeField(
+        "Defined Type",
+        Description = "The defined type to use when saving link information.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.DefinedType.LINKLIST_DEFAULT_LIST,
+        Order = 0,
+        Key = AttributeKey.DefinedType )]
+
+    [CodeEditorField(
+        "Lava Template",
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue =  DefaultLavaTemplate,
+        Order = 1,
+        Key = AttributeKey.LavaTemplate )]
+
+    [CodeEditorField(
+        "Edit Header",
+        Description = "The HTML to display above list when editing values.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = true,
+        DefaultValue = DefaultEditHeader,
+        Order =  3,
+        Key = AttributeKey.EditHeader)]
+
+    [CodeEditorField(
+        "Edit Footer",
+        Description = "The HTML to display above list when editing values.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = true,
+        DefaultValue = DefaultEditFooter,
+        Key = AttributeKey.EditFooter,
+        Order = 4 )]
+
+    #endregion Block Attributes
+    public partial class LinkListLava : Rock.Web.UI.RockBlock
+    {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DefinedType = "DefinedType";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string EditHeader = "EditHeader";
+            public const string EditFooter = "EditFooter";
+        }
+
+        #endregion Attribute Keys
+
+        #region constants
+
+        private const string DefaultLavaTemplate = @"
 <div class=""panel panel-block""> 
     <div class=""panel-heading"">
         <h4 class=""panel-title"">Links</h4>
@@ -61,22 +120,22 @@ namespace RockWeb.Blocks.Cms
         </ul>
     </div>
 </div>
-", "", 1 )]
+";
 
-    [CodeEditorField( "Edit Header", "The HTML to display above list when editing values.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, true, @"
+        private const string DefaultEditHeader = @"
 <div class='panel panel-block'>
     <div class='panel-heading'>
         <h4 class='panel-title'>Links</div>
     <div>
     <div class='panel-body'>
-", "", 3 )]
-    [CodeEditorField( "Edit Footer", "The HTML to display above list when editing values.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, true, @"
+";
+
+        private const string DefaultEditFooter = @"
     </div>
 </div>
-", "", 4 )]
-    
-    public partial class LinkListLava : Rock.Web.UI.RockBlock
-    {
+";
+        #endregion Constants
+
         #region Fields
 
         bool _canEdit = false;
@@ -113,7 +172,7 @@ namespace RockWeb.Blocks.Cms
                 securityField.EntityTypeId = EntityTypeCache.Get( typeof( DefinedValue ) ).Id;
             }
 
-            _definedType = DefinedTypeCache.Get( GetAttributeValue( "DefinedType" ).AsGuid() );
+            _definedType = DefinedTypeCache.Get( GetAttributeValue( AttributeKey.DefinedType ).AsGuid() );
         }
 
         /// <summary>
@@ -424,7 +483,7 @@ namespace RockWeb.Blocks.Cms
             securityActions.Add( "Administrate", UserCanAdministrate );
             mergeFields.Add( "AllowedActions", securityActions ); 
             
-            string template = GetAttributeValue( "LavaTemplate" );
+            string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
             lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
         }
@@ -434,8 +493,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void DisplayEditList()
         {
-            lEditHeader.Text = GetAttributeValue( "EditHeader" );
-            lEditFooter.Text = GetAttributeValue( "EditFooter" );
+            lEditHeader.Text = GetAttributeValue( AttributeKey.EditHeader );
+            lEditFooter.Text = GetAttributeValue( AttributeKey.EditFooter );
 
             if ( _definedType != null )
             {

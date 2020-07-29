@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block used to sign up for a connection opportunity." )]
 
+    #region Block Attributes
     [BooleanField( "Display Home Phone",
         Description ="Whether to display home phone",
         DefaultBooleanValue = true,
@@ -115,7 +116,7 @@ namespace RockWeb.Blocks.Connection
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ExcludeNonPublicAttributes )]
-
+    #endregion Block Attributes
     public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
         #region Attribute Keys
@@ -135,6 +136,19 @@ namespace RockWeb.Blocks.Connection
             public const string IncludeAttributeCategories = "IncludeAttributeCategories";
             public const string ExcludeAttributeCategories = "ExcludeAttributeCategories";
             public const string ExcludeNonPublicAttributes = "ExcludeNonPublicAttributes";
+        }
+
+        #endregion
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string PersonGuid = "PersonGuid";
+            public const string OpportunityId = "OpportunityId";
         }
 
         #endregion
@@ -230,9 +244,9 @@ namespace RockWeb.Blocks.Connection
                     int? campusId = cpCampus.SelectedCampusId;
 
                     // if a person guid was passed in from the query string use that
-                    if ( RockPage.PageParameter( "PersonGuid" ) != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( "PersonGuid" ) ) )
+                    if ( RockPage.PageParameter( PageParameterKey.PersonGuid ) != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( PageParameterKey.PersonGuid ) ) )
                     {
-                        Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+                        Guid? personGuid = RockPage.PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
 
                         if ( personGuid.HasValue )
                         {
@@ -399,9 +413,9 @@ namespace RockWeb.Blocks.Connection
 
                 Person registrant = null;
 
-                if ( RockPage.PageParameter( "PersonGuid" ) != null )
+                if ( RockPage.PageParameter( PageParameterKey.PersonGuid ) != null )
                 {
-                    Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+                    Guid? personGuid = RockPage.PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
 
                     if ( personGuid.HasValue )
                     {
@@ -575,7 +589,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                itemId = PageParameter( "OpportunityId" ).AsInteger();
+                itemId = PageParameter( PageParameterKey.OpportunityId ).AsInteger();
             }
 
             return itemId;

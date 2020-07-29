@@ -38,17 +38,87 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Lists content channel items.")]
 
+    #region Block Attributes
+
     [ContextAware]
-    [LinkedPage("Detail Page", order: 0)]
-    [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
-    [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
-    [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown if any of the items has an event occurrence.", true, order: 3)]
-    [BooleanField( "Show Priority Column", "Determines if the column that displays priority should be shown for content channels that have Priority enabled.", true, order: 4 )]
-    [BooleanField( "Show Security Column", "Determines if the security column should be shown.", true, order: 5 )]
-    [BooleanField( "Show Expire Column", "Determines if the expire column should be shown.", true, order: 6 )]
-    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
+
+    [LinkedPage(
+        "Detail Page",
+        Order = 0,
+        Key = AttributeKey.DetailPage )]
+    [BooleanField(
+        "Filter Items For Current User",
+        Description = "Filters the items by those created by the current logged in user.",
+        DefaultBooleanValue = false,
+        Order = 1,
+        Key = AttributeKey.FilterItemsForCurrentUser )]
+    [BooleanField(
+        "Show Filters",
+        Description = "Allows you to show/hide the grids filters.",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = AttributeKey.ShowFilters )]
+    [BooleanField(
+        "Show Event Occurrences Column",
+        Description = "Determines if the column that lists event occurrences should be shown if any of the items has an event occurrence.",
+        DefaultBooleanValue = true,
+        Order = 3,
+        Key = AttributeKey.ShowEventOccurrencesColumn )]
+    [BooleanField(
+        "Show Priority Column",
+        Description = "Determines if the column that displays priority should be shown for content channels that have Priority enabled.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.ShowPriorityColumn )]
+    [BooleanField(
+        "Show Security Column",
+        Description = "Determines if the security column should be shown.",
+        DefaultBooleanValue = true,
+        Order = 5,
+        Key = AttributeKey.ShowSecurityColumn )]
+    [BooleanField(
+        "Show Expire Column",
+        Description = "Determines if the expire column should be shown.",
+        DefaultBooleanValue = true,
+        Order = 6,
+        Key = AttributeKey.ShowExpireColumn )]
+    [ContentChannelField(
+        "Content Channel",
+        Description = "If set the block will ignore content channel query parameters",
+        IsRequired = false,
+        Key = AttributeKey.ContentChannel )]
+
+    #endregion Block Attributes
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string FilterItemsForCurrentUser = "FilterItemsForCurrentUser";
+            public const string ShowFilters = "ShowFilters";
+            public const string ShowEventOccurrencesColumn = "ShowEventOccurrencesColumn";
+            public const string ShowPriorityColumn = "ShowPriorityColumn";
+            public const string ShowSecurityColumn = "ShowSecurityColumn";
+            public const string ShowExpireColumn = "ShowExpireColumn";
+            public const string ContentChannel = "ContentChannel";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ContentChannelId = "contentChannelId";
+        }
+
+        #endregion
+
         #region Fields
 
         private int? _channelId = null;
@@ -80,20 +150,20 @@ namespace RockWeb.Blocks.Cms
             }
 
             // set person if grid should be filtered by the current person
-            if ( GetAttributeValue( "FilterItemsForCurrentUser" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.FilterItemsForCurrentUser ).AsBoolean() )
             {
                 _person = CurrentPerson;
             }
 
-            gfFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
+            gfFilter.Visible = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
             
-            if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+            if (string.IsNullOrWhiteSpace(GetAttributeValue( AttributeKey.ContentChannel)))
             {
-                _channelId = PageParameter("contentChannelId").AsIntegerOrNull();
+                _channelId = PageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull();
             }
             else
             {
-                _channelId = new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id;
+                _channelId = new ContentChannelService( new RockContext() ).Get( GetAttributeValue( AttributeKey.ContentChannel ).AsGuid() ).Id;
             }
 
             if ( _channelId != null )
@@ -124,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
                         startDateTimeColumn.Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        expireDateTimeColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        expireDateTimeColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( AttributeKey.ShowExpireColumn ).AsBoolean();
                         startDateColumn.Visible = false;
                         expireDateColumn.Visible = false;
                     }
@@ -133,10 +203,10 @@ namespace RockWeb.Blocks.Cms
                         startDateTimeColumn.Visible = false;
                         expireDateTimeColumn.Visible = false;
                         startDateColumn.Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        expireDateColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        expireDateColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( AttributeKey.ShowExpireColumn ).AsBoolean();
                     }
 
-                    priorityColumn.Visible = !contentChannel.ContentChannelType.DisablePriority && GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
+                    priorityColumn.Visible = !contentChannel.ContentChannelType.DisablePriority && GetAttributeValue( AttributeKey.ShowPriorityColumn ).AsBoolean();
 
                     lContentChannel.Text = contentChannel.Name;
                     _typeId = contentChannel.ContentChannelTypeId;
@@ -184,7 +254,7 @@ namespace RockWeb.Blocks.Cms
                 var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
                 if ( securityColumn != null )
                 {
-                    securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
+                    securityColumn.Visible = GetAttributeValue( AttributeKey.ShowSecurityColumn ).AsBoolean();
                 }
 
                 var deleteField = new DeleteField();
@@ -273,8 +343,8 @@ namespace RockWeb.Blocks.Cms
         protected void gItems_Add( object sender, EventArgs e )
         {
             Dictionary<string, string> pageParams = new Dictionary<string, string>();
-            pageParams.Add( "contentItemId", "0" );
-            pageParams.Add( "contentChannelId", _channelId.ToString() );
+            pageParams.Add( "ContentItemId", "0" );
+            pageParams.Add( "ContentChannelId", _channelId.ToString() );
 
             NavigateToLinkedPage( "DetailPage", pageParams );
         }
@@ -286,7 +356,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gItems_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "ContentItemId", e.RowKeyId );
         }
 
         /// <summary>
@@ -490,7 +560,7 @@ namespace RockWeb.Blocks.Cms
 
             // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
             var eventOccurrencesColumn = gItems.ColumnsWithDataField( "Occurrences" ).FirstOrDefault();
-            var showEventOccurrencesColumnBlockSetting = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
+            var showEventOccurrencesColumnBlockSetting = GetAttributeValue( AttributeKey.ShowEventOccurrencesColumn ).AsBoolean();
             eventOccurrencesColumn.Visible = showEventOccurrencesColumnBlockSetting && gridList.Any( a => a.Occurrences == true );
 
             gItems.DataSource = gridList;

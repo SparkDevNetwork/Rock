@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using Rock.Utility;
 
 namespace Rock.Communication
 {
@@ -157,6 +158,39 @@ namespace Rock.Communication
         public string PushSound { get; set; }
 
         /// <summary>
+        /// Gets or sets the push image binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image binary file identifier.
+        /// </value>
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        public string PushData { get; set; }
+        #endregion
+
+        /// <summary>
         /// Copies the specified source.
         /// </summary>
         /// <param name="source">The source.</param>
@@ -175,12 +209,13 @@ namespace Rock.Communication
             target.PushTitle = source.PushTitle;
             target.PushMessage = source.PushMessage;
             target.PushSound = source.PushSound;
+            target.PushData = source.PushData;
+            target.PushImageBinaryFileId = source.PushImageBinaryFileId;
+            target.PushOpenAction = source.PushOpenAction;
+            target.PushOpenMessage = source.PushOpenMessage;
 
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             target.SMSMessage = source.SMSMessage;
         }
-
-        #endregion
-
     }
 }

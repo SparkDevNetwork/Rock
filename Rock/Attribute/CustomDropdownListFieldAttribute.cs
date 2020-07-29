@@ -29,6 +29,16 @@ namespace Rock.Attribute
         private const string FIELDTYPE_KEY = "fieldtype";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CustomDropdownListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CustomDropdownListFieldAttribute( string name )
+            : this( name, string.Empty, string.Empty )
+        {
+
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CustomDropdownListFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>

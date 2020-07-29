@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock</RootNamespace>
     <AssemblyName>Rock</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,41 +38,41 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AngleSharp, Version=0.10.1.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.0.10.1\lib\net46\AngleSharp.dll</HintPath>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9.2\lib\net45\AngleSharp.dll</HintPath>
     </Reference>
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+      <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.Core.3.3.103.26\lib\net45\AWSSDK.Core.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.Core.3.3.25.1\lib\net45\AWSSDK.Core.dll</HintPath>
     </Reference>
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.S3.3.3.104.14\lib\net45\AWSSDK.S3.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.Core, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.Core.1.2.0\lib\net45\CacheManager.Core.dll</HintPath>
+    <Reference Include="CacheManager.Core, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.Core.1.1.2\lib\net45\CacheManager.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.Serialization.Json, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.Serialization.Json.1.2.0\lib\net45\CacheManager.Serialization.Json.dll</HintPath>
+    <Reference Include="CacheManager.Serialization.Json, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.Serialization.Json.1.1.2\lib\net45\CacheManager.Serialization.Json.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.StackExchange.Redis, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.StackExchange.Redis.1.2.0\lib\net461\CacheManager.StackExchange.Redis.dll</HintPath>
+    <Reference Include="CacheManager.StackExchange.Redis, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.StackExchange.Redis.1.1.2\lib\net45\CacheManager.StackExchange.Redis.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.2.0\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
+    <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.1.2\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
     </Reference>
     <Reference Include="CommonMark, Version=0.1.0.0, Culture=neutral, PublicKeyToken=001ef8810438905d, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonMark.NET.0.15.1\lib\net45\CommonMark.dll</HintPath>
+      <HintPath>..\packages\CommonMark.NET.0.13.2\lib\net45\CommonMark.dll</HintPath>
     </Reference>
-    <Reference Include="CronExpressionDescriptor, Version=1.21.2.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
-      <HintPath>..\packages\CronExpressionDescriptor.1.21.2\lib\net45\CronExpressionDescriptor.dll</HintPath>
+    <Reference Include="CronExpressionDescriptor, Version=1.19.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <HintPath>..\packages\CronExpressionDescriptor.1.19.0\lib\net45\CronExpressionDescriptor.dll</HintPath>
     </Reference>
-    <Reference Include="CSScriptLibrary, Version=3.24.2.0, Culture=neutral, PublicKeyToken=70fcc3d18c749033, processorArchitecture=MSIL">
-      <HintPath>..\packages\CS-Script.bin.3.24.2.0\lib\net46\CSScriptLibrary.dll</HintPath>
+    <Reference Include="CSScriptLibrary, Version=3.13.2.0, Culture=neutral, PublicKeyToken=70fcc3d18c749033, processorArchitecture=MSIL">
+      <HintPath>..\packages\CS-Script.bin.3.13.2.0\lib\net45\CSScriptLibrary.dll</HintPath>
     </Reference>
     <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
@@ -82,14 +83,14 @@
     <Reference Include="dotless.Core, Version=1.5.2.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
       <HintPath>..\packages\dotless.1.5.2\lib\dotless.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Elasticsearch.Net, Version=5.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elasticsearch.Net.5.6.5\lib\net461\Elasticsearch.Net.dll</HintPath>
+    <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.2.5.8\lib\net45\Elasticsearch.Net.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.Utilities">
       <HintPath>..\libs\EFUtilities\EntityFramework.Utilities.dll</HintPath>
@@ -104,32 +105,41 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FCM\FCM.Net.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.dll</HintPath>
+    <Reference Include="Google.Api.Gax, Version=2.10.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Api.Gax.2.10.0\lib\net45\Google.Api.Gax.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.25.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    <Reference Include="Google.Api.Gax.Rest, Version=2.10.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Api.Gax.Rest.2.10.0\lib\net45\Google.Api.Gax.Rest.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.25.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.42.0\lib\net45\Google.Apis.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Core, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Core.1.25.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    <Reference Include="Google.Apis.Auth, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.42.0\lib\net45\Google.Apis.Auth.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.PlatformServices, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.42.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Storage.v1, Version=1.25.0.854, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Storage.v1.1.25.0.854\lib\net45\Google.Apis.Storage.v1.dll</HintPath>
+    <Reference Include="Google.Apis.Core, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.42.0\lib\net45\Google.Apis.Core.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack, Version=1.11.12.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.11.12\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.42.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Storage.v1, Version=1.42.0.1744, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Storage.v1.1.42.0.1744\lib\net45\Google.Apis.Storage.v1.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Cloud.Storage.V1, Version=2.4.0.0, Culture=neutral, PublicKeyToken=185c282632e132a0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Cloud.Storage.V1.2.4.0\lib\net45\Google.Cloud.Storage.V1.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Humanizer">
       <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ImageResizer.4.2.5\lib\net45\ImageResizer.dll</HintPath>
+      <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
     </Reference>
     <Reference Include="Lucene.Net, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lucene.Net.4.8.0-beta00005\lib\net45\Lucene.Net.dll</HintPath>
@@ -149,144 +159,143 @@
     <Reference Include="Lucene.Net.Sandbox, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lucene.Net.Sandbox.4.8.0-beta00005\lib\net45\Lucene.Net.Sandbox.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.4.1\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.29.0.1078, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.29.0\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.29.0.1078, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.29.0\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Storage.Blob, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Storage.Blob.11.1.3\lib\net452\Microsoft.Azure.Storage.Blob.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Storage.Common, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Storage.Common.11.1.3\lib\net452\Microsoft.Azure.Storage.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.4.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.4.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.5\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.4.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.1.5\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.1016.290\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.2.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Types.11.0.2\lib\net20\Microsoft.SqlServer.Types.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Web.XmlTransform, Version=3.0.0.34420, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Web.Xdt.3.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
     <Reference Include="Mono.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\CS-Script.bin.3.24.2.0\lib\net46\Mono.CSharp.dll</HintPath>
+      <HintPath>..\packages\CS-Script.bin.3.13.2.0\lib\net45\Mono.CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Nest, Version=5.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
-      <HintPath>..\packages\NEST.5.6.5\lib\net461\Nest.dll</HintPath>
+    <Reference Include="Nest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\NEST.2.5.8\lib\net45\Nest.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.14.0.832, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\NuGet.Core.2.14.0\lib\net40-Client\NuGet.Core.dll</HintPath>
+    <Reference Include="NuGet.Core, Version=2.11.1.812, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Core.2.11.1\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OpenXmlPowerTools, Version=4.5.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenXmlPowerTools.4.5.3.0\lib\OpenXmlPowerTools.dll</HintPath>
+    <Reference Include="OpenXmlPowerTools, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenXmlPowerTools.4.2\lib\OpenXmlPowerTools.dll</HintPath>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Pipelines.Sockets.Unofficial, Version=1.0.0.0, Culture=neutral, PublicKeyToken=42ea0a778e13fbe2, processorArchitecture=MSIL">
-      <HintPath>..\packages\Pipelines.Sockets.Unofficial.2.0.22\lib\net472\Pipelines.Sockets.Unofficial.dll</HintPath>
+    <Reference Include="PreMailer.Net, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PreMailer.Net.1.5.5\lib\net45\PreMailer.Net.dll</HintPath>
     </Reference>
-    <Reference Include="PreMailer.Net, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\PreMailer.Net.2.0.1\lib\net45\PreMailer.Net.dll</HintPath>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.6.10.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.6.10\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
-    <Reference Include="StackExchange.Redis, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
-      <HintPath>..\packages\StackExchange.Redis.2.0.601\lib\net472\StackExchange.Redis.dll</HintPath>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Formatting.Compact, Version=1.1.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Formatting.Compact.1.1.0\lib\net452\Serilog.Formatting.Compact.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Formatting.Compact.Reader, Version=1.0.3.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Formatting.Compact.Reader.1.0.3\lib\net45\Serilog.Formatting.Compact.Reader.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
+    <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
-    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
-    <Reference Include="System.Diagnostics.PerformanceCounter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.PerformanceCounter.4.5.0\lib\net461\System.Diagnostics.PerformanceCounter.dll</HintPath>
-    </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.1.5\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
+    <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net45\System.Interactive.Async.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Pipelines, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Pipelines.4.5.1\lib\netstandard2.0\System.IO.Pipelines.dll</HintPath>
+    <Reference Include="System.Linq.Dynamic, Version=1.0.5840.25917, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.6\lib\net40\System.Linq.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Management.Automation.6.1.7601.17515\lib\net45\System.Management.Automation.dll</HintPath>
     </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
-    <Reference Include="System.Threading.Channels, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Channels.4.5.0\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.1\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
@@ -297,20 +306,18 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Twilio, Version=5.31.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Twilio.5.31.3\lib\net451\Twilio.dll</HintPath>
+    <Reference Include="Twilio, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Twilio.5.1.0\lib\net451\Twilio.dll</HintPath>
     </Reference>
-    <Reference Include="UAParser, Version=2.1.0.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
-      <HintPath>..\packages\UAParser.2.1.0.0\lib\net40-Client\UAParser.dll</HintPath>
+    <Reference Include="UAParser, Version=3.1.44.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
+      <HintPath>..\packages\UAParser.3.1.44\lib\net45\UAParser.dll</HintPath>
     </Reference>
-    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
-    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.10.1.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.10.1\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
-    </Reference>
-    <Reference Include="Zlib.Portable, Version=1.11.0.0, Culture=neutral, PublicKeyToken=431cba815f6a8b5b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zlib.Portable.Signed.1.11.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+    <Reference Include="WindowsBase" />
+    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.8.6.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.8.6\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -484,15 +491,49 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Bulk\BulkImport\InteractionsImport.cs" />
     <Compile Include="Bulk\BulkImport\InteractionImport.cs" />
+    <Compile Include="CheckIn\LocalDeviceConfiguration.cs" />
+    <Compile Include="Communication\CommunicationHelper.cs" />
+    <Compile Include="Communication\IRockMobilePush.cs" />
+    <Compile Include="Communication\PushData.cs" />
+    <Compile Include="Communication\CreateMessageResult.cs" />
+    <Compile Include="Communication\Transport\EmailSendResponse.cs" />
+    <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
-    <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\AutoOpenLocations.cs" />
+    <Compile Include="Jobs\CollectHostingMetrics.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
+    <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
-    <Compile Include="Jobs\SendMessageResults.cs" />
+    <Compile Include="Communication\SendMessageResult.cs" />
+    <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
+    <Compile Include="Lava\Blocks\InteractionWrite.cs" />
+    <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
+    <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\LavaFileSystem.cs" />
+    <Compile Include="Logging\IRockLogReader.cs" />
+    <Compile Include="Logging\RockLogEvent.cs" />
+    <Compile Include="Logging\RockLogSystemSettings.cs" />
+    <Compile Include="Logging\RockSerilogReader.cs" />
+    <Compile Include="Model\AttendanceCheckInSession.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
+    <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
+    <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Utility\Enums\PushOpenAction.cs" />
+    <Compile Include="Utility\RockSerializableList.cs" />
+    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Model\IdentityVerification.cs" />
+    <Compile Include="Model\IdentityVerificationCode.cs" />
+    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
+    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
@@ -501,11 +542,19 @@
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
+    <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
+    <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
+    <Compile Include="SystemGuid\Metric.cs" />
+    <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
     <Compile Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2.cs" />
     <Compile Include="Plugin\HotFixes\112_XamlTemplateMigration.cs" />
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
+    <Compile Include="Transactions\PageRenameTransaction.cs" />
+    <Compile Include="Logging\RockLogLevel.cs" />
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
+    <Compile Include="Plugin\HotFixes\128_MigrationRollupsFor10_4_1.cs" />
+    <Compile Include="Plugin\HotFixes\127_MigrationRollupsFor10_4_0.cs" />
     <Compile Include="Plugin\HotFixes\126_MigrationRollupsFor10_3_7.cs" />
     <Compile Include="Plugin\HotFixes\125_MobileTemplateUpdatesPostAlpha.cs" />
     <Compile Include="Plugin\HotFixes\123_MigrationRollupsFor10_3_6.cs" />
@@ -518,8 +567,28 @@
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
+    <Compile Include="Utility\Enums\RockCacheablityType.cs" />
+    <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
+    <Compile Include="Utility\Enums\IntervalTimeUnit.cs" />
+    <Compile Include="Utility\GuidConverter.cs" />
+    <Compile Include="Utility\RockCacheability.cs" />
+    <Compile Include="Utility\Settings\RockInstanceConfig.cs" />
+    <Compile Include="Utility\Settings\RockInstanceConfigurationService.cs" />
+    <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
+    <Compile Include="Utility\TimeInterval.cs" />
+    <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\IIHasLifespan.cs" />
+    <Compile Include="Logging\IRockLogConfiguration.cs" />
+    <Compile Include="Logging\IRockLogger.cs" />
+    <Compile Include="Logging\RockLogDomains.cs" />
+    <Compile Include="Logging\RockLoggerSerilog.cs" />
+    <Compile Include="Logging\RockLogger.cs" />
+    <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -531,6 +600,8 @@
     <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\DataEntryRequirementLevelFieldType.cs" />
+    <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
@@ -538,7 +609,10 @@
     <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
+    <Compile Include="Jobs\StepsAutomation.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
+    <Compile Include="Financial\HostedGatewayMode.cs" />
+    <Compile Include="Jobs\ConnectionRequestWorkflowTriggers.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\SendRsvpReminders.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
@@ -561,12 +635,14 @@
     <Compile Include="Model\CodeGenerated\GroupDemographicTypeService.cs" />
     <Compile Include="Model\CodeGenerated\GroupDemographicValueService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\CodeGenerated\SmsPipelineService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
+    <Compile Include="Model\DocumentTypeService.Partial.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
@@ -579,6 +655,7 @@
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
+    <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
@@ -598,14 +675,18 @@
     <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
     <Compile Include="Plugin\HotFixes\103_GroupPlacementUpdates.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
-    <Compile Include="Storage\AssetStorage\ApiClient\GoogleClient.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
+    <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
+    <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="SystemGuid\SystemCommunication.cs" />
+    <Compile Include="SystemKey\CountryAttributeKey.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
+    <Compile Include="Transactions\RunDataViewTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
@@ -614,7 +695,9 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\TypeExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
+    <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
@@ -959,7 +1042,7 @@
     <Compile Include="Communication\RockMessage.cs" />
     <Compile Include="Communication\RockPushMessage.cs" />
     <Compile Include="Communication\RockSMSMessage.cs" />
-    <Compile Include="Communication\SMTPComponent.cs" />
+    <Compile Include="Communication\Transport\SMTPComponent.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\Firebase.cs" />
@@ -979,8 +1062,6 @@
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\AnalyticsAttribute.cs" />
-    <Compile Include="Data\IAnalyticHistorical.cs" />
-    <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IFeed.cs" />
@@ -1189,8 +1270,6 @@
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
-    <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
-    <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\DataAutomation.cs" />
@@ -1333,7 +1412,7 @@
     <Compile Include="Model\GroupHistorical.cs" />
     <Compile Include="Model\GroupSync.cs" />
     <Compile Include="Model\GroupMemberHistoricalService.Partial.cs" />
-    <Compile Include="Model\InteractionComponent.Partial.cs" />
+    <Compile Include="Model\InteractionComponentService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
@@ -1511,7 +1590,8 @@
     <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\SystemEmailService.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
+    <Compile Include="Model\SystemEmailService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
@@ -2072,12 +2152,17 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
+    <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
     <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddMultipleSelect.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MetricItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionChannelPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionComponentPicker.cs" />
@@ -2089,6 +2174,9 @@
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\StructureContentEditor.cs" />
+    <Compile Include="Web\UI\Controls\Switch.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
@@ -2341,7 +2429,6 @@
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs" />
-    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
@@ -2375,7 +2462,6 @@
     <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
     <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\MergePersonField.cs" />
@@ -2611,6 +2697,7 @@
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetCampusTeamMember.cs" />
     <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonInDataView.cs" />
@@ -2619,6 +2706,7 @@
     <Compile Include="Workflow\Action\People\PersonPropertyUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
+    <Compile Include="Workflow\Action\People\PrayerRequestAdd.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\Registrations\GenerateDiscountCode.cs" />
     <Compile Include="Workflow\Action\Registrations\UpdateDiscountCode.cs" />
@@ -2665,26 +2753,23 @@
     <Compile Include="Workflow\TriggerCache.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.14.0.1016.290\nativeBinaries\x64\msvcr120.dll">
-      <Link>SqlServerTypes\x64\msvcr120.dll</Link>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
+      <Link>SqlServerTypes\x64\msvcr100.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.14.0.1016.290\nativeBinaries\x64\SqlServerSpatial140.dll">
-      <Link>SqlServerTypes\x64\SqlServerSpatial140.dll</Link>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x64\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.14.0.1016.290\nativeBinaries\x86\msvcr120.dll">
-      <Link>SqlServerTypes\x86\msvcr120.dll</Link>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\msvcr100.dll">
+      <Link>SqlServerTypes\x86\msvcr100.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.14.0.1016.290\nativeBinaries\x86\SqlServerSpatial140.dll">
-      <Link>SqlServerTypes\x86\SqlServerSpatial140.dll</Link>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt" />
-    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy_UpdateCheckInMergefieldDebugInfo.sql">
-      <DependentUpon>040_BusinessTransactionDetailLinks.cs</DependentUpon>
-    </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
     </Content>
@@ -2781,13 +2866,6 @@
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
     </Content>
-    <Content Include="Scripts\jquery-3.4.1.intellisense.js" />
-    <Content Include="Scripts\jquery-3.4.1.js" />
-    <Content Include="Scripts\jquery-3.4.1.min.js" />
-    <Content Include="Scripts\jquery-3.4.1.slim.js" />
-    <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.4.1.js" />
-    <Content Include="Scripts\jquery.signalR-2.4.1.min.js" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
@@ -2803,15 +2881,12 @@
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".editorconfig" />
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Scripts\jquery-3.4.1.min.map" />
-    <None Include="Scripts\jquery-3.4.1.slim.min.map" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource" />
     <None Include="Service References\MelissaData.AddressCheck\Service.wsdl" />
     <None Include="Service References\MelissaData.AddressCheck\Service.xsd">
@@ -2830,7 +2905,6 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin\Auth\" />
     <Folder Include="Pbx\Provider\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
@@ -2859,14 +2933,21 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\AWSSDK.S3.3.3.104.14\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
+    <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
+    <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches
+REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
+if "$(ConfigurationName)" == "Debug" (
+ echo "setting VBCSCOMPILER_TTL to 10 seconds"
+ call "$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+)
+
+REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
@@ -2887,9 +2968,11 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir
 if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
-
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
-</PreBuildEvent>
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

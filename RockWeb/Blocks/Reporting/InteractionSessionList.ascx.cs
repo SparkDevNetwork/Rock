@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "channelId" ).AsIntegerOrNull();
+            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Reporting
                     var interactionQry = interactionService
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.InteractionComponent.ChannelId == _channelId.Value &&
+                            a.InteractionComponent.InteractionChannelId == _channelId.Value &&
                             a.PersonAliasId.HasValue &&
                             a.InteractionSessionId.HasValue );
 

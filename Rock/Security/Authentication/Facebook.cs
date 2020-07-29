@@ -58,7 +58,7 @@ namespace Rock.Security.ExternalAuthentication
         {
             get { return AuthenticationServiceType.External; }
         }
-        
+
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.
@@ -127,7 +127,7 @@ namespace Rock.Security.ExternalAuthentication
 
                 if ( restResponse.StatusCode == HttpStatusCode.OK )
                 {
-                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says 
+                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says
                     // they made this update to be compliant with section 5.1 of RFC 6749. https://developers.facebook.com/docs/apps/changelog
                     dynamic facebookOauthResponse = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content );
                     string accessToken = facebookOauthResponse.access_token;
@@ -355,7 +355,7 @@ namespace Rock.Security.ExternalAuthentication
             using ( var rockContext = new RockContext() )
             {
 
-                // Query for an existing user 
+                // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
 
@@ -455,7 +455,7 @@ namespace Rock.Security.ExternalAuthentication
                                     // If Facebook returned a photo url
                                     if ( !isSilhouette && !string.IsNullOrWhiteSpace( url ) )
                                     {
-                                        // Download the photo from the url provided
+                                        // Download the photo from the URL provided
                                         restClient = new RestClient( url );
                                         restRequest = new RestRequest( Method.GET );
                                         restResponse = restClient.Execute( restRequest );

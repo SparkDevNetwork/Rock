@@ -126,12 +126,13 @@ namespace Rock.Model
             // If an attendance record doesn't exist for the occurrence, add a new record
             if ( attendance == null )
             {
-                attendance = ( ( RockContext ) Context ).Attendances.Create();
+                attendance = new Attendance
                 {
-                    attendance.Occurrence = occurrence;
-                    attendance.OccurrenceId = occurrence.Id;
-                    attendance.PersonAliasId = personAliasId;
+                    Occurrence = occurrence,
+                    OccurrenceId = occurrence.Id,
+                    PersonAliasId = personAliasId
                 };
+
                 Add( attendance );
             }
 
@@ -1635,11 +1636,22 @@ namespace Rock.Model
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        [Obsolete( "Use the method which accepts a List<int> parameter instead." )]
+        [RockObsolete( "1.10.4" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {
-            var rockContext = this.Context as RockContext;
-
             var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
+            RegisterRSVPRecipients( occurrenceId, personIdList );
+        }
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIdList">A a list of Person IDs.</param>
+        public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
+        {
+            var rockContext = this.Context as RockContext;
 
             // Get Occurrence.
             var occurrence = new AttendanceOccurrenceService( rockContext ).Queryable().AsNoTracking()
@@ -1692,7 +1704,12 @@ namespace Rock.Model
         {
             if ( attendancesImport == null )
             {
-                throw new Exception( "AttendancesImport must be assigned a value." );
+                throw new ArgumentNullException( "AttendancesImport must be assigned a value." );
+            }
+
+            if ( attendancesImport.Attendances.Any( a => !a.PersonAliasId.HasValue && !a.PersonId.HasValue ) )
+            {
+                throw new Exception( "All Attendance records must have either a PersonId or PersonAliasId assigned." );
             }
 
             var attendanceImportList = attendancesImport.Attendances;
@@ -1805,7 +1822,6 @@ namespace Rock.Model
                  return attendance;
              } ).ToList();
 
-// NOTE: This can insert 100,000 records in less than 10 seconds, but the documentation will recommend a limit of 1000 records at a time
             rockContext.BulkInsert( attendancesToBulkInsert );
         }
 

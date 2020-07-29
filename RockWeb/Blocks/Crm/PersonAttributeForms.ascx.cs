@@ -44,17 +44,73 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
 
-    // Block Properties
+    #region Block Attributes
 
-    // Settings
-    [BooleanField( "Display Progress Bar", "Determines if the progress bar should be show if there is more than one form.", true, "CustomSetting" )]
-    [CustomDropdownListField( "Save Values", "", "PAGE,END", true, "END", "CustomSetting" )]
-    [WorkflowTypeField( "Workflow", "The workflow to be launched when complete.", false, false, "", "CustomSetting" )]
-    [LinkedPage( "Done Page", "The page to redirect to when done.", false, "", "CustomSetting" )]
-    [TextField( "Forms", "The forms to show.", false, "", "CustomSetting" )]
+    [BooleanField(
+        "Display Progress Bar",
+        Key = AttributeKey.DisplayProgressBar,
+        Description = "Determines if the progress bar should be shown if there is more than one form.",
+        DefaultBooleanValue = true,
+        Category = CategoryKey.CustomSetting,
+        Order = 0 )]
+
+    [CustomDropdownListField(
+        "Save Values",
+        Key = AttributeKey.SaveValues,
+        Description = "",
+        ListSource = "PAGE,END",
+        IsRequired = true,
+        DefaultValue = "END",
+        Category = CategoryKey.CustomSetting,
+        Order = 1 )]
+
+    [WorkflowTypeField(
+        "Workflow",
+        Key = AttributeKey.Workflow,
+        Description = "The workflow to be launched when complete.",
+        AllowMultiple = false,
+        IsRequired = false,
+        Category = CategoryKey.CustomSetting,
+        Order = 2 )]
+
+    [LinkedPage(
+        "Done Page",
+        Key = AttributeKey.DonePage,
+        Description = "The page to redirect to when done.",
+        IsRequired = false,
+        Category = CategoryKey.CustomSetting,
+        Order = 3 )]
+
+    [TextField(
+        "Forms",
+        Key = AttributeKey.Forms,
+        Description = "The forms to show.",
+        IsRequired = false,
+        Category = CategoryKey.CustomSetting,
+        Order = 4 )]
+
+    #endregion Block Attributes
 
     public partial class PersonAttributeForms : RockBlockCustomSettings
     {
+        #region Attribute Keys and Categories
+
+        private static class AttributeKey
+        {
+            public const string DisplayProgressBar = "DisplayProgressBar";
+            public const string SaveValues = "SaveValues";
+            public const string Workflow = "Workflow";
+            public const string DonePage = "DonePage";
+            public const string Forms = "Forms";
+        }
+
+        private static class CategoryKey
+        {
+            public const string CustomSetting = "CustomSetting";
+        }
+
+        #endregion Attribute Keys and Categories
+
         #region Fields
 
         private string _mode = "VIEW";
@@ -277,7 +333,7 @@ namespace RockWeb.Blocks.Crm
 
             CurrentPageIndex++;
 
-            bool saveEachPage = GetAttributeValue( "SaveValues" ) == "PAGE";
+            bool saveEachPage = GetAttributeValue( AttributeKey.SaveValues ) == "PAGE";
             if ( saveEachPage || CurrentPageIndex >= FormState.Count )
             {
                 if ( CurrentPersonId.HasValue )
@@ -311,7 +367,7 @@ namespace RockWeb.Blocks.Crm
 
                             if ( CurrentPageIndex >= FormState.Count )
                             {
-                                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                                Guid? workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
                                 if ( workflowTypeGuid.HasValue )
                                 {
                                     var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
@@ -330,9 +386,9 @@ namespace RockWeb.Blocks.Crm
                                     }
                                 }
 
-                                if ( GetAttributeValue( "DonePage" ).AsGuidOrNull().HasValue )
+                                if ( GetAttributeValue( AttributeKey.DonePage ).AsGuidOrNull().HasValue )
                                 {
-                                    NavigateToLinkedPage( "DonePage" );
+                                    NavigateToLinkedPage( AttributeKey.DonePage );
                                 }
                                 else
                                 {
@@ -367,8 +423,8 @@ namespace RockWeb.Blocks.Crm
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            SetAttributeValue( "DisplayProgressBar", cbDisplayProgressBar.Checked.ToString() );
-            SetAttributeValue( "SaveValues", ddlSaveValues.SelectedValue );
+            SetAttributeValue( AttributeKey.DisplayProgressBar, cbDisplayProgressBar.Checked.ToString() );
+            SetAttributeValue( AttributeKey.SaveValues, ddlSaveValues.SelectedValue );
 
             var workflowTypeId = wtpWorkflow.SelectedValueAsInt();
             if ( workflowTypeId.HasValue )
@@ -378,21 +434,21 @@ namespace RockWeb.Blocks.Crm
                     var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
                     if ( workflowType != null )
                     {
-                        SetAttributeValue( "Workflow", workflowType.Guid.ToString() );
+                        SetAttributeValue( AttributeKey.Workflow, workflowType.Guid.ToString() );
                     }
                     else
                     {
-                        SetAttributeValue( "Workflow", "" );
+                        SetAttributeValue( AttributeKey.Workflow, "" );
                     }
                 }
             }
             else
             {
-                SetAttributeValue( "Workflow", "" );
+                SetAttributeValue( AttributeKey.Workflow, "" );
             }
 
             var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( "DonePage", ppFieldType.GetEditValue( ppDonePage, null ) );
+            SetAttributeValue( AttributeKey.DonePage, ppFieldType.GetEditValue( ppDonePage, null ) );
 
             ParseEditControls();
             var jsonSetting = new JsonSerializerSettings
@@ -402,7 +458,7 @@ namespace RockWeb.Blocks.Crm
             };
 
             string json = JsonConvert.SerializeObject( FormState, Formatting.None, jsonSetting );
-            SetAttributeValue( "Forms", json );
+            SetAttributeValue( AttributeKey.Forms, json );
 
             SaveAttributeValues();
 
@@ -597,7 +653,7 @@ namespace RockWeb.Blocks.Crm
 
             pnlEditModal.Visible = false;
 
-            string json = GetAttributeValue( "Forms" );
+            string json = GetAttributeValue( AttributeKey.Forms );
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FormState = new List<AttributeForm>();
@@ -652,7 +708,7 @@ namespace RockWeb.Blocks.Crm
         {
             decimal currentStep = CurrentPageIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean() && (FormState.Count > 1);
+            pnlProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean() && (FormState.Count > 1);
 
             BuildViewControls( true );
 
@@ -745,10 +801,10 @@ namespace RockWeb.Blocks.Crm
 
 
 
-            cbDisplayProgressBar.Checked = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
-            ddlSaveValues.SetValue( GetAttributeValue( "SaveValues" ) );
+            cbDisplayProgressBar.Checked = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
+            ddlSaveValues.SetValue( GetAttributeValue( AttributeKey.SaveValues ) );
 
-            Guid? wtGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            Guid? wtGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             if ( wtGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -762,9 +818,9 @@ namespace RockWeb.Blocks.Crm
             }
 
             var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppDonePage, null, GetAttributeValue( "DonePage" ) );
+            ppFieldType.SetEditValue( ppDonePage, null, GetAttributeValue( AttributeKey.DonePage ) );
 
-            string json = GetAttributeValue( "Forms" );
+            string json = GetAttributeValue( AttributeKey.Forms );
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FormState = new List<AttributeForm>();
@@ -1187,7 +1243,7 @@ namespace RockWeb.Blocks.Crm
 
             string script = @"
 // activity animation
-$('.template-form > header').click(function () {
+$('.template-form > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -1198,12 +1254,12 @@ $('.template-form > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
-$('.template-form a.js-activity-delete').click(function (event) {
+$('.template-form a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.template-form a.template-form-reorder').click(function (event) {
+$('.template-form a.template-form-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -1668,7 +1724,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
         /*  For Backwards compatibility, we still need to deserialize from PreText, but not serialize it*/
         [JsonProperty( "PreText" )]
         private string _preText
-        {   
+        {
             set
             {
                 PreHtml = value;

@@ -65,7 +65,10 @@ namespace RockWeb.Webhooks
                     postedData = reader.ReadToEnd();
                 }
 
-                System.Threading.Thread.Sleep(5000);
+                // NewPointe - add a delay here to prevent duplicate submissions
+                // It looks like there's already a locking system to prevent this
+                // but it isn't working???
+                System.Threading.Thread.Sleep(7000);
                 Rock.Checkr.Checkr.SaveWebhookResults( postedData );
 
                 // Per Gerhard this has to be set to 200 regardless of the result or the page will not function.

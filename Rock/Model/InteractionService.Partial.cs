@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.BulkImport;
@@ -77,7 +79,7 @@ namespace Rock.Model
             interaction.InteractionComponentId = interactionComponentId;
             interaction.EntityId = entityId;
             interaction.Operation = operation;
-            interaction.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+            interaction.SetInteractionData( interactionData );
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
             interaction.InteractionSummary = interactionSummary;
@@ -85,16 +87,15 @@ namespace Rock.Model
             int? deviceTypeId = null;
             if ( deviceApplication.IsNotNullOrWhiteSpace() && deviceOs.IsNotNullOrWhiteSpace() && deviceClientType.IsNotNullOrWhiteSpace() )
             {
-                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
+                deviceTypeId = this.GetInteractionDeviceTypeId( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
             }
 
             // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
             // but at least one of these has a value, then we should lookup or create a session
             if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhiteSpace() || deviceTypeId.HasValue )
             {
-                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
-                interaction.InteractionSessionId = session.Id;
+                var interactionSessionId = GetInteractionSessionId( browserSessionId ?? Guid.NewGuid(), ipAddress, deviceTypeId );
+                interaction.InteractionSessionId = interactionSessionId;
             }
 
             return interaction;
@@ -124,15 +125,7 @@ namespace Rock.Model
             var interaction = CreateInteraction( interactionComponentId, null, null, string.Empty, null, null, RockDateTime.Now,
                 deviceApplication, deviceOs, deviceClientType, userAgent, ipAddress, browserSessionId );
 
-            if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
-            {
-                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
-                interaction.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
-                interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
-                interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
-                interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
-                interaction.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
-            }
+            interaction.SetUTMFieldsFromURL( url );
 
             return interaction;
         }
@@ -180,6 +173,29 @@ namespace Rock.Model
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
+        private static ConcurrentDictionary<string, int> _deviceTypeIdLookup = new ConcurrentDictionary<string, int>();
+
+        /// <summary>
+        /// Gets the interaction device type identifier.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="operatingSystem">The operating system.</param>
+        /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <returns></returns>
+        public int GetInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
+        {
+            var lookupKey = $"{application}|{operatingSystem}|{clientType}";
+            int? deviceTypeId = _deviceTypeIdLookup.GetValueOrNull( lookupKey );
+            if ( deviceTypeId == null )
+            {
+                deviceTypeId = GetInteractionDeviceType( application, operatingSystem, clientType, deviceTypeData ).Id;
+                _deviceTypeIdLookup.AddOrReplace( lookupKey, deviceTypeId.Value );
+            }
+
+            return deviceTypeId.Value;
+        }
+
         /// <summary>
         /// Gets the interaction device type. If it can't be found, a new InteractionDeviceType record will be created and returned.
         /// </summary>
@@ -221,29 +237,61 @@ namespace Rock.Model
         /// <returns></returns>
         public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                InteractionSessionService interactionSessionService = new InteractionSessionService( rockContext );
-                InteractionSession interactionSession = null;
+            var interactionSessionId = GetInteractionSessionId( browserSessionId ?? Guid.NewGuid(), ipAddress, interactionDeviceTypeId );
+            return new InteractionSessionService( this.Context as RockContext ).GetNoTracking( interactionSessionId );
+        }
 
-                // if we have a browser session id, see if a session record was already created
-                if ( browserSessionId.HasValue )
-                {
-                    interactionSession = interactionSessionService.Queryable().Where( a => a.Guid == browserSessionId.Value ).FirstOrDefault();
-                }
+        /// <summary>
+        /// Ensures there is an InteractionSessionId for the specified browserSessionId and returns it
+        /// </summary>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
+        /// <returns></returns>
+        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId )
+        {
+            var currentDateTime = RockDateTime.Now;
+            // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
+            int interactionSessionId = this.Context.Database.SqlQuery<int>( @"
+BEGIN
+	DECLARE @InteractionSessionId INT;
 
-                if ( interactionSession == null )
-                {
-                    interactionSession = new InteractionSession();
-                    interactionSession.DeviceTypeId = interactionDeviceTypeId;
-                    interactionSession.IpAddress = ipAddress;
-                    interactionSession.Guid = browserSessionId ?? Guid.NewGuid();
-                    interactionSessionService.Add( interactionSession );
-                    rockContext.SaveChanges();
-                }
+	SELECT @InteractionSessionId = Id
+	FROM InteractionSession
+	WHERE [Guid] = @browserSessionId
 
-                return interactionSession;
-            }
+	IF (@InteractionSessionId IS NULL)
+	BEGIN
+		INSERT [dbo].[InteractionSession] (
+			[DeviceTypeId]
+			,[IpAddress]
+			,[Guid]
+            ,[CreatedDateTime]
+            ,[ModifiedDateTime]
+			)
+        OUTPUT inserted.Id
+		VALUES (
+			@interactionDeviceTypeId
+			,@ipAddress
+			,@browserSessionId
+            ,@currentDateTime
+            ,@currentDateTime
+			)
+	END
+	ELSE
+	BEGIN
+		SELECT @InteractionSessionId
+	END
+END
+",
+new SqlParameter( "@browserSessionId", browserSessionId ),
+new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
+new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId ),
+new SqlParameter( "@currentDateTime", currentDateTime )
+).FirstOrDefault();
+
+            return interactionSessionId;
+
         }
 
         /// <summary>
@@ -438,13 +486,11 @@ namespace Rock.Model
                 interaction.ForeignKey = interactionImport.Interaction.ForeignKey;
                 interaction.ForeignGuid = interactionImport.Interaction.ForeignGuid;
 
-                /* Fields that are introduced in v11.0
-                interaction.ChannelCustom1 = interactionImport.Interaction.ChannelCustom1;
-                interaction.ChannelCustom2 = interactionImport.Interaction.ChannelCustom2;
-                interaction.ChannelCustomIndexed1 = interactionImport.Interaction.ChannelCustomIndexed1;
+                interaction.ChannelCustom1 = interactionImport.Interaction.ChannelCustom1.Truncate( 500, true );
+                interaction.ChannelCustom2 = interactionImport.Interaction.ChannelCustom2.Truncate( 2000, true );
+                interaction.ChannelCustomIndexed1 = interactionImport.Interaction.ChannelCustomIndexed1.Truncate( 500, true );
                 interaction.InteractionLength = interactionImport.Interaction.InteractionLength;
                 interaction.InteractionTimeToServe = interactionImport.Interaction.InteractionTimeToServe;
-                */
 
                 interactionsToInsert.Add( interaction );
             }

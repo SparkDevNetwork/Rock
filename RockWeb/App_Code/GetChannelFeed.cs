@@ -205,8 +205,6 @@ namespace RockWeb
 
             var contentItems = content.Take( rssItemLimit ).ToList();
 
-            contentItems.LoadAttributes();
-
             foreach ( var item in contentItems )
             {
                 item.Content = item.Content.ResolveMergeFields( mergeFields );
@@ -218,6 +216,7 @@ namespace RockWeb
                 item.Content = item.Content.Replace( @" href=""/", @" href=""" + publicAppRoot );
 
                 // get item attributes and add them as elements to the feed
+                item.LoadAttributes( rockContext );
                 foreach ( var attributeValue in item.AttributeValues )
                 {
                     attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( mergeFields );

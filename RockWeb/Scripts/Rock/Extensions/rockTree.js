@@ -597,6 +597,17 @@
                 }
 
                 $item.toggleClass('selected');
+
+                // If the item exists under multiple tree branches, select/de-select all instances of the same item.
+                var isSelected = $item.hasClass('selected');
+                $rockTree.find('li[data-id="' + id + '"].rocktree-item > span').each(function (idx, span) {
+                    $(span).removeClass('selected');
+                    if (isSelected) {
+                        $(span).addClass('selected');
+                    }
+                });
+
+                $rockTree.find('.selected').parent('li[data-id="' + id + '"]').removeClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
                     selectedNodes.push({

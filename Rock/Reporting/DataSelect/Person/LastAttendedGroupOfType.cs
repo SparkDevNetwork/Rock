@@ -148,10 +148,6 @@ namespace Rock.Reporting.DataSelect.Person
             return null;
         }
 
-        /// <summary>
-        /// The GroupTypePicker
-        /// </summary>
-        private GroupTypePicker groupTypePicker = null;
 
         /// <summary>
         /// Creates the child controls.
@@ -160,18 +156,11 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            int? selectedGroupTypeId = null;
-            if (groupTypePicker != null)
-            {
-                selectedGroupTypeId = groupTypePicker.SelectedGroupTypeId;
-            }
-            
-            groupTypePicker = new GroupTypePicker();
+            var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = parentControl.ID + "_0";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.AutoPostBack = true;
-            groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
             parentControl.Controls.Add( groupTypePicker );
 
             return new Control[1] { groupTypePicker };

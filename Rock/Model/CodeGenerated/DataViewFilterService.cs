@@ -94,11 +94,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this DataViewFilter target, DataViewFilter source )
         {
             target.Id = source.Id;
+            target.DataViewId = source.DataViewId;
             target.EntityTypeId = source.EntityTypeId;
             target.ExpressionType = source.ExpressionType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.ParentId = source.ParentId;
+            target.RelatedDataViewId = source.RelatedDataViewId;
             target.Selection = source.Selection;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

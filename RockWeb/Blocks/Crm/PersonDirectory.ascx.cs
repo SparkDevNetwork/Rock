@@ -40,25 +40,147 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "A directory of people in database." )]
 
-    [DataViewField("Data View",
-        "The data view to use as the source for the directory. Only those people returned by the data view filter will be displayed on this directory.",
-        true, "cb4bb264-a1f4-4edb-908f-2ccf3a534bc7", "Rock.Model.Person", "", 0)]
-    [GroupField("Opt-out Group", "A group that contains people that should be excluded from this list.", false, "", "", 1, "OptOut")]
-    [CustomRadioListField("Show By", "People can be displayed individually, or grouped by family", "Individual,Family", true, "Individual", "", 2)]
-    [BooleanField( "Show All People", "Display all people by default? If false, a search is required first, and only those matching search criteria will be displayed.", false, "", 3)]
-    [LinkedPage("Person Profile Page", "Page to navigate to when clicking a person's name (leave blank if link should not be enabled).", false, "", "", 4)]
-    [IntegerField( "First Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 1, "", 5)]
-    [IntegerField( "Last Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 3, "", 6 )]
-    [BooleanField( "Show Email", "Should email address be included in the directory?", true, "", 7)]
-    [BooleanField( "Show Address", "Should email address be included in the directory?", true, "", 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory", false, true, "", "", 9 )]
-    [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 10 )]
-    [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 11 )]
-    [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 12 )]
-    [BooleanField( "Show Envelope Number", "Should envelope # be included in the directory?", false, "", 13 )]
-    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500, "", 14)]
+    #region Block Attributes
+
+    [DataViewField(
+        "Data View",
+        Key = AttributeKey.DataView,
+        Description = "The data view to use as the source for the directory. Only those people returned by the data view filter will be displayed on this directory.",
+        IsRequired = true,
+        DefaultValue = "cb4bb264-a1f4-4edb-908f-2ccf3a534bc7",
+        EntityTypeName = "Rock.Model.Person",
+        Order = 0 )]
+
+    [GroupField(
+        "Opt-out Group",
+        Key = AttributeKey.OptOut,
+        Description = "A group that contains people that should be excluded from this list.",
+        IsRequired = false,
+        Order = 1 )]
+
+    [CustomRadioListField(
+        "Show By",
+        Key = AttributeKey.ShowBy,
+        Description = "People can be displayed individually, or grouped by family.",
+        ListSource = "Individual,Family",
+        IsRequired = true,
+        DefaultValue = "Individual",
+        Order = 2 )]
+
+    [BooleanField(
+        "Show All People",
+        Key = AttributeKey.ShowAllPeople,
+        Description = "Display all people by default? If false, a search is required first, and only those matching search criteria will be displayed.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Person Profile Page",
+        Key = AttributeKey.PersonProfilePage,
+        Description = "Page to navigate to when clicking a person's name (leave blank if link should not be enabled).",
+        IsRequired = false,
+        Order = 4 )]
+
+    [IntegerField(
+        "First Name Characters Required",
+        Key = AttributeKey.FirstNameCharactersRequired,
+        Description = "The number of characters that need to be entered before allowing a search.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 5 )]
+
+    [IntegerField(
+        "Last Name Characters Required",
+        Key = AttributeKey.LastNameCharactersRequired,
+        Description = "The number of characters that need to be entered before allowing a search.",
+        IsRequired = false,
+        DefaultIntegerValue = 3,
+        Order = 6 )]
+
+    [BooleanField(
+        "Show Email",
+        Key = AttributeKey.ShowEmail,
+        Description = "Should email address be included in the directory?",
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
+    [BooleanField(
+        "Show Address",
+        Key = AttributeKey.ShowAddress,
+        Description = "Should email address be included in the directory?",
+        DefaultBooleanValue = true,
+        Order = 8 )]
+
+    [DefinedValueField(
+        "Show Phones",
+        Key = AttributeKey.ShowPhones,
+        Description = "The phone numbers to be included in the directory.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 9 )]
+
+    [BooleanField(
+        "Show Birthday",
+        Key = AttributeKey.ShowBirthday,
+        Description = "Should email address be included in the directory?",
+        DefaultBooleanValue = true,
+        Order = 10 )]
+
+    [BooleanField(
+        "Show Gender",
+        Key = AttributeKey.ShowGender,
+        Description = "Should email address be included in the directory?",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+
+    [BooleanField(
+        "Show Grade",
+        Key = AttributeKey.ShowGrade,
+        Description = "Should grade be included in the directory?",
+        DefaultBooleanValue = false,
+        Order = 12 )]
+
+    [BooleanField(
+        "Show Envelope Number",
+        Key = AttributeKey.ShowEnvelopeNumber,
+        Description = "Should envelope # be included in the directory?",
+        DefaultBooleanValue = false,
+        Order = 13 )]
+
+    [IntegerField(
+        "Max Results",
+        Key = AttributeKey.MaxResults,
+        Description = "The maximum number of results to show on the page.",
+        IsRequired = true,
+        DefaultIntegerValue = 1500,
+        Order = 14 )]
+
+    #endregion Block Attributes
+
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string DataView = "DataView";
+            public const string OptOut = "OptOut";
+            public const string ShowBy = "ShowBy";
+            public const string ShowAllPeople = "ShowAllPeople";
+            public const string FirstNameCharactersRequired = "FirstNameCharactersRequired";
+            public const string LastNameCharactersRequired = "LastNameCharactersRequired";
+            public const string ShowEmail = "ShowEmail";
+            public const string ShowAddress = "ShowAddress";
+            public const string ShowBirthday = "ShowBirthday";
+            public const string ShowGender = "ShowGender";
+            public const string ShowGrade = "ShowGrade";
+            public const string ShowEnvelopeNumber = "ShowEnvelopeNumber";
+            public const string PersonProfilePage = "PersonProfilePage";
+            public const string ShowPhones = "ShowPhones";
+            public const string MaxResults = "MaxResults";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private Guid? _dataViewGuid = null;
@@ -114,21 +236,21 @@ namespace RockWeb.Blocks.Crm
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _dataViewGuid = GetAttributeValue( "DataView" ).AsGuidOrNull();
-            _optOutGroupGuid = GetAttributeValue( "OptOut" ).AsGuidOrNull();
-            _showFamily = GetAttributeValue( "ShowBy" ) == "Family";
-            _showAllPeople = GetAttributeValue( "ShowAllPeople" ).AsBoolean();
-            _firsNameCharsRequired = GetAttributeValue( "FirstNameCharactersRequired" ).AsIntegerOrNull();
-            _lastNameCharsRequired = GetAttributeValue( "LastNameCharactersRequired" ).AsIntegerOrNull();
-            _showEmail = GetAttributeValue( "ShowEmail" ).AsBoolean();
-            _showAddress = GetAttributeValue( "ShowAddress" ).AsBoolean();
-            _showBirthday = GetAttributeValue( "ShowBirthday" ).AsBoolean();
-            _showGender = GetAttributeValue( "ShowGender" ).AsBoolean();
-            _showGrade = GetAttributeValue( "ShowGrade" ).AsBoolean();
-            _showEnvelopeNumber = GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
-            _personProfileUrl = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "999" } } ).Replace( "999", "{0}" );
+            _dataViewGuid = GetAttributeValue( AttributeKey.DataView ).AsGuidOrNull();
+            _optOutGroupGuid = GetAttributeValue( AttributeKey.OptOut ).AsGuidOrNull();
+            _showFamily = GetAttributeValue( AttributeKey.ShowBy ) == "Family";
+            _showAllPeople = GetAttributeValue( AttributeKey.ShowAllPeople ).AsBoolean();
+            _firsNameCharsRequired = GetAttributeValue( AttributeKey.FirstNameCharactersRequired ).AsIntegerOrNull();
+            _lastNameCharsRequired = GetAttributeValue( AttributeKey.LastNameCharactersRequired ).AsIntegerOrNull();
+            _showEmail = GetAttributeValue( AttributeKey.ShowEmail ).AsBoolean();
+            _showAddress = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
+            _showBirthday = GetAttributeValue( AttributeKey.ShowBirthday ).AsBoolean();
+            _showGender = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
+            _showGrade = GetAttributeValue( AttributeKey.ShowGrade ).AsBoolean();
+            _showEnvelopeNumber = GetAttributeValue( AttributeKey.ShowEnvelopeNumber ).AsBoolean();
+            _personProfileUrl = LinkedPageUrl( AttributeKey.PersonProfilePage, new Dictionary<string, string> { { "PersonId", "999" } } ).Replace( "999", "{0}" );
 
-            foreach ( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
+            foreach ( var guid in GetAttributeValue( AttributeKey.ShowPhones ).SplitDelimitedValues().AsGuidList() )
             {
                 var phoneValue = DefinedValueCache.Get( guid );
                 if ( phoneValue != null )
@@ -521,7 +643,7 @@ namespace RockWeb.Blocks.Crm
             var people = personQry
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
-                .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
+                .Take( GetAttributeValue( AttributeKey.MaxResults ).AsInteger() )
                 .Select( p => new PersonDirectoryItem
                 {
                     Id = p.Id,
@@ -695,7 +817,7 @@ namespace RockWeb.Blocks.Crm
             } )
             .Distinct()
             .OrderBy( f => f.Name )
-            .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
+            .Take( GetAttributeValue( AttributeKey.MaxResults ).AsInteger() )
             .ToList();
 
             rptFamilies.DataSource = families;

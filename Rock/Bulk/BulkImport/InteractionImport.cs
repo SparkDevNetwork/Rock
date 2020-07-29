@@ -240,8 +240,6 @@ namespace Rock.BulkImport
 
         #endregion Campaign Meta fields
 
-        #region Fields that were introduced in v11.0
-
         /// <summary>
         /// Gets or sets the channel custom1.
         /// </summary>
@@ -285,8 +283,6 @@ namespace Rock.BulkImport
         /// The interaction time to serve.
         /// </value>
         public double? InteractionTimeToServe { get; set; }
-
-        #endregion Fields that were introduced in v11.0
 
         /// <summary>
         /// Gets or sets the foreign identifier.

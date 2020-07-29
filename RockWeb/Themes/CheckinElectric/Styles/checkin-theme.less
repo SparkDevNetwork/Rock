@@ -1,0 +1,359 @@
+/*
+
+     Electric Check-in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+@scrollbar-width: 10px;
+@scroller-gutters: 15px;
+
+//
+// Imports
+// --------------------------------------------------
+
+:root {
+  --checkin-footer-background: @checkin-footer-background;
+  --btn-checkinselect-bg: @btn-default-bg;
+  --btn-checkinselect-color: @btn-default-color;
+  --btn-checkinselect-disabled-bg: @btn-default-bg;
+  --btn-default-color: @btn-default-color;
+  --btn-default-border: @btn-default-border;
+  --btn-default-bg: @btn-default-bg;
+  --btn-default-active-bg: @btn-default-active-bg;
+  --btn-default-active-color: @btn-default-active-color;
+  --input-bg: @input-bg;
+  --input-color: @input-color;
+  --input-border: @input-border;
+  --input-border-focus: @input-border-focus;
+  --btn-transition: width 300ms cubic-bezier(.5,.25,.25,.75), min-width 300ms cubic-bezier(.5,.25,.25,.75), height 300ms cubic-bezier(.5,.25,.25,.75), min-height 300ms cubic-bezier(.5,.25,.25,.75), color 300ms cubic-bezier(.5,.25,.25,.75), font-size 300ms cubic-bezier(.5,.25,.25,.75), box-shadow 200ms cubic-bezier(0,.25,.25,.75), background-color 300ms cubic-bezier(.5,.25,.25,.75);
+}
+
+
+@import url("https://rsms.me/inter/inter.css");
+
+html {
+  & when (@font-family-base = ~'"Inter", sans-serif') {
+    font-family: "Inter", sans-serif;
+    @supports (font-variation-settings: normal) {
+      font-family: "Inter var", sans-serif;
+    }
+  }
+}
+
+@import "../../../Styles/Bootstrap/bootstrap.less";
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+
+@import "includes/_defaults.less";
+@import "includes/_forms.less";
+@import "includes/_kioskmanager.less";
+
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+.checkin-scroll-panel {
+  bottom: 0;
+}
+
+// Search Page
+.checkin-phone-keypad {
+  margin-bottom: 10px;
+}
+
+// .checkin-search-body.search-phone,
+// input.checkin-phone-entry {
+//   width: 275px;
+// }
+
+.tenkey {
+  @media (min-width: @screen-sm-min) {
+    .btn {
+      margin: 7px 11px;
+    }
+
+    .btn:first-of-type {
+      margin-left: 0;
+    }
+
+    .btn:last-of-type {
+      margin-right: 0;
+    }
+  }
+
+  .btn.digit {
+    line-height: 1.2;
+  }
+
+  .btn.command {
+    padding: 24px 0 0;
+  }
+
+  // Override keypad for short devices
+  @media (max-height: 680px) {
+    .btn {
+      height: 60px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .btn.command {
+      padding: 18px 0 0;
+    }
+  }
+}
+
+// Search page button equal to other buttons
+.checkin-body .checkin-actions .btn-primary {
+  padding: 12px 24px;
+  font-size: 22px;
+}
+
+.btn-checkin-select,
+.row-checkin-item {
+  margin-bottom: 10px;
+
+  @media (min-width: @screen-sm-min) {
+    margin-bottom: 20px;
+  }
+}
+// End Search Page
+
+// Checkin Header
+.checkin-header {
+  padding: 16px 0 0;
+  margin: 0;
+
+  @media (min-width: @screen-sm-min) {
+    padding: 32px 0 0 3px;
+    margin: 0 0 8px;
+    text-align: center;
+  }
+
+  @media (min-width: @screen-md-min) {
+    padding: 16px @scrollbar-width 0 @scrollbar-width;
+    margin: 0 0 16px;
+  }
+
+  @media (min-width: @screen-lg-min) and (min-height: 768px) {
+    padding: 35px @scrollbar-width 0 @scrollbar-width;
+    margin: 0 0 35px;
+  }
+
+  h1{
+    padding-bottom: 8px;
+    margin: 0;
+    font-size: @font-size-h1;
+    @media (min-width: @screen-sm-min) {
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    @media (min-width: @screen-lg-min) and (min-height: 768px) {
+      padding-bottom: 25px;
+    }
+  }
+
+  .checkin-sub-title {
+    display: inline;
+    font-weight: 400;
+
+    &:empty {
+      display: none;
+    }
+
+    &::before {
+      content: " - ";
+    }
+  }
+}
+
+// Checkin Footer
+.checkin-footer {
+  padding: 10px 0;
+  margin: 0;
+  background: @checkin-footer-background;
+  background: var(--checkin-footer-background);
+
+  @media (max-height: 320px) {
+    padding: 0;
+  }
+
+  .checkin-actions {
+    .container();
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+
+    @media (min-width: @screen-sm-min) {
+      padding: 0 (@scrollbar-width + @scroller-gutters);
+    }
+
+    .btn {
+      padding: 8px 24px;
+      margin: 4px;
+      font-size: 16px;
+      font-weight: 400;
+      @media (min-width: @screen-xs-min) {
+        margin: 8px 4px;
+      }
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      font-size: 16px;
+
+      @media (min-width: @screen-xs-min) {
+        display: inline-block;
+        -ms-flex-order: 12;
+        order: 12;
+        width: 350px;
+        max-width: 40%;
+        margin-left: auto;
+      }
+
+      @media (min-width: @screen-sm-min) {
+        max-width: 100%;
+      }
+    }
+
+    .btn-default {
+      flex-grow: 1;
+      @media (min-width: @screen-xs-min) {
+        flex-grow: 0;
+      }
+    }
+  }
+}
+
+
+// Checkin Body Label and Edit Family Link Adjustment
+.checkin-body-container > .btn-link,
+.checkin-body-container > label,
+.checkin-time-select > label.control-label {
+  font-size: 14px;
+
+  @media (min-width: @screen-sm-min) {
+    font-size: @font-size-base;
+  }
+}
+
+@media (min-width: @screen-sm-min) {
+  .checkin-body-container > label,
+  .checkin-time-select > label.control-label {
+    display: block;
+    text-align: center;
+  }
+
+  .checkin-body-container > .btn-link {
+    position: absolute;
+    top: 0;
+    right: (@scrollbar-width+ @scroller-gutters);
+  }
+}
+
+.checkin-body-container > .btn-link {
+  padding-top: 0;
+  padding-right: 0;
+  margin-bottom: 5px;
+  color: @text-muted;
+}
+
+// Family Select Page
+
+.checkin-person {
+  min-height: 48px;
+
+  @media (min-width: @screen-xs-min) {
+    min-height: 86px;
+  }
+
+  > .btn,
+  > .btn > .row {
+    height: 100%;
+  }
+}
+
+.checkin-timelist.btn-group > .btn {
+  min-height: 48px;
+
+  @media (min-width: @screen-xs-min) {
+    min-height: 86px;
+  }
+}
+
+.photo-round.photo-round-md {
+  width: 30px;
+  height: 30px;
+  @media (min-width: @screen-xs-min) {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.family-personselect {
+  font-size: 18px;
+  @media (min-width: @screen-xs-min) {
+    font-size: 26px;
+  }
+}
+
+.photo-container {
+  @media (max-width: @screen-xs-min + 1) {
+    flex-shrink: 1;
+    width: auto;
+    margin-right: 10px;
+  }
+}
+
+.name-container {
+  flex: 1 1 auto;
+  text-align: left;
+
+  @media (min-width: @screen-xs-min) {
+    right: 0;
+    left: 0;
+    width: 100%;
+    padding-left: @scrollbar-width !important;
+    text-align: center;
+  }
+}
+
+// Override Service Time Selects
+.checkin-time-select {
+  display: block;
+
+  .control-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.checkin-timelist.btn-group {
+  display: block !important;
+
+  > .btn {
+    .btn-checkin-select();
+    display: block;
+    float: none;
+    width: 100%;
+    padding: 18px 4px !important;
+    border-radius: 100px !important;
+    box-shadow: none;
+    -webkit-transition: var(--btn-transition);
+    transition: var(--btn-transition);
+  }
+
+  i {
+    display: none;
+  }
+}
+
+@import "_css-overrides.less";

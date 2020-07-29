@@ -2201,7 +2201,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChanges != null && HistoryChanges.Any() )
+            if ( HistoryChanges?.Any() == true )
             {
                 HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
             }
@@ -2512,7 +2512,7 @@ namespace Rock.Model
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use other GetPersonPhotoUrl" )]
+        [Obsolete( "Use other GetPersonPhotoUrl", true )]
         public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
             return GetPersonPhotoUrl( personId, photoId, age, gender, recordTypeValueGuid, null, maxWidth, maxHeight );

@@ -36,40 +36,71 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Following By Entity" )]
     [Category( "Core" )]
     [Description( "Takes a entity type and displays a person's following items for that entity using a Lava template." )]
-    [EntityTypeField("Entity Type", "The type of entity to show following for.", order: 0)]
-    [TextField("Link URL", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", false, "/samplepage/[Id]", "", 1, "LinkUrl")]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div class=""panel panel-block""> 
-    <div class=""panel-heading"">
-       <h4 class=""panel-title"">Followed {{ EntityType | Pluralize }}</h4>
-    </div>
-    <div class=""panel-body"">
 
-        <ul>
-        {% for item in FollowingItems %}
-            {% if LinkUrl != '' %}
-                <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a> 
-                <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
-                <i class=""fa fa-pencil""></i>
-			    </a></li>
-            {% else %}
-                <li>{{ item.Name }}
-                <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
-                <i class=""fa fa-pencil""></i>
-			    </a></li>
-            {% endif %}
-        {% endfor %}
+    [EntityTypeField( "Entity Type",
+        Description = "The type of entity to show following for.",
+        Order = 0,
+        Key = AttributeKey.EntityType )]
 
-        {% if HasMore %}
-            <li><i class='fa fa-fw''></i> <small>(showing top {{ Quantity }})</small></li>
+    [TextField( "Link URL",
+        Description = "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.",
+        IsRequired = false,
+        DefaultValue = "/samplepage/[Id]",
+        Order = 1,
+        Key = AttributeKey.LinkUrl )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"<div class=""panel panel-block""> 
+<div class=""panel-heading"">
+    <h4 class=""panel-title"">Followed {{ EntityType | Pluralize }}</h4>
+</div>
+<div class=""panel-body"">
+    <ul>
+    {% for item in FollowingItems %}
+        {% if LinkUrl != '' %}
+            <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a> 
+            <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
+            <i class=""fa fa-pencil""></i>
+			</a></li>
+        {% else %}
+            <li>{{ item.Name }}
+            <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
+            <i class=""fa fa-pencil""></i>
+			</a></li>
         {% endif %}
+    {% endfor %}
 
-        </ul>
-        
-    </div>
-</div>", "", 2, "LavaTemplate" )]
-    [IntegerField("Max Results", "The maximum number of results to display.", true, 100, order: 4)]
+    {% if HasMore %}
+        <li><i class='fa fa-fw''></i> <small>(showing top {{ Quantity }})</small></li>
+    {% endif %}
+    </ul>
+</div>
+</div>",
+        Order = 2,
+        Key = AttributeKey.LavaTemplate )]
+
+    [IntegerField( "Max Results",
+        Description = "The maximum number of results to display.",
+        IsRequired = true,
+        DefaultValue = "100",
+        Order = 4,
+        Key = AttributeKey.MaxResults )]
+
     public partial class FollowingByEntityLava : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string EntityType = "EntityType";
+            public const string LinkUrl = "LinkUrl";
+            public const string MaxResults = "MaxResults";
+            public const string LavaTemplate = "LavaTemplate";
+        }
+
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -126,8 +157,8 @@ namespace RockWeb.Blocks.Core
         protected void LoadContent()
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            
-            var entityType = EntityTypeCache.Get(GetAttributeValue("EntityType").AsGuid());
+
+            var entityType = EntityTypeCache.Get( GetAttributeValue( AttributeKey.EntityType ).AsGuid() );
 
             if ( entityType != null )
             {
@@ -139,18 +170,18 @@ namespace RockWeb.Blocks.Core
                 var followingService = new FollowingService( rockContext );
                 IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
 
-                int quantity = GetAttributeValue( "MaxResults" ).AsInteger();
-                var items = qryFollowedItems.Take(quantity + 1).Distinct().ToList();
+                int quantity = GetAttributeValue( AttributeKey.MaxResults ).AsInteger();
+                var items = qryFollowedItems.Take( quantity + 1 ).Distinct().ToList();
 
-                bool hasMore = (quantity < items.Count);
+                bool hasMore = ( quantity < items.Count );
 
                 mergeFields.Add( "FollowingItems", items.Take( quantity ) );
                 mergeFields.Add( "HasMore", hasMore );
                 mergeFields.Add( "EntityType", entityType.FriendlyName );
-                mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
+                mergeFields.Add( "LinkUrl", GetAttributeValue( AttributeKey.LinkUrl ) );
                 mergeFields.Add( "Quantity", quantity );
 
-                string template = GetAttributeValue( "LavaTemplate" );
+                string template = GetAttributeValue( AttributeKey.LavaTemplate );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
 
             }
@@ -198,7 +229,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="entityId">The group member identifier.</param>
         private void DeleteFollowing( int entityId )
         {
-            var entityType = EntityTypeCache.Get( GetAttributeValue( "EntityType" ).AsGuid() );
+            var entityType = EntityTypeCache.Get( GetAttributeValue( AttributeKey.EntityType ).AsGuid() );
             int personId = this.CurrentPersonId.Value;
 
             RockContext rockContext = new RockContext();

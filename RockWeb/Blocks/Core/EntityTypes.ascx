@@ -53,8 +53,8 @@
                     Help="The Lava used by the Universal Search feature to display results. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions." />
                 <Rock:CodeEditor ID="ceIndexDocumentUrl" runat="server" Label="Index Document URL Pattern" EditorTheme="Rock" EditorMode="Lava" EditorHeight="200"
                     Help="The Lava used by the Universal Search feature to determine the Rock URL of the document. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions." />
-                <Rock:CodeEditor ID="ceLinkUrl" runat="server" Label="Link Url Pattern" EditorTheme="Rock" EditorMode="Lava" EditorHeight="80"
-                    Help="The Lava used when Rock needs to create a url to an entity based just on the entity type (ie. Tag Report). Available merge field is Entity." />
+                <Rock:CodeEditor ID="ceLinkUrl" runat="server" Label="Link URL Pattern" EditorTheme="Rock" EditorMode="Lava" EditorHeight="80"
+                    Help="The Lava used when Rock needs to create a URL to an entity based just on the entity type (ie. Tag Report). Available merge field is Entity." />
             </Content>
         </Rock:ModalDialog>
 

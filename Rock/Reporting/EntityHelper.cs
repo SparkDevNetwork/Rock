@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
@@ -29,13 +30,14 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public static class EntityHelper
     {
+        private static Dictionary<int, string> _workflowTypeNameLookup = null;
 
         /// <summary>
-        /// Gets the cache key for the EntityFields
+        /// Gets the cache key for the EntityFields 
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
@@ -62,7 +64,7 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the entity field indentified by it's uniqueFieldName ( the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }})" for attribute )
+        /// Gets the entity field identified by it's uniqueFieldName ( the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }})" for attribute )
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="uniqueFieldName">Name of the unique field.</param>
@@ -153,12 +155,6 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Getting EntityFields can take 10ms+ or so, so only get them once per thread (per request or per job execution)
-        /// </summary>
-        [ThreadStatic]
-        private static Dictionary<string, List<EntityField>> _entityFieldsLookup = null;
-
-        /// <summary>
         /// Gets the entity fields for a specific Entity
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -169,12 +165,15 @@ namespace Rock.Reporting
         private static List<EntityField> GetEntityFields( Type entityType, IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
             List<EntityField> entityFields = null;
+            _workflowTypeNameLookup = null;
 
-            _entityFieldsLookup = _entityFieldsLookup ?? new Dictionary<string, List<EntityField>>();
-            entityFields = _entityFieldsLookup.GetValueOrNull( EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields ) );
-            if ( entityFields != null )
+            if ( HttpContext.Current != null )
             {
-                return entityFields;
+                entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
+                if ( entityFields != null )
+                {
+                    return entityFields;
+                }
             }
 
             if ( entityFields == null )
@@ -328,70 +327,67 @@ namespace Rock.Reporting
                 }
                 else
                 {
+                    var entityAttributesCache = AttributeCache.GetByEntity( entityTypeCache.Id );
 
-                    using ( var rockContext = new RockContext() )
+                    cacheAttributeList = entityAttributesCache.SelectMany( a => a.AttributeIds ).Distinct().Select( a => AttributeCache.Get( a ) ).ToList();
+
+                    if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                     {
-                        var qryAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeId );
-                        if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
-                        {
-                            // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
-                            qryAttributes = qryAttributes
+                        // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
+                        cacheAttributeList = cacheAttributeList
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn == null ||
                                     a.EntityTypeQualifierColumn == string.Empty ||
-                                    a.EntityTypeQualifierColumn == "GroupTypeId" );
-                        }
-                        else if ( entityType == typeof( ConnectionRequest ) )
-                        {
-                            // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
-                            qryAttributes = qryAttributes
+                                    a.EntityTypeQualifierColumn == "GroupTypeId" ).ToList();
+                    }
+                    else if ( entityType == typeof( ConnectionRequest ) )
+                    {
+                        // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                        cacheAttributeList = cacheAttributeList
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn == null ||
                                     a.EntityTypeQualifierColumn == string.Empty ||
                                     a.EntityTypeQualifierColumn == "ConnectionOpportunityId"
-                                    );
-                        }
-                        else if ( entityType == typeof( Registration ) )
-                        {
-                            // in the case of Registrations, show attributes that are entity global, but also ones that are qualified by RegistrationTemplateId
-                            qryAttributes = qryAttributes
+                                    ).ToList();
+                    }
+                    else if ( entityType == typeof( Registration ) )
+                    {
+                        // in the case of Registrations, show attributes that are entity global, but also ones that are qualified by RegistrationTemplateId
+                        cacheAttributeList = cacheAttributeList
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn == null ||
                                     a.EntityTypeQualifierColumn == string.Empty ||
                                     a.EntityTypeQualifierColumn == "RegistrationTemplateId"
-                                    );
-                        }
-                        else if ( entityType == typeof( ContentChannelItem ) )
-                        {
-                            // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
-                            qryAttributes = qryAttributes
+                                    ).ToList();
+                    }
+                    else if ( entityType == typeof( ContentChannelItem ) )
+                    {
+                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
+                        cacheAttributeList = cacheAttributeList
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn == null ||
                                     a.EntityTypeQualifierColumn == string.Empty ||
                                     a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
                                     a.EntityTypeQualifierColumn == "ContentChannelId"
-                                    );
-                        }
-                        else if ( entityType == typeof( Rock.Model.Workflow ) )
-                        {
-                            // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId (and have a valid WorkflowTypeId)
-                            var validWorkflowTypeIds = new WorkflowTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => a.ToString() ).ToList();
-                            qryAttributes = qryAttributes
+                                    ).ToList();
+                    }
+                    else if ( entityType == typeof( Rock.Model.Workflow ) )
+                    {
+                        // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId (and have a valid WorkflowTypeId)
+                        var validWorkflowTypeIds = WorkflowTypeCache.All().Select( a => a.Id.ToString() ).ToArray();
+                        cacheAttributeList = cacheAttributeList
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn == null ||
                                     a.EntityTypeQualifierColumn == string.Empty ||
-                                    ( a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains( a.EntityTypeQualifierValue ) ) );
-                        }
-                        else
-                        {
-                            qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
-                        }
-
-                        cacheAttributeList = qryAttributes.ToAttributeCacheList();
+                                    ( a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains( a.EntityTypeQualifierValue ) ) ).ToList();
                     }
-                }
+                    else
+                    {
+                        cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
+                    }
 
-                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList );
+                    EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList );
+                }
             }
 
             // Order the fields by title, name
@@ -404,7 +400,10 @@ namespace Rock.Reporting
                 sortedFields.Add( entityField );
             }
 
-            _entityFieldsLookup.AddOrReplace( EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields ), sortedFields );
+            if ( HttpContext.Current != null )
+            {
+                HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
+            }
 
             return sortedFields;
         }
@@ -501,7 +500,7 @@ namespace Rock.Reporting
             if ( attribute.EntityTypeId == EntityTypeCache.GetId<ContentChannelItem>() )
             {
                 var entityType = EntityTypeCache.Get( attribute.EntityTypeId ?? 0 );
-                // in the case of ContentChannelItem attribute fields qualified by ContentChannelId, fully qualify the fieldName to ensure that other attributes on this
+                // in the case of ContentChannelItem attribute fields qualified by ContentChannelId, fully qualify the fieldName to ensure that other attributes on this 
                 // that have the exact same Name don't cause a random attribute with the same name to get picked
                 // NOTE: this is an issue with any Qualified Attribute, but since ContentChannelId is new, we don't have to worry about backwards compatibility
                 if ( entityType.Id == EntityTypeCache.GetId<ContentChannelItem>() && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
@@ -529,18 +528,6 @@ namespace Rock.Reporting
         /// <param name="limitToFilterableAttributes"></param>
         public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true )
         {
-            return GetEntityFieldForAttribute( attribute, limitToFilterableAttributes, null );
-        }
-
-        /// <summary>
-        /// Create an EntityField for an Attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="limitToFilterableAttributes"></param>
-        /// <param name="rockContext">The RockContext to use.</param>
-        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes, RockContext externalRockContext = null )
-        {
-
             // Ensure field name only has Alpha, Numeric and underscore chars
             string fieldName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
 
@@ -591,7 +578,7 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
-                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
+                    using ( var rockContext = new RockContext() )
                     {
                         var contentChannelTypeName = new ContentChannelTypeService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
                         if ( contentChannelTypeName != null )
@@ -606,7 +593,7 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Registration" to handle sub-types that are distinguished by RegistrationTemplateId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Registration ) ) && attribute.EntityTypeQualifierColumn == "RegistrationTemplateId" )
                 {
-                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
+                    using ( var rockContext = new RockContext() )
                     {
                         var RegistrationTemplateName = new RegistrationTemplateService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
                         if ( RegistrationTemplateName != null )
@@ -633,15 +620,21 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
                 {
-                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
+                    int workflowTypeId = attribute.EntityTypeQualifierValue.AsInteger();
+                    if ( _workflowTypeNameLookup == null )
                     {
-                        var workflowType = WorkflowTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), externalRockContext ?? rockContext );
-                        if ( workflowType != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            // Append the Qualifier to the title for Workflow Attributes
-                            entityField.AttributeEntityTypeQualifierName = workflowType.Name;
-                            entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowType.Name );
+                            _workflowTypeNameLookup = new WorkflowTypeService( rockContext ).Queryable().ToDictionary( k => k.Id, v => v.Name );
                         }
+                    }
+
+                    var workflowTypeName = _workflowTypeNameLookup.ContainsKey( workflowTypeId ) ? _workflowTypeNameLookup[workflowTypeId] : null;
+                    if ( workflowTypeName != null )
+                    {
+                        // Append the Qualifier to the title for Workflow Attributes
+                        entityField.AttributeEntityTypeQualifierName = workflowTypeName;
+                        entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowTypeName );
                     }
                 }
             }
@@ -907,7 +900,7 @@ namespace Rock.Reporting
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public static class EntityFieldExtensions
     {
@@ -937,7 +930,7 @@ namespace Rock.Reporting
 
                 if ( entityField == null )
                 {
-                    // if STILL not found, it could be that this is an attribute qualified by ContentChannelId,
+                    // if STILL not found, it could be that this is an attribute qualified by ContentChannelId, 
                     // which would NOT work if you had duplicate Attribute Keys and hadn't narrowed it down to ContentChannelId, but WOULD work if you had already narrowed down the keys to a specific ContentChannelId
                     entityField = entityFields.FirstOrDefault( a => a.Name == filterFieldSelection );
                 }
@@ -952,7 +945,7 @@ namespace Rock.Reporting
     #region Private Enumerations
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum FieldKind
     {

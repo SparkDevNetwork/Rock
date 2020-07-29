@@ -611,7 +611,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
             {
                 string editScript = string.Format( @"
-    $('a.js-edit-registrant').click(function( e ){{
+    $('a.js-edit-registrant').on('click', function( e ){{
         e.preventDefault();
         if( $('#{2} .js-person-id').val() !=='{1}'){{
         var  newPerson = $('#{2} .js-person-name' ).val();

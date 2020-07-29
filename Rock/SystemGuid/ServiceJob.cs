@@ -82,6 +82,21 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_103_SPIRITUAL_GIFTS = "B16F889F-3349-4CA9-976D-7EF098DD8BC6";
 
         /// <summary>
+        /// The Job to run Post v11 Data Migrations to update Date Keys on several tables
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_POPULATE_DATE_KEYS = "E56FD4FC-02F8-4A46-A91D-E86C2B635870";
+
+        /// <summary>
+        /// The job to run Post V11 to create an index on <seealso cref="Rock.Model.CommunicationRecipient.ResponseCode"/>
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX = "131F9418-777B-4A34-A19B-EB9A65893602";
+
+        /// <summary>
+        /// The Job to run Post v11 Data Migrations to update Related DataView Id in DataView Filter table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID = "C3882742-714B-4E82-8894-4B944142CDC7";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -106,6 +121,21 @@ namespace Rock.SystemGuid
         /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
+
+        /// <summary>
+        /// The rock cleanup Job. <see cref="Rock.Jobs.RockCleanup"/>
+        /// </summary>
+        public const string ROCK_CLEANUP = "1A8238B1-038A-4295-9FDE-C6D93002A5D7";
+
+        /// <summary>
+        /// The steps automation job - add steps based on people in a dataview
+        /// </summary>
+        public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
+
+        /// <summary>
+        /// The collect hosting metrcis job - collect metrics regarding database connections, Etc.
+        /// </summary>
+        public const string COLLECT_HOSTING_METRICS = "36FA38CA-9DB0-40A8-BABD-5411121B4809";
 
         /// <summary>
         /// The Job to send an email digest with an attendance summary of all child groups to regional group leaders

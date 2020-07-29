@@ -253,7 +253,7 @@ namespace Rock.Model
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
             var rockContext = dbContext as RockContext;
-            if ( GroupHistoryChanges != null && GroupHistoryChanges.Any() )
+            if ( GroupHistoryChanges?.Any() == true )
             {
                 HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), GroupId, GroupHistoryChanges, true, this.ModifiedByPersonAliasId );
             }
