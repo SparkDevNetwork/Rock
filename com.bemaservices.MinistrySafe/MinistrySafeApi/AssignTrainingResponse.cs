@@ -32,6 +32,9 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         [JsonProperty( "last_name" )]
         public string LastName { get; set; }
 
+        [JsonProperty( "email" )]
+        public string Email { get; set; }
+
         [JsonProperty( "external_id" )]
         public string PersonAliasId { get; set; }
 
