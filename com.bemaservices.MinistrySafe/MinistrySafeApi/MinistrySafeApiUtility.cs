@@ -10,6 +10,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using System;
+using Rock;
 
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
@@ -23,7 +24,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <returns></returns>
         private static List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafeTraining ) );
+            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) );
             if ( ministrySafeEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -63,7 +64,19 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <returns>The rest client.</returns>
         private static RestClient RestClient()
         {
-            string token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
+            string token = null;
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                if ( settings != null )
+                {
+                    token = GetSettingValue( settings, "AccessToken", true );
+                }
+            }
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
+            }
             var restClient = new RestClient( MinistrySafeConstants.MINISTRYSAFE_APISERVER );
 
             restClient.AddDefaultHeader( "Authorization", string.Format( "Token token={0}", token ) );

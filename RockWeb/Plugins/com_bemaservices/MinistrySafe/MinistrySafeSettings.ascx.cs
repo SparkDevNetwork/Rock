@@ -40,7 +40,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 
     public partial class MinistrySafeSettings : Rock.Web.UI.RockBlock
     {
-          #region Control Methods
+        #region Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -171,7 +171,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                     // Remove PMM and Checkr from Bio Workflow Actions
                     guid = Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid();
                     workflowActionGuidList.RemoveAll( w => w == guid );
-                    
+
                     guid = CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid();
                     workflowActionGuidList.RemoveAll( w => w == guid );
 
@@ -194,7 +194,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 // Rename PMM Workflow
                 var pmmWorkflowAction = workflowTypeService.Get( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid() );
                 pmmWorkflowAction.Name = Checkr_CreatePages.NEW_PMM_WORKFLOW_TYPE_NAME;
-          
+
                 // Rename Checkr Workflow
                 var checkrWorkflowAction = workflowTypeService.Get( CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid() );
                 checkrWorkflowAction.Name = "Background Check (Checkr)";
@@ -268,8 +268,19 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
+                    accessToken = GetSettingValue( settings, "AccessToken", true );
 
-                    accessToken = GetSettingValue( settings, "AccessToken", true );//Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+                    if ( accessToken.IsNullOrWhiteSpace() )
+                    {
+                        string token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
+                        if ( token.IsNotNullOrWhiteSpace() )
+                        {
+                            SetSettingValue( rockContext, settings, "AccessToken", token, true );
+                            rockContext.SaveChanges();
+                            BackgroundCheckContainer.Instance.Refresh();
+                            accessToken = GetSettingValue( settings, "AccessToken", true );
+                        }
+                    }
                 }
             }
 
@@ -334,7 +345,8 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 .FirstOrDefault();
             if ( encryptedValue && !string.IsNullOrWhiteSpace( value ) )
             {
-                try { value = Encryption.DecryptString( value ); }
+                try
+                { value = Encryption.DecryptString( value ); }
                 catch { }
             }
 
@@ -352,7 +364,8 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
         {
             if ( encryptValue && !string.IsNullOrWhiteSpace( value ) )
             {
-                try { value = Encryption.EncryptString( value ); }
+                try
+                { value = Encryption.EncryptString( value ); }
                 catch { }
             }
 
