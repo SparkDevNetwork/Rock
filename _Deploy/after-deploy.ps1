@@ -47,7 +47,7 @@ foreach ($Theme in $Themes) {
 
         foreach($File in $CompiledFiles) {
 
-            $NewFilePath = Join-Path $OldStylesPath $File.Name;
+            $OldFilePath = Join-Path $OldStylesPath $File.Name;
             $NewFilePath = Join-Path $NewStylesPath $File.Name;
 
             if( Test-Path $OldFilePath) {

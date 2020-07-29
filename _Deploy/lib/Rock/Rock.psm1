@@ -1,7 +1,9 @@
 Import-Module "$PSScriptRoot/../Util";
 
 Function Get-RockThemes([string] $RootPath) {
-    return Get-ChildItem (Join-Path $RootPath "Themes") | Get-RockTheme;
+    $ThemesRoot = Join-Path $RootPath "Themes";
+    $ThemesFolders = Get-ChildItem -Path $ThemesRoot -Directory;
+    return $ThemesFolders | Get-RockTheme;
 }
 
 Function Get-RockTheme {
