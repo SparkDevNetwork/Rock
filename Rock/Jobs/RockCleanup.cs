@@ -769,15 +769,14 @@ namespace Rock.Jobs
         /// </summary>
         private int CleanUpWorkflowLogs( JobDataMap dataMap )
         {
-            int totalRowsDeleted = 0;
-
             // Limit the number of workflow logs to delete for this run (20M records could take around 20 minutes).
             int maxRowDeleteLimit = 20000000;
             var workflowContext = new RockContext();
             workflowContext.Database.CommandTimeout = commandTimeout;
 
             var workflowService = new WorkflowService( workflowContext );
-            var workflowLogQuery = new WorkflowLogService( workflowContext ).Queryable();
+
+            var workflowLogs = workflowContext.WorkflowLogs;
 
             // Get the list of workflows that haven't been modified since X days
             // and have at least one workflow log (narrowing it down to ones with Logs improves performance of this cleanup)
@@ -785,12 +784,11 @@ namespace Rock.Jobs
                 .Where( w =>
                     w.WorkflowType.LogRetentionPeriod.HasValue
                     && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod )
-                    && workflowLogQuery.Any( wl => wl.WorkflowId == w.Id ) )
+                    && workflowLogs.Any( wl => wl.WorkflowId == w.Id ) )
                 .Select( w => w.Id );
 
-            // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
-            var workflowLogsToDeleteQuery = new WorkflowLogService( workflowContext ).Queryable().Where( a => workflowIdsOlderThanLogRetentionPeriodQuery.Contains( a.WorkflowId ) );
-            BulkDeleteInChunks( workflowLogsToDeleteQuery, batchAmount, commandTimeout, maxRowDeleteLimit );
+            var workflowLogsToDeleteQuery = workflowLogs.Where( a => workflowIdsOlderThanLogRetentionPeriodQuery.Contains( a.WorkflowId ) );
+            int totalRowsDeleted = BulkDeleteInChunks( workflowLogsToDeleteQuery, batchAmount, commandTimeout, maxRowDeleteLimit );
 
             return totalRowsDeleted;
         }

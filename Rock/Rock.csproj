@@ -1616,7 +1616,6 @@
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowLogService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.cs" />

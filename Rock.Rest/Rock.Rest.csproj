@@ -392,7 +392,6 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowActionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActivityTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\WorkflowLogsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />
