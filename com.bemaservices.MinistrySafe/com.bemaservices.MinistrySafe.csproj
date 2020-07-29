@@ -76,7 +76,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Checkr.cs" />
     <Compile Include="Constants\MinistrySafeConstants.cs" />
     <Compile Include="Constants\MinistrySafeSystemGuid.cs" />
     <Compile Include="Migrations\006_NamespaceMove.cs" />
@@ -85,11 +84,12 @@
     <Compile Include="Migrations\002_Workflow.cs" />
     <Compile Include="Migrations\003_Pages.cs" />
     <Compile Include="Migrations\001_Data.cs" />
+    <Compile Include="MinistrySafeApi\BackgroundCheckWebhook.cs" />
+    <Compile Include="MinistrySafeBackgroundCheck.cs" />
     <Compile Include="MinistrySafeTraining.cs" />
     <Compile Include="MinistrySafeApi\TrainingResponse.cs" />
-    <Compile Include="MinistrySafeApi\GetBackgroundCheckResponse.cs" />
     <Compile Include="MinistrySafeApi\CreateUserRequest.cs" />
-    <Compile Include="MinistrySafeApi\CreateBackgroundCheckResponse.cs" />
+    <Compile Include="MinistrySafeApi\BackgroundCheckResponse.cs" />
     <Compile Include="MinistrySafeApi\UserResponse.cs" />
     <Compile Include="MinistrySafeApi\GetTrainingResponse.cs" />
     <Compile Include="MinistrySafeApi\GetUsersResponse.cs" />
@@ -104,6 +104,9 @@
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utility\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

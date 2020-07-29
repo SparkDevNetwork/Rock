@@ -118,8 +118,11 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
             return JsonConvert.SerializeObject( responseToLog );
         }
+
         #endregion
+
         #region Public Methods
+
         /// <summary>
         /// Gets the packages.
         /// </summary>
@@ -167,6 +170,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             createUserResponse = null;
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_USERS_URL, Method.POST );
+
             restRequest.AddJsonBody( new
             {
                 user = new CreateUserRequest()
@@ -335,6 +339,70 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
             return true;
         }
+
+        internal static bool GetBackgroundCheck( string backgroundCheckId, out BackgroundCheckResponse getBackgroundCheckResponse, List<string> errorMessages )
+        {
+            getBackgroundCheckResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( String.Format( "{0}/{1}", MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, backgroundCheckId ) );
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Invalid MinistrySafe access token. To Re-authenticate go to Admin Tools > System Settings > MinistrySafe. Click edit to change your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.OK )
+            {
+                errorMessages.Add( "Failed to get MinistrySafe Training: " + restResponse.Content );
+                return false;
+            }
+
+            getBackgroundCheckResponse = JsonConvert.DeserializeObject<BackgroundCheckResponse>( restResponse.Content );
+            if ( getBackgroundCheckResponse == null )
+            {
+                errorMessages.Add( "Get Training is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool CreateBackgroundCheck( string userId, string level, string packageCode, out BackgroundCheckResponse backgroundCheckResponse, List<string> errorMessages )
+        {
+            backgroundCheckResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, Method.POST );
+            restRequest.AddParameter( "user_id", userId );
+            restRequest.AddParameter( "level", level );
+            restRequest.AddParameter( "custom_background_check_package_code", packageCode );
+            restRequest.AddParameter( "quickapp", true );
+
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Invalid MinistrySafe access token. To Re-authenticate go to Admin Tools > System Settings > MinistrySafe. Click edit to change your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.Created )
+            {
+                errorMessages.Add( "Failed to create MinistrySafe Background Check: " + restResponse.Content );
+                return false;
+            }
+
+            backgroundCheckResponse = JsonConvert.DeserializeObject<BackgroundCheckResponse>( restResponse.Content );
+            if ( backgroundCheckResponse == null )
+            {
+                errorMessages.Add( "Create  Background Check is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion
     }
 }

@@ -14,21 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
     /// <summary>
-    /// JSON return structure for the create candidate API call's response.
+    /// Invitation webhook
     /// </summary>
-    internal class CreateBackgroundCheckResponse
+    /// <seealso cref="com.bemaservices.MinistrySafe.MinistrySafeApi.BackgroundCheckWebhook" />
+    internal class BackgroundCheckWebhook
     {
-        /// <summary>
-        /// Gets or sets the candidate ID.
-        /// </summary>
-        /// <value>
-        /// The candidate ID.
-        /// </value>
         [JsonProperty( "id" )]
         public string Id { get; set; }
 
@@ -37,7 +34,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
         [JsonProperty( "status" )]
         public string Status { get; set; }
-        
+
         [JsonProperty( "applicant_interface_url" )]
         public string ApplicantInterfaceUrl { get; set; }
 
@@ -49,5 +46,8 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
         [JsonProperty( "level" )]
         public int? Level { get; set; }
+
+        [JsonProperty( "custom_background_check_package_code" )]
+        public string CustomBackgroundCheckPackageCode { get; set; }
     }
 }

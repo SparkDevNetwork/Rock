@@ -9,7 +9,12 @@ namespace com.bemaservices.MinistrySafe.Constants
         /// <summary>
         /// The checkr workflow type
         /// </summary>
-        public static readonly string MINISTRYSAFE_WORKFLOW_TYPE = "413C52C0-43BD-4524-B307-76CF95C9FA75";
+        public static readonly string MINISTRYSAFE_TRAINING_WORKFLOW_TYPE = "413C52C0-43BD-4524-B307-76CF95C9FA75";
+
+        /// <summary>
+        /// The checkr workflow type
+        /// </summary>
+        public static readonly string MINISTRYSAFE_BACKGROUNDCHECK_WORKFLOW_TYPE = "21637ED6-B25B-4E00-88D4-C42425279D86";
 
         /// <summary>
         /// The checkr page GUID

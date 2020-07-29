@@ -21,7 +21,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
     /// <summary>
     /// JSON return structure for the create candidate API call's response.
     /// </summary>
-    internal class GetBackgroundCheckResponse
+    internal class BackgroundCheckResponse
     {
         /// <summary>
         /// Gets or sets the candidate ID.
