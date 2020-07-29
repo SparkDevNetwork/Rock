@@ -34,6 +34,19 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Converts a string to a hash value using xxHash, a fast non-cryptographic hash algorithm.
+        /// Refer https://www.xxhash.com.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string XxHash( this string str )
+        {
+            var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );
+
+            return hash.ToString();
+        }
+
+        /// <summary>
         /// Converts string to MD5 hash
         /// </summary>
         /// <param name="str">The string.</param>
