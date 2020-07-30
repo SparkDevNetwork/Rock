@@ -520,7 +520,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( ddlCampus );
 
                                     var templateField = new RockLiteralField();
-                                    templateField.ID = "lCampus";
+                                    templateField.ID = "lRegistrantsCampus";
                                     templateField.HeaderText = "Campus";
                                     grid.Columns.Add( templateField );
                                 }
