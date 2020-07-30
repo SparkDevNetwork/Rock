@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
         private DeleteField _deleteField = null;
         private int? _deleteFieldColumnIndex = null;
-        
+
         private EditField _editField = null;
         private int? _editFieldColumnIndex = null;
         #endregion
@@ -159,10 +159,11 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         {
             base.OnLoad( e );
 
+            var careItemId = PageParameter( "CareItemId" ).AsInteger();
             nbErrorMessage.Visible = false;
             nbNoParameterMessage.Visible = false;
 
-            if ( PageParameter( "CareItemId" ).AsInteger() == 0 && PageParameter( "CareTypeId" ).AsIntegerOrNull() == null )
+            if ( careItemId == 0 && PageParameter( "CareTypeId" ).AsIntegerOrNull() == null )
             {
                 nbNoParameterMessage.Visible = true;
                 pnlContents.Visible = false;
@@ -172,10 +173,21 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "CareItemId" ).AsInteger() );
+                ShowDetail( careItemId );
             }
             else
             {
+
+                if ( careItemId > 0 )
+                {
+                    CareItem careItem = new CareItemService( new RockContext() ).Get( careItemId );
+                    if ( careItem != null )
+                    {
+                        // Set the person
+                        Person = careItem.PersonAlias.Person;
+                    }
+                }
+
                 if ( pnlEditDetails.Visible )
                 {
                     ShowItemAttributes();
@@ -1277,7 +1289,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                     }
                 }
             }
-            
+
 
             // Add delete column
             _editField = new EditField();
