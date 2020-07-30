@@ -34,7 +34,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <Triggers>
-        <asp:AsyncPostBackTrigger ControlID="rcbEnableStatistics" />
+        <asp:PostBackTrigger ControlID="rcbEnableStatistics" />
     </Triggers>
     <ContentTemplate>
 
