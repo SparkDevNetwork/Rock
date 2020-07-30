@@ -964,7 +964,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                                     if ( !string.IsNullOrWhiteSpace( value ) )
                                     {
                                         var rl = new RockLiteral();
-                                        rl.ID = "attr_" + attr.Key;
+                                        rl.ID = String.Format( "attr_{0}_{1}", attr.Key, attr.Value.Id );
                                         rl.Label = attr.Value.Name;
                                         rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, attr.Value.EntityTypeId, careTypeItem.Id, value, attr.Value.QualifierValues, false );
                                         phAttributesReadOnly.Controls.Add( rl );
@@ -984,7 +984,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                             if ( !string.IsNullOrWhiteSpace( value ) )
                             {
                                 var rl = new RockLiteral();
-                                rl.ID = "attr_" + attr.Key;
+                                rl.ID = String.Format( "attr_{0}_{1}", attr.Key, attr.Value.Id );
                                 rl.Label = attr.Value.Name;
                                 rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, attr.Value.EntityTypeId, careTypeItem.Id, value, attr.Value.QualifierValues, false );
                                 phAttributesReadOnly.Controls.Add( rl );
