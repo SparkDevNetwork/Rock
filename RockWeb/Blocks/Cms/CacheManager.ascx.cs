@@ -81,6 +81,8 @@ namespace RockWeb.Blocks.Cms
                 PopulateDdlCacheTypes();
                 PopulateCacheStatistics();
                 PopulateRedisView();
+
+                rcbEnableStatistics.Checked = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
             }
         }
 
@@ -507,6 +509,20 @@ namespace RockWeb.Blocks.Cms
         protected void ddlCacheTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
             PopulateCacheStatistics();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the rcbEnableStatistics control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rcbEnableStatistics_CheckedChanged(object sender, EventArgs e)
+        {
+            // Save updated value.
+            SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, rcbEnableStatistics.Checked.ToString() );
+
+            // Reload this page to trigger application restart due to modification of web.config.
+            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
