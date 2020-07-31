@@ -1,0 +1,127 @@
+<script data-jsd-embedded data-key="078625ca-d6c6-42f6-bd56-3a80a38be133" data-base-url="https://jsd-widget.atlassian.com">
+! function(t) {
+    var e = {};
+
+    function n(i) {
+        if (e[i]) return e[i].exports;
+        var o = e[i] = {
+            i: i,
+            l: !1,
+            exports: {}
+        };
+        return t[i].call(o.exports, o, o.exports, n), o.l = !0, o.exports
+    }
+    n.m = t, n.c = e, n.d = function(t, e, i) {
+        n.o(t, e) || Object.defineProperty(t, e, {
+            enumerable: !0,
+            get: i
+        })
+    }, n.r = function(t) {
+        "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(t, Symbol.toStringTag, {
+            value: "Module"
+        }), Object.defineProperty(t, "__esModule", {
+            value: !0
+        })
+    }, n.t = function(t, e) {
+        if (1 & e && (t = n(t)), 8 & e) return t;
+        if (4 & e && "object" == typeof t && t && t.__esModule) return t;
+        var i = Object.create(null);
+        if (n.r(i), Object.defineProperty(i, "default", {
+                enumerable: !0,
+                value: t
+            }), 2 & e && "string" != typeof t)
+            for (var o in t) n.d(i, o, function(e) {
+                return t[e]
+            }.bind(null, o));
+        return i
+    }, n.n = function(t) {
+        var e = t && t.__esModule ? function() {
+            return t.default
+        } : function() {
+            return t
+        };
+        return n.d(e, "a", e), e
+    }, n.o = function(t, e) {
+        return Object.prototype.hasOwnProperty.call(t, e)
+    }, n.p = "/assets/", n(n.s = 445)
+}({
+    23: function(t, e, n) {
+        "use strict";
+        var i = function() {
+            function t() {}
+            return t.isMobile = function() {
+                return t.includesString(t.getUserAgent(), "Mobi")
+            }, t.getUserAgent = function() {
+                return window.navigator.userAgent
+            }, t.includesString = function(t, e) {
+                return -1 !== t.indexOf(e)
+            }, t
+        }();
+        e.a = i
+    },
+    445: function(t, e, n) {
+        "use strict";
+        n.r(e);
+        var i = n(23),
+            o = function() {
+                function t(t, e) {
+                    this.document = t, this.css = e, this.installObserver()
+                }
+                return t.prototype.installObserver = function() {
+                    var t = this;
+                    (i.a.isMobile() ? new MutationObserver(t.mobileMutationCallback.bind(t)) : new MutationObserver(t.desktopMutationCallback.bind(t))).observe(this.document.body, {
+                        childList: !0,
+                        subtree: !0,
+                        attributes: !0
+                    })
+                }, t.prototype.desktopMutationCallback = function() {
+                    this.document.querySelector(".expanded") ? this.css("transition", "height 1s") : this.css("transition", "height 0s"), this.setSizeToFitContent()
+                }, t.prototype.mobileMutationCallback = function() {
+                    this.document.querySelector("#help-button") ? this.setSizeToFitContent() : this.setSizeToFullScreen()
+                }, t.prototype.setSizeToFitContent = function() {
+                    var t = this.document.querySelector("#react-root");
+                    if (t) {
+                        this.css("height", "1px"), this.css("width", "1px"), this.css("height", t.clientHeight + 10 + "px"), this.css("width", this.document.body.scrollWidth + 10 + "px")
+                    }
+                }, t.prototype.setSizeToFullScreen = function() {
+                    this.css("height", "100%"), this.css("width", "100%")
+                }, t
+            }(),
+            s = function() {
+                function t() {}
+                return t.scriptTag = '<script src="http://localhost:8097"><\/script>', t
+            }(),
+            r = function() {
+                function t(t, e) {
+                    this.createAndInsertIframe(document.body), this.applyCss(), this.writeDocument(t, e), new o(this.document, this.css.bind(this))
+                }
+                return t.prototype.createAndInsertIframe = function(t) {
+                    var e = document.createElement("iframe");
+                    e.scrolling = "no", e.name = "JSD widget", e.id = "jsd-widget", t.appendChild(e), this.el = e, this.document = e.contentWindow.document
+                }, t.prototype.applyCss = function() {
+                    this.css("height", "1px"), this.css("width", "1px"), this.css("position", "fixed"), this.css("border", "0"), this.css("bottom", "20px"), this.css("right", "0"), this.css("z-index", "9999999999999")
+                }, t.prototype.writeDocument = function(t, e) {
+                    var n = '<script type="application/javascript" src="' + t + '"><\/script>',
+                        i = JSON.stringify(e);
+                    this.document.open(), this.document.write("<body data-embeddable=" + i + '>\n                <div id="react-root"></div>\n                ' + (void 0 !== e.reactDevtools ? s.scriptTag : "") + "\n                " + n + "\n            </body>"), this.document.close()
+                }, t.prototype.css = function(t, e) {
+                    this.el.style[t] = e
+                }, t
+            }();
+        document.addEventListener("DOMContentLoaded", (function() {
+            var t = document.currentScript || document.querySelector("script[data-jsd-embedded]"),
+                e = t && t instanceof HTMLScriptElement && t.dataset;
+            if (t)
+                if (e) {
+                    var n = "https://jsd-widget.atlassian.com/assets/embed.js";
+                    if (n) {
+                        var i = n.substring(0, n.lastIndexOf("/")) + "/iframe.js";
+                        new r(i, e)
+                    }
+                } else console.warn("JSD Widget: legacy unsupported browser, jsd-embedded script.dataset was undefined");
+            else console.error("JSD Widget: could not find jsd-embedded script")
+        }))
+    }
+});
+//# sourceMappingURL=https://jsd-widget.atlassian.com/assets/embed.js.map
+</script>

@@ -49,7 +49,8 @@ namespace RockWeb.Plugins.com_bemaservices.ClientTools
     [BooleanField( "Download BEMA Standard Packages", "Whether to check for and prompt the user to install the latest BEMA Standard Package", false, "", 0, BemaAttributeKey.DownloadStandardPackage )]
     [BooleanField( "Download BEMA Client Packages", "Whether to check for and prompt the user to install the latest BEMA Standard Package", false, "", 1, BemaAttributeKey.DownloadClientPackage )]
     [BooleanField( "Download BEMA Client Tool Updates", "Whether to check for and prompt the user to install updates to BEMA Client Tools", true, "", 2, BemaAttributeKey.DownloadClientToolUpdates )]
-    [EncryptedTextField( "Client Key", "Your Client Key. Please contact BEMA to recieve a client key.", true, "", "", 3, BemaAttributeKey.ClientKey )]
+    [BooleanField( "Enable Support Widget", "Whether to show BEMA's support widget", true, "", 3, BemaAttributeKey.EnableSupportWidget )]
+    [EncryptedTextField( "Client Key", "Your Client Key. Please contact BEMA to recieve a client key.", true, "", "", 4, BemaAttributeKey.ClientKey )]
     public partial class BemaPackageInstaller : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -62,6 +63,7 @@ namespace RockWeb.Plugins.com_bemaservices.ClientTools
             public const string DownloadStandardPackage = "DownloadStandardPackage";
             public const string DownloadClientPackage = "DownloadClientPackage";
             public const string DownloadClientToolUpdates = "DownloadClientToolUpdates";
+            public const string EnableSupportWidget = "EnableSupportWidget";
             public const string ClientKey = "ClientKey";
         }
 
@@ -352,6 +354,28 @@ namespace RockWeb.Plugins.com_bemaservices.ClientTools
             }
 
             pnlView.Visible = ( !isLatestStandardInstalled || !isLatestClientInstalled || !isLatestToolsInstalled );
+
+            if ( GetAttributeValue( BemaAttributeKey.EnableSupportWidget ).AsBoolean() )
+            {
+                var content = "{% include '~/Plugins/com_bemaservices/ClientTools/Assets/Lava/JiraEmbed.lava' %}";
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "CurrentPage", this.PageCache );
+
+                if ( CurrentPerson != null )
+                {
+                    // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                    mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                }
+
+                mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );
+
+                mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Rock.Security.Authorization.EDIT ) );
+                mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) );
+
+                var html = content.ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                lHtmlContent.Text = html;
+            }
         }
 
         private string GetClientFolder()

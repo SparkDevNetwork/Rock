@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:Literal ID="lHtmlContent" runat="server" EnableViewState="false" />
         <Rock:NotificationBox ID="nbInfo" runat="server" Visible="false" />
         <asp:Panel ID="pnlView" runat="server">
             <div class="alert alert-info">
