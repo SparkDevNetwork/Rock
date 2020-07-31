@@ -53,6 +53,13 @@ namespace RockWeb.Blocks.Connection
         IsRequired = true,
         Order = 1,
         Key = AttributeKey.DetailPage )]
+    [BooleanField(
+        "Use Connection Request Detail Page From Connection Type",
+        Key = AttributeKey.UseConnectionRequestDetailPageFromConnectionType,
+        Description = "If enabled, the Connection Request Detail page defined by the Connection Type will be used to view the request(if it's not empty/unset). Otherwise the Connection Request Detail page configured on this block will be used.",
+        DefaultBooleanValue = true,
+        Order = 1
+    )]
     [ConnectionTypesField(
         "Connection Types",
         Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
@@ -120,6 +127,7 @@ namespace RockWeb.Blocks.Connection
             public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestStatusIconsTemplate = "ConnectionRequestStatusIconsTemplate";
             public const string OpportunitySummaryTemplate = "OpportunitySummaryTemplate";
+            public const string UseConnectionRequestDetailPageFromConnectionType = "UseConnectionRequestDetailPageFromConnectionType";
         }
         #endregion Attribute Keys
 
@@ -531,7 +539,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gRequests_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, 0, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+            NavigateToConnectionPage( 0 );
         }
 
         /// <summary>
@@ -541,7 +549,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, e.RowKeyId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+            NavigateToConnectionPage( e.RowKeyId );
         }
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
@@ -659,7 +667,7 @@ namespace RockWeb.Blocks.Connection
                 bool canEdit = UserCanEdit || opportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
-                
+
                 if ( CurrentPersonId.HasValue )
                 {
                     // Check to see if person belongs to any connector group that is not campus specific
@@ -718,6 +726,8 @@ namespace RockWeb.Blocks.Connection
                             Id = opportunity.ConnectionTypeId,
                             Name = opportunity.ConnectionType.Name,
                             EnableRequestSecurity = opportunity.ConnectionType.EnableRequestSecurity,
+                            ConnectionRequestDetailPageId = opportunity.ConnectionType.ConnectionRequestDetailPageId,
+                            ConnectionRequestDetailPageRouteId = opportunity.ConnectionType.ConnectionRequestDetailPageRouteId,
                             Opportunities = new List<OpportunitySummary>()
                         };
                         SummaryState.Add( connectionTypeSummary );
@@ -1306,6 +1316,25 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        private void NavigateToConnectionPage( int connectionRequestId )
+        {
+            var connectionType = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
+            if ( GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean() &&
+                 ( connectionType.ConnectionRequestDetailPageId.HasValue || connectionType.ConnectionRequestDetailPageRouteId.HasValue ) )
+            {
+                Dictionary<string, string> pageParameters = new Dictionary<string, string>();
+                pageParameters.Add( PageParameterKey.ConnectionRequestId, connectionRequestId.ToString() );
+                pageParameters.Add( PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId.ToStringSafe() );
+                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, pageParameters );
+                NavigateToPage( pageReference );
+
+            }
+            else
+            {
+                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, connectionRequestId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+            }
+        }
+
         #endregion
 
         #region Helper Classes
@@ -1316,6 +1345,8 @@ namespace RockWeb.Blocks.Connection
             public int Id { get; set; }
             public string Name { get; set; }
             public bool EnableRequestSecurity { get; set; }
+            public int? ConnectionRequestDetailPageId { get; set; }
+            public int? ConnectionRequestDetailPageRouteId { get; set; }
             public List<OpportunitySummary> Opportunities { get; set; }
         }
 

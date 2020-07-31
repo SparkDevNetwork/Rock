@@ -69,6 +69,10 @@
     <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.Designer.cs">
       <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.cs" />
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1320,6 +1324,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.resx">
       <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
