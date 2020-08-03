@@ -152,7 +152,7 @@ namespace Rock.SystemKey
         public const string SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS = "core_EnableAdoNetPerformanceCounters";
 
         /// <summary>
-        /// Enable a redis cache cluster
+        /// Enable Cache Manager statistics and performance counters.
         /// </summary>
         public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
 
