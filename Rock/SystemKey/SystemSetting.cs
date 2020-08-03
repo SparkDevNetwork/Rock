@@ -157,6 +157,11 @@ namespace Rock.SystemKey
         public const string COMMUNICATION_SETTING_APPROVAL_TEMPLATE = "core_CommunicationSettingApprovalTemplate";
 
         /// <summary>
+        /// Enable Cache Manager statistics and performance counters.
+        /// </summary>
+        public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
+
+        /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
         [Obsolete( "This functionality is no longer used." )]
