@@ -29,6 +29,7 @@ namespace Rock.Utility.Settings
         #region Fields
 
         private bool _versionInfoRetrieved = false;
+        private string _versionNumber;
         private string _version;
         private string _versionFriendlyName;
         private string _databaseServerOperatingSystem;
@@ -112,6 +113,7 @@ namespace Rock.Utility.Settings
             // Reset all cached properties.
             _platform = PlatformSpecifier.Unknown;
             _versionInfoRetrieved = false;
+            _versionNumber = null;
             _version = null;
             _versionFriendlyName = null;
             _databaseServerOperatingSystem = null;
@@ -253,6 +255,22 @@ WHERE  data_space_id = 0
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the database platform version number string.
+        /// </summary>
+        public string VersionNumber
+        {
+            get
+            {
+                if ( !_versionInfoRetrieved )
+                {
+                    GetPlatformAndVersionInfo();
+                }
+
+                return _versionNumber;
             }
         }
 
@@ -400,6 +418,7 @@ WHERE  name = DB_NAME()
         {
             _versionInfoRetrieved = true;
 
+            string versionNumber = string.Empty;
             string version = string.Empty;
             string dbVersion = string.Empty;
             string editionAndPlatformInfo = string.Empty;
@@ -416,9 +435,10 @@ SELECT SERVERPROPERTY('productversion'), @@Version;
                 {
                     if ( reader.Read() )
                     {
-                        version = reader[0].ToString();
+                        versionNumber = reader[0].ToString();
+                        version = reader[1].ToString();
 
-                        var versionInfo = reader[1].ToString().SplitDelimitedValues( "\n" );
+                        var versionInfo = version.SplitDelimitedValues( "\n" );
 
                         dbVersion = versionInfo[0];
                         editionAndPlatformInfo = versionInfo[3];
@@ -445,26 +465,27 @@ SELECT SERVERPROPERTY('productversion'), @@Version;
                 _platform = PlatformSpecifier.Other;
             }
 
+            _versionNumber = versionNumber;
             _version = version;
 
             // Parse Version Friendly Name.
-            if ( _version.StartsWith( "11.0" ) )
+            if ( _versionNumber.StartsWith( "11.0" ) )
             {
                 _versionFriendlyName = "SQL Server 2012";
             }
-            else if ( _version.StartsWith( "12.0" ) )
+            else if ( _versionNumber.StartsWith( "12.0" ) )
             {
                 _versionFriendlyName = "SQL Server 2014";
             }
-            else if ( _version.StartsWith( "13.0" ) )
+            else if ( _versionNumber.StartsWith( "13.0" ) )
             {
                 _versionFriendlyName = "SQL Server 2016";
             }
-            else if ( _version.StartsWith( "14.0" ) )
+            else if ( _versionNumber.StartsWith( "14.0" ) )
             {
                 _versionFriendlyName = "SQL Server 2017";
             }
-            else if ( _version.StartsWith( "15.0" ) )
+            else if ( _versionNumber.StartsWith( "15.0" ) )
             {
                 _versionFriendlyName = "SQL Server 2019";
             }
