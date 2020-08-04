@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upPtoAllocation" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Allocation will permently delete the allocation. Are you sure you want to delete the Pto Tier?" />
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Allocation will permently delete the allocation and all related pto requests. Are you sure you want to delete the Pto Allocation?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
         </asp:Panel>
