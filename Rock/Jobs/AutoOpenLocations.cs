@@ -47,7 +47,7 @@ namespace Rock.Jobs
         "Re-open Period (minutes)",
         Key = AttributeKey.ReopenPeriod,
         IsRequired = false,
-        Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). If left empty, the time the location was modified will not be considered.",
+        Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). Only locations modified within the timeframe would be considered. If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
     [DisallowConcurrentExecution]
     public class AutoOpenLocations : IJob
