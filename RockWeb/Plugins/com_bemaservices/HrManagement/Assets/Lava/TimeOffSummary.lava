@@ -3,21 +3,26 @@
 {% assign person = personId | PersonById %}
 
 {% assign canView = false %}
-{% group where:'Guid == "628C51A8-4613-43ED-A18D-4A6FB999273E"' %}
+{% assign canEditAllocations = false %}
+{% comment %} RSR - Human Resources Administration {% endcomment%}
+{% group where:'Guid == "628C51A8-4613-43ED-A18D-4A6FB999273E"' securityenabled:'false' %}
     {% capture groupIdString %}{{group.Id}}{% endcapture %}
     {% assign groupMembers = viewer | Group:groupIdString %}
     {% for groupMember in groupMembers %}
         {% assign canView = true %}
+        {% assign canEditAllocations = true %}
     {% endfor %}
 {% endgroup %}
 
 {% if canView == false %}
-	{% group where:'Guid == "6F8AABA3-5BC8-468B-90DD-F0686F38E373"' %}
-			{% capture groupIdString %}{{group.Id}}{% endcapture %}
-			{% assign groupMembers = viewer | Group:groupIdString %}
-			{% for groupMember in groupMembers %}
-					{% assign canView = true %}
-			{% endfor %}
+{% comment %} RSR - Rock Administration {% endcomment%}
+	{% group where:'Guid == "6F8AABA3-5BC8-468B-90DD-F0686F38E373"' securityenabled:'false' %}
+		{% capture groupIdString %}{{group.Id}}{% endcapture %}
+		{% assign groupMembers = viewer | Group:groupIdString %}
+		{% for groupMember in groupMembers %}
+				{% assign canView = true %}
+				{% assign canEditAllocations = true %}
+		{% endfor %}
 	{% endgroup %}
 {% endif %}
 
@@ -25,12 +30,14 @@
     {% assign supervisor = person | Attribute:'Supervisor', 'Object' %}
     {% if supervisor.Id == viewer.Id %}
         {% assign canView = true %}
+		{% assign canEditAllocations = false %}
     {% endif %}
 {% endif %}
 
 {% if canView == false %}
     {% if person.Id == viewer.Id %}
         {% assign canView = true %}
+		{% assign canEditAllocations = false %}
     {% endif %}
 {% endif %}
 
@@ -48,11 +55,12 @@
 					<th><strong>Allocated</strong><br></th>
 					<th><strong>Used</strong><br></th>
 					<th><strong>Available</strong><br></th>
+					<th></th>
 				</tr>
 				{% for alias in person.Aliases %}
 					{% ptoallocation where:'PersonAliasId == {{alias.Id}}' %}
 						{% for ptoAllocation in ptoallocationItems %}
-                            {% if ptoAllocation.PtoAllocationStatus == 1 %}
+                            {% if ptoAllocation.PtoAllocationStatus != 0 %}
 							    {% assign usedHours = 0.0 %}
 							    {% for ptoRequest in ptoAllocation.PtoRequests %}
 								    {% if ptoRequest.PtoRequestApprovalState != 2 %}
@@ -61,12 +69,19 @@
 							    {% endfor %}
 							    <tr>
 								    <td>
-										    {{ptoAllocation.PtoType.Name}}</br>
-										    <small>({{ptoAllocation.StartDate | Date:'M/d/yyyy' }}{% if ptoAllocation.EndDate != null %}-{{ptoAllocation.EndDate | Date:'M/d/yyyy' }}{% endif %})
+										{% if canEditAllocations == true %}
+										<a href='/page/1123?ptoAllocationId={{ptoAllocation.Id}}'>{{ptoAllocation.PtoType.Name}}</a>
+										{% else %}
+										{{ptoAllocation.PtoType.Name}}
+										{% endif %}
+											{% if ptoAllocation.PtoAllocationStatus == 2 %} <small>(Pending)</small>{% endif %}</br>
+											<small>({{ptoAllocation.StartDate | Date:'M/d/yyyy' }}{% if ptoAllocation.EndDate != null %}-{{ptoAllocation.EndDate | Date:'M/d/yyyy' }}{% endif %})
+
 								    </td>
 								    <td>{{ ptoAllocation.Hours }}</td>
 								    <td>{{ usedHours }}</td>
 								    <td>{% assign remainingHours = ptoAllocation.Hours | Minus:usedHours %}<div {% if remainingHours < 0 %}style="color:red;"{% endif %}>{{remainingHours}}</div></td>
+									<td>{% if ptoAllocation.Note != null and ptoAllocation.Note != empty %}<div data-toggle="tooltip" data-original-title="{{ ptoAllocation.Note }}"><i class="fa fa-comment"></i></div>{% endif %}</td>
 							    </tr>
                             {% endif %}
 						{% endfor %}
