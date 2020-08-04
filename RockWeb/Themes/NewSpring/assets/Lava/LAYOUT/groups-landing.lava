@@ -1,0 +1,146 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign personId = CurrentPerson.Id %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare' %}
+
+{% sql return:'groups' %}
+SELECT
+    g.Id,
+    gt.Name 'GroupType'
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN GroupType gt
+ON g.GroupTypeId = gt.Id
+JOIN GroupTypeRole gtr
+ON gtr.Id = gm.GroupRoleId
+WHERE gm.PersonId = {{ personId }}
+AND g.GroupTypeId IN (25,60,66,141,149)
+AND gtr.IsLeader = 1
+AND g.IsArchived = 0
+AND g.IsActive = 1
+{% endsql %}
+
+{% if groups and groups != empty %}
+  <h2 class="h5 text-uppercase strongest push-top">Groups I Lead</h2>
+
+  <div class="row">
+    {% for row in groups %}<div class="col-md-4 col-sm-6 col-xs-12">
+      {% assign group = row.Id | GroupById %}
+
+      <a href="/account/groups/{{ group.Id }}" class="text-decoration-none">
+      {[ cardBlock ]}
+        <div class="row">
+          <div class="col-xs-4">
+            <div class="ratio ratio-square background-cover background-center rounded" style="background-image:url('{{ group | Attribute:'GroupPhoto','Url' | WithFallback:'',fallbackImage }}');"></div>
+          </div><div class="col-xs-8">
+            <h2 class="h5 push-quarter-bottom text-gray-darker">{{ group.Name }}</h2>
+            <p class="label label-default letter-spacing-condensed sans-serif stronger flush"><small>{{ row.GroupType }}</small></p>
+          </div>
+        </div>
+      {[ endcardBlock ]}
+      </a>
+
+    </div>{% endfor %}
+  </div>
+
+{% else %}
+
+  {[ section ]}
+    <div class="text-constrained mx-auto text-center">
+      <h1>Lead a Group</h1>
+      <p class="lead">Every family has at least one relative who loves bringing people together. <b>In our NewSpring family, Group Leaders are those people.</b></p>
+      <p class="flush"><a href="/workflows/93/?Interest=Group%20Leader" class="btn btn-primary">Lead a Group</a></p>
+    </div>
+  {[ endsection ]}
+
+{% endif %}
+
+{% sql return:'leaders' %}
+SELECT
+    p.Id 'PersonId',
+    gm2.Id 'GroupMemberId',
+    g2.Id 'GroupId'
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN [Group] g2
+ON g2.ParentGroupId = g.Id
+JOIN GroupMember gm2
+ON gm2.GroupId = g2.Id
+JOIN GroupTypeRole gtr
+ON gm2.GroupRoleId = gtr.Id
+JOIN Person p
+ON gm2.PersonId = p.Id
+WHERE gm.PersonId = {{ personId }}
+AND g.GroupTypeId = 156 -- Coaching Group
+AND gm.GroupRoleId = 435 -- Is Coach
+AND g.IsArchived = 0
+AND g.IsActive = 1
+AND gm2.GroupRoleId != 382
+AND gm2.IsArchived = 0
+AND gtr.IsLeader = 1
+AND g2.IsActive = 1
+AND g2.IsArchived = 0
+ORDER BY g2.Name, p.LastName, p.NickName
+{% endsql %}
+
+{% if leaders and leaders != empty %}
+<h2 class="h5 text-uppercase strongest push-top">Leaders I Coach</h2>
+<div class="row">
+  {% for leader in leaders %}<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+
+    {% assign linkurl = '/account/groups/' | Append:leader.GroupId | Append:'/' | Append:leader.PersonId %}
+    {% assign person = leader.PersonId | PersonById %}
+    {% assign group = leader.GroupId | GroupById %}
+    {% assign mobile = person | PhoneNumber:'Mobile', true %}
+    {% assign home = person | PhoneNumber:'Home', true %}
+    {% assign work = person | PhoneNumber:'Work', true %}
+    {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+
+
+
+
+
+    {[ cardBlock type:'{{ type }}' ]}
+      <div class="row">
+        <div class="col-xs-4">
+          <a href="{{ linkurl }}" class="text-decoration-none">
+            <div class="ratio ratio-square background-cover background-center rounded" style="background-image:url('{{ person.PhotoUrl }}&maxwidth=200&maxheight=200');"></div>
+          </a>
+        </div><div class="col-xs-6">
+          <a href="{{ linkurl }}" class="text-decoration-none">
+            <h2 class="h5 text-gray-darker push-quarter-bottom">{{ person.NickName }}<br>{{ person.LastName }}</h2>
+
+            <p class="text-gray-light flush"><small>{{ group.Name }}</small></p>
+
+          </a>
+        </div>
+        {% if phone and phone != empty %}
+          <a href="tel:{{ phone }}" class="position-absolute top-zero right-zero push-top push-right xs-push-half-top xs-push-half-right"><i class="fal fa-lg fa-phone"></i></a>
+
+          <a href="sms:{{ phone }}" class="position-absolute bottom-zero right-zero push-bottom push-right xs-push-half-bottom xs-push-half-right"><i class="fal fa-lg fa-comments-alt"></i></a>
+        {% endif %}
+      </div>
+    {[ endcardBlock ]}
+
+  </div>{% endfor %}
+</div>
+{% endif %}
+
+
+{% if groups and groups != empty %}
+
+  <h2 class="h5 text-uppercase strongest push-top">Leader Resources</h2>
+  {% assign articles = 'newspring_articles' | PersistedDataset %}
+
+  <div class="row">
+    {% for item in articles limit:3 offset:4 %}<div class="col-md-4 col-sm-6 col-xs-12 flush">
+
+      {[ card title:'{{ item.Title }}' titlesize:'h5' imageurl:'{{ item.ImageLandscape }}' linkurl:'{{ item.Permalink }}' linktext:'{{ item.ChannelVerb }} {{ item.ContentType }}' ]}
+
+    </div>{% endfor %}
+  </div>
+
+  <p><a href="{{ currentUrl | Append:'/resources' }}" class="btn xs-btn-block btn-primary"><i class="fas fa-sm fa-book push-quarter-right"></i> View More Resources</a></p>
+
+{% endif %}

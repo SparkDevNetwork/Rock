@@ -1,0 +1,9 @@
+<style>
+.group-member-detail .panel-heading {
+  display: none;
+}
+</style>
+
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+
+<h2>{{ group.Name }}</h2>

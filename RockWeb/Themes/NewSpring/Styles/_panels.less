@@ -16,16 +16,23 @@
 	}
 }
 
-.panel-default > .panel-heading {
-	background-color: @gray-dark;
-	color: @white;
+.panel > .panel-heading {
 	font-family: @font-family-sans-serif;
 	font-weight: 700;
 	letter-spacing: -.5px;
 }
 
-.panel-primary > .panel-heading {
-	color: @white !important;
+.accordion .panel > .panel-heading {
+	font-weight: 500;
+	letter-spacing: 0;
+}
+
+.panel-default > .panel-heading {
+	border-bottom: 1px solid darken(@gray-lighter,4%);
+}
+
+.panel .panel-title {
+	margin-top: 2px;
 }
 
 .panel-body {

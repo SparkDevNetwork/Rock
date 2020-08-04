@@ -240,6 +240,10 @@
 		padding: .3em .8em .25em;
 	}
 
+	.label.sans-serif {
+		padding: .3em .6em;
+	}
+
 	blockquote {
 		font-size: floor((@font-size-base * 1.1)) !important;
 		letter-spacing: 0 !important;
@@ -281,6 +285,11 @@
 	
 	.xs-btn-xs {
 		.button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+	}
+
+	// Checkboxes
+	.checkbox .label-text:before {
+		top: -3px;
 	}
 
 	// Positioning

@@ -1,0 +1,117 @@
+{% comment %}Disable iOS phone number hyperlinking{% endcomment %}
+{{ 'telephone=no' | AddMetaTagToHead:'name','format-detection' }}
+
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign person = 'Global' | PageParameter:'PersonId' | PersonById %}
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign groupId = group.Id | AsString %}
+{% assign groupMember = person | Group:groupId,'All' | First %}
+{% assign status = groupMember.GroupMemberStatus %}
+
+<br>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div class="ratio ratio-square background-cover background-center circular shadowed mx-auto" style="background-image:url('{{ person.PhotoUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
+    <h2 class="h1 strongest push-top text-center">{{ person.NickName }}<br>{{ person.LastName }}</h2>
+
+    {% comment %}UI for adding/removing pending group members{% endcomment %}
+    {% if status == 2 %}
+      {[ cardBlock type:'info' ]}
+        <p>{{ person.NickName }} is currently a <span class="text-info stronger">pending</span> member of your group.</p>
+        <div class="row">
+          <div class="col-md-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom">
+            <a href="#" class="btn btn-primary btn-block"><i class="fal fa-plus-circle push-quarter-right"></i> Add {{ person.NickName }}</a>
+          </div><div class="col-md-6 col-xs-12">
+            <a href="#" class="btn btn-danger btn-block"><i class="fal fa-minus-circle push-quarter-right"></i> Remove {{ person.NickName }}</a>
+          </div>
+        </div>
+      {[ endcardBlock ]}
+    {% endif %}
+
+    {% comment %}Contact Information{% endcomment %}
+    {% assign mobileNumber = person.PhoneNumbers | Where:'NumberTypeValueId',12 | Select:'NumberFormatted' %}
+    {% assign smsNumber = person.PhoneNumbers | Where:'NumberTypeValueId',12 | Where:'IsMessagingEnabled',true | Select:'NumberFormatted' %}
+
+    <div class="row row-condensed push-bottom xs-push-half-bottom">
+      <div class="col-xs-4">
+        <a href="sms:/{{ smsNumber }}" class="btn btn-block shadowed text-center {% if smsNumber == empty or smsNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if smsNumber == empty or smsNumber == '' %}disabled title="Person has no SMS-enabled mobile number."{% endif %}><i class="fal fa-lg fa-comments"></i></a>
+      </div><div class="col-xs-4">
+        <a href="tel:/{{ mobileNumber }}" class="btn btn-block shadowed text-center {% if mobileNumber == empty or mobileNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if mobileNumber == empty or mobileNumber == '' %}disabled title="Person has no mobile number."{% endif %}><i class="fal fa-lg fa-phone"></i></a>
+      </div><div class="col-xs-4">
+        <a href="mailto:{{ person.Email }}" class="btn btn-block {% if person.EmailPreference == 2 or person.Email == empty or person.Email == '' %}btn-disabled{% else %}btn-default{% endif %} shadowed text-center" {% if person.EmailPreference == 2 or person.Email == empty or person.Email == '' %}disabled title="Person has no email address or they do not wish to be emailed."{% endif %}><i class="fal fa-lg fa-inbox"></i></a>
+      </div>
+    </div>
+
+    {% comment %}Group Member Actions{% endcomment %}
+    <div class="text-center">
+      {[ accordion ]}
+        [[ item title:'Group Member Actions' cssclasses:'text-center' ]]
+          <ul class="list-group">
+            <li class="list-group-item">
+              <a href="#" class="display-inline-block width-full text-decoration-none"><i class="fal fa-check push-quarter-right"></i> Identify as a Future Leader</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#" class="display-inline-block width-full text-decoration-none text-danger"><i class="fal fa-minus-circle push-quarter-right"></i> Remove From Group</a>
+            </li>
+          </ul>
+        [[ enditem ]]
+      {[ endaccordion ]}
+    </div>
+
+    <style>
+      .accordion .panel-body {
+        padding: 0 !important;
+      }
+      .panel-group .panel {
+        overflow: hidden;
+      }
+    </style>
+
+    <div class="row hidden">
+      <div class="col-md-12 col-sm-6 col-xs-12">
+
+        <p class="push-half-bottom"><a href="#" class="btn btn-block btn-primary shadowed"><i class="fal fa-check push-quarter-right"></i> Identify as a Future Leader</a></p>
+
+      </div><div class="col-md-12 col-sm-6 col-xs-12">
+
+        <p class="push-half-bottom"><a href="{{ currentUrl | Replace:person.Id,'' | Append:'remove' | Append:'?person=' | Append:person.Guid }}" class="btn btn-block btn-danger shadowed"><i class="fal fa-minus-circle push-quarter-right"></i> Remove From Group</a></p>
+
+      </div>
+    </div>
+
+    {% comment %}Group Member Basic Info{% endcomment %}
+    {[ cardBlock ]}
+        <p class="push-half-bottom">{{ person.Age }} years old <span class="text-gray-light">({{ person.BirthDate | Date:'M/d/yyyy' }})</span></p>
+
+        {% assign phones = person.PhoneNumbers | OrderBy:'NumberTypeValueId' %}
+
+        {% for phone in phones %}
+
+          {% if phone.NumberTypeValueId == 136 %}
+            {% assign icon = 'building' %}
+          {% elseif phone.NumberTypeValueId == 12 %}
+            {% assign icon = 'mobile' %}
+          {% elseif phone.NumberTypeValueId == 13 %}
+            {% assign icon = 'home' %}
+          {% else %}
+            {% assign icon = 'phone' %}
+          {% endif %}
+
+          <p class="push-half-bottom">
+            <i class="fal fa-fw fa-{{ icon }} position-relative push-quarter-right" style="top:2px;"></i> {{ phone.NumberFormatted }}
+          </p>
+
+        {% endfor %}
+
+        <p class="push-half-bottom"><i class="fal fa-fw fa-inbox position-relative push-quarter-right" style="top:2px;"></i> {{ person.Email }}</p>
+
+        {% assign homeAddress = person | Address:'Home' %}
+        {% if homeAddress and homeAddress != empty %}
+          <p class="flush"><i class="fal fa-fw fa-home position-relative push-quarter-right pull-left" style="top:2px;"></i> {{ homeAddress }}</p>
+        {% endif %}
+
+    {[ endcardBlock ]}
+
+  </div>
+</div>

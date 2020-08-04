@@ -39,3 +39,35 @@
     }
 
 }
+
+// Checkboxes
+.radio label, 
+.checkbox label {
+    padding-left: 35px;
+}
+.checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkbox .label-text:before {
+    content: "\f0c8";
+    font-family: "Font Awesome 5 Pro";
+    font-size: 24px;
+    font-weight: 300;
+    position: absolute;
+    top: -2px;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    color: @brand-primary;
+}
+
+.checkbox input:checked + .label-text:before {
+    content: "\f14a";
+    font-weight: 900;
+    color: @brand-primary;
+}
