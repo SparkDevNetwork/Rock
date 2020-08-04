@@ -29,7 +29,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.Device", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "DeviceTypeValueId", "43", "Has Cutter", "Used for indicating whether or not a printer has an attached auto-cutter. Checking this will cause Rock to perform automatic label cutting at the end of the label set (for server side label printing).", 1041, "False", "AF534D3F-CC48-4838-8FDB-9D88D61B307D", "core_device_HasCutter", false );
+            //RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.Device", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "DeviceTypeValueId", "43", "Has Cutter", "Used for indicating whether or not a printer has an attached auto-cutter. Checking this will cause Rock to perform automatic label cutting at the end of the label set (for server side label printing).", 1041, "False", "AF534D3F-CC48-4838-8FDB-9D88D61B307D", "core_device_HasCutter", false );
         }
 
         /// <summary>

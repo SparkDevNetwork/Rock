@@ -29,9 +29,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddFindGroupBlockIncludePendingAttribute();
-            UpdatePersonalDeviceLavaTemplate();
-            AddCommunicationApprovalTemplateWithSettingBlock();
+            //AddFindGroupBlockIncludePendingAttribute();
+            //UpdatePersonalDeviceLavaTemplate();
+            //AddCommunicationApprovalTemplateWithSettingBlock();
         }
 
         /// <summary>
