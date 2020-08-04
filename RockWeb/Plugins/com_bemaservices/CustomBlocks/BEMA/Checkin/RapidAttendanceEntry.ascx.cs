@@ -38,6 +38,8 @@ using Rock.Web.UI.Controls;
  * 
  * Additional Features:
  * - FE1) Added Ability to add the attendee to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin
+ * - FE2) Added Ability to list all descendants of a parent group instead of just the immediate children.
+ * - FE3) Added Ability to filter the list of groups by Group Type
  */
 
 namespace RockWeb.Plugins.com_bemaservices.CheckIn
@@ -278,10 +280,30 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         "Is Attendee Saved to Group",
         Key = BemaAttributeKey.ShouldAttendeeBeSavedToGroup,
         Description = "Should the attendee be added to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Order = 2,
         Category = "BEMA Additional Features" )]
     /* BEMA.FE1.End */
+
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Show All Descendants",
+        Key = BemaAttributeKey.ShowAllDescendants,
+        Description = "Whether to list all descendants of a parent group instead of just the immediate children.",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE2.End */
+
+    /* BEMA.FE3.Start */
+    [GroupTypesField(
+        "Filtered Group Types",
+        Key = BemaAttributeKey.FilteredGroupTypes,
+        Description = "The Group Types to filter the group list by.",
+        IsRequired = false,
+        Order = 4,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE3.End */
     public partial class RapidAttendanceEntry : RockBlock
     {
         #region Fields
@@ -422,6 +444,8 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         private static class BemaAttributeKey
         {
             public const string ShouldAttendeeBeSavedToGroup = "ShouldAttendeeBeSavedToGroup";
+            public const string ShowAllDescendants = "ShowAllDescendants";
+            public const string FilteredGroupTypes = "FilteredGroupTypes";
         }
 
         #endregion
@@ -1594,6 +1618,26 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                                 .Where( a => a.ParentGroup.Guid == parentGroupGuid && a.IsActive )
                                 .OrderBy( g => g.Order )
                                 .ToList();
+
+                    /* BEMA.FE2.Start */
+                    if ( GetAttributeValue( BemaAttributeKey.ShowAllDescendants ).AsBoolean() )
+                    {
+                        var groupService = new GroupService( rockContext );
+                        var parentGroup = groupService.Get( parentGroupGuid );
+                        groups = groupService.GetAllDescendentGroups( parentGroup.Id, false ).OrderBy( g => g.Order )
+                                .ToList();
+                    }
+                    /* BEMA.FE2.End */
+
+                    /* BEMA.FE3.Start */
+                    var groupTypeGuids = GetAttributeValue( BemaAttributeKey.FilteredGroupTypes ).SplitDelimitedValues().AsGuidList();
+                    if ( groupTypeGuids.Any() )
+                    {
+                        groups = groups.Where( g => groupTypeGuids.Contains( g.GroupType.Guid ) ).ToList().OrderBy( g => g.Order )
+                                .ToList();
+                    }
+                    /* BEMA.FE3.End */
+
                     if ( groups.Count != 1 )
                     {
                         pnlGroupPicker.Visible = true;
