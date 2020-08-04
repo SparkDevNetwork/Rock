@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Dynamic;
 using System.Linq;
-using DDay.iCal;
-using DDay.iCal.Serialization.iCalendar;
+
+using Ical.Net;
+using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.DataTypes;
+using Ical.Net.Interfaces.DataTypes;
+
 using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -22,40 +26,40 @@ namespace Rock.Tests.Rock.Lava
         private static string webContentFolder = string.Empty;
 
         private static readonly Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
-        private static iCalendarSerializer serializer = new iCalendarSerializer();
+        private static CalendarSerializer serializer = new CalendarSerializer();
         private static RecurrencePattern weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
         private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
         private static readonly DateTime today = RockDateTime.Today;
 
-        private static readonly iCalendar weeklySaturday430 = new iCalendar()
+        private static readonly Calendar weeklySaturday430 = new Calendar()
         {
             Events =
             {
                 new Event
                     {
-                        DTStart = new iCalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 16, 30, 0 ),
-                        DTEnd = new iCalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 17, 30, 0 ),
-                        DTStamp = new iCalDateTime( today.Year, today.Month, today.Day ),
+                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 16, 30, 0 ),
+                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 17, 30, 0 ),
+                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
                         Sequence = 0,
-                        UID = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
+                        Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
                     }
                 }
         };
 
-        private static readonly iCalendar monthlyFirstSaturday = new iCalendar()
+        private static readonly Calendar monthlyFirstSaturday = new Calendar()
         {
             Events =
             {
                 new Event
                     {
-                        DTStart = new iCalDateTime( today.Year, today.Month, today.Day, 8, 0, 0 ),
-                        DTEnd = new iCalDateTime( today.Year, today.Month, today.Day, 10, 0, 0 ),
-                        DTStamp = new iCalDateTime( today.Year, today.Month, today.Day ),
+                        DtStart = new CalDateTime( today.Year, today.Month, today.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day, 10, 0, 0 ),
+                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
-                        UID = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
+                        Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
                     }
                 }
         };
