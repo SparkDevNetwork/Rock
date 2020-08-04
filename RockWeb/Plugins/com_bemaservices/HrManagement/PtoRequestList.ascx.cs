@@ -584,6 +584,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                             return "label label-success";
                         case PtoRequestApprovalState.Denied:
                             return "label label-danger";
+                        case PtoRequestApprovalState.Cancelled:
+                            return "label label-default";
                     }
 
                     return string.Empty;
