@@ -343,6 +343,7 @@
     <Compile Include="Achievement\AchievementConfiguration.cs" />
     <Compile Include="Achievement\AchievementContainer.cs" />
     <Compile Include="Achievement\AchieverAttemptItem.cs" />
+    <Compile Include="Achievement\Component\StepProgramAchievement.cs" />
     <Compile Include="Achievement\Component\InteractionSourcedAccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\AccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
@@ -609,6 +610,8 @@
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
