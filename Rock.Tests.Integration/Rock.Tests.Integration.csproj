@@ -106,6 +106,7 @@
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Achievement\StepProgramAchievementTests.cs" />
     <Compile Include="Achievement\InteractionAchievementTests.cs" />
     <Compile Include="Achievement\AccumulativeAchievementTests.cs" />
     <Compile Include="Achievement\AchievementTests.cs" />

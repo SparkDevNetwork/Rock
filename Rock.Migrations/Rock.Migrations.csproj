@@ -77,6 +77,10 @@
     <Compile Include="Migrations\202008031623133_EntityAchievements.Designer.cs">
       <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008042038088_StepAchievements.cs" />
+    <Compile Include="Migrations\202008042038088_StepAchievements.Designer.cs">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1334,6 +1338,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202008031623133_EntityAchievements.resx">
       <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008042038088_StepAchievements.resx">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
