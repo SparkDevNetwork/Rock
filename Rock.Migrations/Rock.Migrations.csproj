@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
       <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008031623133_EntityAchievements.cs" />
+    <Compile Include="Migrations\202008031623133_EntityAchievements.Designer.cs">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1327,6 +1331,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
       <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008031623133_EntityAchievements.resx">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -2592,7 +2599,7 @@
 CALL CopyToPackage.bat
 </PreBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

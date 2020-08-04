@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -26,6 +28,17 @@ namespace Rock.Plugin.HotFixes
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
+        {
+            UpStatic( RockMigrationHelper, Sql );
+        }
+
+        /// <summary>
+        /// Ups the static. And runs block and page migrations for achievements. Referenced in another regular migration, which is why it
+        /// is static.
+        /// </summary>
+        /// <param name="RockMigrationHelper">The rock migration helper.</param>
+        /// <param name="Sql">The SQL.</param>
+        public static void UpStatic( Data.MigrationHelper RockMigrationHelper, Action<string> Sql )
         {
             RockMigrationHelper.AddPage( true, "CA566B33-0265-45C5-B1B2-6FFA6D4743F4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Achievement Types", "", "FCE0D006-F854-4107-9298-667563FA8D77", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "FCE0D006-F854-4107-9298-667563FA8D77", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Achievement Type", "", "1C378B3C-9721-4A9B-857A-E3C5188C5BF8", "" ); // Site:Rock RMS
@@ -101,6 +114,16 @@ namespace Rock.Plugin.HotFixes
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
+        {
+            DownStatic( RockMigrationHelper );
+        }
+
+        /// <summary>
+        /// Downs the static. And runs block and page migrations for achievements. Referenced in another regular migration, which is why it
+        /// is static.
+        /// </summary>
+        /// <param name="RockMigrationHelper">The rock migration helper.</param>
+        public static void DownStatic( Data.MigrationHelper RockMigrationHelper )
         {
             // Attrib for BlockType: Workflow Entry:Block Title Template
             RockMigrationHelper.DeleteAttribute( "6E7AC3BE-50D0-4219-BC6A-703821DC785F" );

@@ -1585,7 +1585,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             rockContext.Database.CommandTimeout = commandTimeout;
 
             var streakService = new StreakService( rockContext );
-            var attemptService = new StreakAchievementAttemptService( rockContext );
+            var attemptService = new AchievementAttemptService( rockContext );
             var duplicateGroups = streakService.Queryable()
                 .GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } )
                 .Where( g => g.Count() > 1 )
@@ -1606,8 +1606,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
 
                 var recordsToDeleteIds = recordsToDelete.Select( s => s.Id ).ToList();
-                var attempts = attemptService.Queryable().Where( saa => recordsToDeleteIds.Contains( saa.StreakId ) ).ToList();
-                attempts.ForEach( saa => saa.StreakId = recordToKeep.Id );
 
                 streakService.DeleteRange( recordsToDelete );
                 rockContext.SaveChanges( true );

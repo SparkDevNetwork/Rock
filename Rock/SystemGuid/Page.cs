@@ -48,6 +48,12 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// Gets the Achievement Type page guid
+        /// ParentPage: <see cref="ENGAGEMENT"/>
+        /// </summary>
+        public const string ACHIEVEMENT_TYPES = "FCE0D006-F854-4107-9298-667563FA8D77";
+
+        /// <summary>
         /// Gets the Add Transaction page guid
         /// ParentPage: Contributions
         /// </summary>

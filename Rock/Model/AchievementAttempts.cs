@@ -26,28 +26,29 @@ using Rock.Transactions;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Streak Achievement Attempts in Rock.
+    /// Represents an Achievement Attempts in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
-    [Table( "StreakAchievementAttempt" )]
+    [RockDomain( "Achievements" )]
+    [Table( "AchievementAttempt" )]
     [DataContract]
-    public partial class StreakAchievementAttempt : Model<StreakAchievementAttempt>
+    public partial class AchievementAttempt : Model<AchievementAttempt>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Streak"/> to which this attempt belongs. This property is required.
+        /// Gets or sets the achiever entity identifier.
+        /// This was originally a Person Alias Id via the Streak.
         /// </summary>
-        [Required]
         [DataMember( IsRequired = true )]
-        public int StreakId { get; set; }
+        [Required]
+        public int AchieverEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StreakTypeAchievementType"/> to which this attempt belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Model.AchievementType"/> to which this attempt belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        public int StreakTypeAchievementTypeId { get; set; }
+        public int AchievementTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%.
@@ -100,33 +101,26 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Model.Streak"/>.
+        /// Gets or sets the <see cref="Model.AchievementType"/>.
         /// </summary>
         [DataMember]
-        public virtual Streak Streak { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Model.StreakTypeAchievementType"/>.
-        /// </summary>
-        [DataMember]
-        public virtual StreakTypeAchievementType StreakTypeAchievementType { get; set; }
+        public virtual AchievementType AchievementType { get; set; }
 
         #endregion Virtual Properties
 
         #region Entity Configuration
 
         /// <summary>
-        /// Streak Achievement Attempt Configuration class.
+        /// Achievement Attempt Configuration class.
         /// </summary>
-        public partial class StreakAchievementAttemptConfiguration : EntityTypeConfiguration<StreakAchievementAttempt>
+        public partial class AchievementAttemptConfiguration : EntityTypeConfiguration<AchievementAttempt>
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="StreakAchievementAttemptConfiguration"/> class.
+            /// Initializes a new instance of the <see cref="AchievementAttemptConfiguration"/> class.
             /// </summary>
-            public StreakAchievementAttemptConfiguration()
+            public AchievementAttemptConfiguration()
             {
-                HasRequired( saa => saa.Streak ).WithMany( s => s.StreakAchievementAttempts ).HasForeignKey( saa => saa.StreakId ).WillCascadeOnDelete( false );
-                HasRequired( saa => saa.StreakTypeAchievementType ).WithMany( s => s.StreakAchievementAttempts ).HasForeignKey( saa => saa.StreakTypeAchievementTypeId ).WillCascadeOnDelete( true );
+                HasRequired( saa => saa.AchievementType ).WithMany( s => s.Attempts ).HasForeignKey( saa => saa.AchievementTypeId ).WillCascadeOnDelete( true );
             }
         }
 
@@ -161,7 +155,7 @@ namespace Rock.Model
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
             // Add a transaction to process workflows and add steps
-            new StreakAchievementAttemptChangeTransaction( entry ).Enqueue();
+            new AchievementAttemptChangeTransaction( entry ).Enqueue();
             base.PreSaveChanges( dbContext, entry );
         }
 

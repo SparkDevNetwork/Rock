@@ -22,25 +22,25 @@ using Rock.Model;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Cache object for <see cref="StreakTypeAchievementTypePrerequisite" />
+    /// Cache object for <see cref="AchievementTypePrerequisite" />
     /// </summary>
     [Serializable]
     [DataContract]
-    public class StreakTypeAchievementTypePrerequisiteCache : ModelCache<StreakTypeAchievementTypePrerequisiteCache, StreakTypeAchievementTypePrerequisite>
+    public class AchievementTypePrerequisiteCache : ModelCache<AchievementTypePrerequisiteCache, AchievementTypePrerequisite>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Model.StreakTypeAchievementType"/>.
+        /// Gets or sets the Id of the <see cref="Model.AchievementType"/>.
         /// </summary>
         [DataMember]
-        public int StreakTypeAchievementTypeId { get; private set; }
+        public int AchievementTypeId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Id of the prerequisite <see cref="StreakTypeAchievementType"/>
+        /// Gets or sets the Id of the prerequisite <see cref="Model.AchievementType"/>
         /// </summary>
         [DataMember]
-        public int PrerequisiteStreakTypeAchievementTypeId { get; private set; }
+        public int PrerequisiteAchievementTypeId { get; private set; }
 
         #endregion Entity Properties
 
@@ -49,14 +49,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the Achievement Type Cache.
         /// </summary>
-        public StreakTypeAchievementTypeCache StreakTypeAchievementType
-            => StreakTypeAchievementTypeCache.Get( StreakTypeAchievementTypeId );
+        public AchievementTypeCache AchievementType
+            => AchievementTypeCache.Get( AchievementTypeId );
 
         /// <summary>
         /// Gets the Prerequisite Achievement Type Cache.
         /// </summary>
-        public StreakTypeAchievementTypeCache PrerequisiteStreakTypeAchievementType
-             => StreakTypeAchievementTypeCache.Get( PrerequisiteStreakTypeAchievementTypeId );
+        public AchievementTypeCache PrerequisiteAchievementType
+             => AchievementTypeCache.Get( PrerequisiteAchievementTypeId );
 
         #endregion Related Cache Objects
 
@@ -69,15 +69,15 @@ namespace Rock.Web.Cache
         public override void SetFromEntity( IEntity entity )
         {
             base.SetFromEntity( entity );
-            var prerequisite = entity as StreakTypeAchievementTypePrerequisite;
+            var prerequisite = entity as AchievementTypePrerequisite;
 
             if ( prerequisite == null )
             {
                 return;
             }
 
-            PrerequisiteStreakTypeAchievementTypeId = prerequisite.PrerequisiteStreakTypeAchievementTypeId;
-            StreakTypeAchievementTypeId = prerequisite.StreakTypeAchievementTypeId;
+            PrerequisiteAchievementTypeId = prerequisite.PrerequisiteAchievementTypeId;
+            AchievementTypeId = prerequisite.AchievementTypeId;
         }
 
         #endregion Public Methods
