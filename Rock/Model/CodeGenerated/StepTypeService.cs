@@ -64,9 +64,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementStepTypeId == item.Id ) )
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementStepTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, AchievementType.FriendlyTypeName );
                 return false;
             }  
             return true;

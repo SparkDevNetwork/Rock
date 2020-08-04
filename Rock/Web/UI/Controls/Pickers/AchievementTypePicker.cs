@@ -29,7 +29,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control that can be used to select an achievement type.
     /// </summary>
-    public class StreakTypeAchievementTypePicker : RockDropDownList, IStreakTypeAchievementTypePicker
+    public class AchievementTypePicker : RockDropDownList, IAchievementTypePicker
     {
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        public static void LoadDropDownItems( IStreakTypeAchievementTypePicker picker, bool includeEmptyOption )
+        public static void LoadDropDownItems( IAchievementTypePicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -64,7 +64,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
             
-            var achievementTypes = StreakTypeAchievementTypeCache.All()
+            var achievementTypes = AchievementTypeCache.All()
                 .Where( stat => stat.IsActive )
                 .OrderBy( stat => stat.Name )
                 .ToList();
@@ -81,7 +81,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IStreakTypeAchievementTypePicker
+    public interface IAchievementTypePicker
     {
         /// <summary>
         /// Gets the items.

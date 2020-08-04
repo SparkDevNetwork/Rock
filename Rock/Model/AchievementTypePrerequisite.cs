@@ -25,44 +25,44 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Streak Type Achievement Type Prerequisite in Rock.
+    /// Represents a Achievement Type Prerequisite in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
-    [Table( "StreakTypeAchievementTypePrerequisite" )]
+    [RockDomain( "Achievements" )]
+    [Table( "AchievementTypePrerequisite" )]
     [DataContract]
-    public partial class StreakTypeAchievementTypePrerequisite : Model<StreakTypeAchievementTypePrerequisite>, ICacheable
+    public partial class AchievementTypePrerequisite : Model<AchievementTypePrerequisite>, ICacheable
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StreakTypeAchievementType"/> to which this prerequisite belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="AchievementType"/> to which this prerequisite belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        public int StreakTypeAchievementTypeId { get; set; }
+        public int AchievementTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StreakTypeAchievementType"/> that is the prerequisite. This property is required.
+        /// Gets or sets the Id of the <see cref="AchievementType"/> that is the prerequisite. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        public int PrerequisiteStreakTypeAchievementTypeId { get; set; }
+        public int PrerequisiteAchievementTypeId { get; set; }
 
         #endregion Entity Properties
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the StreakTypeAchievementType.
+        /// Gets or sets the AchievementType.
         /// </summary>
         [DataMember]
-        public virtual StreakTypeAchievementType StreakTypeAchievementType { get; set; }
+        public virtual AchievementType AchievementType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Prerequisite StreakTypeAchievementType.
+        /// Gets or sets the Prerequisite AchievementType.
         /// </summary>
         [DataMember]
-        public virtual StreakTypeAchievementType PrerequisiteStreakTypeAchievementType { get; set; }
+        public virtual AchievementType PrerequisiteAchievementType { get; set; }
 
         #endregion Virtual Properties
 
@@ -74,7 +74,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return StreakTypeAchievementTypePrerequisiteCache.Get( Id );
+            return AchievementTypePrerequisiteCache.Get( Id );
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            StreakTypeAchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
+            AchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
         }
 
         #endregion ICacheable
@@ -100,9 +100,9 @@ namespace Rock.Model
             {
                 var isValid = base.IsValid;
 
-                if ( StreakTypeAchievementTypeId == PrerequisiteStreakTypeAchievementTypeId )
+                if ( AchievementTypeId == PrerequisiteAchievementTypeId )
                 {
-                    ValidationResults.Add( new ValidationResult( "StreakTypeAchievementTypeId cannot be equal to PrerequisiteStreakTypeAchievementTypeId" ) );
+                    ValidationResults.Add( new ValidationResult( $"{nameof( AchievementTypeId )} cannot be equal to {nameof( PrerequisiteAchievementTypeId )}" ) );
                     isValid = false;
                 }
 
@@ -117,21 +117,21 @@ namespace Rock.Model
         /// <summary>
         /// Configuration class.
         /// </summary>
-        public partial class StreakTypeAchievementTypePrerequisiteConfiguration : EntityTypeConfiguration<StreakTypeAchievementTypePrerequisite>
+        public partial class AchievementTypePrerequisiteConfiguration : EntityTypeConfiguration<AchievementTypePrerequisite>
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="StreakTypeAchievementTypePrerequisiteConfiguration"/> class.
+            /// Initializes a new instance of the <see cref="AchievementTypePrerequisiteConfiguration"/> class.
             /// </summary>
-            public StreakTypeAchievementTypePrerequisiteConfiguration()
+            public AchievementTypePrerequisiteConfiguration()
             {
-                HasRequired( statp => statp.StreakTypeAchievementType )
+                HasRequired( statp => statp.AchievementType )
                     .WithMany( stat => stat.Prerequisites )
-                    .HasForeignKey( statp => statp.StreakTypeAchievementTypeId )
+                    .HasForeignKey( statp => statp.AchievementTypeId )
                     .WillCascadeOnDelete( true );
 
-                HasRequired( statp => statp.PrerequisiteStreakTypeAchievementType )
+                HasRequired( statp => statp.PrerequisiteAchievementType )
                     .WithMany( stat => stat.Dependencies )
-                    .HasForeignKey( statp => statp.PrerequisiteStreakTypeAchievementTypeId )
+                    .HasForeignKey( statp => statp.PrerequisiteAchievementTypeId )
                     // This has to be false because otherwise SQL server doesn't like the possibility of dependency cycles
                     .WillCascadeOnDelete( false );
             }

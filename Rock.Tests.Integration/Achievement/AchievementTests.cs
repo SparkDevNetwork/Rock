@@ -12,17 +12,17 @@ using Rock.Tests.Shared;
 namespace Rock.Tests.Integration.RockTests.Model
 {
     /// <summary>
-    /// Tests for Streak Achievements that use the database
+    /// Tests for Achievements that use the database
     /// </summary>
     [TestClass]
-    public class StreakAchievementTests
+    public class AchievementTests
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.StreakAchievement";
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
 
         private static RockContext _rockContext { get; set; }
         private static StreakTypeService _streakTypeService { get; set; }
-        private static StreakTypeAchievementTypeService _achievementTypeService { get; set; }
+        private static AchievementTypeService _achievementTypeService { get; set; }
 
         private static int _streakTypeId { get; set; }
         private static int _streakId { get; set; }
@@ -46,7 +46,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         /// </summary>
         private static void CreateStreakTypeData()
         {
-            var personAlias = new PersonAliasService( _rockContext ).Queryable().First( pa => pa.Person.Guid == TestGuids.TestPeople.TedDecker.AsGuid() );
+            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
+            var personAlias = new PersonAliasService( _rockContext ).Queryable().First( pa => pa.Person.Guid == tedDeckerGuid );
             _personAliasId = personAlias.Id;
             _personId = personAlias.PersonId;
 
@@ -103,12 +104,12 @@ namespace Rock.Tests.Integration.RockTests.Model
         /// </summary>
         private static void CreateAchievementTypeData()
         {
-            var achievementType = new StreakTypeAchievementType
+            var achievementType = new AchievementType
             {
                 Name = "Test Achievement",
                 IsActive = true,
-                StreakTypeId = _streakTypeId,
-                AchievementEntityTypeId = EntityTypeCache.GetId( ComponentEntityTypeName ) ?? 0,
+                // SourceEntityQualifierValue = _streakTypeId.ToString(),
+                ComponentEntityTypeId = EntityTypeCache.GetId( ComponentEntityTypeName ) ?? 0,
                 MaxAccomplishmentsAllowed = 2,
                 AllowOverAchievement = false
             };
@@ -132,7 +133,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             _rockContext = new RockContext();
             _streakTypeService = new StreakTypeService( _rockContext );
-            _achievementTypeService = new StreakTypeAchievementTypeService( _rockContext );
+            _achievementTypeService = new AchievementTypeService( _rockContext );
 
             DeleteTestData();
             CreateStreakTypeData();
@@ -153,8 +154,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestCleanup]
         public void TestCleanup()
         {
-            var service = new StreakAchievementAttemptService( _rockContext );
-            service.DeleteRange( service.Queryable().Where( saa => saa.StreakTypeAchievementTypeId == _achievementTypeId ) );
+            var service = new AchievementAttemptService( _rockContext );
+            service.DeleteRange( service.Queryable().Where( saa => saa.AchievementTypeId == _achievementTypeId ) );
             _rockContext.SaveChanges();
         }
 
@@ -166,15 +167,15 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void StreakAchievementProcess()
         {
-            var attemptsQuery = new StreakAchievementAttemptService( _rockContext ).Queryable()
+            var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.StreakTypeAchievementTypeId == _achievementTypeId && saa.StreakId == _streakId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
             Assert.That.AreEqual( 0, attemptsQuery.Count() );
 
-            var achievementTypeCache = StreakTypeAchievementTypeCache.Get( _achievementTypeId );
+            var achievementTypeCache = AchievementTypeCache.Get( _achievementTypeId );
             var streak = new StreakService( _rockContext ).Get( _streakId );
             var component = AchievementContainer.GetComponent( ComponentEntityTypeName );
 
@@ -234,23 +235,23 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void StreakAchievementProcessWithOpenAttempt()
         {
-            var attemptsQuery = new StreakAchievementAttemptService( _rockContext ).Queryable()
+            var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.StreakTypeAchievementTypeId == _achievementTypeId && saa.StreakId == _streakId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
             Assert.That.AreEqual( 0, attemptsQuery.Count() );
 
-            var attempt = new StreakAchievementAttempt
+            var attempt = new AchievementAttempt
             {
                 AchievementAttemptStartDateTime = new DateTime( 2019, 1, 1 ),
                 AchievementAttemptEndDateTime = new DateTime( 2019, 1, 2 ),
                 Progress = .5m,
-                StreakId = _streakId,
-                StreakTypeAchievementTypeId = _achievementTypeId,
+                AchieverEntityId = _personAliasId,
+                AchievementTypeId = _achievementTypeId,
             };
-            var attemptService = new StreakAchievementAttemptService( _rockContext );
+            var attemptService = new AchievementAttemptService( _rockContext );
             attemptService.Add( attempt );
             Assert.That.AreEqual( 0, attempt.Id );
             _rockContext.SaveChanges();
@@ -259,7 +260,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.That.AreEqual( 1, attemptsQuery.Count() );
             Assert.That.IsTrue( attempt.Id > 0 );
 
-            var achievementTypeCache = StreakTypeAchievementTypeCache.Get( _achievementTypeId );
+            var achievementTypeCache = AchievementTypeCache.Get( _achievementTypeId );
             var streak = new StreakService( _rockContext ).Get( _streakId );
             var component = AchievementContainer.GetComponent( ComponentEntityTypeName );
 
@@ -320,25 +321,25 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void StreakAchievementProcessWithSuccessfulAttempt()
         {
-            var attemptsQuery = new StreakAchievementAttemptService( _rockContext ).Queryable()
+            var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.StreakTypeAchievementTypeId == _achievementTypeId && saa.StreakId == _streakId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
             Assert.That.AreEqual( 0, attemptsQuery.Count() );
 
-            var attempt = new StreakAchievementAttempt
+            var attempt = new AchievementAttempt
             {
                 AchievementAttemptStartDateTime = new DateTime( 2019, 2, 1 ),
                 AchievementAttemptEndDateTime = new DateTime( 2019, 2, 1 ),
                 Progress = .5m,
-                StreakId = _streakId,
-                StreakTypeAchievementTypeId = _achievementTypeId,
+                AchieverEntityId = _personAliasId,
+                AchievementTypeId = _achievementTypeId,
                 IsClosed = true,
                 IsSuccessful = true
             };
-            var attemptService = new StreakAchievementAttemptService( _rockContext );
+            var attemptService = new AchievementAttemptService( _rockContext );
             attemptService.Add( attempt );
             Assert.That.AreEqual( 0, attempt.Id );
             _rockContext.SaveChanges();
@@ -347,7 +348,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.That.AreEqual( 1, attemptsQuery.Count() );
             Assert.That.IsTrue( attempt.Id > 0 );
 
-            var achievementTypeCache = StreakTypeAchievementTypeCache.Get( _achievementTypeId );
+            var achievementTypeCache = AchievementTypeCache.Get( _achievementTypeId );
             var streak = new StreakService( _rockContext ).Get( _streakId );
             var component = AchievementContainer.GetComponent( ComponentEntityTypeName );
 

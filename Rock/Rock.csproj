@@ -340,9 +340,13 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Achievement\AchievementComponent.cs" />
+    <Compile Include="Achievement\AchievementConfiguration.cs" />
     <Compile Include="Achievement\AchievementContainer.cs" />
+    <Compile Include="Achievement\AchieverAttemptItem.cs" />
+    <Compile Include="Achievement\Component\InteractionSourcedAccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\AccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
+    <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Address\MelissaData.cs" />
     <Compile Include="Address\ServiceObjects.cs" />
@@ -365,6 +369,7 @@
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
@@ -515,8 +520,11 @@
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
+    <Compile Include="Data\SaveChangesResult.cs" />
+    <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
@@ -535,6 +543,7 @@
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
+    <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
@@ -544,6 +553,7 @@
     <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
+    <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
@@ -656,9 +666,9 @@
     <Compile Include="Model\CodeGenerated\SmsPipelineService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementAttemptService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementTypePrerequisiteService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\DocumentTypeService.Partial.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
@@ -677,10 +687,10 @@
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
-    <Compile Include="Model\StreakAchievementAttempts.cs" />
-    <Compile Include="Model\StreakTypeAchievementTypePrerequisite.cs" />
-    <Compile Include="Model\StreakTypeAchievementTypeService.Partial.cs" />
-    <Compile Include="Model\StreakTypeAchievementType.cs" />
+    <Compile Include="Model\AchievementAttempts.cs" />
+    <Compile Include="Model\AchievementTypePrerequisite.cs" />
+    <Compile Include="Model\AchievementTypeService.Partial.cs" />
+    <Compile Include="Model\AchievementType.cs" />
     <Compile Include="Model\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
@@ -707,7 +717,7 @@
     <Compile Include="Transactions\RunDataViewTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
-    <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
+    <Compile Include="Transactions\AchievementAttemptChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
@@ -721,8 +731,8 @@
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypePrerequisiteCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
@@ -2175,7 +2185,6 @@
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
     <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
@@ -2184,7 +2193,7 @@
     <Compile Include="Web\UI\Controls\Pickers\InteractionChannelPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionChannelInteractionComponentPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />

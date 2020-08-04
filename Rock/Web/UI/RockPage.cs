@@ -2753,6 +2753,25 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Gets the page route and query string parameters.
+        /// </summary>
+        /// <returns>A case-insensitive <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string values, where the Key is the parameter name and the object is the value.</returns>
+        public Dictionary<string, object> QueryParameters()
+        {
+            var parameters = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+
+            foreach ( string param in Request.QueryString.Keys )
+            {
+                if ( param != null )
+                {
+                    parameters.Add( param, Request.QueryString[param] );
+                }
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
