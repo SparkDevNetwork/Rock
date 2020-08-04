@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 $('table.js-grid-allocation-list a.grid-delete-button').click(function( e ){
                     var $btn = $(this);
                     e.preventDefault();
-                    Rock.dialogs.confirm('Are you sure you want to delete this allocation?', function (result) {
+                    Rock.dialogs.confirm('Are you sure you want to delete this allocation and all pto requests tied to it?', function (result) {
                         if(result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -798,7 +798,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                             return "label label-info";
                         case PtoAllocationStatus.Pending:
                             return "label label-warning";
-                        case PtoAllocationStatus.Pending:
+                        case PtoAllocationStatus.Denied:
                             return "label label-danger";
                     }
 

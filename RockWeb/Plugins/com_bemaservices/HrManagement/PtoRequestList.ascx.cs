@@ -69,6 +69,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             gPtoRequestList.DataKeyNames = new string[] { "Id" };
             gPtoRequestList.Actions.ShowAdd = true;
             gPtoRequestList.Actions.AddClick += gPtoRequestList_Add;
+            gPtoRequestList.IsDeleteEnabled = GetViewRights();
+            gPtoRequestList.ShowConfirmDeleteDialog = false;
+
+            AddDynamicControls();
+
             gPtoRequestList.GridRebind += gPtoRequestList_GridRebind;
         }
 
@@ -116,7 +121,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         private bool GetViewRights()
         {
-            var canView = false;
+            var canView = this.UserCanEdit;
 
             if ( _person != null )
             {
@@ -125,6 +130,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     canView = true;
                 }
 
+                /* old logic 
                 if ( canView == false )
                 {
                     var adminGuid = "628C51A8-4613-43ED-A18D-4A6FB999273E".AsGuid();
@@ -136,6 +142,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                         canView = true;
                     }
                 }
+                */
 
                 if ( canView == false )
                 {
@@ -275,6 +282,18 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             BindGrid();
         }
 
+        protected void gPtoRequestList_Delete( object sender, RowEventArgs e )
+        {
+            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
+            var ptoRequest = new PtoRequestService( new RockContext() ).Get( e.RowKeyId );
+            if ( workflowType != null && ptoRequest != null )
+            {
+                var url = string.Format( "/WorkflowEntry/{0}?PTORequest={1}&CancelRequest=Yes", workflowType.Id, ptoRequest.Guid.ToString() );
+                Response.Redirect( url, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
         /// <summary>
         /// Handles the RowSelected event of the gPtoRequestList control.
         /// </summary>
@@ -303,6 +322,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             if ( workflowType != null )
             {
                 var url = string.Format( "/WorkflowEntry/{0}", workflowType.Id );
+                if ( _person != null )
+                {
+                    url += string.Format( "?Person={0}", _person.PrimaryAlias.Guid );
+                }
+
                 Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -321,6 +345,18 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         #endregion
 
         #region Methods
+
+        private void AddDynamicControls()
+        {
+            if ( GetViewRights() )
+            {
+                // Add delete column
+                var deleteField = new DeleteField();
+                gPtoRequestList.Columns.Add( deleteField );
+                deleteField.Click += gPtoRequestList_Delete;
+            }
+
+        }
 
         /// <summary>
         /// Binds the filter.

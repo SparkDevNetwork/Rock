@@ -18,7 +18,7 @@
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                        <Rock:Grid ID="gPtoRequestList" runat="server" RowItemText="Request" OnRowSelected="gPtoRequestList_Edit" AllowSorting="true" CssClass="js-grid-allocation-list">
+                        <Rock:Grid ID="gPtoRequestList" runat="server" RowItemText="Request" OnRowSelected="gPtoRequestList_Edit" AllowSorting="true" CssClass="js-grid-request-list">
                             <Columns>
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.LastName" />

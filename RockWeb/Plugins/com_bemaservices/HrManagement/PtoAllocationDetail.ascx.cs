@@ -133,29 +133,57 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDeleteConfirm_Click( object sender, EventArgs e )
-        {
+        {                
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+
             using ( var rockContext = new RockContext() )
             {
                 PtoAllocationService ptoAllocationService = new PtoAllocationService( rockContext );
-                //AuthService authService = new AuthService( rockContext );
+                var ptoRequestService = new PtoRequestService( rockContext );
                 PtoAllocation ptoAllocation = ptoAllocationService.Get( int.Parse( hfPtoAllocationId.Value ) );
+
+                var personId = ptoAllocation.PersonAlias.PersonId.ToString();
+                qryParams.Add( "PersonId", personId );
 
                 if ( ptoAllocation != null )
                 {
-
-                    string errorMessage;
-                    if ( !ptoAllocationService.CanDelete( ptoAllocation, out errorMessage ) )
+                    rockContext.WrapTransaction( () =>
                     {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
 
-                    ptoAllocationService.Delete( ptoAllocation );
-                    rockContext.SaveChanges();
+                        var changes = new History.HistoryChangeList();
+
+                        var ptoRequests = ptoAllocation.PtoRequests.ToList();
+                        foreach ( var ptoRequest in ptoRequests )
+                        {
+                            var requestChanges = new History.HistoryChangeList();
+
+                            requestChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoRequest" );
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( PtoRequest ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                                ptoRequest.Id,
+                                requestChanges );
+
+                            ptoRequestService.Delete( ptoRequest );
+                        }
+
+                        changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "PtoAllocation" );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( PtoAllocation ),
+                            Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                            ptoAllocation.Id,
+                            changes );
+
+                        ptoAllocationService.Delete( ptoAllocation );
+
+                        rockContext.SaveChanges();
+                    } );
                 }
             }
 
-            NavigateToParentPage();
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -450,9 +478,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     break;
                 case PtoAllocationStatus.Pending:
                     statusLabelClass = "label label-warning";
-                    break;
-                case PtoAllocationStatus.Denied:
-                    statusLabelClass = "label label-danger";
                     break;
             }
 
