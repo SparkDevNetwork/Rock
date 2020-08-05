@@ -40,28 +40,37 @@ namespace Rock.Achievement.Component
     [ExportMetadata( "ComponentName", "Steps: Program Completion" )]
 
     [StepProgramField(
-        name: "Step Program",
-        description: "The step program from which the achievement is earned.",
-        required: true,
-        order: 0,
-        key: AttributeKey.StepProgram )]
+        "Step Program",
+        Description = "The step program from which the achievement is earned.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.StepProgram )]
 
     [DateField(
-        name: "Start Date",
-        description: "The date that defines when the program must be completed on or after.",
-        required: false,
-        order: 2,
-        key: AttributeKey.StartDateTime )]
+        "Start Date",
+        Description = "The date that defines when the program must be completed on or after.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.StartDateTime )]
 
     [DateField(
-        name: "End Date",
-        description: "The date that defines when the program must be completed on or before.",
-        required: false,
-        order: 3,
-        key: AttributeKey.EndDateTime )]
+        "End Date",
+        Description = "The date that defines when the program must be completed on or before.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.EndDateTime )]
 
     public class StepProgramAchievement : AchievementComponent
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementComponent" /> class.
+        /// </summary>
+        public StepProgramAchievement() : base(
+            new AchievementConfiguration( typeof( Step ), typeof( PersonAlias ) ),
+            new HashSet<string> { AttributeKey.StepProgram } )
+        {
+        }
+
         #region Keys
 
         /// <summary>
@@ -86,22 +95,6 @@ namespace Rock.Achievement.Component
         }
 
         #endregion Keys
-
-        /// <summary>
-        /// Gets the attribute keys stored in configuration.
-        /// <see cref="AchievementType.ComponentConfigJson" />
-        /// </summary>
-        /// <value>
-        /// The attribute keys stored in configuration.
-        /// </value>
-        /// <exception cref="NotImplementedException"></exception>
-        public override HashSet<string> AttributeKeysStoredInConfig => new HashSet<string> { AttributeKey.StepProgram };
-
-        /// <summary>
-        /// Gets the supported configuration.
-        /// </summary>
-        public override AchievementConfiguration SupportedConfiguration =>
-            new AchievementConfiguration( EntityTypeCache.Get<Step>(), EntityTypeCache.Get<PersonAlias>() );
 
         /// <summary>
         /// Should the achievement type process attempts if the given source entity has been modified in some way.

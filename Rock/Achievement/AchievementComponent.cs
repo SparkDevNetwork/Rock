@@ -29,9 +29,20 @@ namespace Rock.Achievement
     public abstract class AchievementComponent : Rock.Extension.Component
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementComponent"/> class.
+        /// </summary>
+        /// <param name="supportedConfiguration">The supported configuration.</param>
+        /// <param name="attributeKeysStoredInConfig">The attribute keys stored in configuration.</param>
+        public AchievementComponent( AchievementConfiguration supportedConfiguration, HashSet<string> attributeKeysStoredInConfig )
+        {
+            SupportedConfiguration = supportedConfiguration;
+            AttributeKeysStoredInConfig = attributeKeysStoredInConfig;
+        }
+
+        /// <summary>
         /// Gets the supported configuration.
         /// </summary>
-        public abstract AchievementConfiguration SupportedConfiguration { get; }
+        public readonly AchievementConfiguration SupportedConfiguration;
 
         /// <summary>
         /// Gets the attribute keys stored in configuration.
@@ -40,7 +51,7 @@ namespace Rock.Achievement
         /// <value>
         /// The attribute keys stored in configuration.
         /// </value>
-        public abstract HashSet<string> AttributeKeysStoredInConfig { get; }
+        public readonly HashSet<string> AttributeKeysStoredInConfig;
 
         /// <summary>
         /// Gets the attribute value defaults.

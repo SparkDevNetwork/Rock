@@ -1,7 +1,23 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Amazon.S3.Model;
 using Lucene.Net.Support;
 using Rock.Data;
 using Rock.Model;
@@ -15,6 +31,17 @@ namespace Rock.Achievement
     /// <seealso cref="Rock.Achievement.AchievementComponent" />
     public abstract class StreakSourcedAchievementComponent : AchievementComponent
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementComponent" /> class.
+        /// </summary>
+        /// <param name="streakTypeAttributeKey">The streak type attribute key.</param>
+        public StreakSourcedAchievementComponent( string streakTypeAttributeKey ) : base(
+            new AchievementConfiguration( typeof( Streak ), typeof( PersonAlias ) ),
+            new HashSet<string> { streakTypeAttributeKey } )
+        {
+            StreakTypeAttributeKey = streakTypeAttributeKey;
+        }
+
         #region Helpers
 
         /// <summary>
@@ -41,12 +68,6 @@ namespace Rock.Achievement
         #endregion Helpers
 
         #region Base Component Overrides
-
-        /// <summary>
-        /// Gets the supported configuration.
-        /// </summary>
-        public override AchievementConfiguration SupportedConfiguration =>
-            new AchievementConfiguration( EntityTypeCache.Get<Streak>(), EntityTypeCache.Get<PersonAlias>() );
 
         /// <summary>
         /// Processes the specified achievement type cache for the source entity.
@@ -175,16 +196,6 @@ namespace Rock.Achievement
         }
 
         /// <summary>
-        /// Gets the attribute keys stored in configuration.
-        /// <see cref="AchievementType.ComponentConfigJson" />
-        /// </summary>
-        /// <value>
-        /// The attribute keys stored in configuration.
-        /// </value>
-        /// <exception cref="NotImplementedException"></exception>
-        public override HashSet<string> AttributeKeysStoredInConfig => new HashSet<string> { StreakTypeAttributeKey };
-
-        /// <summary>
         /// Should the achievement type process attempts if the given source entity has been modified in some way.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
@@ -308,7 +319,7 @@ namespace Rock.Achievement
         /// This is done so that the attribute remains on the derived class as it originally was. Moving the attribute
         /// was considered risky because the attribute could be created in a migration.
         /// </summary>
-        protected abstract string StreakTypeAttributeKey { get; }
+        protected readonly string StreakTypeAttributeKey;
 
         /// <summary>
         /// Update the open attempt record if there are changes. Be sure to close the attempt if it is no longer possible to make
