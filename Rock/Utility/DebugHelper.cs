@@ -41,6 +41,9 @@ namespace Rock
         /// </summary>
         public static double _callMSTotal = 0.00;
 
+        /// <summary>
+        /// The timings only setting
+        /// </summary>
         public static bool TimingsOnly = false;
 
         private class DebugHelperUserState

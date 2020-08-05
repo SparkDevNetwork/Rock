@@ -27,18 +27,51 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for StreakAchievementAttempt that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AchievementType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class StreakAchievementAttemptEntity
+    public partial class AchievementTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? AchievementAttemptEndDateTime { get; set; }
+        public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary />
-        public DateTime AchievementAttemptStartDateTime { get; set; }
+        public string AchievementIconCssClass { get; set; }
+
+        /// <summary />
+        public int? AchievementStartWorkflowTypeId { get; set; }
+
+        /// <summary />
+        public int? AchievementStepStatusId { get; set; }
+
+        /// <summary />
+        public int? AchievementStepTypeId { get; set; }
+
+        /// <summary />
+        public int? AchievementSuccessWorkflowTypeId { get; set; }
+
+        /// <summary />
+        public int AchieverEntityTypeId { get; set; }
+
+        /// <summary />
+        public bool AllowOverAchievement { get; set; }
+
+        /// <summary />
+        public string BadgeLavaTemplate { get; set; }
+
+        /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
+        public string ComponentConfigJson { get; set; }
+
+        /// <summary />
+        public int ComponentEntityTypeId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,10 +80,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsClosed { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary />
-        public bool IsSuccessful { get; set; }
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,13 +91,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public decimal Progress { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
-        public int StreakId { get; set; }
+        public string ResultsLavaTemplate { get; set; }
 
         /// <summary />
-        public int StreakTypeAchievementTypeId { get; set; }
+        public int? SourceEntityTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -93,22 +126,33 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source StreakAchievementAttempt object
+        /// Copies the base properties from a source AchievementType object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( StreakAchievementAttempt source )
+        public void CopyPropertiesFrom( AchievementType source )
         {
             this.Id = source.Id;
-            this.AchievementAttemptEndDateTime = source.AchievementAttemptEndDateTime;
-            this.AchievementAttemptStartDateTime = source.AchievementAttemptStartDateTime;
+            this.AchievementFailureWorkflowTypeId = source.AchievementFailureWorkflowTypeId;
+            this.AchievementIconCssClass = source.AchievementIconCssClass;
+            this.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
+            this.AchievementStepStatusId = source.AchievementStepStatusId;
+            this.AchievementStepTypeId = source.AchievementStepTypeId;
+            this.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
+            this.AchieverEntityTypeId = source.AchieverEntityTypeId;
+            this.AllowOverAchievement = source.AllowOverAchievement;
+            this.BadgeLavaTemplate = source.BadgeLavaTemplate;
+            this.CategoryId = source.CategoryId;
+            this.ComponentConfigJson = source.ComponentConfigJson;
+            this.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsClosed = source.IsClosed;
-            this.IsSuccessful = source.IsSuccessful;
+            this.IsActive = source.IsActive;
+            this.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Progress = source.Progress;
-            this.StreakId = source.StreakId;
-            this.StreakTypeAchievementTypeId = source.StreakTypeAchievementTypeId;
+            this.Name = source.Name;
+            this.ResultsLavaTemplate = source.ResultsLavaTemplate;
+            this.SourceEntityTypeId = source.SourceEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -120,15 +164,39 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for StreakAchievementAttempt that includes all the fields that are available for GETs. Use this for GETs (use StreakAchievementAttemptEntity for POST/PUTs)
+    /// Client model for AchievementType that includes all the fields that are available for GETs. Use this for GETs (use AchievementTypeEntity for POST/PUTs)
     /// </summary>
-    public partial class StreakAchievementAttempt : StreakAchievementAttemptEntity
+    public partial class AchievementType : AchievementTypeEntity
     {
         /// <summary />
-        public Streak Streak { get; set; }
+        public EntityType AchievementEntityType { get; set; }
 
         /// <summary />
-        public StreakTypeAchievementType StreakTypeAchievementType { get; set; }
+        public WorkflowType AchievementFailureWorkflowType { get; set; }
+
+        /// <summary />
+        public WorkflowType AchievementStartWorkflowType { get; set; }
+
+        /// <summary />
+        public StepStatus AchievementStepStatus { get; set; }
+
+        /// <summary />
+        public StepType AchievementStepType { get; set; }
+
+        /// <summary />
+        public WorkflowType AchievementSuccessWorkflowType { get; set; }
+
+        /// <summary />
+        public ICollection<AchievementAttempt> Attempts { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public ICollection<AchievementTypePrerequisite> Dependencies { get; set; }
+
+        /// <summary />
+        public ICollection<AchievementTypePrerequisite> Prerequisites { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
