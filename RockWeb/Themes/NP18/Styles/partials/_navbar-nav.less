@@ -27,9 +27,6 @@
     }
 }
 
-.nav-logo {
-    display: none;
-}
 
 .nav-item {
     margin: 0.5em 0;
@@ -63,12 +60,13 @@
         font-size: 1.25em;
         display: flex;
         align-items: center;
-        color: inherit;
+        color: @white;
         text-transform: uppercase;
         transition: color ease-in-out 300ms;
+        z-index: 999;
 
         &:hover, &:active, &:focus {
-            color: inherit;
+            color: @brand-primary;
             text-decoration: none;
         }
     }
@@ -81,11 +79,12 @@
     }
 
     .nav-logo {
-        color: @white;
+        color: @brand-primary;
         display: block;
         font-size: 2.35em;
         margin: 3px 0;
     }
+
 
     .opaque .nav-logo,
     .noheader .nav-logo {
@@ -95,5 +94,12 @@
     .nav-home-text {
         display: none;
     }
+}
 
+// Mobile view
+@media (max-width: @screen-sm-max) {
+
+    .nav-home-text {
+        display: none;
+    }
 }

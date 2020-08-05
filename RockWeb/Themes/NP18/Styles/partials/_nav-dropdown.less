@@ -1,4 +1,3 @@
-
 // Universal styles
 .nav-caret {
     font-family: 'Icons' !important;
@@ -23,13 +22,6 @@
     align-items: center;
 }
 
-
-// Mobile view
-@media (max-width: @screen-sm-max) {
-
-    .nav-caret {
-        font-size: 0.75em;
-    }
 
     .nav-dropdown.open {
         position: fixed;
@@ -57,49 +49,8 @@
 
         & > .nav-dropdown-content {
             display: block;
-            padding: 2em 3em;
+            margin: auto;
+            
         }
     }
 
-}
-
-// Desktop view
-@media (min-width: @screen-md-min) {
-
-    .nav-dropdown {
-        position: relative;
-    }
-
-    .nav-dropdown-content {
-        position: absolute;
-        top: 90%;
-        left: 0;
-        border-top: solid 4px #8bc540;
-        padding: 1.5rem;
-        background-color: #fff;
-        min-width: 12rem;
-    }
-
-    .nav-caret {
-        font-size: 0.5em;
-        transform: rotate(90deg);
-        margin-left: 1em;
-    }
-
-    .nav-dropdown.open,
-    .nav-dropdown:hover {
-
-        & > .nav-dropdown-toggle {
-
-            .nav-caret {
-                transform: rotate(-90deg);
-                color: @brand-primary;
-            }
-        }
-
-        & > .nav-dropdown-content {
-            display: block;
-        }
-    }
-
-}
