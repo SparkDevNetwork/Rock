@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for StreakTypeAchievementTypePrerequisite that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AchievementTypePrerequisite that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class StreakTypeAchievementTypePrerequisiteEntity
+    public partial class AchievementTypePrerequisiteEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public int AchievementTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -46,10 +49,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int PrerequisiteStreakTypeAchievementTypeId { get; set; }
-
-        /// <summary />
-        public int StreakTypeAchievementTypeId { get; set; }
+        public int PrerequisiteAchievementTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -78,17 +78,17 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source StreakTypeAchievementTypePrerequisite object
+        /// Copies the base properties from a source AchievementTypePrerequisite object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( StreakTypeAchievementTypePrerequisite source )
+        public void CopyPropertiesFrom( AchievementTypePrerequisite source )
         {
             this.Id = source.Id;
+            this.AchievementTypeId = source.AchievementTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.PrerequisiteStreakTypeAchievementTypeId = source.PrerequisiteStreakTypeAchievementTypeId;
-            this.StreakTypeAchievementTypeId = source.StreakTypeAchievementTypeId;
+            this.PrerequisiteAchievementTypeId = source.PrerequisiteAchievementTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -100,15 +100,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for StreakTypeAchievementTypePrerequisite that includes all the fields that are available for GETs. Use this for GETs (use StreakTypeAchievementTypePrerequisiteEntity for POST/PUTs)
+    /// Client model for AchievementTypePrerequisite that includes all the fields that are available for GETs. Use this for GETs (use AchievementTypePrerequisiteEntity for POST/PUTs)
     /// </summary>
-    public partial class StreakTypeAchievementTypePrerequisite : StreakTypeAchievementTypePrerequisiteEntity
+    public partial class AchievementTypePrerequisite : AchievementTypePrerequisiteEntity
     {
         /// <summary />
-        public StreakTypeAchievementType PrerequisiteStreakTypeAchievementType { get; set; }
+        public AchievementType AchievementType { get; set; }
 
         /// <summary />
-        public StreakTypeAchievementType StreakTypeAchievementType { get; set; }
+        public AchievementType PrerequisiteAchievementType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

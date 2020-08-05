@@ -587,6 +587,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class EntityType
     {
+        public const string ACHIEVEMENT_ATTEMPT = "5C144B51-3D2E-4BC2-B6C7-7E4CB890E15F";
+        public const string ACHIEVEMENT_TYPE = "0E99356C-0DEA-4F24-944E-21CD5FA83B9E";
+        public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
         public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
@@ -623,6 +626,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
         public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
+        public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
         public const string MOBILE_CMS_HERO_BLOCK_TYPE = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8";
@@ -670,6 +674,7 @@ namespace Rock.Client.SystemGuid
         public const string STORAGE_ASSETSTORAGE_GOOGLECLOUD = "71344FA8-4210-4B6C-ADC1-9F63C4CA15CA";
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
+        public const string STREAK = "D953B0A5-0065-4624-8844-10010DE01E5C";
         public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
@@ -902,6 +907,7 @@ namespace Rock.Client.SystemGuid
     public class InteractionChannel
     {
         public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
+        public const string ROCK_RMS = "C9CEF6C4-E1EA-4E1F-B8D7-0172236A3F09";
         public const string SHORT_LINKS = "AEFF9B52-AE61-8EBB-4F43-37C152342076";
         public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
     }
@@ -949,6 +955,7 @@ namespace Rock.Client.SystemGuid
         public const string ACCOUNT = "DADE879D-8DF5-4367-89EF-FEECD12B81AB";
         public const string ACCOUNT_DETAIL = "75130E27-405A-4935-AB27-0EDE11F6E8B3";
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
+        public const string ACHIEVEMENT_TYPES = "FCE0D006-F854-4107-9298-667563FA8D77";
         public const string ADD_TRANSACTION = "B1CA86DC-9890-4D26-8EBD-488044E1B3DD";
         public const string ADMIN_CHECK_IN = "7B7207D0-B905-4836-800E-A24DDC6FE445";
         public const string ADMIN_TOOLS = "84E12152-E456-478E-AF68-BA640E9CE65B";
@@ -1326,6 +1333,7 @@ namespace Rock.Client.SystemGuid
     {
         public const string ASSESSMENT_REQUEST = "41FF4269-7B48-40CD-81D4-C11370A13DED";
         public const string ATTENDANCE_NOTIFICATION = "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6";
+        public const string COMMUNICATION_APPROVAL_EMAIL = "11D325F4-DAF3-4579-A9D8-6347CCC02341";
         public const string COMMUNICATION_QUEUE = "2FC7D3E3-D85B-4265-8983-970345215DEA";
         public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
         public const string CONFIG_JOB_NOTIFICATION = "691FEA1B-E5C4-4BF8-A7CD-C588F5C63CA8";

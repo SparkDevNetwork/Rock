@@ -26,13 +26,13 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// AchievementAttempts REST API
+    /// AchievementTypes REST API
     /// </summary>
-    public partial class AchievementAttemptsController : Rock.Rest.ApiController<Rock.Model.AchievementAttempt>
+    public partial class AchievementTypesController : Rock.Rest.ApiController<Rock.Model.AchievementType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AchievementAttemptsController"/> class.
+        /// Initializes a new instance of the <see cref="AchievementTypesController"/> class.
         /// </summary>
-        public AchievementAttemptsController() : base( new Rock.Model.AchievementAttemptService( new Rock.Data.RockContext() ) ) { } 
+        public AchievementTypesController() : base( new Rock.Model.AchievementTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
