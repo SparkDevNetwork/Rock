@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.SystemKey;
 using Rock.Web.Cache;
 
 namespace Rock.Transactions
@@ -73,76 +75,32 @@ namespace Rock.Transactions
 
                     if ( approvers.Any() )
                     {
-                        string fromName = GlobalAttributesCache.Value("OrganizationName");
-                        string fromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
-                        string subject = "Pending Communication Requires Approval";
-                        var appRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-                        string communicationDetails = string.Empty;
-                        string typeName = communication.CommunicationType.ConvertToString();
-
-                        // get custom details by type
-                        switch ( communication.CommunicationType )
+                        var communicationSettingApprovalGuid = Rock.Web.SystemSettings.GetValue( SystemSetting.COMMUNICATION_SETTING_APPROVAL_TEMPLATE ).AsGuidOrNull();
+                        if ( communicationSettingApprovalGuid.HasValue )
                         {
-                            case CommunicationType.Email:
-                                communicationDetails = $@"
-                                        <strong>From Name:</strong> {communication.FromName}<br/>
-                                        <strong>From Address:</strong> {communication.FromEmail}<br/>
-                                        <strong>Subject:</strong> {communication.Subject}<br/>";
-                                break;
-                            case CommunicationType.SMS:
-                                if ( communication.SMSFromDefinedValue != null )
-                                {
-                                    communicationDetails = $"<strong>SMS Number:</strong> {communication.SMSFromDefinedValue.Description} ({communication.SMSFromDefinedValue.Value})<br/>";
-                                }
-                                break;
-                            case CommunicationType.PushNotification:
-                                communicationDetails = $"<strong>Title:</strong> {communication.PushTitle}<br/>";
-                                break;
-                        }
 
-                        // create approval link if one was not provided
-                        if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
-                        {
-                            var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
-                            ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
-                        }
+                            // create approval link if one was not provided
+                            if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
+                            {
+                                var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
+                                ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
+                            }
 
-                        foreach ( var approver in approvers )
-                        {
-                            string message = string.Format( @"
-                                    {{{{ 'Global' | Attribute:'EmailHeader' }}}}
-                            
-                                    <p>{0}:</p>
+                            foreach ( var approver in approvers )
+                            {
+                                var recipients = new List<RockEmailMessageRecipient>();
+                                var emailMessage = new RockEmailMessage( communicationSettingApprovalGuid.Value );
 
-                                    <p>A new communication requires approval. Information about this communication can be found below.</p>
-
-                                    <p>
-                                        <strong>From:</strong> {1}<br />
-                                        <strong>Type:</strong> {2}<br />
-                                        {3}
-                                        <strong>Recipient Count:</strong> {4}<br />
-                                    </p>
-
-                                    <p>
-                                        <a href='{5}'>View Communication</a>
-                                    </p>
-    
-                                    {{{{ 'Global' | Attribute:'EmailFooter' }}}}", 
-                                                    approver.Person.NickName,
-                                                    communication.SenderPersonAlias.Person.FullName,
-                                                    typeName,
-                                                    communicationDetails,
-                                                    communication.GetRecipientsQry( rockContext ).Count(),
-                                                    ApprovalPageUrl );
-
-                            var emailMessage = new RockEmailMessage();
-                            emailMessage.AddRecipient( new RockEmailMessageRecipient( approver.Person, null ) );
-                            emailMessage.FromEmail = fromEmail;
-                            emailMessage.FromName = fromName;
-                            emailMessage.Subject = subject;
-                            emailMessage.Message = message;
-                            emailMessage.AppRoot = appRoot;
-                            emailMessage.Send();
+                                // Build Lava merge fields.
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                                mergeFields.Add( "Approver", approver.Person );
+                                mergeFields.Add( "Communication", communication );
+                                mergeFields.Add( "RecipientsCount", communication.GetRecipientsQry( rockContext ).Count() );
+                                mergeFields.Add( "ApprovalPageUrl", ApprovalPageUrl );
+                                recipients.Add( new RockEmailMessageRecipient( approver.Person, mergeFields ) );
+                                emailMessage.SetRecipients( recipients );
+                                emailMessage.Send();
+                            }
                         }
                     }
                 }

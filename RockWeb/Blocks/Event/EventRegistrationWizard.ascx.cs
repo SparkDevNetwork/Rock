@@ -730,8 +730,8 @@ namespace RockWeb.Blocks.Event
 
                     // Set Calendar.
                     string iCalendarContent = sbSchedule.iCalendarContent ?? string.Empty;
-                    var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-                    if ( calEvent != null && calEvent.DTStart != null )
+                    var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                    if ( calEvent != null && calEvent.DtStart != null )
                     {
                         if ( eventItemOccurrence.Schedule == null )
                         {
@@ -1574,6 +1574,7 @@ namespace RockWeb.Blocks.Event
             if ( selectedTemplateId == null )
             {
                 pnlCosts.Visible = true;
+                pnlDefaultPayment.Visible = true;
                 return;
             }
 
@@ -1582,7 +1583,8 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplateService = new RegistrationTemplateService( rockContext );
                 var registrationTemplate = registrationTemplateService.Get( selectedTemplateId.Value );
                 SaveSelectedTemplate( registrationTemplate );
-                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false ;
+                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false;
+                pnlDefaultPayment.Visible = registrationTemplate.SetCostOnInstance ?? false;
                 if ( !registrationTemplate.GroupTypeId.HasValue )
                 {
                     tbGroupName.Text = string.Empty;

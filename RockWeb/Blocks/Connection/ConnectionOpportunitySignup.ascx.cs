@@ -19,12 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -215,6 +215,14 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnConnect_Click( object sender, EventArgs e )
         {
+            Page.Validate();
+
+            if ( !Page.IsValid )
+            {
+                // Exit and allow the validation controls to render the appropriate error messages.
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var opportunityService = new ConnectionOpportunityService( rockContext );

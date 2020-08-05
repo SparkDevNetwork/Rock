@@ -41,6 +41,11 @@ namespace Rock
         /// </summary>
         public static double _callMSTotal = 0.00;
 
+        /// <summary>
+        /// The timings only setting
+        /// </summary>
+        public static bool TimingsOnly = false;
+
         private class DebugHelperUserState
         {
             public int CallNumber { get; set; }
@@ -206,7 +211,10 @@ namespace Rock
 
                 sbDebug.AppendLine( "\nEND\nGO\n\n" );
 
-                System.Diagnostics.Debug.Write( sbDebug.ToString() );
+                if ( !TimingsOnly )
+                {
+                    System.Diagnostics.Debug.Write( sbDebug.ToString() );
+                }
 
                 var sqlConnection = command.Connection as System.Data.SqlClient.SqlConnection;
 
@@ -295,7 +303,7 @@ namespace Rock
         {
             if ( _callCounts != 0 )
             {
-                Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
+                Debug.WriteLine( $"/* ####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}#### */" );
             }
 
             DbInterception.Remove( _debugLoggingDbCommandInterceptor );

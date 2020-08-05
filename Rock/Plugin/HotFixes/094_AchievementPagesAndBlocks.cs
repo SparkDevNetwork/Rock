@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -27,6 +29,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+            /*
             RockMigrationHelper.AddPage( true, "CA566B33-0265-45C5-B1B2-6FFA6D4743F4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Achievement Types", "", "FCE0D006-F854-4107-9298-667563FA8D77", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "FCE0D006-F854-4107-9298-667563FA8D77", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Achievement Type", "", "1C378B3C-9721-4A9B-857A-E3C5188C5BF8", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "488BE67C-EDA0-489E-8D80-8CC67F5854D4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Achievement Attempts", "", "4AC3D8B7-1A8A-40F9-8F51-8E09B863BA40", "" ); // Site:Rock RMS
@@ -95,6 +98,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.UpdatePageBreadcrumb( "1C378B3C-9721-4A9B-857A-E3C5188C5BF8", false );
             RockMigrationHelper.UpdatePageBreadcrumb( "75CDD408-3E1B-4EF3-9A6F-4DC76B92A80F", false );
             RockMigrationHelper.UpdatePageBreadcrumb( "D3BE86DE-7237-4FE9-9F5D-3C08BD7F9F97", false );
+            */
         }
 
         /// <summary>
@@ -102,7 +106,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            // Attrib for BlockType: Workflow Entry:Block Title Template
+            /*
             RockMigrationHelper.DeleteAttribute( "6E7AC3BE-50D0-4219-BC6A-703821DC785F" );
             // Attrib for BlockType: Workflow Entry:Block Title Icon CSS Class
             RockMigrationHelper.DeleteAttribute( "A5A2897F-6448-45C2-BC9D-44F0E35E9192" );
@@ -141,6 +145,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.DeletePage( "4AC3D8B7-1A8A-40F9-8F51-8E09B863BA40" ); //  Page: Achievement Attempts, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "1C378B3C-9721-4A9B-857A-E3C5188C5BF8" ); //  Page: Achievement Type, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "FCE0D006-F854-4107-9298-667563FA8D77" ); //  Page: Achievement Types, Layout: Full Width, Site: Rock RMS
+            */
         }
     }
 }

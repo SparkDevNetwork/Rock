@@ -558,14 +558,8 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupType.EnableGroupHistory = cbEnableGroupHistory.Checked;
-
-            // Update the allowed Child Group Types.
-            var existingChildGroupTypeIdList = ( groupType.ChildGroupTypes == null )
-                ? new List<int>()
-                : groupType.ChildGroupTypes.Select( x => x.Id ).ToList();
-
             groupType.ChildGroupTypes = new List<GroupType>();
-
+            groupType.ChildGroupTypes.Clear();
             foreach ( var item in ChildGroupTypesList )
             {
                 var childGroupType = groupTypeService.Get( item );
@@ -573,17 +567,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupType.ChildGroupTypes.Add( childGroupType );
                 }
-            }
-
-            var newChildGroupTypeIdList = groupType.ChildGroupTypes.Select( x => x.Id ).ToList();
-
-            if ( existingChildGroupTypeIdList.Except( newChildGroupTypeIdList ).Any()
-                || newChildGroupTypeIdList.Except( existingChildGroupTypeIdList ).Any() )
-            {
-                // Ensure that at least one property of the Group Type is marked as modified.
-                // If we don't do this, Rock.Data.DbContext.RockPostSave won't interpret changes to the Child Group Types collection
-                // as a change to the Group Type itself.
-                groupType.ModifiedDateTime = RockDateTime.Now;
             }
 
             // Delete any removed exclusions
@@ -629,6 +612,10 @@ namespace RockWeb.Blocks.Groups
                 cvGroupType.ErrorMessage = groupType.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
+
+            // Set the ModifiedDateTime field to ensure that at least one property of the primary entity is updated before saving changes.
+            // This forces the Rock.Data.DbContext.RockPostSave method to be triggered even in cases where only related entities have been modified by the user.
+            groupType.ModifiedDateTime = RockDateTime.Now;
 
             // need WrapTransaction due to Attribute saves    
             rockContext.WrapTransaction( () =>

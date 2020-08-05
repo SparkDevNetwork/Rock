@@ -177,9 +177,9 @@
     <Compile Include="Controllers\CodeGenerated\StepTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\StreakAchievementAttemptsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AchievementAttemptsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
-    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypePrerequisitesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AchievementTypePrerequisitesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
@@ -198,7 +198,7 @@
     <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
-    <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
+    <Compile Include="Controllers\AchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />
@@ -392,7 +392,6 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowActionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActivityTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\WorkflowLogsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />

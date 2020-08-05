@@ -7,16 +7,16 @@
         
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-medal"></i>
-                    <asp:Literal ID="lTitlePrefix" runat="server" />
-                    Achievement Types</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-medal"></i>
+                    Achievement Types
+                </h1>
             </div>
             <div class="panel-body">
 
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gAchievements" runat="server" AllowSorting="false" OnRowSelected="gAchievements_Edit">
                         <Columns>
-                            <Rock:ReorderField />
                             <Rock:RockTemplateField ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">
                                 <ItemTemplate>
                                    <i class="fa-fw <%# Eval( "IconCssClass" ) %>"></i>
@@ -24,8 +24,8 @@
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:RockBoundField DataField="StreakTypeName" HeaderText="Streak Type" />
                             <Rock:RockBoundField DataField="ComponentName" HeaderText="Achievement Type" />
+                            <Rock:RockBoundField DataField="SourceName" HeaderText="Source" />
                             <Rock:DeleteField OnClick="gAchievements_Delete" />
                         </Columns>
                     </Rock:Grid>

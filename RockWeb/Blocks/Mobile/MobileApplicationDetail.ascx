@@ -23,7 +23,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
-
+        <Rock:ModalAlert ID="mdWarning" runat="server" />
         <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
