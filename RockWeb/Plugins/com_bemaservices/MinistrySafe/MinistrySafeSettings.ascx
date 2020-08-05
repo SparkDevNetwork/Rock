@@ -5,7 +5,7 @@
         <Rock:ModalAlert ID="maUpdated" runat="server" />
         <asp:Panel ID="pnlWrapper" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-shield"></i> MinistrySafe Background Checks</h1>
+                <h1 class="panel-title"><i class="fa fa-shield"></i>MinistrySafe</h1>
                 <div class="pull-right">
                     <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
@@ -24,9 +24,10 @@
                                 </div>
                                 <div class="col-md-5 col-md-offset-1 col-sm-6">
                                     <Rock:RockTextBox ID="tbAccessToken" runat="server" Label="MinistrySafe API Token" Required="true" RequiredErrorMessage="A MinistrySafe API Token is Required" Help="The MinistrySafe Access Token is generated when a MinistrySafe Account is created on the Rock website." />
-                                        <div class="actions">
-                                            <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click">Save</asp:LinkButton>
-                                        </div>
+                                    <Rock:RockCheckBox ID="cbIsStaging" runat="server" Label="Is Staging Environment" Help="Are you using a staging environment?" />
+                                    <div class="actions">
+                                        <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click">Save</asp:LinkButton>
+                                    </div>
                                 </div>
                             </div>
                         </div>

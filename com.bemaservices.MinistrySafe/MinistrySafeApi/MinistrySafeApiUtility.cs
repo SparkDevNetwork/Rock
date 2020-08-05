@@ -65,19 +65,24 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         private static RestClient RestClient()
         {
             string token = null;
+            bool isStaging = false;
             using ( RockContext rockContext = new RockContext() )
             {
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
                     token = GetSettingValue( settings, "AccessToken", true );
+                    isStaging = GetSettingValue( settings, "IsStaging", false ).AsBoolean();
                 }
             }
+
             if ( token.IsNullOrWhiteSpace() )
             {
                 token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
             }
-            var restClient = new RestClient( MinistrySafeConstants.MINISTRYSAFE_APISERVER );
+
+            var serverLink = isStaging ? MinistrySafeConstants.MINISTRYSAFE_APISERVER : MinistrySafeConstants.MINISTRYSAFE_APISERVER;
+            var restClient = new RestClient( serverLink );
 
             restClient.AddDefaultHeader( "Authorization", string.Format( "Token token={0}", token ) );
             return restClient;
@@ -230,7 +235,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
             IRestResponse restResponse = restClient.Execute( restRequest );
 
-            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized || restResponse.StatusCode == HttpStatusCode.Forbidden )
             {
                 errorMessages.Add( "Failed to authorize MinistrySafe. Please confirm your access token." );
                 return false;

@@ -20,6 +20,11 @@
         /// The login URL
         /// </summary>
         public const string MINISTRYSAFE_APISERVER = "https://safetysystem.abusepreventionsystems.com/api/";
+        
+        /// <summary>
+        /// The staging login URL
+        /// </summary>
+        public const string MINISTRYSAFE_STAGING_APISERVER = "https://staging.abusepreventionsystems.com/api/";
 
         /// <summary>
         /// The candidates URL

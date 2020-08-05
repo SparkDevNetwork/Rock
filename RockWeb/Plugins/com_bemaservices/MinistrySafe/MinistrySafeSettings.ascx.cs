@@ -92,6 +92,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             {
                 var settings = GetSettings( rockContext );
                 SetSettingValue( rockContext, settings, "AccessToken", tbAccessToken.Text, true );
+                SetSettingValue( rockContext, settings, "IsStaging", cbIsStaging.Checked.ToTrueFalse(), true );
 
                 rockContext.SaveChanges();
 
@@ -263,12 +264,14 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
         private void ShowDetail()
         {
             string accessToken = null;
+            bool isStaging = false;
             using ( RockContext rockContext = new RockContext() )
             {
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
                     accessToken = GetSettingValue( settings, "AccessToken", true );
+                    isStaging = GetSettingValue( settings, "IsStaging", false ).AsBoolean();
 
                     if ( accessToken.IsNullOrWhiteSpace() )
                     {
@@ -305,8 +308,10 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 }
 
                 tbAccessToken.Text = accessToken;
+                cbIsStaging.Checked = isStaging;
                 lViewColumnLeft.Text = new DescriptionList()
                     .Add( "Access Token", accessToken )
+                    .Add( "Is Staging Environment", isStaging.ToYesNo() )
                     .Html;
                 DisplayPackages();
             }
