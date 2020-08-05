@@ -27,7 +27,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateRockShopFrontpageUI();
+            //UpdateRockShopFrontpageUI();
         }
 
         /// <summary>
