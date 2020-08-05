@@ -92,7 +92,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             {
                 var settings = GetSettings( rockContext );
                 SetSettingValue( rockContext, settings, "AccessToken", tbAccessToken.Text, true );
-                SetSettingValue( rockContext, settings, "IsStaging", cbIsStaging.Checked.ToTrueFalse(), true );
+                SetSettingValue( rockContext, settings, "IsStaging", cbIsStaging.Checked.ToTrueFalse().ToLower(), false );
 
                 rockContext.SaveChanges();
 

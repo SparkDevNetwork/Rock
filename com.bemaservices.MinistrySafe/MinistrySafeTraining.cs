@@ -40,6 +40,7 @@ namespace com.bemaservices.MinistrySafe
     [ExportMetadata( "ComponentName", "MinistrySafe" )]
 
     [EncryptedTextField( "Access Token", "MinistrySafe Access Token", true, "", "", 0, null, true )]
+    [BooleanField( "Is Staging", "Is Staging Environment", false, "", 0, "IsStaging" )]
     public class MinistrySafeTraining
     {
         #region Private Fields

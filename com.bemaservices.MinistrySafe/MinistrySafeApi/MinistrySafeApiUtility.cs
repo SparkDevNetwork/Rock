@@ -81,7 +81,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
             }
 
-            var serverLink = isStaging ? MinistrySafeConstants.MINISTRYSAFE_APISERVER : MinistrySafeConstants.MINISTRYSAFE_APISERVER;
+            var serverLink = isStaging ? MinistrySafeConstants.MINISTRYSAFE_STAGING_APISERVER : MinistrySafeConstants.MINISTRYSAFE_APISERVER;
             var restClient = new RestClient( serverLink );
 
             restClient.AddDefaultHeader( "Authorization", string.Format( "Token token={0}", token ) );
@@ -247,14 +247,20 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            usersResponse = JsonConvert.DeserializeObject<GetUsersResponse>( restResponse.Content );
-            if ( usersResponse == null )
+            try
             {
-                errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
-                return false;
+                usersResponse = JsonConvert.DeserializeObject<GetUsersResponse>( restResponse.Content );
+                if ( usersResponse == null )
+                {
+                    errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
+                    return false;
+                }
+                userResponse = usersResponse.Data.FirstOrDefault();
             }
+            catch
+            {
 
-            userResponse = usersResponse.Data.FirstOrDefault();
+            }
 
             return true;
         }
