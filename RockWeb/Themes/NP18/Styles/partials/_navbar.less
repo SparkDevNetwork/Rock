@@ -4,13 +4,20 @@
     margin: 0;
     position: relative;
     border: none;
-    float: none;
+    justify-content: center;
     transition:
         padding ease-in-out 300ms,
         box-shadow ease-in-out 300ms,
         background-color ease-in-out 300ms,
         margin-bottom ease-in-out 300ms;
     z-index: 100;
+}
+
+
+.nav-logo {
+    display: block;
+    color: @brand-primary;
+    margin: 3px 0;
 }
 
 .navbar-collapse {
@@ -32,6 +39,7 @@
 }
 
 .navbar.open {
+
     .navbar-toggler {
         position: fixed;
         right: 0;
@@ -45,13 +53,6 @@
     }
 }
 
-// Mobile view
-@media (max-width: @screen-sm-max) {
-    .navbar {
-        padding: 0 1rem;
-        color: gray;
-        background-color: white;
-    }
     .navbar-toggle-content {
         display: none;
         background-color: #282828;
@@ -60,41 +61,21 @@
 
     .navbar.open {
         .navbar-toggle-content {
-            display: block;
+            display: inline-block;
             .fullscreen-scrollable
         }
     }
+
+.opaque .navbar {
+    padding: 0.75rem 3rem;
+    margin-bottom: 1.5rem;
+    color: gray;
+    background-color: @truewhite;
+    box-shadow: @box-shadow;
 }
 
-// Small Desktop view
-@media (min-width: @screen-md-min) {
 
-    .navbar {
-        padding: 1.5rem 3rem;
-        color: @white;
-        background-color: transparent;
-    }
-
-    .noheader .navbar {
-        padding: 1.25rem 3rem;
-        color: gray;
-        background-color: @truewhite;
-    }
-
-    .opaque .navbar {
-        padding: 0.75rem 3rem;
-        margin-bottom: 1.5rem;
-        color: gray;
-        background-color: @truewhite;
-        box-shadow: @box-shadow;
-    }
-
-    .navbar-toggler {
-        display: none;
-    }
-
-    .block-highlight .navbar-toggle-content,
-    .zone-highlight .navbar-toggle-content {
-        position: relative;
-    }
+.block-highlight .navbar-toggle-content,
+.zone-highlight .navbar-toggle-content {
+    position: relative;
 }
