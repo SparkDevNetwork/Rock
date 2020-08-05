@@ -30,7 +30,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateMobileBlockTemplates();
+            //UpdateMobileBlockTemplates();
         }
 
         /// <summary>

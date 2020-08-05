@@ -27,7 +27,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddPrayerRequestCommentsNotificationEmailTemplateUp();
+            //AddPrayerRequestCommentsNotificationEmailTemplateUp();
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            AddPrayerRequestCommentsNotificationEmailTemplateDown();
+            //AddPrayerRequestCommentsNotificationEmailTemplateDown();
         }
 
         /// <summary>

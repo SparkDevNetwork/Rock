@@ -158,9 +158,6 @@ namespace Rock.Client
         public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
-        public ICollection<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
-
-        /// <summary />
         public StreakType StreakType { get; set; }
 
         /// <summary>

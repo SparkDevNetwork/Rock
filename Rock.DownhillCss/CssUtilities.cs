@@ -594,10 +594,6 @@ NavigationPage {
     color: ?color-text;
 }
 
-.flyout {
-    background-color: ?color-brand;
-}
-
 /*
     Utility Classes
     -----------------------------------------------------------
@@ -876,6 +872,21 @@ NavigationPage {
     Control CSS
     -----------------------------------------------------------
 */
+
+/* Flyout Styling */
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
+}
 
 /* Countdown */
 .countdown-field {
@@ -1343,6 +1354,10 @@ NavigationPage {
 ^literal {
     line-height: 1.15;
     margin-bottom: 16;
+}
+
+^editor {
+    margin: -5, -10;
 }
 
 /* Field Titles */

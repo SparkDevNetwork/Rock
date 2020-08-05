@@ -753,6 +753,19 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Returns a <see cref="System.Collections.Generic.Dictionary{String, Object}" /> representing all of the <see cref="Rock.Model.Page">page's</see> query parameters.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.Dictionary{String, Obejct}"/> containing all the <see cref="Rock.Model.Page">page's</see> query parameters. Each
+        /// <see cref="System.Collections.Generic.KeyValuePair{String, Object}"/> consists of the key being a <see cref="System.String"/> representing
+        /// the name of the page parameter and the value being an <see cref="System.Object"/> that represents the parameter value.
+        /// </returns>
+        public Dictionary<string, object> QueryParameters()
+        {
+            return RockPage.QueryParameters();
+        }
+
+        /// <summary>
         /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/> from a "linked page attribute" and any necessary query parameters.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>

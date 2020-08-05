@@ -106,8 +106,10 @@
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Achievement\StepProgramAchievementTests.cs" />
+    <Compile Include="Achievement\InteractionAchievementTests.cs" />
     <Compile Include="Achievement\AccumulativeAchievementTests.cs" />
-    <Compile Include="Achievement\StreakAchievementTests.cs" />
+    <Compile Include="Achievement\AchievementTests.cs" />
     <Compile Include="Attendances\AttendanceCodeTests.cs" />
     <Compile Include="Communications\EmailTransportComponentTests.cs" />
     <Compile Include="Communications\Transport\MailgunTests.cs" />
@@ -117,7 +119,9 @@
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
+    <Compile Include="Lava\CachingTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
+    <Compile Include="Lava\RockEntityTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />

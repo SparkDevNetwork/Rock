@@ -30,26 +30,50 @@ namespace Rock.Mobile
     {
         #region Private Fields
 
-        private const string _defaultFlyoutXaml = @"
-<ListView SeparatorVisibility=""None""
-          HasUnevenRows=""true""
-          BackgroundColor=""#c4c4c4""
-          ItemsSource=""{Binding MenuItems}"">
+        private const string _defaultFlyoutXaml = @"<ListView SeparatorVisibility=""None"" 
+    HasUnevenRows=""true"" 
+    ItemsSource=""{Binding MenuItems}"">
+
     <ListView.Header>
-        <Rock:LoginStatus Padding=""20, 20, 20, 20"" />
+        <StackLayout VerticalOptions=""FillAndExpand""
+            Orientation=""Vertical"">
+
+            <Rock:LoginStatus Padding=""20, 70, 20, 50"" 
+                ImageSize=""120"" 
+                ImageBorderColor=""rgba(255, 255, 255, 0.4)"" 
+                ImageBorderSize=""5"" />
+
+            <BoxView HeightRequest=""1"" BackgroundColor=""rgba(255, 255, 255, 0.2)""
+                HorizontalOptions=""FillAndExpand""/>
+
+        </StackLayout>
     </ListView.Header>
+
     <ListView.ItemTemplate>
         <DataTemplate>
-            <ViewCell>
-                <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
-                    <Rock:Image Source=""{Binding IconUrl}"" WidthRequest=""20"" />
-                    <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
+            <Rock:ViewCell SelectedBackgroundColor=""rgba(255, 255, 255, 0.2)"">
+            
+                <StackLayout VerticalOptions=""FillAndExpand"" 
+                    Orientation=""Vertical"">
+
+                    <ContentView StyleClass=""pt-16, pb-12"">
+                        <Label StyleClass=""text-white, ml-32, flyout-menu-item""
+                            Text=""{Binding Title}"" 
+                            VerticalOptions=""Center"" 
+                            HorizontalOptions=""FillAndExpand"" />
+                    </ContentView>
+
+                    <BoxView HeightRequest=""1""
+                        BackgroundColor=""rgba(255, 255, 255, 0.4)""
+                        HorizontalOptions=""FillAndExpand"" />
+
                 </StackLayout>
-            </ViewCell>
+
+            </Rock:ViewCell>
         </DataTemplate>
     </ListView.ItemTemplate>
-</ListView>
-";
+
+</ListView>";
 
         #endregion
 

@@ -548,10 +548,24 @@ This can be due to multiple threads updating the same attribute at the same time
                         attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
                     }
 
-                    foreach ( var attributeValue in attributeValueQuery )
+                    /* 2020-07-29 MDP
+                     Select just AttributeId, EntityId, and Value. That way the AttributeId_EntityId_Value index is the
+                     only thing that SQL needs to touch. This improves query performance around 10% since SQL doesn't
+                     have to look at the full row after finding the records in the index.
+                     */
+                    var attributeValueSelectQuery = attributeValueQuery.Select( a =>
+                        new
+                        {
+                            a.AttributeId,
+                            a.EntityId,
+                            a.Value
+                        } );
+
+                    foreach ( var attributeValueSelect in attributeValueSelectQuery )
                     {
-                        var attributeKey = AttributeCache.Get( attributeValue.AttributeId ).Key;
-                        attributeValues[attributeKey] = new AttributeValueCache( attributeValue );
+                        var attributeKey = AttributeCache.Get( attributeValueSelect.AttributeId ).Key;
+                        var attributeValueCache = new AttributeValueCache( attributeValueSelect.AttributeId, attributeValueSelect.EntityId, attributeValueSelect.Value );
+                        attributeValues[attributeKey] = attributeValueCache;
                     }
                 }
 

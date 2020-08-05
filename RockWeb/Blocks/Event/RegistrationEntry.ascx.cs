@@ -3164,6 +3164,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
+            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            {
+                person.PrimaryCampusId = campusId;
+                rockContext.SaveChanges();
+            }
+
             int? familyId = null;
 
             if ( person.Id > 0 )
@@ -3219,42 +3225,53 @@ namespace RockWeb.Blocks.Event
             }
 
             // If we have family ID and a meaninful location then update that info
-            if ( familyId.HasValue && location != null && location.IsMinimumViableAddress() )
+            if ( familyId.HasValue )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
-                var existingLocation = new LocationService( rockContext ).Get(
-                    location.Street1,
-                    location.Street2,
-                    location.City,
-                    location.State,
-                    location.PostalCode,
-                    location.Country,
-                    familyGroup,
-                    true,
-                    false );
 
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null && familyGroup != null )
+                if ( !familyGroup.CampusId.HasValue && campusId.HasValue )
                 {
-                    if ( existingLocation != null )
+                    familyGroup.CampusId = campusId;
+                    rockContext.SaveChanges();
+                }
+
+                if ( location != null && location.IsMinimumViableAddress() )
+                {
+
+                    var existingLocation = new LocationService( rockContext ).Get(
+                        location.Street1,
+                        location.Street2,
+                        location.City,
+                        location.State,
+                        location.PostalCode,
+                        location.Country,
+                        familyGroup,
+                        true,
+                        false );
+
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null && familyGroup != null )
                     {
-                        // A location exists but is not associated with this family group
-                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
-                    }
-                    else
-                    {
-                        // Create a new location and save it to the family group
-                        GroupService.AddNewGroupAddress(
-                            rockContext,
-                            familyGroup,
-                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                            location.Street1,
-                            location.Street2,
-                            location.City,
-                            location.State,
-                            location.PostalCode,
-                            location.Country,
-                            true );
+                        if ( existingLocation != null )
+                        {
+                            // A location exists but is not associated with this family group
+                            GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                        }
+                        else
+                        {
+                            // Create a new location and save it to the family group
+                            GroupService.AddNewGroupAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1,
+                                location.Street2,
+                                location.City,
+                                location.State,
+                                location.PostalCode,
+                                location.Country,
+                                true );
+                        }
                     }
                 }
             }
