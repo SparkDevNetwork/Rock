@@ -32,6 +32,11 @@
         public const string MINISTRYSAFE_USERS_URL = "v2/users";
 
         /// <summary>
+        /// The packages URL
+        /// </summary>
+        public const string MINISTRYSAFE_PACKAGES_URL = "v2/custom_background_check_packages";
+
+        /// <summary>
         /// The report URL
         /// </summary>
         public const string MINISTRYSAFE_BACKGROUNDCHECK_URL = "v2/background_checks";

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UserList.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.MinistrySafe.UserList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MinistrySafeTrainingList.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.MinistrySafe.MinistrySafeTrainingList" %>
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
@@ -7,7 +7,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-file-text-o"></i> Users</h1>
+                    <h1 class="panel-title"><i class="fa fa-file-text-o"></i> Trainings</h1>
                 </div>
                 <div class="panel-body">
 

@@ -56,14 +56,14 @@ namespace com.bemaservices.MinistrySafe.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var provider = new MinistrySafeTraining();
+            var provider = new MinistrySafe();
             var personAttribute = AttributeCache.Get( GetAttributeValue( action, "PersonAttribute" ).AsGuid() );
             var surveyTypeAttribute = AttributeCache.Get( GetAttributeValue( action, "SurveyTypeAttribute" ).AsGuid() );
             var userTypeAttribute = AttributeCache.Get( GetAttributeValue( action, "UserTypeAttribute" ).AsGuid() );
             var directLoginUrlAttribute = AttributeCache.Get( GetAttributeValue( action, "DirectLoginUrl" ).AsGuid() );
 
-            var ministrySafe = new MinistrySafeTraining();
-            return ministrySafe.SendRequest( rockContext, action.Activity.Workflow, personAttribute, userTypeAttribute,
+            var ministrySafe = new MinistrySafe();
+            return ministrySafe.SendTraining( rockContext, action.Activity.Workflow, personAttribute, userTypeAttribute,
                  surveyTypeAttribute, directLoginUrlAttribute, out errorMessages );
         }
     }

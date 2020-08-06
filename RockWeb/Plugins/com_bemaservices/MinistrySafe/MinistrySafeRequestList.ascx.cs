@@ -189,7 +189,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
                 if ( bc != null )
                 {
-                    string url = new com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck().GetReportUrl( bc.ResponseId );
+                    string url = new com.bemaservices.MinistrySafe.MinistrySafe().GetReportUrl( bc.ResponseId );
                     if ( url.IsNotNullOrWhiteSpace() && url != "Unauthorized" )
                     {
                         try

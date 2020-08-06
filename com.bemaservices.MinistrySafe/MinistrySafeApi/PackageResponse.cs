@@ -14,23 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
     /// <summary>
-    /// JSON return structure for the get packages API call's response.
+    /// JSON return structure for the create candidate API call's response.
     /// </summary>
-    internal class GetUsersResponse
+    internal class PackageResponse
     {
         /// <summary>
-        /// Gets or sets the packages array.
+        /// Gets or sets the candidate ID.
         /// </summary>
         /// <value>
-        /// The packages array.
+        /// The candidate ID.
         /// </value>
-        [JsonProperty( "" )]
-        public List<UserResponse> Data { get; set; }
+        [JsonProperty( "id" )]
+        public string Id { get; set; }
+
+        [JsonProperty( "name" )]
+        public string Name { get; set; }
+
+        [JsonProperty( "code" )]
+        public string Code { get; set; }
+
+        [JsonProperty( "price" )]
+        public decimal Price { get; set; }
+   
+        public int? Level { get; set; }
     }
 }

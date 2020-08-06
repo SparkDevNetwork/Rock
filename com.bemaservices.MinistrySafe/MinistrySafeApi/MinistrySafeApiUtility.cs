@@ -24,7 +24,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <returns></returns>
         private static List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) );
+            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafe ) );
             if ( ministrySafeEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -147,7 +147,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <param name="getPackagesResponse">The get packages response.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        internal static bool GetUsers( out GetUsersResponse getUsersResponse, List<string> errorMessages )
+        internal static bool GetUsers( out List<UserResponse> getUsersResponse, List<string> errorMessages )
         {
             getUsersResponse = null;
             RestClient restClient = RestClient();
@@ -166,8 +166,44 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            getUsersResponse = JsonConvert.DeserializeObject<GetUsersResponse>( restResponse.Content );
+            getUsersResponse = JsonConvert.DeserializeObject<List<UserResponse>>( restResponse.Content );
             if ( getUsersResponse == null )
+            {
+                errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Gets the packages.
+        /// </summary>
+        /// <param name="getPackagesResponse">The get packages response.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns>True/False value of whether the request was successfully sent or not.</returns>
+        internal static bool GetPackages( out List<PackageResponse> getPackagesResponse, List<string> errorMessages )
+        {
+            getPackagesResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_PACKAGES_URL );
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Failed to authorize MinistrySafe. Please confirm your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.OK )
+            {
+                errorMessages.Add( "Failed to get MinistrySafe Users: " + restResponse.Content );
+                return false;
+            }
+
+            getPackagesResponse = JsonConvert.DeserializeObject<List<PackageResponse>>( restResponse.Content );
+            if ( getPackagesResponse == null )
             {
                 errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
                 return false;
@@ -228,7 +264,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         internal static bool GetUser( Rock.Model.Workflow workflow, Person person, int personAliasId, string userType, out UserResponse userResponse, List<string> errorMessages )
         {
             userResponse = null;
-            GetUsersResponse usersResponse = null;
+            List<UserResponse> usersResponse = null;
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_USERS_URL );
             restRequest.AddParameter( "external_id", personAliasId );
@@ -247,22 +283,15 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            try
+            usersResponse = JsonConvert.DeserializeObject<List<UserResponse>>( restResponse.Content );
+            if ( usersResponse == null )
             {
-                usersResponse = JsonConvert.DeserializeObject<GetUsersResponse>( restResponse.Content );
-                if ( usersResponse == null )
-                {
-                    errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
-                    return false;
-                }
-                userResponse = usersResponse.Data.FirstOrDefault();
+                errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
+                return false;
             }
-            catch
-            {
+            userResponse = usersResponse.FirstOrDefault();
 
-            }
-
-            return true;
+            return userResponse != null;
         }
 
         /// <summary>
@@ -398,10 +427,16 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             backgroundCheckResponse = null;
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, Method.POST );
-            restRequest.AddParameter( "user_id", userId );
-            restRequest.AddParameter( "level", level );
-            restRequest.AddParameter( "custom_background_check_package_code", packageCode );
-            restRequest.AddParameter( "quickapp", true );
+            restRequest.AddParameter( "background_check[user_id]", userId );
+            restRequest.AddParameter( "background_check[quickapp]", true );
+            if ( level.IsNotNullOrWhiteSpace() )
+            {
+                restRequest.AddParameter( "background_check[level]", level );
+            }
+            if ( packageCode.IsNotNullOrWhiteSpace() )
+            {
+                restRequest.AddParameter( "background_check[custom_background_check_package_code]", packageCode );
+            }
 
             IRestResponse restResponse = restClient.Execute( restRequest );
 

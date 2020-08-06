@@ -31,12 +31,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 {
-    [DisplayName( "User List" )]
+    [DisplayName( "Ministry Safe Training List" )]
     [Category( "BEMA Services > Ministry Safe" )]
-    [Description( "Lists all the Ministry Safe Users." )]
+    [Description( "Lists all the Ministry Safe Trainings." )]
 
     [LinkedPage( "Workflow Detail Page", "The page to view details about the Ministry Safe workflow" )]
-    public partial class UserList : RockBlock, ICustomGridColumns
+    public partial class MinistrySafeTrainingList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

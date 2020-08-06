@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             nbNotification.Visible = false;
 
             List<string> errorMessages = new List<string>();
-            if ( !com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck.UpdatePackages( errorMessages ) )
+            if ( !com.bemaservices.MinistrySafe.MinistrySafe.UpdatePackages( errorMessages ) )
             {
                 nbNotification.Text = "<p>" + errorMessages.AsDelimited( "</p><p>" ) + "</p>";
                 nbNotification.Visible = true;
@@ -182,7 +182,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 bioBlock.SaveAttributeValue( "WorkflowActions" );
             }
 
-            string ministrySafeTypeName = ( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) ).FullName;
+            string ministrySafeTypeName = ( typeof( com.bemaservices.MinistrySafe.MinistrySafe ) ).FullName;
             var ministrySafeComponent = BackgroundCheckContainer.Instance.Components.Values.FirstOrDefault( c => c.Value.TypeName == ministrySafeTypeName );
             ministrySafeComponent.Value.SetAttributeValue( "Active", "True" );
             ministrySafeComponent.Value.SaveAttributeValue( "Active" );
@@ -237,7 +237,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             {
                 var packages = new DefinedValueService( rockContext )
                     .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
-                    .Where( v => v.ForeignId == 2 && v.IsActive )
+                    .Where( v => v.ForeignId == 4 && v.IsActive )
                     .Select( v => v.Value.Substring( MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX.Length ) )
                     .ToList();
 
@@ -253,7 +253,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
         /// </returns>
         private bool IsDefaultProvider()
         {
-            string providerTypeName = ( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) ).FullName;
+            string providerTypeName = ( typeof( com.bemaservices.MinistrySafe.MinistrySafe ) ).FullName;
             string defaultProvider = Rock.Web.SystemSettings.GetValue( SystemSetting.DEFAULT_BACKGROUND_CHECK_PROVIDER ) ?? string.Empty;
             return providerTypeName == defaultProvider;
         }
@@ -324,7 +324,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
         /// <returns></returns>
         private List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) );
+            var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafe ) );
             if ( ministrySafeEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -383,7 +383,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             }
             else
             {
-                var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafeBackgroundCheck ) );
+                var ministrySafeEntityType = EntityTypeCache.Get( typeof( com.bemaservices.MinistrySafe.MinistrySafe ) );
                 if ( ministrySafeEntityType != null )
                 {
                     var attribute = new AttributeService( rockContext )
