@@ -348,6 +348,12 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         private void AddDynamicControls()
         {
+            var deleteCol = gPtoRequestList.Columns.OfType<DeleteField>().FirstOrDefault();
+            if ( deleteCol != null )
+            {
+                gPtoRequestList.Columns.Remove( deleteCol );
+            }
+
             if ( GetViewRights() )
             {
                 // Add delete column
