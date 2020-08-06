@@ -1,0 +1,18 @@
+
+## from https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+
+POST https://sandbox.gotnpgateway.com/api/transaction/search  HTTP/1.1
+content-type: application/json
+Authorization: api_1D4yJCYJNXV3MqnOmAlEMHmYYeg
+
+{
+    "created_at": {
+      "start_date": "2020-07-01T00:00:00Z",
+      "end_date": "2020-11-30T00:00:00Z"
+    },
+    "transaction_source": {
+        "operator": "=",
+        "value": "recurring"
+    },
+    "limit": 0
+}

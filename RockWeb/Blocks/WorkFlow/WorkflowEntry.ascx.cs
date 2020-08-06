@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -26,11 +25,11 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Security;
-using Rock.Workflow;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -48,11 +47,13 @@ namespace RockWeb.Blocks.WorkFlow
         Description = "Type of workflow to start.",
         Key = AttributeKey.WorkflowType,
         Order = 0 )]
+
     [BooleanField(
         "Show Summary View",
         Description = "If workflow has been completed, should the summary view be displayed?",
         Key = AttributeKey.ShowSummaryView,
         Order = 1 )]
+
     [CodeEditorField(
         "Block Title Template",
         Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
@@ -62,12 +63,21 @@ namespace RockWeb.Blocks.WorkFlow
         EditorHeight = 100,
         IsRequired = false,
         Order = 2)]
+
     [TextField(
         "Block Title Icon CSS Class",
         Description = "The CSS class for the icon displayed in the block title. If not specified, the icon for the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleIconCssClass,
         IsRequired = false,
         Order = 3 )]
+
+    [BooleanField(
+        "Disable Passing WorkflowId",
+        Description = "If disabled, prevents the use of a Workflow Id (WorkflowId=) from being passed in and only accepts a WorkflowGuid.",
+        Key = AttributeKey.DisablePassingWorkflowId,
+        DefaultBooleanValue = false,
+        Order = 4
+        )]
 
     #endregion
 
@@ -84,9 +94,31 @@ namespace RockWeb.Blocks.WorkFlow
             public const string ShowSummaryView = "ShowSummaryView";
             public const string BlockTitleTemplate = "BlockTitleTemplate";
             public const string BlockTitleIconCssClass = "BlockTitleIconCssClass";
+            public const string DisablePassingWorkflowId = "DisablePassingWorkflowId";
         }
 
         #endregion Attribute Keys
+
+        #region PageParameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string WorkflowId = "WorkflowId";
+            public const string WorkflowGuid = "WorkflowGuid";
+            public const string WorkflowName = "WorkflowName";
+            public const string ActionId = "ActionId";
+
+            public const string WorkflowTypeId = "WorkflowTypeId";
+            public const string Command = "Command";
+            public const string GroupId = "GroupId";
+            public const string PersonId = "PersonId";
+
+        }
+
+        #endregion PageParameter Keys
 
         #region Fields
 
@@ -299,10 +331,17 @@ namespace RockWeb.Blocks.WorkFlow
             // If operating against an existing workflow, get the workflow and load attributes
             if ( !WorkflowId.HasValue )
             {
-                WorkflowId = PageParameter( "WorkflowId" ).AsIntegerOrNull();
+                bool allowPassingWorkflowId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean();
+                if ( allowPassingWorkflowId )
+                {
+
+                    var workflowIdValue = PageParameter( PageParameterKey.WorkflowId );
+                    WorkflowId = workflowIdValue.AsIntegerOrNull();
+                }
+
                 if ( !WorkflowId.HasValue )
                 {
-                    Guid guid = PageParameter( "WorkflowGuid" ).AsGuid();
+                    Guid guid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuid();
                     if ( !guid.IsEmpty() )
                     {
                         _workflow = _workflowService.Queryable()
@@ -340,7 +379,7 @@ namespace RockWeb.Blocks.WorkFlow
             // If an existing workflow was not specified, activate a new instance of workflow and start processing
             if ( _workflow == null )
             {
-                string workflowName = PageParameter( "WorkflowName" );
+                string workflowName = PageParameter( PageParameterKey.WorkflowName );
                 if ( string.IsNullOrWhiteSpace( workflowName ) )
                 {
                     workflowName = "New " + _workflowType.WorkTerm;
@@ -352,14 +391,14 @@ namespace RockWeb.Blocks.WorkFlow
                     // If a PersonId or GroupId parameter was included, load the corresponding
                     // object and pass that to the actions for processing
                     object entity = null;
-                    int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                    int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
                     if ( personId.HasValue )
                     {
                         entity = new PersonService( _rockContext ).Get( personId.Value );
                     }
                     else
                     {
-                        int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                        int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                         if ( groupId.HasValue )
                         {
                             entity = new GroupService( _rockContext ).Get( groupId.Value );
@@ -421,7 +460,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
-                int? actionId = PageParameter( "ActionId" ).AsIntegerOrNull();
+                int? actionId = PageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
                 foreach ( var activity in _workflow.Activities
                     .Where( a =>
                         a.IsActive &&
@@ -522,7 +561,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
+                    WorkflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
                     ConfiguredType = false;
                 }
             }
@@ -536,7 +575,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void ProcessActionRequest()
         {
-            string action = PageParameter( "Command" );
+            string action = PageParameter( PageParameterKey.Command );
             if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 CompleteFormAction( action );
@@ -854,14 +893,22 @@ namespace RockWeb.Blocks.WorkFlow
                         // If we are already being directed (presumably from the Redirect Action), don't redirect again.
                         if ( !Response.IsRequestBeingRedirected )
                         {
-                            var cb = CurrentPageReference;
-                            cb.Parameters.AddOrReplace( "WorkflowId", _workflow.Id.ToString() );
-                            foreach ( var key in cb.QueryString.AllKeys.Where( k => !k.Equals( "Command", StringComparison.OrdinalIgnoreCase ) ) )
+                            var pageReference = new PageReference( CurrentPageReference );
+                            bool allowPassingWorkflowId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean();
+                            if ( allowPassingWorkflowId )
                             {
-                                cb.Parameters.AddOrIgnore( key, cb.QueryString[key] );
+                                pageReference.Parameters.AddOrReplace( PageParameterKey.WorkflowId, _workflow.Id.ToString() );
                             }
-                            cb.QueryString = new System.Collections.Specialized.NameValueCollection();
-                            Response.Redirect( cb.BuildUrl(), false );
+
+                            pageReference.Parameters.AddOrReplace( PageParameterKey.WorkflowGuid, _workflow.Guid.ToString() );
+                            
+                            foreach ( var key in pageReference.QueryString.AllKeys.Where( k => !k.Equals( PageParameterKey.Command, StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                pageReference.Parameters.AddOrIgnore( key, pageReference.QueryString[key] );
+                            }
+
+                            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
+                            Response.Redirect( pageReference.BuildUrl(), false );
                             Context.ApplicationInstance.CompleteRequest();
                         }
                     }

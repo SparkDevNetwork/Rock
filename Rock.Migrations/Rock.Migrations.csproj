@@ -65,6 +65,26 @@
     <Compile Include="Migrations\202007211806064_Rollup_0721.Designer.cs">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.cs" />
+    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.Designer.cs">
+      <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.cs" />
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008031623133_EntityAchievements.cs" />
+    <Compile Include="Migrations\202008031623133_EntityAchievements.Designer.cs">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008042038088_StepAchievements.cs" />
+    <Compile Include="Migrations\202008042038088_StepAchievements.Designer.cs">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008042327182_Rollup_0804.cs" />
+    <Compile Include="Migrations\202008042327182_Rollup_0804.Designer.cs">
+      <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1313,6 +1333,21 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202007211806064_Rollup_0721.resx">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.resx">
+      <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008031623133_EntityAchievements.resx">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008042038088_StepAchievements.resx">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008042327182_Rollup_0804.resx">
+      <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -2578,7 +2613,7 @@
 CALL CopyToPackage.bat
 </PreBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

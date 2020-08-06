@@ -34,6 +34,19 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Converts a string to a hash value using xxHash, a fast non-cryptographic hash algorithm.
+        /// Refer https://www.xxhash.com.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string XxHash( this string str )
+        {
+            var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );
+
+            return hash.ToString();
+        }
+
+        /// <summary>
         /// Converts string to MD5 hash
         /// </summary>
         /// <param name="str">The string.</param>
@@ -754,6 +767,25 @@ namespace Rock
         {
             int place = source.LastIndexOf( find );
             return place > 0 ? source.Remove( place, find.Length ).Insert( place, replace ) : source;
+        }
+
+        /// <summary>
+        /// Replaces string found at the very end of the content.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="replacement">The replacement.</param>
+        /// <returns></returns>
+        public static string ReplaceIfEndsWith( this string content, string suffix, string replacement )
+        {
+            if ( content.EndsWith( suffix ) )
+            {
+                return content.Substring( 0, content.Length - suffix.Length ) + replacement;
+            }
+            else
+            {
+                return content;
+            }
         }
 
         /// <summary>

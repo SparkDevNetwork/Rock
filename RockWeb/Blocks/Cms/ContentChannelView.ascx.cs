@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Caching;
-using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -129,7 +127,7 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         DefaultIntegerValue = 0,
         Category = "CustomSetting",
-        Key = AttributeKey.FilterId)]
+        Key = AttributeKey.FilterId )]
     [BooleanField(
         "Query Parameter Filtering",
         Description = "Determines if block should evaluate the query string parameters for additional filter criteria.",
@@ -172,6 +170,12 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Category = "CustomSetting",
         Key = AttributeKey.MetaImageAttribute )]
+    [BooleanField(
+        "Enable Tag List",
+        Description = "Determines if the ItemTagList lava parameter will be populated.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.EnableTagList )]
 
     #endregion Block Attributes
     public partial class ContentChannelView : RockBlockCustomSettings
@@ -199,6 +203,7 @@ namespace RockWeb.Blocks.Cms
             public const string RssAutodiscover = "RssAutodiscover";
             public const string MetaDescriptionAttribute = "MetaDescriptionAttribute";
             public const string MetaImageAttribute = "MetaImageAttribute";
+            public const string EnableTagList = "EnableTagList";
         }
 
         #endregion Attribute Keys
@@ -222,6 +227,7 @@ namespace RockWeb.Blocks.Cms
         private readonly string CONTENT_CACHE_KEY = "Content";
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
+        private readonly string TAG_CACHE_KEY = "Tags";
 
         #endregion Fields
 
@@ -424,21 +430,22 @@ namespace RockWeb.Blocks.Cms
 
             rockContext.SaveChanges();
 
-            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
-            SetAttributeValue( "Channel", ddlChannel.SelectedValue );
-            SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
-            SetAttributeValue( "Template", ceTemplate.Text );
-            SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
-            SetAttributeValue( "CacheDuration", ( nbItemCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
-            SetAttributeValue( "OutputCacheDuration", ( nbOutputCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
-            SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
-            SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
-            SetAttributeValue( "QueryParameterFiltering", cbQueryParamFiltering.Checked.ToString() );
-            SetAttributeValue( "Order", kvlOrder.Value );
-            SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
-            SetAttributeValue( "RssAutodiscover", cbSetRssAutodiscover.Checked.ToString() );
-            SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
-            SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
+            SetAttributeValue( AttributeKey.Status, cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
+            SetAttributeValue( AttributeKey.Channel, ddlChannel.SelectedValue );
+            SetAttributeValue( AttributeKey.MergeContent, cbMergeContent.Checked.ToString() );
+            SetAttributeValue( AttributeKey.Template, ceTemplate.Text );
+            SetAttributeValue( AttributeKey.Count, ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
+            SetAttributeValue( AttributeKey.CacheDuration, ( nbItemCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
+            SetAttributeValue( AttributeKey.OutputCacheDuration, ( nbOutputCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
+            SetAttributeValue( AttributeKey.CacheTags, cblCacheTags.SelectedValues.AsDelimited( "," ) );
+            SetAttributeValue( AttributeKey.FilterId, dataViewFilter.Id.ToString() );
+            SetAttributeValue( AttributeKey.QueryParameterFiltering, cbQueryParamFiltering.Checked.ToString() );
+            SetAttributeValue( AttributeKey.Order, kvlOrder.Value );
+            SetAttributeValue( AttributeKey.SetPageTitle, cbSetPageTitle.Checked.ToString() );
+            SetAttributeValue( AttributeKey.RssAutodiscover, cbSetRssAutodiscover.Checked.ToString() );
+            SetAttributeValue( AttributeKey.MetaDescriptionAttribute, ddlMetaDescriptionAttribute.SelectedValue );
+            SetAttributeValue( AttributeKey.MetaImageAttribute, ddlMetaImageAttribute.SelectedValue );
+            SetAttributeValue( AttributeKey.EnableTagList, cbEnableTags.Checked.ToString() );
 
             var ppFieldType = new PageReferenceFieldType();
             SetAttributeValue( AttributeKey.DetailPage, ppFieldType.GetEditValue( ppDetailPage, null ) );
@@ -586,6 +593,7 @@ $(document).ready(function() {
             nbCount.Text = GetAttributeValue( AttributeKey.Count );
             nbItemCacheDuration.Text = GetAttributeValue( AttributeKey.CacheDuration );
             nbOutputCacheDuration.Text = GetAttributeValue( AttributeKey.OutputCacheDuration );
+            cbEnableTags.Checked = GetAttributeValue( AttributeKey.EnableTagList ).AsBoolean();
 
             DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
@@ -637,6 +645,8 @@ $(document).ready(function() {
             bool isSetPageTitleEnabled = GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean();
             bool isRssAutodiscoverEnabled = GetAttributeValue( AttributeKey.RssAutodiscover ).AsBoolean();
             bool isQueryParameterFilteringEnabled = GetAttributeValue( AttributeKey.QueryParameterFiltering ).AsBoolean( false );
+            bool isTagListEnabled = GetAttributeValue( AttributeKey.EnableTagList ).AsBoolean();
+
             string metaDescriptionAttributeValue = GetAttributeValue( AttributeKey.MetaDescriptionAttribute );
             string metaImageAttributeValue = GetAttributeValue( AttributeKey.MetaImageAttribute );
             int pageNumber = PageParameter( PageParameterKey.Page ).AsIntegerOrNull() ?? 1;
@@ -661,10 +671,13 @@ $(document).ready(function() {
                 linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
 
                 var errorMessages = new List<string>();
-                List<ContentChannelItem> contentItemList;
+                List<ContentChannelItem> contentItemList = null;
+                List<TagModel> tags = null;
                 try
                 {
-                    contentItemList = GetContent( errorMessages, isQueryParameterFilteringEnabled ) ?? new List<ContentChannelItem>();
+                    var contentItemResults = GetContent( errorMessages, isQueryParameterFilteringEnabled, isTagListEnabled );
+                    contentItemList = contentItemResults.Items ?? new List<ContentChannelItem>();
+                    tags = contentItemResults.Tags ?? new List<TagModel>();
                 }
                 catch ( Exception ex )
                 {
@@ -724,7 +737,13 @@ $(document).ready(function() {
                 mergeFields.Add( "Pagination", pagination );
                 mergeFields.Add( "LinkedPages", linkedPages );
                 mergeFields.Add( "Items", currentPageContent );
+                mergeFields.Add( "ItemTagList", tags );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+                var tagPageRef = new Rock.Web.PageReference( CurrentPageReference );
+                tagPageRef.Parameters.AddOrReplace( "Tag", "TagTemplate" );
+
+                mergeFields.Add( "CurrentPageUrl", tagPageRef.BuildUrl() );
 
                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                 mergeFields.AddOrIgnore( "Person", CurrentPerson );
@@ -732,7 +751,7 @@ $(document).ready(function() {
                 // set page title
                 if ( isSetPageTitleEnabled && contentItemList.Count > 0 )
                 {
-                    if ( string.IsNullOrWhiteSpace( PageParameter(  PageParameterKey.Item ) ) )
+                    if ( string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Item ) ) )
                     {
                         // set title to channel name
                         string channelName = contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault();
@@ -1145,6 +1164,310 @@ $(document).ready(function() {
         }
 
         /// <summary>
+        /// Gets the content channel items from the item-cache (if there), or from 
+        /// the configured Channel and any given Item id or filter in the query string
+        /// if QueryParameterFiltering is enabled.
+        /// </summary>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns> a list of <see cref="Rock.Model.ContentChannelItem">ContentChannelItems</see></returns>
+        private ItemContentResults GetContent( List<string> errorMessages, bool isQueryParameterFilteringEnabled, bool isTagListEnabled )
+        {
+            List<ContentChannelItem> items = null;
+            List<TagModel> tags = null;
+
+            // only load from the cache if a cacheDuration was specified
+            if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+            {
+                items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
+                tags = GetCacheItem( TAG_CACHE_KEY ) as List<TagModel>;
+            }
+
+            if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) )
+            {
+                var channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
+                if ( channelGuid.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+                    var itemId = PageParameter( PageParameterKey.Item ).AsIntegerOrNull();
+
+
+                    var statuses = new List<ContentChannelItemStatus>();
+                    var statusValList = ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    var dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
+
+                    foreach ( string statusVal in statusValList )
+                    {
+                        var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                        if ( status != null )
+                        {
+                            statuses.Add( status.Value );
+                        }
+                    }
+
+                    var contentChannelItemQuery = GetContentChannelItemQuery( rockContext,
+                        contentChannelItemService,
+                        channelGuid.Value,
+                        itemId,
+                        dataFilterId,
+                        isQueryParameterFilteringEnabled,
+                        statuses,
+                        errorMessages );
+
+                    if ( isTagListEnabled )
+                    {
+                        var tagQuery = new TaggedItemService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Include( ti => ti.Tag );
+
+                        var contentChannelItemTagQuery = tagQuery
+                            .Where( ti => contentChannelItemQuery.Any( cci => cci.Guid == ti.EntityGuid ) )
+                            .GroupBy( ti => new { ti.Tag.Id, ti.Tag.Guid, ti.Tag.Name } )
+                            .Select( group => new { Tag = group.Key, Count = group.Count() } )
+                            .Select( tag => new TagModel() { Id = tag.Tag.Id, Guid = tag.Tag.Guid, Name = tag.Tag.Name, Count = tag.Count } );
+
+                        tags = contentChannelItemTagQuery.ToList();
+
+                        var selectedTag = PageParameter( "Tag" );
+
+                        if ( !string.IsNullOrWhiteSpace( selectedTag ) && selectedTag.ToLower() != "all" )
+                        {
+                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => tagQuery.Any( t => t.Tag.Name == selectedTag && t.EntityGuid == cci.Guid ) );
+                        }
+                    }
+
+                    items = new List<ContentChannelItem>( contentChannelItemQuery.Count() );
+
+                    // All filtering has been added, now run query, check security and load attributes
+                    foreach ( var item in contentChannelItemQuery )
+                    {
+                        if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            item.LoadAttributes( rockContext );
+                            items.Add( item );
+                        }
+                    }
+
+                    // Order the items
+                    string orderBy = GetAttributeValue( AttributeKey.Order );
+                    if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                    {
+                        var fieldDirection = new List<string>();
+                        foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                        {
+                            if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
+                            {
+                                var sortDirection = SortDirection.Ascending;
+                                if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
+                                {
+                                    sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                }
+                                fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                            }
+                        }
+
+                        var sortProperty = new SortProperty();
+                        sortProperty.Direction = SortDirection.Ascending;
+                        sortProperty.Property = fieldDirection.AsDelimited( "," );
+
+                        string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                        var itemQry = items.AsQueryable();
+                        IOrderedQueryable<ContentChannelItem> orderedQry = null;
+
+                        for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                        {
+                            string column = columns[columnIndex].Trim();
+
+                            var direction = sortProperty.Direction;
+                            if ( column.ToLower().EndsWith( " desc" ) )
+                            {
+                                column = column.Left( column.Length - 5 );
+                                direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                            }
+
+                            try
+                            {
+                                if ( column.StartsWith( "Attribute:" ) )
+                                {
+                                    string attributeKey = column.Substring( 10 );
+
+                                    if ( direction == SortDirection.Ascending )
+                                    {
+                                        orderedQry = ( columnIndex == 0 ) ?
+                                            itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                            orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                                    }
+                                    else
+                                    {
+                                        orderedQry = ( columnIndex == 0 ) ?
+                                            itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                            orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                                    }
+                                }
+                                else
+                                {
+                                    if ( direction == SortDirection.Ascending )
+                                    {
+                                        orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                                    }
+                                    else
+                                    {
+                                        orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                                    }
+                                }
+                            }
+                            catch { }
+
+                        }
+
+                        try
+                        {
+                            if ( orderedQry != null )
+                            {
+                                items = orderedQry.ToList();
+                            }
+                        }
+                        catch { }
+
+                    }
+
+                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !isQueryParameterFilteringEnabled )
+                    {
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
+                        AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );
+                        AddCacheItem( TAG_CACHE_KEY, tags ?? new List<TagModel>(), ItemCacheDuration.Value, cacheTags );
+                    }
+                }
+            }
+
+            return new ItemContentResults { Items = items, Tags = tags };
+        }
+
+        private IQueryable<ContentChannelItem> GetContentChannelItemQuery( RockContext rockContext,
+            ContentChannelItemService contentChannelItemService,
+            Guid channelGuid,
+            int? itemId,
+            int? dataFilterId,
+            bool isQueryParameterFilteringEnabled,
+            List<ContentChannelItemStatus> statuses,
+            List<string> errorMessages )
+        {
+            var contentChannelInfo = new ContentChannelService( rockContext ).GetSelect( channelGuid, s => new { s.Id, s.RequiresApproval, ContentChannelTypeDisableStatus = s.ContentChannelType.DisableStatus } );
+            if ( contentChannelInfo == null )
+            {
+                return null;
+            }
+
+            var contentChannelItemQuery = contentChannelItemService
+                        .Queryable()
+                        .Include( a => a.ContentChannel )
+                        .Include( a => a.ContentChannelType )
+                        .Include( a => a.ContentChannelItemSlugs )
+                        .Where( i => i.ContentChannelId == contentChannelInfo.Id );
+
+            if ( isQueryParameterFilteringEnabled && itemId.HasValue )
+            {
+                contentChannelItemQuery = contentChannelItemQuery.Where( i => i.Id == itemId.Value );
+            }
+
+            if ( contentChannelInfo.RequiresApproval && !contentChannelInfo.ContentChannelTypeDisableStatus )
+            {
+                if ( statuses.Any() )
+                {
+                    contentChannelItemQuery = contentChannelItemQuery.Where( i => statuses.Contains( i.Status ) );
+                }
+            }
+
+            var itemType = typeof( Rock.Model.ContentChannelItem );
+            var paramExpression = contentChannelItemService.ParameterExpression;
+
+            try
+            {
+                if ( dataFilterId.HasValue )
+                {
+                    var dataFilterService = new DataViewFilterService( rockContext );
+                    var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
+
+                    contentChannelItemQuery = contentChannelItemQuery.Where( paramExpression, whereExpression, null );
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                //Don't choke on the filter.
+            }
+
+            // If items could be filtered by querystring values, check for filters
+            if ( isQueryParameterFilteringEnabled )
+            {
+                var pageParameters = PageParameters();
+                if ( pageParameters.Count > 0 )
+                {
+                    var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
+
+                    //var itemIdList = items.Select( a => a.Id ).ToList();
+                    var queryParameterContentChannelItemQuery = contentChannelItemService
+                        .Queryable()
+                        .Where( a => contentChannelItemQuery.Any( b => b.Id == a.Id ) );
+                    foreach ( string fieldParameterKey in PageParameters().Select( p => p.Key ) )
+                    {
+                        Expression queryParameterFilteringExpression = null;
+
+                        // Just in case this EntityType has multiple attributes with the same key (or also a property name),
+                        // create a OR'd clause for each attribute that has this key, plus any property with a matching name
+                        var entityFieldList = Rock.Reporting.EntityHelper.FindFromFieldName( itemType, fieldParameterKey );
+
+                        foreach ( var entityField in entityFieldList )
+                        {
+                            var selection = new List<string>();
+                            selection.Add( entityField.UniqueName );
+
+                            string value = PageParameter( fieldParameterKey );
+                            if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DAY_OF_WEEK.AsGuid() )
+                                    || entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ) )
+                            {
+                                selection.Add( value );
+                            }
+                            else if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.MULTI_SELECT.AsGuid() ) )
+                            {
+                                selection.Add( ComparisonType.Contains.ConvertToInt().ToString() );
+                                selection.Add( value );
+                            }
+                            else
+                            {
+                                selection.Add( ComparisonType.EqualTo.ConvertToInt().ToString() );
+                                selection.Add( value );
+                            }
+
+                            var entityFieldExpression = propertyFilter.GetExpression( itemType, contentChannelItemService, paramExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) );
+
+                            if ( queryParameterFilteringExpression == null )
+                            {
+                                queryParameterFilteringExpression = entityFieldExpression;
+                            }
+                            else
+                            {
+                                queryParameterFilteringExpression = Expression.OrElse( queryParameterFilteringExpression, entityFieldExpression );
+                            }
+                        }
+
+                        if ( queryParameterFilteringExpression != null )
+                        {
+                            queryParameterContentChannelItemQuery = queryParameterContentChannelItemQuery.Where( paramExpression, queryParameterFilteringExpression );
+                        }
+                    }
+
+                    return queryParameterContentChannelItemQuery;
+                }
+            }
+
+            return contentChannelItemQuery;
+        }
+        /// <summary>
         /// Shows the edit.
         /// </summary>
         public void ShowEdit()
@@ -1394,9 +1717,20 @@ $(document).ready(function() {
 
         #region Helper Classes
 
-        /// <summary>
-        /// 
-        /// </summary>
+        private class TagModel : DotLiquid.Drop
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public string Name { get; set; }
+            public int Count { get; set; }
+        }
+
+        private class ItemContentResults
+        {
+            public List<ContentChannelItem> Items { get; set; }
+            public List<TagModel> Tags { get; set; }
+        }
+
         public class Pagination : DotLiquid.Drop
         {
 

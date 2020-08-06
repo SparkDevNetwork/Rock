@@ -442,38 +442,72 @@ namespace Rock.Model
             // of occurrences. The count property in the iCal rule refers to the count of occurrences.
             var endDateRules = calEvent.RecurrenceRules.Where( rule => rule.Count <= 0 );
             var countRules = calEvent.RecurrenceRules.Where( rule => rule.Count > 0 );
-            var endDateRuleApplied = false;
+
+            var hasRuleWithEndDate = endDateRules.Any();
+            var hasRuleWithCount = countRules.Any();
+            var hasDates = calEvent.RecurrenceDates.Any();
+
+            bool adjustEffectiveDateForLastOccurrence = false;
 
             // If there are any recurrence rules with no end date, the Effective End Date is infinity
             // iCal rule.Until will be min value date if it is representing no end date (backwards from Rock using max value)
-            if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
+            if ( hasRuleWithEndDate )
             {
-                EffectiveEndDate = DateTime.MaxValue;
-                endDateRuleApplied = true;
-            }
-            else if ( endDateRules.Any() )
-            {
-                EffectiveEndDate = endDateRules.Max( rule => rule.Until );
-                endDateRuleApplied = true;
+                if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
+                {
+                    EffectiveEndDate = DateTime.MaxValue;
+                }
+                else
+                {
+                    EffectiveEndDate = endDateRules.Max( rule => rule.Until );
+                }
             }
 
-            if ( countRules.Any( rule => rule.Count > 999 ) && !endDateRuleApplied )
+            if ( hasRuleWithCount )
             {
-                // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
-                // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
-                EffectiveEndDate = DateTime.MaxValue;
+                if ( countRules.Any( rule => rule.Count > 999 ) && !hasRuleWithEndDate )
+                {
+                    // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
+                    // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
+                    EffectiveEndDate = DateTime.MaxValue;
+                }
+                else
+                {
+                    // This case means that there are count rules and they are <= 999. Go ahead and calculate the actual occurrences
+                    // to get the EffectiveEndDate.
+                    adjustEffectiveDateForLastOccurrence = true;
+                }
             }
-            else if ( countRules.Any() )
+
+            // If specific recurrence dates exist, adjust the Effective End Date to the last specified date 
+            // if it occurs after the Effective End Date required by the recurrence rules.
+            if ( hasDates )
             {
-                // This case means that there are count rules and they are <= 999. Go ahead and calculate the actual occurrences
-                // to get the EffectiveEndDate.
+                // If the Schedule does not have any other rules, reset the Effective End Date to ensure it is recalculated.
+                if ( !hasRuleWithEndDate && !hasRuleWithCount )
+                {
+                    EffectiveEndDate = null;
+                }
+
+                adjustEffectiveDateForLastOccurrence = true;
+            }
+
+            if ( adjustEffectiveDateForLastOccurrence
+                 && EffectiveEndDate != DateTime.MaxValue )
+            {
                 var occurrences = GetICalOccurrences( DateTime.MinValue, DateTime.MaxValue );
 
                 if ( occurrences.Any() )
                 {
-                    EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
+                    var lastOccurrenceDate = occurrences.Any() // It is possible for an event to have no occurrences
                         ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
                         : EffectiveStartDate;
+
+                    if ( EffectiveEndDate == null
+                         || lastOccurrenceDate > EffectiveEndDate )
+                    {
+                        EffectiveEndDate = lastOccurrenceDate;
+                    }
                 }
             }
 

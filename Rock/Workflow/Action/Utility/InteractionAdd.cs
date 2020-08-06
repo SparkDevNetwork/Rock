@@ -239,6 +239,7 @@ namespace Rock.Workflow.Action
                         int? interactionComponentId = new InteractionComponentService( rockContext )
                             .Queryable()
                             .AsNoTracking()
+                            .Where( c => c.InteractionChannelId == channel.Id )
                             .Where( c => c.Name.Equals( identifier, StringComparison.OrdinalIgnoreCase ) )
                             .Select( c => c.Id )
                             .Cast<int?>()

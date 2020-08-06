@@ -76,6 +76,7 @@
     <Compile Include="BulkImport\BulkImportHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\BulkImportController.cs" />
+    <Compile Include="SlingshotImport\SlingshotExtensionMethods.cs" />
     <Compile Include="SlingshotImport\SlingshotImporter.cs" />
   </ItemGroup>
   <ItemGroup>
