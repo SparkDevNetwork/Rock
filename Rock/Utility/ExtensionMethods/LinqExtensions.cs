@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
@@ -359,34 +360,84 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Property.StartsWith( "attribute:" ) )
+            if ( sortProperty.Property.StartsWith("attribute:") )
             {
-                var itemType = typeof( T );
-                var attributeCache = AttributeCache.Get( sortProperty.Property.Substring( 10 ).AsInteger() );
-                if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
+                var itemType = typeof(T);
+                var attributeCache = AttributeCache.Get(sortProperty.Property.Substring(10).AsInteger());
+                if ( attributeCache != null && typeof(IModel).IsAssignableFrom(typeof(T)) )
                 {
-                    var entityIds = new List<int>();
-
+                    List<int> ids = new List<int>();
                     var models = new List<IModel>();
-                    source.ToList().ForEach( i => models.Add( i as IModel ) );
-                    var ids = models.Select( m => m.Id ).ToList();
-
-                    var field = attributeCache.FieldType.Field;
+                    source.ToList().ForEach(i => models.Add(i as IModel));
 
                     using ( var rockContext = new RockContext() )
                     {
-                        foreach ( var attributeValue in new AttributeValueService( rockContext )
+                        //Check if Attribute Entity Type is same as Source Entity Type
+                        var type = models.First().GetType();
+                        EntityType modelEntity = new EntityTypeService(rockContext).Queryable().FirstOrDefault(e => e.Name == type.BaseType.FullName);
+                        PropertyInfo modelProperty = null;
+                        string modelPropPK = "";
+                        //Same Entity Type
+                        if ( modelEntity != null && modelEntity.Id == attributeCache.EntityTypeId )
+                        {
+                            ids = models.Select(m => m.Id).ToList();
+                        }
+                        //Different Entity Types
+                        else if ( modelEntity != null )
+                        {
+                            //Search the entity properties for a matching entity and save the property information and primary key name
+                            foreach ( var propertyInfo in type.GetProperties() )
+                            {
+                                var propertyEntity = new EntityTypeService(rockContext).Queryable().FirstOrDefault(e => e.Name == propertyInfo.PropertyType.FullName);
+                                if ( propertyEntity != null && propertyEntity.Id == attributeCache.EntityTypeId )
+                                {
+                                    Object obj = models.First().GetPropertyValue(propertyInfo.Name);
+                                    foreach ( var prop in obj.GetType().GetProperties() )
+                                    {
+                                        if ( prop.GetCustomAttribute(typeof(KeyAttribute)) != null )
+                                        {
+                                            modelProperty = propertyInfo;
+                                            modelPropPK = prop.Name;
+                                            ids = models.Select(m => Int32.Parse(prop.GetValue(m.GetPropertyValue(propertyInfo.Name)).ToString())).ToList();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        var field = attributeCache.FieldType.Field;
+
+                        foreach ( var attributeValue in new AttributeValueService(rockContext)
                             .Queryable().AsNoTracking()
-                            .Where( v =>
-                                v.AttributeId == attributeCache.Id &&
-                                v.EntityId.HasValue &&
-                                ids.Contains( v.EntityId.Value ) )
+                            .Where(v =>
+                               v.AttributeId == attributeCache.Id &&
+                               v.EntityId.HasValue &&
+                               ids.Contains(v.EntityId.Value))
                             .ToList() )
                         {
-                            var model = models.FirstOrDefault( m => m.Id == attributeValue.EntityId.Value );
+                            IModel model = null;
+                            if ( modelEntity != null && modelEntity.Id == attributeCache.EntityTypeId )
+                            {
+                                model = models.FirstOrDefault(m => m.Id == attributeValue.EntityId.Value);
+                            }
+                            else if ( modelEntity != null )
+                            {
+                                //Use the model property and primary key name to get the foreign key EntityId refers to
+                                model = models.FirstOrDefault(m =>
+                                {
+                                    var obj = m.GetPropertyValue(modelProperty.Name);
+                                    PropertyInfo prop = obj.GetType().GetProperty(modelPropPK);
+                                    string val = prop.GetValue(obj).ToString();
+                                    return Int32.Parse(val) == attributeValue.EntityId.Value;
+                                });
+                            }
+                            else
+                            {
+                                //Handle not finding an Entity type
+                                model = null;
+                            }
                             if ( model != null )
                             {
-                                model.CustomSortValue = field.SortValue( null, attributeValue.Value, attributeCache.QualifierValues );
+                                model.CustomSortValue = field.SortValue(null, attributeValue.Value, attributeCache.QualifierValues);
                             }
                         }
                     }
@@ -394,18 +445,18 @@ namespace Rock
                     var result = new List<T>();
                     if ( sortProperty.Direction == SortDirection.Ascending )
                     {
-                        models.OrderBy( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                        models.OrderBy(m => m.CustomSortValue).ToList().ForEach(m => result.Add((T)m));
                     }
                     else
                     {
-                        models.OrderByDescending( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                        models.OrderByDescending(m => m.CustomSortValue).ToList().ForEach(m => result.Add((T)m));
                     }
 
-                    return result.AsQueryable().OrderBy( r => 0 );
+                    return result.AsQueryable().OrderBy(r => 0);
                 }
             }
 
-            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] columns = sortProperty.Property.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             IOrderedQueryable<T> qry = null;
 
@@ -414,24 +465,24 @@ namespace Rock
                 string column = columns[columnIndex].Trim();
 
                 var direction = sortProperty.Direction;
-                if ( column.ToLower().EndsWith( " desc" ) )
+                if ( column.ToLower().EndsWith(" desc") )
                 {
-                    column = column.Left( column.Length - 5 );
+                    column = column.Left(column.Length - 5);
                     direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                 }
 
                 if ( direction == SortDirection.Ascending )
                 {
-                    qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
+                    qry = ( columnIndex == 0 ) ? source.OrderBy(column) : qry.ThenBy(column);
                 }
                 else
                 {
-                    qry = ( columnIndex == 0 ) ? source.OrderByDescending( column ) : qry.ThenByDescending( column );
+                    qry = ( columnIndex == 0 ) ? source.OrderByDescending(column) : qry.ThenByDescending(column);
                 }
             }
 
             return qry;
-            
+
         }
 
         /// <summary>
