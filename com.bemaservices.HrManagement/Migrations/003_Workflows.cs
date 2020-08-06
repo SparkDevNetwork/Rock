@@ -37,22 +37,20 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Model.Workflow", "3540E9A7-FE30-43A9-8B0A-A372B63DFC93", true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowActivity", "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F", true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowActionType", "23E3273A-B137-48A3-9AFF-C8DC832DDCA6", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Workflow.Action.PtoRequestDelete", "2CBFBD56-2F3A-4CD5-AA23-A807CEBEEB54", false, true );
             RockMigrationHelper.UpdateEntityType( "com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate", "546C6C01-5C8B-449E-A16A-580D92D0317B", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.ActivateActivity", "38907A90-1634-4A93-8017-619326A4A582", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.CompleteWorkflow", "EEDA4318-F014-4A46-9C76-4C052EF81AA1", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.PersistWorkflow", "F1A39347-6FE0-43D4-89FB-544195088ECF", false, true );
+            RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.Redirect", "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.RunLava", "BC21E57A-1477-44B3-A7C2-61A806118945", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.SendEmail", "66197B01-D1F0-4924-A315-47AD54E030DE", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.SetAttributeToCurrentPerson", "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", false, true );
+            RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.SetAttributeValue", "C789E457-0783-44B3-9D8F-2EBAB5F11110", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.ShowHtml", "C96D86B4-D14D-4CA4-ADA2-F2CB20AFD7C6", false, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.UserEntryForm", "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", false, true );
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "DE9CB292-4785-4EA3-976D-3826F91E9E98" ); // Rock.Workflow.Action.SetAttributeToCurrentPerson:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Person Attribute", "PersonAttribute", "The attribute to set to the currently logged in person.", 0, @"", "BBED8A83-8BB2-4D35-BAFB-05F67DCAD112" ); // Rock.Workflow.Action.SetAttributeToCurrentPerson:Person Attribute
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "89E9BCED-91AB-47B0-AD52-D78B0B7CB9E8" ); // Rock.Workflow.Action.SetAttributeToCurrentPerson:Order
-            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "2CBFBD56-2F3A-4CD5-AA23-A807CEBEEB54", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "0883AE9A-24EE-433F-9925-C7A5C8BCB467" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestDelete:Active
-            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "2CBFBD56-2F3A-4CD5-AA23-A807CEBEEB54", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Existing Pto Request", "PTO_REQUEST_ATTRIBUTE_KEY", "The Pto Request to update.", 0, @"", "1B976B41-C2D6-4C16-B781-6F5DD1AC2B69" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestDelete:Existing Pto Request
-            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "2CBFBD56-2F3A-4CD5-AA23-A807CEBEEB54", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "CF3E47A3-DE75-49B6-971A-0D91DEE55079" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestDelete:Order
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "38907A90-1634-4A93-8017-619326A4A582", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "E8ABD802-372C-47BE-82B1-96F50DB5169E" ); // Rock.Workflow.Action.ActivateActivity:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "38907A90-1634-4A93-8017-619326A4A582", "739FD425-5B8C-4605-B775-7E4D9D4C11DB", "Activity", "Activity", "The activity type to activate", 0, @"", "02D5A7A5-8781-46B4-B9FC-AF816829D240" ); // Rock.Workflow.Action.ActivateActivity:Activity
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "38907A90-1634-4A93-8017-619326A4A582", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "3809A78C-B773-440C-8E3F-A8E81D0DAE08" ); // Rock.Workflow.Action.ActivateActivity:Order
@@ -64,6 +62,7 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Approval State|Attribute Value", "APPROVAL_STATE_KEY", "The Approval State or an attribute that contains the Approval State of the pto request. <span class='tip tip-lava'></span>", 7, @"", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Approval State|Attribute Value
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Approver|Attribute Value", "APPROVER_KEY", "The approver or an attribute that contains the approver of the pto request. <span class='tip tip-lava'></span>", 6, @"", "A781A20B-4F21-47CA-9BCF-1654565DB5F6" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Approver|Attribute Value
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "End Date|Attribute Value", "ENDDATE_KEY", "The end date or an attribute that contains the end date of the pto request. <span class='tip tip-lava'></span>", 3, @"", "8304DE14-DA5C-41FD-BA30-026D91A492C7" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:End Date|Attribute Value
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Exclude Weekends|Attribute Value", "EXCLUDE_WEEKENDS_KEY", "Whether to Include weekends, or an attribute that contains whether or not to incldue weekends. <span class='tip tip-lava'></span>", 8, @"False", "552610AA-C128-4A6F-AAB6-20ACC0C5F060" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Exclude Weekends|Attribute Value
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Hours|Attribute Value", "HOURS_KEY", "The hours per day or an attribute that contains the hours per day of the pto request. <span class='tip tip-lava'></span>", 4, @"", "858BFCA2-E793-446E-B146-87D5FC6783A0" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Hours|Attribute Value
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Reason|Attribute Value", "PTO_REASON_KEY", "The reason or an attribute that contains the reason of the pto request. <span class='tip tip-lava'></span>", 5, @"", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Reason|Attribute Value
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "546C6C01-5C8B-449E-A16A-580D92D0317B", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Start Date|Attribute Value", "STARTDATE_KEY", "The start date or an attribute that contains the start date of the pto request. <span class='tip tip-lava'></span>", 2, @"", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D" ); // com.bemaservices.HrManagement.Workflow.Action.PtoRequestUpdate:Start Date|Attribute Value
@@ -84,6 +83,10 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "BC21E57A-1477-44B3-A7C2-61A806118945", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Attribute", "Attribute", "The attribute to store the result in.", 1, @"", "431273C6-342D-4030-ADC7-7CDEDC7F8B27" ); // Rock.Workflow.Action.RunLava:Attribute
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "BC21E57A-1477-44B3-A7C2-61A806118945", "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D", "Enabled Lava Commands", "EnabledLavaCommands", "The Lava commands that should be enabled for this action.", 2, @"", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5" ); // Rock.Workflow.Action.RunLava:Enabled Lava Commands
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "BC21E57A-1477-44B3-A7C2-61A806118945", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "1B833F48-EFC2-4537-B1E3-7793F6863EAA" ); // Rock.Workflow.Action.RunLava:Order
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C789E457-0783-44B3-9D8F-2EBAB5F11110", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "D7EAA859-F500-4521-9523-488B12EAA7D2" ); // Rock.Workflow.Action.SetAttributeValue:Active
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C789E457-0783-44B3-9D8F-2EBAB5F11110", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Attribute", "Attribute", "The attribute to set the value of.", 0, @"", "44A0B977-4730-4519-8FF6-B0A01A95B212" ); // Rock.Workflow.Action.SetAttributeValue:Attribute
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C789E457-0783-44B3-9D8F-2EBAB5F11110", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Text Value|Attribute Value", "Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", 1, @"", "E5272B11-A2B8-49DC-860D-8D574E2BC15C" ); // Rock.Workflow.Action.SetAttributeValue:Text Value|Attribute Value
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C789E457-0783-44B3-9D8F-2EBAB5F11110", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "57093B41-50ED-48E5-B72B-8829E62704C8" ); // Rock.Workflow.Action.SetAttributeValue:Order
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C96D86B4-D14D-4CA4-ADA2-F2CB20AFD7C6", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "HTML", "HTML", "The HTML to show. <span class='tip tip-lava'></span>", 0, @"", "0962CF90-3767-4827-A8CA-5213BDB0DEAD" ); // Rock.Workflow.Action.ShowHtml:HTML
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C96D86B4-D14D-4CA4-ADA2-F2CB20AFD7C6", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "1FE6D692-38AB-4989-B617-E396B39BAC7A" ); // Rock.Workflow.Action.ShowHtml:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "C96D86B4-D14D-4CA4-ADA2-F2CB20AFD7C6", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Hide Status Message", "HideStatusMessage", "Whether or not to hide the built-in status message.", 1, @"False", "CCF7629B-E452-4736-9FFD-A4E2F598906E" ); // Rock.Workflow.Action.ShowHtml:Hide Status Message
@@ -94,6 +97,10 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F1A39347-6FE0-43D4-89FB-544195088ECF", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "50B01639-4938-40D2-A791-AA0EB4F86847" ); // Rock.Workflow.Action.PersistWorkflow:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F1A39347-6FE0-43D4-89FB-544195088ECF", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Persist Immediately", "PersistImmediately", "This action will normally cause the workflow to be persisted (saved) once all the current activities/actions have completed processing. Set this flag to true, if the workflow should be persisted immediately. This is only required if a subsequent action needs a persisted workflow with a valid id.", 0, @"False", "E22BE348-18B1-4420-83A8-6319B35416D2" ); // Rock.Workflow.Action.PersistWorkflow:Persist Immediately
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F1A39347-6FE0-43D4-89FB-544195088ECF", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "86F795B0-0CB6-4DA4-9CE4-B11D0922F361" ); // Rock.Workflow.Action.PersistWorkflow:Order
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "1DAA899B-634B-4DD5-A30A-69BAC235B383" ); // Rock.Workflow.Action.Redirect:Active
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", "3B1D93D7-9414-48F9-80E5-6A3FC8F94C20", "Url|Url Attribute", "Url", "The full Url to redirect to, for example: http://www.rockrms.com  <span class='tip tip-lava'></span>", 0, @"", "051BD491-817F-45DD-BBAC-875BA79E3644" ); // Rock.Workflow.Action.Redirect:Url|Url Attribute
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Processing Options", "ProcessingOptions", "How should workflow continue processing?", 1, @"0", "581736CE-76CF-46CE-A401-60A9E9EBCC1A" ); // Rock.Workflow.Action.Redirect:Processing Options
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "66A0A14E-45EC-45CD-904E-F0AC4344E1DB" ); // Rock.Workflow.Action.Redirect:Order
 
             #endregion
 
@@ -119,51 +126,89 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Hours / Day", "HoursDay", "", 10, @"", "4180D0D3-A144-4974-B364-34292969C1A9", false ); // PTO Request:Hours / Day
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Reason", "Reason", "", 11, @"", "1136E804-A793-4081-9902-F8E7ED0CDD69", false ); // PTO Request:Reason
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Approver", "Approver", "", 12, @"", "35198559-8801-424C-B410-7145E00D3F67", false ); // PTO Request:Approver
-            RockMigrationHelper.AddAttributeQualifier( "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", "EnableSelfSelection", @"False", "7BF9A3D0-2BCF-4DB2-BD7A-27923CEF669D" ); // PTO Request:Person:EnableSelfSelection
-            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "datePickerControlType", @"Date Picker", "8F9DE3FA-F317-4F46-985B-0409D730C746" ); // PTO Request:Start Date:datePickerControlType
-            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "displayCurrentOption", @"False", "E0EEBA79-715E-4FD4-B15D-6CF2D2E2F647" ); // PTO Request:Start Date:displayCurrentOption
-            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "displayDiff", @"False", "4A0863C3-E619-4E10-802C-355588C4D2D1" ); // PTO Request:Start Date:displayDiff
-            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "format", @"", "A3FF949A-516F-43EA-A68A-363EC7B235D0" ); // PTO Request:Start Date:format
-            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "futureYearCount", @"", "7838B3AC-0199-44B1-9492-5F2A3AABDA5B" ); // PTO Request:Start Date:futureYearCount
-            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "datePickerControlType", @"Date Picker", "1D1DA33E-7D83-46ED-B164-AFC596CBC157" ); // PTO Request:End Date:datePickerControlType
-            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "displayCurrentOption", @"False", "56C1A1FB-07D3-4D49-B5C4-462C7D0C4C83" ); // PTO Request:End Date:displayCurrentOption
-            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "displayDiff", @"False", "3EBDE59B-1CD7-4423-A93A-6CD14C5C7A01" ); // PTO Request:End Date:displayDiff
-            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "format", @"", "50349AC7-22F3-47BC-86FB-43982726D0B1" ); // PTO Request:End Date:format
-            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "futureYearCount", @"", "DED4B790-BA58-4ACF-B9F1-022349A67B00" ); // PTO Request:End Date:futureYearCount
-            RockMigrationHelper.AddAttributeQualifier( "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", "fieldtype", @"ddl", "47AFC27B-C254-4012-A66E-4813DEE4BC2F" ); // PTO Request:PTO Allocation:fieldtype
-            RockMigrationHelper.AddAttributeQualifier( "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", "repeatColumns", @"", "42609373-518D-474B-8A35-46631B351ECF" ); // PTO Request:PTO Allocation:repeatColumns
-            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "fieldtype", @"ddl", "D6517715-3AC1-4709-A7A1-6FE442630B15" ); // PTO Request:Approval State:fieldtype
-            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "repeatColumns", @"", "62DD16D7-0E6D-4708-B7A0-BAEC46360319" ); // PTO Request:Approval State:repeatColumns
-            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "values", @"0^Pending, 1^Approved, 2^Denied", "27AC8DEA-5687-4D87-860C-20145F5F6F93" ); // PTO Request:Approval State:values
-            RockMigrationHelper.AddAttributeQualifier( "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", "EnableSelfSelection", @"False", "263D5CD4-96B6-4DA9-91EC-30B8C8EF0757" ); // PTO Request:Supervisor:EnableSelfSelection
-            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "allowmultiple", @"False", "F5A11FA1-AC32-4CED-BC3A-DD967242B75C" ); // PTO Request:Supervisor Attribute:allowmultiple
-            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "entitytype", @"72657ed8-d16e-492e-ac12-144c5e7567e7", "BCF94C21-B080-46E9-9141-6BDB3FF2BE91" ); // PTO Request:Supervisor Attribute:entitytype
-            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "qualifierColumn", @"", "6A750E2D-AD14-4737-A051-A8C13C8DC46B" ); // PTO Request:Supervisor Attribute:qualifierColumn
-            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "qualifierValue", @"", "338D51F6-2F2C-434B-90DF-D8DE3FA4690D" ); // PTO Request:Supervisor Attribute:qualifierValue
-            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "ispassword", @"False", "A1E444AA-B2A3-491C-9671-E3548F4733FE" ); // PTO Request:HasViewRights:ispassword
-            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "maxcharacters", @"", "E0EC8E43-3362-40BC-A375-133CBBBAD127" ); // PTO Request:HasViewRights:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "showcountdown", @"False", "436D5280-C0B7-4CB1-AA4B-07D21CF38952" ); // PTO Request:HasViewRights:showcountdown
-            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "ispassword", @"False", "9CD70183-258B-43EA-A0CE-00B8C97D588D" ); // PTO Request:HasReviewRights:ispassword
-            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "maxcharacters", @"", "982AE016-537C-4707-B6B1-90D75466835F" ); // PTO Request:HasReviewRights:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "showcountdown", @"False", "AA5244B6-7881-42C8-A91C-9190AF16BEB7" ); // PTO Request:HasReviewRights:showcountdown
-            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "fieldtype", @"ddl", "F12DA589-5FC5-47BF-ACA1-F04F072CC164" ); // PTO Request:Hours / Day:fieldtype
-            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "repeatColumns", @"", "4CF3B215-BD4C-4D50-94DC-F6AB00E5E888" ); // PTO Request:Hours / Day:repeatColumns
-            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "values", @"0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0", "F48269A0-92DC-46BE-9DD6-70F2E125A718" ); // PTO Request:Hours / Day:values
-            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "allowhtml", @"False", "D6A9B9EC-5F9D-4B2D-9277-BFB5FB0543BA" ); // PTO Request:Reason:allowhtml
-            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "maxcharacters", @"", "642E9553-E60F-4BDB-8279-1C0F83CFCCF7" ); // PTO Request:Reason:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "numberofrows", @"", "DDE880EE-ED3E-4A83-95F7-BB49EB3012C5" ); // PTO Request:Reason:numberofrows
-            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "showcountdown", @"False", "A8F69E39-1CA4-4D70-BB53-82745AB25E79" ); // PTO Request:Reason:showcountdown
-            RockMigrationHelper.AddAttributeQualifier( "35198559-8801-424C-B410-7145E00D3F67", "EnableSelfSelection", @"False", "B381C359-9CFC-4628-AB05-A116B3B20E1A" ); // PTO Request:Approver:EnableSelfSelection
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "C757A554-3009-4214-B05D-CEA2B2EA6B8F", "Remaining Hours", "RemainingHours", "", 13, @"0", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", false ); // PTO Request:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "C757A554-3009-4214-B05D-CEA2B2EA6B8F", "Requested Hours", "RequestedHours", "", 14, @"", "52166C99-8A84-437E-8E01-A0282CD6E5BC", false ); // PTO Request:Requested Hours
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Exclude Weekends", "ExcludeWeekends", "", 15, @"", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", false ); // PTO Request:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Cancel Request", "CancelRequest", "", 16, @"", "65B0E759-671A-421C-B2FC-E9885BA4D38D", false ); // PTO Request:Cancel Request
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Time Frame Validation Error", "TimeFrameValidationError", "", 17, @"", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", false ); // PTO Request:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8", "Human Resources", "HumanResources", "", 18, @"6f8aaba3-5bc8-468b-90dd-f0686f38e373", "A28F65E4-D1C9-41B5-89CB-065F7809B298", false ); // PTO Request:Human Resources
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Requested Hours YTD", "RequestedHoursYTD", "", 19, @"", "A8101AB8-B260-407D-9C8D-EF4063C73922", false ); // PTO Request:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Reason for Cancellation", "CancelReason", "", 20, @"", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", false ); // PTO Request:Reason for Cancellation
+            RockMigrationHelper.AddAttributeQualifier( "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", "EnableSelfSelection", @"False", "C4EED29C-0F9A-4EFD-8051-9A8E53E8FE96" ); // PTO Request:Person:EnableSelfSelection
+            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "datePickerControlType", @"Date Picker", "8289B28A-F3BA-47D6-83C3-CAAFFDD4A058" ); // PTO Request:Start Date:datePickerControlType
+            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "displayCurrentOption", @"False", "E69D93CB-D9BE-4C4A-B44E-1AF1D48DCA84" ); // PTO Request:Start Date:displayCurrentOption
+            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "displayDiff", @"False", "61ED2ACD-AAD2-4539-925B-5D042A8F928E" ); // PTO Request:Start Date:displayDiff
+            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "format", @"", "E4ED3698-557A-4584-9A7A-B71861FBFB30" ); // PTO Request:Start Date:format
+            RockMigrationHelper.AddAttributeQualifier( "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", "futureYearCount", @"", "D46AF18C-0675-4A46-90CA-17D97DF41728" ); // PTO Request:Start Date:futureYearCount
+            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "datePickerControlType", @"Date Picker", "7E23A53C-C521-406E-B923-9F869049A294" ); // PTO Request:End Date:datePickerControlType
+            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "displayCurrentOption", @"False", "C7B5409A-27EA-4EC4-8DDC-8F28AFA95A41" ); // PTO Request:End Date:displayCurrentOption
+            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "displayDiff", @"False", "51EB0DFF-CFEE-40B0-BA46-980C57BE1E8D" ); // PTO Request:End Date:displayDiff
+            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "format", @"", "85E266A0-3F91-416F-A3A8-039AAF455DE0" ); // PTO Request:End Date:format
+            RockMigrationHelper.AddAttributeQualifier( "286C5A76-9113-49C4-A209-078E856BD0B2", "futureYearCount", @"", "DB3AF4C9-9563-441D-B488-22CD708A46E1" ); // PTO Request:End Date:futureYearCount
+            RockMigrationHelper.AddAttributeQualifier( "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", "fieldtype", @"ddl", "60A1F214-84CC-414B-BDA5-863BDA6DF2B6" ); // PTO Request:PTO Allocation:fieldtype
+            RockMigrationHelper.AddAttributeQualifier( "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", "repeatColumns", @"", "EF317A68-5965-49A0-8D68-543F5A43761E" ); // PTO Request:PTO Allocation:repeatColumns
+            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "fieldtype", @"ddl", "07DB9D6C-8CB0-4D8A-8DA6-E0B2767F1D16" ); // PTO Request:Approval State:fieldtype
+            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "repeatColumns", @"", "8817462A-4D69-4B10-969E-320AEF9900CD" ); // PTO Request:Approval State:repeatColumns
+            RockMigrationHelper.AddAttributeQualifier( "FFC543BE-7B65-425B-A56C-AD441986FA2C", "values", @"0^Pending, 1^Approved, 2^Denied,3^Cancelled", "28AD3ECB-014F-4ED8-9330-B5CC4685DA2B" ); // PTO Request:Approval State:values
+            RockMigrationHelper.AddAttributeQualifier( "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", "EnableSelfSelection", @"False", "415D4955-9602-4886-ABAD-19FDF03FF39A" ); // PTO Request:Supervisor:EnableSelfSelection
+            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "allowmultiple", @"False", "C7139BD1-408B-489A-A1A6-6FE5D754F671" ); // PTO Request:Supervisor Attribute:allowmultiple
+            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "entitytype", @"72657ed8-d16e-492e-ac12-144c5e7567e7", "D8C9D115-3449-4826-ABBD-F97BBB66C6CA" ); // PTO Request:Supervisor Attribute:entitytype
+            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "qualifierColumn", @"", "85E1A077-AE8F-4CE5-AE19-DF301849CA24" ); // PTO Request:Supervisor Attribute:qualifierColumn
+            RockMigrationHelper.AddAttributeQualifier( "CB12115A-8783-472C-B980-FE404D67F12E", "qualifierValue", @"", "37A170AC-1F08-4318-A9B6-9376F015B9ED" ); // PTO Request:Supervisor Attribute:qualifierValue
+            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "ispassword", @"False", "54783F30-0245-48D3-818A-1134B24F241C" ); // PTO Request:HasViewRights:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "maxcharacters", @"", "01EA2075-5976-430C-9534-0F8BDFAA53C6" ); // PTO Request:HasViewRights:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "160380E7-EF1F-4D6A-82C3-712FABD0C263", "showcountdown", @"False", "F4FB3866-E737-4D1B-9260-AC390DE44A35" ); // PTO Request:HasViewRights:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "ispassword", @"False", "172B7176-C89E-492F-9350-5A93E8CB44AF" ); // PTO Request:HasReviewRights:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "maxcharacters", @"", "FA517240-5AB7-4C96-A221-8FB9D2DAA563" ); // PTO Request:HasReviewRights:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "14E6B221-3531-4177-A1B1-8DD8B24B80AA", "showcountdown", @"False", "8081E4B3-CC44-4FE2-8819-F5EF2FB472A1" ); // PTO Request:HasReviewRights:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "fieldtype", @"ddl", "BF68C1CB-D3CD-4C87-81DE-DE8FAB4FCE4B" ); // PTO Request:Hours / Day:fieldtype
+            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "repeatColumns", @"", "716550D9-FE60-4375-97B9-92111CC39002" ); // PTO Request:Hours / Day:repeatColumns
+            RockMigrationHelper.AddAttributeQualifier( "4180D0D3-A144-4974-B364-34292969C1A9", "values", @"0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0", "D12ACEEE-DFA8-4EC4-AB86-6EB5007874ED" ); // PTO Request:Hours / Day:values
+            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "allowhtml", @"False", "3BDEB9DC-AD35-4832-844A-9254C19BACA9" ); // PTO Request:Reason:allowhtml
+            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "maxcharacters", @"", "72B101F5-CB40-449B-874E-AC2ECE325291" ); // PTO Request:Reason:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "numberofrows", @"", "3F26AF14-AD3F-4A81-AA40-8E985CEE5AD4" ); // PTO Request:Reason:numberofrows
+            RockMigrationHelper.AddAttributeQualifier( "1136E804-A793-4081-9902-F8E7ED0CDD69", "showcountdown", @"False", "CE9EF7C2-5D6B-4021-BB16-827CDE551B68" ); // PTO Request:Reason:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "35198559-8801-424C-B410-7145E00D3F67", "EnableSelfSelection", @"False", "1A64C488-508F-49B4-9F9D-D0FB1E1D7889" ); // PTO Request:Approver:EnableSelfSelection
+            RockMigrationHelper.AddAttributeQualifier( "5D083A44-57B8-46AF-AE1B-5FFA067DD187", "falsetext", @"No", "2D1C97CF-66C9-40B4-8369-121F438544AD" ); // PTO Request:Exclude Weekends:falsetext
+            RockMigrationHelper.AddAttributeQualifier( "5D083A44-57B8-46AF-AE1B-5FFA067DD187", "truetext", @"Yes", "2BB7C040-67BB-4B3B-95A2-80C2FFD2F720" ); // PTO Request:Exclude Weekends:truetext
+            RockMigrationHelper.AddAttributeQualifier( "65B0E759-671A-421C-B2FC-E9885BA4D38D", "fieldtype", @"ddl", "AA80D475-BBE7-4C5E-A59D-2AEA6E3670BF" ); // PTO Request:Cancel Request:fieldtype
+            RockMigrationHelper.AddAttributeQualifier( "65B0E759-671A-421C-B2FC-E9885BA4D38D", "repeatColumns", @"", "7E199551-D9FB-4852-8836-BF784C8E3FEF" ); // PTO Request:Cancel Request:repeatColumns
+            RockMigrationHelper.AddAttributeQualifier( "65B0E759-671A-421C-B2FC-E9885BA4D38D", "values", @"Yes,No", "1E0F670C-9DDB-4C10-8889-51EB26FC2488" ); // PTO Request:Cancel Request:values
+            RockMigrationHelper.AddAttributeQualifier( "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", "ispassword", @"False", "F4F0E65A-CFF4-49F5-8B73-FA47AC710839" ); // PTO Request:Time Frame Validation Error:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", "maxcharacters", @"", "25831328-7E9C-4B9B-8A2A-9E8728647E67" ); // PTO Request:Time Frame Validation Error:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", "showcountdown", @"False", "53357CF3-181D-46E9-85F2-1B680A5CE6BE" ); // PTO Request:Time Frame Validation Error:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "A8101AB8-B260-407D-9C8D-EF4063C73922", "ispassword", @"False", "686E202A-19E4-4F42-A97D-4248D66BC7F6" ); // PTO Request:Requested Hours YTD:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "A8101AB8-B260-407D-9C8D-EF4063C73922", "maxcharacters", @"", "4AC3ED01-33A9-4146-8A86-CFD3CE9E4DBB" ); // PTO Request:Requested Hours YTD:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "A8101AB8-B260-407D-9C8D-EF4063C73922", "showcountdown", @"False", "2B8C2A9D-3C20-40B5-9CF7-576D5AC5552C" ); // PTO Request:Requested Hours YTD:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", "ispassword", @"False", "F2ABB497-8E41-4728-96A5-09D6B447F99F" ); // PTO Request:Reason for Cancellation:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", "maxcharacters", @"", "E3B0ABF0-8A43-4DBB-8684-B358BB75F4F3" ); // PTO Request:Reason for Cancellation:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", "showcountdown", @"False", "402C1BE2-6794-4BEB-AC4B-6FCA27EB2B3A" ); // PTO Request:Reason for Cancellation:showcountdown
             RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Start", "", true, 0, "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9" ); // PTO Request:Start
-            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Add Request", "", false, 1, "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08" ); // PTO Request:Add Request
-            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Modify Request - User", "", false, 2, "9F5491B6-DCCC-4D21-A00E-DFBA138423F2" ); // PTO Request:Modify Request - User
-            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Modify Request - Reviewer", "", false, 3, "F8AFF1EA-7578-4D62-9445-2F98F40C99F3" ); // PTO Request:Modify Request - Reviewer
-            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Delete Request", "", false, 4, "CEC47883-FCD3-47D3-87B7-E1A826184463" ); // PTO Request:Delete Request
-            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Modify^fdc397cd-8b4a-436e-bea1-bce2e6717c03^9f5491b6-dccc-4d21-a00e-dfba138423f2^Your information has been submitted successfully.|Delete^638beee0-2f8f-4706-b9a4-5bab70386697^cec47883-fcd3-47d3-87b7-e1a826184463^", "", true, "", "74C1F3A4-6198-43A4-B860-BCDFD8F8656A" ); // PTO Request:Start:Initial Form - User
-            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Review^fdc397cd-8b4a-436e-bea1-bce2e6717c03^F8AFF1EA-7578-4D62-9445-2F98F40C99F3^Your information has been submitted successfully.|Delete^638beee0-2f8f-4706-b9a4-5bab70386697^CEC47883-FCD3-47D3-87B7-E1A826184463^|", "", true, "", "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7" ); // PTO Request:Start:Initial Form - Reviewer
-            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Submit^^^Your information has been submitted successfully.", "", true, "", "4C57D323-945F-4FA1-86DB-C0B5C459268C" ); // PTO Request:Add Request:Form
-            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Submit^^^Your information has been submitted successfully.", "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D", true, "", "126DECCC-A6BE-48F4-AF2B-2A7964F002D3" ); // PTO Request:Modify Request - User:Form
-            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Submit^^^Your information has been submitted successfully.", "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D", true, "", "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1" ); // PTO Request:Modify Request - Reviewer:Form
+            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Add / Modify Request", "", false, 1, "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08" ); // PTO Request:Add / Modify Request
+            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Review Request", "", false, 2, "F8AFF1EA-7578-4D62-9445-2F98F40C99F3" ); // PTO Request:Review Request
+            RockMigrationHelper.UpdateWorkflowActivityType( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", true, "Cancel Request", "", false, 3, "CEC47883-FCD3-47D3-87B7-E1A826184463" ); // PTO Request:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActivityTypeAttribute( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Selection", "Selection", "", 0, @"", "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587" ); // PTO Request:Add / Modify Request:Selection
+            RockMigrationHelper.UpdateWorkflowActivityTypeAttribute( "CEC47883-FCD3-47D3-87B7-E1A826184463", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Selection", "Selection", "", 0, @"", "7B2496AD-98C3-4FB0-979B-6985DB23EEC8" ); // PTO Request:Cancel Request:Selection
+            RockMigrationHelper.AddAttributeQualifier( "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", "ispassword", @"False", "05831463-7278-4A47-8C61-F9072187DB2C" ); // PTO Request:Selection:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", "maxcharacters", @"", "B71C232C-6B44-4790-83F5-0FABE2B39AB8" ); // PTO Request:Selection:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", "showcountdown", @"False", "E9B30DC3-C2B2-42E2-8165-4C52B1D0FC70" ); // PTO Request:Selection:showcountdown
+            RockMigrationHelper.AddAttributeQualifier( "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", "ispassword", @"False", "B38FC3D2-54C0-47CC-A64F-259C2DB5F58C" ); // PTO Request:Selection:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", "maxcharacters", @"", "3C6F5983-99E5-4EB2-8EAB-644004BC5894" ); // PTO Request:Selection:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", "showcountdown", @"False", "5C310B10-A541-4613-867D-D629B66C2D73" ); // PTO Request:Selection:showcountdown
+            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Modify Request^fdc397cd-8b4a-436e-bea1-bce2e6717c03^BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08^Your information has been submitted successfully.|Cancel Request^638beee0-2f8f-4706-b9a4-5bab70386697^CEC47883-FCD3-47D3-87B7-E1A826184463^|", "", true, "", "74C1F3A4-6198-43A4-B860-BCDFD8F8656A" ); // PTO Request:Start:Initial Form - User
+            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Review Request^fdc397cd-8b4a-436e-bea1-bce2e6717c03^F8AFF1EA-7578-4D62-9445-2F98F40C99F3^Your information has been submitted successfully.|Cancel Request^638beee0-2f8f-4706-b9a4-5bab70386697^CEC47883-FCD3-47D3-87B7-E1A826184463^|", "", true, "", "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7" ); // PTO Request:Start:Initial Form - Reviewer
+            RockMigrationHelper.UpdateWorkflowActionForm( @"{{ Workflow | Attribute:'TimeFrameValidationError' }}
+{% assign remainingHours = Workflow | Attribute:'RemainingHours' | AsDecimal %}
+{% if remainingHours < 0 %}
+<div class=""alert alert-danger"">PTO Requests cannot exceed allocated hours.  Please modify your request.</div>
+{% endif %}", @"", "Submit Request^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^Your information has been submitted successfully.|Cancel^5683e775-b9f3-408c-80ac-94de0e51cf3a^^|", "", true, "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", "4C57D323-945F-4FA1-86DB-C0B5C459268C" ); // PTO Request:Add / Modify Request:Add Request Form
+            RockMigrationHelper.UpdateWorkflowActionForm( @"{{ Workflow | Attribute:'TimeFrameValidationError' }}
+{% assign remainingHours = Workflow | Attribute:'RemainingHours' | AsDecimal %}
+{% if remainingHours < 0 %}
+<div class=""alert alert-danger"">PTO Requests cannot exceed allocated hours.  Please modify your request.</div>
+{% endif %}", @"", "Submit Changes^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^Your information has been submitted successfully.|Cancel^5683e775-b9f3-408c-80ac-94de0e51cf3a^^|", "", true, "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", "DB797225-7327-47F7-91C5-123AC720256C" ); // PTO Request:Add / Modify Request:Modify Request Form
+            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Submit^^^Your information has been submitted successfully.", "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D", true, "", "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1" ); // PTO Request:Review Request:Form
+            RockMigrationHelper.UpdateWorkflowActionForm( @"", @"", "Cancel Request & Notify Supervisor^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^|Cancel Request^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^|Cancel^5683e775-b9f3-408c-80ac-94de0e51cf3a^^|", "", true, "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", "6BE418EB-4761-40C6-AC31-B6EFF5D83871" ); // PTO Request:Cancel Request:Cancel Form
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "1617313E-4367-473B-9567-A0A992BCD483" ); // PTO Request:Start:Initial Form - User:Person
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 7, true, true, false, false, @"", @"", "E9CF6608-8E0E-476B-B989-E10FB1BBD545" ); // PTO Request:Start:Initial Form - User:Start Date
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "286C5A76-9113-49C4-A209-078E856BD0B2", 8, false, true, false, false, @"", @"", "8589A2EE-2FF6-4E78-ADDA-AA0C89E49143" ); // PTO Request:Start:Initial Form - User:End Date
@@ -177,6 +222,14 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "4180D0D3-A144-4974-B364-34292969C1A9", 9, true, true, false, false, @"", @"", "2C06ECF7-F252-4A23-94F3-F3E22BE734D0" ); // PTO Request:Start:Initial Form - User:Hours / Day
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "1136E804-A793-4081-9902-F8E7ED0CDD69", 10, true, true, false, false, @"", @"", "714A9CCA-D968-4A66-990C-E5B3C189E3EA" ); // PTO Request:Start:Initial Form - User:Reason
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "9A28C1E6-7877-4AD6-A381-2BF24B3C654A" ); // PTO Request:Start:Initial Form - User:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 13, false, true, false, false, @"", @"", "2A4BA2D9-81AB-4594-A6E4-7C257B5B8947" ); // PTO Request:Start:Initial Form - User:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 14, false, true, false, false, @"", @"", "440F3022-30BF-4BFF-8C66-ABE75CF478B4" ); // PTO Request:Start:Initial Form - User:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 15, false, true, false, false, @"", @"", "76FB3970-86FF-4F71-9F32-A6AB0F880E60" ); // PTO Request:Start:Initial Form - User:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "3455E8C7-450D-4469-B0C5-A4FB806E8603" ); // PTO Request:Start:Initial Form - User:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "138E6CE5-044D-4DC3-9BDE-64862C0EEA3F" ); // PTO Request:Start:Initial Form - User:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "33A6DA12-A223-48AB-B599-D78FFD4E972C" ); // PTO Request:Start:Initial Form - User:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "A744895F-7FA9-4A3C-921E-1C7B83F81CDA" ); // PTO Request:Start:Initial Form - User:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 20, false, true, false, false, @"", @"", "7420E7C9-78B3-4FF2-AE44-B336135FAC49" ); // PTO Request:Start:Initial Form - User:Reason for Cancellation
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "14CEB0F8-B488-4670-8825-F86F0E5EAB42" ); // PTO Request:Start:Initial Form - Reviewer:Person
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 4, true, true, false, false, @"", @"", "A6379B7B-1DF5-45C5-AA65-3336D9BC641E" ); // PTO Request:Start:Initial Form - Reviewer:Start Date
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "286C5A76-9113-49C4-A209-078E856BD0B2", 2, false, true, false, false, @"", @"", "A8A32F53-F38A-4D26-A0AB-37D5DBE81214" ); // PTO Request:Start:Initial Form - Reviewer:End Date
@@ -190,45 +243,101 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "4180D0D3-A144-4974-B364-34292969C1A9", 10, true, true, false, false, @"", @"", "9BAD33C1-7D79-40D5-916E-C9AB9B414B2A" ); // PTO Request:Start:Initial Form - Reviewer:Hours / Day
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "1136E804-A793-4081-9902-F8E7ED0CDD69", 11, true, true, false, false, @"", @"", "04EB6453-F7F3-4A9E-B074-226AB7D2D060" ); // PTO Request:Start:Initial Form - Reviewer:Reason
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "D2EA145F-FEDF-45EE-89BC-5BFD8074E742" ); // PTO Request:Start:Initial Form - Reviewer:Approver
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "1DD3103F-7465-4970-9FF1-2B913534CD01" ); // PTO Request:Add Request:Form:Person
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 6, true, false, true, false, @"", @"", "E0204296-3FC7-47E1-BF49-E043A9EADE40" ); // PTO Request:Add Request:Form:Start Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "286C5A76-9113-49C4-A209-078E856BD0B2", 7, true, false, false, false, @"", @"", "CB83027E-D256-4801-B9A3-EC4AA68FF93A" ); // PTO Request:Add Request:Form:End Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 5, true, false, true, false, @"", @"", "389B00A8-F7A2-4C74-A375-F181164BAF7E" ); // PTO Request:Add Request:Form:PTO Allocation
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 8, false, true, false, false, @"", @"", "8B3F097B-6BA1-4953-94C9-8350FAD78C4B" ); // PTO Request:Add Request:Form:Approval State
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 1, false, true, false, false, @"", @"", "D85DAE3A-908B-444D-A746-81C5CCC9747E" ); // PTO Request:Add Request:Form:PTO Request
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 2, false, true, false, false, @"", @"", "CD9073A5-EE57-4315-A5E7-D24AC02681E9" ); // PTO Request:Add Request:Form:Supervisor
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "CB12115A-8783-472C-B980-FE404D67F12E", 3, false, true, false, false, @"", @"", "12DD8CA9-05A9-4293-8D5D-34CC6E18B575" ); // PTO Request:Add Request:Form:Supervisor Attribute
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 11, false, true, false, false, @"", @"", "A2A60D27-CCEC-4EAD-A6BC-520F1D3E9753" ); // PTO Request:Add Request:Form:HasViewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 4, false, true, false, false, @"", @"", "3E70A524-35FF-47EF-9441-D25A56EEC0F6" ); // PTO Request:Add Request:Form:HasReviewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "4180D0D3-A144-4974-B364-34292969C1A9", 9, true, false, true, false, @"", @"", "8C5D4C1C-C2D0-402C-A3F9-9AEF107AFB87" ); // PTO Request:Add Request:Form:Hours / Day
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "1136E804-A793-4081-9902-F8E7ED0CDD69", 10, true, false, true, false, @"", @"", "F9086841-D9A4-4B85-8AD3-1A8D136FCCDA" ); // PTO Request:Add Request:Form:Reason
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "3252E791-80B8-40B1-BAA2-80772A6034AE" ); // PTO Request:Add Request:Form:Approver
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "1DBDCA8D-8DF1-4779-A126-9773628968B9" ); // PTO Request:Modify Request - User:Form:Person
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 7, true, false, true, false, @"", @"", "5D934167-F53B-468C-90E4-18326AFC2AAE" ); // PTO Request:Modify Request - User:Form:Start Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "286C5A76-9113-49C4-A209-078E856BD0B2", 8, true, false, false, false, @"", @"", "D131F60D-7B15-43F7-8ED4-1B36DBB1F450" ); // PTO Request:Modify Request - User:Form:End Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 1, true, false, false, false, @"", @"", "7A350C1F-E754-4536-ADBF-2B727D716872" ); // PTO Request:Modify Request - User:Form:PTO Allocation
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 2, true, true, false, false, @"", @"", "453C7C26-E4B7-4A8F-A32D-B9E8B5B54AE2" ); // PTO Request:Modify Request - User:Form:Approval State
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 3, false, true, false, false, @"", @"", "E683AC07-F488-4056-899E-6B1104965604" ); // PTO Request:Modify Request - User:Form:PTO Request
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 4, false, true, false, false, @"", @"", "42809E72-B30A-4B41-9A4B-4EC3B6AEF5F1" ); // PTO Request:Modify Request - User:Form:Supervisor
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "CB12115A-8783-472C-B980-FE404D67F12E", 5, false, true, false, false, @"", @"", "5D3EDDA8-117D-4602-8618-8C471D2995F4" ); // PTO Request:Modify Request - User:Form:Supervisor Attribute
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 11, false, true, false, false, @"", @"", "763D4D9C-08A4-4A83-BCB6-9BDED93C2BEA" ); // PTO Request:Modify Request - User:Form:HasViewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 6, false, true, false, false, @"", @"", "FB1D31D9-E455-486E-8480-7C36D5960263" ); // PTO Request:Modify Request - User:Form:HasReviewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "4180D0D3-A144-4974-B364-34292969C1A9", 9, true, false, true, false, @"", @"", "6E108AAB-7ABE-4DF1-A458-59B5E4290AEC" ); // PTO Request:Modify Request - User:Form:Hours / Day
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "1136E804-A793-4081-9902-F8E7ED0CDD69", 10, true, false, true, false, @"", @"", "2BDD1C62-89AE-4DA4-AD2C-93F7B8F87D5D" ); // PTO Request:Modify Request - User:Form:Reason
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "21F63F23-21B6-4574-A4E8-5A8708BA87EA" ); // PTO Request:Modify Request - User:Form:Approver
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "639DE8BC-17DF-421B-BC9A-97CFF0632A55" ); // PTO Request:Modify Request - Reviewer:Form:Person
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 3, true, false, true, false, @"", @"", "87E0E969-37EF-4133-8CED-98708A5EDC2F" ); // PTO Request:Modify Request - Reviewer:Form:Start Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "286C5A76-9113-49C4-A209-078E856BD0B2", 4, true, false, false, false, @"", @"", "D7A03211-4011-431C-B271-343284FDEB6E" ); // PTO Request:Modify Request - Reviewer:Form:End Date
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 1, true, false, false, false, @"", @"", "3AE915D1-72CC-4E4E-940D-1C31B095AF46" ); // PTO Request:Modify Request - Reviewer:Form:PTO Allocation
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 2, true, false, false, false, @"", @"", "1D62A696-F1A3-4003-9052-82EB0DEDF0D0" ); // PTO Request:Modify Request - Reviewer:Form:Approval State
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 5, false, true, false, false, @"", @"", "39BB0B21-D9CD-475D-B4E4-9591027B4A4C" ); // PTO Request:Modify Request - Reviewer:Form:PTO Request
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 6, false, true, false, false, @"", @"", "D48F6162-852A-431F-B20A-7827EE2202B4" ); // PTO Request:Modify Request - Reviewer:Form:Supervisor
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "CB12115A-8783-472C-B980-FE404D67F12E", 7, false, true, false, false, @"", @"", "02266B98-00C9-476F-8237-F99CDF51358A" ); // PTO Request:Modify Request - Reviewer:Form:Supervisor Attribute
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 8, false, true, false, false, @"", @"", "7D61D053-7C10-44DF-A1A8-9EFE4277DC3D" ); // PTO Request:Modify Request - Reviewer:Form:HasViewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 9, false, true, false, false, @"", @"", "87EA194F-3E3F-401D-A506-CF45C2513094" ); // PTO Request:Modify Request - Reviewer:Form:HasReviewRights
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "4180D0D3-A144-4974-B364-34292969C1A9", 10, true, false, true, false, @"", @"", "83D532E7-87F9-41DD-BB75-2769214F1607" ); // PTO Request:Modify Request - Reviewer:Form:Hours / Day
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "1136E804-A793-4081-9902-F8E7ED0CDD69", 11, true, false, true, false, @"", @"", "D9F3A0ED-E5ED-4B48-963B-121341F1CD93" ); // PTO Request:Modify Request - Reviewer:Form:Reason
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "F6E26CBC-AF24-4D68-BFF8-55E7505D6ABA" ); // PTO Request:Modify Request - Reviewer:Form:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 13, false, true, false, false, @"", @"", "4A2F62CF-003F-41DD-B9BD-249AFE4AF314" ); // PTO Request:Start:Initial Form - Reviewer:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 14, false, true, false, false, @"", @"", "B42C7B71-F7DB-47DE-AB18-84F987BAF8DF" ); // PTO Request:Start:Initial Form - Reviewer:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 15, false, true, false, false, @"", @"", "63ED71CA-F8BC-43CD-867B-654058AE419C" ); // PTO Request:Start:Initial Form - Reviewer:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "C5B9D0F0-9F10-45B8-94EA-226C9FA45054" ); // PTO Request:Start:Initial Form - Reviewer:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "C56601EE-60AA-48D3-A5FE-0F5255E4E061" ); // PTO Request:Start:Initial Form - Reviewer:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "11A0E019-080F-4D58-BB07-EF5FC3DFCEFD" ); // PTO Request:Start:Initial Form - Reviewer:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "9410E929-B515-4704-A6A7-D1E71E320193" ); // PTO Request:Start:Initial Form - Reviewer:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 20, false, true, false, false, @"", @"", "46BC8747-AD68-400D-9656-B936DE44C88A" ); // PTO Request:Start:Initial Form - Reviewer:Reason for Cancellation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "1DD3103F-7465-4970-9FF1-2B913534CD01" ); // PTO Request:Add / Modify Request:Add Request Form:Person
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", 20, false, true, false, false, @"", @"", "80FF4AF1-DF02-4533-9B09-F1CAB45C9AA8" ); // PTO Request:Add / Modify Request:Add Request Form:Selection
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 7, true, false, true, false, @"", @"", "E0204296-3FC7-47E1-BF49-E043A9EADE40" ); // PTO Request:Add / Modify Request:Add Request Form:Start Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "286C5A76-9113-49C4-A209-078E856BD0B2", 8, true, false, false, false, @"", @"", "CB83027E-D256-4801-B9A3-EC4AA68FF93A" ); // PTO Request:Add / Modify Request:Add Request Form:End Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 5, true, false, true, false, @"", @"", "389B00A8-F7A2-4C74-A375-F181164BAF7E" ); // PTO Request:Add / Modify Request:Add Request Form:PTO Allocation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 6, true, true, false, false, @"", @"", "8B3F097B-6BA1-4953-94C9-8350FAD78C4B" ); // PTO Request:Add / Modify Request:Add Request Form:Approval State
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 1, false, true, false, false, @"", @"", "D85DAE3A-908B-444D-A746-81C5CCC9747E" ); // PTO Request:Add / Modify Request:Add Request Form:PTO Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 2, false, true, false, false, @"", @"", "CD9073A5-EE57-4315-A5E7-D24AC02681E9" ); // PTO Request:Add / Modify Request:Add Request Form:Supervisor
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "CB12115A-8783-472C-B980-FE404D67F12E", 3, false, true, false, false, @"", @"", "12DD8CA9-05A9-4293-8D5D-34CC6E18B575" ); // PTO Request:Add / Modify Request:Add Request Form:Supervisor Attribute
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 12, false, true, false, false, @"", @"", "A2A60D27-CCEC-4EAD-A6BC-520F1D3E9753" ); // PTO Request:Add / Modify Request:Add Request Form:HasViewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 4, false, true, false, false, @"", @"", "3E70A524-35FF-47EF-9441-D25A56EEC0F6" ); // PTO Request:Add / Modify Request:Add Request Form:HasReviewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "4180D0D3-A144-4974-B364-34292969C1A9", 9, true, false, true, false, @"", @"", "8C5D4C1C-C2D0-402C-A3F9-9AEF107AFB87" ); // PTO Request:Add / Modify Request:Add Request Form:Hours / Day
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "1136E804-A793-4081-9902-F8E7ED0CDD69", 11, true, false, true, false, @"", @"", "F9086841-D9A4-4B85-8AD3-1A8D136FCCDA" ); // PTO Request:Add / Modify Request:Add Request Form:Reason
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "35198559-8801-424C-B410-7145E00D3F67", 13, false, true, false, false, @"", @"", "3252E791-80B8-40B1-BAA2-80772A6034AE" ); // PTO Request:Add / Modify Request:Add Request Form:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 14, false, true, false, false, @"", @"", "E4674BEA-2E3E-4AED-A7CB-FD64326A6745" ); // PTO Request:Add / Modify Request:Add Request Form:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 15, false, true, false, false, @"", @"", "AF066075-A857-47EF-ACF7-EECDCE007FF2" ); // PTO Request:Add / Modify Request:Add Request Form:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 10, true, false, false, false, @"", @"", "97AA8FAD-0E2F-4A8B-8D83-588DB43F4D5D" ); // PTO Request:Add / Modify Request:Add Request Form:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "0FC5CF68-4BED-4CB4-BD34-08E312E15567" ); // PTO Request:Add / Modify Request:Add Request Form:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "DA50344B-5957-4C18-A5AF-1907CA4D106A" ); // PTO Request:Add / Modify Request:Add Request Form:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "73CCE029-302D-4467-8463-64290F41DAF3" ); // PTO Request:Add / Modify Request:Add Request Form:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "8EBD7ED0-8030-4BA3-8967-A40D0A3A2B68" ); // PTO Request:Add / Modify Request:Add Request Form:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "4C57D323-945F-4FA1-86DB-C0B5C459268C", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 21, false, true, false, false, @"", @"", "6638E414-94F1-4651-AAA0-E763B1105AC8" ); // PTO Request:Add / Modify Request:Add Request Form:Reason for Cancellation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "E659CC7D-4F7D-44AA-9F92-72EE9347480A" ); // PTO Request:Add / Modify Request:Modify Request Form:Person
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", 20, false, true, false, false, @"", @"", "C21692E0-2508-4256-885E-DA43D6D78B07" ); // PTO Request:Add / Modify Request:Modify Request Form:Selection
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 3, true, false, true, false, @"", @"", "DEAFC992-EBBD-48D8-A028-FF5814C761D0" ); // PTO Request:Add / Modify Request:Modify Request Form:Start Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "286C5A76-9113-49C4-A209-078E856BD0B2", 4, true, false, false, false, @"", @"", "710FE644-9E58-4E87-9570-9E6577D4FF49" ); // PTO Request:Add / Modify Request:Modify Request Form:End Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 1, true, false, false, false, @"", @"", "CE07A790-505A-4CD6-97F1-F527D1405498" ); // PTO Request:Add / Modify Request:Modify Request Form:PTO Allocation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 2, true, true, false, false, @"", @"", "E2E4DCFD-5445-4C6C-9BA2-0A87C10241F5" ); // PTO Request:Add / Modify Request:Modify Request Form:Approval State
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 5, false, true, false, false, @"", @"", "F4C948DA-8CD1-4F2D-AAC8-42338C86228A" ); // PTO Request:Add / Modify Request:Modify Request Form:PTO Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 6, false, true, false, false, @"", @"", "AD8E8139-C905-4267-ACFA-7361D9C91D5D" ); // PTO Request:Add / Modify Request:Modify Request Form:Supervisor
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "CB12115A-8783-472C-B980-FE404D67F12E", 7, false, true, false, false, @"", @"", "CEC8CC6F-3E07-48A6-8AFB-51218C03957E" ); // PTO Request:Add / Modify Request:Modify Request Form:Supervisor Attribute
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 8, false, true, false, false, @"", @"", "2BE0C887-AC0F-4E01-8B37-62AF9760E538" ); // PTO Request:Add / Modify Request:Modify Request Form:HasViewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 9, false, true, false, false, @"", @"", "15ADF872-5DDD-4781-AEDF-CC3EA835EE6C" ); // PTO Request:Add / Modify Request:Modify Request Form:HasReviewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "4180D0D3-A144-4974-B364-34292969C1A9", 10, true, false, true, false, @"", @"", "7CBBE2D1-4B45-49A8-A3D4-7E41945886AE" ); // PTO Request:Add / Modify Request:Modify Request Form:Hours / Day
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "1136E804-A793-4081-9902-F8E7ED0CDD69", 12, true, false, true, false, @"", @"", "C54F98F1-329C-4007-A51E-48DDCA5AC346" ); // PTO Request:Add / Modify Request:Modify Request Form:Reason
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "35198559-8801-424C-B410-7145E00D3F67", 13, false, true, false, false, @"", @"", "2B721D1E-4F42-423D-B52E-3595FC010043" ); // PTO Request:Add / Modify Request:Modify Request Form:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 14, false, true, false, false, @"", @"", "711F3476-67A0-4EB8-B668-A66CB5A3F67C" ); // PTO Request:Add / Modify Request:Modify Request Form:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 15, false, true, false, false, @"", @"", "DEB47B13-7092-4505-A043-66BD955C348D" ); // PTO Request:Add / Modify Request:Modify Request Form:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 11, true, false, false, false, @"", @"", "3E339374-8F64-4C87-8498-C80B26D939A5" ); // PTO Request:Add / Modify Request:Modify Request Form:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "ED6BC0E0-1FBE-4EE4-8DDA-A3EF83937EF6" ); // PTO Request:Add / Modify Request:Modify Request Form:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "430EC24B-6AF9-4D5C-A8DD-F1E62C7C78FF" ); // PTO Request:Add / Modify Request:Modify Request Form:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "63DD2A75-8844-4E2D-B250-F1ED40334DE0" ); // PTO Request:Add / Modify Request:Modify Request Form:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "9CCBC1F2-E2BE-4E5B-AE4F-96114E5322FE" ); // PTO Request:Add / Modify Request:Modify Request Form:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "DB797225-7327-47F7-91C5-123AC720256C", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 21, false, true, false, false, @"", @"", "E503AB96-448A-4E74-AD57-4D52FCB4F598" ); // PTO Request:Add / Modify Request:Modify Request Form:Reason for Cancellation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, true, true, false, false, @"", @"", "639DE8BC-17DF-421B-BC9A-97CFF0632A55" ); // PTO Request:Review Request:Form:Person
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 3, true, false, true, false, @"", @"", "87E0E969-37EF-4133-8CED-98708A5EDC2F" ); // PTO Request:Review Request:Form:Start Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "286C5A76-9113-49C4-A209-078E856BD0B2", 4, true, false, false, false, @"", @"", "D7A03211-4011-431C-B271-343284FDEB6E" ); // PTO Request:Review Request:Form:End Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 1, true, false, false, false, @"", @"", "3AE915D1-72CC-4E4E-940D-1C31B095AF46" ); // PTO Request:Review Request:Form:PTO Allocation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 2, true, false, false, false, @"", @"", "1D62A696-F1A3-4003-9052-82EB0DEDF0D0" ); // PTO Request:Review Request:Form:Approval State
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 5, false, true, false, false, @"", @"", "39BB0B21-D9CD-475D-B4E4-9591027B4A4C" ); // PTO Request:Review Request:Form:PTO Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 6, false, true, false, false, @"", @"", "D48F6162-852A-431F-B20A-7827EE2202B4" ); // PTO Request:Review Request:Form:Supervisor
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "CB12115A-8783-472C-B980-FE404D67F12E", 7, false, true, false, false, @"", @"", "02266B98-00C9-476F-8237-F99CDF51358A" ); // PTO Request:Review Request:Form:Supervisor Attribute
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 8, false, true, false, false, @"", @"", "7D61D053-7C10-44DF-A1A8-9EFE4277DC3D" ); // PTO Request:Review Request:Form:HasViewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 9, false, true, false, false, @"", @"", "87EA194F-3E3F-401D-A506-CF45C2513094" ); // PTO Request:Review Request:Form:HasReviewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "4180D0D3-A144-4974-B364-34292969C1A9", 10, true, false, true, false, @"", @"", "83D532E7-87F9-41DD-BB75-2769214F1607" ); // PTO Request:Review Request:Form:Hours / Day
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "1136E804-A793-4081-9902-F8E7ED0CDD69", 11, true, false, true, false, @"", @"", "D9F3A0ED-E5ED-4B48-963B-121341F1CD93" ); // PTO Request:Review Request:Form:Reason
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "F6E26CBC-AF24-4D68-BFF8-55E7505D6ABA" ); // PTO Request:Review Request:Form:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 13, false, true, false, false, @"", @"", "3C74260B-2242-47E0-9BD5-A87583864184" ); // PTO Request:Review Request:Form:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 14, false, true, false, false, @"", @"", "5BCC71DD-F857-4894-A77C-E6A62B3368D3" ); // PTO Request:Review Request:Form:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 15, false, true, false, false, @"", @"", "7BDF5100-3BEF-4B78-959F-B8216F5A3C22" ); // PTO Request:Review Request:Form:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "B480E337-1A03-475F-BEBD-56B18C7E6D27" ); // PTO Request:Review Request:Form:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "D0F039CB-B7CD-4DCF-AEB4-BF5D09B4A128" ); // PTO Request:Review Request:Form:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "0047AB1C-9E76-4355-A4F3-08A3C88B0C8B" ); // PTO Request:Review Request:Form:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "26AF0A47-AFB4-47CE-8A8E-CE1018FE4133" ); // PTO Request:Review Request:Form:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 20, false, true, false, false, @"", @"", "0C4F0056-2469-453F-9FA5-648D481183DA" ); // PTO Request:Review Request:Form:Reason for Cancellation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 0, false, true, false, false, @"", @"", "2999F51E-4240-4C99-9D2C-523707230B25" ); // PTO Request:Cancel Request:Cancel Form:Person
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", 21, false, true, false, false, @"", @"", "D00E97B0-5616-4117-B8D5-0AEA9969C881" ); // PTO Request:Cancel Request:Cancel Form:Selection
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", 1, false, true, false, false, @"", @"", "8FC4F958-DEA2-4C29-A896-8C18E70532DC" ); // PTO Request:Cancel Request:Cancel Form:Start Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "286C5A76-9113-49C4-A209-078E856BD0B2", 2, false, true, false, false, @"", @"", "7ECDA271-8D85-417B-A552-D9F7EC8ED52B" ); // PTO Request:Cancel Request:Cancel Form:End Date
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", 3, false, true, false, false, @"", @"", "7B6D91C4-7136-4A23-A0F1-34CB0A438C38" ); // PTO Request:Cancel Request:Cancel Form:PTO Allocation
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "FFC543BE-7B65-425B-A56C-AD441986FA2C", 4, false, true, false, false, @"", @"", "35A53C27-8248-4676-BD59-DE2982820D90" ); // PTO Request:Cancel Request:Cancel Form:Approval State
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 5, false, true, false, false, @"", @"", "B2C302C1-E3A6-4D58-A120-2BD7943A0B31" ); // PTO Request:Cancel Request:Cancel Form:PTO Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 6, false, true, false, false, @"", @"", "06C43392-5970-40C5-ACFD-27020A5F2423" ); // PTO Request:Cancel Request:Cancel Form:Supervisor
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "CB12115A-8783-472C-B980-FE404D67F12E", 7, false, true, false, false, @"", @"", "C528D8F3-2213-4C25-8769-D783E6125AA4" ); // PTO Request:Cancel Request:Cancel Form:Supervisor Attribute
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "160380E7-EF1F-4D6A-82C3-712FABD0C263", 8, false, true, false, false, @"", @"", "FA0EE01C-0C72-4865-BB1A-5FE8D5502A90" ); // PTO Request:Cancel Request:Cancel Form:HasViewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 9, false, true, false, false, @"", @"", "DAAA3448-34CE-4077-8003-B0D3339932E9" ); // PTO Request:Cancel Request:Cancel Form:HasReviewRights
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "4180D0D3-A144-4974-B364-34292969C1A9", 10, false, true, false, false, @"", @"", "ACE0449C-B8D8-4FFA-B18C-031D8643DE5A" ); // PTO Request:Cancel Request:Cancel Form:Hours / Day
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "1136E804-A793-4081-9902-F8E7ED0CDD69", 11, false, true, false, false, @"", @"", "FBD5DBC9-43E4-414A-A27E-8DBF2364FF05" ); // PTO Request:Cancel Request:Cancel Form:Reason
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "35198559-8801-424C-B410-7145E00D3F67", 12, false, true, false, false, @"", @"", "A8210068-01D4-46BD-B566-7C0BC0E07C3F" ); // PTO Request:Cancel Request:Cancel Form:Approver
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 13, false, true, false, false, @"", @"", "F82B187A-7D90-4027-A6D7-21C4716CBA19" ); // PTO Request:Cancel Request:Cancel Form:Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "52166C99-8A84-437E-8E01-A0282CD6E5BC", 14, false, true, false, false, @"", @"", "B62EA12E-88E7-4163-9291-357A6F5F4070" ); // PTO Request:Cancel Request:Cancel Form:Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "5D083A44-57B8-46AF-AE1B-5FFA067DD187", 15, false, true, false, false, @"", @"", "2740CB59-7480-4CB6-8E5A-68AEB2EDC547" ); // PTO Request:Cancel Request:Cancel Form:Exclude Weekends
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 16, false, true, false, false, @"", @"", "2CD83F6B-F138-4E2C-B6A5-43E1EA3D04A1" ); // PTO Request:Cancel Request:Cancel Form:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 17, false, true, false, false, @"", @"", "1F1B6A44-E566-4E44-AD2F-8FE3C98FA9C2" ); // PTO Request:Cancel Request:Cancel Form:Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "A28F65E4-D1C9-41B5-89CB-065F7809B298", 18, false, true, false, false, @"", @"", "59D4B795-2C6E-455B-B4BD-0992F8C5F425" ); // PTO Request:Cancel Request:Cancel Form:Human Resources
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "A8101AB8-B260-407D-9C8D-EF4063C73922", 19, false, true, false, false, @"", @"", "0F13D7DC-2864-42F3-BC14-D2D882F36472" ); // PTO Request:Cancel Request:Cancel Form:Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "FA2F1F80-D035-41BD-BADF-98ADBB72D7C2", 20, true, false, true, false, @"", @"", "94AB6A21-62C7-4E2E-9EF4-C51571AE5489" ); // PTO Request:Cancel Request:Cancel Form:Reason for Cancellation
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Person", 0, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 64, "", "066D899E-645D-40F8-BFD8-AFDFEEFCE183" ); // PTO Request:Start:Set Person
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Person To Current Person If Blank", 1, "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", true, false, "", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", 32, "", "56AA96EB-57C8-43E8-9BF3-3CF2534834D6" ); // PTO Request:Start:Set Person To Current Person If Blank
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Supervisor", 2, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "C56BECDD-24BB-40F4-908D-4ECE52F8FBBD" ); // PTO Request:Start:Set Supervisor
@@ -241,25 +350,38 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Reason", 9, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 64, "", "7E6DA347-7333-4723-9DB6-F5E5B69F64B8" ); // PTO Request:Start:Set Reason
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Hours", 10, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 64, "", "790F40BC-0D26-42E6-B6EA-6761273653BC" ); // PTO Request:Start:Set Hours
             RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Set Approval State", 11, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "E2FCD026-7AC1-45F0-93BD-110920E2369C" ); // PTO Request:Start:Set Approval State
-            RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Initial Form - User", 12, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, true, "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 1, "false", "309F9CA5-6ADD-48F4-B615-5F367FE691FA" ); // PTO Request:Start:Initial Form - User
-            RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Initial Form - Reviewer", 13, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, true, "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 1, "true", "D1D1DC50-7186-458C-B105-55B9F8CEF26C" ); // PTO Request:Start:Initial Form - Reviewer
-            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "4C57D323-945F-4FA1-86DB-C0B5C459268C", "", 1, "", "0B3A4061-593E-4403-9B6D-7BDC66C5AE84" ); // PTO Request:Add Request:Form
-            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB" ); // PTO Request:Add Request:Persist Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Add Request", 2, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "", 1, "", "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB" ); // PTO Request:Add Request:Add Request
-            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Complete Workflow", 3, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "FC3DA720-67E3-443D-B0CF-7983FD102BB4" ); // PTO Request:Add Request:Complete Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "9F5491B6-DCCC-4D21-A00E-DFBA138423F2", "Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "126DECCC-A6BE-48F4-AF2B-2A7964F002D3", "", 1, "", "84952D19-07EA-4C7E-A31F-7E5DA3C386B5" ); // PTO Request:Modify Request - User:Form
-            RockMigrationHelper.UpdateWorkflowActionType( "9F5491B6-DCCC-4D21-A00E-DFBA138423F2", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "92E7CBA2-B8B2-44E9-8685-45C0A5AB1231" ); // PTO Request:Modify Request - User:Persist Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "9F5491B6-DCCC-4D21-A00E-DFBA138423F2", "Update Request", 2, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "", 1, "", "66613CA7-EF9B-456D-910C-8F90B85FBE1F" ); // PTO Request:Modify Request - User:Update Request
-            RockMigrationHelper.UpdateWorkflowActionType( "9F5491B6-DCCC-4D21-A00E-DFBA138423F2", "Send Email to Supervisor", 3, "66197B01-D1F0-4924-A315-47AD54E030DE", true, false, "", "", 1, "", "3EC9A269-940B-48BC-8171-789033655F20" ); // PTO Request:Modify Request - User:Send Email to Supervisor
-            RockMigrationHelper.UpdateWorkflowActionType( "9F5491B6-DCCC-4D21-A00E-DFBA138423F2", "Complete Workflow", 4, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "7A841A72-2DFB-4514-84FA-B50DE2FECE6B" ); // PTO Request:Modify Request - User:Complete Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "", 1, "", "A5DB1A4C-0B69-4394-B7E3-0728C75C6C66" ); // PTO Request:Modify Request - Reviewer:Form
-            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "C8056574-6838-4C42-AD9E-021F1ECEBA70" ); // PTO Request:Modify Request - Reviewer:Persist Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Set Approver", 2, "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", true, false, "", "", 1, "", "22BDBE2C-2670-49FA-AF2E-E0420FB24714" ); // PTO Request:Modify Request - Reviewer:Set Approver
-            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Update Request", 3, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "", 1, "", "77664272-44CB-40F0-BED2-0A11ADB5C125" ); // PTO Request:Modify Request - Reviewer:Update Request
-            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Complete Workflow", 4, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3" ); // PTO Request:Modify Request - Reviewer:Complete Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Delete Request", 0, "2CBFBD56-2F3A-4CD5-AA23-A807CEBEEB54", true, false, "", "", 1, "", "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB" ); // PTO Request:Delete Request:Delete Request
-            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8" ); // PTO Request:Delete Request:Persist Workflow
-            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Complete Workflow", 2, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "B277B0BC-474C-4934-80B3-01383BB2D95E" ); // PTO Request:Delete Request:Complete Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Activate Cancel Request Activity", 12, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "65B0E759-671A-421C-B2FC-E9885BA4D38D", 1, "Yes", "91B7FD94-E1D7-4A65-A25F-FE795424D635" ); // PTO Request:Start:Activate Cancel Request Activity
+            RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Initial Form - User", 13, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, true, "74C1F3A4-6198-43A4-B860-BCDFD8F8656A", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 1, "false", "309F9CA5-6ADD-48F4-B615-5F367FE691FA" ); // PTO Request:Start:Initial Form - User
+            RockMigrationHelper.UpdateWorkflowActionType( "BD2A46DC-C0CC-4145-9D7A-1D3B55E3AAA9", "Initial Form - Reviewer", 14, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, true, "3F5CD9A8-105D-4F6C-8E91-0F319929C8A7", "14E6B221-3531-4177-A1B1-8DD8B24B80AA", 1, "true", "D1D1DC50-7186-458C-B105-55B9F8CEF26C" ); // PTO Request:Start:Initial Form - Reviewer
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Add Request Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "4C57D323-945F-4FA1-86DB-C0B5C459268C", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 32, "", "0B3A4061-593E-4403-9B6D-7BDC66C5AE84" ); // PTO Request:Add / Modify Request:Add Request Form
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Modify Request Form", 1, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "DB797225-7327-47F7-91C5-123AC720256C", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 64, "", "6F4A6BBB-3C80-42A3-910F-0106CB5B3BFD" ); // PTO Request:Add / Modify Request:Modify Request Form
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Persist Workflow", 2, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB" ); // PTO Request:Add / Modify Request:Persist Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Redirect", 3, "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", true, true, "", "8ECFAEAF-9381-4D3F-9A46-3EC7292AD587", 8, "Cancel", "0D0031DF-A108-4745-840C-3B1C2D5C25CE" ); // PTO Request:Add / Modify Request:Redirect
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Build Time Frame Validation Error", 4, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "728BB3A2-A5E1-4CE7-A23A-8C500C7B2112" ); // PTO Request:Add / Modify Request:Build Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Show Time Frame Validation Error", 5, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "B1DA7119-6B5E-4A1A-A08B-B9E0BD9FABF8", 64, "", "52E2A6AA-7974-431E-BA54-229BD93D8DB0" ); // PTO Request:Add / Modify Request:Show Time Frame Validation Error
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Set Requested Hours YTD", 6, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "88F975B5-7EAD-4823-A9B5-7EF55AEF1068" ); // PTO Request:Add / Modify Request:Set Requested Hours YTD
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Set Requested Hours", 7, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "6299C5B3-7233-4CD3-9FD6-91A1B286C5CC" ); // PTO Request:Add / Modify Request:Set Requested Hours
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Check Remaining Hours", 8, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 1, "", "4556A8F7-7B85-4246-892D-BF7EA5CB4FB8" ); // PTO Request:Add / Modify Request:Check Remaining Hours
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Show Overdraft Error", 9, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "1A8D6FA2-5AA0-4548-83EF-4F4D65670347", 512, "0", "3CD27A70-082A-4EC0-8BB2-42E82F202326" ); // PTO Request:Add / Modify Request:Show Overdraft Error
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Modify Request", 10, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 64, "", "1B6922B4-16A3-4CE4-848C-4BA8672073F3" ); // PTO Request:Add / Modify Request:Modify Request
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Add Request", 11, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", 32, "", "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB" ); // PTO Request:Add / Modify Request:Add Request
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Send Email to Supervisor if one exists", 12, "66197B01-D1F0-4924-A315-47AD54E030DE", true, false, "", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 64, "", "E6B880BD-3903-41D5-8734-91DBDB91EE09" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Send Email to HR if no supervisor exists", 13, "66197B01-D1F0-4924-A315-47AD54E030DE", true, false, "", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", 32, "", "C889FAA5-3FC6-4920-BC4D-8C70E17061F4" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Redirect", 14, "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", true, false, "", "", 1, "", "81BDBD72-79B6-4AEE-92C3-135472ED8C53" ); // PTO Request:Add / Modify Request:Redirect
+            RockMigrationHelper.UpdateWorkflowActionType( "BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08", "Complete Workflow", 15, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "FC3DA720-67E3-443D-B0CF-7983FD102BB4" ); // PTO Request:Add / Modify Request:Complete Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "FC39F7C5-82C5-43C7-A0F0-0C4D1CA417A1", "", 1, "", "A5DB1A4C-0B69-4394-B7E3-0728C75C6C66" ); // PTO Request:Review Request:Form
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "C8056574-6838-4C42-AD9E-021F1ECEBA70" ); // PTO Request:Review Request:Persist Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Set Approver", 2, "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", true, false, "", "", 1, "", "22BDBE2C-2670-49FA-AF2E-E0420FB24714" ); // PTO Request:Review Request:Set Approver
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Update Request", 3, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "", 1, "", "77664272-44CB-40F0-BED2-0A11ADB5C125" ); // PTO Request:Review Request:Update Request
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Send Email to Person", 4, "66197B01-D1F0-4924-A315-47AD54E030DE", true, false, "", "", 1, "", "B35D6DAB-82EE-4646-A96A-797124CDEA1A" ); // PTO Request:Review Request:Send Email to Person
+            RockMigrationHelper.UpdateWorkflowActionType( "F8AFF1EA-7578-4D62-9445-2F98F40C99F3", "Complete Workflow", 5, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3" ); // PTO Request:Review Request:Complete Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Cancel Form", 0, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "6BE418EB-4761-40C6-AC31-B6EFF5D83871", "", 1, "", "A56DFEBF-5DB6-4A9F-B0D7-C8B7560770CD" ); // PTO Request:Cancel Request:Cancel Form
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Persist Workflow", 1, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8" ); // PTO Request:Cancel Request:Persist Workflow
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Set Approval State to Cancelled", 2, "C789E457-0783-44B3-9D8F-2EBAB5F11110", true, false, "", "", 1, "", "5797F050-5A1E-4EBC-A800-D63215386BC5" ); // PTO Request:Cancel Request:Set Approval State to Cancelled
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Send Email to Supervisor", 3, "66197B01-D1F0-4924-A315-47AD54E030DE", true, false, "", "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", 8, "Notify", "8A500384-1F40-443E-9387-04AB9BB8BDE9" ); // PTO Request:Cancel Request:Send Email to Supervisor
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Cancel Request", 4, "546C6C01-5C8B-449E-A16A-580D92D0317B", true, false, "", "7B2496AD-98C3-4FB0-979B-6985DB23EEC8", 8, "Request", "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB" ); // PTO Request:Cancel Request:Cancel Request
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Redirect", 5, "F4FB0FB4-B2B3-4FC4-BEEA-E9B846A63293", true, false, "", "", 1, "", "077BFC61-E634-4827-8769-8D1ABDB0AD46" ); // PTO Request:Cancel Request:Redirect
+            RockMigrationHelper.UpdateWorkflowActionType( "CEC47883-FCD3-47D3-87B7-E1A826184463", "Complete Workflow", 6, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, true, "", "", 1, "", "B277B0BC-474C-4934-80B3-01383BB2D95E" ); // PTO Request:Cancel Request:Complete Workflow
             RockMigrationHelper.AddActionTypeAttributeValue( "066D899E-645D-40F8-BFD8-AFDFEEFCE183", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign ptoRequestGuid = Workflow | Attribute:'PTORequest','RawValue' %}
 {% ptorequest where:'Guid == ""{{ptoRequestGuid}}""'%}
     {% for ptoRequest in ptorequestItems %}
@@ -405,53 +527,156 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "E2FCD026-7AC1-45F0-93BD-110920E2369C", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // PTO Request:Start:Set Approval State:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "E2FCD026-7AC1-45F0-93BD-110920E2369C", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"ffc543be-7b65-425b-a56c-ad441986fa2c" ); // PTO Request:Start:Set Approval State:Attribute
             RockMigrationHelper.AddActionTypeAttributeValue( "E2FCD026-7AC1-45F0-93BD-110920E2369C", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5", @"RockEntity" ); // PTO Request:Start:Set Approval State:Enabled Lava Commands
+            RockMigrationHelper.AddActionTypeAttributeValue( "91B7FD94-E1D7-4A65-A25F-FE795424D635", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // PTO Request:Start:Activate Cancel Request Activity:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "91B7FD94-E1D7-4A65-A25F-FE795424D635", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"CEC47883-FCD3-47D3-87B7-E1A826184463" ); // PTO Request:Start:Activate Cancel Request Activity:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "309F9CA5-6ADD-48F4-B615-5F367FE691FA", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Start:Initial Form - User:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "D1D1DC50-7186-458C-B105-55B9F8CEF26C", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Start:Initial Form - Reviewer:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "0B3A4061-593E-4403-9B6D-7BDC66C5AE84", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Add Request:Form:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Add Request:Persist Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Add Request:Persist Workflow:Persist Immediately
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Add Request:Add Request:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Add Request:Add Request:Allocation|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Add Request:Add Request:Start Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Add Request:Add Request:End Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Add Request:Add Request:Hours|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Add Request:Add Request:Reason|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"0" ); // PTO Request:Add Request:Add Request:Approval State|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "FC3DA720-67E3-443D-B0CF-7983FD102BB4", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Add Request:Complete Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "FC3DA720-67E3-443D-B0CF-7983FD102BB4", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Add Request:Complete Workflow:Status|Status Attribute
-            RockMigrationHelper.AddActionTypeAttributeValue( "84952D19-07EA-4C7E-A31F-7E5DA3C386B5", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Modify Request - User:Form:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "92E7CBA2-B8B2-44E9-8685-45C0A5AB1231", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Modify Request - User:Persist Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "92E7CBA2-B8B2-44E9-8685-45C0A5AB1231", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Modify Request - User:Persist Workflow:Persist Immediately
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Modify Request - User:Update Request:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "C957F777-F0FE-4D05-BB22-10D7C7A5C437", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Modify Request - User:Update Request:Existing Pto Request
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Modify Request - User:Update Request:Allocation|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Modify Request - User:Update Request:Start Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Modify Request - User:Update Request:End Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Modify Request - User:Update Request:Hours|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Modify Request - User:Update Request:Reason|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "66613CA7-EF9B-456D-910C-8F90B85FBE1F", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"0" ); // PTO Request:Modify Request - User:Update Request:Approval State|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "3EC9A269-940B-48BC-8171-789033655F20", "36197160-7D3D-490D-AB42-7E29105AFE91", @"False" ); // PTO Request:Modify Request - User:Send Email to Supervisor:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "3EC9A269-940B-48BC-8171-789033655F20", "0C4C13B8-7076-4872-925A-F950886B5E16", @"203ab4e9-065c-4d49-8da5-9c7c61f49a01" ); // PTO Request:Modify Request - User:Send Email to Supervisor:Send To Email Addresses|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "3EC9A269-940B-48BC-8171-789033655F20", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"PTO Request: {{Workflow | Attribute:'Person'}} ({{Workflow | Attribute:'StartDate'}} - {{Workflow | Attribute:'EndDate'}})" ); // PTO Request:Modify Request - User:Send Email to Supervisor:Subject
-            RockMigrationHelper.AddActionTypeAttributeValue( "3EC9A269-940B-48BC-8171-789033655F20", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+            RockMigrationHelper.AddActionTypeAttributeValue( "0B3A4061-593E-4403-9B6D-7BDC66C5AE84", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Add / Modify Request:Add Request Form:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "6F4A6BBB-3C80-42A3-910F-0106CB5B3BFD", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Add / Modify Request:Modify Request Form:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Add / Modify Request:Persist Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "9404EB9E-0E26-43E8-ACEE-FDD62434FDDB", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Add / Modify Request:Persist Workflow:Persist Immediately
+            RockMigrationHelper.AddActionTypeAttributeValue( "0D0031DF-A108-4745-840C-3B1C2D5C25CE", "051BD491-817F-45DD-BBAC-875BA79E3644", @"/Person/{{ Workflow | Attribute:'Person','Id' }}/HR" ); // PTO Request:Add / Modify Request:Redirect:Url|Url Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "0D0031DF-A108-4745-840C-3B1C2D5C25CE", "1DAA899B-634B-4DD5-A30A-69BAC235B383", @"False" ); // PTO Request:Add / Modify Request:Redirect:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "0D0031DF-A108-4745-840C-3B1C2D5C25CE", "581736CE-76CF-46CE-A401-60A9E9EBCC1A", @"0" ); // PTO Request:Add / Modify Request:Redirect:Processing Options
+            RockMigrationHelper.AddActionTypeAttributeValue( "728BB3A2-A5E1-4CE7-A23A-8C500C7B2112", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{%- assign allocation = Workflow | Attribute:'PTOAllocation','RawValue' -%}
+{%- assign endDate = Workflow | Attribute:'EndDate' | AsDateTime -%}
+{%- ptoallocation where:'Guid == ""{{ allocation }}""' -%}
+{%- if endDate > ptoallocation.EndDate -%}
+<div class=""alert alert-danger"">PTO Requests cannot span multiple allocations.  Please select an end date that is within your allocation's timeframe.</div>
+{%- endif -%}
+{%- endptoallocation -%}" ); // PTO Request:Add / Modify Request:Build Time Frame Validation Error:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue( "728BB3A2-A5E1-4CE7-A23A-8C500C7B2112", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // PTO Request:Add / Modify Request:Build Time Frame Validation Error:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "728BB3A2-A5E1-4CE7-A23A-8C500C7B2112", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"b1da7119-6b5e-4a1a-a08b-b9e0bd9fabf8" ); // PTO Request:Add / Modify Request:Build Time Frame Validation Error:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "728BB3A2-A5E1-4CE7-A23A-8C500C7B2112", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5", @"RockEntity" ); // PTO Request:Add / Modify Request:Build Time Frame Validation Error:Enabled Lava Commands
+            RockMigrationHelper.AddActionTypeAttributeValue( "52E2A6AA-7974-431E-BA54-229BD93D8DB0", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // PTO Request:Add / Modify Request:Show Time Frame Validation Error:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "52E2A6AA-7974-431E-BA54-229BD93D8DB0", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08" ); // PTO Request:Add / Modify Request:Show Time Frame Validation Error:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "88F975B5-7EAD-4823-A9B5-7EF55AEF1068", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign ptoAllocationGuid = Workflow | Attribute:'PTOAllocation','RawValue' %}
+{% if ptoAllocationGuid == empty %}
+    {% assign ptoRequest = Workflow | Attribute:'PTORequest','Object' %}
+    {% assign ptoAllocationGuid = ptoRequest.PtoAllocation.Guid %}
+{% endif %}
+
+{% ptoallocation where:'Guid == ""{{ ptoAllocationGuid }}""' %}
+    {% for ptoAllocation in ptoallocationItems %}
+        {% assign totalHours = ptoAllocation.Hours %}
+        {% assign takenHours = 0.0 %}
+        {% for request in ptoAllocation.PtoRequests %}
+            {% if request.PtoRequestApprovalState != 0 %}
+                {% assign takenHours = takenHours | Plus:request.Hours %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endptoallocation %}
+{{ takenHours }}" ); // PTO Request:Add / Modify Request:Set Requested Hours YTD:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue( "88F975B5-7EAD-4823-A9B5-7EF55AEF1068", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // PTO Request:Add / Modify Request:Set Requested Hours YTD:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "88F975B5-7EAD-4823-A9B5-7EF55AEF1068", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"a8101ab8-b260-407d-9c8d-ef4063c73922" ); // PTO Request:Add / Modify Request:Set Requested Hours YTD:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "88F975B5-7EAD-4823-A9B5-7EF55AEF1068", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5", @"RockEntity" ); // PTO Request:Add / Modify Request:Set Requested Hours YTD:Enabled Lava Commands
+            RockMigrationHelper.AddActionTypeAttributeValue( "6299C5B3-7233-4CD3-9FD6-91A1B286C5CC", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign startDate = Workflow | Attribute:'StartDate' %}
+{% assign endDate = Workflow | Attribute:'EndDate' %}
+{% assign hoursPerDay = Workflow | Attribute:'HoursDay' %}
+{% assign excludeWeekends = Workflow | Attribute:'ExcludeWeekends' %}
+{% assign requestDate = startDate %}
+{% assign totalRequestHours = 0 %}
+
+{% if endDate != empty %}
+    {% assign dayCount = startDate | DateDiff:endDate, 'd' %}
+    {% for i in (0...dayCount) %}
+        {% assign requestDate = startDate | DateAdd:i,'d' %}
+        {% assign dayCounts = true %}
+        
+        {% if excludeWeekends == 'True' %}
+            {% assign dayOfWeek = requestDate | Date:'dddd' %}
+            {% if dayOfWeek == 'Sunday' or dayOfWeek == 'Saturday' %}
+                {% assign dayCounts = false %}
+            {% endif %}
+        {% endif %}
+        
+        {% if dayCounts %}
+            {% assign totalRequestHours = totalRequestHours | Plus:hoursPerDay %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% assign totalRequestHours = hoursPerDay %}
+{% endif %}
+
+{{totalRequestHours }}" ); // PTO Request:Add / Modify Request:Set Requested Hours:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue( "6299C5B3-7233-4CD3-9FD6-91A1B286C5CC", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // PTO Request:Add / Modify Request:Set Requested Hours:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "6299C5B3-7233-4CD3-9FD6-91A1B286C5CC", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"52166c99-8a84-437e-8e01-a0282cd6e5bc" ); // PTO Request:Add / Modify Request:Set Requested Hours:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "4556A8F7-7B85-4246-892D-BF7EA5CB4FB8", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign requestHours = Workflow | Attribute:'RequestedHours' %}
+
+{% assign ptoAllocationGuid = Workflow | Attribute:'PTOAllocation','RawValue' %}
+{% if ptoAllocationGuid == empty %}
+    {% assign ptoRequest = Workflow | Attribute:'PTORequest','Object' %}
+    {% assign ptoAllocationGuid = ptoRequest.PtoAllocation.Guid %}
+{% endif %}
+
+{% ptoallocation where:'Guid == ""{{ptoAllocationGuid}}""' %}
+    {% for ptoAllocation in ptoallocationItems %}
+        {% assign totalHours = ptoAllocation.Hours %}
+        {% assign takenHours = 0.0 %}
+        {% for request in ptoAllocation.PtoRequests %}
+            {% if request.PtoRequestApprovalState != 0 %}
+                {% assign takenHours = takenHours | Plus:request.Hours %}
+            {% endif %}
+        {% endfor %}
+        {% assign remainingHours = totalHours | Minus:takenHours %}
+    {% endfor %}
+{% endptoallocation %}
+{% assign remainingHours = remainingHours | Minus:requestHours %}
+
+{{ remainingHours }}" ); // PTO Request:Add / Modify Request:Check Remaining Hours:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue( "4556A8F7-7B85-4246-892D-BF7EA5CB4FB8", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // PTO Request:Add / Modify Request:Check Remaining Hours:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "4556A8F7-7B85-4246-892D-BF7EA5CB4FB8", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"1a8d6fa2-5aa0-4548-83ef-4f4d65670347" ); // PTO Request:Add / Modify Request:Check Remaining Hours:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "4556A8F7-7B85-4246-892D-BF7EA5CB4FB8", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5", @"RockEntity" ); // PTO Request:Add / Modify Request:Check Remaining Hours:Enabled Lava Commands
+            RockMigrationHelper.AddActionTypeAttributeValue( "3CD27A70-082A-4EC0-8BB2-42E82F202326", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // PTO Request:Add / Modify Request:Show Overdraft Error:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "3CD27A70-082A-4EC0-8BB2-42E82F202326", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"BFBA23D1-FA40-43FF-9FA8-7C9B4342ED08" ); // PTO Request:Add / Modify Request:Show Overdraft Error:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Add / Modify Request:Modify Request:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "C957F777-F0FE-4D05-BB22-10D7C7A5C437", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Add / Modify Request:Modify Request:Existing Pto Request
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Add / Modify Request:Modify Request:Allocation|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Add / Modify Request:Modify Request:Start Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Add / Modify Request:Modify Request:End Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Add / Modify Request:Modify Request:Hours|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Add / Modify Request:Modify Request:Reason|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"0" ); // PTO Request:Add / Modify Request:Modify Request:Approval State|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "1B6922B4-16A3-4CE4-848C-4BA8672073F3", "552610AA-C128-4A6F-AAB6-20ACC0C5F060", @"5d083a44-57b8-46af-ae1b-5ffa067dd187" ); // PTO Request:Add / Modify Request:Modify Request:Exclude Weekends|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Add / Modify Request:Add Request:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Add / Modify Request:Add Request:Allocation|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Add / Modify Request:Add Request:Start Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Add / Modify Request:Add Request:End Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Add / Modify Request:Add Request:Hours|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Add / Modify Request:Add Request:Reason|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"0" ); // PTO Request:Add / Modify Request:Add Request:Approval State|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "CDF5DB63-354C-4123-AF0B-A4AA9C4AFCEB", "552610AA-C128-4A6F-AAB6-20ACC0C5F060", @"5d083a44-57b8-46af-ae1b-5ffa067dd187" ); // PTO Request:Add / Modify Request:Add Request:Exclude Weekends|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "36197160-7D3D-490D-AB42-7E29105AFE91", @"False" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "0C4C13B8-7076-4872-925A-F950886B5E16", @"203ab4e9-065c-4d49-8da5-9c7c61f49a01" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists:Send To Email Addresses|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"{{ Workflow | Attribute:'Type' }} Time Off Request for {{Workflow | Attribute:'Person'}} ({{Workflow | Attribute:'StartDate'}} - {{Workflow | Attribute:'EndDate'}})" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
 {% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
 
 {{ 'Global' | Attribute:'EmailHeader' }}
+{% if selection = 'Submit Changes' %}
+    An updated {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% elseif selection = 'Submit Request' %}
+    A new {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% else %}
+    A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% endif %}
 
-{{ Person.NickName }},<br/>
-<br/>
-A new PTO Request has been submitted by one of your employees. Please review it below:
-
-<div>
-    <strong>Person:</strong> {{ Workflow | Attribute:'Person' }}<br />
-    <strong>PTO Type:</strong> {{ Workflow | Attribute:'PTOAllocation' }}<br />
-    <strong>Start Date:</strong> {{ Workflow | Attribute:'StartDate' }}<br />
-    <strong>End Date:</strong> {{ Workflow | Attribute:'EndDate' }}<br />
-    <strong>Hours / Day:</strong> {{ Workflow | Attribute:'HoursDay' }}<br />
-    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br />
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong>
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
             
-</div>
-<br/>
 
 Thank you!<br/>
 <br/>
@@ -471,32 +696,194 @@ Thank you!<br/>
  </tr>
 </table>
 {{ 'Global' | Attribute:'EmailFooter' }}
-" ); // PTO Request:Modify Request - User:Send Email to Supervisor:Body
-            RockMigrationHelper.AddActionTypeAttributeValue( "3EC9A269-940B-48BC-8171-789033655F20", "51C1E5C2-2422-46DD-BA47-5D9E1308DC32", @"True" ); // PTO Request:Modify Request - User:Send Email to Supervisor:Save Communication History
-            RockMigrationHelper.AddActionTypeAttributeValue( "7A841A72-2DFB-4514-84FA-B50DE2FECE6B", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Modify Request - User:Complete Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "7A841A72-2DFB-4514-84FA-B50DE2FECE6B", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Modify Request - User:Complete Workflow:Status|Status Attribute
-            RockMigrationHelper.AddActionTypeAttributeValue( "A5DB1A4C-0B69-4394-B7E3-0728C75C6C66", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Modify Request - Reviewer:Form:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "C8056574-6838-4C42-AD9E-021F1ECEBA70", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Modify Request - Reviewer:Persist Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "C8056574-6838-4C42-AD9E-021F1ECEBA70", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Modify Request - Reviewer:Persist Workflow:Persist Immediately
-            RockMigrationHelper.AddActionTypeAttributeValue( "22BDBE2C-2670-49FA-AF2E-E0420FB24714", "DE9CB292-4785-4EA3-976D-3826F91E9E98", @"False" ); // PTO Request:Modify Request - Reviewer:Set Approver:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "22BDBE2C-2670-49FA-AF2E-E0420FB24714", "BBED8A83-8BB2-4D35-BAFB-05F67DCAD112", @"35198559-8801-424c-b410-7145e00d3f67" ); // PTO Request:Modify Request - Reviewer:Set Approver:Person Attribute
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Modify Request - Reviewer:Update Request:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "C957F777-F0FE-4D05-BB22-10D7C7A5C437", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Modify Request - Reviewer:Update Request:Existing Pto Request
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Modify Request - Reviewer:Update Request:Allocation|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Modify Request - Reviewer:Update Request:Start Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Modify Request - Reviewer:Update Request:End Date|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Modify Request - Reviewer:Update Request:Hours|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Modify Request - Reviewer:Update Request:Reason|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "A781A20B-4F21-47CA-9BCF-1654565DB5F6", @"35198559-8801-424c-b410-7145e00d3f67" ); // PTO Request:Modify Request - Reviewer:Update Request:Approver|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"ffc543be-7b65-425b-a56c-ad441986fa2c" ); // PTO Request:Modify Request - Reviewer:Update Request:Approval State|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Modify Request - Reviewer:Complete Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Modify Request - Reviewer:Complete Workflow:Status|Status Attribute
-            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "0883AE9A-24EE-433F-9925-C7A5C8BCB467", @"False" ); // PTO Request:Delete Request:Delete Request:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "1B976B41-C2D6-4C16-B781-6F5DD1AC2B69", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Delete Request:Delete Request:Existing Pto Request
-            RockMigrationHelper.AddActionTypeAttributeValue( "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Delete Request:Persist Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Delete Request:Persist Workflow:Persist Immediately
-            RockMigrationHelper.AddActionTypeAttributeValue( "B277B0BC-474C-4934-80B3-01383BB2D95E", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Delete Request:Complete Workflow:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "B277B0BC-474C-4934-80B3-01383BB2D95E", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Delete Request:Complete Workflow:Status|Status Attribute
+" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists:Body
+            RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "51C1E5C2-2422-46DD-BA47-5D9E1308DC32", @"True" ); // PTO Request:Add / Modify Request:Send Email to Supervisor if one exists:Save Communication History
+            RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "36197160-7D3D-490D-AB42-7E29105AFE91", @"False" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "0C4C13B8-7076-4872-925A-F950886B5E16", @"a28f65e4-d1c9-41b5-89cb-065f7809b298" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Send To Email Addresses|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"{{ Workflow | Attribute:'Type' }} Time Off Request for {{Workflow | Attribute:'Person'}} ({{Workflow | Attribute:'StartDate'}} - {{Workflow | Attribute:'EndDate'}})" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+{% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
+
+{{ 'Global' | Attribute:'EmailHeader' }}
+
+{% if selection = 'Submit Changes' %}
+    An updated {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% elseif selection = 'Submit Request' %}
+    A new {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% else %}
+    A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ Workflow | Attribute:'Person' }}. <br /> <br />
+{% endif %}
+
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong>
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
+            
+
+Thank you!<br/>
+<br/>
+<table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+ <tr>
+   <td>
+
+		<div><!--[if mso]>
+		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ reviewLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+			<w:anchorlock/>
+			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{reviewText}}</center>
+		  </v:roundrect>
+		<![endif]--><a href=""{{ reviewLink }}""
+		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{reviewText}}</a></div>
+
+	</td>
+ </tr>
+</table>
+{{ 'Global' | Attribute:'EmailFooter' }}
+" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Body
+            RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "51C1E5C2-2422-46DD-BA47-5D9E1308DC32", @"True" ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Save Communication History
+            RockMigrationHelper.AddActionTypeAttributeValue( "81BDBD72-79B6-4AEE-92C3-135472ED8C53", "051BD491-817F-45DD-BBAC-875BA79E3644", @"/Person/{{ Workflow | Attribute:'Person','Id' }}/HR" ); // PTO Request:Add / Modify Request:Redirect:Url|Url Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "81BDBD72-79B6-4AEE-92C3-135472ED8C53", "1DAA899B-634B-4DD5-A30A-69BAC235B383", @"False" ); // PTO Request:Add / Modify Request:Redirect:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "81BDBD72-79B6-4AEE-92C3-135472ED8C53", "581736CE-76CF-46CE-A401-60A9E9EBCC1A", @"0" ); // PTO Request:Add / Modify Request:Redirect:Processing Options
+            RockMigrationHelper.AddActionTypeAttributeValue( "FC3DA720-67E3-443D-B0CF-7983FD102BB4", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Add / Modify Request:Complete Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "FC3DA720-67E3-443D-B0CF-7983FD102BB4", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Add / Modify Request:Complete Workflow:Status|Status Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "A5DB1A4C-0B69-4394-B7E3-0728C75C6C66", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Review Request:Form:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "C8056574-6838-4C42-AD9E-021F1ECEBA70", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Review Request:Persist Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "C8056574-6838-4C42-AD9E-021F1ECEBA70", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Review Request:Persist Workflow:Persist Immediately
+            RockMigrationHelper.AddActionTypeAttributeValue( "22BDBE2C-2670-49FA-AF2E-E0420FB24714", "DE9CB292-4785-4EA3-976D-3826F91E9E98", @"False" ); // PTO Request:Review Request:Set Approver:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "22BDBE2C-2670-49FA-AF2E-E0420FB24714", "BBED8A83-8BB2-4D35-BAFB-05F67DCAD112", @"35198559-8801-424c-b410-7145e00d3f67" ); // PTO Request:Review Request:Set Approver:Person Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Review Request:Update Request:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "C957F777-F0FE-4D05-BB22-10D7C7A5C437", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Review Request:Update Request:Existing Pto Request
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Review Request:Update Request:Allocation|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "3C5F03BD-2CDD-41D7-9ED1-5AAC62AF733D", @"f6fb28d8-ae58-445e-9373-46cda04e6cc5" ); // PTO Request:Review Request:Update Request:Start Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Review Request:Update Request:End Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Review Request:Update Request:Hours|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Review Request:Update Request:Reason|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "A781A20B-4F21-47CA-9BCF-1654565DB5F6", @"35198559-8801-424c-b410-7145e00d3f67" ); // PTO Request:Review Request:Update Request:Approver|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"ffc543be-7b65-425b-a56c-ad441986fa2c" ); // PTO Request:Review Request:Update Request:Approval State|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "77664272-44CB-40F0-BED2-0A11ADB5C125", "552610AA-C128-4A6F-AAB6-20ACC0C5F060", @"False" ); // PTO Request:Review Request:Update Request:Exclude Weekends|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "36197160-7D3D-490D-AB42-7E29105AFE91", @"False" ); // PTO Request:Review Request:Send Email to Person:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "0C4C13B8-7076-4872-925A-F950886B5E16", @"ff9b21ed-f47a-4961-a7db-7cf8d90d96c3" ); // PTO Request:Review Request:Send Email to Person:Send To Email Addresses|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"{{Workflow | Attribute:'ApprovalState'}}: {{ Workflow | Attribute:'Type' }} Time Off Request for {{Workflow | Attribute:'Person'}} ({{Workflow | Attribute:'StartDate'}} - {{Workflow | Attribute:'EndDate'}})" ); // PTO Request:Review Request:Send Email to Person:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+{% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
+
+{{ 'Global' | Attribute:'EmailHeader' }}
+
+    Your {{ Workflow | Attribute:'Type' }} Time Off Request has been {{Workflow | Attribute:'ApprovalState'}} by {{ Workflow | Attribute:'Approver' }}. <br /> <br />
+
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong>
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
+            
+
+Thank you!<br/>
+<br/>
+<table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+ <tr>
+   <td>
+
+		<div><!--[if mso]>
+		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ reviewLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+			<w:anchorlock/>
+			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{reviewText}}</center>
+		  </v:roundrect>
+		<![endif]--><a href=""{{ reviewLink }}""
+		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{reviewText}}</a></div>
+
+	</td>
+ </tr>
+</table>
+{{ 'Global' | Attribute:'EmailFooter' }}
+" ); // PTO Request:Review Request:Send Email to Person:Body
+            RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "51C1E5C2-2422-46DD-BA47-5D9E1308DC32", @"True" ); // PTO Request:Review Request:Send Email to Person:Save Communication History
+            RockMigrationHelper.AddActionTypeAttributeValue( "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Review Request:Complete Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "BA66A6A3-DF0F-4A53-A565-C52AAF7ED5B3", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Review Request:Complete Workflow:Status|Status Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "A56DFEBF-5DB6-4A9F-B0D7-C8B7560770CD", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // PTO Request:Cancel Request:Cancel Form:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // PTO Request:Cancel Request:Persist Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "6C9AFB68-FB82-4DB9-B28D-72992CEAEDD8", "E22BE348-18B1-4420-83A8-6319B35416D2", @"True" ); // PTO Request:Cancel Request:Persist Workflow:Persist Immediately
+            RockMigrationHelper.AddActionTypeAttributeValue( "5797F050-5A1E-4EBC-A800-D63215386BC5", "D7EAA859-F500-4521-9523-488B12EAA7D2", @"False" ); // PTO Request:Cancel Request:Set Approval State to Cancelled:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "5797F050-5A1E-4EBC-A800-D63215386BC5", "44A0B977-4730-4519-8FF6-B0A01A95B212", @"ffc543be-7b65-425b-a56c-ad441986fa2c" ); // PTO Request:Cancel Request:Set Approval State to Cancelled:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "5797F050-5A1E-4EBC-A800-D63215386BC5", "E5272B11-A2B8-49DC-860D-8D574E2BC15C", @"3" ); // PTO Request:Cancel Request:Set Approval State to Cancelled:Text Value|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "36197160-7D3D-490D-AB42-7E29105AFE91", @"False" ); // PTO Request:Cancel Request:Send Email to Supervisor:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "0C4C13B8-7076-4872-925A-F950886B5E16", @"203ab4e9-065c-4d49-8da5-9c7c61f49a01" ); // PTO Request:Cancel Request:Send Email to Supervisor:Send To Email Addresses|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"{{Workflow | Attribute:'ApprovalState'}}: {{ Workflow | Attribute:'Type' }} Time Off Request for {{Workflow | Attribute:'Person'}} ({{Workflow | Attribute:'StartDate'}} - {{Workflow | Attribute:'EndDate'}})" ); // PTO Request:Cancel Request:Send Email to Supervisor:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+{% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
+
+    A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ CurrentPerson.FullName }}. <br /> <br />
+
+
+ <strong>Date Cancelled:</strong> {{ 'Now' | Date: 'dddd MMM dd, yyyy' }}<br />
+ <strong>Reason for Cancellation:</strong> {{ Workflow | Attribute:'CancelReason' }}<br />
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong>
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
+            
+
+Thank you!<br/>
+<br/>
+<table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+ <tr>
+   <td>
+
+		<div><!--[if mso]>
+		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ reviewLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+			<w:anchorlock/>
+			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{reviewText}}</center>
+		  </v:roundrect>
+		<![endif]--><a href=""{{ reviewLink }}""
+		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{reviewText}}</a></div>
+
+	</td>
+ </tr>
+</table>
+{{ 'Global' | Attribute:'EmailFooter' }}
+" ); // PTO Request:Cancel Request:Send Email to Supervisor:Body
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "51C1E5C2-2422-46DD-BA47-5D9E1308DC32", @"True" ); // PTO Request:Cancel Request:Send Email to Supervisor:Save Communication History
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "DD610F3E-2E83-41AE-B63B-9B163B87F82E", @"False" ); // PTO Request:Cancel Request:Cancel Request:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "C957F777-F0FE-4D05-BB22-10D7C7A5C437", @"9fe62eb5-6604-416f-899b-f836c1dec7a5" ); // PTO Request:Cancel Request:Cancel Request:Existing Pto Request
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "EC01344E-61BF-4E22-88E3-36051BCAABE7", @"c9e17918-4ecf-4029-a2f3-bf95d4eed4e3" ); // PTO Request:Cancel Request:Cancel Request:Allocation|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "8304DE14-DA5C-41FD-BA30-026D91A492C7", @"286c5a76-9113-49c4-a209-078e856bd0b2" ); // PTO Request:Cancel Request:Cancel Request:End Date|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "858BFCA2-E793-446E-B146-87D5FC6783A0", @"4180d0d3-a144-4974-b364-34292969c1a9" ); // PTO Request:Cancel Request:Cancel Request:Hours|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "C6A51AEB-18CB-4591-BDF8-D4017CF38DCF", @"1136e804-a793-4081-9902-f8e7ed0cdd69" ); // PTO Request:Cancel Request:Cancel Request:Reason|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "080025FD-9E80-4158-8D7F-FBF3ED12A2E1", @"ffc543be-7b65-425b-a56c-ad441986fa2c" ); // PTO Request:Cancel Request:Cancel Request:Approval State|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "ED092B4A-AB43-4836-A3C7-28CFF9F47DFB", "552610AA-C128-4A6F-AAB6-20ACC0C5F060", @"5d083a44-57b8-46af-ae1b-5ffa067dd187" ); // PTO Request:Cancel Request:Cancel Request:Exclude Weekends|Attribute Value
+            RockMigrationHelper.AddActionTypeAttributeValue( "077BFC61-E634-4827-8769-8D1ABDB0AD46", "051BD491-817F-45DD-BBAC-875BA79E3644", @"/Person/{{ Workflow | Attribute:'Person','Id' }}/HR" ); // PTO Request:Cancel Request:Redirect:Url|Url Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "077BFC61-E634-4827-8769-8D1ABDB0AD46", "1DAA899B-634B-4DD5-A30A-69BAC235B383", @"False" ); // PTO Request:Cancel Request:Redirect:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "077BFC61-E634-4827-8769-8D1ABDB0AD46", "581736CE-76CF-46CE-A401-60A9E9EBCC1A", @"0" ); // PTO Request:Cancel Request:Redirect:Processing Options
+            RockMigrationHelper.AddActionTypeAttributeValue( "B277B0BC-474C-4934-80B3-01383BB2D95E", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // PTO Request:Cancel Request:Complete Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "B277B0BC-474C-4934-80B3-01383BB2D95E", "3327286F-C1A9-4624-949D-33E9F9049356", @"Completed" ); // PTO Request:Cancel Request:Complete Workflow:Status|Status Attribute
 
             #endregion
 
