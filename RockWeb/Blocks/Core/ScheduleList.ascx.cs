@@ -80,17 +80,15 @@ namespace RockWeb.Blocks.Administration
     $('table.js-grid-schedule-list a.grid-delete-button').on('click', function( e ){
         var $btn = $(this);
         e.preventDefault();
-        Rock.dialogs.confirm('Are you sure you want to delete this schedule?', function (result) {
+
+        var confirmMsg = 'Are you sure you want to delete this schedule?';
+        if ($btn.closest('tr').hasClass('js-has-attendance')) {
+            confirmMsg = 'This schedule has attendance history. If you delete this, the attendance history will no longer be associated with the schedule. ' + confirmMsg;
+        }
+
+        Rock.dialogs.confirm(confirmMsg, function (result) {
             if (result) {
-                if ( $btn.closest('tr').hasClass('js-has-attendance') ) {
-                    Rock.dialogs.confirm('This schedule has attendance history. Are you sure that you want to delete this schedule and all of its attendance history?', function (result) {
-                        if (result) {
-                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                        }
-                    });
-                } else {
-                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                }
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
