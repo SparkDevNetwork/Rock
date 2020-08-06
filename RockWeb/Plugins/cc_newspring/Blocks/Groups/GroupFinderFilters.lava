@@ -1,0 +1,64 @@
+{%- assign daysofweek = "Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday" -%}
+{%- assign daysofweek = daysofweek | Split:',' -%}
+
+
+<div id="filters" class="position-absolute full-screen bg-white">
+    <div class="soft">
+
+        <i id="close-filters" class="text-gray-light fa fa-times fa-lg position-absolute top-zero right-zero soft cursor-pointer" aria-hidden="true"></i>
+
+        <h2>Filters</h2>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-4">
+
+                {% assign campusesSorted = Campuses | Sort:'Name' %}
+                <h3 class="h5 push-half-bottom">Campus</h3>
+                <ul class="list-unstyled">
+                    {%- for campus in campusesSorted -%}
+                    {% assign IsPublic = campus | Attribute:'Public' %}
+                    {%- if campus.IsActive == true and IsPublic == 'Yes' -%}<li>
+                        <div class="checkbox">
+                            <input type="checkbox" id="{{ campus.Id }}" class="js-filter" data-key="campuses" data-value="{{ campus.Id }}">
+                            <label for="{{ campus.Id }}">{{ campus.Name }}</label>
+                        </div>
+                    </li>{%- endif -%}
+                    {%- endfor -%}
+                </ul>
+
+            </div><div class="col-xs-12 col-sm-12 col-md-4">
+
+                <h3 class="h5 push-half-bottom">Day of the Week</h3>
+                <ul class="list-unstyled">
+                    {%- for day in daysofweek -%}<li>
+                    <div class="checkbox">
+                        <input type="checkbox" id="{{ day | Downcase }}" class="js-filter" data-key="schedules" data-value="{{ day | Downcase }}">
+                        <label for="{{ day | Downcase }}">{{ day }}</label>
+                    </div>
+                    </li>{%- endfor -%}
+                </ul>
+            
+            </div><div class="col-xs-12 col-sm-12 col-md-4">
+
+                <h3 class="h5 push-half-bottom">Demographic/Focus</h3>
+                <ul class="list-unstyled">
+                    <li>
+                        <div class="checkbox">
+                            <input type="checkbox" id="kidfriendly" class="js-filter" data-key="kidfriendly" data-value="true">
+                            <label for="kidfriendly">Kid-Friendly</label>
+                        </div>
+                    </li>
+                    {% assign tags = 52 | FromCache:'DefinedType' %}
+                    {%- for tag in tags.DefinedValues -%}<li>
+                        <div class="checkbox">
+                            <input type="checkbox" id="{{ tag.Value | Downcase }}" class="js-filter" data-key="tags" data-value="{{ tag.Value | Downcase }}">
+                            <label for="{{ tag.Value | Downcase }}">{{ tag.Value }}</label>
+                        </div>
+                    </li>{%- endfor -%}
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+</div>
