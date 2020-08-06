@@ -362,10 +362,11 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            var workflowAttributes = PageParameters().ToDictionary(k => k.Key, v => v.Value.ToString());
             var entitySetId = GetEntitySetId();
             var rockContext = new RockContext();
             var entitySetService = new EntitySetService( rockContext );
-            entitySetService.LaunchWorkflows( entitySetId, workflowType.Id );
+            entitySetService.LaunchWorkflows( entitySetId, workflowType.Id, workflowAttributes );
         }
 
         /// <summary>

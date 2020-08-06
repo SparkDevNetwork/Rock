@@ -152,6 +152,16 @@ namespace Rock.SystemKey
         public const string SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS = "core_EnableAdoNetPerformanceCounters";
 
         /// <summary>
+        /// Settings for Communication setting approval template
+        /// </summary>
+        public const string COMMUNICATION_SETTING_APPROVAL_TEMPLATE = "core_CommunicationSettingApprovalTemplate";
+
+        /// <summary>
+        /// Enable Cache Manager statistics and performance counters.
+        /// </summary>
+        public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
+
+        /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
         [Obsolete( "This functionality is no longer used." )]

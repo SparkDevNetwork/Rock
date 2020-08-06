@@ -123,7 +123,18 @@ namespace Rock.Transactions
                 {
                     dataView.TimeToRunDurationMilliseconds = TimeToRunDurationMilliseconds;
                 }
-                rockContext.SaveChanges();
+
+                /*
+                    8/3/2020 - JH
+                    We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                    because we only want to change the properties explicitly set above. If we don't disable
+                    these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                    run, which is not what we want here.
+
+                    Reason: GitHub Issue #4321
+                    https://github.com/SparkDevNetwork/Rock/issues/4321
+                */
+                rockContext.SaveChanges( true );
             }
         }
     }

@@ -797,7 +797,7 @@ namespace Rock.Slingshot
                         IsAlert = slingshotEntityNote.IsAlert,
                         IsPrivateNote = slingshotEntityNote.IsPrivateNote,
                         Text = slingshotEntityNote.Text,
-                        DateTime = slingshotEntityNote.DateTime,
+                        DateTime = slingshotEntityNote.DateTime.ToSQLSafeDate(),
                         CreatedByPersonForeignId = slingshotEntityNote.CreatedByPersonId
                     };
 
@@ -846,10 +846,10 @@ namespace Rock.Slingshot
                         FinancialAccountForeignId = slingshotFinancialPledge.AccountId,
                         GroupForeignId = null,
                         TotalAmount = slingshotFinancialPledge.TotalAmount,
-                        StartDate = slingshotFinancialPledge.StartDate ?? DateTime.MinValue,
-                        EndDate = slingshotFinancialPledge.EndDate ?? DateTime.MaxValue,
-                        CreatedDateTime = slingshotFinancialPledge.CreatedDateTime,
-                        ModifiedDateTime = slingshotFinancialPledge.ModifiedDateTime
+                        StartDate = slingshotFinancialPledge.StartDate.ToSQLSafeDate() ?? DateTime.MinValue.ToSQLSafeDate(),
+                        EndDate = slingshotFinancialPledge.EndDate.ToSQLSafeDate() ?? DateTime.MaxValue,
+                        CreatedDateTime = slingshotFinancialPledge.CreatedDateTime.ToSQLSafeDate(),
+                        ModifiedDateTime = slingshotFinancialPledge.ModifiedDateTime.ToSQLSafeDate()
                     };
 
                     switch ( slingshotFinancialPledge.PledgeFrequency )
@@ -960,11 +960,11 @@ namespace Rock.Slingshot
                         Name = slingshotFinancialBatch.Name,
                         ControlAmount = slingshotFinancialBatch.ControlAmount,
                         CreatedByPersonForeignId = slingshotFinancialBatch.CreatedByPersonId,
-                        CreatedDateTime = slingshotFinancialBatch.CreatedDateTime,
-                        EndDate = slingshotFinancialBatch.EndDate,
+                        CreatedDateTime = slingshotFinancialBatch.CreatedDateTime.ToSQLSafeDate(),
+                        EndDate = slingshotFinancialBatch.EndDate.ToSQLSafeDate(),
                         ModifiedByPersonForeignId = slingshotFinancialBatch.ModifiedByPersonId,
-                        ModifiedDateTime = slingshotFinancialBatch.ModifiedDateTime,
-                        StartDate = slingshotFinancialBatch.StartDate,
+                        ModifiedDateTime = slingshotFinancialBatch.ModifiedDateTime.ToSQLSafeDate(),
+                        StartDate = slingshotFinancialBatch.StartDate.ToSQLSafeDate(),
                         CampusId = campusId
                     };
 
@@ -1017,11 +1017,11 @@ namespace Rock.Slingshot
                         BatchForeignId = slingshotFinancialTransaction.BatchId,
                         Summary = slingshotFinancialTransaction.Summary,
                         TransactionCode = slingshotFinancialTransaction.TransactionCode,
-                        TransactionDate = slingshotFinancialTransaction.TransactionDate,
+                        TransactionDate = slingshotFinancialTransaction.TransactionDate.ToSQLSafeDate(),
                         CreatedByPersonForeignId = slingshotFinancialTransaction.CreatedByPersonId,
-                        CreatedDateTime = slingshotFinancialTransaction.CreatedDateTime,
+                        CreatedDateTime = slingshotFinancialTransaction.CreatedDateTime.ToSQLSafeDate(),
                         ModifiedByPersonForeignId = slingshotFinancialTransaction.ModifiedByPersonId,
-                        ModifiedDateTime = slingshotFinancialTransaction.ModifiedDateTime,
+                        ModifiedDateTime = slingshotFinancialTransaction.ModifiedDateTime.ToSQLSafeDate(),
                         FinancialTransactionDetailImports = new List<Model.FinancialTransactionDetailImport>()
                     };
 
@@ -1106,10 +1106,10 @@ namespace Rock.Slingshot
                                 FinancialAccountForeignId = slingshotFinancialTransactionDetail.AccountId,
                                 Amount = slingshotFinancialTransactionDetail.Amount,
                                 CreatedByPersonForeignId = slingshotFinancialTransactionDetail.CreatedByPersonId,
-                                CreatedDateTime = slingshotFinancialTransactionDetail.CreatedDateTime,
+                                CreatedDateTime = slingshotFinancialTransactionDetail.CreatedDateTime.ToSQLSafeDate(),
                                 FinancialTransactionDetailForeignId = slingshotFinancialTransactionDetail.Id,
                                 ModifiedByPersonForeignId = slingshotFinancialTransactionDetail.ModifiedByPersonId,
-                                ModifiedDateTime = slingshotFinancialTransactionDetail.ModifiedDateTime,
+                                ModifiedDateTime = slingshotFinancialTransactionDetail.ModifiedDateTime.ToSQLSafeDate(),
                                 Summary = slingshotFinancialTransactionDetail.Summary
                             };
 
@@ -1197,8 +1197,8 @@ namespace Rock.Slingshot
                         GroupForeignId = slingshotAttendance.GroupId,
                         LocationForeignId = slingshotAttendance.LocationId,
                         ScheduleForeignId = slingshotAttendance.ScheduleId,
-                        StartDateTime = slingshotAttendance.StartDateTime,
-                        EndDateTime = slingshotAttendance.EndDateTime,
+                        StartDateTime = slingshotAttendance.StartDateTime.ToSQLSafeDate(),
+                        EndDateTime = slingshotAttendance.EndDateTime.ToSQLSafeDate(),
                         Note = slingshotAttendance.Note
                     };
 
@@ -1525,8 +1525,8 @@ namespace Rock.Slingshot
                         Gender = Gender.Unknown.ConvertToInt(),
                         Email = slingshotBusiness.Email,
                         IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
-                        CreatedDateTime = slingshotBusiness.CreatedDateTime,
-                        ModifiedDateTime = slingshotBusiness.ModifiedDateTime,
+                        CreatedDateTime = slingshotBusiness.CreatedDateTime.ToSQLSafeDate(),
+                        ModifiedDateTime = slingshotBusiness.ModifiedDateTime.ToSQLSafeDate(),
                         Note = slingshotBusiness.Note,
                         GivingIndividually = false,
                         PhoneNumbers = new List<Model.PhoneNumberImport>(),
@@ -1774,12 +1774,12 @@ namespace Rock.Slingshot
                         NickName = slingshotPerson.NickName,
                         MiddleName = slingshotPerson.MiddleName,
                         LastName = slingshotPerson.LastName,
-                        AnniversaryDate = slingshotPerson.AnniversaryDate,
+                        AnniversaryDate = slingshotPerson.AnniversaryDate.ToSQLSafeDate(),
                         Grade = slingshotPerson.Grade,
                         Email = slingshotPerson.Email,
                         IsEmailActive = true, // slingshot doesn't include an IsEmailActive, so default it to true.
-                        CreatedDateTime = slingshotPerson.CreatedDateTime,
-                        ModifiedDateTime = slingshotPerson.ModifiedDateTime,
+                        CreatedDateTime = slingshotPerson.CreatedDateTime.ToSQLSafeDate(),
+                        ModifiedDateTime = slingshotPerson.ModifiedDateTime.ToSQLSafeDate(),
                         Note = slingshotPerson.Note,
                         GivingIndividually = slingshotPerson.GiveIndividually,
                         PhoneNumbers = new List<Model.PhoneNumberImport>(),
