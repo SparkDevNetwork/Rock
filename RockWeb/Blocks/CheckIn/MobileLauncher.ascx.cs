@@ -691,22 +691,30 @@ namespace RockWeb.Blocks.CheckIn
         {
             var deviceTypeCheckinKioskValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
-            using ( var rockContext = new RockContext() )
+            try
             {
-                IQueryable<Device> kioskQuery = new DeviceService( rockContext )
-                    .GetDevicesByGeocode( latitude, longitude, deviceTypeCheckinKioskValueId )
-                    .Where( a => a.IsActive == true );
-                List<int> allowedDeviceIds = this.GetAttributeValue( AttributeKey.DeviceIdList ).SplitDelimitedValues().AsIntegerList();
-                if ( allowedDeviceIds.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    kioskQuery = kioskQuery.Where( a => allowedDeviceIds.Contains( a.Id ) );
+                    IQueryable<Device> kioskQuery = new DeviceService( rockContext )
+                        .GetDevicesByGeocode( latitude, longitude, deviceTypeCheckinKioskValueId )
+                        .Where( a => a.IsActive == true );
+                    List<int> allowedDeviceIds = this.GetAttributeValue( AttributeKey.DeviceIdList ).SplitDelimitedValues().AsIntegerList();
+                    if ( allowedDeviceIds.Any() )
+                    {
+                        kioskQuery = kioskQuery.Where( a => allowedDeviceIds.Contains( a.Id ) );
+                    }
+
+                    var mobileGeoPoint = Location.GetGeoPoint( latitude, longitude );
+                    var distances = kioskQuery.Select( a => a.Location.GeoPoint.Distance( mobileGeoPoint ) ).ToList();
+
+                    return kioskQuery.OrderBy( a => a.Id ).FirstOrDefault();
                 }
-
-                var mobileGeoPoint = Location.GetGeoPoint( latitude, longitude );
-                var distances = kioskQuery.Select( a => a.Location.GeoPoint.Distance( mobileGeoPoint ) ).ToList();
-
-                return kioskQuery.OrderBy( a => a.Id ).FirstOrDefault();
             }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Error while trying to find matching geo-fenced kiosk. This is likely due to an invalid geo-fence on a kiosk.", ex ) );
+            }
+            return null;
         }
 
         #endregion Methods

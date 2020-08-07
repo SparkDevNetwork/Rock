@@ -60,7 +60,7 @@ namespace Rock.Model
             JToken wktToken = location["Geography"]["WellKnownText"];
             string wkt = wktToken.ToString();
 
-            DbGeography converted = DbGeography.FromText( wkt, 4326 );
+            DbGeography converted = DbGeography.FromText( wkt, DbGeography.DefaultCoordinateSystemId );
 
             return converted;
         }
