@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -48,6 +50,8 @@ namespace Rock.Model
         }
 
         #endregion Overrides
+
+        #region Component Based Logic
 
         /// <summary>
         /// Processes attempts for the specified streak type achievement type identifier. This adds new attempts and updates existing attempts.
@@ -81,6 +85,28 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
         }
+
+        /// <summary>
+        /// Gets the badge markup for this achiever for this achievement.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public string GetBadgeMarkup( AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            var achievementComponent = achievementTypeCache.AchievementComponent;
+
+            if ( achievementComponent == null )
+            {
+                throw new ArgumentException( $"The AchievementComponent did not resolve for {achievementTypeCache}" );
+            }
+
+            return achievementComponent.GetBadgeMarkup( achievementTypeCache, achieverEntityId );
+        }
+
+        #endregion Component Based Logic
+
+        #region Sort
 
         /// <summary>
         /// Sorts for processing. This considers prerequisites so that prerequisites are processed first.
@@ -129,26 +155,9 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the unmet prerequisites.
-        /// </summary>
-        /// <param name="achievementTypeId">The achievement type identifier.</param>
-        /// <param name="achieverEntityId">The achiever entity identifier.</param>
-        /// <returns></returns>
-        public List<ProgressStatement> GetUnmetPrerequisites( int achievementTypeId, int achieverEntityId )
-        {
-            var achievementType = AchievementTypeCache.Get( achievementTypeId );
+        #endregion Sort
 
-            if ( achievementType == null || !achievementType.Prerequisites.Any() )
-            {
-                return new List<ProgressStatement>();
-            }
-
-            return achievementType.Prerequisites
-                .Select( stat => GetFlatProgressStatement( stat.PrerequisiteAchievementType, achieverEntityId ) )
-                .Where( ps => ps.SuccessCount == 0 )
-                .ToList();
-        }
+        #region Progress Statements
 
         /// <summary>
         /// Gets the progress statements for the achiever for all active achievements.
@@ -245,6 +254,31 @@ namespace Rock.Model
             return progressStatement;
         }
 
+        #endregion Progress Statements
+
+        #region Prerequisites
+
+        /// <summary>
+        /// Gets the unmet prerequisites.
+        /// </summary>
+        /// <param name="achievementTypeId">The achievement type identifier.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public List<ProgressStatement> GetUnmetPrerequisites( int achievementTypeId, int achieverEntityId )
+        {
+            var achievementType = AchievementTypeCache.Get( achievementTypeId );
+
+            if ( achievementType == null || !achievementType.Prerequisites.Any() )
+            {
+                return new List<ProgressStatement>();
+            }
+
+            return achievementType.Prerequisites
+                .Select( stat => GetFlatProgressStatement( stat.PrerequisiteAchievementType, achieverEntityId ) )
+                .Where( ps => ps.SuccessCount == 0 )
+                .ToList();
+        }
+
         /// <summary>
         /// Returns a collection of Achievement Types that can be selected as prerequisites of the specified Achievement Type.
         /// An Achievement Type cannot be a prerequisite of itself, or of any Achievement Type that has it as a prerequisite.
@@ -277,12 +311,16 @@ namespace Rock.Model
                     at.AchieverEntityTypeId == achieverEntityTypeId )
                 .ToList();
         }
+
+        #endregion Prerequisites
     }
+
+    #region Helper Classes
 
     /// <summary>
     /// Statement of Progress for an Achievement Type
     /// </summary>
-    public class ProgressStatement
+    public class ProgressStatement: ILiquidizable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressStatement" /> class.
@@ -302,6 +340,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type identifier.
         /// </summary>
+        [LavaInclude]
         public int AchievementTypeId { get; }
 
         /// <summary>
@@ -314,6 +353,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the name of the streak type achievement type.
         /// </summary>
+        [LavaInclude]
         public string AchievementTypeName { get; }
 
         /// <summary>
@@ -326,6 +366,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type description.
         /// </summary>
+        [LavaInclude]
         public string AchievementTypeDescription { get; }
 
         /// <summary>
@@ -338,21 +379,25 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the success count.
         /// </summary>
+        [LavaInclude]
         public int SuccessCount { get; set; }
 
         /// <summary>
         /// Gets or sets the attempt count.
         /// </summary>
+        [LavaInclude]
         public int AttemptCount { get; set; }
 
         /// <summary>
         /// Gets or sets the best attempt.
         /// </summary>
+        [LavaInclude]
         public AchievementAttempt BestAttempt { get; set; }
 
         /// <summary>
         /// Gets or sets the most recent attempt.
         /// </summary>
+        [LavaInclude]
         public AchievementAttempt MostRecentAttempt { get; set; }
 
         /// <summary>
@@ -361,6 +406,7 @@ namespace Rock.Model
         /// <value>
         /// The attributes.
         /// </value>
+        [LavaInclude]
         public Dictionary<string, string> Attributes { get; set; }
 
         /// <summary>
@@ -369,6 +415,116 @@ namespace Rock.Model
         /// <value>
         /// The unmet prerequisites.
         /// </value>
+        [LavaInclude]
         public List<ProgressStatement> UnmetPrerequisites { get; }
+
+        #region ILiquidizable
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
+        /// </summary>
+        /// <returns>DotLiquid compatible dictionary.</returns>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Gets the available keys (for debugging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public virtual List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string>();
+
+                foreach ( var propInfo in GetType().GetProperties() )
+                {
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
+                    {
+                        availableKeys.Add( propInfo.Name );
+                    }
+                }
+
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaIgnore]
+        public virtual object this[object key]
+        {
+            get
+            {
+                string propertyKey = key.ToStringSafe();
+                var propInfo = GetType().GetProperty( propertyKey );
+
+                try
+                {
+                    object propValue = null;
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
+                    {
+                        propValue = propInfo.GetValue( this, null );
+                    }
+
+                    if ( propValue is Guid )
+                    {
+                        return ( ( Guid ) propValue ).ToString();
+                    }
+                    else
+                    {
+                        return propValue;
+                    }
+                }
+                catch
+                {
+                    // intentionally ignore
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public virtual bool ContainsKey( object key )
+        {
+            string propertyKey = key.ToStringSafe();
+            var propInfo = GetType().GetProperty( propertyKey );
+            if ( propInfo != null && LiquidizableProperty( propInfo ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the property is available to Lava
+        /// </summary>
+        /// <param name="propInfo">The property information.</param>
+        /// <returns></returns>
+        private bool LiquidizableProperty( PropertyInfo propInfo )
+        {
+            return LavaHelper.IsLavaProperty( propInfo );
+        }
+
+        #endregion ILiquidizable
     }
+
+    #endregion Helper Classes
 }

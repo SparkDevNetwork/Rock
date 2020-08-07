@@ -372,6 +372,7 @@
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\AchievementTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
@@ -490,6 +491,7 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Badge\Component\Achievement.cs" />
     <Compile Include="Badge\HighlightLabelBadge.cs" />
     <Compile Include="Badge\IconBadge.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
@@ -526,6 +528,7 @@
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
+    <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
