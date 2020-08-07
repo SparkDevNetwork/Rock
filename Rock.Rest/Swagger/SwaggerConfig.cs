@@ -74,7 +74,18 @@ namespace Rock.Rest.Swagger
                          // However, there may be situations (e.g. proxy and load-balanced environments) where this does not
                          // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                          //
-                         //c.RootUrl(req =>
+                         
+                         // when running behind nginx to provide ssl, the default RootUrl seems to get the scheme
+                         // from the external request, but the port from the internal request resulting in urls like:
+                         // https://server.tld:80/api...
+                         // this is my attempted workaround
+                         c.RootUrl( (req) {
+                             var uri = new Uri( request.Url.ToString() );
+                             if ( uri.IsDefaultPort ) {
+                                 return uri.Scheme + "://" + uri.GetComponents( UriComponents.Host, UriFormat.UriEscaped );
+                             }
+                             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
+                         });
 
                          // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                          // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit

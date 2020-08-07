@@ -119,8 +119,15 @@ namespace Rock.Net
         internal RockRequestContext( HttpRequest request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( false );
-
+            
+            // when running behind nginx to provide ssl, the default RootUrlPath seems to get the scheme
+            // from the external request, but the port from the internal request resulting in urls like:
+            // https://server.tld:80/api...
+            // this is my attempted workaround
             var uri = new Uri( request.Url.ToString() );
+            if ( uri.IsDefaultPort ) {
+              RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.Host, UriFormat.UriEscaped ) + request.ApplicationPath;
+            }
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
 
             ClientInformation = new ClientInformation( request );
@@ -159,8 +166,15 @@ namespace Rock.Net
         internal RockRequestContext( HttpRequestMessage request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( false );
-
+            
+            // when running behind nginx to provide ssl, the default RootUrlPath seems to get the scheme
+            // from the external request, but the port from the internal request resulting in urls like:
+            // https://server.tld:80/api...
+            // this is my attempted workaround
             var uri = request.RequestUri;
+            if ( uri.IsDefaultPort ) {
+              RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.Host, UriFormat.UriEscaped );
+            }
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
 
             ClientInformation = new ClientInformation( request );
