@@ -89,6 +89,10 @@
     <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.Designer.cs">
       <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.cs" />
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.Designer.cs">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1355,6 +1359,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.resx">
       <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008071645528_AchievementIndexes.resx">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

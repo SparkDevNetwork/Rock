@@ -373,6 +373,17 @@ namespace Rock.Web.Cache
             return updatedAttempts.Values.ToList();
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance Title.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance Title.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
         #endregion Public Methods
     }
 }

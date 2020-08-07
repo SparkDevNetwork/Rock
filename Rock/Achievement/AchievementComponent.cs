@@ -123,6 +123,85 @@ namespace Rock.Achievement
         }
 
         /// <summary>
+        /// Gets the badge merge fields primarily intended for <see cref="AchievementType.BadgeLavaTemplate"/>.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> GetBadgeMergeFields( AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            var rockContext = new RockContext();
+            var mergeFields = new Dictionary<string, object>
+            {
+                {  "AchievementType", achievementTypeCache }
+            };
+
+            var achievementTypeService = new AchievementTypeService( rockContext );
+            mergeFields["ProgressStatement"] = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
+
+            var entityTypeService = new EntityTypeService( rockContext );
+            mergeFields["Achiever"] = entityTypeService.GetEntity( achievementTypeCache.AchieverEntityTypeId, achieverEntityId );
+
+            if ( achievementTypeCache.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id )
+            {
+                mergeFields["Person"] = ( mergeFields["Achiever"] as PersonAlias )?.Person;
+            }
+            else if ( achievementTypeCache.AchieverEntityTypeId == EntityTypeCache.Get<Person>().Id )
+            {
+                mergeFields["Person"] = mergeFields["Achiever"] as Person;
+            }
+            else
+            {
+                mergeFields["Person"] = null;
+            }
+
+            return mergeFields;
+        }
+
+        /// <summary>
+        /// Gets the badge markup for this achiever for this achievement.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public virtual string GetBadgeMarkup( AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            if ( !achievementTypeCache.BadgeLavaTemplate.IsNullOrWhiteSpace() )
+            {
+                var mergeFields = GetBadgeMergeFields( achievementTypeCache, achieverEntityId );
+                return achievementTypeCache.BadgeLavaTemplate.ResolveMergeFields( mergeFields );
+            }
+
+            var rockContext = new RockContext();
+            var achievementTypeService = new AchievementTypeService( rockContext );
+            var progressStatement = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
+
+            if ( progressStatement.SuccessCount < 1 )
+            {
+                return string.Empty;
+            }
+
+            var iconClass = achievementTypeCache.AchievementIconCssClass.IsNullOrWhiteSpace() ?
+                "fa fa-medal" :
+                achievementTypeCache.AchievementIconCssClass;
+            var successCountMarkup = string.Empty;
+
+            if ( progressStatement.SuccessCount > 1 )
+            {
+                successCountMarkup =
+$@"<span class=""badge-count"">
+    {progressStatement.SuccessCount}
+</span>";
+            }
+
+            return
+$@"<div style=""color: #16c98d"">
+    <i class=""badge-icon {iconClass}""></i>
+    {successCountMarkup}
+</div>";
+        }
+
+        /// <summary>
         /// Gets the attribute value for the achievement
         /// </summary>
         /// <param name="achievementTypeCache"></param>
