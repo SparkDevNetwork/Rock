@@ -29,16 +29,25 @@ namespace com.bemaservices.MailChimp.Jobs
             var daysToSyncUpdates = dataMap.GetString( "DaysToSyncUpdates" ).AsIntegerOrNull();
             foreach ( var account in accounts.DefinedValues )
             {
-                Utility.MailChimpApi mailChimpApi = new Utility.MailChimpApi( account );
-                var mailChimpLists = mailChimpApi.GetMailChimpLists();
-
-                foreach ( var list in mailChimpLists )
+                try
                 {
-                    if ( !audienceGuids.Any() || audienceGuids.Contains( list.Guid ) )
+                    Utility.MailChimpApi mailChimpApi = new Utility.MailChimpApi( account );
+                    var mailChimpLists = mailChimpApi.GetMailChimpLists();
+
+                    foreach ( var list in mailChimpLists )
                     {
-                        mailChimpApi.SyncMembers( DefinedValueCache.Get( list.Guid ), daysToSyncUpdates );
+                        if ( !audienceGuids.Any() || audienceGuids.Contains( list.Guid ) )
+                        {
+                            mailChimpApi.SyncMembers( DefinedValueCache.Get( list.Guid ), daysToSyncUpdates );
+                        }
                     }
                 }
+                catch ( Exception ex )
+                {
+                    string message = String.Format( "Error Syncing {0} Account from Mailchimp", account.Value );
+                    ExceptionLogService.LogException( new Exception( message, ex ) );
+                }
+
             }
         }
     }
