@@ -132,11 +132,11 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
-            var nameValues = RockSerializableDictionary.FromUriEncodedString( this.Value );
-
-            foreach ( var nameValuePair in nameValues.Dictionary )
+            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            foreach ( string nameValue in nameValues )
             {
-                var nameAndValue = new string[] { nameValuePair.Key, nameValuePair.Value.ToStringSafe() };
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -144,7 +144,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( DisplayValueFirst )
                 {
-                    WriteValueControls( writer,  nameAndValue, values );
+                    WriteValueControls( writer, nameAndValue, values );
                     WriteKeyControls( writer, nameAndValue );
                 }
                 else
@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger key-value-remove" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-times" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
