@@ -119,8 +119,12 @@ namespace Rock.Lava.Blocks
                 Type entityType = entityTypeCache.GetEntityType();
                 if ( entityType != null )
                 {
-                    // Get the database context
-                    var dbContext = Reflection.GetDbContextForEntityType( entityType );  // TODO why not use RockContext here?
+                    // Get the appropriate database context for this entity type.
+                    // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
+                    var dbContext = Reflection.GetDbContextForEntityType( entityType );
+
+                    // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
 
                     // Create an instance of the entity's service
                     IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
@@ -207,9 +211,12 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    // Make the query from the expression
-                    // Note: Use GetNoTracking to help improve performance
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+                    // Make the query from the expression.                    
+                    /* [2020-10-08] DL
+                     * "Get" is intentionally used here rather than "GetNoTracking" to allow lazy-loading of navigation properties from the Lava context.
+                     * (Refer https://github.com/SparkDevNetwork/Rock/issues/4293)
+                     */
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
 
                     if ( getMethod != null )
                     {
