@@ -168,7 +168,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "median page load time", () => UpdateMedianPageLoadTimes() );
 
-            RunCleanupTask( "old interaction", () => CleanupOldInteractions( dataMap ) );
+            RunCleanupTask( "old interaction", () => CleanupOldInteractions() );
 
             RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions() );
 
@@ -901,8 +901,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up Interactions for Interaction Channels that have a retention period
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupOldInteractions( JobDataMap dataMap )
+        private int CleanupOldInteractions()
         {
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;

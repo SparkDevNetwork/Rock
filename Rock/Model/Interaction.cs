@@ -39,8 +39,9 @@ namespace Rock.Model
         /* Custom Indexes:
          *
          * InteractionComponentId, InteractionDateTime
-         *      Includes InteractionTimeToServe, Operation
+         *      Includes InteractionTimeToServe, Operation, InteractionSessionId
          *      This was added for <see cref="Rock.Jobs.RockCleanup.UpdateMedianPageLoadTimes"/>
+         *          and CleanupOldInteractions
          *
          *  InteractionDateTime
          *      Includes InteractionComponentId, PersonAliasId
