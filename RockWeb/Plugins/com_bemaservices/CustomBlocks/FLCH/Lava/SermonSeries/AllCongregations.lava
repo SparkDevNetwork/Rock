@@ -1,0 +1,84 @@
+{% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\styles.lava' %}
+
+
+
+{% sql return:'campusGroup' %}
+select
+	  c.id
+	  , c.Name
+from DefinedValue v
+	left join AttributeValue avCampus on avCampus.EntityId = v.id and avCampus.AttributeId = 4700
+	left join AttributeValue avService on avService.EntityId = v.id and avService.AttributeId = 8572
+	left join AttributeValue avImage on avImage.EntityId = v.id and avImage.AttributeId = 8700
+	left join Campus c on c.Guid = try_cast(avcampus.value as uniqueidentifier)
+where v.DefinedTypeId = 91
+group by c.Id, c.Name
+order by c.Name desc
+{% endsql %}
+
+
+  {% for results in campusGroup %}
+
+  <div class='row'>
+
+  {% sql return:'data' %}
+    select
+      '/' + REPLACE(c.Name, ' ', '-') + '/' +  REPLACE(avService.Value, ' ', '-')  as [Route]
+      , c.Name as [CampusName]
+      , avImage.Guid as [ImgGuid]
+      , avService.Value as [Service]
+      , v.id as [Id]
+      , content.LastUpdated
+    from DefinedValue v
+      left join AttributeValue avCampus on avCampus.EntityId = v.id and avCampus.AttributeId = 4700
+      left join AttributeValue avService on avService.EntityId = v.id and avService.AttributeId = 8572
+      left join AttributeValue avImage on avImage.EntityId = v.id and avImage.AttributeId = 8700
+      left join Campus c on c.Guid = try_cast(avcampus.value as uniqueidentifier)
+	  Cross Apply(
+      Select Top 1
+        IsNull(i.ModifiedDateTime, i.CreatedDateTime) as [lastUpdated]
+      From ContentChannelItem i
+      join AttributeValue av1 on av1.AttributeId = 8701 and av1.EntityId = i.Id
+      join AttributeValue av2 on av2.AttributeId = 8702 and av2.EntityId = i.Id
+      Where av1.[Value] = REPLACE(c.Name, ' ', '-')
+      and av2.[Value] = REPLACE(avService.Value, ' ', '-')
+      order by  IsNull(i.ModifiedDateTime, i.CreatedDateTime) desc
+	  ) content
+    where v.DefinedTypeId = 91
+    and c.id = {{ results.id }}
+    order by v.[Order]
+  {% endsql %}
+
+    <div class='col-md-12'>
+    <h2>{{results.Name}}</h2>
+    <hr class="margin-b-lg"/>
+    </div>
+
+      {% for result in data %}
+
+      {% definedvalue where:'Id == {{ result.Id }}' %}
+        {% assign dv = definedvalue %}
+      {% enddefinedvalue %}
+
+      {% assign hasASL = dv | Attribute:'HasASL','RawValue' %}
+
+      <div class='col-md-4 sermon-card'>
+          <a href='/services{{ result.Route }}' class='padding-all-none'>
+
+            <div class='img-16x9' style='background: url("/GetImage.ashx?Guid={{ dv | Attribute:'ServiceImage','RawValue' }}&Width=300") no-repeat center center;'>
+              {% if hasASL == true %}<div class='img-detail'><i class="fa fa-american-sign-language-interpreting"></i> ASL</div>{% endif %}
+            </div>
+            <h3 class='margin-b-none margin-t-sm'>{{ result.Service }}</h3>
+            <span class='gray-text'>Updated {{ result.LastUpdated | HumanizeDateTime }}</span>
+
+
+          </a>
+      </div>
+  {% endfor %}
+
+ </div>
+
+{% endfor %}
+
+
+

@@ -1,0 +1,54 @@
+{% assign duration = null %}
+
+{% contentchannelitem id:'{{ sermonid }}' %}
+    {% assign sermonSeries = contentchannelitem | Attribute:'Series', 'RawValue' %}
+    {% assign audience = contentchannelitem | Attribute:'Audience', 'RawValue' %}
+{% endcontentchannelitem %}
+
+{% contentchannelitem where:'Guid == "{{ sermonSeries }}"' %}
+    {% assign series = contentchannelitem %}
+    {% assign seriesImage = series | Attribute:'SeriesImage', 'RawValue' %}
+{% endcontentchannelitem %}
+
+
+
+
+{% contentchannelitem where:'DefinedTypeId == 91 && Series == "{{ sermonSeries }}" && Audience == "{{ audience }}"' sort:'StartDateTime Desc' iterator:'Items' %}
+    {% for item in Items %}
+
+        {% assign vimeoId = null %}
+        {% assign vimeoId = item | Attribute:'VimeoId', 'RawValue' %}
+        {% assign duration = 0 %}
+
+        {% capture durationString %}{[ vimeoduration id:'{{ vimeoId }}' ]}{% endcapture %}
+        {% assign duration = durationString | AsInteger %}
+
+        <div class="col-md-3 {% if item.Id == sermonid %}current-series{% endif %} sermon-card">
+            {% capture vimeoLink %}{[ vimeothumbnail id:'{{ vimeoId }}' width:'295' playbutton:'false' output:'url' ]}{% endcapture %}
+            <a href='/services/{{ item | Attribute:'Congregation','RawValue'}}/{{ item | Attribute:'Service','RawValue' }}/{{ item.ItemGlobalKey }}'>
+                {% if vimeoId and vimeoId != '' %}
+                    <div class='img-16x9' style='background-image: url("{{ vimeoLink  | Trim  }}");'>
+                        {% if duration > 1 %}
+                        <div class='img-detail'>
+                            {{ duration | DividedBy:60 | Floor }}:{{ duration | Modulo:60 | Format:'00' }}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class='img-16x9' style='background-image: url("/GetImage.ashx?Guid={{ seriesImage }}");'>
+
+                    </div>
+                {% endif %}
+
+                <h3 class='margin-b-none margin-t-sm'>{{ item.Title }}</h3>
+                <span class='gray-text'>{{ item.StartDateTime | Date:'MMMM dd, yyyy' }} </span>
+
+            </a>
+
+
+        </div>
+        {% cycle 'sermonItems': '', '', '', '</div><div class="row">' %}
+
+    {% endfor %}
+{% endcontentchannelitem %}
+
