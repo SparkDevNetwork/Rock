@@ -1,0 +1,59 @@
+{% sql return:'data' %}
+Declare @SeriesId int = {{ seriesId }}
+Declare @Congregation nvarchar(max) = '{{ congregation }}'
+Declare @Service nvarchar(max) = '{{ service }}'
+
+;With CTE as (
+Select
+    i.Id
+	, i.StartDateTime
+    , ROW_NUMBER() Over (Partition By av.[Value] Order By i.StartDateTime Desc ) as [Order]
+From ContentChannelItem i
+Join AttributeValue av on av.EntityId = i.Id and av.AttributeId = 5225
+join AttributeValue av2 on av2.EntityId = i.id and av2.AttributeId = 8701
+join AttributeValue av3 on av3.EntityId = i.Id and av3.AttributeId = 8702
+Where
+    i.ContentChannelId = 10
+    And av2.[Value] = @Congregation
+	And av3.[Value] = @Service
+	)
+Select top(3)
+    Max(i.Id) as LatestSermonId
+    , s.[Title]
+	, Count(*) as Sermons
+	, Min( CTE.StartDateTime ) as StartDate
+	, Max( CTE.StartDateTime ) as EndDate
+	, Max( av4.Value ) as ImageGuid
+	, Max(i.ItemGlobalKey) as Slug
+From CTE
+Left Join ContentChannelItem i on CTE.Id = i.Id and CTE.[Order] = 1
+Join ContentChannelItem i2 on i2.Id = CTE.Id
+Join AttributeValue av on av.Entityid = CTE.Id and av.AttributeId = 5225
+Join AttributeValue av2 on av2.EntityId = i2.Id and av2.AttributeId = 8701
+Join AttributeValue av3 on av3.EntityId = i2.Id and av3.AttributeId = 8702
+Join ContentChannelItem s on s.[Guid] = av.[Value]
+Left Join AttributeValue av4 on av4.attributeId = 5221 and av4.EntityId = s.Id
+Where  av2.Value = @Congregation
+and av3.Value = @Service
+and s.Id != @SeriesId
+Group By s.[Title]
+order by Max(CTE.StartDateTime) desc
+{% endsql %}
+
+
+  {% for result in data %}
+      <div class='col-md-4 sermon-card'>
+          <a href='/services/{{ congregation }}/{{ service }}/{{ result.Slug }}' class='padding-all-none'>
+
+            <div class='img-16x9' style='background: url("/GetImage.ashx?Guid={{ result.ImageGuid }}&Width=300") center center;'>
+                <div class='img-detail'>{{ result.Sermons }} {{ 'Service' | PluralizeForQuantity:result.Sermons }}</div>
+            </div>
+            <h3 class='margin-b-none margin-t-sm'>{{ result.Title }}</h3>
+            <span class='gray-text'>{{ result.StartDate | Date:'MMM' }} - {{ result.EndDate | Date:'MMM yyyy' }} </span>
+
+          </a>
+      </div>
+  {% endfor %}
+
+
+

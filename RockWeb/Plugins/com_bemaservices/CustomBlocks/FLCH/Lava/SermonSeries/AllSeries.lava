@@ -1,0 +1,153 @@
+{% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\styles.lava' %}
+{% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\PageFilters.lava' %}
+
+{% assign page = 'Global' | PageParameter:'page' | SanatizeSql %}
+{% assign pageSize = 10 %}
+
+{% if page == null or page == empty %}
+    {% assign page = 1 %}
+{% endif %}
+
+{% sql return:'data' %}
+Declare @Congregation nvarchar(max) = '{{ congregation }}'
+Declare @Service nvarchar(max) = '{{ service }}'
+Declare @Page int = {{ page }}
+Declare @PageSize int = {{ pageSize }}
+
+;With CTE as (
+Select
+    i.Id
+	, i.StartDateTime
+    , ROW_NUMBER() Over (Partition By av.[Value] Order By i.StartDateTime Desc ) as [Order]
+From ContentChannelItem i
+Join AttributeValue av on av.EntityId = i.Id and av.AttributeId = 5225
+join AttributeValue av2 on av2.EntityId = i.id and av2.AttributeId = 8701
+join AttributeValue av3 on av3.EntityId = i.Id and av3.AttributeId = 8702
+Where
+    i.ContentChannelId = 10
+    And av2.[Value] = @Congregation
+	And av3.[Value] = @Service
+	)
+Select
+    Max(i.[ItemGlobalKey]) as LatestSermonSlug
+    , s.[Title]
+	, Count(*) as Sermons
+	, Min( CTE.StartDateTime ) as StartDate
+	, Max( CTE.StartDateTime ) as EndDate
+	, Max( av4.Value ) as ImageGuid
+From CTE
+Left Join ContentChannelItem i on CTE.Id = i.Id and CTE.[Order] = 1
+Join ContentChannelItem i2 on i2.Id = CTE.Id
+Join AttributeValue av on av.Entityid = CTE.Id and av.AttributeId = 5225
+Join AttributeValue av2 on av2.EntityId = i2.Id and av2.AttributeId = 8701
+Join AttributeValue av3 on av3.EntityId = i2.Id and av3.AttributeId = 8702
+Join ContentChannelItem s on s.[Guid] = av.[Value]
+Left Join AttributeValue av4 on av4.attributeId = 5221 and av4.EntityId = s.Id
+Where  av2.Value = @Congregation
+and av3.Value = @Service
+Group By s.[Title]
+order by Max(CTE.StartDateTime) desc
+OFFSET (@Page-1)*@PageSize Rows Fetch Next @PageSize ROWS Only
+{% endsql %}
+
+{% sql return:'pageCount' %}
+    Declare @Congregation nvarchar(max) = '{{ congregation }}'
+    Declare @Service nvarchar(max) = '{{ service }}'
+
+    Select
+        Count( distinct s.Id ) as [Count]
+    From ContentChannelItem i
+    Join AttributeValue av on av.Entityid = i.Id and av.AttributeId = 5225
+    Join AttributeValue av2 on av2.EntityId = i.Id and av2.AttributeId = 8701
+    Join AttributeValue av3 on av3.EntityId = i.Id and av3.AttributeId = 8702
+    Join ContentChannelItem s on s.[Guid] = av.[Value]
+    Left Join AttributeValue av4 on av4.attributeId = 5221 and av4.EntityId = s.Id
+    Where  av2.Value = @Congregation
+    and av3.Value = @Service
+{% endsql %}
+
+{% assign totalPages = pageCount | First | Property:'Count' | DividedBy:pageSize | Ceiling %}
+
+<div class='row'>
+
+{% assign year = data | First | Property:'EndDate' | Date:'yyyy' %}
+<div class="col-md-12">
+        <h2>{{ year }}</h2>
+        <hr />
+    </div>
+</div>
+
+<div class='row'>
+  {% for result in data %}
+      {% assign myYear = result.EndDate | Date:'yyyy' %}
+      {% if year != myYear %}
+        {% assign year = myYear %}
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h2>{{ myYear }}</h2>
+                <hr/>
+            </div>
+        </div>
+        <div class='row'>
+      {% endif %}
+      <div class='col-md-4 sermon-card margin-b-lg'>
+          <a href='/Services/{{ congregation }}/{{ service }}/{{ result.LatestSermonSlug }}' class='padding-all-none'>
+
+            <div class='img-16x9' style='background: url("/GetImage.ashx?Guid={{ result.ImageGuid }}&Width=300") center center;'>
+                <div class='img-detail'>{{ result.Sermons }} {{ 'Service' | PluralizeForQuantity:result.Sermons }}</div>
+            </div>
+            <h3 class='margin-b-none margin-t-sm'>{{ result.Title }}</h3>
+            <span class='gray-text'>{{ result.StartDate | Date:'MMM' }} - {{ result.EndDate | Date:'MMM yyyy' }} </span>
+
+          </a>
+      </div>
+  {% endfor %}
+
+ </div>
+
+{% if totalPages > 1 %}
+    <div class="row margin-t-lg">
+        <div class="col-xs-2">
+            {% assign nextPage = page | Plus:1 %}
+            {% assign previousPage = page | Minus:1 %}
+            {% capture nextPageString %}{{'Global' | Page:'Path' }}?page={{ nextPage }}{% endcapture %}
+            {% capture previousPageString %}{{'Global' | Page:'Path' }}?page={{ previousPage }}{% endcapture %}
+
+            {% if previousPage < 1 %}
+
+            {% else %}
+                <a class="btn btn-link pull-left" href="{{ previousPageString }}">
+                    <i class="fa fa-chevron-left"></i> Prev
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="col-xs-8 text-center">
+
+        {% for i in (1..totalPages) %}
+            {% if i == page %}
+                    <span class="btn btn-link active">{{ i }}</span>
+            {% else %}
+                <a class="btn btn-link" href="{{'Global' | Page:'Path' }}?page={{ i }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        </div>
+
+        <div class="col-xs-2">
+
+            {% if nextPage > totalPages %}
+
+            {% else %}
+                <a class="btn btn-link pull-right" href="{{ nextPageString }}">
+                    Next <i class="fa fa-chevron-right"></i>
+                </a>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endif %}
+
+
