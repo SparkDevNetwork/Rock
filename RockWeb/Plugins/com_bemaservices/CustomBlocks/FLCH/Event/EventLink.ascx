@@ -48,7 +48,7 @@
                         <div class="col-md-4">
                             <Rock:RockTextBox ID="tbEventName" runat="server" Label="Public Event Name" Required="true"></Rock:RockTextBox>
                             <Rock:RockTextBox ID="tbInternalEventName" runat="server" Label="Internal Event Name" Required="true"></Rock:RockTextBox>
-                            <Rock:RockTextBox ID="tbEventDescription" runat="server" Label="Event Summary" Required="true" TextMode="MultiLine" Rows="4" MaxLength="200" ShowCountDown="true" />
+                            <Rock:RockTextBox ID="tbEventDescription" runat="server" Label="Promotional Summary" Required="true" TextMode="MultiLine" Rows="4" MaxLength="200" ShowCountDown="true" />
 
                         </div>
 
