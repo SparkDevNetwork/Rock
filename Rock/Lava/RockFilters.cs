@@ -3962,7 +3962,7 @@ namespace Rock.Lava
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Other, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
 
                     return null;
                 }
@@ -4883,6 +4883,43 @@ namespace Rock.Lava
             rockContext.SaveChanges();
 
             return shortLink.ShortLinkUrl;
+        }
+
+        /// <summary>
+        /// Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.
+        /// </summary>
+        /// <param name="input">The input. This may be an integer ID or a Guid.</param>
+        /// <param name="fallbackUrl">The fallback URL to be used if the input is not defined.</param>
+        /// <param name="prependRootUrl">If true, the application root URL will be prepended to the returned image URL.</param>
+        /// <returns>The image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.</returns>
+        public static string ImageUrl( object input, string fallbackUrl, bool prependRootUrl = false )
+        {
+            string inputString = input?.ToString();
+            var queryStringKey = "Id";
+            var useFallbackUrl = false;
+
+            if ( !inputString.AsIntegerOrNull().HasValue )
+            {
+                queryStringKey = "Guid";
+
+                if ( !inputString.AsGuidOrNull().HasValue )
+                {
+                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    useFallbackUrl = true;
+                }
+            }
+
+            if ( useFallbackUrl )
+            {
+                return fallbackUrl;
+            }
+
+            // At this point, we know that either an integer or a Guid was supplied. Use the GetImage handler to serve the image.
+            string prefix = prependRootUrl
+                ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash()
+                : "/";
+
+            return $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
         }
 
         #endregion Misc Filters
