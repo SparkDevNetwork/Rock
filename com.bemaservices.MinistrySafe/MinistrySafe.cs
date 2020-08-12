@@ -453,7 +453,8 @@ namespace com.bemaservices.MinistrySafe
                     .ToDictionary( v => v.GetAttributeValue( "MinistrySafePackageName" ).ToString(), v => v );
 
                 var userTypes = definedValueService
-                     .GetByDefinedTypeGuid( "559E79C6-2EAB-4A0D-A16F-59D9B63F002F".AsGuid() );
+                     .GetByDefinedTypeGuid( "559E79C6-2EAB-4A0D-A16F-59D9B63F002F".AsGuid() )
+                     .ToList();
                 foreach ( var packageResponse in getPackagesResponse )
                 {
 
@@ -489,7 +490,7 @@ namespace com.bemaservices.MinistrySafe
                 IsActive = true,
                 DefinedTypeId = definedType.Id,
                 ForeignId = 4,
-                Value = string.Format( "{0}{1} {1}", MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX, userType.Description, packageResponse.Name.Replace( '_', ' ' ) )
+                Value = string.Format( "{0}{1} {2}", MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX, userType.Description, packageResponse.Name.Replace( '_', ' ' ) )
             };
 
             definedValueService.Add( definedValue );

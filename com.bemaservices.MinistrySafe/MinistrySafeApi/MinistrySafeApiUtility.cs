@@ -176,7 +176,6 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             return true;
         }
 
-
         /// <summary>
         /// Gets the packages.
         /// </summary>
@@ -428,7 +427,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, Method.POST );
             restRequest.AddParameter( "background_check[user_id]", userId );
-            restRequest.AddParameter( "background_check[quickapp]", true );
+            restRequest.AddParameter( "background_check[quickapp]", "true" );
             if ( level.IsNotNullOrWhiteSpace() )
             {
                 restRequest.AddParameter( "background_check[level]", level );
