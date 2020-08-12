@@ -105,7 +105,8 @@ namespace com.bemaservices.MinistrySafe
                     string level = null;
                     string packageCode = null;
                     string userType = null;
-                    if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out level, packageCode, userType, errorMessages ) )
+                    string packageName = null;
+                    if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out level, out packageCode, out userType, out packageName, errorMessages ) )
                     {
                         errorMessages.Add( "Unable to get Package." );
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
@@ -122,9 +123,10 @@ namespace com.bemaservices.MinistrySafe
                         return true;
                     }
 
-                    if ( !CreateBackgroundCheck( userId, level, packageCode, errorMessages ) )
+                    string requestId;
+                    if ( !CreateBackgroundCheck( userId, level, packageCode, out requestId, errorMessages ) )
                     {
-                        errorMessages.Add( "Unable to create invitation." );
+                        errorMessages.Add( "Unable to create background check." );
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                         return true;
                     }
@@ -147,9 +149,9 @@ namespace com.bemaservices.MinistrySafe
 
                         backgroundCheck.PersonAliasId = personAliasId.Value;
                         backgroundCheck.ForeignId = 4;
-                        backgroundCheck.PackageName = String.Format( "{0}: {1}", level, packageCode );
+                        backgroundCheck.PackageName = packageName;
                         backgroundCheck.RequestDate = RockDateTime.Now;
-                        backgroundCheck.RequestId = userId;
+                        backgroundCheck.RequestId = requestId;
                         newRockContext.SaveChanges();
                     }
 
@@ -201,6 +203,7 @@ namespace com.bemaservices.MinistrySafe
                 {
                     LogErrors( errorMessages );
                 }
+                return backgroundCheckId;
             }
             else
             {
@@ -316,32 +319,30 @@ namespace com.bemaservices.MinistrySafe
         {
             using ( var rockContext = new RockContext() )
             {
-                string userId = backgroundCheckWebhook.UserId.ToString();
+                string requestId = backgroundCheckWebhook.Id;
+                int? externalId = backgroundCheckWebhook.ExternalId;
                 var backgroundCheck = new BackgroundCheckService( rockContext )
                     .Queryable( "PersonAlias.Person" )
-                    .Where( g => g.RequestId == userId )
-                    .Where( g => g.ForeignId == 2 )
+                    .Where( g => ( requestId != null && g.RequestId == requestId ) || ( requestId == null && g.PersonAliasId == externalId ) )
+                    .Where( g => g.ForeignId == 4 )
+                    .OrderByDescending( g => g.RequestDate )
                     .FirstOrDefault();
 
                 if ( backgroundCheck == null )
                 {
-                    string errorMessage = "Background Check not found: Candidate ID: " + userId;
+
+                    string errorMessage = requestId != null ? "Background Check not found: Request ID: " + requestId : "Background Check not found: PersonAliasId: " + externalId;
                     ExceptionLogService.LogException( new Exception( errorMessage ), null );
                     return false;
                 }
 
-                backgroundCheck.Status = backgroundCheckWebhook.Status;
-                if ( backgroundCheckWebhook.Level != null )
-                {
-                    backgroundCheck.PackageName = backgroundCheckWebhook.Level.ToString();
-                }
+                backgroundCheck.Status = "consider";
 
+                backgroundCheck.ResponseId = backgroundCheckWebhook.Id;
                 if ( backgroundCheckWebhook.ResultsUrl.IsNotNullOrWhiteSpace() )
                 {
-                    backgroundCheck.ResponseId = backgroundCheckWebhook.ResultsUrl;
+                    backgroundCheck.ResponseData = backgroundCheckWebhook.ResultsUrl;
                 }
-
-                backgroundCheck.RecordFound = backgroundCheckWebhook.Status == "consider";
 
                 //rockContext.SqlLogging( true );
 
@@ -353,7 +354,7 @@ namespace com.bemaservices.MinistrySafe
                 {
                     string recommendation = null;
                     string reportStatus = null; //Pass,Fail,Review
-                    switch ( backgroundCheckWebhook.Status )
+                    switch ( backgroundCheck.Status )
                     {
                         case "pending":
                             recommendation = "Report Pending";
@@ -383,7 +384,7 @@ namespace com.bemaservices.MinistrySafe
                             break;
                     }
 
-                    UpdateBackgroundCheckWorkflow( backgroundCheck.WorkflowId.Value, recommendation, backgroundCheckWebhook.ResultsUrl, reportStatus, rockContext );
+                    UpdateBackgroundCheckWorkflow( backgroundCheck.WorkflowId.Value, recommendation, backgroundCheck.ResponseId, reportStatus, rockContext );
                 }
             }
 
@@ -516,11 +517,12 @@ namespace com.bemaservices.MinistrySafe
         /// <param name="packageName"></param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        private bool GetPackageName( RockContext rockContext, Rock.Model.Workflow workflow, AttributeCache requestTypeAttribute, out string level, string packageCode, string userType, List<string> errorMessages )
+        private bool GetPackageName( RockContext rockContext, Rock.Model.Workflow workflow, AttributeCache requestTypeAttribute, out string level, out string packageCode, out string userType, out string packageName, List<string> errorMessages )
         {
             level = null;
             packageCode = null;
             userType = null;
+            packageName = null;
             if ( requestTypeAttribute == null )
             {
                 errorMessages.Add( "The 'MinistrySafe' background check provider requires a background check type." );
@@ -550,6 +552,7 @@ namespace com.bemaservices.MinistrySafe
             level = pkgTypeDefinedValue.GetAttributeValue( "MinistrySafePackageLevel" );
             packageCode = pkgTypeDefinedValue.GetAttributeValue( "MinistrySafePackageCode" );
             userType = userTypeDefinedValue.Value;
+            packageName = pkgTypeDefinedValue.Value;
             return true;
         }
 
@@ -562,12 +565,14 @@ namespace com.bemaservices.MinistrySafe
         /// <param name="request">The request.</param>
         /// <param name="response">The response.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        public static bool CreateBackgroundCheck( string userId, string level, string packageCode, List<string> errorMessages )
+        public static bool CreateBackgroundCheck( string userId, string level, string packageCode, out string requestId, List<string> errorMessages )
         {
+            requestId = null;
             BackgroundCheckResponse backgroundCheckResponse;
             if ( MinistrySafeApiUtility.CreateBackgroundCheck( userId, level, packageCode, out backgroundCheckResponse, errorMessages ) )
             {
-                userId = backgroundCheckResponse.Id;
+                userId = backgroundCheckResponse.UserId.ToString();
+                requestId = backgroundCheckResponse.Id;
                 return true;
             }
 
@@ -1110,7 +1115,7 @@ namespace com.bemaservices.MinistrySafe
                 }
             } );
 
-            if ( trainingWebhook == null )
+            if ( trainingWebhook.CertificateUrl == null )
             {
                 BackgroundCheckWebhook backgroundCheckWebhook = JsonConvert.DeserializeObject<BackgroundCheckWebhook>( postedData, new JsonSerializerSettings()
                 {
