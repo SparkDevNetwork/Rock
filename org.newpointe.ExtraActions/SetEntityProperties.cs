@@ -32,7 +32,7 @@ namespace org.newpointe.WorkflowEntities
             errorMessages = new List<string>();
 
             Guid workflowAttributeGuid = GetAttributeValue( action, "Entity" ).AsGuid();
-            Guid entityGuid = action.GetWorklowAttributeValue( workflowAttributeGuid ).AsGuid();
+            Guid entityGuid = action.GetWorkflowAttributeValue( workflowAttributeGuid ).AsGuid();
 
             if ( !entityGuid.IsEmpty() )
             {

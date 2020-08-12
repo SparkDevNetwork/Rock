@@ -48,7 +48,7 @@ namespace org.newpointe.RockU.Workflow.Action.RockU
             Guid itemListValueAsGuid = itemListValue.AsGuid();
             if (!itemListValueAsGuid.IsEmpty())
             {
-                var workflowAttributeValue = action.GetWorklowAttributeValue( itemListValueAsGuid );
+                var workflowAttributeValue = action.GetWorkflowAttributeValue( itemListValueAsGuid );
                 if (workflowAttributeValue != null)
                 {
                     itemListValue = workflowAttributeValue;

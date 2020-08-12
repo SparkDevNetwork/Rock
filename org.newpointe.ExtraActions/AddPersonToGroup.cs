@@ -56,7 +56,7 @@ namespace org.newpointe.ExtraActions
             Guid? groupMemberWorkflowAttributeAttribute = GetAttributeValue( action, "GroupMemberStatusAttribute" ).AsGuidOrNull();
             if ( groupMemberWorkflowAttributeAttribute.HasValue )
             {
-                string groupMemberWorkflowAttribute = action.GetWorklowAttributeValue( groupMemberWorkflowAttributeAttribute.Value );
+                string groupMemberWorkflowAttribute = action.GetWorkflowAttributeValue( groupMemberWorkflowAttributeAttribute.Value );
                 if ( !string.IsNullOrWhiteSpace( groupMemberWorkflowAttribute ) )
                 {
                     if ( Enum.TryParse( groupMemberWorkflowAttribute, true, out GroupMemberStatus groupMemberStatusOut ) )

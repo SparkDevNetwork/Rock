@@ -101,7 +101,7 @@ namespace org.newpointe.ExtraActions
             string mValStr = GetAttributeValue( action, "MetricValue" );
             if ( Guid.TryParse( mValStr, out Guid mValGuid ) )
             {
-                mValStr = action.GetWorklowAttributeValue( mValGuid );
+                mValStr = action.GetWorkflowAttributeValue( mValGuid );
             }
             decimal? metricValueValue = mValStr.ResolveMergeFields( mergeFields ).AsDecimalOrNull();
 
@@ -163,7 +163,7 @@ namespace org.newpointe.ExtraActions
             }
 
             // Fall back to Workflow Action's Workflow Attribute
-            return valueConverter( action.GetWorklowAttributeValue( GetAttributeValue( action, attributeAttributeKey ).AsGuid() ), valueConverterData );
+            return valueConverter( action.GetWorkflowAttributeValue( GetAttributeValue( action, attributeAttributeKey ).AsGuid() ), valueConverterData );
         }
     }
 }

@@ -45,7 +45,7 @@ namespace org.newpointe.ExtraActions
             }
             else
             {
-                url = action.GetWorklowAttributeValue( guid );
+                url = action.GetWorkflowAttributeValue( guid );
             }
 
             if ( !string.IsNullOrWhiteSpace( url ) && HttpContext.Current != null )

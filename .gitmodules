@@ -1,0 +1,3 @@
+[submodule "NewPointe.eSpace"]
+	path = NewPointe.eSpace
+	url = git@github.com:NewPointe/espace-dotnet.git

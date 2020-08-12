@@ -21,7 +21,7 @@ namespace org.newpointe.ExtraActions
         public T GetEntityFromWorkflowAttributes<T>( WorkflowAction action, string directAttributeKey, string workflowAttributeKey, Service<T> entityService ) where T : Entity<T>, new()
         {
             Guid? entityAttributeGuid = GetAttributeValue( action, workflowAttributeKey ).AsGuidOrNull();
-            return entityService.Get( ( entityAttributeGuid.HasValue ? action.GetWorklowAttributeValue( entityAttributeGuid.Value ).AsGuidOrNull() : null ) ?? GetAttributeValue( action, directAttributeKey ).AsGuid() );
+            return entityService.Get( ( entityAttributeGuid.HasValue ? action.GetWorkflowAttributeValue( entityAttributeGuid.Value ).AsGuidOrNull() : null ) ?? GetAttributeValue( action, directAttributeKey ).AsGuid() );
         }
     }
 }
