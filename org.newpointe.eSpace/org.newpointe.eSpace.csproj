@@ -44,7 +44,7 @@
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NewPointe.eSpace\NewPointe.eSpace\NewPointe.eSpace.csproj">
+    <ProjectReference Include="..\NewPointe.eSpace\NewPointe.eSpace\NewPointe.eSpace.csproj" ReferenceOutputAssembly="false" PrivateAssets="All">
       <Project>{f0c6cf2a-3174-4551-bfc9-4f5681a66d13}</Project>
       <Name>NewPointe.eSpace</Name>
     </ProjectReference>
