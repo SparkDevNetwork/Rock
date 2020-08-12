@@ -97,6 +97,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public override void LoadDefinedValues()
         {
+            EnsureChildControls();
+
             _ddlDefinedValues.Items.Clear();
 
             if ( DefinedTypeId.HasValue )
