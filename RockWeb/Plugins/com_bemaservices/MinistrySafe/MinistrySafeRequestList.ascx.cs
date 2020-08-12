@@ -32,9 +32,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 {
-    [DisplayName( "Ministry Safe Request List" )]
-    [Category( "BEMA Services > Ministry Safe" )]
-    [Description( "Lists all the Ministry Safe background check requests." )]
+    [DisplayName( "MinistrySafe Request List" )]
+    [Category( "BEMA Services > MinistrySafe" )]
+    [Description( "Lists all the MinistrySafe background check requests." )]
 
     [LinkedPage( "Workflow Detail Page", "The page to view details about the background check workflow" )]
     public partial class MinistrySafeRequestList : RockBlock, ISecondaryBlock, ICustomGridColumns

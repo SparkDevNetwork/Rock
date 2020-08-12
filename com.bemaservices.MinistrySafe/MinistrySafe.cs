@@ -798,7 +798,7 @@ namespace com.bemaservices.MinistrySafe
 
                 if ( ministrySafeUsers == null || ministrySafeUsers.Count <= 0 )
                 {
-                    string errorMessage = "Ministry Safe User not found: External ID: " + trainingWebhook.ExternalId;
+                    string errorMessage = "MinistrySafe User not found: External ID: " + trainingWebhook.ExternalId;
                     Rock.Model.ExceptionLogService.LogException( new Exception( errorMessage ), null );
                     return false;
                 }

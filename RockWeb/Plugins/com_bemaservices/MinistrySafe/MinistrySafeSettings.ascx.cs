@@ -34,9 +34,9 @@ using Rock.Checkr.Constants;
 
 namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 {
-    [DisplayName( "Ministry Safe Settings" )]
-    [Category( "BEMA Services > Ministry Safe" )]
-    [Description( "Block for updating the settings used by the Ministry Safe integration." )]
+    [DisplayName( "MinistrySafe Settings" )]
+    [Category( "BEMA Services > MinistrySafe" )]
+    [Description( "Block for updating the settings used by the MinistrySafe plugin." )]
 
     public partial class MinistrySafeSettings : Rock.Web.UI.RockBlock
     {
@@ -201,7 +201,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 checkrWorkflowAction.Name = "Background Check (Checkr)";
 
                 var ministrySafeWorkflowAction = workflowTypeService.Get( MinistrySafeSystemGuid.MINISTRYSAFE_BACKGROUNDCHECK_WORKFLOW_TYPE.AsGuid() );
-                // Rename Ministry Safe Workflow
+                // Rename MinistrySafe Workflow
                 ministrySafeWorkflowAction.Name = "Background Check";
 
                 rockContext.SaveChanges();
