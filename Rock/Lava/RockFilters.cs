@@ -4890,9 +4890,13 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="input">The input. This may be an integer ID or a Guid.</param>
         /// <param name="fallbackUrl">The fallback URL to be used if the input is not defined.</param>
-        /// <param name="prependRootUrl">If true, the application root URL will be prepended to the returned image URL.</param>
+        /// <param name="rootUrl">
+        /// This parameter is multipurpose:
+        /// <para>If the string value 'rootUrl' or true, the application root URL will be prepended and the GetImage handler will be used to serve the image.</para>
+        /// <para>If false or null, the application root URL will not be prepended but the GetImage handler will be used to serve the image.</para>
+        /// </param>
         /// <returns>The image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.</returns>
-        public static string ImageUrl( object input, string fallbackUrl, bool prependRootUrl = false )
+        public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
             var queryStringKey = "Id";
@@ -4911,15 +4915,52 @@ namespace Rock.Lava
 
             if ( useFallbackUrl )
             {
-                return fallbackUrl;
+                return fallbackUrl ?? string.Empty;
             }
 
-            // At this point, we know that either an integer or a Guid was supplied. Use the GetImage handler to serve the image.
-            string prefix = prependRootUrl
-                ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash()
-                : "/";
+            /*
+                8/12/2020 - JH
+                The rootUrl parameter is multipurpose:
 
-            return $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                1. If the object is a string whose value is "rootUrl" OR the object is a bool whose value is true:
+                       prepend the application root URL and use the GetImage handler to serve the image.
+
+                2. If the object is a bool whose value is false OR the object is null:
+                       do not prepend the application root URL but use the GetImage handler to serve the image.
+
+                3. Future dev will dictate (i.e. If the object is a string whose value is "cdnUrl" ...)
+            */
+            bool useGetImageHandler = false;
+            bool prependAppRootUrl = false;
+
+            string rootUrlString = rootUrl?.ToString();
+
+            // Note that this will return false (and not null) for any string value other than a "truthy" value, meaning that any string comparisons below need to done BEFORE a rootUrlAsBool.HasValue check.
+            bool? rootUrlAsBool = rootUrlString?.AsBooleanOrNull();
+
+            if ( rootUrlString?.Equals( "rootUrl", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                useGetImageHandler = true;
+                prependAppRootUrl = true;
+            }
+            else if ( rootUrlAsBool.HasValue || rootUrl == null )
+            {
+                useGetImageHandler = true;
+                prependAppRootUrl = rootUrlAsBool ?? false;
+            }
+
+            string url = null;
+
+            if ( useGetImageHandler )
+            {
+                string prefix = prependAppRootUrl
+                    ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash()
+                    : "/";
+
+                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+            }
+
+            return url;
         }
 
         #endregion Misc Filters
