@@ -46,6 +46,7 @@ namespace com.bemaservices.MinistrySafe
     public class MinistrySafe : BackgroundCheckComponent
     {
         #region Private Fields
+
         /// <summary>
         /// The objects to use when locking our use of the workflow's attribute values and the webhook's use of them.
         /// We're using a concurrent dictionary to hold small lock objects that are based on the workflow id so
@@ -55,7 +56,6 @@ namespace com.bemaservices.MinistrySafe
         private static ConcurrentDictionary<int, object> _lockObjects = new ConcurrentDictionary<int, object>();
 
         #endregion
-
 
         #region BackgroundCheck Implementation
 
@@ -104,7 +104,8 @@ namespace com.bemaservices.MinistrySafe
 
                     string level = null;
                     string packageCode = null;
-                    if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out level, packageCode, errorMessages ) )
+                    string userType = null;
+                    if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out level, packageCode, userType, errorMessages ) )
                     {
                         errorMessages.Add( "Unable to get Package." );
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
@@ -114,7 +115,7 @@ namespace com.bemaservices.MinistrySafe
 
                     string userId;
                     string directLoginUrl;
-                    if ( !GetOrCreateUser( workflow, person, personAliasId.Value, "", out userId, out directLoginUrl, errorMessages ) )
+                    if ( !GetOrCreateUser( workflow, person, personAliasId.Value, userType, out userId, out directLoginUrl, errorMessages ) )
                     {
                         errorMessages.Add( "Unable to create user." );
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
@@ -451,32 +452,18 @@ namespace com.bemaservices.MinistrySafe
                     .Select( v => { v.LoadAttributes( rockContext ); return v; } ) // v => v.Value.Substring( CheckrConstants.TYPENAME_PREFIX.Length ) )
                     .ToDictionary( v => v.GetAttributeValue( "MinistrySafePackageName" ).ToString(), v => v );
 
+                var userTypes = definedValueService
+                     .GetByDefinedTypeGuid( "559E79C6-2EAB-4A0D-A16F-59D9B63F002F".AsGuid() );
                 foreach ( var packageResponse in getPackagesResponse )
                 {
+
                     string packageName = packageResponse.Name;
                     if ( !packages.ContainsKey( packageName ) )
                     {
-                        DefinedValue definedValue = null;
-
-                        definedValue = new DefinedValue()
+                        foreach ( var userType in userTypes )
                         {
-                            IsActive = true,
-                            DefinedTypeId = definedType.Id,
-                            ForeignId = 4,
-                            Value = MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX + packageResponse.Name.Replace( '_', ' ' ),
-                        };
-
-                        definedValueService.Add( definedValue );
-
-                        rockContext.SaveChanges();
-
-                        definedValue.LoadAttributes( rockContext );
-
-                        definedValue.SetAttributeValue( "MinistrySafePackageName", packageResponse.Name );
-                        definedValue.SetAttributeValue( "MinistrySafePackageLevel", packageResponse.Level );
-                        definedValue.SetAttributeValue( "MinistrySafePackageCode", packageResponse.Code );
-                        definedValue.SetAttributeValue( "MinistrySafePackagePrice", packageResponse.Price );
-                        definedValue.SaveAttributeValues( rockContext );
+                            AddPackage( rockContext, definedType, definedValueService, packageResponse, userType );
+                        }
                     }
                 }
 
@@ -493,6 +480,32 @@ namespace com.bemaservices.MinistrySafe
             return true;
         }
 
+        private static void AddPackage( RockContext rockContext, DefinedTypeCache definedType, DefinedValueService definedValueService, PackageResponse packageResponse, DefinedValue userType )
+        {
+            DefinedValue definedValue = null;
+
+            definedValue = new DefinedValue()
+            {
+                IsActive = true,
+                DefinedTypeId = definedType.Id,
+                ForeignId = 4,
+                Value = string.Format( "{0}{1} {1}", MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX, userType.Description, packageResponse.Name.Replace( '_', ' ' ) )
+            };
+
+            definedValueService.Add( definedValue );
+
+            rockContext.SaveChanges();
+
+            definedValue.LoadAttributes( rockContext );
+
+            definedValue.SetAttributeValue( "MinistrySafePackageName", packageResponse.Name );
+            definedValue.SetAttributeValue( "MinistrySafePackageLevel", packageResponse.Level );
+            definedValue.SetAttributeValue( "MinistrySafePackageCode", packageResponse.Code );
+            definedValue.SetAttributeValue( "MinistrySafePackagePrice", packageResponse.Price );
+            definedValue.SetAttributeValue( "MinistrySafeUserType", userType.Guid.ToString() );
+            definedValue.SaveAttributeValues( rockContext );
+        }
+
         /// <summary>
         /// Get the background check type that the request is for.
         /// </summary>
@@ -502,20 +515,21 @@ namespace com.bemaservices.MinistrySafe
         /// <param name="packageName"></param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        private bool GetPackageName( RockContext rockContext, Rock.Model.Workflow workflow, AttributeCache requestTypeAttribute, out string level, string packageCode, List<string> errorMessages )
+        private bool GetPackageName( RockContext rockContext, Rock.Model.Workflow workflow, AttributeCache requestTypeAttribute, out string level, string packageCode, string userType, List<string> errorMessages )
         {
             level = null;
             packageCode = null;
+            userType = null;
             if ( requestTypeAttribute == null )
             {
-                errorMessages.Add( "The 'Checkr' background check provider requires a background check type." );
+                errorMessages.Add( "The 'MinistrySafe' background check provider requires a background check type." );
                 return false;
             }
 
             DefinedValueCache pkgTypeDefinedValue = DefinedValueCache.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
             if ( pkgTypeDefinedValue == null )
             {
-                errorMessages.Add( "The 'Checkr' background check provider couldn't load background check type." );
+                errorMessages.Add( "The 'MinistrySafe' background check provider couldn't load background check type." );
                 return false;
             }
 
@@ -525,8 +539,16 @@ namespace com.bemaservices.MinistrySafe
                 return false;
             }
 
+            DefinedValueCache userTypeDefinedValue = DefinedValueCache.Get( pkgTypeDefinedValue.GetAttributeValue( "MinistrySafeUserType" ).AsGuid() );
+            if ( userTypeDefinedValue == null )
+            {
+                errorMessages.Add( "The 'MinistrySafe' background check type does not have an associated user type." );
+                return false;
+            }
+
             level = pkgTypeDefinedValue.GetAttributeValue( "MinistrySafePackageLevel" );
             packageCode = pkgTypeDefinedValue.GetAttributeValue( "MinistrySafePackageCode" );
+            userType = userTypeDefinedValue.Value;
             return true;
         }
 
