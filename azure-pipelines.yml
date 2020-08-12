@@ -18,6 +18,12 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+
+- checkout: self
+  clean: true
+  fetchDepth: 1
+  submodules: true
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
