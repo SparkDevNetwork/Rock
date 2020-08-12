@@ -75,8 +75,6 @@ namespace Rock.Attribute
                 return false;
             }
 
-            List<string> existingKeys = new List<string>();
-
             var entityProperties = new List<FieldAttribute>();
 
             // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
@@ -123,7 +121,6 @@ namespace Rock.Attribute
                 try
                 {
                     attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
-                    existingKeys.Add( entityProperty.Key );
                 }
                 catch ( Exception ex )
                 {
@@ -139,6 +136,7 @@ namespace Rock.Attribute
                 // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                 if ( !dynamicAttributesBlock )
                 {
+                    var existingKeys = entityProperties.Select( a => a.Key ).ToList();
                     foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                     {
                         if ( !existingKeys.Contains( a.Key ) )
