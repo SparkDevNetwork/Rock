@@ -99,6 +99,14 @@
         <td style="width: 50%">
           <strong>Schedule</strong> <br>
           {{group.Schedule.FriendlyScheduleText}}</br>
+
+          {% assign roomNumber = group | Attribute:'RoomNumber1' %}
+          {% if roomNumber != empty %}
+          </br>
+          <strong>Room Number</strong> <br>
+          {{roomNumber}}</br>
+          {% endif %}
+
           {% assign groupImage = group | Attribute:'Image' %}
           {% if groupImage != empty %}
           </br>
