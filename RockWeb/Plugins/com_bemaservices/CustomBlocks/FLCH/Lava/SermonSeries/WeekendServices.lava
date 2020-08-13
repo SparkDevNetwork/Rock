@@ -134,37 +134,41 @@
 
       </div>
     </div>
+<div class="opensearchserver.ignore">
+  <div class="row margin-t-lg">
+    <div class="col-md-12 padding-b-none">
+        <h4 class='uppercase-text'>Current Series</h4>
+        <hr/>
+      </div>
+  </div>
+  <div class="row">
 
-<div class="row margin-t-lg opensearchserver.ignore">
-  <div class="col-md-12 padding-b-none">
-      <h4 class='uppercase-text'>Current Series</h4>
+        {[ morefromcurrentseries sermonid:'{{ item.Id }}' ]}
+
+  </div>
+  <div class="row margin-t-lg">
+    <div class="col-md-12 padding-b-none">
+      <h4 class='uppercase-text'>Recent Series</h4>
       <hr/>
     </div>
-</div>
-<div class="row opensearchserver.ignore">
-
-      {[ morefromcurrentseries sermonid:'{{ item.Id }}' ]}
-
-</div>
-<div class="row margin-t-lg opensearchserver.ignore">
-  <div class="col-md-12 padding-b-none">
-    <h4 class='uppercase-text'>Recent Series</h4>
-    <hr/>
   </div>
-</div>
-<div class="row opensearchserver.ignore">
+  <div class="row">
 
-        {% assign congregation = item | Attribute:'Congregation','RawValue' %}
-        {% assign service =  item | Attribute:'Service','RawValue' %}
-        {% assign seriesId = series.Id %}
+          {% assign congregation = item | Attribute:'Congregation','RawValue' %}
+          {% assign service =  item | Attribute:'Service','RawValue' %}
+          {% assign seriesId = series.Id %}
 
-        {% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\PastSeries.lava' %}
+          {% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\PastSeries.lava' %}
 
 
-      <div class="col-md-10 padding-b-none">
-        <a href='/AllSeries/{{ congregation }}/{{ service }}' class='btn btn-primary margin-t-lg' >View All Series</a>
-      </div>
+        <div class="col-md-10 padding-b-none">
+          <a href='/AllSeries/{{ congregation }}/{{ service }}' class='btn btn-primary margin-t-lg' >View All Series</a>
+        </div>
 
-</div>
+
+    </div>
+  </div>
+
+
 
 {% endfor %}
