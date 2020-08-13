@@ -12,6 +12,7 @@ from DefinedValue v
 	left join AttributeValue avImage on avImage.EntityId = v.id and avImage.AttributeId = 8700
 	left join Campus c on c.Guid = try_cast(avcampus.value as uniqueidentifier)
 where v.DefinedTypeId = 91
+and v.IsActive = 1
 group by c.Id, c.Name
 order by c.Name desc
 {% endsql %}
@@ -79,6 +80,3 @@ order by c.Name desc
  </div>
 
 {% endfor %}
-
-
-

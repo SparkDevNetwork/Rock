@@ -38,6 +38,8 @@
 
         {% unless PageParameter.ItemGlobalKey %}<h4 class="subtitle gray-uppercase-text margin-b-md">Latest Service</h4>{% endunless %}
         <h1 class="title">{{ item.Title }}</h1>
+        {% capture pageTitle %}{{ item.Title }} | {{ 'Global' | Page:'SiteName' }}{% endcapture %}
+        {{ pageTitle | SetPageTitle }}
         <span class="meta-data gray-text margin-b-lg">{{ item.StartDateTime | Date:'MMMM d, yyyy' }} | {{ item | Attribute:'Speaker' }}</span>
 
         <p class='clearfix margin-t-lg'>{{ series | Attribute:'Description' }}<p>
@@ -133,24 +135,24 @@
       </div>
     </div>
 
-<div class="row margin-t-lg">
+<div class="row margin-t-lg opensearchserver.ignore">
   <div class="col-md-12 padding-b-none">
       <h4 class='uppercase-text'>Current Series</h4>
       <hr/>
     </div>
 </div>
-<div class="row">
+<div class="row opensearchserver.ignore">
 
       {[ morefromcurrentseries sermonid:'{{ item.Id }}' ]}
 
 </div>
-<div class="row margin-t-lg">
+<div class="row margin-t-lg opensearchserver.ignore">
   <div class="col-md-12 padding-b-none">
     <h4 class='uppercase-text'>Recent Series</h4>
     <hr/>
   </div>
 </div>
-<div class="row">
+<div class="row opensearchserver.ignore">
 
         {% assign congregation = item | Attribute:'Congregation','RawValue' %}
         {% assign service =  item | Attribute:'Service','RawValue' %}
@@ -163,11 +165,6 @@
         <a href='/AllSeries/{{ congregation }}/{{ service }}' class='btn btn-primary margin-t-lg' >View All Series</a>
       </div>
 
-
 </div>
 
-
-
 {% endfor %}
-
-
