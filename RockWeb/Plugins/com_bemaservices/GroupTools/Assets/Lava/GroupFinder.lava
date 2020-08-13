@@ -242,8 +242,42 @@
 .multiselect__tag{
   background-color: #eee !important;
   color: black !important;
+  background: #323232;
 }
 
+/*multiselect color updates */
+.multselect__spinner:after, .multselect_spinner:before {
+  border-color: #323232 transparent transparent;
+}
+.multiselect__tag-icon:focus,
+.multiselect__tag-icon:hover {
+  background:#f04b28
+}
+
+.multiselect__option--highlight {
+  background:#323232;
+}
+
+.multiselect__option--highlight:after {
+  background: #323232;
+}
+
+.multiselect__option--selected.multiselect__option--highlight{
+  background:#f04b28;
+}
+
+.multiselect__option--selected.multiselect__option--highlight:after {
+  background:#f04b28;
+}
+
+.multiselect__option--group-selected.multiselect__option--highlight {
+  background:#f04b28;
+}
+
+.multiselect__option--group-selected.multiselect__option--highlight:after {
+  background: #f04b28;
+
+}
 </style>
 <div id="app">
 
