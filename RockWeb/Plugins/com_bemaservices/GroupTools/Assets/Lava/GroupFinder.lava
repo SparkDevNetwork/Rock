@@ -182,6 +182,7 @@
     width: calc(100% - 100px);
     position: relative;
     overflow-wrap: break-word;
+    overflow: hidden;
 }
 .sg-card .sg-day-of-week {
     line-height: 21px;
