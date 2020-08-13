@@ -363,8 +363,10 @@
                   <div class="fontSize-xxs">{{group.Frequency}}</div>
                 </div>
                 <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">{{group.Category}}</div>
-                <div v-for="secondaryCategory in group.SecondaryCategories.slice(0,3)" class="sg-card-info m-b-half" :style="'color:' + secondaryCategory.Color+';margin-top:0px !important;'">
-                  {{secondaryCategory.Category}}
+                <div v-if="group.SecondaryCategories != null && group.SecondaryCategories.length > 0">
+                  <div v-for="secondaryCategory in group.SecondaryCategories.slice(0,3)" class="sg-card-info m-b-half" :style="'color:' + secondaryCategory.Color+';margin-top:0px !important;'">
+                    {{secondaryCategory.Category}}
+                  </div>
                 </div>
                 <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.LifeStage}}</div>
               </div>
