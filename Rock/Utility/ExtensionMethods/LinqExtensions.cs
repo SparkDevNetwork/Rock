@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -373,7 +373,7 @@ namespace Rock
                     {
                         //Check if Attribute Entity Type is same as Source Entity Type
                         var type = models.First().GetType();
-                        EntityTypeCache modelEntity = EntityTypeCache.Get( type );
+                        EntityTypeCache modelEntity = EntityTypeCache.Get( type, false );
                         PropertyInfo modelProperty = null;
                         //Same Entity Type
                         if ( modelEntity != null && modelEntity.Id == attributeCache.EntityTypeId )
@@ -384,9 +384,10 @@ namespace Rock
                         else if ( modelEntity != null )
                         {
                             //Search the entity properties for a matching entity and save the property information and primary key name
-                            foreach ( var propertyInfo in type.GetProperties() )
+                            var propertiesWithAttributes = type.GetProperties().Where( a => typeof( IHasAttributes ).IsAssignableFrom( a.PropertyType ) ).ToList();
+                            foreach ( var propertyInfo in propertiesWithAttributes )
                             {
-                                var propertyEntity = new EntityTypeService( rockContext ).Queryable().FirstOrDefault( e => e.Name == propertyInfo.PropertyType.FullName );
+                                var propertyEntity = EntityTypeCache.Get( propertyInfo.PropertyType, false );
                                 if ( propertyEntity != null && propertyEntity.Id == attributeCache.EntityTypeId )
                                 {
                                     Object obj = models.First().GetPropertyValue( propertyInfo.Name );
