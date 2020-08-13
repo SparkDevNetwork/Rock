@@ -365,6 +365,7 @@ namespace Rock.NMI
                 if ( resultQueryString.IsNullOrWhiteSpace() )
                 {
                     errorMessage = "invalid resultQueryString";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"Unable to process Step 3 Charge in NMI gateway.  Invalid Query String." ) );
                     return null;
                 }
 
@@ -376,6 +377,7 @@ namespace Rock.NMI
                 if ( threeStepChangeStep3Response == null )
                 {
                     errorMessage = "Invalid Response from NMI";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"An invalid response was received from the NMI gateway at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The token-id was: {resultQueryString.Substring( 10 )}" ) );
                     return null;
                 }
 
@@ -439,11 +441,19 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
+
+                string logMessage = webException.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"A WebException occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}"  ) );
+
                 return null;
             }
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
+
+                string logMessage = ex.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"An internal error occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}"  ) );
+
                 return null;
             }
         }
