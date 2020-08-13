@@ -135,31 +135,20 @@ namespace com.bemaservices.GroupTools.Controllers
                     var categories = definedValueService.GetByGuids( categoryGuids );
                     if ( categories.Any() )
                     {
-                        var category = categories.OrderBy( c => c.Order ).First();
-                        category.LoadAttributes();
-                        groupInfo.Category = category.Value;
-                        groupInfo.SecondaryCategories = categories.Where( c => c.Id != category.Id ).OrderBy( c => c.Order ).Select( c => c.Value ).ToList();
+                        var primaryCategory = categories.OrderBy( c => c.Order ).First();
+                        groupInfo.Category = primaryCategory.Value;
+                        groupInfo.Color = GetCategoryColor( primaryCategory );
 
-                        var colorString = category.GetAttributeValue( "Color" );
-                        if ( colorString.IsNotNullOrWhiteSpace() )
+                        List<CategoryColor> secondaryCategories = new List<CategoryColor>();
+                        foreach ( var category in categories.Where( c => c.Id != primaryCategory.Id ).OrderBy( c => c.Order ).ToList() )
                         {
-                            if ( colorString.Contains( "rgb" ) )
-                            {
-                                var colorList = colorString.Replace( "rgb(", "" ).Replace( ")", "" ).SplitDelimitedValues().AsIntegerList();
-                                if ( colorList.Count == 3 )
-                                {
-                                    Color myColor = Color.FromArgb( colorList[0], colorList[1], colorList[2] );
-                                    string hex = myColor.R.ToString( "X2" ) + myColor.G.ToString( "X2" ) + myColor.B.ToString( "X2" );
-
-                                    groupInfo.Color = "#" + hex;
-                                }
-                            }
-                            else
-                            {
-                                groupInfo.Color = colorString;
-                            }
+                            var secondaryCategory = new CategoryColor();
+                            secondaryCategory.Category = category.Value;
+                            secondaryCategory.Color = GetCategoryColor( category );
+                            secondaryCategories.Add( secondaryCategory );
                         }
 
+                        groupInfo.SecondaryCategories = secondaryCategories;
                     }
                 }
 
@@ -214,6 +203,33 @@ namespace com.bemaservices.GroupTools.Controllers
                 .AsQueryable();
 
             return groupInfoQry;
+        }
+
+        private static string GetCategoryColor( DefinedValue category )
+        {
+            category.LoadAttributes();
+            var rawValue = category.GetAttributeValue( "Color" );
+            var colorString = string.Empty;
+            if ( rawValue.IsNotNullOrWhiteSpace() )
+            {
+                if ( rawValue.Contains( "rgb" ) )
+                {
+                    var colorList = rawValue.Replace( "rgb(", "" ).Replace( ")", "" ).SplitDelimitedValues().AsIntegerList();
+                    if ( colorList.Count == 3 )
+                    {
+                        Color myColor = Color.FromArgb( colorList[0], colorList[1], colorList[2] );
+                        string hex = myColor.R.ToString( "X2" ) + myColor.G.ToString( "X2" ) + myColor.B.ToString( "X2" );
+
+                        colorString = "#" + hex;
+                    }
+                }
+                else
+                {
+                    colorString = rawValue;
+                }
+            }
+
+            return colorString;
         }
 
         private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, string keywords, bool showPrivateGroups, RockContext rockContext )
@@ -337,9 +353,15 @@ namespace com.bemaservices.GroupTools.Controllers
 
         public string Category { get; set; }
 
-        public List<string> SecondaryCategories { get; set; }
+        public List<CategoryColor> SecondaryCategories { get; set; }
 
         public string Color { get; set; }
 
+    }
+
+    public class CategoryColor
+    {
+        public string Category { get; set; }
+        public string Color { get; set; }
     }
 }
