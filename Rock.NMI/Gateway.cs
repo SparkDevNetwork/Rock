@@ -53,8 +53,7 @@ namespace Rock.NMI
         Key = AttributeKey.SecurityKey,
         Description = "The API key",
         IsRequired = true,
-        Order = 0
-        )]
+        Order = 0 )]
 
     [TextField(
         "Admin Username",
@@ -362,7 +361,7 @@ namespace Rock.NMI
 
             try
             {
-                if ( resultQueryString.IsNullOrWhiteSpace() )
+                if ( resultQueryString.IsNullOrWhiteSpace() || resultQueryString.Length <= 10 )
                 {
                     errorMessage = "invalid resultQueryString";
                     ExceptionLogService.LogException( new NMIGatewayException( $"Unable to process Step 3 Charge in NMI gateway.  Invalid Query String." ) );
@@ -443,7 +442,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 errorMessage = webException.Message + " - " + message;
 
                 string logMessage = webException.ToString();
-                ExceptionLogService.LogException( new NMIGatewayException( $"A WebException occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}"  ) );
+                ExceptionLogService.LogException( new NMIGatewayException( $"A WebException occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", webException ) );
 
                 return null;
             }
@@ -452,7 +451,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 errorMessage = ex.Message;
 
                 string logMessage = ex.ToString();
-                ExceptionLogService.LogException( new NMIGatewayException( $"An internal error occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}"  ) );
+                ExceptionLogService.LogException( new NMIGatewayException( $"An internal error occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", ex ) );
 
                 return null;
             }
