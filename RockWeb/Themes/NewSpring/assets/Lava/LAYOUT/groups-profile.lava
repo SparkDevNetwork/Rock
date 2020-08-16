@@ -1,4 +1,6 @@
-{% comment %}Disable iOS phone number hyperlinking{% endcomment %}
+{%- comment -%}
+  Disable iOS phone number hyperlinking
+{%- endcomment -%}
 {{ 'telephone=no' | AddMetaTagToHead:'name','format-detection' }}
 
 {% assign currentUrl = 'Global' | Page:'Url' %}
@@ -34,7 +36,6 @@
   AND gt.Guid IN ({{ groupTypeGuids }})
   AND g.IsActive = 1
   AND g.IsArchived = 0
-  AND gtr.Name NOT LIKE '%Coach%' -- We don't want to show groups that people are in as coaches, only as group leaders
   AND gm.GroupMemberStatus != 0
   AND gm.IsArchived = 0
   AND gtr.IsLeader = 1
@@ -65,7 +66,6 @@
   AND g2.IsArchived = 0 -- Child Groups of Coaching Group That Aren't Archived
   AND gm2.IsArchived = 0 -- Leaders of Coaching Group Who Aren't Archived
   AND gtr2.IsLeader = 1 -- Leaders of Child Groups of Coaching Group
-  AND gtr2.Name NOT LIKE '%Coach%' -- We don't want to show groups that people are in as coaches, only as group leaders
   AND gm2.PersonId != {{ person.Id }} -- Don't list themselves
 {% endsql %}
 
@@ -117,47 +117,13 @@
     </div>
   </div>
 
-  <style>
-    .accordion .panel-body {
-      padding: 0 !important;
-    }
-    .panel-group .panel {
-      overflow: hidden;
-    }
-
-    .list-group-item > a {
-      margin-top: 3px;
-    }
-
-    .list-group-item > .fa-fw,
-    .list-group-item > a > .fa-fw {
-      position: relative;
-      top: 1px;
-      margin-left: -3px;
-    }
-  </style>
-
-  {[ accordion ]}
-    [[ item title:'Group Member Actions' ]]
-      <ul class="list-group">
-        <li class="list-group-item">
-          <i class="fal fa-fw fa-edit position-relative push-quarter-right"></i> <a href="{{ currentUrl | Append:'/update' }}" target="_blank" class="text-decoration-none">Edit Group Member</a>
-        </li>
-        <li class="list-group-item">
-          <i class="fal fa-fw fa-times position-relative push-quarter-right"></i> <a href="/workflows/119?PersonId={{ person.Id }}&ReturnUrl={{ currentUrl }}" target="_blank" class="text-decoration-none">Report a Person Data Error</a>
-        </li>
-        <li class="list-group-item">
-          <i class="fal fa-fw fa-check position-relative push-quarter-right"></i> <a href="#" target="_blank" class="text-decoration-none">Identify as a Future Leader</a>
-        </li>
-        <li class="list-group-item">
-          <i class="fal fa-fw fa-archive position-relative push-quarter-right"></i> <a href="#" target="_blank" class="text-decoration-none text-danger">Archive Group Member</a>
-        </li>
-      </ul>
-    [[ enditem ]]
-  {[ endaccordion ]}
-
-
-  {% comment %} <p class="push-half-bottom"><a href="{{ currentUrl | Replace:person.Id,'' | Append:'remove' | Append:'?person=' | Append:person.Guid }}" class="btn btn-block btn-danger shadowed"><i class="fal fa-minus-circle push-quarter-right"></i> Remove From Group</a></p> {% endcomment %}
+  {% comment %}
+    Group Member Actions
+  {% endcomment %}
+  <p>
+    <a href="#" class="btn btn-block btn-primary shadowed push-half-bottom"><i class="fal fa-fw fa-star position-relative push-quarter-right"></i> Identify as Future Leader</a>
+    <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-default shadowed"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report a Person Data Error</a>
+  </p>
 
   <div class="row row-condensed">
     <div class="col-md-12 col-sm-6 col-xs-12">
