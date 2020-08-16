@@ -32,7 +32,7 @@
 <section class="bg-primary hard flush shadowed hidden-md hidden-lg">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
-        <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
+        <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
                 <span class="h5 display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
             <i class="position-relative fas fa-angle-down fa-lg pull-right" style="top: 7px; font-size: 1.6em;"></i>
         </a>
@@ -54,7 +54,7 @@
         });
         </script>
 
-        <div class="panel panel-default rounded overflow-hidden flush hidden-md hidden-lg">
+        <div class="panel panel-default rounded overflow-hidden flush-bottom hidden-md hidden-lg">
             <div id="mobileSecondaryNav" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                 <div class="panel-body hard" style="background-color: transparent;">
                     <div class="list-group list-group-dark text-left">

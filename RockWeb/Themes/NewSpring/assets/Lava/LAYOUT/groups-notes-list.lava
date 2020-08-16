@@ -8,19 +8,24 @@
   });
 </script>
 
+
 <p class="xs-push-half-bottom">
-  <a href="#" class="btn btn-primary xs-btn-block xs-push-half-bottom js-addnote shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add a Note</a>
-
-  {% if limit and limit != empty %}
-    <a href="{{ 'Global' | Page:'Url' }}/notes" class="btn btn-default xs-btn-block
- shadowed pull-right xs-pull-none"><i class="fal fa-clipboard push-quarter-right"></i> View All Notes</a>
-  {% endif %}
-
+  <a href="#" class="btn btn-primary xs-btn-block xs-flush-bottom js-addnote shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add a Note</a>
 </p>
 
-<ul class="list-unstyled js-notelist flush">
-    {% for note in NoteList limit:limit %}
-		{% assign noteReplyDepth = 0 %}
-		{% include '~/Themes/NewSpring/assets/Lava/LAYOUT/groups-notes-item.lava' %}
-    {% endfor %}
-</ul>
+{% if NoteList and NoteList != empty %}
+
+  <ul class="list-unstyled js-notelist flush">
+      {% for note in NoteList limit:limit %}
+      {% assign noteReplyDepth = 0 %}
+      {% include '~/Themes/NewSpring/assets/Lava/LAYOUT/groups-notes-item.lava' %}
+      {% endfor %}
+  </ul>
+
+{% else %}
+
+  {[ cardBlock ]}
+    <p class="flush">{{ person.NickName }} currently has no notes.</p>
+  {[ endcardBlock ]}
+
+{% endif %}

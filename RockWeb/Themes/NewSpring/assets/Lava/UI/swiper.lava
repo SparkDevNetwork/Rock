@@ -19,8 +19,8 @@
 
         <!-- Add Arrows -->
         <div class="hidden-sm hidden-xs">
-            <div class="swiper-next"><i class="fas fa-fw fa-2x fa-angle-right"></i></div>
-            <div class="swiper-prev"><i class="fas fa-fw fa-2x fa-angle-left"></i></div>
+            <div class="swiper-next"><i class="fal fa-fw fa-2x fa-angle-right"></i></div>
+            <div class="swiper-prev"><i class="fal fa-fw fa-2x fa-angle-left"></i></div>
         </div>
 
         <!-- If we need pagination -->
@@ -73,7 +73,7 @@
         initialSlide: {{ initialslide }}
       {% endif %}
   });
-  
+
   $(document).ready(function(){
     swiper.update();
   });

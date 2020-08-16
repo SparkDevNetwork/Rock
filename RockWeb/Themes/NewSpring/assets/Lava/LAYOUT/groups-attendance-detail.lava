@@ -22,7 +22,7 @@
 
   .group-attendance-detail .group-member-photo {
     position: absolute;
-    top: -3px;
+    top: -2px;
     left: 35px;
   }
   .group-attendance-detail .group-member-photo .ratio {
@@ -31,6 +31,10 @@
 
   .group-attendance-detail .js-roster .checkbox label {
     padding-left: 75px;
+  }
+
+  .group-attendance-detail .checkbox .label-text:before {
+    top: -1px;
   }
 
   .group-attendance-detail .col-xs-1,
@@ -84,3 +88,6 @@
     float: left;
   }
 </style>
+
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+{[ groupsHeader groupid:groupId ]}
