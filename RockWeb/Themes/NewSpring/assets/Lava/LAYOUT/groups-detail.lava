@@ -108,6 +108,48 @@
   ORDER BY CONVERT(datetime, CONCAT(YEAR(GETDATE()), SUBSTRING(CONVERT(varchar, p.AnniversaryDate), 5, 10))) ASC
 {% endsql %}
 
+{% sql return:'attendances' %}
+SELECT
+    gm.PersonId,
+    p.NickName,
+    p.LastName,
+    'last attended' 'Action',
+    (
+        SELECT TOP 1
+            ao.OccurrenceDate
+        FROM AttendanceOccurrence ao
+        JOIN Attendance a
+        ON a.OccurrenceId = ao.Id
+        JOIN PersonAlias pa
+        ON a.PersonAliasId = pa.Id
+        WHERE ao.GroupId = gm.GroupId
+        AND ao.DidNotOccur = 0
+        AND pa.PersonId = p.Id
+        AND a.DidAttend = 1
+        ORDER BY ao.OccurrenceDate DESC
+    ) 'Date'
+FROM GroupMember gm
+JOIN Person p
+ON gm.PersonId = p.Id
+WHERE gm.GroupId = {{ groupId }}
+AND gm.GroupMemberStatus = 1
+AND gm.IsArchived = 0
+ORDER BY (
+        SELECT TOP 1
+            ao.OccurrenceDate
+        FROM AttendanceOccurrence ao
+        JOIN Attendance a
+        ON a.OccurrenceId = ao.Id
+        JOIN PersonAlias pa
+        ON a.PersonAliasId = pa.Id
+        WHERE ao.GroupId = gm.GroupId
+        AND ao.DidNotOccur = 0
+        AND pa.PersonId = p.Id
+        AND a.DidAttend = 1
+        ORDER BY ao.OccurrenceDate DESC
+    ) asc
+{% endsql %}
+
 {% assign pulseCount = groupPulse | Size %}
 {% assign birthdaysCount = birthdays | Size %}
 {% assign anniversariesCount = anniversaries | Size %}
@@ -136,10 +178,26 @@
       <h2 class="h4 xs-h5 text-uppercase strongest">Group Pulse</h2>
 
       <ul class="list-group group-pulse rounded shadowed push-double-bottom sm-flush-bottom xs-push-double-bottom">
+        {% if attendances and attendances != emtpy %}
+
+          {% assign oneMonthAgo = 'Now' | DateAdd:-1,'M' %}
+          {% for attendance in attendances %}
+            {% if attendance.Date <= oneMonthAgo and attendance.Date != NULL %}
+              <li class="list-group-item">
+                <div class="flush">
+                  <div class="pulse-image">
+                    <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ attendance.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
+                  </div>
+                  <a href="{{ currentUrl | Append:'/' | Append:attendance.PersonId }}" class="text-decoration-none"><b>{{ attendance.NickName }} {{ attendance.LastName }}</b></a> {{ attendance.Action }} on {{ attendance.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ attendance.Date }}' ]} {% assign daysFromNow = attendance.Date | DaysFromNow %}<span class="text-danger"> {{ daysFromNow }}.</span></div>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+        {% endif %}
+
         {% for item in groupPulse %}
           <li class="list-group-item">
             <div class="flush">
-              {% if item.IconCSSClass and item.IconCSSClass != empty %}<i class="{{ item.IconCSSClass }} push-quarter-right"></i> {% endif %}
               <div class="pulse-image">
                 <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ item.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
               </div>
