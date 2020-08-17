@@ -97,6 +97,10 @@
     <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.Designer.cs">
       <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008121743577_update-personaldevice-model.cs" />
+    <Compile Include="Migrations\202008121743577_update-personaldevice-model.Designer.cs">
+      <DependentUpon>202008121743577_update-personaldevice-model.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1369,6 +1373,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202008101306418_InteractionIndexUpdate.resx">
       <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008121743577_update-personaldevice-model.resx">
+      <DependentUpon>202008121743577_update-personaldevice-model.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
