@@ -13,10 +13,16 @@
 {% assign status = groupMember.GroupMemberStatus %}
 
 {%- comment -%}
-  Redirect to 404 if person doesn't have access
+  Redirect to 404 if person doesn't have access or if person isn't in group from url
 {%- endcomment -%}
 {% assign currentPersonCanEditGroup = group.Id | HasRightsTo:'Edit','Rock.Model.Group' %}
 {% if currentPersonCanEditGroup == false %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
+
+{% assign groupMemberPersonIds = group.Members | Select:'PersonId' %}
+{% if groupMemberPersonIds contains person.Id %}
+{% else %}
   {{ '/page-not-found' | PageRedirect }}
 {% endif %}
 
@@ -117,14 +123,6 @@
     </div>
   </div>
 
-  {% comment %}
-    Group Member Actions
-  {% endcomment %}
-  <p>
-    <a href="#" class="btn btn-block btn-primary shadowed push-half-bottom"><i class="fal fa-fw fa-star position-relative push-quarter-right"></i> Identify as Future Leader</a>
-    <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-default shadowed"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report a Person Data Error</a>
-  </p>
-
   <div class="row row-condensed">
     <div class="col-md-12 col-sm-6 col-xs-12">
 
@@ -172,6 +170,13 @@
           </li>
         {% endif %}
       </ul>
+
+      {% comment %}
+        Group Member Actions
+      {% endcomment %}
+      <p>
+        <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-primary shadowed"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report a Person Data Error</a>
+      </p>
 
     </div><div class="col-md-12 col-sm-6 col-xs-12">
 
@@ -267,7 +272,7 @@
     {% for row in groups %}<div class="col-md-12 col-sm-6 col-xs-12">
       {% assign group = row.GroupId | GroupById %}
       {% assign groupName = group.Name | Replace:"'","’" %}
-      {% assign linkurl = '/account/groups/' | Append:group.Id %}
+      {% assign linkurl = '/groups/' | Append:group.Id | Append:'/toolbox' %}
       {% assign groupTypeImage = group.GroupType | Attribute:'ImageSquare' %}
       {% assign groupImageUrl = group | Attribute:'ImageSquare' | WithFallback:'',groupTypeImage %}
 

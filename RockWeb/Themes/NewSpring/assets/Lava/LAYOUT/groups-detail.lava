@@ -214,7 +214,7 @@ ORDER BY (
 
         <p class="push-half-bottom"><a href="#" class="btn btn-primary btn-block shadowed js-copy"><i class="fal fa-copy push-quarter-right"></i> Copy Numbers for SMS</a></p>
 
-        <p class="flush-bottom"><a href="mailto:{{ Group.Members | Map:'Person' | Select:'Email' | Join:',' }}" class="btn btn-primary btn-block shadowed"><i class="fal fa-inbox push-quarter-right"></i> Email Group</a></p>
+        <p class="flush-bottom"><a href="mailto:{{ Group.Members | Map:'Person' | Select:'Email' | Join:',' }}" class="btn btn-primary btn-block shadowed"><i class="fal fa-envelope push-quarter-right"></i> Email Group</a></p>
 
       </div>
     </div>
@@ -247,21 +247,25 @@ ORDER BY (
     {%- comment -%}
       GROUP ATTENDANCE
     {%- endcomment -%}
-    <h2 class="h4 xs-h5 text-uppercase strongest push-double-top">Group Attendance</h2>
-    <div class="row sm-push-bottom">
-      <div class="col-md-12 col-sm-6 col-xs-12">
+    {% if Group.GroupType.TakesAttendance %}
 
-        {[ cardBlock ]}
-          {[ groupAttendanceChart groupid:'{{ groupId }}' showaverage:'true' ]}
-        {[ endcardBlock ]}
+      <h2 class="h4 xs-h5 text-uppercase strongest push-double-top">Group Attendance</h2>
+      <div class="row sm-push-bottom">
+        <div class="col-md-12 col-sm-6 col-xs-12">
 
-      </div><div class="col-md-12 col-sm-6 col-xs-12">
+          {[ cardBlock ]}
+            {[ groupAttendanceChart groupid:'{{ groupId }}' showaverage:'true' ]}
+          {[ endcardBlock ]}
 
-        <p class="push-half-bottom"><a href="{{ currentUrl | Append:'/attendance/detail' }}" class="btn btn-block btn-primary shadowed"><i class="fal fa-check push-quarter-right"></i> Take Attendance</a></p>
-        <p><a href="{{ currentUrl | Append:'/attendance' }}" class="btn btn-block btn-default shadowed"><i class="fal fa-history push-quarter-right"></i> Attendance History</a></p>
+        </div><div class="col-md-12 col-sm-6 col-xs-12">
 
+          <p class="push-half-bottom"><a href="{{ currentUrl | Append:'/attendance/detail' }}" class="btn btn-block btn-primary shadowed"><i class="fal fa-check push-quarter-right"></i> Take Attendance</a></p>
+          <p><a href="{{ currentUrl | Append:'/attendance' }}" class="btn btn-block btn-default shadowed"><i class="fal fa-history push-quarter-right"></i> Attendance History</a></p>
+
+        </div>
       </div>
-    </div>
+
+    {% endif %}
 
 </div><div class="col-md-8 col-sm-12 col-xs-12">
 
