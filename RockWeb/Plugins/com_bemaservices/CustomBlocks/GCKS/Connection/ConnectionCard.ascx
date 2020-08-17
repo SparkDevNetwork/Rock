@@ -301,10 +301,12 @@
         <asp:Panel ID="pnThanks" runat="server" Visible="false">
             <div class="row margin-t-md">
                 <div class="col-xs-12 text-left">
-                    <h4>Thank you!</h4>
-                    <label>Thanks for submitting your connect card and helping us shepherd our church.</label>
-                    <br />
-                    <label>You're all set!</label>
+                    <Rock:RockLiteral ID="literalThanks" runat="server">
+                        <h4>Thank you!</h4>
+                        <label>Thanks for submitting your connect card and helping us shepherd our church.</label>
+                        <br />
+                        <label>You're all set!</label>
+                    </Rock:RockLiteral>
                 </div>
             </div>
         </asp:Panel>
