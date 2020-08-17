@@ -1,0 +1,28 @@
+.accordion {
+    .panel {
+        overflow: hidden;
+
+        & > .panel-heading {
+            font-weight: 500;
+            letter-spacing: 0;
+
+            i {
+                transition: all .2s ease;
+            }
+
+            .flip {
+                transform: rotate(180deg);
+            }
+        }
+    }
+
+    .panel.panel-primary, 
+    .panel.panel-secondary, 
+    .panel.panel-tertiary, 
+    .panel.panel-success,
+    .panel.panel-info,
+    .panel.panel-warning,
+    .panel.panel-danger {
+        border-top: 0px;
+    }
+}

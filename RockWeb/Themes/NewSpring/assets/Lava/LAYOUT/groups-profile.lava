@@ -131,7 +131,7 @@
       {% comment %}
         Group Member Basic Info
       {% endcomment %}
-      <h2 class="h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Information</h2>
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Information</h2>
 
       {% assign homeAddress = person | Address:'Home' %}
       <ul class="list-group push-bottom xs-push-half-bottom rounded shadowed">
@@ -178,7 +178,7 @@
       {% comment %}
         Group Member Person Attributes
       {% endcomment %}
-      <h2 class="h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Journey</h2>
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Journey</h2>
 
       {% assign salvationStatus = person | Attribute:'HasBeenSaved' %}
       {% assign salvationDate = person | Attribute:'SalvationDate' %}
@@ -261,7 +261,7 @@
   {% comment %}
     Group Member Groups They Lead
   {% endcomment %}
-  <h2 class="h5 text-uppercase strongest push-top">Groups {{ person.NickName }} Leads</h2>
+  <h2 class="h4 xs-h5 text-uppercase strongest push-top">Groups {{ person.NickName }} Leads</h2>
   <div class="row row-condensed">
   {% if groups and groups != empty %}
     {% for row in groups %}<div class="col-md-12 col-sm-6 col-xs-12">
@@ -288,7 +288,7 @@
   {% endcomment %}
   {% if leaders and leaders != empty %}
 
-    <h2 class="h5 text-uppercase strongest push-top">Leaders {{ person.NickName }} Coaches</h2>
+    <h2 class="h4 xs-h5 text-uppercase strongest push-top">Leaders {{ person.NickName }} Coaches</h2>
     <div class="row row-condensed">
       {% for row in leaders %}<div class="col-md-12 col-sm-6 col-xs-12">
 
@@ -353,7 +353,7 @@
     {% assign familyMemberCount = familyMembers | Size %}
 
     {% if familyMemberCount > 1 %}
-      <h2 class="h5 text-uppercase strongest push-top">{{ familyGroup.Name | Prepend:'The ' }}</h2>
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ familyGroup.Name | Prepend:'The ' }}</h2>
 
       <div class="row row-condensed">
         {% for familyMember in familyMembers %}{% assign member = familyMember.PersonId | PersonById %}{% if member.Id != person.Id %}<div class="col-md-12 col-sm-6 col-xs-12">

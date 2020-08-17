@@ -1,5 +1,5 @@
 {% assign person = 'Global' | PageParameter:'PersonId' | PersonById %}
-<h2 class="h5 text-uppercase strongest sm-push-top xs-push-top">{{ person.NickName | Possessive }} Notes</h2>
+<h2 class="h4 xs-h5 text-uppercase strongest sm-push-top xs-push-top">{{ person.NickName | Possessive }} Notes</h2>
 
 <script>
   $(document).ready(function(){

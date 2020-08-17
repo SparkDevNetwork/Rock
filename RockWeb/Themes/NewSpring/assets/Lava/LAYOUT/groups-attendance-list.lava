@@ -13,53 +13,55 @@
 
 {% if groupId and groupId != empty %}
 
-{% assign group = groupId | GroupById %}
-{% assign currentDay = 'Now' | Date:'dddd' | AsString %}
-{% assign groupScheduleDayOfWeek = group.Schedule.WeeklyDayOfWeek | AsString %}
-{% assign groupScheduleTimeOfDay = group.Schedule.WeeklyTimeOfDay %}
+  {% assign group = groupId | GroupById %}
+  {% assign currentDay = 'Now' | Date:'dddd' | AsString %}
+  {% assign groupScheduleDayOfWeek = group.Schedule.WeeklyDayOfWeek | AsString %}
+  {% assign groupScheduleTimeOfDay = group.Schedule.WeeklyTimeOfDay %}
 
-{% if currentDay == groupScheduleDayOfWeek %}
-  {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | ToMidnight %}
-{% else %}
-  {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | DateAdd:-7,'d' | ToMidnight %}
-{% endif %}
+  {% if currentDay == groupScheduleDayOfWeek %}
+    {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | ToMidnight %}
+  {% else %}
+    {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | DateAdd:-7,'d' | ToMidnight %}
+  {% endif %}
 
-{% sql return:'occurrences' %}
-  SELECT
-      ao.Id,
-      ao.OccurrenceDate,
-      CASE
-        WHEN ao.DidNotOccur = 1 THEN 'true'
-        ELSE 'false'
-      END 'DidNotOccur',
-      (
-        SELECT COUNT(*)
-        FROM Attendance a
-        WHERE a.OccurrenceId = ao.Id
-        AND a.DidAttend = 1
-      ) 'Attended',
-      (
+  {% sql return:'occurrences' %}
+    SELECT
+        ao.Id,
+        ao.OccurrenceDate,
+        CASE
+          WHEN ao.DidNotOccur = 1 THEN 'true'
+          ELSE 'false'
+        END 'DidNotOccur',
+        (
           SELECT COUNT(*)
           FROM Attendance a
           WHERE a.OccurrenceId = ao.Id
-      ) 'Total',
-      ao.Notes
-  FROM AttendanceOccurrence ao
-  WHERE ao.GroupId = {{ groupId }}
-  AND ao.OccurrenceDate >= DATEADD(week, -11, GETDATE())
-  ORDER BY ao.OccurrenceDateKey DESC
-{% endsql %}
+          AND a.DidAttend = 1
+        ) 'Attended',
+        (
+            SELECT COUNT(*)
+            FROM Attendance a
+            WHERE a.OccurrenceId = ao.Id
+        ) 'Total',
+        ao.Notes
+    FROM AttendanceOccurrence ao
+    WHERE ao.GroupId = {{ groupId }}
+    AND ao.OccurrenceDate >= DATEADD(week, -11, GETDATE())
+    ORDER BY ao.OccurrenceDateKey DESC
+  {% endsql %}
 
-{% comment %}Creating the dates object from actual attendance occurrances + dates that match the group schedule that do not have occurrences yet{% endcomment %}
-{% capture datesString %}[
-  {% comment %}Group Attendance Occurrances{% endcomment %}
-  {% for occurrence in occurrences %}{ "Date": {{ occurrence.OccurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }} },{% endfor %}
-  {% comment %}Dates that match the group's schedule{% endcomment %}
-  {% if startDate and startDate != empty %}{% for i in (0..10) %}{ "Date": {% assign dateOffset = 7 | Times:i | Times:-1 %}{% assign occurrenceDate = startDate | DateAdd:dateOffset,'d' %}{{ occurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}
-]{% endcapture %}
+  {%- comment -%}
+    Creating the dates object from actual attendance occurrances + dates that match the group schedule that do not have occurrences yet
+  {%- endcomment -%}
+  {% capture datesString %}[
+    {% comment %}Group Attendance Occurrances{% endcomment %}
+    {% for occurrence in occurrences %}{ "Date": {{ occurrence.OccurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }} },{% endfor %}
+    {% comment %}Dates that match the group's schedule day-of-week{% endcomment %}
+    {% if startDate and startDate != empty %}{% for i in (0..10) %}{ "Date": {% assign dateOffset = 7 | Times:i | Times:-1 %}{% assign occurrenceDate = startDate | DateAdd:dateOffset,'d' %}{{ occurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}
+  ]{% endcapture %}
 
-{% comment %}Order dates descending and remove any duplicates{% endcomment %}
-{% assign datesObject = datesString | FromJSON | OrderBy:'Date desc' | Select:'Date' | Uniq %}
+  {% comment %}Order dates descending and remove any duplicates{% endcomment %}
+  {% assign datesObject = datesString | FromJSON | OrderBy:'Date desc' | Select:'Date' | Uniq %}
 
   {% capture addButton %}<p class="sm-push-half-bottom xs-push-half-bottom"><a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add Attendance</a></p>{% endcapture %}
 
