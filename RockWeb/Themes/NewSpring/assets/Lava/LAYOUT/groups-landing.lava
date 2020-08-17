@@ -253,7 +253,7 @@ ORDER BY g2.Name, p.LastName, p.NickName
 {% comment %}
   Group Leader Resources
 {% endcomment %}
-{% if groups and groups != empty %}
+{% if groups != empty or leaders != empty or coaches != empty %}
 
   <h2 class="h3 xs-h5 text-uppercase strongest push-top">Leader Resources</h2>
   {% assign articles = 'newspring_articles' | PersistedDataset %}
