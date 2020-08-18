@@ -143,6 +143,7 @@ namespace Rock.Model
             target.iCalendarContent = source.iCalendarContent;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;
             target.WeeklyTimeOfDay = source.WeeklyTimeOfDay;
             target.CreatedDateTime = source.CreatedDateTime;
