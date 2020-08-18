@@ -7,9 +7,9 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class updatepersonaldevicemodel : IMigrationMetadata
+    public sealed partial class UpdatePersonalDeviceModel : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(updatepersonaldevicemodel));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdatePersonalDeviceModel));
         
         string IMigrationMetadata.Id
         {
