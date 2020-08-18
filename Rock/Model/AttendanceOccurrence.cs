@@ -397,7 +397,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"Occurrence for {Schedule} {Group} at {Location} on { OccurrenceDate }";
+            return $"Occurrence for {Schedule} {Group} at {Location} on { OccurrenceDate.ToShortDateString() }";
         }
 
         #endregion
