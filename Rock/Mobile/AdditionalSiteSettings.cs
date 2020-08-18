@@ -220,5 +220,13 @@ namespace Rock.Mobile
         /// The campus filter data view identifier.
         /// </value>
         public int? CampusFilterDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication view page identifier.
+        /// </summary>
+        /// <value>
+        /// The communication view page identifier.
+        /// </value>
+        public int? CommunicationViewPageId { get; set; }
     }
 }

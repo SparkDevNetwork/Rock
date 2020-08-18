@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -51,6 +52,22 @@ namespace RockWeb.Blocks.GroupScheduling
         IsRequired = false,
         Order = 0 )]
 
+    [LinkedPage(
+        "Roster Page",
+        Key = AttributeKey.RostersPage,
+        Description = "The page to use to view and print a rosters.",
+        IsRequired = false,
+        Order = 1
+        )]
+
+    [LinkedPage(
+        "Communications Page",
+        Key = AttributeKey.CommunicationsPage,
+        Description = "The page to use to send group scheduling communications.",
+        IsRequired = false,
+        Order = 2
+        )]
+
     public partial class GroupScheduleStatusBoard : RockBlock
     {
         #region Fields
@@ -59,6 +76,8 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             public const string ParentGroup = "ParentGroup";
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string RostersPage = "RostersPage";
+            public const string CommunicationsPage = "CommunicationsPage";
         }
 
         private static class UserPreferenceKey
@@ -68,6 +87,19 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         #endregion
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += GroupScheduleStatusBoard_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upScheduleStatusBoard );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -81,14 +113,34 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( !this.IsPostBack )
             {
-                var rootGroupGuid = this.GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
-                if ( rootGroupGuid.HasValue )
-                {
-                    gpGroups.RootGroupId = new GroupService( new RockContext() ).GetId( rootGroupGuid.Value );
-                }
-
+                ApplyBlockSettings();
                 BuildStatusBoard();
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the GroupScheduleStatusBoard control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void GroupScheduleStatusBoard_BlockUpdated( object sender, EventArgs e )
+        {
+            this.NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Applies the block settings.
+        /// </summary>
+        private void ApplyBlockSettings()
+        {
+            var rootGroupGuid = this.GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
+            if ( rootGroupGuid.HasValue )
+            {
+                gpGroups.RootGroupId = new GroupService( new RockContext() ).GetId( rootGroupGuid.Value );
+            }
+
+            btnSendCommunications.Visible = this.GetAttributeValue( AttributeKey.CommunicationsPage ).IsNotNullOrWhiteSpace();
+            btnRosters.Visible = this.GetAttributeValue( AttributeKey.RostersPage ).IsNotNullOrWhiteSpace();
         }
 
         /// <summary>
@@ -102,7 +154,9 @@ namespace RockWeb.Blocks.GroupScheduling
 
             List<int> selectedGroupIds = GetSelectedGroupIds();
             var rockContext = new RockContext();
-            var groupsQuery = new GroupService( rockContext ).GetByIds( selectedGroupIds ).Where( a => a.GroupType.IsSchedulingEnabled == true && a.DisableScheduling == false );
+            var groupsQuery = new GroupService( rockContext )
+                .GetByIds( selectedGroupIds )
+                .Where( a => a.GroupType.IsSchedulingEnabled == true && a.DisableScheduling == false );
 
             nbGroupsWarning.Visible = false;
             if ( !groupsQuery.Any() )
@@ -157,16 +211,16 @@ namespace RockWeb.Blocks.GroupScheduling
             var scheduledOccurrencesQuery = new AttendanceOccurrenceService( rockContext ).Queryable().Where( a => a.GroupId.HasValue && a.LocationId.HasValue && a.ScheduleId.HasValue && selectedGroupIds.Contains( a.GroupId.Value ) );
             scheduledOccurrencesQuery = scheduledOccurrencesQuery.Where( a => a.OccurrenceDate >= currentDate && a.OccurrenceDate <= latestOccurrenceDate );
 
-            var occurrenceScheduledAttendancesList = scheduledOccurrencesQuery.Select( ao => new
+            var occurrenceScheduledAttendancesList = scheduledOccurrencesQuery.Select( ao => new ScheduledAttendanceInfo
             {
                 Occurrence = ao,
-                ScheduledAttendees = ao.Attendees.Where( a => a.RequestedToAttend == true || a.ScheduledToAttend == true ).Select( a => new
+                ScheduledAttendees = ao.Attendees.Where( a => a.RequestedToAttend == true || a.ScheduledToAttend == true ).Select( a => new ScheduledPersonInfo
                 {
                     ScheduledPerson = a.PersonAlias.Person,
-                    a.RequestedToAttend,
-                    a.ScheduledToAttend,
-                    a.RSVP
-                } )
+                    RequestedToAttend = a.RequestedToAttend,
+                    ScheduledToAttend = a.ScheduledToAttend,
+                    RSVP = a.RSVP
+                } ).ToList()
             } ).ToList();
 
             StringBuilder sbTable = new StringBuilder();
@@ -195,10 +249,16 @@ namespace RockWeb.Blocks.GroupScheduling
             sbTable.AppendLine( "</tr>" );
             sbTable.AppendLine( "</thead>" );
 
-            var groupLocationsList = groupsQuery.Where( g => g.GroupLocations.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( g => new
+            var groupLocationsList = groupsQuery.Where( g => g.GroupLocations.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( g => new GroupInfo
             {
                 Group = g,
-                LocationScheduleCapacitiesList = g.GroupLocations.OrderBy( gl => gl.Order ).ThenBy( gl => gl.Location.Name ).Select( a => new
+                MemberList = g.Members.Select( m =>
+                    new MemberInfo
+                    {
+                        PersonId = m.PersonId,
+                        GroupRoleId = m.GroupRoleId
+                    } ).ToList(),
+                LocationScheduleCapacitiesList = g.GroupLocations.OrderBy( gl => gl.Order ).ThenBy( gl => gl.Location.Name ).Select( a => new LocationScheduleCapacityInfo
                 {
                     ScheduleCapacitiesList = a.GroupLocationScheduleConfigs.Select( sc =>
                          new ScheduleCapacities
@@ -208,7 +268,7 @@ namespace RockWeb.Blocks.GroupScheduling
                              DesiredCapacity = sc.DesiredCapacity,
                              MaximumCapacity = sc.MaximumCapacity
                          } ),
-                    a.Location
+                    Location = a.Location
                 } ).ToList()
             } ).ToList();
 
@@ -216,12 +276,28 @@ namespace RockWeb.Blocks.GroupScheduling
             foreach ( var groupLocations in groupLocationsList )
             {
                 var group = groupLocations.Group;
+                var groupType = GroupTypeCache.Get( groupLocations.Group.GroupTypeId );
                 StringBuilder sbGroupLocations = new StringBuilder();
                 sbGroupLocations.AppendLine( string.Format( "<tbody class='group-locations js-group-locations' data-group-id='{0}' data-locations-expanded='1'>", group.Id ) );
 
+                var groupSchedulingUrl = ResolveRockUrl( string.Format( "~/GroupScheduler/{0}", group.Id ) );
+
                 // group header row
                 sbGroupLocations.AppendLine( "<tr class='group-heading js-group-header thead-dark clickable' >" );
-                sbGroupLocations.AppendLine( string.Format( "<th></th><th colspan='{0}'><i class='fa fa-chevron-down'></i> {1}</th>", columnsCount - 1, group.Name ) );
+                sbGroupLocations.AppendLine(
+                    string.Format(
+                        @"
+<th></th>
+<th colspan='{0}'>
+    <i class='fa fa-chevron-down js-toggle-panel'></i> {1}
+    <a href='{2}' class='ml-1 text-color js-group-scheduler-link'><i class='{3}'></i></a>
+</th>",
+                        columnsCount - 1, // {0}
+                        group.Name, // {1}
+                        groupSchedulingUrl,  // {2}
+                        "fa fa-calendar-check-o" )  // {3}
+                    );
+
                 sbGroupLocations.AppendLine( "</tr>" );
 
                 // group/schedule+locations
@@ -243,7 +319,7 @@ namespace RockWeb.Blocks.GroupScheduling
     {0}
 </ul>";
                         StringBuilder sbScheduledListHtml = new StringBuilder();
-                        var occurrenceScheduledAttendances = occurrenceScheduledAttendancesList
+                        ScheduledAttendanceInfo occurrenceScheduledAttendances = occurrenceScheduledAttendancesList
                             .FirstOrDefault( ao =>
                                  ao.Occurrence.OccurrenceDate == scheduleOccurrenceDate.OccurrenceDate
                                  && ao.Occurrence.GroupId == groupLocations.Group.Id
@@ -252,18 +328,38 @@ namespace RockWeb.Blocks.GroupScheduling
 
                         int scheduledCount = 0;
 
+
+                        var groupTypeRoleLookup = groupType.Roles.ToDictionary( k => k.Id, v => v );
+
                         if ( occurrenceScheduledAttendances != null && occurrenceScheduledAttendances.ScheduledAttendees.Any() )
                         {
+                            foreach ( ScheduledPersonInfo scheduledPersonInfo in occurrenceScheduledAttendances.ScheduledAttendees )
+                            {
+                                var personRolesInGroup = groupLocations
+                                    .MemberList
+                                    .Where( m => m.PersonId == scheduledPersonInfo.ScheduledPerson.Id )
+                                    .Select( m => groupTypeRoleLookup.GetValueOrNull( m.GroupRoleId ) )
+                                    .Where( r => r != null )
+                                    .ToList();
+
+                                var personRoleInGroup = personRolesInGroup
+                                    .OrderBy( r => r.Order )
+                                    .FirstOrDefault();
+
+                                scheduledPersonInfo.PersonRoleInGroup = personRoleInGroup;
+                            }
+
                             // sort so that it is Yes, then Pending, then Denied
-                            var scheduledPersonList = occurrenceScheduledAttendances
+                            var attendanceScheduledPersonList = occurrenceScheduledAttendances
                                 .ScheduledAttendees
                                 .OrderBy( a => a.RSVP == RSVP.Yes ? 0 : 1 )
                                 .ThenBy( a => ( a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown ) ? 0 : 1 )
                                 .ThenBy( a => a.RSVP == RSVP.No ? 0 : 1 )
+                                .ThenBy( a => a.GroupTypeRoleOrder )
                                 .ThenBy( a => a.ScheduledPerson.LastName )
                                 .ToList();
 
-                            foreach ( var scheduledPerson in scheduledPersonList )
+                            foreach ( ScheduledPersonInfo scheduledPerson in attendanceScheduledPersonList )
                             {
                                 ScheduledAttendanceItemStatus status = ScheduledAttendanceItemStatus.Pending;
                                 if ( scheduledPerson.RSVP == RSVP.No )
@@ -275,10 +371,15 @@ namespace RockWeb.Blocks.GroupScheduling
                                     status = ScheduledAttendanceItemStatus.Confirmed;
                                 }
 
-                                sbScheduledListHtml.AppendLine( string.Format( "<li class='slot person {0}' data-status='{0}'><i class='status-icon'></i><span class='person-name'>{1}</span></li>", status.ConvertToString( false ).ToLower(), scheduledPerson.ScheduledPerson ) );
+                                sbScheduledListHtml.AppendLine(
+                                    string.Format(
+                                        "<li class='slot person {0}' data-status='{0}'><i class='status-icon'></i><span class='person-name'>{1}</span><span class='person-group-role pull-right'>{2}</span></li>",
+                                        status.ConvertToString( false ).ToLower(),
+                                        scheduledPerson.ScheduledPerson,
+                                        scheduledPerson.PersonRoleInGroup ) );
                             }
 
-                            scheduledCount = scheduledPersonList.Where( a => a.RSVP != RSVP.No ).Count();
+                            scheduledCount = attendanceScheduledPersonList.Where( a => a.RSVP != RSVP.No ).Count();
                         }
 
                         if ( capacities.DesiredCapacity.HasValue && scheduledCount < capacities.DesiredCapacity.Value )
@@ -319,7 +420,7 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Gets the sunday date list.
+        /// Gets the Sunday date list.
         /// </summary>
         /// <param name="numberOfWeeks">The number of weeks.</param>
         /// <returns></returns>
@@ -440,6 +541,30 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSendCommunications control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSendCommunications_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "GroupIds", GetSelectedGroupIds().AsDelimited( "," ) );
+            NavigateToLinkedPage( AttributeKey.CommunicationsPage, queryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRosters control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRosters_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "GroupIds", GetSelectedGroupIds().AsDelimited( "," ) );
+            NavigateToLinkedPage( AttributeKey.RostersPage, queryParams );
+        }
+
+        /// <summary>
         ///
         /// </summary>
         public class ScheduleCapacities
@@ -451,6 +576,61 @@ namespace RockWeb.Blocks.GroupScheduling
             public int? DesiredCapacity { get; set; }
 
             public int? MaximumCapacity { get; set; }
+        }
+
+        private class ScheduledAttendanceInfo
+        {
+            public AttendanceOccurrence Occurrence { get; set; }
+
+            public List<ScheduledPersonInfo> ScheduledAttendees { get; set; }
+        }
+
+        private class ScheduledPersonInfo
+        {
+            public Person ScheduledPerson { get; set; }
+
+            public GroupTypeRoleCache PersonRoleInGroup { get; set; }
+
+            public int GroupTypeRoleOrder
+            {
+                get
+                {
+                    if ( PersonRoleInGroup != null )
+                    {
+                        return PersonRoleInGroup.Order;
+                    }
+                    else
+                    {
+                        // put non-members after members
+                        return int.MaxValue;
+                    }
+                }
+            }
+
+            public bool? RequestedToAttend { get; set; }
+
+            public bool? ScheduledToAttend { get; set; }
+
+            public RSVP RSVP { get; set; }
+        }
+
+        private class MemberInfo
+        {
+            public int PersonId { get; internal set; }
+            public int GroupRoleId { get; internal set; }
+        }
+
+        private class GroupInfo
+        {
+            public Group Group { get; set; }
+            public List<MemberInfo> MemberList { get; set; }
+            public List<LocationScheduleCapacityInfo> LocationScheduleCapacitiesList { get; set; }
+        }
+
+        private class LocationScheduleCapacityInfo
+        {
+            public IEnumerable<ScheduleCapacities> ScheduleCapacitiesList { get; set; }
+            public Location Location { get; set; }
         }
     }
 }

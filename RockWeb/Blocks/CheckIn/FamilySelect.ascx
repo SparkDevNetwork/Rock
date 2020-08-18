@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('div.js-family-select').on('click touchstart', function () {
+        $('div.js-family-select').on('click', function () {
 
             var $familySelectDiv = $(this);
 

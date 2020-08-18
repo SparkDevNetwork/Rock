@@ -102,23 +102,15 @@
                 function confirmScheduleDelete(e)
                 {
                     e.preventDefault();
-                    Rock.dialogs.confirm('Are you sure you want to delete this schedule?', function (result)
-                    {
-                        if (result)
-                        {
-                            if ($('#<%=hfHasAttendanceHistory.ClientID%>').val() == "1")
-                            {
-                                Rock.dialogs.confirm('This schedule has attendance history. Are you sure that you want to delete this schedule and all of its attendance history?', function (result)
-                                {
-                                    if (result)
-                                    {
-                                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                                    }
-                                });
-                            } else
-                            {
-                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                            }
+
+                    var confirmMsg = 'Are you sure you want to delete this schedule?';
+                    if ($('#<%=hfHasAttendanceHistory.ClientID%>').val() == "1") {
+                        confirmMsg = 'This schedule has attendance history. If you delete this, the attendance history will no longer be associated with the schedule. ' + confirmMsg;
+                    }
+
+                    Rock.dialogs.confirm(confirmMsg, function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
                     });
                 }

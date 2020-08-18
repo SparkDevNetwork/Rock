@@ -538,7 +538,7 @@ namespace RockWeb.Blocks.Administration
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
-            var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
+            var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
             if ( cacheStatisticsEnabled )
             {
                 pnlHideCacheStatistics.Visible = false;

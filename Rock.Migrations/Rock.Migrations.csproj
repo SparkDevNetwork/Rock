@@ -85,6 +85,30 @@
     <Compile Include="Migrations\202008042327182_Rollup_0804.Designer.cs">
       <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.cs" />
+    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.Designer.cs">
+      <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.cs" />
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.Designer.cs">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.cs" />
+    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.Designer.cs">
+      <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.cs" />
+    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.Designer.cs">
+      <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.cs" />
+    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.Designer.cs">
+      <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008182000056_Rollup_0818.cs" />
+    <Compile Include="Migrations\202008182000056_Rollup_0818.Designer.cs">
+      <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1348,6 +1372,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202008042327182_Rollup_0804.resx">
       <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.resx">
+      <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008071645528_AchievementIndexes.resx">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008101306418_InteractionIndexUpdate.resx">
+      <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008121743577_UpdatePersonalDeviceModel.resx">
+      <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008181633260_GroupSchedulingV2.resx">
+      <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008182000056_Rollup_0818.resx">
+      <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

@@ -657,7 +657,7 @@ namespace Rock.Utility
                     {
                         if ( campusLocation.Longitude != null && campusLocation.Latitude != null )
                         {
-                            var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), 4326 );
+                            var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), DbGeography.DefaultCoordinateSystemId );
                             if ( geo != null )
                             {
                                 campusGeoPoints.Add( geo );
@@ -705,7 +705,7 @@ namespace Rock.Utility
                 {
                     try
                     {
-                        var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), 4326 );
+                        var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), DbGeography.DefaultCoordinateSystemId );
                         if ( geoPoint != null )
                         {
                             foreach ( var campusGeoPoint in campusGeoPoints )

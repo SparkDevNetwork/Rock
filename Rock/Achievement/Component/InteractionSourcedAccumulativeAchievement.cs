@@ -39,35 +39,44 @@ namespace Rock.Achievement.Component
     [ExportMetadata( "ComponentName", "Interactions: Accumulative" )]
 
     [InteractionChannelInteractionComponentField(
-        name: "Interaction Channel and Component",
-        description: "The source interaction channel and component from which achievements are earned.",
-        required: false,
-        order: 0,
-        key: AttributeKey.InteractionChannelComponent )]
+        "Interaction Channel and Component",
+        Description = "The source interaction channel and component from which achievements are earned.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.InteractionChannelComponent )]
 
     [IntegerField(
-        name: "Number to Accumulate",
-        description: "The number of interactions required to earn this achievement.",
-        required: true,
-        order: 1,
-        key: AttributeKey.NumberToAccumulate )]
+        "Number to Accumulate",
+        Description = "The number of interactions required to earn this achievement.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.NumberToAccumulate )]
 
     [DateField(
-        name: "Start Date",
-        description: "The date that defines when the interactions must occur on or after.",
-        required: false,
-        order: 2,
-        key: AttributeKey.StartDateTime )]
+        "Start Date",
+        Description = "The date that defines when the interactions must occur on or after.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.StartDateTime )]
 
     [DateField(
-        name: "End Date",
-        description: "The date that defines when the interactions must occur on or before.",
-        required: false,
-        order: 3,
-        key: AttributeKey.EndDateTime )]
+        "End Date",
+        Description = "The date that defines when the interactions must occur on or before.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.EndDateTime )]
 
     public class InteractionSourcedAccumulativeAchievement : AchievementComponent
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementComponent" /> class.
+        /// </summary>
+        public InteractionSourcedAccumulativeAchievement() : base(
+            new AchievementConfiguration( typeof( Interaction ), typeof( PersonAlias ) ),
+            new HashSet<string> { AttributeKey.InteractionChannelComponent } )
+        {
+        }
+
         #region Keys
 
         /// <summary>
@@ -97,22 +106,6 @@ namespace Rock.Achievement.Component
         }
 
         #endregion Keys
-
-        /// <summary>
-        /// Gets the attribute keys stored in configuration.
-        /// <see cref="AchievementType.ComponentConfigJson" />
-        /// </summary>
-        /// <value>
-        /// The attribute keys stored in configuration.
-        /// </value>
-        /// <exception cref="NotImplementedException"></exception>
-        public override HashSet<string> AttributeKeysStoredInConfig => new HashSet<string> { AttributeKey.InteractionChannelComponent };
-
-        /// <summary>
-        /// Gets the supported configuration.
-        /// </summary>
-        public override AchievementConfiguration SupportedConfiguration =>
-            new AchievementConfiguration( EntityTypeCache.Get<Interaction>(), EntityTypeCache.Get<PersonAlias>() );
 
         /// <summary>
         /// Should the achievement type process attempts if the given source entity has been modified in some way.

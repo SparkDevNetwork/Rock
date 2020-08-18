@@ -1,4 +1,6 @@
-﻿//
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -12,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.Collections.Generic;
 
 namespace Rock.Communication

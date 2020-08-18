@@ -470,7 +470,7 @@ namespace RockWeb.Blocks.CheckIn
             // clear out any existing schedule columns and add the ones that match the current filter setting
             var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
 
-            var sortedScheduleList = scheduleList.OrderByNextScheduledDateTime();
+            var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
 
             foreach ( var item in sortedScheduleList )
             {

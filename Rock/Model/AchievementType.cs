@@ -192,7 +192,7 @@ namespace Rock.Model
             AchievementTypeCache.UpdateCachedEntity( Id, entityState );
         }
 
-        #endregion
+        #endregion ICacheable
 
         #region Virtual Properties
 

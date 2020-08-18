@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Event
 
                 var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
-                ShowOccurranceAttributes( eventItemOccurrence, false );
+                ShowOccurrenceAttributes( eventItemOccurrence, false );
             }
         }
 
@@ -437,11 +437,11 @@ namespace RockWeb.Blocks.Event
         #region Edit Panel
 
         /// <summary>
-        /// Shows the occurrance attributes.
+        /// Shows the occurrence attributes.
         /// </summary>
         /// <param name="eventItemOccurrence">The event item occurrence.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowOccurranceAttributes( EventItemOccurrence eventItemOccurrence, bool setValues )
+        private void ShowOccurrenceAttributes( EventItemOccurrence eventItemOccurrence, bool setValues )
         {
             wpAttributes.Visible = false;
             phAttributeEdits.Controls.Clear();
@@ -626,7 +626,7 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            ShowOccurranceAttributes( eventItemOccurrence, true );
+            ShowOccurrenceAttributes( eventItemOccurrence, true );
 
             htmlOccurrenceNote.Text = eventItemOccurrence.Note;
 

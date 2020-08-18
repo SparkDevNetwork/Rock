@@ -261,7 +261,7 @@ namespace Rock.Rest.Controllers
 
                     if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
                     {
-                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
+                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByOrderAndNextScheduledDateTime().OfType<ICategorized>().ToList();
                     }
                     else
                     {
