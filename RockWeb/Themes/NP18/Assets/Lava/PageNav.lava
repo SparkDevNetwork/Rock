@@ -1,6 +1,12 @@
 {% assign PageHeaderImage_Url = CurrentPage | Attribute:'PageHeaderImage','Url' %}
 
 <nav class="navbar {% unless PageHeaderImage_Url != "" %}noheader{% endunless %}" aria-label="Navigation">
+            <li class="nav-item" role="none">
+                <a class="nav-link" href="/" aria-label="Home">
+                    <span class="nav-home-text">Home</span>
+                    <i class="nav-home-icon nav-logo np-logomark" aria-hidden="true" ></i>
+                </a>
+            </li>
     
     <div class="navbar-toggle-content" id="navbar-toggle-content">
         <ul class="navbar-nav" aria-label="Main Navigation">
