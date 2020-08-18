@@ -14,43 +14,37 @@
 }
 
 .nav-dropdown-content {
-    display: none;
+    display: inline;
 }
 
 .nav-dropdown-toggle {
     display: flex;
     align-items: center;
+
+
 }
 
 
-    .nav-dropdown.open {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        width: 100%;
-        background-color: #404040;
-        margin: 0;
-        padding: 0;
-        overflow: auto;
+.nav-dropdown.open {
+    background-color: #404040;
+    margin: 0 auto;
+    padding: 0;
+    overflow: auto;
 
-        & > .nav-dropdown-toggle {
-            color: white;
-            background-color: gray;
-            padding: 50px 40px 20px;
+    & > .nav-dropdown-toggle {
+        color: white;
+        background-color: gray;
+        padding: 50px 40px 20px;
 
-            .nav-caret {
-                transform: rotate(180deg);
-                order: -1;
-            }
-        }
-
-        & > .nav-dropdown-content {
-            display: block;
-            margin: auto;
-            
+        .nav-caret {
+            transform: rotate(180deg);
+            order: -1;
         }
     }
+
+    & > .nav-dropdown-content {
+        display: block;
+        margin: auto;
+    }
+}
 
