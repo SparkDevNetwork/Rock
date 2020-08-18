@@ -527,6 +527,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
     <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />
     <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
