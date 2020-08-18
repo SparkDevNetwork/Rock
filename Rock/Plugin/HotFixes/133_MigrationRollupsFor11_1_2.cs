@@ -29,8 +29,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixExpiredContentChannelItems();
-            MobileTemplateUpdate();
+            //FixExpiredContentChannelItems();
+            //MobileTemplateUpdate();
         }
 
         /// <summary>
