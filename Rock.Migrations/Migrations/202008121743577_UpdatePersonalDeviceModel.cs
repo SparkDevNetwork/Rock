@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,11 +18,11 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
-    ///
+    /// Update Personal Device Model
     /// </summary>
-    public partial class updatepersonaldevicemodel : Rock.Migrations.RockMigration
+    public partial class UpdatePersonalDeviceModel : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
