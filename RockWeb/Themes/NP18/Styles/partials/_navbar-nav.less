@@ -14,18 +14,20 @@
     }
 }
 
-.nav-link {
-    display: block;
-    font-size: 1.75em;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-family: "din-2014-narrow",sans-serif;
+    .nav-link {
+        font-size: 1.25em;
+        display: flex;
+        align-items: center;
+        color: @white;
+        text-transform: uppercase;
+        transition: color ease-in-out 300ms;
+        z-index: 999;
 
-    &:hover, &:focus, &:active {
-        text-decoration: none;
-        color: white;
+        &:hover, &:active, &:focus {
+            color: @brand-primary;
+            text-decoration: none;
+        }
     }
-}
 
 
 .nav-item {
@@ -78,18 +80,6 @@
         }
     }
 
-    .nav-logo {
-        color: @brand-primary;
-        display: block;
-        font-size: 2.35em;
-        margin: 3px 0;
-    }
-
-
-    .opaque .nav-logo,
-    .noheader .nav-logo {
-        color: @brand-primary;
-    }
 
     .nav-home-text {
         display: none;
