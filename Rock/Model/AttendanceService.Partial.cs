@@ -2520,6 +2520,16 @@ namespace Rock.Model
         public int? DisplayedDaysCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of occurrences for the selected week
+        /// </summary>
+        /// <value>
+        /// The occurrence date count.
+        /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use DisplayedDaysCount instead" )]
+        public int OccurrenceDateCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the displayed time slot count. This could be more than
         /// one if there are multiple schedules selected, or a schedule occurs more than once a week (like a Daily Schedule).
         /// We'll store this in each Scheduled Resource (person) that we show in the Resource list
@@ -2652,10 +2662,35 @@ namespace Rock.Model
         Unscheduled,
     }
 
+
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.12" )]
+    [Obsolete( "Use GroupSchedulerResourceListSourceType instead" )]
     public enum SchedulerResourceListSourceType
+    {
+        /// <summary>
+        /// The group
+        /// </summary>
+        Group,
+
+        /// <summary>
+        /// The alternate group
+        /// </summary>
+        [Description( "Alt Group" )]
+        AlternateGroup,
+
+        /// <summary>
+        /// The data view
+        /// </summary>
+        DataView
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GroupSchedulerResourceListSourceType
     {
         /// <summary>
         /// Show all members of the selected group
@@ -2717,6 +2752,17 @@ namespace Rock.Model
         /// The attendance occurrence group identifier.
         /// </value>
         public int AttendanceOccurrenceGroupId { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the attendance occurrence schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The attendance occurrence schedule identifier.
+        /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use AttendanceOccurrenceScheduleIds instead" )]
+        public int AttendanceOccurrenceScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance occurrence schedules

@@ -507,8 +507,8 @@ btnCopyToClipboard.ClientID );
             }
 
             SchedulerResourceGroupMemberFilterType groupMemberFilterType;
-            var resourceListSourceType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.ResourceListSourceType, UserPreferenceKey.SelectedResourceListSourceType ).ConvertToEnumOrNull<SchedulerResourceListSourceType>() ?? SchedulerResourceListSourceType.GroupMembers;
-            if ( resourceListSourceType == SchedulerResourceListSourceType.GroupMatchingPreference )
+            var resourceListSourceType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.ResourceListSourceType, UserPreferenceKey.SelectedResourceListSourceType ).ConvertToEnumOrNull<GroupSchedulerResourceListSourceType>() ?? GroupSchedulerResourceListSourceType.GroupMembers;
+            if ( resourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference )
             {
                 groupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
             }
@@ -524,11 +524,11 @@ btnCopyToClipboard.ClientID );
             {
                 if ( this.PageParameter( PageParameterKey.DataViewId ).IsNotNullOrWhiteSpace() )
                 {
-                    resourceListSourceType = SchedulerResourceListSourceType.DataView;
+                    resourceListSourceType = GroupSchedulerResourceListSourceType.DataView;
                 }
                 else if ( this.PageParameter( PageParameterKey.AlternateGroupId ).IsNotNullOrWhiteSpace() )
                 {
-                    resourceListSourceType = SchedulerResourceListSourceType.AlternateGroup;
+                    resourceListSourceType = GroupSchedulerResourceListSourceType.AlternateGroup;
                 }
             }
 
@@ -679,14 +679,14 @@ btnCopyToClipboard.ClientID );
 
             lScheduleFilterText.Text = string.Format( "<i class='fa fa-clock-o'></i>  {0}", selectedSchedulesText );
 
-            var resourceListSourceType = ( SchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
+            var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
 
-            List<SchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( SchedulerResourceListSourceType ) ).OfType<SchedulerResourceListSourceType>().ToList();
+            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( GroupSchedulerResourceListSourceType ) ).OfType<GroupSchedulerResourceListSourceType>().ToList();
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
-                var sameGroupSourceTypes = new SchedulerResourceListSourceType[] { SchedulerResourceListSourceType.GroupMembers, SchedulerResourceListSourceType.GroupMatchingPreference };
+                var sameGroupSourceTypes = new GroupSchedulerResourceListSourceType[] { GroupSchedulerResourceListSourceType.GroupMembers, GroupSchedulerResourceListSourceType.GroupMatchingPreference };
 
                 // if SchedulingMustMeetRequirements
                 // -- don't show options for other groups or people
@@ -698,7 +698,7 @@ btnCopyToClipboard.ClientID );
 
                 if ( !sameGroupSourceTypes.Contains( resourceListSourceType ) )
                 {
-                    resourceListSourceType = SchedulerResourceListSourceType.GroupMembers;
+                    resourceListSourceType = GroupSchedulerResourceListSourceType.GroupMembers;
                     SetResourceListSourceType( resourceListSourceType, groupMemberFilterType );
                 }
             }
@@ -706,7 +706,7 @@ btnCopyToClipboard.ClientID );
             {
                 if ( selectedGroup == null || !selectedGroup.ParentGroupId.HasValue )
                 {
-                    schedulerResourceListSourceTypes = schedulerResourceListSourceTypes.Where( a => a != SchedulerResourceListSourceType.ParentGroup ).ToList();
+                    schedulerResourceListSourceTypes = schedulerResourceListSourceTypes.Where( a => a != GroupSchedulerResourceListSourceType.ParentGroup ).ToList();
                 }
 
                 pnlAddPerson.Visible = true;
@@ -722,8 +722,8 @@ btnCopyToClipboard.ClientID );
             this.SetBlockUserPreference( UserPreferenceKey.DataViewId, dvpResourceListDataView.SelectedValue, false );
             this.SaveBlockUserPreferences();
 
-            pnlResourceFilterAlternateGroup.Visible = resourceListSourceType == SchedulerResourceListSourceType.AlternateGroup;
-            pnlResourceFilterDataView.Visible = resourceListSourceType == SchedulerResourceListSourceType.DataView;
+            pnlResourceFilterAlternateGroup.Visible = resourceListSourceType == GroupSchedulerResourceListSourceType.AlternateGroup;
+            pnlResourceFilterDataView.Visible = resourceListSourceType == GroupSchedulerResourceListSourceType.DataView;
 
             var listedLocations = GetListedLocations( authorizedListedGroups, scheduleIds );
             var pickedLocationIds = hfPickedLocationIds.Value.Split( ',' ).AsIntegerList();
@@ -1048,30 +1048,30 @@ btnCopyToClipboard.ClientID );
 
             hfResourceAdditionalPersonIds.Value = string.Empty;
 
-            var resourceListSourceType = hfSchedulerResourceListSourceType.Value.ConvertToEnum<SchedulerResourceListSourceType>();
+            var resourceListSourceType = hfSchedulerResourceListSourceType.Value.ConvertToEnum<GroupSchedulerResourceListSourceType>();
             switch ( resourceListSourceType )
             {
-                case SchedulerResourceListSourceType.GroupMembers:
-                case SchedulerResourceListSourceType.GroupMatchingPreference:
+                case GroupSchedulerResourceListSourceType.GroupMembers:
+                case GroupSchedulerResourceListSourceType.GroupMatchingPreference:
                     {
                         resourceGroupId = groupId;
                         break;
                     }
 
-                case SchedulerResourceListSourceType.AlternateGroup:
+                case GroupSchedulerResourceListSourceType.AlternateGroup:
                     {
                         resourceGroupId = gpResourceListAlternateGroup.SelectedValue.AsInteger();
                         break;
                     }
 
-                case SchedulerResourceListSourceType.ParentGroup:
+                case GroupSchedulerResourceListSourceType.ParentGroup:
                     {
                         var rockContext = new RockContext();
                         resourceGroupId = new GroupService( rockContext ).GetSelect( groupId, s => s.ParentGroupId );
                         break;
                     }
 
-                case SchedulerResourceListSourceType.DataView:
+                case GroupSchedulerResourceListSourceType.DataView:
                     {
                         resourceDataViewId = dvpResourceListDataView.SelectedValue.AsInteger();
                         break;
@@ -1794,10 +1794,10 @@ btnCopyToClipboard.ClientID );
         {
             LinkButton btnResourceListSourceType = sender as LinkButton;
 
-            SchedulerResourceListSourceType schedulerResourceListSourceType = ( SchedulerResourceListSourceType ) btnResourceListSourceType.CommandArgument.AsInteger();
+            GroupSchedulerResourceListSourceType schedulerResourceListSourceType = ( GroupSchedulerResourceListSourceType ) btnResourceListSourceType.CommandArgument.AsInteger();
             SchedulerResourceGroupMemberFilterType schedulerResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
 
-            if ( schedulerResourceListSourceType == SchedulerResourceListSourceType.GroupMatchingPreference )
+            if ( schedulerResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference )
             {
                 schedulerResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
             }
@@ -1811,15 +1811,15 @@ btnCopyToClipboard.ClientID );
         /// </summary>
         /// <param name="schedulerResourceListSourceType">Type of the scheduler resource list source.</param>
         /// <param name="schedulerResourceGroupMemberFilterType">Type of the scheduler resource group member filter.</param>
-        private void SetResourceListSourceType( SchedulerResourceListSourceType schedulerResourceListSourceType, SchedulerResourceGroupMemberFilterType schedulerResourceGroupMemberFilterType )
+        private void SetResourceListSourceType( GroupSchedulerResourceListSourceType schedulerResourceListSourceType, SchedulerResourceGroupMemberFilterType schedulerResourceGroupMemberFilterType )
         {
             hfSchedulerResourceListSourceType.Value = schedulerResourceListSourceType.ConvertToInt().ToString();
             hfResourceGroupMemberFilterType.Value = schedulerResourceGroupMemberFilterType.ConvertToInt().ToString();
 
             switch ( schedulerResourceListSourceType )
             {
-                case SchedulerResourceListSourceType.GroupMembers:
-                case SchedulerResourceListSourceType.GroupMatchingPreference:
+                case GroupSchedulerResourceListSourceType.GroupMembers:
+                case GroupSchedulerResourceListSourceType.GroupMatchingPreference:
                     {
                         if ( schedulerResourceGroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference )
                         {
@@ -1835,21 +1835,21 @@ btnCopyToClipboard.ClientID );
                         break;
                     }
 
-                case SchedulerResourceListSourceType.AlternateGroup:
+                case GroupSchedulerResourceListSourceType.AlternateGroup:
                     {
                         lSelectedResourceTypeDropDownText.Text = "Alternate Group";
                         sfResource.Placeholder = "Search Alternate Group";
                         break;
                     }
 
-                case SchedulerResourceListSourceType.DataView:
+                case GroupSchedulerResourceListSourceType.DataView:
                     {
                         lSelectedResourceTypeDropDownText.Text = "Data View";
                         sfResource.Placeholder = "Search Data View";
                         break;
                     }
 
-                case SchedulerResourceListSourceType.ParentGroup:
+                case GroupSchedulerResourceListSourceType.ParentGroup:
                     {
                         lSelectedResourceTypeDropDownText.Text = "Parent Group";
                         sfResource.Placeholder = "Search";
@@ -2079,7 +2079,7 @@ btnCopyToClipboard.ClientID );
         protected void rptSchedulerResourceListSourceType_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var btnResourceListSourceType = e.Item.FindControl( "btnResourceListSourceType" ) as LinkButton;
-            SchedulerResourceListSourceType schedulerResourceListSourceType = ( SchedulerResourceListSourceType ) e.Item.DataItem;
+            GroupSchedulerResourceListSourceType schedulerResourceListSourceType = ( GroupSchedulerResourceListSourceType ) e.Item.DataItem;
             btnResourceListSourceType.Text = schedulerResourceListSourceType.GetDescription() ?? schedulerResourceListSourceType.ConvertToString( true );
             btnResourceListSourceType.CommandArgument = schedulerResourceListSourceType.ConvertToInt().ToString();
         }
