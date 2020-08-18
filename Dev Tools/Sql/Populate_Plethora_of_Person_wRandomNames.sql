@@ -12093,6 +12093,14 @@ BEGIN
             ,NEWID()
             );
 
+         IF (@personId%10 = 0) BEGIN
+            DECLARE @userName NVARCHAR(255) = concat(@lastName, substring(@firstName, 1, 2));
+            IF NOT EXISTS (SELECT * FROM UserLogin WHERE UserName = @userName) BEGIN
+                INSERT INTO [UserLogin] (UserName, [Password], [EntityTypeId], [PersonId], [Guid]) 
+                    VALUES (@userName, NEWID(),27, @personId, NEWID())
+            END
+         END
+
         SET @phoneNumber = cast(convert(BIGINT, ROUND(rand() * 0095551212, 0) + 6230000000) AS NVARCHAR(20));
         SET @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' + substring(@phoneNumber, 7, 4);
 
@@ -12609,6 +12617,9 @@ BEGIN
 			            )) x
 
     COMMIT TRANSACTION
+
+
+    
 
     IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
         DROP TABLE #lastNames

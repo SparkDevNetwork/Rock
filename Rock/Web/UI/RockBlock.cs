@@ -109,6 +109,7 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Gets the current page reference.
+        /// NOTE: Create a copy of this using <see cref="PageReference.PageReference(PageReference)">new PageReference.PageReference( CurrentPageReference )</see> to prevent modifying this instance.
         /// </summary>
         public PageReference CurrentPageReference
         {
@@ -1302,6 +1303,14 @@ namespace Rock.Web.UI
         public void SetBlockUserPreference( string key, string value, bool saveValue = true )
         {
             RockPage.SetUserPreference( BlockUserPreferencePrefix + key, value, saveValue );
+        }
+
+        /// <summary>
+        /// Saves this block's user preferences to the database
+        /// </summary>
+        public void SaveBlockUserPreferences()
+        {
+            SaveUserPreferences( BlockUserPreferencePrefix );
         }
 
         /// <summary>

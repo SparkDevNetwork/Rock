@@ -176,7 +176,7 @@ namespace Rock.Migrations
         /// </summary>
         private void AddPrayerRequestCommentsNotificationEmailTemplateUp()
         {
-            const string PrayerRequestCommentsNotificationTemplateGuid = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
+            const string prayerRequestCommentsNotificationTemplateGuid = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
 
             RockMigrationHelper.UpdateSystemEmail( "System", "Prayer Request Comments Digest", "", "", "", "", "", "Prayer Request Update",
         @"
@@ -205,7 +205,7 @@ namespace Rock.Migrations
 
 {{ 'Global' | Attribute:'EmailFooter' }}
 ",
-                                                    PrayerRequestCommentsNotificationTemplateGuid );
+                                                    prayerRequestCommentsNotificationTemplateGuid );
         }
 
         /// <summary>

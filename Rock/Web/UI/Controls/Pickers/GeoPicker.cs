@@ -18,12 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.Spatial;
+using System.Data.SqlTypes;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Microsoft.SqlServer.Types;
 
 using Rock.Web.Cache;
 
@@ -366,7 +368,13 @@ namespace Rock.Web.UI.Controls
                     // Now we split the lat1,long1|lat2,long2|... stored in the hidden
                     // into something that's usable by DbGeography's PolygonFromText
                     // Well Known Text (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    return DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), 4326 );
+
+                    /* 8/7/2020 - NA
+                     *  I tried using this DbSpatialServices.Default.GeographyFromProviderValue( sqlGeography );
+                     *  but it will use the MULTIPOLYGON format which is not compatible with our single
+                     *  POLYGON implementation.
+                     */
+                    return DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), DbGeography.DefaultCoordinateSystemId );
                 }
             }
 
@@ -397,7 +405,7 @@ namespace Rock.Web.UI.Controls
                     // Now split the lat1,long1 stored in the hidden into something
                     // that's usable by DbGeography's PolygonFromText Well Known Text (WKT)
                     // (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    return DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), 4326 );
+                    return DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), DbGeography.DefaultCoordinateSystemId );
                 }
             }
 
@@ -859,6 +867,65 @@ if ($('#{1}').length > 0)
             }
             isClockwise = ( sum > 0 ) ? true : false;
             return isClockwise;
+        }
+
+        /// <summary>
+        /// Determines whether [is geo fence valid] [the specified error message].
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [is geo fence valid] [the specified error message]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsGeoFenceValid( out string errorMessage )
+        {
+            EnsureChildControls();
+            if ( string.IsNullOrWhiteSpace( _hfGeoPath.Value ) )
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+
+            try
+            {
+                /*
+                 * 8/7/2020 - NA
+                 * We use the SqlGeography as an intermediate conversion because it has
+                 * methods to determine if the fence is a single polygon (has 1 geometry).
+                 * If that passes, then we can consider the geo-fence valid.
+                 *
+                 * Reason: Some administrators were creating incompatible shapes using the
+                 * GeoPicker that will otherwise break the check-in geo-location kiosk matching.
+                 */
+                var polygonText = ConvertPolyToWellKnownText( _hfGeoPath.Value );
+                var sqlGeography = SqlGeography.STGeomFromText( new SqlChars( polygonText ), DbGeography.DefaultCoordinateSystemId ).MakeValid();
+
+                if ( sqlGeography == null || ! sqlGeography.STIsValid() )
+                {
+                    errorMessage = "The selected geo-fence path is invalid.";
+                    return false;
+                }
+                
+                if ( sqlGeography.STNumGeometries() > 1 )
+                {
+                    errorMessage=  "The geo-fence has overlapping lines or is made up of multiple polygons. Only one polygon is allowed.";
+                    return false;
+                }
+
+                var dbGeography = DbGeography.PolygonFromText( polygonText, DbGeography.DefaultCoordinateSystemId );
+                if ( dbGeography == null )
+                {
+                    errorMessage = "Unable to convert the given geo-fence path to a compatible format.";
+                    return false;
+                }
+            }
+            catch
+            {
+                errorMessage = "Unable to convert the given geo-fence path to a compatible format.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
 
         #endregion

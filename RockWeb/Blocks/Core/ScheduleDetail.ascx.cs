@@ -497,6 +497,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlEditDetails.Visible = editable;
             pnlViewDetails.Visible = !editable;
+            HideSecondaryBlocks( editable );
         }
 
         #endregion

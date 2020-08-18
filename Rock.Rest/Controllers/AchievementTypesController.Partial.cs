@@ -125,5 +125,91 @@ namespace Rock.Rest.Controllers
 
             return progressStatements;
         }
+
+        /// <summary>
+        /// Gets the badge data for the achiever.
+        /// </summary>
+        /// <param name="achievementTypeId">The achievement type identifier.</param>
+        /// <param name="achieverEntityId">The achiever identifier. The current person is used if this is omitted.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/AchievementTypes/{achievementTypeId}/BadgeData" )]
+        public virtual BadgeData GetBadgeData( int achievementTypeId, [FromUri] int? achieverEntityId = null )
+        {
+            var rockContext = Service.Context as RockContext;
+            var achievementType = AchievementTypeCache.Get( achievementTypeId );
+
+            if ( achievementType == null )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The achievement type did not resolve" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var isPerson = achievementType.AchieverEntityTypeId == EntityTypeCache.Get<Person>().Id;
+            var isPersonAlias = achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id;
+
+            // If not specified, use the current person
+            if ( !achieverEntityId.HasValue && isPerson )
+            {
+                achieverEntityId = GetPerson( rockContext )?.Id;
+
+                if ( !achieverEntityId.HasValue )
+                {
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
+                }
+            }
+
+            if ( !achieverEntityId.HasValue && isPersonAlias )
+            {
+                achieverEntityId = GetPersonAliasId( rockContext );
+
+                if ( !achieverEntityId.HasValue )
+                {
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person alias Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
+                }
+            }
+
+            if ( !achieverEntityId.HasValue )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The achiever entity id could not be resolved" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var achievementTypeService = Service as AchievementTypeService;
+            var markup = achievementTypeService.GetBadgeMarkup( achievementType, achieverEntityId.Value );
+
+            return new BadgeData
+            {
+                AchievementTypeName = achievementType.Name,
+                BadgeMarkup = markup
+            };
+        }
+
+        /// <summary>
+        /// <see cref="GetBadgeData(int, int?)"/> Response
+        /// </summary>
+        public class BadgeData
+        {
+            /// <summary>
+            /// Gets or sets the name of the achievement type.
+            /// </summary>
+            /// <value>
+            /// The name of the achievement type.
+            /// </value>
+            public string AchievementTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the badge markup.
+            /// </summary>
+            /// <value>
+            /// The badge markup.
+            /// </value>
+            public string BadgeMarkup { get; set; }
+        }
     }
 }

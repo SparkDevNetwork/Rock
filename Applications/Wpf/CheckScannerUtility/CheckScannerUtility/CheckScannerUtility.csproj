@@ -315,8 +315,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.25.28610\bin\Hostx86\x86\editbin.exe" /NXCOMPAT:NO "$(TargetPath)"
+    <PostBuildEvent>call "$(DevEnvDir)..\Tools\VsDevCmd.bat"
+"%25VCToolsInstallDir%25\bin\Hostx86\x86\editbin.exe" /NXCOMPAT:NO "$(TargetPath)"
 
 </PostBuildEvent>
   </PropertyGroup>
