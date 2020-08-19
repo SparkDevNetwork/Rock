@@ -42,6 +42,12 @@ namespace RockWeb.Blocks.Cms
 
     #region Block Attributes
 
+    [BooleanField(
+        "Display Most Recent",
+        Description = "Should the most recent item for the configured Content Channel be displayed if no query parameter value is provided.",
+        IsRequired = false,
+        Key = AttributeKey.DisplayMostRecent )]
+
     [LavaCommandsField(
         "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this content channel item block.",
@@ -243,6 +249,7 @@ namespace RockWeb.Blocks.Cms
             public const string TwitterImageAttribute = "TwitterImageAttribute";
             public const string TwitterCard = "TwitterCard";
             public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string DisplayMostRecent = "DisplayMostRecent";
         }
 
         #endregion Attribute Keys
@@ -848,6 +855,35 @@ Guid - ContentChannelItem Guid
                 else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
+                }
+            }
+
+            if ( contentChannelItemKey.IsNullOrWhiteSpace() && GetAttributeValue( AttributeKey.DisplayMostRecent ).AsBoolean() )
+            {
+                // if a Channel was specified, verify that the ChannelItem is part of the channel
+                var contentChannelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
+                if ( contentChannelGuid.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    var statuses = new List<ContentChannelItemStatus>();
+                    foreach ( var status in ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                        if ( statusEnum != null )
+                        {
+                            statuses.Add( statusEnum.Value );
+                        }
+                    }
+                    var now = RockDateTime.Now;
+                    var contentChannelItem = new ContentChannelItemService( rockContext ).Queryable()
+                        .Where( i => i.ContentChannel.Guid.Equals( contentChannelGuid.Value ) && i.StartDateTime <= now && ( !i.ContentChannel.RequiresApproval || statuses.Contains( i.Status ) ) )
+                        .OrderByDescending( c => c.StartDateTime )
+                        .FirstOrDefault();
+                    
+                    if ( contentChannelItem != null )
+                    {
+                        contentChannelItemKey = contentChannelItem.Id.ToString();
+                    }
                 }
             }
 

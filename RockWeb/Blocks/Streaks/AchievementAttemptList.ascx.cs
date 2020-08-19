@@ -575,7 +575,6 @@ namespace RockWeb.Blocks.Streaks
                 lHeading.Text = "Achievement Attempts";
             }
 
-            GetRockContext().SqlLogging( true );
             var query = GetAttemptsQuery();
 
             // Filter by Achiever Name

@@ -565,8 +565,8 @@ namespace Rock.DownhillCss
         private static string baseStylesWeb = @"";
 
         private static string baseStylesMobile = @"/*
-    Resets
-    -----------------------------------------------------------
+Resets
+-----------------------------------------------------------
 */
 
 /* Fixes frame backgrounds from being black while in dark mode */
@@ -590,7 +590,11 @@ NavigationPage {
 }
 
 ^label {
-    font-size: default;
+    font-size: ?font-size-default;
+    color: ?color-text;
+}
+
+icon {
     color: ?color-text;
 }
 
@@ -675,7 +679,7 @@ NavigationPage {
 
 /* Text Named Sizes */
 .text {
-    font-size: default;
+    font-size: ?font-size-default;
     color: ?color-text;
 }
 
@@ -714,13 +718,13 @@ NavigationPage {
 
 .title {
     font-style: bold;
-    font-size: default;
+    font-size: ?font-size-default;
     line-height: 1;
 }
 
 /* Body Styles */
 .paragraph {
-    font-size: default;
+    font-size: ?font-size-default;
     color: ?color-text;
     line-height: 1.15;
     margin-bottom: 24;
@@ -1348,7 +1352,7 @@ NavigationPage {
 ^switch,
 ^editor {
     color: ?color-text;
-    font-size: default;
+    font-size: ?font-size-default;
 }
 
 ^literal {
@@ -1369,7 +1373,7 @@ fieldgroupheader .title,
 formfield .title {
     color: ?color-text;
     font-style: bold;
-    font-size: default;
+    font-size: ?font-size-default;
 }
 
 fieldgroupheader.error .title,

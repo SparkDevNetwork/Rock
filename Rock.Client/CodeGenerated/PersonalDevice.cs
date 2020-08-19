@@ -55,10 +55,19 @@ namespace Rock.Client
         /// <summary />
         public string MACAddress { get; set; }
 
+        /// <summary />
+        public string Manufacturer { get; set; }
+
+        /// <summary />
+        public string Model { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public bool NotificationsEnabled { get; set; }
@@ -71,6 +80,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PlatformValueId { get; set; }
+
+        /// <summary />
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -112,11 +124,15 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.MACAddress = source.MACAddress;
+            this.Manufacturer = source.Manufacturer;
+            this.Model = source.Model;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.NotificationsEnabled = source.NotificationsEnabled;
             this.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
             this.PersonAliasId = source.PersonAliasId;
             this.PlatformValueId = source.PlatformValueId;
+            this.SiteId = source.SiteId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -137,6 +153,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public Site Site { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
