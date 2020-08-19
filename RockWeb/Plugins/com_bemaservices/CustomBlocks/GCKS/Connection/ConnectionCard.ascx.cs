@@ -58,6 +58,8 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
     {% endif %}
 </a>
 ", "", 9 )]
+    [BooleanField("Display Final Steps","Show user be able to select optional checbox options for connection requests, prayer requests, etc.", true)]
+    [TextField("Thanks Text","Override the default thanks text with this string.", false, "")]
 
     public partial class ConnectionCard : RockBlock
     {
@@ -992,7 +994,16 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
         private void FinalStep()
         {
             pnFamilyMembers.Visible = false;
-            pnFinalStep.Visible = true;
+
+            if( GetAttributeValue("DisplayFinalSteps").AsBoolean() )
+            {
+                pnFinalStep.Visible = true;
+            }
+            else
+            {
+                //Skip this screen and submit
+                btnSubmit_Click( null, null );
+            }
         }
 
         protected void btnSubmit_Click( object sender, EventArgs e )
@@ -1034,6 +1045,11 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
 
             pnSelectedData.Visible = false;
             pnFinalStep.Visible = false;
+
+            if( GetAttributeValue( "ThanksText" ).IsNotNullOrWhiteSpace() )
+            {
+                literalThanks.Text = GetAttributeValue( "ThanksText" );
+            }
             pnThanks.Visible = true;
         }
 
