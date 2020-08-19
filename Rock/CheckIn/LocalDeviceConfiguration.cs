@@ -137,7 +137,7 @@ namespace Rock.CheckIn
         public void SaveToCookie( System.Web.UI.Page page )
         {
             SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = sameSiteCookieSetting == SameSiteCookieSetting.None ? string.Empty : ";SameSite=" + sameSiteCookieSetting;
+            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
 
             var localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
             localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
