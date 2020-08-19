@@ -861,9 +861,9 @@ namespace Rock.Security
         /// <returns></returns>
         private static HttpCookie GetAuthCookie( string domain, string value )
         {
-            // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax" and "Strict" so if None was selected don't put the setting in the cookie.
+            // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax", "Strict", and "None".
             SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = sameSiteCookieSetting == SameSiteCookieSetting.None ? string.Empty : ";SameSite=" + sameSiteCookieSetting;
+            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
 
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
