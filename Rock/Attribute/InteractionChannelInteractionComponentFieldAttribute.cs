@@ -29,27 +29,9 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="InteractionChannelInteractionComponentFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="defaultInteractionChannelGuid"></param>
-        public InteractionChannelInteractionComponentFieldAttribute(
-            string name = "",
-            string description = "",
-            bool required = true,
-            string defaultValue = "",
-            string category = "",
-            int order = 0,
-            string key = null,
-            string defaultInteractionChannelGuid = "" )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.InteractionChannelInteractionComponentFieldType ).FullName )
+        public InteractionChannelInteractionComponentFieldAttribute( string name )
+            : base( name, fieldTypeClass: typeof( Field.Types.InteractionChannelInteractionComponentFieldType ).FullName )
         {
-            FieldConfigurationValues.Add(
-                Rock.Field.Types.InteractionChannelInteractionComponentFieldType.ConfigKey.DefaultInteractionChannelGuid,
-                new Field.ConfigurationValue( defaultInteractionChannelGuid ) );
         }
     }
 }

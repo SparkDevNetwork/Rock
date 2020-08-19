@@ -335,6 +335,17 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupSchedulerResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum HistoryChangeType
     {
         Record = 0x0,
@@ -653,6 +664,15 @@ namespace Rock.Client.Enums
         Yes = 0x1,
         Maybe = 0x2,
         Unknown = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduledAttendanceItemMatchesPreference
+    {
+        MatchesPreference = 0x0,
+        NotMatchesPreference = 0x1,
+        NoPreference = 0x2,
     }
 
     /// <summary>

@@ -452,6 +452,7 @@ namespace RockWeb.Blocks.Mobile
 
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
+            ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
 
             //
             // Set the API Key.
@@ -799,6 +800,7 @@ namespace RockWeb.Blocks.Mobile
             
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
+            additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;

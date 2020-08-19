@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+
 using Rock.Data;
 
 namespace Rock
@@ -27,6 +29,19 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+        /// <summary>
+        /// Converts a string to a hash value using xxHash, a fast non-cryptographic hash algorithm.
+        /// Refer https://www.xxhash.com.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string XxHash( this string str )
+        {
+            var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );
+
+            return hash.ToString();
+        }
+
         /// <summary>
         /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
         /// </summary>

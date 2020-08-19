@@ -1718,7 +1718,10 @@ namespace RockWeb.Blocks.Communication
             }
             catch ( Exception ex )
             {
-                throw new Exception( "An unexpected error occurred while building the Recipients List.", ex );
+                ExceptionLogService.LogException( ex );
+                nbAnalyticsNotAvailable.Visible = true;
+                nbAnalyticsNotAvailable.Text = "An unexpected error occurred while building the Recipients List.";
+                return;
             }
 
             // If the grid is sorted by a communication-specific column, apply the sort now.

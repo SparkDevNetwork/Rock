@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -95,11 +94,29 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/GetSchedulerResources" )]
         [HttpPost]
-        public IEnumerable<SchedulerResource> GetSchedulerResources( [FromBody]SchedulerResourceParameters schedulerResourceParameters )
+        public IEnumerable<SchedulerResource> GetSchedulerResources( [FromBody] SchedulerResourceParameters schedulerResourceParameters )
         {
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
             return attendanceService.GetSchedulerResources( schedulerResourceParameters );
+        }
+
+        /// <summary>
+        /// Gets an individual scheduler resource.
+        /// </summary>
+        /// <param name="schedulerResourceParameters">The scheduler resource parameters.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/GetSchedulerResource" )]
+        [HttpPost]
+        public SchedulerResource GetSchedulerResource( [FromBody] SchedulerResourceParameters schedulerResourceParameters, int personId )
+        {
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            schedulerResourceParameters.LimitToPersonId = personId;
+            var result = attendanceService.GetSchedulerResources( schedulerResourceParameters ).FirstOrDefault();
+            return result;
         }
 
         /// <summary>

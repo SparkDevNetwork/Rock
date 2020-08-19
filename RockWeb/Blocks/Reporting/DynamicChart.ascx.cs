@@ -51,22 +51,32 @@ namespace RockWeb.Blocks.Reporting
 </ul>
 
 Example: 
-<code><pre>
--- get top 25 viewed pages from the last 30 days (excluding Home)
-select top 25  * from (
-    select 
-        distinct
-        pv.PageTitle [SeriesName], 
-        convert(date, pv.DateTimeViewed) [DateTime], 
-        count(*) [YValue] 
-    from 
-        PageView pv
-    where PageTitle is not null    
-    group by pv.PageTitle, convert(date, pv.DateTimeViewed)
-    ) x where SeriesID != 'Home' 
-and DateTime > DateAdd(day, -30, SysDateTime())
-order by YValue desc
-</pre>
+<code>
+    <pre>
+        -- Get Exception count per day for the last 10 days.
+        WITH [Last10Days]
+        AS
+        (
+            SELECT CONVERT(date, GETDATE()) [Date]
+            UNION ALL
+            SELECT DATEADD(day, -1, [Date])
+            FROM [Last10Days]
+            WHERE ([Date] > GETDATE() - 9)
+        )
+        SELECT 'Exception Count' [SeriesName]
+            , d.[Date] [DateTime]
+            , CASE WHEN exceptions.[ExceptionCount] IS NOT NULL THEN exceptions.[ExceptionCount] ELSE 0 END [YValue]
+        FROM [Last10Days] d
+        LEFT OUTER JOIN
+        (
+            SELECT CONVERT(date, [CreatedDateTime]) [Date]
+                , COUNT(*) [ExceptionCount]
+            FROM [ExceptionLog]
+            GROUP BY CONVERT(date, [CreatedDateTime])
+        ) exceptions
+            ON d.[Date] = exceptions.[Date]
+        ORDER BY d.[Date];
+    </pre>
 </code>",
               CodeEditorMode.Sql )]
     [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.", false, "" )]

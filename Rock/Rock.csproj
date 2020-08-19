@@ -366,12 +366,14 @@
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\AchievementTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
@@ -490,6 +492,7 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Badge\Component\Achievement.cs" />
     <Compile Include="Badge\HighlightLabelBadge.cs" />
     <Compile Include="Badge\IconBadge.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
@@ -519,6 +522,7 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
@@ -526,6 +530,7 @@
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
+    <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
@@ -551,6 +556,8 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
+    <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
     <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />
     <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
@@ -975,7 +982,7 @@
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
-    <Compile Include="Utility\StringRockExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />

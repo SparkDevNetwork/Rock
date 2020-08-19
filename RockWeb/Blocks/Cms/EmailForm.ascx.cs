@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         DefaultValue = MESSAGE_BODY_DEFAULT_VALUE,
         Order = 7,
-        Key = AttributeKey.HTMLForm )]
+        Key = AttributeKey.MessageBody )]
     [CodeEditorField(
         "Response Message",
         Description = "The message the user will see when they submit the form if no response page if provided. Lava merge fields are available for you to use in your message.",

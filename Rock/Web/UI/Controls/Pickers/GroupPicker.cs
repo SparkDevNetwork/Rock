@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupPicker"/> class.
         /// </summary>
-        public GroupPicker(): base()
+        public GroupPicker() : base()
         {
             this.ShowSelectChildren = true;
         }
@@ -208,7 +208,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Create or add this node to the history stack for this tree walk.
-            ancestorGroupIds.Insert(0, group.Id );
+            ancestorGroupIds.Insert( 0, group.Id );
 
             ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
 
@@ -265,7 +265,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var group = new GroupService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var groupId = ItemId.AsIntegerOrNull();
+            Group group = null;
+            if ( groupId.HasValue && groupId > 0 )
+            {
+                group = new GroupService( new RockContext() ).Get( groupId.Value );
+            }
+
             SetValue( group );
         }
 
@@ -357,15 +363,15 @@ namespace Rock.Web.UI.Controls
 
             if ( IncludedGroupTypeIds != null && IncludedGroupTypeIds.Any() )
             {
-                extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited(",")}" );
+                extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited( "," )}" );
             }
 
-            if (LimitToSchedulingEnabledGroups)
+            if ( LimitToSchedulingEnabledGroups )
             {
                 extraParams.Append( $"&limitToSchedulingEnabled={LimitToSchedulingEnabledGroups.ToTrueFalse()}" );
             }
 
-            if (LimitToRSVPEnabledGroups)
+            if ( LimitToRSVPEnabledGroups )
             {
                 extraParams.Append( $"&limitToRSVPEnabled={LimitToRSVPEnabledGroups.ToTrueFalse()}" );
             }

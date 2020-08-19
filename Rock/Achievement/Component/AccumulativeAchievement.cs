@@ -36,42 +36,49 @@ namespace Rock.Achievement.Component
     [ExportMetadata( "ComponentName", "Streaks: Accumulative" )]
 
     [StreakTypeField(
-        name: "Streak Type",
-        description: "The source streak type from which achievements are earned.",
-        required: true,
-        order: 0,
-        key: AttributeKey.StreakType )]
+        "Streak Type",
+        Description = "The source streak type from which achievements are earned.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.StreakType )]
 
     [IntegerField(
-        name: "Number to Accumulate",
-        description: "The number of engagements required to earn this achievement.",
-        required: true,
-        order: 1,
-        key: AttributeKey.NumberToAccumulate )]
+        "Number to Accumulate",
+        Description = "The number of engagements required to earn this achievement.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.NumberToAccumulate )]
 
     [IntegerField(
-        name: "Timespan in Days",
-        description: "The sliding window of days in which the engagements must occur.",
-        required: false,
-        order: 2,
-        key: AttributeKey.TimespanInDays )]
+        "Timespan in Days",
+        Description = "The sliding window of days in which the engagements must occur.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.TimespanInDays )]
 
     [DateField(
-        name: "Start Date",
-        description: "The date that defines when the engagements must occur on or after.",
-        required: false,
-        order: 3,
-        key: AttributeKey.StartDateTime )]
+        "Start Date",
+        Description = "The date that defines when the engagements must occur on or after.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.StartDateTime )]
 
     [DateField(
-        name: "End Date",
-        description: "The date that defines when the engagements must occur on or before.",
-        required: false,
-        order: 4,
-        key: AttributeKey.EndDateTime )]
+        "End Date",
+        Description = "The date that defines when the engagements must occur on or before.",
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKey.EndDateTime )]
 
     public class AccumulativeAchievement : StreakSourcedAchievementComponent
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccumulativeAchievement"/> class.
+        /// </summary>
+        public AccumulativeAchievement() : base( AttributeKey.StreakType )
+        {
+        }
+
         #region Keys
 
         /// <summary>
@@ -105,24 +112,9 @@ namespace Rock.Achievement.Component
             public const string StreakType = "StreakType";
         }
 
-        /// <summary>
-        /// Gets the streak type attribute key.
-        /// </summary>
-        protected override string StreakTypeAttributeKey => AttributeKey.StreakType;
-
         #endregion Keys
 
         #region Abstract Method Overrides
-
-        /// <summary>
-        /// Gets the attribute keys stored in configuration.
-        /// <see cref="AchievementType.ComponentConfigJson" />
-        /// </summary>
-        /// <value>
-        /// The attribute keys stored in configuration.
-        /// </value>
-        /// <exception cref="NotImplementedException"></exception>
-        public override HashSet<string> AttributeKeysStoredInConfig => new HashSet<string> { AttributeKey.StreakType };
 
         /// <summary>
         /// Update the open attempt record if there are changes.

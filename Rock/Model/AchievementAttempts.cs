@@ -33,6 +33,12 @@ namespace Rock.Model
     [DataContract]
     public partial class AchievementAttempt : Model<AchievementAttempt>
     {
+        /* Custom Indexes:
+         *
+         * AchievementTypeId, AchieverEntityId
+         *      This was added for Achievement components process methods
+         */
+
         #region Entity Properties
 
         /// <summary>

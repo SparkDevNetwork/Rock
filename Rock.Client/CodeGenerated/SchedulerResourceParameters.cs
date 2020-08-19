@@ -35,13 +35,21 @@ namespace Rock.Client
         public int AttendanceOccurrenceGroupId { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.12"
+        [Obsolete( "Use AttendanceOccurrenceScheduleIds instead", false )]
         public int AttendanceOccurrenceScheduleId { get; set; }
+
+        /// <summary />
+        public Int32[] AttendanceOccurrenceScheduleIds { get; set; }
 
         /// <summary />
         public DateTime AttendanceOccurrenceSundayDate { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.SchedulerResourceGroupMemberFilterType? GroupMemberFilterType { get; set; }
+
+        /// <summary />
+        public int? LimitToPersonId { get; set; }
 
         /// <summary />
         public List<int> ResourceAdditionalPersonIds { get; set; }
@@ -59,9 +67,13 @@ namespace Rock.Client
         public void CopyPropertiesFrom( SchedulerResourceParameters source )
         {
             this.AttendanceOccurrenceGroupId = source.AttendanceOccurrenceGroupId;
+            #pragma warning disable 612, 618
             this.AttendanceOccurrenceScheduleId = source.AttendanceOccurrenceScheduleId;
+            #pragma warning restore 612, 618
+            this.AttendanceOccurrenceScheduleIds = source.AttendanceOccurrenceScheduleIds;
             this.AttendanceOccurrenceSundayDate = source.AttendanceOccurrenceSundayDate;
             this.GroupMemberFilterType = source.GroupMemberFilterType;
+            this.LimitToPersonId = source.LimitToPersonId;
             this.ResourceAdditionalPersonIds = source.ResourceAdditionalPersonIds;
             this.ResourceDataViewId = source.ResourceDataViewId;
             this.ResourceGroupId = source.ResourceGroupId;
