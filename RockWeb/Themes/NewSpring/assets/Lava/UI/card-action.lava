@@ -19,7 +19,7 @@
   </div>
   <div class="panel-footer btn-group btn-group-justified hard">
     {% for action in cardactions %}
-      <a href="{{ action.Url | Fallback:'','#' }}" {% if action.OnClick != empty %}onclick="{{ action.OnClick }}"{% endif %} {% if action.NewWindow %}target="_blank"{% endif %} class="btn btn-gray {% if action.ButtonClass and action.ButtonClass != empty %}{{ action.ButtonClass }}{% endif %} {% if action.Url == empty and action.OnClick == empty %}text-gray-light{% endif %}" {% if action.Url == empty and action.OnClick == empty %}disabled{% endif %} {% if action.Title != empty %}title="{{ action.Title }}"{% endif %}>{% if action.IconCSSClass %}<i class="{{ action.IconCSSClass }}"></i>{% endif %}</a>
+      <a href="{{ action.Url | Fallback:'','#' }}" {% if action.OnClick != empty %}onclick="{{ action.OnClick }}"{% endif %} {% if action.NewWindow %}target="_blank"{% endif %} class="btn btn-gray {% if action.ButtonClass and action.ButtonClass != empty %}{{ action.ButtonClass }}{% endif %} {% if action.Url == empty and action.OnClick == empty %}text-gray-light{% endif %}" {% if action.Url == empty and action.OnClick == empty %}disabled{% endif %} {% if action.Title != empty %}title="{{ action.Title }}"{% endif %}>{% if action.IconCSSClass %}<i class="fa-fw {{ action.IconCSSClass }}"></i>{% endif %}</a>
     {% endfor %}
   </div>
 </div>

@@ -1,0 +1,36 @@
+{% definedvalue where:'DefinedTypeId == 127' sort:'Order' iterator:'values' %}
+  {% for value in values %}
+    {% contentchannelitem where:'ContentChannelId == 690 && ContentFormat == "{{ value.Guid }}"' iterator:'items' %}
+      {% if items and items != empty %}
+      <h2 class="h3 xs-h5 text-uppercase strongest push-top">{{ value.Description | Pluralize }}</h2>
+      <div class="row">
+        {% for item in items limit:8 %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 flush">
+
+          {% assign fallbackImage = item.ContentChannel | Attribute:'ImageLandscape' %}
+          {% assign relatedItemGuid = item | Attribute:'ContentChannelItem','RawValue' | WithFallback:'',null %}
+
+          {% if relatedItemGuid and relatedItemGuid != emtpy and relatedItemGuid != '' %}
+
+            {% contentchannelitem where:'Guid == "{{ relatedItemGuid }}"' iterator:'relatedItems' %}
+              {% assign relatedItem = relatedItems | First %}
+            {% endcontentchannelitem %}
+
+            {% assign title = relatedItem.Title | Replace:"'","’" %}
+            {% capture linkurl %}{[ getPermalink cciid:'{{ relatedItem.Id }}' ]}{% endcapture %}
+            {% assign contentType = relatedItem.ContentChannel.Name | Split:" - " | Last | Singularize %}
+
+            {[ card title:'{{ title }}' titlesize:'h4' subtitle:'{{ relatedItem | Attribute:"Attribution" }}' imageurl:'{{ relatedItem | Attribute:"ImageLandscape" | WithFallback:"",fallbackImage }}' type:'{{ contentType }}' linkurl:'{{ linkurl | Trim }}' linktext:'{{ relatedItem.ContentChannel | Attribute:"ChannelVerb" }} {{ contentType }}' ]}
+
+          {% else %}
+
+            {% assign title = item.Title | Replace:"'","’" %}
+            {[ card title:'{{ title }}' titlesize:'h4' subtitle:'{{ item | Attribute:"Attribution" }}' imageurl:'{{ item | Attribute:"ImageLandscape" | WithFallback:"",fallbackImage }}' type:'{{ item | Attribute:"ContentFormat" }}' linkurl:'{{ item | Attribute:"Link","RawValue" }}' linktext:'{{ item | Attribute:"ContentFormat","Object" | Attribute:"Verb" }} {{ item | Attribute:"ContentFormat" }}' target:'_blank' ]}
+
+          {% endif %}
+
+        </div>{% endfor %}
+      </div>
+      {% endif %}
+    {% endcontentchannelitem %}
+  {% endfor %}
+{% enddefinedvalue %}

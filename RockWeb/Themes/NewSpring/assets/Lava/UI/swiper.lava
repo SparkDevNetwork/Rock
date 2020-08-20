@@ -33,7 +33,7 @@
   var swiper = new Swiper('#{{ swiperid }}', {
       slidesPerView: 3.3,
       spaceBetween: 15,
-      speed: 200,
+      speed: 100,
       centeredSlides: true,
       roundLengths: true,
       grabCursor: true,
@@ -55,14 +55,14 @@
           slidesPerView: 2.3,
         },
         768: {
-          speed: 300,
+          speed: 100,
           slidesPerView: 2.3,
           pagination: {
             dynamicBullets: true,
           },
         },
         667: {
-          speed: 300,
+          speed: 100,
           slidesPerView: 1.15,
           pagination: {
             dynamicBullets: true,
