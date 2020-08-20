@@ -443,11 +443,6 @@ fieldset[disabled] .multiselect {
 	color: #fff
 }
 
-.multiselect__option--highlight:after {
-	content: attr(data-select);
-	background: #41b883;
-	color: #fff
-}
 
 .multiselect__option--selected {
 	background: #f3f3f3;
@@ -798,37 +793,35 @@ fieldset[disabled] .multiselect {
     </div>
   </div>
 
-  {%raw%}<h5>{{groupCount}} Groups Found</h5> {% endraw %}
+  <h5>{*groupCount*} Groups Found</h5>
     <div v-if="groups.length === 0 && groupCount != 0" class="loading">Loading...</div>
     <div v-for="i in Math.ceil(groups.length / 3)" class="row">
       <div v-for="group in groups.slice((i - 1) * 3, i * 3)" class="col-md-4">
-        {% raw %}
           <div class="columns column-block">
             <div class="sg-card border-radius-md">
               <div class="sg-card-content p-t-1">
-                <h2 class="sg-card-name fontSize-body">{{group.Name}}</h2>
-                <p class="sg-card-campus fontSize-xs">{{group.Campus}}</p>
-                <p class="sg-card-description">{{group.Description}}.</p>
+                <h2 class="sg-card-name fontSize-body">{*group.Name*}</h2>
+                <p class="sg-card-campus fontSize-xs">{*group.Campus*}</p>
+                <p class="sg-card-description">{*group.Description*}.</p>
                 <div class="description-fade"></div>
               </div>
               <div class="sg-card-side-bar">
                 <div class="sg-card-meta" :style="'background-color:' + group.Color+';'">
-                  <div class="fontSize-body sg-day-of-week">{{group.DayOfWeek}}</div>
-                  <div class="fontSize-xxs">{{group.TimeOfDay}}</div>
-                  <div class="fontSize-xxs">{{group.Frequency}}</div>
+                  <div class="fontSize-body sg-day-of-week">{*group.DayOfWeek*}</div>
+                  <div class="fontSize-xxs">{*group.TimeOfDay*}</div>
+                  <div class="fontSize-xxs">{*group.Frequency*}</div>
                 </div>
-                <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">{{group.Category}}</div>
+                <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">{*group.Category*}</div>
                 <div v-if="group.SecondaryCategories != null && group.SecondaryCategories.length > 0">
                   <div v-for="secondaryCategory in group.SecondaryCategories.slice(0,3)" class="sg-card-info m-b-half" :style="'color:' + secondaryCategory.Color+';margin-top:0px !important;'">
-                    {{secondaryCategory.Category}}
+                    {*secondaryCategory.Category*}
                   </div>
                 </div>
-                <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.LifeStage}}</div>
+                <div class="fontSize-xxs m-b-half sg-card-info-age">{*group.LifeStage*}</div>
               </div>
-              <a class="more-info-text" :href="'/page/{% endraw%}{{linkedPage.Id}}{% raw %}?Group=' + group.Guid" target="_blank">More Info</a>
+              <a class="more-info-text" :href="'/page/{{linkedPage.Id}}?Group=' + group.Guid" target="_blank">More Info</a>
             </div>
           </div>
-        {% endraw %}
       </div>
     </div>
 </div>
@@ -836,6 +829,7 @@ fieldset[disabled] .multiselect {
 <script>
 var app = new Vue({
   el: '#app',
+  delimiters: ['{*','*}'],
   components: {
     Multiselect: window.VueMultiselect.default
   },
