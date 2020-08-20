@@ -2441,6 +2441,58 @@ namespace Rock.Lava
                 PersonService.DeleteUserPreference( person, settingKey );
             }
         }
+        
+        /// <summary>
+        /// Content Channel Item the by identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object ContentItemById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int contentChannelItemId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out contentChannelItemId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new ContentChannelItemService( rockContext ).Get( contentChannelItemId );
+        }
+
+        /// <summary>
+        /// Content Channel Item the by unique identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object ContentItemByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? contentChannelItemGuid = input.ToString().AsGuidOrNull();
+
+            if ( contentChannelItemGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new ContentChannelItemService( rockContext ).Get( contentChannelItemGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Persons the by identifier.
