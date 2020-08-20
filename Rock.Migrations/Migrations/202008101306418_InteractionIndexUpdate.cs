@@ -29,11 +29,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.DropIndexIfExists( "Interaction", "IX_InteractionComponentId_InteractionDateTime" );
+            //RockMigrationHelper.DropIndexIfExists( "Interaction", "IX_InteractionComponentId_InteractionDateTime" );
 
-            RockMigrationHelper.CreateIndexIfNotExists( "Interaction",
-                new[] { "InteractionComponentId", "InteractionDateTime" },
-                new[] { "InteractionTimeToServe", "Operation", "InteractionSessionId" } );
+            //RockMigrationHelper.CreateIndexIfNotExists( "Interaction",
+            //    new[] { "InteractionComponentId", "InteractionDateTime" },
+            //    new[] { "InteractionTimeToServe", "Operation", "InteractionSessionId" } );
         }
         
         /// <summary>
