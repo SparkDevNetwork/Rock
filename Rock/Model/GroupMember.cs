@@ -332,7 +332,9 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             string errorMessage;
-            if ( entry.State != EntityState.Deleted && this.IsArchived == false )
+            if ( entry.State != EntityState.Deleted
+                 && this.IsArchived == false
+                 && this.GroupMemberStatus != GroupMemberStatus.Inactive )
             {
                 if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
                 {
