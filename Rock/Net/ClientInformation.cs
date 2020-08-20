@@ -27,6 +27,8 @@ namespace Rock.Net
     /// </summary>
     public class ClientInformation
     {
+        private static readonly Parser _uaParser = Parser.GetDefault();
+
         #region Properties
 
         /// <summary>
@@ -82,8 +84,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            Parser uaParser = Parser.GetDefault();
-            Browser = uaParser.Parse( request.UserAgent );
+            Browser = _uaParser.Parse( request.UserAgent );
         }
 
         /// <summary>
@@ -113,8 +114,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            Parser uaParser = Parser.GetDefault();
-            Browser = uaParser.Parse( request.Headers.UserAgent.ToString() );
+            Browser = _uaParser.Parse( request.Headers.UserAgent.ToString() );
         }
 
         #endregion
