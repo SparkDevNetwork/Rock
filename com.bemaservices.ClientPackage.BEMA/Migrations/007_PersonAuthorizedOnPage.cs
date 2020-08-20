@@ -28,7 +28,7 @@ namespace com.bemaservices.ClientPackage.BEMA
         {
             //Stored Procedure
             Sql( @"
-            CREATE OR ALTER PROCEDURE [dbo].[GetAuthorizationsByPage]
+            CREATE PROCEDURE [dbo].[GetAuthorizationsByPage]
                 @pageId int 
             AS
 
