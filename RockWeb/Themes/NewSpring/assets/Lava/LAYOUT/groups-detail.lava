@@ -320,7 +320,7 @@ ORDER BY (
             "IconCSSClass": "fal fa-lg fa-user",
             "Url": {{ linkurl | ToJSON }},
             "OnClick": "",
-            "Title": "",
+            "Title": "View Group Member Profile",
             "NewWindow": false
           },
           {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
@@ -329,7 +329,15 @@ ORDER BY (
               "ButtonClass": "",
               "Url": "#",
               "OnClick": "{{ member.Id | Postback:'EditGroupMember' }}",
-              "Title": "",
+              "Title": "Edit Group Member",
+              "NewWindow": false
+            },
+            {
+              "IconCSSClass": "fal fa-lg fa-times text-danger",
+              "ButtonClass": "",
+              "Url": "#",
+              "OnClick": "{{ member.Id | Postback:'DeleteGroupMember' }}",
+              "Title": "Archive Group Member",
               "NewWindow": false
             },
           {% endif %}
@@ -337,21 +345,21 @@ ORDER BY (
             "IconCSSClass": "fal fa-lg fa-envelope",
             "Url": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}mailto:{{ person.Email }}{% endif %}",
             "OnClick": "",
-            "Title": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+            "Title": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}Email Group Member{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
             "NewWindow": false
           },
           {
             "IconCSSClass": "fal fa-lg fa-phone",
             "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
             "OnClick": "",
-            "Title": "{% if phone and phone != empty %}{% else %}Person has no phone number.{% endif %}",
+            "Title": "{% if phone and phone != empty %}Call Group Member{% else %}Person has no phone number.{% endif %}",
             "NewWindow": false
           },
           {
             "IconCSSClass": "fal fa-lg fa-comments",
             "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
             "OnClick": "",
-            "Title": "{% if sms == empty %}Person has no SMS-enabled number.{% endif %}",
+            "Title": "{% if sms and sms != empty %}Text Group Member{% else %}Person has no SMS-enabled number.{% endif %}",
             "NewWindow": false
           }
         ]{% endcapture %}
