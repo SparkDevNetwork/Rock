@@ -79,6 +79,19 @@
     <Compile Include="Migrations\004_StaffGivingSQLReport.cs" />
     <Compile Include="Migrations\005_GiversWithoutPledges.cs" />
     <Compile Include="Migrations\006_AlternateBusinessList.cs" />
+    <Compile Include="Migrations\007_PersonAuthorizedOnPage.cs" />
+    <Compile Include="Migrations\008_LargeDonations.cs" />
+    <Compile Include="Migrations\009_DuplicateContentChannelItemSlugs.cs" />
+    <Compile Include="Migrations\010_DuplicateEmails.cs" />
+    <Compile Include="Migrations\011_PledgeProgressReport.cs" />
+    <Compile Include="Migrations\012_ConnectionRequestsChart.cs" />
+    <Compile Include="Migrations\013_BaptismOverTimeChart.cs" />
+    <Compile Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs" />
+    <Compile Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs" />
+    <Compile Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs" />
+    <Compile Include="Migrations\017_FamilyCampusNotLastTransaction.cs" />
+    <Compile Include="Migrations\018_GivingByFinancialAccount.cs" />
+    <Compile Include="Migrations\019_PledgeAnalytics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
