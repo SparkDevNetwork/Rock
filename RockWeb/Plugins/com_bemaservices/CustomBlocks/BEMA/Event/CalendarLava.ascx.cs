@@ -519,10 +519,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( occurrenceEndTime != null && occurrenceEndTime.Value.Date > datetime.Date )
                     {
                         var multiDate = datetime;
-                        while ( multiDate <= occurrenceEndTime.Date && multiDate <= endDate )
+                        var datePerEventCount = 0;
+                        while ( multiDate < eventItemOccurrence.Schedule.EffectiveEndDate.Value && datePerEventCount < 367 )
                         {
                             CalendarEventDates.Add( multiDate.Date );
                             multiDate = multiDate.AddDays( 1 );
+                            datePerEventCount++;
                         }
                     }
                     else

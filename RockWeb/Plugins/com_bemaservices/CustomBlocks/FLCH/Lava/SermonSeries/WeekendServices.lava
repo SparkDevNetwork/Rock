@@ -1,0 +1,174 @@
+{% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\styles.lava' %}
+{% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\PageFilters.lava' %}
+
+{% for item in Items %}
+
+    {% assign seriesGuid = item | Attribute:'Series','RawValue' %}
+    {% assign teachingOnlyAudioFile = item | Attribute:'teachingOnlyAudioFile','Url' %}
+    {% assign vimeoId = item | Attribute:'VimeoId' %}
+    {% assign videoLink = item | Attribute:'VideoLink','RawValue' %}
+
+    {% contentchannelitem where:'Guid == "{{ seriesGuid }}"' %}
+        {% assign series = contentchannelitem %}
+    {% endcontentchannelitem %}
+
+<div class="row">
+    <div class="col-md-10">
+
+            {% if vimeoId and vimeoId != '' %}
+              <div class="embed-responsive embed-responsive-16by9">
+                <iframe src="https://player.vimeo.com/video/{{vimeoId}}" allow="autoplay; fullscreen" allowfullscreen="" width="100%" height="360" frameborder="0"></iframe>
+              </div>
+            {% else %}
+            <div class="embed-responsive embed-responsive-16by9" style="background-image: url({{ series | Attribute:'SeriesImage','Url' }}); background-size:cover; background-position:center;">
+
+            </div>
+              {% if teachingOnlyAudioFile != '' %}
+                <audio controls>
+                  <source src="{{teachingOnlyAudioFile}}" >
+                  Your browser does not support the audio element.
+                </audio>
+              {% endif %}
+            {% endif %}
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-10">
+
+        {% unless PageParameter.ItemGlobalKey %}<h4 class="subtitle gray-uppercase-text margin-b-md">Latest Service</h4>{% endunless %}
+        <h1 class="title">{{ item.Title }}</h1>
+        {% capture pageTitle %}{{ item.Title }} | {{ 'Global' | Page:'SiteName' }}{% endcapture %}
+        {{ pageTitle | SetPageTitle }}
+        <span class="meta-data gray-text margin-b-lg">{{ item.StartDateTime | Date:'MMMM d, yyyy' }} | {{ item | Attribute:'Speaker' }}</span>
+
+        <p class='clearfix margin-t-lg'>{{ series | Attribute:'Description' }}<p>
+
+    {% assign relatedFilesorLinks = item | Attribute:'RelatedFilesorLinks','Object' %}
+
+    {% assign matrixItems = relatedFilesorLinks.AttributeMatrixItems | Sort:'Order' %}
+
+      <ul class="list-inline list-unstyled list-related-documents">
+
+      {% for attributesItems in matrixItems %}
+
+          {% assign externallink = attributesItems | Attribute:'LinkUrl','RawValue' %}
+          <li>
+          {% if externallink and externallink != '' %}
+              <a href="{{externallink}}"  class="button button-white noarrow" target="_blank">{{ attributesItems | Attribute:'LinkName' }}</a>
+          {% else %}
+              <a href="/GetFile.ashx?guid={{ attributesItems | Attribute:'File','RawValue' }}"  class="button button-white noarrow" target="_blank">{{ attributesItems | Attribute:'LinkName' }}</a><br/>
+          {% endif %}
+          </li>
+
+      {% endfor %}
+
+      {% if videoLink != null and videoLink != empty %}
+        <li><a href="{{ videoLink }}" class="button button-white noarrow" target="_blank">ASL Interpreted Service</a></li>
+      {% endif %}
+
+
+    </ul>
+
+    {% assign sermonAudience = item | Attribute:'Audience','Object' %}
+
+    {% assign defaultSpotifyLink = sermonAudience | Attribute:'SpotifyPodcastLink','RawValue' %}
+    {% assign defaultItunesLink = sermonAudience | Attribute:'ItunesPodcastLink','RawValue' %}
+    {% assign defaultGoogleLink = sermonAudience | Attribute:'GooglePlayPodcastLink','RawValue' %}
+
+    {% assign spotifyPodcastLink = item | Attribute:'SpotifyPodcastLink','RawValue' | Default:defaultSpotifyLink %}
+    {% assign itunesPodcastLink = item | Attribute:'ItunesPodcastLink','RawValue' | Default:defaultItunesLink %}
+    {% assign googlePlayPodcastLink = item | Attribute:'GooglePlayPodcastLink','RawValue' | Default:defaultGoogleLink %}
+
+    </div>
+</div>
+
+    <div class="row">
+      {% if spotifyPodcastLink != null and  spotifyPodcastLink != empty and itunesPodcastLink != null and  itunesPodcastLink != empty and  googlePlayPodcastLink != null and  googlePlayPodcastLink != empty %}
+      <div class="col-md-3 col-xs-6">
+      <h4 class="subtitle gray-uppercase-text">Podcasts</h4>
+
+        <ul class="socialsharing margin-b-none">
+
+          {% if spotifyPodcastLink != null and  spotifyPodcastLink != empty %}
+            <li><a href='{{ spotifyPodcastLink }}' class='socialicon socialicon-gray' title="" data-original-title="View on Spotify" target="_blank"><i class="fa fa-fw fa-spotify"></i></a></li>
+          {% endif %}
+
+          {% if itunesPodcastLink != null and  itunesPodcastLink != empty %}
+            <li><a href='{{ itunesPodcastLink }}' class='socialicon socialicon-gray' title="" data-original-title="View on Itunes" target="_blank"><i class="fa fa-fw fa-podcast"></i></a></li>
+          {% endif %}
+
+          {% if googlePlayPodcastLink != null and  googlePlayPodcastLink != empty %}
+            <li><a href='{{ googlePlayPodcastLink }}' class='socialicon socialicon-gray' title="" data-original-title="View on Google Play" target="_blank"><i class="fa fa-fw fa-google-play"></i></a></li>
+          {% endif %}
+
+        </ul>
+
+      </div>
+
+    {% endif %}
+
+      <div class="col-md-3 col-xs-6">
+      <h4 class="subtitle gray-uppercase-text">Share</h4>
+
+        <script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+        <script>function ics_click() { text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ Event.Name }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ Event.Name }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
+
+        <ul class="socialsharing margin-b-none">
+          <li>
+            <a href="http://www.facebook.com/share.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-gray" title="" data-original-title="Share via Facebook">
+              <i class="fa fa-fw fa-facebook"></i>
+            </a>
+          </li>
+          <li>
+            <a href="http://twitter.com/home?status={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-gray" title="" data-original-title="Share via Twitter">
+              <i class="fa fa-fw fa-twitter"></i>
+            </a>
+          </li>
+          <li>
+            <a href="mailto:?Subject={{ item.Title | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-gray" title="" data-original-title="Share via Email">
+              <i class="fa fa-fw fa-envelope"></i>
+            </a>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+<div class="opensearchserver.ignore">
+  <div class="row margin-t-lg">
+    <div class="col-md-12 padding-b-none">
+        <h4 class='uppercase-text'>Current Series</h4>
+        <hr/>
+      </div>
+  </div>
+  <div class="row">
+
+        {[ morefromcurrentseries sermonid:'{{ item.Id }}' ]}
+
+  </div>
+  <div class="row margin-t-lg">
+    <div class="col-md-12 padding-b-none">
+      <h4 class='uppercase-text'>Recent Series</h4>
+      <hr/>
+    </div>
+  </div>
+  <div class="row">
+
+          {% assign congregation = item | Attribute:'Congregation','RawValue' %}
+          {% assign service =  item | Attribute:'Service','RawValue' %}
+          {% assign seriesId = series.Id %}
+
+          {% include '\Plugins\com_bemaservices\CustomBlocks\FLCH\Lava\SermonSeries\PastSeries.lava' %}
+
+
+        <div class="col-md-10 padding-b-none">
+          <a href='/AllSeries/{{ congregation }}/{{ service }}' class='btn btn-primary margin-t-lg' >View All Series</a>
+        </div>
+
+
+    </div>
+  </div>
+
+
+
+{% endfor %}
