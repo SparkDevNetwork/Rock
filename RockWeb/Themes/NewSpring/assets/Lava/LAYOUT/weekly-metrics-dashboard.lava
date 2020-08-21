@@ -35,19 +35,25 @@
 ]{% endcapture %}
 {% assign dates = dates | FromJSON | Sort:'Date' %}
 
-{% sql return:'adultAttendanceValues' %}
+{% sql return:'adultAttendanceValues' timeout:'180' %}
     SELECT
         CONVERT(varchar, mv.MetricValueDateTime, 23)  'Date',
-        (SELECT mvp.EntityId FROM MetricValuePartition mvp WHERE mvp.MetricValueId = mv.Id AND mvp.MetricPartitionId = 1524) 'CampusId',
-        (SELECT mvp.EntityId FROM MetricValuePartition mvp WHERE mvp.MetricValueId = mv.Id AND mvp.MetricPartitionId = 1525) 'ScheduleId',
+        mvp.EntityId 'CampusId',
+        mvp2.EntityId 'ScheduleId',
         mv.YValue 'AdultAttendance'
     FROM MetricValue mv
+    JOIN MetricValuePartition mvp
+    ON mvp.MetricValueId = mv.Id
+    JOIN MetricValuePartition mvp2
+    ON mvp2.MetricValueId = mv.Id
     WHERE mv.MetricId = 2235
+    AND mvp.MetricPartitionId = 1524
+    AND mvp2.MetricPartitionId = 1525
     AND DATEPART(DW, mv.MetricValueDateTime) = 1 -- limit results to sundays
     ORDER BY CONVERT(varchar, mv.MetricValueDateTime, 23) DESC
 {% endsql %}
 
-{% sql return:'values' %}
+{% sql return:'values' timeout:'180' %}
     DECLARE @Now datetime;
     DECLARE @KidSpringIds table (Id int);
     DECLARE @VolunteerIds table (Id int);
@@ -310,8 +316,6 @@
     </div>
 </div>
 
-
-
 {% if currentCampus == empty %}
     {[ rockCard title:'Attendance Totals By Campus' iconclass:'' ]}
         <div class="table-responsive">
@@ -354,10 +358,11 @@
     {[ endrockCard ]}
 {% endif %}
 
+<div class="hidden-sm hidden-xs">
 {[ rockCard title:'Total Attendance - Last 12 Weeks' iconclass:'' ]}
     <canvas id="myChart" width="400" height="150"></canvas>
 {[ endrockCard ]}
-
+</div>
 
 
 <!-- SETUP ATTENDANCE CHART -->
