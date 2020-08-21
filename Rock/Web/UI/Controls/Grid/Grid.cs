@@ -4583,7 +4583,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     PageLink[0].CommandName = prevPageIndex.ToString();
 
                     int nextPageIndex = ( currentGroupIndex + 1 ) * 10;
-                    if ( nextPageIndex >= pageCount - 1 )
+                    if ( nextPageIndex > pageCount - 1 )
                     {
                         nextPageIndex = pageCount - 1;
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
