@@ -126,6 +126,7 @@
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
+    <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="StorageTests\BaseStorageComponentTests.cs" />
@@ -205,6 +206,10 @@
     <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj">
       <Project>{704740d8-b539-4560-9f8c-681670c9d6ad}</Project>
       <Name>Rock.Migrations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Oidc\Rock.Oidc.csproj">
+      <Project>{8ccb8e2a-073c-48cb-b31a-621ec5430a42}</Project>
+      <Name>Rock.Oidc</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}</Project>
