@@ -181,5 +181,15 @@ namespace Rock.SystemKey
         [Obsolete( "This functionality is no longer used." )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
+
+        /// <summary>
+        /// The open id connect RSA keys
+        /// </summary>
+        public const string OPEN_ID_CONNECT_RSA_KEYS = "OpenIdConnectRsaKeys";
+
+        /// <summary>
+        /// The open identifier connect settings
+        /// </summary>
+        public const string OPEN_ID_CONNECT_SETTINGS = "OpenIdConnectSettings";
     }
 }

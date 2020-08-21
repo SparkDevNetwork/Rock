@@ -142,7 +142,7 @@ namespace Rock
         public static string ScrubEncodedStringForXSSObjects( string encodedString )
         {
             // Characters used by DOM Objects; javascript, document, window and URLs
-            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+            char[] badCharacters = new char[] { '<', '>', ':', '*' };
 
             if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
             {

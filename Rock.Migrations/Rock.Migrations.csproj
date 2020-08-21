@@ -109,6 +109,10 @@
     <Compile Include="Migrations\202008182000056_Rollup_0818.Designer.cs">
       <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.cs" />
+    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.Designer.cs">
+      <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1390,6 +1394,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202008182000056_Rollup_0818.resx">
       <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008211513093_AddOidcModelsAndPages.resx">
+      <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
