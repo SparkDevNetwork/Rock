@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Web;
@@ -27,7 +28,20 @@ namespace Rock.Net
     /// </summary>
     public class ClientInformation
     {
+        #region Private Fields
+
+        /// <summary>
+        /// The shared UA parser that will be used.
+        /// </summary>
         private static readonly Parser _uaParser = Parser.GetDefault();
+
+        /// <summary>
+        /// The browser information is lazy loaded since it can take a few
+        /// milliseconds to parse the regex and is only rarely used.
+        /// </summary>
+        private Lazy<ClientInfo> _browser;
+
+        #endregion
 
         #region Properties
 
@@ -45,7 +59,7 @@ namespace Rock.Net
         /// <value>
         /// The browser object that identifies what we know about the browser.
         /// </value>
-        public ClientInfo Browser { get; }
+        public ClientInfo Browser => _browser.Value;
 
         #endregion
 
@@ -84,7 +98,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            Browser = _uaParser.Parse( request.UserAgent );
+            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.UserAgent ) );
         }
 
         /// <summary>
@@ -114,7 +128,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            Browser = _uaParser.Parse( request.Headers.UserAgent.ToString() );
+            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.Headers.UserAgent.ToString() ) );
         }
 
         #endregion
