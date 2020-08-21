@@ -136,6 +136,11 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gConnectionRequestAttributes.GridRebind += gConnectionRequestAttributes_GridRebind;
             gConnectionRequestAttributes.GridReorder += gConnectionRequestAttributes_GridReorder;
+            var securityFieldConnectionRequestAttributes = gConnectionRequestAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityFieldConnectionRequestAttributes != null )
+            {
+                securityFieldConnectionRequestAttributes.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             gActivityTypes.DataKeyNames = new string[] { "Guid" };
             gActivityTypes.Actions.ShowAdd = true;
