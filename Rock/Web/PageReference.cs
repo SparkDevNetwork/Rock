@@ -609,6 +609,7 @@ namespace Rock.Web
                                         {
                                             RockBlock rockBlock = control as RockBlock;
                                             rockBlock.SetBlock( page, block );
+                                            rockBlock.RequestContext = rockPage.RequestContext;
                                             rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
                                         }
                                         control = null;

@@ -812,6 +812,7 @@ namespace Rock.CheckIn
                             if ( checkinBlock != null )
                             {
                                 checkinBlock.SetBlock( page, block, true, true );
+                                checkinBlock.RequestContext = RequestContext;
                                 checkinBlock.GetState();
                                 return checkinBlock;
                             }

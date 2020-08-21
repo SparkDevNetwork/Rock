@@ -116,9 +116,10 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
-        internal RockRequestContext( HttpRequest request )
+        /// <param name="currentUser">The current user for this request.</param>
+        internal RockRequestContext( HttpRequest request, UserLogin currentUser )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = currentUser;
 
             var uri = new Uri( request.Url.ToString() );
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;

@@ -24,8 +24,10 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -35,7 +37,7 @@ namespace Rock.Web.UI
     /// <summary>
     /// RockBlock is the base abstract class that all Blocks should inherit from
     /// </summary>
-    public abstract class RockBlock : UserControl
+    public abstract class RockBlock : UserControl, IRockBlockType
     {
         #region Public Properties
 
@@ -318,6 +320,48 @@ namespace Rock.Web.UI
         /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
         /// </summary>
         public bool ConfigurationRenderModeIsEnabled { get; set; }
+
+        #endregion
+
+        #region IRockBlockType Properties
+
+        /// <summary>
+        /// Gets or sets the block cache.
+        /// </summary>
+        /// <value>
+        /// The block cache.
+        /// </value>
+        /// <remarks>
+        /// Implement explicitely so we don't modify the original property definitions.
+        /// </remarks>
+        BlockCache IRockBlockType.BlockCache
+        {
+            get => this.BlockCache;
+            set => this.BlockCache = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the page cache.
+        /// </summary>
+        /// <value>
+        /// The page cache.
+        /// </value>
+        /// <remarks>
+        /// Implement explicitely so we don't modify the original property definitions.
+        /// </remarks>
+        PageCache IRockBlockType.PageCache
+        {
+            get => this.PageCache;
+            set => this.PageCache = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the request context.
+        /// </summary>
+        /// <value>
+        /// The request context.
+        /// </value>
+        public RockRequestContext RequestContext { get; set; }
 
         #endregion
 

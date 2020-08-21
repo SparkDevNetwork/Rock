@@ -33,6 +33,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
@@ -535,6 +536,14 @@ namespace Rock.Web.UI
         /// </value>
         public bool EnableViewStateInspection { get; set; }
 
+        /// <summary>
+        /// Gets or sets the request context.
+        /// </summary>
+        /// <value>
+        /// The request context.
+        /// </value>
+        public RockRequestContext RequestContext { get; private set; }
+
         #endregion
 
         #region Overridden Properties
@@ -864,6 +873,17 @@ namespace Rock.Web.UI
 
                 // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
                 HandleRockWiFiCookie( CurrentPersonAliasId );
+            }
+
+            // Store the details about this web request.
+            Page.Trace.Warn( "Setting RequestContext" );
+            RequestContext = new RockRequestContext( Request, user );
+
+            if ( _showDebugTimings )
+            {
+                stopwatchInitEvents.Stop();
+                slDebugTimings.Append( GetDebugTimingOutput( "Set Request Context", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                stopwatchInitEvents.Restart();
             }
 
             // If a PageInstance exists
@@ -1279,6 +1299,7 @@ namespace Rock.Web.UI
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
+                                    blockControl.RequestContext = RequestContext;
                                     control = new RockBlockWrapper( blockControl );
 
                                     // Add any breadcrumbs to current page reference that the block creates
