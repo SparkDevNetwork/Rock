@@ -82,23 +82,55 @@ namespace Rock.Model
         /// </returns>
         public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
         {
-            var dataViewFilterEntityId = EntityTypeCache.Get<OtherDataViewFilter>( false )?.Id ?? 0;
-
-            return IsViewInFilter( dataViewId, filter, dataViewFilterEntityId );
+            var dataView = Get( dataViewId );
+            return IsViewInFilter( dataView, filter );
         }
 
-        private bool IsViewInFilter( int dataViewId, DataViewFilter filter, int dataViewFilterEntityId )
+        /// <summary>
+        /// Determines whether [is view in filter] [the specified data view].
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns>
+        ///   <c>true</c> if [is view in filter] [the specified data view]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsViewInFilter( DataView dataView, DataViewFilter filter )
         {
-            if ( filter.EntityTypeId == dataViewFilterEntityId )
+            if ( filter.EntityTypeId.HasValue )
             {
-                var filterDataViewId = filter.Selection.AsIntegerOrNull();
-                if ( filterDataViewId == dataViewId )
+                var entityType = EntityTypeCache.Get( filter.EntityTypeId.Value );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                if ( component is OtherDataViewFilter otherDataViewFilter )
+                {
+                    var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
+                    if ( otherDataView == null)
+                    {
+                        return false;
+                    }
+
+                    if ( otherDataView.Id == dataView.Id )
+                    {
+                        // if we discover that this DataView is also used in one of its child views, we've got infinite recursion
+                        return true;
+                    }
+                    else
+                    {
+                        // dig down recursively thru the *other* DataView's child filters to see if any of it's child filters is using this dataview
+                        return IsViewInFilter( dataView, otherDataView.DataViewFilter );
+                    }
+                }
+            }
+
+            foreach ( var childFilter in filter.GetChildFilters() )
+            {
+                // dig down recursively thru *this* DataView's child filters 
+                if ( IsViewInFilter( dataView, childFilter ) )
                 {
                     return true;
                 }
             }
 
-            return filter.ChildFilters.Any( childFilter => IsViewInFilter( dataViewId, childFilter, dataViewFilterEntityId ) );
+            return false;
         }
 
 
