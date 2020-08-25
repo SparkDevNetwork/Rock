@@ -232,10 +232,41 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( reportGetQueryableArgs ) instead" )]
         public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
-            System.Data.Entity.DbContext reportDbContext;
-            var qry = GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
+            errorMessages = new List<string>();
+            return GetDataSource( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds );
+        }
+
+        /// <summary>
+        /// Gets the data source.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( reportGetQueryableArgs ) instead" )]
+        public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds )
+        {
+            var reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+
+            ReportGetQueryableArgs reportGetQueryableArgs = new ReportGetQueryableArgs
+            {
+                ReportDbContext = reportDbContext as Rock.Data.DbContext,
+                EntityFields = entityFields,
+                Attributes = attributes,
+                SelectComponents = selectComponents,
+                SortProperty = sortProperty,
+                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
+            };
+
+            var qry = GetQueryable( reportGetQueryableArgs );
 
             // enumerate thru the query results and put into a list
             var reportResult = new List<object>();
@@ -259,6 +290,8 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( ReportGetQueryableArgs reportGetQueryableArgs ) instead" )]
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             System.Data.Entity.DbContext reportDbContext;
@@ -277,6 +310,8 @@ namespace Rock.Model
         /// <param name="errorMessages">The error messages.</param>
         /// <param name="reportDbContext">The report database context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( ReportGetQueryableArgs reportGetQueryableArgs ) instead" )]
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
         {
             return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
@@ -297,6 +332,8 @@ namespace Rock.Model
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         /// <exception cref="System.Exception"></exception>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( ReportGetQueryableArgs reportGetQueryableArgs ) instead" )]
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, bool isCommunication, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
         {
             return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, isCommunication, out errorMessages, out reportDbContext );
@@ -317,222 +354,293 @@ namespace Rock.Model
         /// <param name="reportDbContext">The report database context.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, bool isCommunication, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetQueryable( ReportGetQueryableArgs reportGetQueryableArgs ) instead" )]
+        public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty,
+            DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, bool isCommunication, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
         {
-            errorMessages = new List<string>();
-            reportDbContext = null;
+            reportDbContext = Reflection.GetDbContextForEntityType( entityType );
 
-            if ( entityType != null )
+            ReportGetQueryableArgs reportGetQueryableArgs = new ReportGetQueryableArgs
             {
-                reportDbContext = Reflection.GetDbContextForEntityType( entityType );
-                IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
+                ReportDbContext = reportDbContext as Rock.Data.DbContext,
+                EntityFields = entityFields,
+                Attributes = attributes,
+                SelectComponents = selectComponents,
+                SortProperty = sortProperty,
+                DataViewFilterOverrides = dataViewFilterOverrides,
+                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
+                IsCommunication = isCommunication
+            };
 
-                if ( databaseTimeoutSeconds.HasValue )
+            errorMessages = null;
+
+
+            return GetQueryable( reportGetQueryableArgs );
+        }
+
+        /// <summary>
+        /// Gets the queryable.
+        /// </summary>
+        /// <param name="reportGetQueryableArgs">The report get queryable arguments.</param>
+        /// <returns></returns>
+        /// <exception cref="Rock.Reporting.RockReportingException">
+        /// At least one field must be defined for {this.Name}
+        /// or
+        /// Unable to get component for {reportField.Value.DataSelectComponentEntityType.Name}
+        /// or
+        /// Unable to get componentExpression for {reportField.Value.DataSelectComponentEntityType.Name}
+        /// or
+        /// Unable to get recipientPersonIdExpression for {reportField.Value.Selection}
+        /// or
+        /// Unable to determine IService.Get method for {serviceInstance}
+        /// </exception>
+        public IQueryable GetQueryable( ReportGetQueryableArgs reportGetQueryableArgs )
+        {
+            var reportEntityTypeCache = EntityTypeCache.Get( this.EntityTypeId.Value );
+
+            if ( reportEntityTypeCache?.AssemblyName == null )
+            {
+                throw new RockReportException( this, $"Unable to determine Report EntityType/Assembly for EntityTypeId { EntityTypeId }" );
+            }
+
+            Type reportEntityTypeType = reportEntityTypeCache.GetEntityType();
+            if ( reportEntityTypeType == null )
+            {
+                throw new RockReportException( this, $"Unable to determine Report EntityType for { reportEntityTypeType }." );
+            }
+
+            var reportDbContext = reportGetQueryableArgs.ReportDbContext;
+            if ( reportDbContext == null )
+            {
+                reportDbContext = Reflection.GetDbContextForEntityType( reportEntityTypeType ) as Rock.Data.DbContext;
+            }
+
+            if (reportDbContext == null)
+            {
+                throw new RockReportException( this, $"Unable to determine ReportDbContext from Report EntityType {reportEntityTypeType}" );
+            }
+
+            IService serviceInstance = Reflection.GetServiceForEntityType( reportEntityTypeType, reportDbContext );
+            if ( serviceInstance == null )
+            {
+                throw new RockReportException( this, $"Unable to determine ServiceInstance from Report EntityType {reportEntityTypeType}" );
+            }
+
+            var databaseTimeoutSeconds = reportGetQueryableArgs.DatabaseTimeoutSeconds;
+
+            if ( databaseTimeoutSeconds.HasValue )
+            {
+                reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+            }
+
+            var entityFields = reportGetQueryableArgs.EntityFields;
+            var attributes = reportGetQueryableArgs.Attributes;
+            var selectComponents = reportGetQueryableArgs.SelectComponents;
+            var isCommunication = reportGetQueryableArgs.IsCommunication;
+
+            ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+            MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
+
+            // Get AttributeValue queryable and parameter
+            var attributeValues = reportDbContext.Set<AttributeValue>();
+            ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+
+            // Create the dynamic type
+            var dynamicFields = new Dictionary<string, Type>();
+            dynamicFields.Add( "Id", typeof( int ) );
+            foreach ( var f in entityFields )
+            {
+                dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
+            }
+
+            foreach ( var a in attributes )
+            {
+                dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), a.Value.FieldType.Field.AttributeValueFieldType );
+            }
+
+            foreach ( var reportField in selectComponents )
+            {
+                DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
+                if ( selectComponent == null )
                 {
-                    reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                    throw new RockReportFieldExpressionException( reportField.Value, $"Unable to determine select component for {reportField.Value.DataSelectComponentEntityType.Name}" );
                 }
 
-                if ( serviceInstance != null )
+                dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
+                var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                if ( customSortProperties != null )
                 {
-                    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-                    MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
-
-                    // Get AttributeValue queryable and parameter
-                    var attributeValues = reportDbContext.Set<AttributeValue>();
-                    ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
-
-                    // Create the dynamic type
-                    var dynamicFields = new Dictionary<string, Type>();
-                    dynamicFields.Add( "Id", typeof( int ) );
-                    foreach ( var f in entityFields )
+                    foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                     {
-                        dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
-                    }
-
-                    foreach ( var a in attributes )
-                    {
-                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), a.Value.FieldType.Field.AttributeValueFieldType );
-                    }
-
-                    foreach ( var reportField in selectComponents )
-                    {
-                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
-                        if ( selectComponent != null )
+                        if ( !string.IsNullOrWhiteSpace( customSortProperty ) )
                         {
-                            dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
-                            var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
-                            if ( customSortProperties != null )
-                            {
-                                foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
-                                {
-                                    if ( !string.IsNullOrWhiteSpace( customSortProperty ) )
-                                    {
-                                        var customSortPropertyType = entityType.GetPropertyType( customSortProperty );
-                                        dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), customSortPropertyType ?? typeof( string ) );
-                                    }
-                                }
-                            }
-
-                            if ( isCommunication && selectComponent is IRecipientDataSelect )
-                            {
-                                dynamicFields.Add( $"Recipient_{selectComponent.ColumnPropertyName}_{reportField.Key}", ( (IRecipientDataSelect)selectComponent ).RecipientColumnFieldType );
-                            }
+                            var customSortPropertyType = reportEntityTypeType.GetPropertyType( customSortProperty );
+                            dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), customSortPropertyType ?? typeof( string ) );
                         }
                     }
+                }
 
-                    if ( dynamicFields.Count == 0 )
+                if ( isCommunication && selectComponent is IRecipientDataSelect )
+                {
+                    dynamicFields.Add( $"Recipient_{selectComponent.ColumnPropertyName}_{reportField.Key}", ( ( IRecipientDataSelect ) selectComponent ).RecipientColumnFieldType );
+                }
+
+            }
+
+            if ( dynamicFields.Count == 0 )
+            {
+                throw new RockReportException( this, $"At least one field must be defined for {this.Name}" );
+            }
+
+            Type dynamicType = LinqRuntimeTypeBuilder.GetDynamicType( dynamicFields );
+            ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
+
+            // Bind the dynamic fields to their expressions
+            var bindings = new List<MemberAssignment>();
+            bindings.Add( Expression.Bind( dynamicType.GetField( "id" ), idExpression ) );
+
+            foreach ( var f in entityFields )
+            {
+                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );
+            }
+
+            foreach ( var a in attributes )
+            {
+                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
+            }
+
+            foreach ( var reportFieldKeyValue in selectComponents )
+            {
+                var reportField = reportFieldKeyValue.Value;
+                DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                if ( selectComponent == null )
+                {
+                    throw new RockReportFieldExpressionException( reportField, $"Unable to get component for {reportField.DataSelectComponentEntityType.Name} " );
+                }
+
+                var componentExpression = selectComponent.GetExpression( reportDbContext, idExpression, reportField.Selection ?? string.Empty );
+                if ( componentExpression == null )
+                {
+                    throw new RockReportFieldExpressionException( reportField, $"Unable to get componentExpression for {reportField.DataSelectComponentEntityType.Name} " );
+                }
+
+                var componentFieldInfo = dynamicType.GetField( $"data_{selectComponent.ColumnPropertyName}_{reportFieldKeyValue.Key}" );
+                bindings.Add( Expression.Bind( componentFieldInfo, componentExpression ) );
+
+                if ( isCommunication && selectComponent is IRecipientDataSelect )
+                {
+                    var recipientPersonIdExpression = ( ( IRecipientDataSelect ) selectComponent ).GetRecipientPersonIdExpression( reportDbContext, idExpression, reportField.Selection ?? string.Empty );
+
+                    if ( recipientPersonIdExpression == null )
                     {
-                        errorMessages.Add( "At least one field must be defined" );
-                        return null;
+                        throw new RockReportFieldExpressionException( reportField, $"Unable to get recipientPersonIdExpression for {reportField.Selection} " );
                     }
 
-                    Type dynamicType = LinqRuntimeTypeBuilder.GetDynamicType( dynamicFields );
-                    ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
+                    var recipientFieldInfo = dynamicType.GetField( $"recipient_{selectComponent.ColumnPropertyName}_{reportFieldKeyValue.Key}" );
+                    bindings.Add( Expression.Bind( recipientFieldInfo, recipientPersonIdExpression ) );
+                }
 
-                    // Bind the dynamic fields to their expressions
-                    var bindings = new List<MemberAssignment>();
-                    bindings.Add( Expression.Bind( dynamicType.GetField( "id" ), idExpression ) );
-
-                    foreach ( var f in entityFields )
+                var customSortProperties = selectComponent.SortProperties( reportField.Selection );
+                if ( !string.IsNullOrEmpty( customSortProperties ) )
+                {
+                    foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                     {
-                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );
-                    }
-
-                    foreach ( var a in attributes )
-                    {
-                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
-                    }
-
-                    foreach ( var reportField in selectComponents )
-                    {
-                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
-                        if ( selectComponent != null )
+                        var customSortPropertyParts = customSortProperty.Split( '.' );
+                        MemberInfo memberInfo = dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportFieldKeyValue.Key ) );
+                        Expression memberExpression = null;
+                        foreach ( var customSortPropertyPart in customSortPropertyParts )
                         {
-                            try
-                            {
-                                var componentExpression = selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty );
-                                if ( componentExpression == null )
-                                {
-                                    componentExpression = Expression.Constant( null, typeof( string ) );
-                                }
-
-                                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), componentExpression ) );
-
-                                if ( isCommunication && selectComponent is IRecipientDataSelect )
-                                {
-                                    var recipientPersonIdExpression = ( (IRecipientDataSelect)selectComponent ).GetRecipientPersonIdExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty );
-                                    if ( recipientPersonIdExpression != null )
-                                    {
-                                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "recipient_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), recipientPersonIdExpression ) );
-                                    }
-                                }
-
-                                var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
-                                if ( !string.IsNullOrEmpty( customSortProperties ) )
-                                {
-                                    foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
-                                    {
-                                        var customSortPropertyParts = customSortProperty.Split( '.' );
-                                        MemberInfo memberInfo = dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) );
-                                        Expression memberExpression = null;
-                                        foreach ( var customSortPropertyPart in customSortPropertyParts )
-                                        {
-                                            memberExpression = Expression.Property( memberExpression ?? paramExpression, customSortPropertyPart );
-                                        }
-
-                                        bindings.Add( Expression.Bind( memberInfo, memberExpression ) );
-                                    }
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                throw new Exception( string.Format( "Exception in {0}", selectComponent ), ex );
-                            }
-                        }
-                    }
-
-                    ConstructorInfo constructorInfo = dynamicType.GetConstructor( Type.EmptyTypes );
-                    NewExpression newExpression = Expression.New( constructorInfo );
-                    MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
-                    LambdaExpression selector = Expression.Lambda( memberInitExpression, paramExpression );
-
-                    // NOTE: having a NULL Dataview is OK.
-                    Expression whereExpression = null;
-                    if ( this.DataView != null )
-                    {
-                        whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides, out errorMessages );
-                    }
-
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
-                    if ( getMethod != null )
-                    {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
-                        var qry = getResult as IQueryable<IEntity>;
-                        var qryExpression = qry.Expression;
-
-                        // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
-                        string orderByMethod = "OrderBy";
-                        if ( sortProperty == null )
-                        {
-                            // if no sorting was specified, sort by Id
-                            sortProperty = new Web.UI.Controls.SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+                            memberExpression = Expression.Property( memberExpression ?? paramExpression, customSortPropertyPart );
                         }
 
-                        /*
-                         NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
-                         * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
-                         * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
-                         * Examples:
-                         *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
-                         *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
-                         *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
-                         *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
-                         */
-
-                        foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                        {
-                            string propertyName;
-
-                            var direction = sortProperty.Direction;
-                            if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
-                            {
-                                propertyName = column.Left( column.Length - 5 );
-
-                                // if the column ends with " desc", toggle the direction if sortProperty is Descending
-                                direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                            }
-                            else
-                            {
-                                propertyName = column;
-                            }
-
-                            string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
-
-                            // Call OrderBy on whatever the Expression is for that Column
-                            var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
-                            LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
-                            qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
-                            orderByMethod = "ThenBy";
-                        }
-
-                        var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
-
-                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
-
-                        // cast to a dynamic so that we can do a Queryable.Take (the compiler figures out the T in IQueryable at runtime)
-                        dynamic dquery = query;
-
-                        if ( FetchTop.HasValue )
-                        {
-                            dquery = Queryable.Take( dquery, FetchTop.Value );
-                        }
-
-                        return dquery as IQueryable;
+                        bindings.Add( Expression.Bind( memberInfo, memberExpression ) );
                     }
                 }
             }
 
-            return null;
+            ConstructorInfo constructorInfo = dynamicType.GetConstructor( Type.EmptyTypes );
+            NewExpression newExpression = Expression.New( constructorInfo );
+            MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
+            LambdaExpression selector = Expression.Lambda( memberInitExpression, paramExpression );
+
+            // NOTE: having a NULL Dataview is OK, it just means to not filter the results
+            Expression whereExpression = null;
+            if ( this.DataView != null )
+            {
+                var dataViewFilterOverrides = reportGetQueryableArgs.DataViewFilterOverrides;
+                whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
+            }
+
+            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+            if ( getMethod == null )
+            {
+                throw new RockReportException( this, $"Unable to determine IService.Get method for {serviceInstance}" );
+            }
+
+            var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
+            var qry = getResult as IQueryable<IEntity>;
+            var qryExpression = qry.Expression;
+            var sortProperty = reportGetQueryableArgs.SortProperty;
+
+            // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
+            string orderByMethod = "OrderBy";
+            if ( sortProperty == null )
+            {
+                // if no sorting was specified, sort by Id
+                sortProperty = new Web.UI.Controls.SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+            }
+
+            /*
+             NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
+             * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
+             * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
+             * Examples:
+             *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
+             *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
+             *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
+             *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
+             */
+
+            foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                string propertyName;
+
+                var direction = sortProperty.Direction;
+                if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    propertyName = column.Left( column.Length - 5 );
+
+                    // if the column ends with " desc", toggle the direction if sortProperty is Descending
+                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                }
+                else
+                {
+                    propertyName = column;
+                }
+
+                string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
+
+                // Call OrderBy on whatever the Expression is for that Column
+                var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
+                LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
+                qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
+                orderByMethod = "ThenBy";
+            }
+
+            var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
+
+            var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
+
+            // cast to a dynamic so that we can do a Queryable.Take (the compiler figures out the T in IQueryable at runtime)
+            dynamic dquery = query;
+
+            if ( FetchTop.HasValue )
+            {
+                dquery = Queryable.Take( dquery, FetchTop.Value );
+            }
+
+            return dquery as IQueryable;
         }
 
         /// <summary>

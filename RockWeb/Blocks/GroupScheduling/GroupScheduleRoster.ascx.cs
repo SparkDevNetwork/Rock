@@ -305,6 +305,7 @@ namespace RockWeb.Blocks.GroupScheduling
             // Only use teh ShowChildGroups option when there is 1 group selected
             if ( rosterConfiguration.IncludeChildGroups && pickedGroupIds.Count == 1 )
             {
+                // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                 var parentGroupId = pickedGroupIds[0];
                 var groupService = new GroupService( rockContext );
 

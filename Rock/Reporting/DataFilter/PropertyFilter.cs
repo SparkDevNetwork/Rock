@@ -140,6 +140,10 @@ namespace Rock.Reporting.DataFilter
                 {
                     result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ) );
                 }
+                else
+                {
+                    result = $"Unknown Property: {fieldSelection}";
+                }
             }
 
             return result;
@@ -463,29 +467,101 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            if ( !string.IsNullOrWhiteSpace( selection ) )
-            {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            /* 2020-08-17 MDP
+               'selection' should be a deserialized List<string> where list parts are
+               [0] - PropertyName or Attribute to filter on
+               [1] - Comparison Type
+               [2+] - Parts that the GetPropertyExpression or GetAttributeExpression interpret
+             */
 
-                if ( values.Count >= 2 )
-                {
-                    string selectedProperty = values[0];
-                    var entityField = EntityHelper.FindFromFilterSelection( entityType, selectedProperty );
-                    if ( entityField != null )
-                    {
-                        if ( entityField.FieldKind == FieldKind.Property )
-                        {
-                            return GetPropertyExpression( serviceInstance, parameterExpression, entityField, FixDelimination( values.Skip( 1 ).ToList() ) );
-                        }
-                        else
-                        {
-                            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, FixDelimination( values.Skip( 1 ).ToList() ) );
-                        }
-                    }
-                }
+
+            /* 2020-08-17 MDP
+            * If it isn't fully configured we will ignore it and won't filter. We can detect if the filter isn't configured if..
+            * 
+            *   1) There isn't a selection specified (null or whitespace)
+            *   2) Deserialized Selection (filterValues) is an empty list
+            *   3) There are less than 2 items in the filterValues (we need a PropertyName/Attribute, and a comparison type)
+            *   4) A comparisontype isn't specified (null, "" or "0" means not specified) 
+            *   5) A property/attribute is not specified
+            *   
+            *   If we have any of the above cases, we'll return Expression.Const(true), which means we won't filter on this)
+            *   
+            * An exception is returned if
+            *   1) A Property is specified, but the Property doesn't exist
+            *   2) An attribute is specified, but the Attribute doesn't exist
+            *   3) A Property is specified, but the property is [HideFromReporting]
+            */
+
+            if ( string.IsNullOrWhiteSpace( selection ) )
+            {
+                // if the Property Filter hasn't been configured, don't use it to filter the results.
+                return Expression.Constant( true );
             }
 
-            return null;
+
+            var filterValues = JsonConvert.DeserializeObject<List<string>>( selection );
+
+            if ( !filterValues.Any() )
+            {
+                // if the Property/Attribute Filter hasn't been configured, don't use it to filter the results.
+                return Expression.Constant( true );
+            }
+
+            if ( filterValues.Count < 2 )
+            {
+                // a Property/Attribute filter needs at least 2 parameters. If it doesn't, don't filter
+                return Expression.Constant( true );
+            }
+
+            string selectedPropertyOrAttribute = filterValues[0];
+            if ( selectedPropertyOrAttribute.IsNullOrWhiteSpace() )
+            {
+                // A property/attribute is not specified
+                return Expression.Constant( true );
+            }
+
+            var entityField = EntityHelper.FindFromFilterSelection( entityType, selectedPropertyOrAttribute );
+            if ( entityField != null )
+            {
+                /* 2020-08-17 MDP
+                  filterValues[0] is the PropertyName or Attribute, we used that to determine which property or attribute to filter on.
+                  filterValues[1]+ are the filterValues that GetPropertyExpression or GetAttributeExpression use, so we do a Skip(1) when passing those
+                */
+
+                if ( entityField.FieldKind == FieldKind.Property )
+                {
+                    return GetPropertyExpression( serviceInstance, parameterExpression, entityField, FixDelimination( filterValues.Skip( 1 ).ToList() ) );
+                }
+                else
+                {
+                    return GetAttributeExpression( serviceInstance, parameterExpression, entityField, FixDelimination( filterValues.Skip( 1 ).ToList() ) );
+                }
+            }
+            else
+            {
+                /* 2020-08-17 MDP
+                 Pre-v12 would ignore this situation. However, ignoring this will return incorrect results. So, v12+ will throw an exception instead.
+                 Here is an example where the Pre-v12 behavior would return incorrect results
+                   -- A 'FavoriteColor' attribute exists on Person, and they configure a DataView to filter on 'FavoriteColor is Blue'. DataView returns only people whose favorite color is blue
+                   -- Somebody removes the 'FavoriteColor' attribute
+                   -- Pre-v12 would return everybody since the FavoriteColor attribute no longer exists
+                   -- v12 will throw an exception to prevent unexpected results after an attribute is deleted.
+                 */
+
+
+                string formattedSelection;
+
+                try
+                {
+                    formattedSelection = this.FormatSelection( entityType, selection );
+                }
+                catch
+                {
+                    formattedSelection = "Property";
+                }
+
+                throw new RockDataViewFilterExpressionException( $"{formattedSelection} filter refers to a property or attribute that doesn't exist. Selection: {selection}" );
+            }
         }
 
         /// <summary>

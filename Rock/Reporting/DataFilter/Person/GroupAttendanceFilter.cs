@@ -424,6 +424,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupIds = GetGroupIds( groupAttendanceFilterSelection.GroupGuids, groupAttendanceFilterSelection.IncludeChildGroups );
             if ( groupIds.Count == 1 )
             {
+                // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                 int groupId = groupIds[0];
                 attendanceQry = attendanceQry.Where( a => a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == groupId );
             }

@@ -700,8 +700,7 @@ namespace Rock.Lava.Blocks
 
                 if ( isCorrectDataType )
                 {
-                    List<string> errorMessages = new List<string>();
-                    var whereExpression = dataViewSource.GetExpression( service, parmExpression, out errorMessages );
+                    var whereExpression = dataViewSource.GetExpression( service, parmExpression );
                     return whereExpression;
                 }
                 else

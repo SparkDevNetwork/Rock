@@ -385,6 +385,7 @@ btnCopyToClipboard.ClientID );
 
                 if ( pickedGroupIds.Count() == 1)
                 {
+                    // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                     var pickedGroupId = pickedGroupIds[0];
                     childGroupIdQuery = childGroupIdQuery.Where( a => a.ParentGroupId == pickedGroupId );
                 }

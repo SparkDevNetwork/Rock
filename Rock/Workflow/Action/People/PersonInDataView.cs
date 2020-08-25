@@ -75,7 +75,11 @@ namespace Rock.Workflow.Action
                             {
                                 var timeout = GetAttributeValue( action, "Timeout" ).AsIntegerOrNull();
                                 Stopwatch stopwatch = Stopwatch.StartNew();
-                                var qry = dataView.GetQuery( null, timeout, out errorMessages );
+                                var qry = dataView.GetQuery( new DataViewGetQueryArgs
+                                {
+                                    DatabaseTimeoutSeconds = timeout
+                                } );
+
                                 var isPersonFound = false;
                                 if ( qry != null )
                                 {

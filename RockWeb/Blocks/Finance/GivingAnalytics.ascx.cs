@@ -32,6 +32,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -984,10 +985,9 @@ function(item) {
                     var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
-                        var errorMessages = new List<string>();
                         var dvPersonService = new PersonService( threadRockContext );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
                         SortProperty sort = null;
                         var dataViewPersonIdQry = dvPersonService
@@ -1316,10 +1316,9 @@ function(item) {
                         var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
                         if ( dataView != null )
                         {
-                            var errorMessages = new List<string>();
                             var dvPersonService = new PersonService( threadRockContext );
                             ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                            Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                            Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
                             SortProperty sort = null;
                             var dataViewPersonIdQry = dvPersonService
@@ -1799,33 +1798,17 @@ function(item) {
         private void LogAndShowException( Exception exception )
         {
             LogException( exception );
-            string errorMessage = null;
-            string stackTrace = string.Empty;
-            while ( exception != null )
+
+            var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( exception );
+            if ( sqlTimeoutException != null)
             {
-                errorMessage = exception.Message;
-                stackTrace += exception.StackTrace;
-                if ( exception is System.Data.SqlClient.SqlException )
-                {
-                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                    {
-                        errorMessage = "The Giving Analytics report did not complete in a timely manner.";
-                        break;
-                    }
-                    else
-                    {
-                        exception = exception.InnerException;
-                    }
-                }
-                else
-                {
-                    exception = exception.InnerException;
-                }
+                nbGiversError.Text = "The Giving Analytics report did not complete in a timely manner.";
+                nbGiversError.Visible = true;
+                return;
             }
 
-            nbGiversError.Text = errorMessage;
-            nbGiversError.Details = stackTrace;
+            nbGiversError.Text = "An error occurred";
+            nbGiversError.Details = exception.Message;
             nbGiversError.Visible = true;
         }
 

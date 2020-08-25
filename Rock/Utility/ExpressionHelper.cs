@@ -43,34 +43,52 @@ namespace Rock.Utility
         /// <returns></returns>
         public static Expression PropertyFilterExpression( List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
-            if ( filterValues.Count >= 2 )
+            /* 2020-08-17 MDP
+             * If it isn't fully configured we won't filter. We can detect if the filter isn't configured by..
+             * 
+             *   1) There are less than 2 filterValues 
+             *   2) A comparisontype isn't specified ("0" means not specified) 
+             *   3) Except of in the case of IsBlank or IsNotBlank, a "CompareTo null" (filterValues[1]) value means the filter value isn't specified
+             *   
+             *   If we have any of the above cases, we'll return Expression.Const(true), which means we won't filter on this)
+             */
+
+            if ( filterValues.Count < 2 )
             {
-                string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
-                {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
-
-                    var type = propertyType;
-                    bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
-                    if ( isNullableType )
-                    {
-                        type = Nullable.GetUnderlyingType( type );
-                    }
-
-                    object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
-                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-
-                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
-
-                    if ( value != null || valueNotNeeded )
-                    {
-                        ConstantExpression constantExpression = value != null ? Expression.Constant( value, type ) : null;
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-                }
+                // if PropertyFilter needs at least 2 parameters. If it doesn't, don't filter
+                return Expression.Constant( true );
             }
 
-            return null;
+            string comparisonValue = filterValues[0];
+            if ( comparisonValue == "0" )
+            {
+                // if the comparison as a string is "0", that means no comparision type is specified (comparisonType enum starts at 1)
+                return Expression.Constant( true );
+            }
+
+            var type = propertyType;
+            bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
+            if ( isNullableType )
+            {
+                type = Nullable.GetUnderlyingType( type );
+            }
+
+            object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
+            ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+            bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
+
+            if ( value != null || valueNotNeeded )
+            {
+                // a valid value is specified or we are doing a NotBlank/IsNotBlank, so build an filter expression
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+                ConstantExpression constantExpression = value != null ? Expression.Constant( value, type ) : null;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+            }
+            else
+            {
+                // if Property Filter isn't fully configured (for example "Birthday(int) greaterThan null"), don't filter the results
+                return Expression.Constant( true );
+            }
         }
 
         /// <summary>
@@ -105,6 +123,11 @@ namespace Rock.Utility
             if ( propertyType == typeof( TimeSpan ) )
             {
                 return value.AsTimeSpan();
+            }
+
+            if ( propertyType == typeof( int ) )
+            {
+                return value.AsIntegerOrNull();
             }
 
             return Convert.ChangeType( value, propertyType );
@@ -266,7 +289,6 @@ namespace Rock.Utility
                     }
                     else
                     {
-                        
                         if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && parameterExpression.Type == typeof( Rock.Model.GroupMember ) )
                         {
                             // Special Case for GroupMember with Qualifier of 'GroupTypeId' (which is really Group.GroupTypeId)
