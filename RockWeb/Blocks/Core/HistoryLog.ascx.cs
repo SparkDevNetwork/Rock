@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Field.Types;
+using Rock.Reporting;
 
 namespace RockWeb.Blocks.Core
 {
@@ -127,11 +128,7 @@ namespace RockWeb.Blocks.Core
             {
                 ExceptionLogService.LogException( ex );
 
-                Exception sqlException = ex;
-                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
-                {
-                    sqlException = sqlException.InnerException;
-                }
+                Exception sqlException = ReportingHelper.FindSqlTimeoutException( ex );
 
                 nbMessage.Visible = true;
                 nbMessage.Text = string.Format( "<p>An error occurred trying to retrieve the history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",

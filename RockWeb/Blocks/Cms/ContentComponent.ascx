@@ -12,7 +12,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Danger" />
+            <Rock:NotificationBox ID="nbContentError" runat="server" Dismissable="true" Visible="false" />
             <asp:Literal ID="lContentOutput" runat="server" />
         </asp:Panel>
 

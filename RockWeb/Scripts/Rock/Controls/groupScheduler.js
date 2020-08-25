@@ -212,8 +212,11 @@
                                     // Also, we don't need to repopulate the resources since the person is no longer listed
                                     self.populateScheduledOccurrence($occurrence);
                                 }
-                            }).fail(function (a, b, c) {
-                                console.log('fail');
+                            }).fail(function (a) {
+                                console.log('fail:' + a.responseText);
+                                $(".ajax-error-message").html(a.responseText);
+                                $(".ajax-error").show();
+
                             });
                         }
                         self.trimSourceContainer();
@@ -268,8 +271,11 @@
                     } else {
                         self.populateScheduledOccurrence($occurrence);
                     }
-                }).fail(function (a, b, c) {
-                    console.log('fail');
+                }).fail(function (a) {
+                    console.log('fail:' + a.responseText);
+                    $(".ajax-error-message").html(a.responseText);
+                    $(".ajax-error").show();
+
                 });
             },
             /** populates the scheduled (requested/scheduled) resources for all the occurrence divs */
@@ -467,8 +473,11 @@
                     $unscheduledResource.html($resourceTemplateDiv.html());
 
                     self.populateResourceDiv($unscheduledResource, schedulerResource);
-                }).fail(function (a, b, c) {
-                    console.log('fail');
+                }).fail(function (a) {
+                    console.log('fail:' + a.responseText);
+                    $(".ajax-error-message").html(a.responseText);
+                    $(".ajax-error").show();
+
                 });
             },
             /** populates the resource list with unscheduled resources */
@@ -527,8 +536,10 @@
                         $loadingNotification.hide();
                     }, 0)
 
-                }).fail(function (a, b, c) {
-                    console.log('fail');
+                }).fail(function (a) {
+                    console.log('fail:' + a.responseText);
+                    $(".ajax-error-message").html(a.responseText);
+                    $(".ajax-error").show();
                     $loadingNotification.hide();
                 });
 
@@ -714,8 +725,10 @@
                         // after updating a resource, repopulate the list of resources for this occurrence
                         var $occurrence = $resource.closest('.js-scheduled-occurrence');
                         self.populateScheduledOccurrence($occurrence);
-                    }).fail(function (a, b, c) {
-                        console.log('fail');
+                    }).fail(function (a) {
+                        console.log('fail:' + a.responseText);
+                        $(".ajax-error-message").html(a.responseText);
+                        $(".ajax-error").show();
                     })
                 });
 
