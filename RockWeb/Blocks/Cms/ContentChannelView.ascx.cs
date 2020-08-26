@@ -474,18 +474,6 @@ namespace RockWeb.Blocks.Cms
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             Guid? channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
-            if ( channelGuid.HasValue )
-            {
-                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
-                if ( contentChannel != null )
-                {
-                    filterField.Entity = new ContentChannelItem
-                    {
-                        ContentChannelId = contentChannel.Id,
-                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                    };
-                }
-            }
 
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
@@ -1622,11 +1610,6 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                    filterControl.Entity = new ContentChannelItem
-                    {
-                        ContentChannelId = contentChannel.Id,
-                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                    };
 
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
