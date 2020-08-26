@@ -774,10 +774,17 @@ namespace RockWeb.Blocks.Event
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
-                                        // Redirect for Digital Signature Cookie Initialization
+                                        // Redirect to the digital signature provider page to initialize a cookie.
+                                        // The returnUrl specifies the current Rock page as the address to return to once the cookie has been created.
                                         var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "Redirected=True";
-                                        string redirectUrl = string.Format( "{0}?Redirect_Uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
+
+                                        /*
+                                         *[2020-08-26] DL
+                                         * The SignNow provider requires that the "redirect_uri" parameter be specified in lowercase.
+                                         * If this causes a problem with any other providers, we may need to add a placeholder token for the redirect parameter value to the CookieInitializationUrl instead.
+                                         */
+                                        string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
                                     }
                                     else
