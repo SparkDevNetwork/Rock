@@ -174,6 +174,8 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void ClearForm()
         {
+            pdAuditDetails.Visible = true;
+            ddlAddEditDocumentType.Enabled = true;
             ddlAddEditDocumentType.SelectedIndex = 0;
             tbDocumentName.Text = string.Empty;
             tbDescription.Text = string.Empty;
@@ -400,6 +402,7 @@ namespace RockWeb.Blocks.Crm
         protected void gFileList_Add( object sender, EventArgs e )
         {
             ClearForm();
+            pdAuditDetails.Visible = false;
             pnlAddEdit.Visible = true;
             pnlList.Visible = false;
         }
