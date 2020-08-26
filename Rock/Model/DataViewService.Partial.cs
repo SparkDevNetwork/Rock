@@ -121,7 +121,7 @@ namespace Rock.Model
                 }
             }
 
-            foreach ( var childFilter in filter.GetChildFilters() )
+            foreach ( var childFilter in filter.ChildFilters )
             {
                 // dig down recursively thru *this* DataView's child filters 
                 if ( IsViewInFilter( dataView, childFilter ) )
