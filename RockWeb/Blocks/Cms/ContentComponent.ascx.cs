@@ -1082,11 +1082,6 @@ namespace RockWeb.Blocks.Cms
         {
             FilterField filterField = new FilterField();
 
-            filterField.Entity = new ContentChannelItem
-            {
-                ContentChannelTypeId = contentChannelTypeId
-            };
-
             filterField.DataViewFilterGuid = dataViewFilterGuid;
 
             parentControl.Controls.Add( filterField );
