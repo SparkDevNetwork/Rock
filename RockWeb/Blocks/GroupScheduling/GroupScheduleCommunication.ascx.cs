@@ -34,42 +34,16 @@ namespace RockWeb.Blocks.GroupScheduling
     [DisplayName( "Group Schedule Communication" )]
     [Category( "Group Scheduling" )]
     [Description( "Allows an individual to create a communication based on group schedule criteria." )]
-
-    #region Block Attributes
-
-    #endregion Block Attributes
     public partial class GroupScheduleCommunication : RockBlock
     {
-        #region Attribute Keys
-
-        private static class AttributeKey
-        {
-        }
-
-        #endregion Attribute Keys
-
-        #region PageParameterKeys
-
-        private static class PageParameterKey
-        {
-        }
-
-        #endregion PageParameterKeys
+        #region User Preference Keys
 
         private static class UserPreferenceKey
         {
             public const string UserPreferenceConfigurationJSON = "UserPreferenceConfigurationJSON";
         }
 
-        private class UserPreferenceConfiguration
-        {
-            public int[] GroupIds { get; set; }
-            public bool IncludeChildGroups { get; set; }
-            public string[] InviteStatuses { get; set; }
-            public int[] ScheduleIds { get; set; }
-            public int[] LocationIds { get; set; }
-        }
-        
+        #endregion User Preference Keys
 
         #region Base Control Methods
 
@@ -98,7 +72,6 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 PopulateDropDowns();
                 ShowDetails();
-                
             }
             else
             {
@@ -219,7 +192,7 @@ namespace RockWeb.Blocks.GroupScheduling
                     .WhereHasScheduledAttendanceItemStatus( selectedInviteStatus );
 
             var personIds = scheduledAttendancesForOccurrenceQuery.Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
-            if (!personIds.Any())
+            if ( !personIds.Any() )
             {
                 nbCommunicationWarning.Text = "No people found to send communication to.";
                 nbCommunicationWarning.Visible = true;
@@ -287,8 +260,6 @@ namespace RockWeb.Blocks.GroupScheduling
             userPreferenceConfiguration.ScheduleIds = lbSchedules.SelectedValuesAsInt.ToArray();
             userPreferenceConfiguration.LocationIds = cblLocations.SelectedValuesAsInt.ToArray();
             this.SetBlockUserPreference( UserPreferenceKey.UserPreferenceConfigurationJSON, userPreferenceConfiguration.ToJson() );
-
-
 
             Page.Response.Redirect( communicationUrl, false );
             Context.ApplicationInstance.CompleteRequest();
@@ -361,8 +332,8 @@ namespace RockWeb.Blocks.GroupScheduling
             cbIncludeChildGroups.Checked = userPreferenceConfiguration.IncludeChildGroups;
             cblInviteStatus.SetValues( userPreferenceConfiguration.InviteStatuses );
             UpdateListsForSelectedGroups();
-            
-            lbSchedules.SetValues( userPreferenceConfiguration.ScheduleIds ?? new int[0]);
+
+            lbSchedules.SetValues( userPreferenceConfiguration.ScheduleIds ?? new int[0] );
             UpdateLocationListFromSelectedSchedules();
 
             cblLocations.SetValues( userPreferenceConfiguration.LocationIds ?? new int[0] );
@@ -503,6 +474,23 @@ namespace RockWeb.Blocks.GroupScheduling
                 cblLocations.Visible = false;
                 return;
             }
+        }
+
+        #endregion
+
+        #region Private Classes
+
+        private class UserPreferenceConfiguration
+        {
+            public int[] GroupIds { get; set; }
+
+            public bool IncludeChildGroups { get; set; }
+
+            public string[] InviteStatuses { get; set; }
+
+            public int[] ScheduleIds { get; set; }
+
+            public int[] LocationIds { get; set; }
         }
 
         #endregion

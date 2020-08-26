@@ -99,7 +99,6 @@ namespace RockWeb.Blocks.GroupScheduling
 
             // by default, the roster only shows for the current date, but this can override that
             public const string OccurrenceDate = "OccurrenceDate";
-
         }
 
         #endregion PageParameterKeys
@@ -112,14 +111,6 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         #endregion PageParameterKeys
-
-        #region Fields
-
-        #endregion
-
-        #region Properties
-
-        #endregion
 
         #region Base Control Methods
 
@@ -333,8 +324,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 .Where( a =>
                     allGroupIds.Contains( a.GroupId.Value )
                     && a.OccurrenceDate == occurrenceDate
-                    && scheduleIds.Contains( a.ScheduleId.Value )
-                    );
+                    && scheduleIds.Contains( a.ScheduleId.Value ) );
 
             // if specific locations are specified, use those, otherwise just show all
             if ( locationIds.Any() )
