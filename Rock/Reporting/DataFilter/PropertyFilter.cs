@@ -211,7 +211,7 @@ namespace Rock.Reporting.DataFilter
             var rockBlock = filterControl.RockBlock();
 
 
-            var entityFields = this.GetEntityFields( entityType );
+            var entityFields = EntityHelper.GetEntityFields( entityType );
             foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
             {
                 bool isAuthorized = true;
@@ -295,7 +295,7 @@ namespace Rock.Reporting.DataFilter
 
             var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
 
-            var entityFields = this.GetEntityFields( entityType );
+            var entityFields = EntityHelper.GetEntityFields( entityType );
 
             var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
@@ -328,7 +328,7 @@ namespace Rock.Reporting.DataFilter
                 var containerControl = controls[0] as DynamicControlsPanel;
 
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
-                var entityFields = this.GetEntityFields( entityType );
+                var entityFields = EntityHelper.GetEntityFields( entityType );
                 RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID, filterMode );
             }
         }
@@ -374,6 +374,8 @@ namespace Rock.Reporting.DataFilter
         /// <value>
         /// The entity.
         /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
         public IEntity Entity
         {
             get
@@ -406,24 +408,9 @@ namespace Rock.Reporting.DataFilter
         /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
         /// </summary>
         [ThreadStatic]
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
         private static IEntity _nonHttpContextEntity;
-
-        /// <summary>
-        /// Gets the entity fields.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
-        internal List<EntityField> GetEntityFields( Type entityType )
-        {
-            if ( Entity != null )
-            {
-                return EntityHelper.GetEntityFields( this.Entity );
-            }
-            else
-            {
-                return EntityHelper.GetEntityFields( entityType );
-            }
-        }
 
         /// <summary>
         /// Sets the selection.
@@ -440,7 +427,7 @@ namespace Rock.Reporting.DataFilter
                 var containerControl = controls[0] as DynamicControlsPanel;
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
 
-                var entityFields = this.GetEntityFields( entityType );
+                var entityFields = EntityHelper.GetEntityFields( entityType );
 
                 // set the selected Field, but not the filter values yet
                 var entityFieldControls = containerControl.Controls.OfType<Control>().ToList();
