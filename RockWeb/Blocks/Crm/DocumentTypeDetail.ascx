@@ -47,7 +47,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="rcbManuallySelectable" runat="server" Label="Manually Selectable" Help="Checking this box will allow this Document Type as an option when manually adding/editing documents for the entity." />
+                            <Rock:RockCheckBox ID="rcbManuallySelectable" runat="server" Label="Manually Selectable" Help="Checking this box will allow this Document Type to be displayed when manually editing documents for the entity type. e.g. for a person the document type will be a selectable option on the documents tab." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="rtbIconCssClass" runat="server" Label="Icon CSS Class" />
@@ -62,11 +62,11 @@
                     <div class="row" id="divAdvanced" runat="server">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="rtbQualifierColumn" runat="server" Label="Entity Qualifier Column" Required="false"
-                                Help="If you would like the document type to only apply to specific entities of the specified type you can provide a column to filter on for that entity. For example if you would like the documents to be specific to a group of a certain type the 'Column' would be 'GroupTypeId'. You'll also need to provide a Entity Qualifer Value." />
+                                Help="If you would like the document type to only apply to specific entities of the specified type you can provide a column to filter on for that entity. For example if you would like the documents to be specific to a group of a certain type the ‘Column’ would be ‘GroupTypeId’. You’ll also need to provide a Entity Qualifer Value." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="rtbQualifierValue" runat="server" Label="Entity Qualifier Value" Required="false"
-                                Help="Once you provide a Entity Qualifer Column, you'll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
+                                Help="Once you provide a Entity Qualifer Column, you’ll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
                         </div>
                         <div class="col-sm-12">
                             <Rock:CodeEditor ID="ceTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Default Document Name Template" />
