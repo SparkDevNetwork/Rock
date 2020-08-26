@@ -400,18 +400,5 @@ namespace Rock.Reporting.DataFilter
         }
 
         #endregion IDataFilterWithOverrides
-
-        #region Private Methods
-
-        /// <summary>
-        /// Determines whether [is view in filter] [the specified data view id].
-        /// </summary>
-        /// <param name="dataViewId">The data view id.</param>
-        /// <param name="filter">The filter.</param>
-        /// <returns>
-        ///   <c>true</c> if [is view in filter] [the specified data view id]; otherwise, <c>false</c>.
-        /// </returns>
-
-        #endregion
     }
 }
