@@ -174,6 +174,18 @@ BEGIN
 		WHERE [EntityTypeId] = @PersonEntityTypeId
 		AND [EntityId] = @OldId
 
+		-- Document
+		-----------------------------------------------------------------------------------------------
+		-- Update any documents that are associated to the old person to be associated to the new person
+		UPDATE [dbo].[Document]
+		SET [EntityId] = @NewId
+		WHERE [Id] IN (
+			SELECT d.[Id]
+			FROM [Document] d
+			JOIN [DocumentType] dt ON dt.[Id] = d.[DocumentTypeId]
+			WHERE dt.[EntityTypeId] = @PersonEntityTypeId
+				AND d.[EntityId] = @OldId)
+
 		-- Entity Set
 		-----------------------------------------------------------------------------------------------
 		-- Update any entity set items that are associated to the old person to be associated to the new 
