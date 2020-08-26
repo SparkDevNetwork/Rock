@@ -1,7 +1,7 @@
 SET NOCOUNT ON
 
 -- NOTE: Set @maxPerson to the number of people you want to add. Setting it as high as 99999 might take a minute or so
-DECLARE @maxPerson INT = 9999
+DECLARE @maxPerson INT = 99999
     ,@genderInt INT
     ,@countryCode nvarchar(3) = null
     ,@personRecordType INT = (
@@ -37,7 +37,6 @@ DECLARE @maxPerson INT = 9999
         FROM DefinedType
         WHERE guid = '2E6540EA-63F0-40FE-BE50-F2A84735E600'
     )
-    ,@campusId int = (select top 1 Id from Campus)
     ,@personId INT
     ,@personGuid UNIQUEIDENTIFIER
     ,@spousePersonId INT
@@ -12283,6 +12282,9 @@ BEGIN
             ,@mobilePhone
             );
 
+        declare @randomCampusId int = (select top 1 Id from Campus order by newid())
+
+
 		-- create family
 		INSERT INTO [Group] (
             IsSystem
@@ -12300,7 +12302,7 @@ BEGIN
             ,@lastName + ' Family'
             ,0
             ,1
-            ,@campusId
+            ,@randomCampusId
             ,NEWID()
             ,0
             )
