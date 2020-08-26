@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            // nothing needed for Block Updated since there aren't any block attributes
         }
 
         /// <summary>
