@@ -47,7 +47,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="rcbManuallySelectable" runat="server" Label="Manually Selectable" Help="Checking this box will allow this Document Type to be displayed when manually editing documents for the entity type. e.g. for a person the document type will be a selectable option on the documents tab." />
+                            <Rock:RockCheckBox ID="rcbManuallySelectable" runat="server" Label="Manually Selectable" Help="Checking this box will allow this Document Type as an option when manually adding/editing documents for the entity." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="rtbIconCssClass" runat="server" Label="Icon CSS Class" />
