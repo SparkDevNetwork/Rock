@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Web;
 using System.Web.UI;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -114,15 +116,29 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( BadgeService.DoesBadgeApplyToEntity( BadgeCache, contextEntityBlock.Entity ) )
                     {
-                        badgeComponent.ParentContextEntityBlock = contextEntityBlock;
-                        badgeComponent.Entity = contextEntityBlock.Entity;
-                        badgeComponent.Render( BadgeCache, writer );
+                        try
+                        {
+                            badgeComponent.ParentContextEntityBlock = contextEntityBlock;
+                            badgeComponent.Entity = contextEntityBlock.Entity;
+                            badgeComponent.Render( BadgeCache, writer );
 #pragma warning disable CS0618 // Type or member is obsolete
-                        badgeComponent.Render( personBadgeCache, writer );
+                            badgeComponent.Render( personBadgeCache, writer );
 #pragma warning restore CS0618 // Type or member is obsolete
-
-                        const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
-                        ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
+                        }
+                        catch ( Exception ex )
+                        {
+                            var errorMessage = $"An error occurred rendering badge: {BadgeCache?.Name }, badge-id: {BadgeCache?.Id}";
+                            ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
+                            var badgeNameClass = BadgeCache?.Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
+                            writer.Write( $"<div class='badge badge-{badgeNameClass} badge-id-{BadgeCache?.Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
+                            writer.Write( $"  <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>" );
+                            writer.Write( "</div>" );
+                        }
+                        finally
+                        {
+                            const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
+                            ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
+                        }
                     }
                 }
             }
