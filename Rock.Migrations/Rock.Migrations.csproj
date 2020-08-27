@@ -113,6 +113,10 @@
     <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.Designer.cs">
       <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.cs" />
+    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.Designer.cs">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1398,6 +1402,9 @@
     <EmbeddedResource Include="Migrations\202008211513093_AddOidcModelsAndPages.resx">
       <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008272036178_AddDocumentsToPersonMerge.resx">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
     </EmbeddedResource>
@@ -2344,6 +2351,9 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 11.0\Version 1.11.0\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
