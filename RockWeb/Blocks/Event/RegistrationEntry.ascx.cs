@@ -3461,12 +3461,6 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
-            if ( txtCreditCard.Text == "0000000000000000000" )
-            {
-                errorMessage = "No soup for you!";
-                return false;
-            }
-
             GatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
