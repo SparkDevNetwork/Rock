@@ -174,6 +174,8 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void ClearForm()
         {
+            pdAuditDetails.Visible = true;
+            ddlAddEditDocumentType.Enabled = true;
             ddlAddEditDocumentType.SelectedIndex = 0;
             tbDocumentName.Text = string.Empty;
             tbDescription.Text = string.Empty;
@@ -257,6 +259,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="documentTypes">The document types.</param>
         private void PopulateDdlAddEditDocumentType( List<DocumentTypeCache> documentTypes )
         {
+            ddlAddEditDocumentType.Items.Clear();
             ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
             foreach( var documentType in documentTypes )
@@ -344,7 +347,7 @@ namespace RockWeb.Blocks.Crm
                 if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
                 {
                     var filteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
-                    documents = documents.Where( d => filteredDocumentTypes.Contains( d.Id ) );
+                    documents = documents.Where( d => filteredDocumentTypes.Contains( d.DocumentTypeId ) );
                 }
 
                 gFileList.DataSource = documents.ToList();
@@ -399,6 +402,7 @@ namespace RockWeb.Blocks.Crm
         protected void gFileList_Add( object sender, EventArgs e )
         {
             ClearForm();
+            pdAuditDetails.Visible = false;
             pnlAddEdit.Visible = true;
             pnlList.Visible = false;
         }
