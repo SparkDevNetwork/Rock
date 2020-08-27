@@ -139,12 +139,13 @@ namespace Rock.Utility
             // Update the EntitySet name
             entitySet.Name = campaignConfiguration.Name;
 
+            var orderIndex = 0;
             foreach ( var personId in orderedPersonIds )
             {
                 try
                 {
                     var item = new Rock.Model.EntitySetItem();
-                    item.Order = orderedPersonIds.IndexOf( personId );
+                    item.Order = orderIndex++;
                     item.EntityId = personId;
                     entitySetItems.Add( item );
                 }
@@ -226,13 +227,18 @@ namespace Rock.Utility
             var entitySetService = new EntitySetService( rockContext );
             var entitySetId = GetEntitySet( campaignConnectionItem );
 
-            var pendingPersonList = entitySetService.GetEntityQuery<Person>( entitySetId ).ToList();
+            var pendingPersonPrimaryCampusIdList = entitySetService.GetEntityQuery<Person>( entitySetId )
+                .Select( a => new
+                {
+                    a.PrimaryCampusId
+                } )
+                .ToList();
 
             int pendingCount = 0;
             var connectorCampusIds = GetConnectorCampusIds( campaignConnectionItem, connectorPerson );
-            foreach ( var pendingPerson in pendingPersonList )
+            foreach ( var pendingPerson in pendingPersonPrimaryCampusIdList )
             {
-                int? entitySetPersonPrimaryCampusId = pendingPerson.GetCampus()?.Id;
+                int? entitySetPersonPrimaryCampusId = pendingPerson.PrimaryCampusId;
 
                 if ( IsValidCampus( connectorCampusIds, entitySetPersonPrimaryCampusId ) )
                 {
@@ -256,29 +262,28 @@ namespace Rock.Utility
             var personService = new PersonService( rockContext );
 
             var filteredPersonIds = new List<int>();
+
             DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs();
-            var personList = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>().AsNoTracking().ToList();
-            if ( !personList.Any() )
-            {
-                return filteredPersonIds;
-            }
+            var personQuery = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>();
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
-                var familyWithMembers = new Dictionary<int, List<GroupMember>>();
+                var familyMembersQuery = personQuery.SelectMany( a => a.PrimaryFamily.Members ).Distinct();
 
                 //// Get all family group Id and all it's family member in dictionary.
                 //// We will all the family members to both figure out if might be opted out
                 //// and to figure out the head of household
-                foreach ( var person in personList )
-                {
-                    var family = person.GetFamily( rockContext );
-                    if ( family != null && !familyWithMembers.ContainsKey( family.Id ) )
+                var familyWithMembers = familyMembersQuery.AsNoTracking()
+                    .Select( a => new
                     {
-                        var familyMembers = personService.GetFamilyMembers( family, person.Id, true ).AsNoTracking().ToList();
-                        familyWithMembers.Add( family.Id, familyMembers );
-                    }
-                }
+                        a.PersonId,
+                        PersonIsDeceased = a.Person.IsDeceased,
+                        GroupRoleOrder = a.GroupRole.Order,
+                        PersonGender = a.Person.Gender
+                    } )
+                    .ToList()
+                    .GroupBy( a => a.PersonId )
+                    .ToDictionary( k => k.Key, v => v );
 
                 if ( campaignConfiguration.OptOutGroupGuid.HasValue )
                 {
@@ -304,9 +309,9 @@ namespace Rock.Utility
 
                     // Get all the head of house personIds of leftout family.
                     var headOfHouse = familyWithMembers[familyId]
-                          .Where( m => !m.Person.IsDeceased )
-                          .OrderBy( m => m.GroupRole.Order )
-                          .ThenBy( m => m.Person.Gender )
+                          .Where( m => !m.PersonIsDeceased )
+                          .OrderBy( m => m.GroupRoleOrder )
+                          .ThenBy( m => m.PersonGender )
                           .Select( a => a.PersonId )
                           .FirstOrDefault();
 
@@ -318,17 +323,18 @@ namespace Rock.Utility
             }
             else
             {
+                var personIdList = personQuery.Select( a => a.Id ).ToList();
                 if ( campaignConfiguration.OptOutGroupGuid.HasValue )
                 {
                     var optOutGroup = new GroupService( rockContext ).Get( campaignConfiguration.OptOutGroupGuid.Value );
                     if ( optOutGroup != null )
                     {
                         var personIds = optOutGroup.ActiveMembers().Select( a => a.PersonId ).ToList();
-                        personList = personList.Where( a => !personIds.Contains( a.Id ) ).ToList();
+                        personIdList = personIdList.Where( a => !personIds.Contains( a ) ).ToList();
                     }
                 }
 
-                filteredPersonIds = personList.Select( a => a.Id ).ToList();
+                filteredPersonIds = personIdList;
             }
 
             // just in case the same person is in multiple times (for example, head of household in multiple families), get just the distinct person ids
@@ -562,7 +568,7 @@ namespace Rock.Utility
                     continue;
                 }
 
-                var entitySetPersonPrimaryCampusId = entitySetPerson.GetCampus()?.Id;
+                var entitySetPersonPrimaryCampusId = entitySetPerson.PrimaryCampusId;
 
                 bool validCampus = IsValidCampus( connectorCampusIds, entitySetPersonPrimaryCampusId );
                 if ( !validCampus )
