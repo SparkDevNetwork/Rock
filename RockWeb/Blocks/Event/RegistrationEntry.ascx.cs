@@ -3099,9 +3099,7 @@ namespace RockWeb.Blocks.Event
                     // Save the signed document
                     try
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue &&
-                            !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) &&
-                            registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
                         {
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
@@ -3113,10 +3111,26 @@ namespace RockWeb.Blocks.Event
                             document.Status = SignatureDocumentStatus.Signed;
                             document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
                             document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
-                            documentService.Add( document );
-                            rockContext.SaveChanges();
 
-                            registrantInfo.SignatureDocumentId = document.Id;
+                            if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                            {
+                                // This document has already been saved, probably on a previous save where a credit card processing error occurred.
+                                // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
+                                document.Id = registrantInfo.SignatureDocumentId.Value;
+                                documentService.Add( document );
+                                rockContext.SaveChanges();
+                            }
+                            else
+                            {
+                                documentService.Add( document );
+
+                                // Save the changes to get the document ID
+                                rockContext.SaveChanges();
+
+                                // Set the registrant info and then save again
+                                registrantInfo.SignatureDocumentId = document.Id;
+                                rockContext.SaveChanges();
+                            }
 
                             var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
@@ -3447,6 +3461,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
+            if ( txtCreditCard.Text == "0000000000000000000" )
+            {
+                errorMessage = "No soup for you!";
+                return false;
+            }
+
             GatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
