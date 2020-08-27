@@ -24,6 +24,25 @@ namespace com.bemaservices.MinistrySafe.Migrations
 
             BackgroundCheckReportPage();
 
+            AddMinistrySafeTrainingFeatures();
+
+        }
+
+        private void AddMinistrySafeTrainingFeatures()
+        {
+            RockMigrationHelper.UpdatePersonAttribute( "FE95430C-322D-4B67-9C77-DFD1D4408725", "CB481AB7-E0F9-4A3E-B846-0F5E5C94C038", "Training Completion Date", "TrainingDate", "", "", 0, "", "0B1607AF-6900-406C-8F7F-8DC03FC253F3" );
+
+
+            // Person Attribute "Training Request Date"
+            RockMigrationHelper.UpdatePersonAttribute( @"6B6AA175-4758-453F-8D83-FCD8044B5F36", @"CB481AB7-E0F9-4A3E-B846-0F5E5C94C038", @"Training Request Date", @"TrainingRequestDate", @"", @"", 1047, @"", @"8CB3B231-133C-4B32-B169-61EF5792F1E9" );
+
+            RockMigrationHelper.AddAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"datePickerControlType", @"Date Picker", @"DE6EDE02-DAA1-46DD-B278-08C6AEBD4544" );
+            RockMigrationHelper.AddAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"displayCurrentOption", @"False", @"FFBE1AF2-D6EB-4370-A7B6-9FD27583328F" );
+            RockMigrationHelper.AddAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"displayDiff", @"False", @"3816633A-DCF1-4A79-9EAB-19EB9C5F6E6C" );
+            RockMigrationHelper.AddAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"format", @"", @"84E4E879-A3CC-4D4A-9103-1B509B22A999" );
+            RockMigrationHelper.AddAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"futureYearCount", @"", @"C1659EAE-A19D-4294-8F0F-6EA0256E157F" );
+
+            RockMigrationHelper.UpdateAttributeQualifier( "C19F3842-7CEE-4772-B2ED-86B7968E2879", "values", @"Pass,Fail,Pending, Pass - Pending Renewal", "5C9AB718-6B8C-4D19-AFDC-86E1E7755505" );
         }
 
         private void BackgroundCheckReportPage()
