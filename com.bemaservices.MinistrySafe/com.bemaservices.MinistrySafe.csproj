@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Constants\MinistrySafeConstants.cs" />
     <Compile Include="Constants\MinistrySafeSystemGuid.cs" />
+    <Compile Include="Migrations\008_TrainingWorkflowUpdates.cs" />
     <Compile Include="Migrations\007_BackgroundChecks.cs" />
     <Compile Include="Migrations\006_NamespaceMove.cs" />
     <Compile Include="Migrations\005_FixWorkflowDeleteIssue.cs" />
