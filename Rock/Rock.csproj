@@ -527,6 +527,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
     <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />
@@ -2872,6 +2873,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
