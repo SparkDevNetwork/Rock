@@ -90,8 +90,6 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             fRequest.SaveUserPreference( "Last Name", tbLastName.Text );
             fRequest.SaveUserPreference( "Request Date Range", drpRequestDates.DelimitedValues );
             fRequest.SaveUserPreference( "Response Date Range", drpResponseDates.DelimitedValues );
-            fRequest.SaveUserPreference( "Report Status", tbReportStatus.Text );
-            fRequest.SaveUserPreference( "Record Found", ddlRecordFound.SelectedValue );
 
             BindGrid();
         }
@@ -134,15 +132,15 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 BackgroundCheckRow request = e.Row.DataItem as BackgroundCheckRow;
                 if ( !request.HasWorkflow )
                 {
-                    foreach ( var lbWorkflow in e.Row.Cells[6].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach ( var lbWorkflow in e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>() )
                     {
                         lbWorkflow.Visible = false;
                     }
                 }
 
-                if ( !request.RecordFound.HasValue || request.RecordFound.Value == false )
+                if ( String.IsNullOrWhiteSpace( request.ResponseId ) )
                 {
-                    foreach ( var lbReport in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach ( var lbReport in e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>() )
                     {
                         lbReport.Visible = false;
                     }
@@ -238,8 +236,6 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
             tbLastName.Text = fRequest.GetUserPreference( "Last Name" );
             drpRequestDates.DelimitedValues = fRequest.GetUserPreference( "Request Date Range" );
             drpResponseDates.DelimitedValues = fRequest.GetUserPreference( "Response Date Range" );
-            tbReportStatus.Text = fRequest.GetUserPreference( "Report Status" );
-            ddlRecordFound.SetValue( fRequest.GetUserPreference( "ddlRecordFound" ) );
         }
 
         /// <summary>
@@ -255,7 +251,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                         g.PersonAlias != null &&
                         g.PersonAlias.Person != null )
                     .Where( g =>
-                        g.ForeignId == 4);
+                        g.ForeignId == 4 );
 
                 // FirstName
                 string firstName = fRequest.GetUserPreference( "First Name" );
@@ -302,31 +298,6 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                     qry = qry.Where( t => t.ResponseDate < upperDate );
                 }
 
-                // Report Status
-                string reportStatus = fRequest.GetUserPreference( "Report Status" );
-                if ( !string.IsNullOrWhiteSpace( reportStatus ) )
-                {
-                    qry = qry.Where( t => t.Status == reportStatus );
-                }
-
-                // Record Found
-                string recordFound = fRequest.GetUserPreference( "Record Found" );
-                if ( !string.IsNullOrWhiteSpace( recordFound ) )
-                {
-                    if ( recordFound == "Yes" )
-                    {
-                        qry = qry.Where( t =>
-                            t.RecordFound.HasValue &&
-                            t.RecordFound.Value );
-                    }
-                    else if ( recordFound == "No" )
-                    {
-                        qry = qry.Where( t =>
-                            t.RecordFound.HasValue &&
-                            !t.RecordFound.Value );
-                    }
-                }
-
                 List<Rock.Model.BackgroundCheck> items = null;
                 SortProperty sortProperty = gRequest.SortProperty;
                 if ( sortProperty != null )
@@ -339,24 +310,18 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                 }
 
                 gRequest.DataSource = items.Select( b => new BackgroundCheckRow
-                    {
-                        Name = b.PersonAlias.Person.LastName + ", " + b.PersonAlias.Person.NickName,
-                        Id = b.Id,
-                        PersonId = b.PersonAlias.PersonId,
-                        HasWorkflow = b.WorkflowId.HasValue,
-                        RequestDate = b.RequestDate,
-                        ResponseDate = b.ResponseDate,
-                        RecordFound = b.RecordFound,
-                        RecordFoundLabel = b.RecordFound.HasValue ? (
-                            b.RecordFound.Value ?
-                                "<span class='label label-warning'>Yes</span>" :
-                                "<span class='label label-success'>No</span>" ) :
-                            string.Empty,
-                        HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
-                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
+                {
+                    Name = b.PersonAlias.Person.LastName + ", " + b.PersonAlias.Person.NickName,
+                    Id = b.Id,
+                    PersonId = b.PersonAlias.PersonId,
+                    HasWorkflow = b.WorkflowId.HasValue,
+                    RequestDate = b.RequestDate,
+                    ResponseDate = b.ResponseDate,
+                    HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
+                    ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
                     ResponseId = b.ResponseId,
                     ReportStatus = b.Status.SplitCase()
-                    } ).ToList();
+                } ).ToList();
 
                 gRequest.DataBind();
             }

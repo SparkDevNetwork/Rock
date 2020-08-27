@@ -339,6 +339,7 @@ namespace com.bemaservices.MinistrySafe
                 backgroundCheck.Status = "consider";
 
                 backgroundCheck.ResponseId = backgroundCheckWebhook.Id;
+                backgroundCheck.ResponseDate = RockDateTime.Now;
                 if ( backgroundCheckWebhook.ResultsUrl.IsNotNullOrWhiteSpace() )
                 {
                     backgroundCheck.ResponseData = backgroundCheckWebhook.ResultsUrl;
