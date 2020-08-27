@@ -13,32 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-namespace Rock.Plugin.HotFixes
+//
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// Plug-in migration
+    ///
     /// </summary>
-    /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 134, "1.11.0" )]
-    public class AddDocumentsToPersonMerge : Migration
+    public partial class AddDocumentsToPersonMerge : Rock.Migrations.RockMigration
     {
-
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            //UpdatePersonMergeSproc();
-            //UpdateOrphanedDocuments();
+            UpdatePersonMergeSproc();
+            UpdateOrphanedDocuments();
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            // Down migrations are not yet supported in plug-in migrations.
         }
 
         /// <summary>
@@ -46,7 +45,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         private void UpdatePersonMergeSproc()
         {
-            Sql( HotFixMigrationResource._134_AddDocumentsToPersonMerge_spCrm_PersonMerge );
+            Sql( MigrationSQL._202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge );
         }
 
         /// <summary>
