@@ -40,7 +40,14 @@ namespace Rock.Jobs
     [GroupTypeField( "Group Type", "The group type to look for new pending registrations", true, "", "", 0 )]
     [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]
     [SystemCommunicationField( "Notification Email", "", true, "", "", 2 )]
-    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
+
+    [GroupRoleField(
+        "Group Role Filter",
+        Key = "GroupRoleFilter",
+        Description = "Optional group role to filter the pending members by. To select the role you'll need to select a group type.",
+        IsRequired = false,
+        Order = 3)]
+
     [IntegerField( "Pending Age", "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.", false, 1, order: 4 )]
     [DisallowConcurrentExecution]
     public class GroupLeaderPendingNotifications : IJob

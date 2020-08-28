@@ -27,7 +27,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) workflow filtered by a selected workflow type
+    /// Field Type to select a single (or null) workflow filtered by a selected workflow type.
+    /// Stored as Workflow.Guid
     /// </summary>
     public class WorkflowFieldType : FieldType, IEntityFieldType
     {

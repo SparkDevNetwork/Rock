@@ -45,7 +45,12 @@ namespace Rock.Workflow.Action
 
     [TextField("Group Member Attribute Key", "The attribute key to use for the group member attribute.", true, "", "", 2)]
 
-    [GroupRoleField("", "Group Role Filter", "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.", false, "", "", 3)]
+    [GroupRoleField(
+        "Group Role Filter",
+        Key = "GroupRoleFilter",
+        Description = "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.",
+        IsRequired = false,
+        Order = 3)]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
     

@@ -37,7 +37,13 @@ namespace Rock.Follow.Suggestion
     [ExportMetadata( "ComponentName", "InFollowedGroup" )]
 
     [GroupTypeField( "Group Type", "The group type that this suggestion applies to", true, order: 0 )]
-    [GroupRoleField( null, "Group Role (optional)", "The group role that people must belong to (optional).", false, order: 3, key: "GroupRole" )]
+
+    [GroupRoleField(
+        "Group Role (optional)",
+        Description = "The group role that people must belong to (optional).",
+        Key = "GroupRole",
+        Order = 3)]
+
     [BooleanField( "Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow" )]
     public class InFollowedGroup : SuggestionComponent
     {

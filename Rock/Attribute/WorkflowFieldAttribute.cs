@@ -19,13 +19,22 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to a workflow
+    /// Field Attribute to select a workflow. Stored as a Workflow Guid.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="WorkflowFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public WorkflowFieldAttribute( string name )
+            : base( name, typeof( Rock.Field.Types.WorkflowFieldType ) )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowFieldAttribute" /> class.
         /// </summary>
         /// <param name="workflowTypeGuid">The group type GUID.</param>
         /// <param name="name">The name.</param>
@@ -35,6 +44,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use (string name) constructor instead" )]
         public WorkflowFieldAttribute( string workflowTypeGuid = "", string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowFieldType ).FullName )
         {

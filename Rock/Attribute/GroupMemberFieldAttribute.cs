@@ -33,6 +33,15 @@ namespace Rock.Attribute
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupMemberFieldAttribute( string name )
+            : base( name, typeof( Rock.Field.Types.GroupMemberFieldType ) )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberFieldAttribute" /> class.
         /// </summary>
         /// <param name="groupGuid">The group GUID.</param>
@@ -44,6 +53,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use (string name) constructor instead" )]
         public GroupMemberFieldAttribute( string groupGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
              : this( groupGuid, name, description, required, allowMultiple, false, defaultValue, category, order, key )
         {
@@ -62,6 +73,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use (string name) constructor instead" )]
         public GroupMemberFieldAttribute( string groupGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupMemberFieldType ).FullName )
         {
@@ -69,7 +82,7 @@ namespace Rock.Attribute
             Group group = null;
             using ( var rockContext = new RockContext() )
             {
-                group = new GroupService( rockContext ).Get ( new Guid( groupGuid ) );
+                group = new GroupService( rockContext ).Get( new Guid( groupGuid ) );
             }
 
             if ( group != null )

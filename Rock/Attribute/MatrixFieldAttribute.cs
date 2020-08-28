@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Field.Types;
 using Rock.Model;
 
@@ -26,6 +27,15 @@ namespace Rock.Attribute
     public class MatrixFieldAttribute : FieldAttribute
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="MatrixFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public MatrixFieldAttribute( string name )
+            : base( name, typeof( MatrixFieldType ) )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MatrixFieldAttribute" /> class.
         /// </summary>
         /// <param name="attributeMatrixTemplateGuid">The attribute matrix template unique identifier.</param>
@@ -35,6 +45,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use (string name) constructor instead" )]
         public MatrixFieldAttribute( string attributeMatrixTemplateGuid, string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
             : base( name, description, required, null, category, order, key, typeof( MatrixFieldType ).FullName )
         {
