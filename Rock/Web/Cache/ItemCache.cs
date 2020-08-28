@@ -28,7 +28,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class ItemCache<T> : IItemCache
+    public abstract class ItemCache<T> : IItemCache, IHasLifespan
         where T : IItemCache
     {
         private const string _AllRegion = "AllItems";
