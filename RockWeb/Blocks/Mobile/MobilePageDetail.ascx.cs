@@ -630,9 +630,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var page = new PageService( new RockContext() ).Get( pageId );
 
-            //
             // Ensure the page is valid.
-            //
             if ( pageId != 0 )
             {
                 var pageCache = PageCache.Get( pageId );
@@ -651,23 +649,31 @@ namespace RockWeb.Blocks.Mobile
                 };
             }
 
-            //
-            // Ensure user has access to edit this page.
-            //
-            if ( !page.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( pageId == 0 )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
-
-                pnlEditPage.Visible = false;
-
-                return;
+                // If this is a new page then we need to check the site permissions
+                var site = SiteCache.Get( PageParameter( "SiteId" ).AsInteger() );
+                if ( site == null || !site.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
+                    pnlEditPage.Visible = false;
+                    return;
+                }
+            }
+            else
+            {
+                // Ensure user has access to edit this page.
+                if ( !page.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
+                    pnlEditPage.Visible = false;
+                    return;
+                }
             }
 
             var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
 
-            //
             // Set the basic fields of the page.
-            //
             tbName.Text = page.PageTitle;
             tbInternalName.Text = page.InternalName;
             tbDescription.Text = page.Description;
@@ -677,9 +683,7 @@ namespace RockWeb.Blocks.Mobile
             ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
-            //
             // Configure the layout options.
-            //
             var siteId = PageParameter( "SiteId" ).AsInteger();
             ddlLayout.Items.Add( new ListItem() );
             foreach ( var layout in LayoutCache.All().Where( l => l.SiteId == siteId ) )
