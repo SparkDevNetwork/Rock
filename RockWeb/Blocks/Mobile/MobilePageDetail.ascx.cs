@@ -42,6 +42,15 @@ namespace RockWeb.Blocks.Mobile
     [Description( "Edits and configures the settings of a mobile page." )]
     public partial class MobilePageDetail : RockBlock
     {
+        #region PageParameterKeys
+        private static class PageParameterKeys
+        {
+            public const string SiteId = "SiteId";
+            public const string Page = "Page";
+            public const string Tab = "Tab";
+        }
+        #endregion PageParameterKeys
+
         #region Properties
 
         /// <summary>
@@ -90,8 +99,8 @@ namespace RockWeb.Blocks.Mobile
 
             if ( !IsPostBack )
             {
-                int pageId = PageParameter( "Page" ).AsInteger();
-                int siteId = PageParameter( "SiteId" ).AsInteger();
+                int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
+                int siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
 
                 BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
 
@@ -153,7 +162,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? pageId = PageParameter( pageReference, "Page" ).AsIntegerOrNull();
+            int? pageId = PageParameter( pageReference, PageParameterKeys.Page ).AsIntegerOrNull();
             if ( pageId != null )
             {
                 var page = new PageService( new RockContext() ).Get( pageId.Value );
@@ -652,7 +661,7 @@ namespace RockWeb.Blocks.Mobile
             if ( pageId == 0 )
             {
                 // If this is a new page then we need to check the site permissions
-                var site = SiteCache.Get( PageParameter( "SiteId" ).AsInteger() );
+                var site = SiteCache.Get( PageParameter( PageParameterKeys.SiteId ).AsInteger() );
                 if ( site == null || !site.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
@@ -684,7 +693,7 @@ namespace RockWeb.Blocks.Mobile
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             // Configure the layout options.
-            var siteId = PageParameter( "SiteId" ).AsInteger();
+            var siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
             ddlLayout.Items.Add( new ListItem() );
             foreach ( var layout in LayoutCache.All().Where( l => l.SiteId == siteId ) )
             {
@@ -711,9 +720,9 @@ namespace RockWeb.Blocks.Mobile
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            int parentPageId = SiteCache.Get( PageParameter( "SiteId" ).AsInteger() ).DefaultPageId.Value;
+            int parentPageId = SiteCache.Get( PageParameter( PageParameterKeys.SiteId ).AsInteger() ).DefaultPageId.Value;
 
-            var page = pageService.Get( PageParameter( "Page" ).AsInteger() );
+            var page = pageService.Get( PageParameter( PageParameterKeys.Page ).AsInteger() );
             if ( page == null )
             {
                 page = new Rock.Model.Page();
@@ -779,8 +788,8 @@ namespace RockWeb.Blocks.Mobile
 
             NavigateToCurrentPage( new Dictionary<string, string>
             {
-                { "SiteId", PageParameter( "SiteId" ) },
-                { "Page", page.Id.ToString() }
+                { PageParameterKeys.SiteId, PageParameter( PageParameterKeys.SiteId ) },
+                { PageParameterKeys.Page, page.Id.ToString() }
             } );
         }
 
@@ -793,8 +802,8 @@ namespace RockWeb.Blocks.Mobile
         {
             NavigateToParentPage( new Dictionary<string, string>
             {
-                { "SiteId", PageParameter( "SiteId" ) },
-                { "Tab", "Pages" }
+                { PageParameterKeys.SiteId, PageParameter( PageParameterKeys.SiteId ) },
+                { PageParameterKeys.Tab, "Pages" }
             } );
         }
 
@@ -822,7 +831,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowPageEdit( PageParameter( "Page" ).AsInteger() );
+            ShowPageEdit( PageParameter( PageParameterKeys.Page ).AsInteger() );
         }
 
         /// <summary>
@@ -1077,8 +1086,8 @@ namespace RockWeb.Blocks.Mobile
         protected void ddlPageList_SelectedIndexChanged( object sender, EventArgs e )
         {
             var queryString = new Dictionary<string, string>();
-            queryString.Add( "SiteId", PageParameter( "SiteId" ) );
-            queryString.Add( "Page", ddlPageList.SelectedValue );
+            queryString.Add( PageParameterKeys.SiteId, PageParameter( PageParameterKeys.SiteId ) );
+            queryString.Add( PageParameterKeys.Page, ddlPageList.SelectedValue );
 
             NavigateToCurrentPage( queryString );
         }
