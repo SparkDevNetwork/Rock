@@ -31,6 +31,18 @@ namespace Rock.Attribute
     public abstract class FieldAttribute : System.Attribute
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fieldTypeType">Type of the field type.</param>
+        public FieldAttribute( string name, Type fieldTypeType )
+        {
+            Name = name;
+            FieldTypeClass = fieldTypeType?.FullName;
+            FieldTypeAssembly = fieldTypeType?.Assembly?.GetName()?.Name;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -53,7 +65,7 @@ namespace Rock.Attribute
             {
                 Key = key;
             }
-            
+
             if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
             {
                 fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
@@ -158,6 +170,6 @@ namespace Rock.Attribute
                 FieldConfigurationValues = value;
             }
         }
-        private Dictionary<string, ConfigurationValue> fieldConfigurationValues = new Dictionary<string, ConfigurationValue>(); 
+        private Dictionary<string, ConfigurationValue> fieldConfigurationValues = new Dictionary<string, ConfigurationValue>();
     }
 }
