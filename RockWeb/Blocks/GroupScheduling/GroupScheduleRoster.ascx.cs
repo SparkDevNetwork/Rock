@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [BooleanField(
         "Enable Live Refresh",
         Key = AttributeKey.EnableLiveRefresh,
-        Description = "The Email address to show.",
+        Description = "When enabled, the page content will automatically refresh based on the 'Refresh Interval' setting.",
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 0 )]
