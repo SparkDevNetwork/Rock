@@ -114,6 +114,12 @@ namespace RockWeb.Blocks.Crm
                 PopulateDocumentTypeDropDownLists();
                 BindGrid();
             }
+            else
+            {
+                // Register download buttons as PostBackControls since they are returning a File download
+                // Do this here because the postback control registration is lost after a partial postback and needs to be redone after a edit save/cancel.
+                RegisterDownloadButtonsAsPostBackControls();
+            }
 
             base.OnLoad( e );
         }
@@ -354,7 +360,8 @@ namespace RockWeb.Blocks.Crm
                 gFileList.DataBind();
             }
 
-            // register download buttons as PostBackControls since they are returning a File download
+            // Register download buttons as PostBackControls since they are returning a File download
+            // Leave this here because filter changes and grid events will rebind the grid after OnLoad
             RegisterDownloadButtonsAsPostBackControls();
         }
 
