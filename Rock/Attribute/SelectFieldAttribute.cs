@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -27,6 +29,17 @@ namespace Rock.Attribute
         /// The key value for the repeatColumns value to use in the FieldConfigurationValues dictionary
         /// </summary>
         private const string REPEAT_COLUMNS = "repeatColumns";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fieldTypeType">Type of the field type.</param>
+        public SelectFieldAttribute( string name, Type fieldTypeType )
+            : base( name, fieldTypeType )
+        {
+            //
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectFieldAttribute"/> class.
@@ -61,7 +74,7 @@ namespace Rock.Attribute
 
             set
             {
-                value = value == 0 ? 4: value;
+                value = value == 0 ? 4 : value;
                 FieldConfigurationValues.AddOrReplace( REPEAT_COLUMNS, new Field.ConfigurationValue( value.ToString() ) );
             }
         }

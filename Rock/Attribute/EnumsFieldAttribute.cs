@@ -33,9 +33,8 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public EnumsFieldAttribute( string name )
-            : base( name )
+            : base( name, typeof( Rock.Field.Types.SelectMultiFieldType ) )
         {
-            FieldTypeClass = typeof( Rock.Field.Types.SelectMultiFieldType ).FullName;
         }
 
         /// <summary>

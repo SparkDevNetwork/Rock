@@ -27,9 +27,9 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="PersistedDatasetFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public PersistedDatasetFieldAttribute( string name ) : base( name )
+        public PersistedDatasetFieldAttribute( string name )
+            : base( name, typeof( PersistedDatasetFieldType ) )
         {
-            FieldTypeClass = typeof( PersistedDatasetFieldType ).FullName;
         }
     }
 }

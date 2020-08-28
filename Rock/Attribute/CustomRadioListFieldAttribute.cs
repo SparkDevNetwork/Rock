@@ -33,8 +33,9 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CustomRadioListFieldAttribute( string name )
-            : this( name, string.Empty, string.Empty )
+            : base( name, typeof( Rock.Field.Types.SelectSingleFieldType ) )
         {
+            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>
