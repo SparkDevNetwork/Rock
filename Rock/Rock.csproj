@@ -575,6 +575,7 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
+    <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
