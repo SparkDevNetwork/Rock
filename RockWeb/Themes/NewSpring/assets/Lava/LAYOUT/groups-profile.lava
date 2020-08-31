@@ -15,7 +15,7 @@
 {%- comment -%}
   Redirect to 404 if person doesn't have access or if person isn't in group from url
 {%- endcomment -%}
-{% assign currentPersonCanEditGroup = group.Id | HasRightsTo:'Edit','Rock.Model.Group' %}
+{% assign currentPersonCanEditGroup = group.Id | HasRightsTo:'View','Rock.Model.Group' %}
 {% if currentPersonCanEditGroup == false %}
   {{ '/page-not-found' | PageRedirect }}
 {% endif %}
@@ -45,6 +45,7 @@
   AND gm.GroupMemberStatus != 0
   AND gm.IsArchived = 0
   AND gtr.IsLeader = 1
+  AND gtr.Name != 'Coach'
 {% endsql %}
 {% assign groupsLeadCount = groups | Size %}
 
@@ -77,6 +78,7 @@
 
 <div class="push-top">
   <div class="text-center">
+    <p><a href="/groups/{{ group.Id }}/toolbox" class="btn btn-primary shadowed hidden"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a></p>
     <div class="ratio ratio-square background-cover background-center circular shadowed mx-auto" style="background-image:url('{{ person.PhotoUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
     <h2 class="h1 strongest push-top push-half-bottom">{{ person.NickName }} {{ person.LastName }}</h2>
 
@@ -297,7 +299,7 @@
     <div class="row row-condensed">
       {% for row in leaders %}<div class="col-md-12 col-sm-6 col-xs-12">
 
-        {% assign linkurl = '/account/groups/' | Append:row.GroupId | Append:'/' | Append:row.PersonId %}
+        {% assign linkurl = '/groups/' | Append:row.GroupId | Append:'/toolbox/' | Append:row.PersonId %}
         {% assign coach = row.PersonId | PersonById %}
         {% assign groupTypeId = group.GroupTypeId | AsString %}
         {% assign mobile = coach | PhoneNumber:'Mobile', true %}

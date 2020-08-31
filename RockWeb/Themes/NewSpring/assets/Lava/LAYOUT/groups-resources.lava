@@ -1,10 +1,23 @@
 {% definedvalue where:'DefinedTypeId == 127' sort:'Order' iterator:'values' %}
-  {% for value in values %}
-    {% contentchannelitem where:'ContentChannelId == 690 && ContentFormat == "{{ value.Guid }}"' iterator:'items' %}
-      {% if items and items != empty %}
-      <h2 class="h3 xs-h5 text-uppercase strongest push-top">{{ value.Description | Pluralize }}</h2>
+  {% assign resourceCategories = values %}
+{% enddefinedvalue %}
+
+{[ section title:'Group Leader Resources' ]}
+  <div class="text-constrained mx-auto text-center">
+    <p>Eiusmod tempor laboris reprehenderit fugiat duis quis eu sint aliquip reprehenderit esse ex. Laboris aute incididunt sunt id reprehenderit. Qui laborum id ad eiusmod tempor cupidatat.</p>
+  </div>
+{[ endsection ]}
+
+<script>
+  $(document).ready(function(){
+    $('.dropdown-toggle').dropdown();
+  });
+</script>
+
+  {% contentchannelitem where:'ContentChannelId == 690' iterator:'items' %}
+    {% if items and items != empty %}
       <div class="row">
-        {% for item in items limit:8 %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 flush">
+        {% for item in items %}<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 flush">
 
           {% assign fallbackImage = item.ContentChannel | Attribute:'ImageLandscape' %}
           {% assign relatedItemGuid = item | Attribute:'ContentChannelItem','RawValue' | WithFallback:'',null %}
@@ -30,7 +43,5 @@
 
         </div>{% endfor %}
       </div>
-      {% endif %}
-    {% endcontentchannelitem %}
-  {% endfor %}
-{% enddefinedvalue %}
+    {% endif %}
+  {% endcontentchannelitem %}

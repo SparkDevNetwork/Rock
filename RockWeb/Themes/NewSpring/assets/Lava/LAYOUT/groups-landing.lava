@@ -21,6 +21,7 @@ ON gtr.Id = gm.GroupRoleId
 WHERE gm.PersonId = {{ personId }}
 AND gt.Guid IN ({{ groupTypeGuids }})
 AND gtr.IsLeader = 1
+AND gtr.Name != 'Coach'
 AND g.IsActive = 1
 AND g.IsArchived = 0
 AND gm.GroupMemberStatus = 1
@@ -48,14 +49,15 @@ AND gm.IsArchived = 0
 
 {% else %}
 
+  <div class="push-double-bottom">
   {[ section ]}
     <div class="text-constrained mx-auto text-center">
-      <h1>Lead a Group</h1>
-      <p class="lead">Every family has at least one relative who loves bringing people together. <b>In our NewSpring family, Group Leaders are those people.</b></p>
-      <p class="flush"><a href="/workflows/93/?Interest=Group%20Leader" class="btn btn-primary">Lead a Group</a></p>
+      <h1 class="h2">Lead a Group</h1>
+      <p>Every family has at least one relative who loves bringing people together. <b>In our NewSpring family, Group Leaders are those people.</b></p>
+      <p><a href="/workflows/93/?Interest=Group%20Leader" class="btn btn-primary">Lead a Group</a></p>
     </div>
   {[ endsection ]}
-
+  </div>
 {% endif %}
 
 {% comment %}

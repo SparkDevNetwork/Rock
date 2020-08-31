@@ -9,9 +9,14 @@
 </script>
 
 
+
+{% assign canEditGeneralNotes =  4 | HasRightsTo:'Edit','Rock.Model.NoteType' %}
+
+{% if canEditGeneralNotes %}
 <p class="xs-push-half-bottom">
   <a href="#" class="btn btn-primary xs-btn-block xs-flush-bottom js-addnote shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add a Note</a>
 </p>
+{% endif %}
 
 {% if NoteList and NoteList != empty %}
 

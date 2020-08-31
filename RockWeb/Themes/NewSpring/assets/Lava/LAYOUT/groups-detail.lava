@@ -5,6 +5,7 @@
 {% assign groupAttendanceWarningThreshold = 'Global' | Attribute:'GroupAttendanceWarningThreshold' %}
 {% assign pulseLookBack = 'Global' | Attribute:'GroupPulseLookBack' %}
 {% assign pulseLookAhead = 'Global' | Attribute:'GroupPulseLookForward' %}
+{% assign groupPulseAttendanceAlert = 'Global' | Attribute:'GroupPulseAttendanceAlert' | Times:-1 %}
 
 <style>
   .group-pulse .list-group-item {
@@ -174,38 +175,46 @@ ORDER BY (
     {%- comment -%}
       GROUP PULSE
     {%- endcomment -%}
-    {% if groupPulse and groupPulse != empty %}<div class="col-md-12 col-sm-6 col-xs-12">
-      <h2 class="h4 xs-h5 text-uppercase strongest">Group Pulse</h2>
+    <div class="col-md-12 col-sm-6 col-xs-12">
 
-      <ul class="list-group group-pulse rounded shadowed push-double-bottom sm-flush-bottom xs-push-double-bottom">
-        {% if attendances and attendances != emtpy %}
+      {% if AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'EditGroup' }}" class="btn btn-primary btn-block shadowed push-bottom xs-push-half-bottom">
+          <i class="fal fa-pencil push-quarter-right"></i> Edit Group
+        </a>
+      {% endif %}
 
-          {% assign oneMonthAgo = 'Now' | DateAdd:-1,'M' %}
-          {% for attendance in attendances %}
-            {% if attendance.Date <= oneMonthAgo and attendance.Date != NULL %}
-              <li class="list-group-item">
-                <div class="flush">
-                  <div class="pulse-image">
-                    <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ attendance.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
-                  </div>
-                  <a href="{{ currentUrl | Append:'/' | Append:attendance.PersonId }}" class="text-decoration-none"><b>{{ attendance.NickName }} {{ attendance.LastName }}</b></a> {{ attendance.Action }} on {{ attendance.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ attendance.Date }}' ]} {% assign daysFromNow = attendance.Date | DaysFromNow %}<span class="text-danger"> {{ daysFromNow }}.</span></div>
-              </li>
-            {% endif %}
+      {% if groupPulse and groupPulse != empty %}
+        <h2 class="h4 xs-h5 text-uppercase strongest">Group Pulse</h2>
+
+        <ul class="list-group group-pulse rounded shadowed push-double-bottom sm-flush-bottom xs-push-double-bottom">
+          {% if attendances and attendances != emtpy %}
+            {% assign attendanceLookbackDate = 'Now' | DateAdd:groupPulseAttendanceAlert,'d' %}
+            {% for attendance in attendances %}
+              {% if attendance.Date <= attendanceLookbackDate and attendance.Date != NULL %}
+                <li class="list-group-item">
+                  <div class="flush">
+                    <div class="pulse-image">
+                      <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ attendance.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
+                    </div>
+                    <a href="{{ currentUrl | Append:'/' | Append:attendance.PersonId }}" class="text-decoration-none"><b>{{ attendance.NickName }} {{ attendance.LastName }}</b></a> {{ attendance.Action }} on {{ attendance.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ attendance.Date }}' ]} {% assign daysFromNow = attendance.Date | DaysFromNow %}<span class="text-danger"> {{ daysFromNow }}.</span></div>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+          {% endif %}
+
+          {% for item in groupPulse %}
+            <li class="list-group-item">
+              <div class="flush">
+                <div class="pulse-image">
+                  <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ item.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
+                </div>
+                <a href="{{ currentUrl | Append:'/' | Append:item.PersonId }}" class="text-decoration-none"><b>{{ item.NickName }} {% if item.Action contains 'birthday' or item.Action contains 'anniversary' %}{{ item.LastName | Possessive }}{% else %}{{ item.LastName }}{% endif %}</b></a> {{ item.Action }} on {{ item.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ item.Date }}' ]} {% assign daysFromNow = item.Date | DaysFromNow %}<span class="text-gray-light"> {{ daysFromNow }}.</span></div>
+            </li>
           {% endfor %}
-
-        {% endif %}
-
-        {% for item in groupPulse %}
-          <li class="list-group-item">
-            <div class="flush">
-              <div class="pulse-image">
-                <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ item.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
-              </div>
-              <a href="{{ currentUrl | Append:'/' | Append:item.PersonId }}" class="text-decoration-none"><b>{{ item.NickName }} {% if item.Action contains 'birthday' or item.Action contains 'anniversary' %}{{ item.LastName | Possessive }}{% else %}{{ item.LastName }}{% endif %}</b></a> {{ item.Action }} on {{ item.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ item.Date }}' ]} {% assign daysFromNow = item.Date | DaysFromNow %}<span class="text-gray-light"> {{ daysFromNow }}.</span></div>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>{% endif %}<div class="col-md-12 col-sm-6 col-xs-12">
+        </ul>
+      {% endif %}
+    </div><div class="col-md-12 col-sm-6 col-xs-12">
 
         {%- comment -%}
           GROUP COMMUNICATION
