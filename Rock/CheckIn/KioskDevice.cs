@@ -263,7 +263,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskDevice Get( int id, List<int> configuredGroupTypes )
         {
-            return GetOrAddExisting( id, () => Create( id ) );
+            return GetOrAddExisting( id, () => Create( id ), () => GetAllIds() );
         }
 
         /// <summary>
@@ -300,6 +300,28 @@ namespace Rock.CheckIn
                     }
 
                     return device;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a list of IDs for all devices of type CheckinKiosk
+        /// </summary>
+        /// <returns></returns>
+        private static List<string> GetAllIds()
+        {
+            int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
+
+            using( var rockContext = new RockContext() )
+            {
+                var deviceService = new DeviceService( rockContext );
+                var ids = deviceService.Queryable().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId ).Select( d => d.Id ).ToList().ConvertAll( d => d.ToString() );
+
+                if ( ids.Any() )
+                {
+                    return ids;
                 }
             }
 
