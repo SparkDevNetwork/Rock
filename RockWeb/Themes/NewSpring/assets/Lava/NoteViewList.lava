@@ -1,0 +1,6 @@
+<ul class="note-view-list note-list list-unstyled js-notelist">
+    {% for note in NoteList %}
+		{% assign noteReplyDepth = 0 %}
+		{% include '~/Themes/NewSpring/assets/Lava/NoteViewItem.lava' %}
+    {% endfor %}
+</ul>
