@@ -85,6 +85,9 @@
       {% if meetingDay == '6' %}
         { value:6, text:'Saturday'},
       {% endif %}
+      {% if meetingDay == '7' %}
+        { value:7, text:'Other'},
+      {% endif %}
     {% endfor %}
   {% endif %}
 {% endcapture %}
@@ -851,6 +854,7 @@ var app = new Vue({
                       { value:4, text:'Thursday'},
                       { value:5, text:'Friday'},
                       { value:6, text:'Saturday'},
+                      { value:7, text:'Other'},
                         ],
       campusValues: {{selectedCampuses | ReplaceLast:',','' }},
       campusOptions: {{ campusData | ReplaceLast:',','' }},

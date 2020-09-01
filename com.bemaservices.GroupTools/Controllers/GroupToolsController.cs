@@ -166,32 +166,62 @@ namespace com.bemaservices.GroupTools.Controllers
                     }
                     else
                     {
-                        var nextStartDate = schedule.GetNextStartDateTime( RockDateTime.Now );
-                        if ( nextStartDate.HasValue )
+                        DDay.iCal.Event calendarEvent = schedule.GetCalendarEvent();
+                        if ( calendarEvent != null && calendarEvent.DTStart != null )
                         {
-                            groupInfo.FriendlyScheduleText = schedule.FriendlyScheduleText;
+                            string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
+                            groupInfo.TimeOfDay = startTimeText;
 
-                            groupInfo.DayOfWeek = nextStartDate.Value.ToString( "ddd" );
-                            groupInfo.TimeOfDay = nextStartDate.Value.TimeOfDay.ToTimeString();
-
-                            DDay.iCal.Event calendarEvent = schedule.GetCalendarEvent();
-                            if ( calendarEvent != null && calendarEvent.DTStart != null )
+                            if ( calendarEvent.RecurrenceRules.Any() )
                             {
-                                string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
-                                if ( calendarEvent.RecurrenceRules.Any() )
-                                {
-                                    // some type of recurring schedule
+                                // some type of recurring schedule
 
-                                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
-                                    if ( rrule.Interval == 1 )
+                                IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                                if ( rrule.Interval == 1 )
+                                {
+                                    groupInfo.Frequency = rrule.Frequency.ToString();
+                                }
+                                if ( rrule.Interval == 2 )
+                                {
+                                    groupInfo.Frequency = string.Format( "Bi{0}", rrule.Frequency.ToString().ToLower() );
+                                }
+
+                                if ( rrule.ByDay.Count == 1 )
+                                {
+                                    var byDay = rrule.ByDay.First();
+                                    groupInfo.DayOfWeek = byDay.DayOfWeek.ConvertToString().Substring( 0, 3 );
+                                }
+                                else
+                                {
+                                    groupInfo.DayOfWeek = "Varies";
+                                }
+                            }
+                            else
+                            {
+                                if ( calendarEvent.RecurrenceDates.Any() )
+                                {
+                                    var dates = calendarEvent.RecurrenceDates.SelectMany( d => d.Select( d1 => d1.StartTime ) );
+                                    var weekDays = dates.Select( d => d.DayOfWeek ).Distinct().ToList();
+
+                                    weekDays.Add( calendarEvent.DTStart.Value.DayOfWeek, true );
+
+                                    if ( weekDays.Count == 1 )
                                     {
-                                        groupInfo.Frequency = rrule.Frequency.ToString();
+                                        groupInfo.DayOfWeek = weekDays.First().ConvertToString().Substring( 0, 3 );
+                                    }
+                                    else
+                                    {
+                                        groupInfo.DayOfWeek = "Varies";
                                     }
                                 }
                             }
                         }
                     }
-
+                }
+                else
+                {
+                    groupInfo.DayOfWeek = "N/A";
+                    groupInfo.Frequency = "No Schedule";
                 }
 
                 groupInfoList.Add( groupInfo );
@@ -240,7 +270,9 @@ namespace com.bemaservices.GroupTools.Controllers
 
             var groupTypeIdList = groupTypeIds.SplitDelimitedValues().AsIntegerList();
             var campusIdList = campusIds.SplitDelimitedValues().AsIntegerList();
-            var meetingDayList = meetingDays.SplitDelimitedValues().Select( i => i.ConvertToEnum<DayOfWeek>() ).ToList();
+            var meetingDayIntegerList = meetingDays.SplitDelimitedValues().AsIntegerList();
+            var meetingDayList = meetingDayIntegerList.Where( i => i >= 0 && i <= 6 ).Select( i => i.ToString().ConvertToEnum<DayOfWeek>() ).ToList();
+            var includeNonWeeklySchedules = meetingDayIntegerList.Where( i => i > 6 ).Any();
             var categoryIdList = categoryIds.SplitDelimitedValues().AsIntegerList();
 
             if ( groupTypeIdList.Any() )
@@ -263,9 +295,27 @@ namespace com.bemaservices.GroupTools.Controllers
                 qry = qry.Where( g => g.CampusId.HasValue && campusIdList.Contains( g.CampusId.Value ) );
             }
 
-            if ( meetingDayList.Any() )
+            if ( meetingDayList.Any() || includeNonWeeklySchedules )
             {
-                qry = qry.Where( g => g.Schedule != null && g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
+                qry = qry.Where( g => g.Schedule != null );
+
+                if ( meetingDayList.Any() && !includeNonWeeklySchedules )
+                {
+                    qry = qry.Where( g => g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
+                }
+
+                if ( !meetingDayList.Any() && includeNonWeeklySchedules )
+                {
+                    qry = qry.Where( g => g.Schedule.iCalendarContent != null && g.Schedule.iCalendarContent != string.Empty );
+                }
+
+                if ( meetingDayList.Any() && includeNonWeeklySchedules )
+                {
+                    qry = qry.Where( g =>
+                                        ( g.Schedule.WeeklyDayOfWeek != null && meetingDayList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) ) ||
+                                        ( g.Schedule.iCalendarContent != null && g.Schedule.iCalendarContent != string.Empty )
+                                    );
+                }
             }
 
             if ( categoryIdList.Any() )
