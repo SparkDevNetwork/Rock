@@ -40,9 +40,9 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     ///
     /// </summary>
-    [DisplayName("Content Channel Item Detail")]
-    [Category("CMS")]
-    [Description("Displays the details for a content channel item.")]
+    [DisplayName( "Content Channel Item Detail" )]
+    [Category( "CMS" )]
+    [Description( "Displays the details for a content channel item." )]
 
     #region Block Attributes
 
@@ -245,9 +245,9 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                if (string.IsNullOrWhiteSpace(GetAttributeValue( AttributeKey.ContentChannel )))
+                if ( string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.ContentChannel ) ) )
                 {
-                    ShowDetail(PageParameter( PageParameterKey.ContentItemId ).AsInteger(), PageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull());
+                    ShowDetail( PageParameter( PageParameterKey.ContentItemId ).AsInteger(), PageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Cms
                             .Queryable()
                             .Where( c =>
                                 c.ContentChannelItemId == contentItem.Id &&
-                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value)
+                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value )
                             .FirstOrDefault();
 
                         if ( occurrenceChannelItem == null )
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
-            if (contentItem != null )
+            if ( contentItem != null )
             {
                 contentItemService.Delete( contentItem );
                 rockContext.SaveChanges();
@@ -513,6 +513,13 @@ namespace RockWeb.Blocks.Cms
             {
                 BindChildItemsGrid( contentItem );
             }
+
+            // Make sure correct tab is selected.
+            liParents.RemoveCssClass( "active" );
+            divParentItems.RemoveCssClass( "active" );
+
+            liChildren.AddCssClass( "active" );
+            divChildItems.AddCssClass( "active" );
         }
 
         private void gChildItems_Add( object sender, EventArgs e )
@@ -587,6 +594,13 @@ namespace RockWeb.Blocks.Cms
             {
                 BindParentItemsGrid( contentItem );
             }
+
+            // Make sure correct tab is selected.
+            liChildren.RemoveCssClass( "active" );
+            divChildItems.RemoveCssClass( "active" );
+
+            liParents.AddCssClass( "active" );
+            divParentItems.AddCssClass( "active" );
         }
 
         protected void gParentItems_RowSelected( object sender, RowEventArgs e )
@@ -628,7 +642,7 @@ namespace RockWeb.Blocks.Cms
                     var service = new ContentChannelItemAssociationService( rockContext );
                     var order = service.Queryable().AsNoTracking()
                         .Where( a => a.ContentChannelItemId == itemId.Value )
-                        .Select( a => (int?)a.Order )
+                        .Select( a => ( int? ) a.Order )
                         .DefaultIfEmpty()
                         .Max();
 
@@ -803,7 +817,7 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
-            if ( contentItem == null)
+            if ( contentItem == null )
             {
                 var contentChannel = new ContentChannelService( rockContext ).Get( hfChannelId.Value.AsInteger() );
                 if ( contentChannel != null )
@@ -826,7 +840,7 @@ namespace RockWeb.Blocks.Cms
                             parentItem.ContentChannel.ChildContentChannels.Any( c => c.Id == contentChannel.Id ) )
                         {
                             var order = parentItem.ChildItems
-                                .Select( a => (int?)a.Order )
+                                .Select( a => ( int? ) a.Order )
                                 .DefaultIfEmpty()
                                 .Max();
 
@@ -885,7 +899,7 @@ namespace RockWeb.Blocks.Cms
             {
                 taglTags.EntityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                 taglTags.CategoryGuid = ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategory != null ) ?
-                     contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
+                     contentItem.ContentChannel.ItemTagCategory.Guid : ( Guid? ) null;
                 taglTags.EntityGuid = contentItem.Guid;
                 taglTags.DelaySave = true;
                 taglTags.GetTagValues( CurrentPersonId );
@@ -969,7 +983,7 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
 
-                rSlugs.DataSource =  contentItem.ContentChannelItemSlugs;
+                rSlugs.DataSource = contentItem.ContentChannelItemSlugs;
                 rSlugs.DataBind();
 
                 htmlContent.Visible = false;
@@ -1002,7 +1016,7 @@ namespace RockWeb.Blocks.Cms
                         htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
                     }
                 }
-               
+
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
                     dpStart.Visible = false;
@@ -1023,7 +1037,7 @@ namespace RockWeb.Blocks.Cms
 
                     dpStart.SelectedDate = contentItem.StartDateTime.Date;
                     dpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
-                    dpExpire.SelectedDate = contentItem.ExpireDateTime.HasValue ? contentItem.ExpireDateTime.Value.Date : (DateTime?)null;
+                    dpExpire.SelectedDate = contentItem.ExpireDateTime.HasValue ? contentItem.ExpireDateTime.Value.Date : ( DateTime? ) null;
                 }
 
                 lblItemGlobalKey.Text = contentItem.ItemGlobalKey;
@@ -1193,34 +1207,12 @@ namespace RockWeb.Blocks.Cms
             bool isFiltered = false;
             var childItemAssociationList = GetChildItemAssociationList( contentItem, out isFiltered );
 
-            if ( contentItem.ContentChannel.ChildItemsManuallyOrdered && !isFiltered )
-            {
-                gChildItems.Columns[0].Visible = true;
-                gChildItems.AllowSorting = false;
-                childItemAssociationList = childItemAssociationList.OrderBy( i => i.Order ).ToList();
-            }
-            else
-            {
-                gChildItems.Columns[0].Visible = false;
-                gChildItems.AllowSorting = true;
-
-                SortProperty sortProperty = gChildItems.SortProperty;
-                if ( sortProperty != null )
-                {
-                    childItemAssociationList = childItemAssociationList.AsQueryable().Sort( sortProperty ).ToList();
-                }
-                else
-                {
-                    childItemAssociationList = childItemAssociationList.OrderByDescending( p => p.ContentChannelItem.StartDateTime ).ToList();
-                }
-            }
-
             gChildItems.ObjectList = new Dictionary<string, object>();
             var childItemList = childItemAssociationList.Select( a => a.ChildContentChannelItem ).ToList();
             var childItemAssociationOrder = childItemAssociationList.Distinct().ToDictionary( k => k.ChildContentChannelItemId, v => v.Order );
             childItemList.ForEach( i => gChildItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-            gChildItems.DataSource = childItemList.Select( i => new
+            var items = childItemList.Select( i => new
             {
                 i.Id,
                 i.Guid,
@@ -1232,6 +1224,29 @@ namespace RockWeb.Blocks.Cms
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
 
+            if ( contentItem.ContentChannel.ChildItemsManuallyOrdered && !isFiltered )
+            {
+                gChildItems.Columns[0].Visible = true;
+                gChildItems.AllowSorting = false;
+                items = items.OrderBy( i => i.Order ).ToList();
+            }
+            else
+            {
+                gChildItems.Columns[0].Visible = false;
+                gChildItems.AllowSorting = true;
+
+                SortProperty sortProperty = gChildItems.SortProperty;
+                if ( sortProperty != null )
+                {
+                    items = items.AsQueryable().Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+                }
+            }
+
+            gChildItems.DataSource = items;
             gChildItems.DataBind();
         }
 
@@ -1239,30 +1254,32 @@ namespace RockWeb.Blocks.Cms
         {
             var items = GetParentItems( contentItem );
 
-            SortProperty sortProperty = gParentItems.SortProperty;
-            if ( sortProperty != null )
-            {
-                items = items.AsQueryable().Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                items = items.OrderByDescending( p => p.ChildContentChannelItem.StartDateTime ).ToList();
-            }
-
             gParentItems.ObjectList = new Dictionary<string, object>();
             items.ForEach( i => gParentItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-            gParentItems.DataSource = items.Select( i => new
+            var selectedItems = items.Select( i => new
             {
-                i.ChildContentChannelItem.Id,
-                i.ChildContentChannelItem.Guid,
-                i.ChildContentChannelItem.Title,
-                StartDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates ? i.ChildContentChannelItem.StartDateTime : ( DateTime? ) null,
-                ExpireDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ChildContentChannelItem.ExpireDateTime : ( DateTime? ) null,
-                Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) null : ( int? ) i.ChildContentChannelItem.Order,
-                Status = ( i.ChildContentChannelItem.ContentChannel.RequiresApproval && !i.ChildContentChannelItem.ContentChannelType.DisableStatus ) ? DisplayStatus( i.ChildContentChannelItem.Status ) : string.Empty,
+                i.ContentChannelItem.Id,
+                i.ContentChannelItem.Guid,
+                i.ContentChannelItem.Title,
+                StartDateTime = i.ContentChannelItem.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates ? i.ContentChannelItem.StartDateTime : ( DateTime? ) null,
+                ExpireDateTime = i.ContentChannelItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ContentChannelItem.ExpireDateTime : ( DateTime? ) null,
+                Order = contentItem.ContentChannel.ItemsManuallyOrdered ? ( int? ) null : ( int? ) i.ContentChannelItem.Order,
+                Status = ( i.ContentChannelItem.ContentChannel.RequiresApproval && !i.ContentChannelItem.ContentChannelType.DisableStatus ) ? DisplayStatus( i.ContentChannelItem.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
+
+            SortProperty sortProperty = gParentItems.SortProperty;
+            if ( sortProperty != null )
+            {
+                selectedItems = selectedItems.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                selectedItems = selectedItems.OrderByDescending( p => p.StartDateTime ).ToList();
+            }
+
+            gParentItems.DataSource = selectedItems;
             gParentItems.DataBind();
         }
 
@@ -1383,7 +1400,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
-
     }
 }
