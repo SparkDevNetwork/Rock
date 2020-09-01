@@ -802,7 +802,7 @@ fieldset[disabled] .multiselect {
               <div class="sg-card-content p-t-1">
                 <h2 class="sg-card-name fontSize-body">{*group.Name*}</h2>
                 <p class="sg-card-campus fontSize-xs">{*group.Campus*}</p>
-                <p class="sg-card-description">{*group.Description*}.</p>
+                <p class="sg-card-description">{*group.Description*}</p>
                 <div class="description-fade"></div>
               </div>
               <div class="sg-card-side-bar">
