@@ -263,7 +263,7 @@ namespace Rock.Utility
 
             var filteredPersonIds = new List<int>();
 
-            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs();
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs();
             var personQuery = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>();
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )

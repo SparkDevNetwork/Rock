@@ -1057,7 +1057,7 @@ $(document).ready(function() {
                         {
                             grid.CreatePreviewColumns( entityType );
                             var dbContext = dv.GetDbContext();
-                            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                            var dataViewGetQueryArgs = new DataViewGetQueryArgs
                             {
                                 SortProperty = grid.SortProperty,
                                 DbContext = dbContext,
