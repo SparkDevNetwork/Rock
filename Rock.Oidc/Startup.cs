@@ -66,7 +66,7 @@ namespace Rock.Oidc
                 options.RefreshTokenLifetime = TimeSpan.FromSeconds( rockOidcSettings.RefreshTokenLifetime );
 
                 options.ApplicationCanDisplayErrors = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
-                options.AllowInsecureHttp = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+                options.AllowInsecureHttp = true;
 
                 var rockSigningCredentials = new RockOidcSigningCredentials( rockOidcSettings );
 
