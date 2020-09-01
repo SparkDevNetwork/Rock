@@ -55,14 +55,15 @@ namespace com.bemaservices.GroupTools.Controllers
             int? limit = null,
             int characterLimit = 150,
             string keywords = "",
-            bool showPrivateGroups = false )
+            bool showPrivateGroups = false,
+            bool showInactiveGroups = false )
         {
             var rockContext = new RockContext();
             var groupInfoList = new List<GroupInformation>();
             var definedValueService = new DefinedValueService( rockContext );
             int entityTypeId = EntityTypeCache.GetId( typeof( Group ) ) ?? 0;
 
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, showPrivateGroups, rockContext );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, showPrivateGroups, showInactiveGroups, rockContext );
 
             var categoryValues = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
                 .Where( a => a.Attribute.Key == "Category" )
@@ -232,7 +233,7 @@ namespace com.bemaservices.GroupTools.Controllers
             return colorString;
         }
 
-        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, string keywords, bool showPrivateGroups, RockContext rockContext )
+        private static IQueryable<Group> FilterGroups( string groupTypeIds, string campusIds, string meetingDays, string categoryIds, string age, string keywords, bool showPrivateGroups, bool showInactiveGroups, RockContext rockContext )
         {
             var groupService = new GroupService( rockContext );
             var qry = groupService.Queryable().AsNoTracking();
@@ -250,6 +251,11 @@ namespace com.bemaservices.GroupTools.Controllers
             if ( !showPrivateGroups )
             {
                 qry = qry.Where( g => g.IsPublic );
+            }
+
+            if ( !showInactiveGroups )
+            {
+                qry = qry.Where( g => g.IsActive );
             }
 
             if ( campusIdList.Any() )
@@ -314,9 +320,10 @@ namespace com.bemaservices.GroupTools.Controllers
             string categoryIds = "",
             string age = "",
             string keywords = "",
-            bool showPrivateGroups = false )
+            bool showPrivateGroups = false,
+            bool showInactiveGroups = false )
         {
-            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, showPrivateGroups, new RockContext() );
+            IQueryable<Group> qry = FilterGroups( groupTypeIds, campusIds, meetingDays, categoryIds, age, keywords, showPrivateGroups, showInactiveGroups, new RockContext() );
 
             return qry.Count();
         }
