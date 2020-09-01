@@ -30,7 +30,7 @@
             </Rock:ModalDialog>
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-openid"></i>OpenID Connect Scopes</h1>
+                <h1 class="panel-title"><i class="fa fa-openid"></i>OpenID Connect Claims</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
