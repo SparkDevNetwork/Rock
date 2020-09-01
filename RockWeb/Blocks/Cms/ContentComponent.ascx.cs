@@ -349,57 +349,70 @@ namespace RockWeb.Blocks.Cms
         public List<ContentChannelItem> GetContentChannelItems( string itemCacheKey, int? itemCacheDuration )
         {
             List<ContentChannelItem> contentChannelItems = null;
-
-            if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+            try
             {
-                contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
-                if ( contentChannelItems != null )
+                if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
                 {
-                    return contentChannelItems;
+                    contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
+                    if ( contentChannelItems != null )
+                    {
+                        return contentChannelItems;
+                    }
                 }
+
+                ContentChannelCache contentChannel = GetContentChannel();
+
+                if ( contentChannel == null )
+                {
+                    return null;
+                }
+
+                var rockContext = new RockContext();
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+                IQueryable<ContentChannelItem> contentChannelItemsQuery = contentChannelItemService.Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
+
+                var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
+                if ( !allowMultipleContentItems )
+                {
+                    // if allowMultipleContentItems = false, just get the first one
+                    // if it was configured for allowMultipleContentItems previously, there might be more, but they won't show until allowMultipleContentItems is enabled again
+                    contentChannelItemsQuery = contentChannelItemsQuery.Take( 1 );
+                }
+
+                int? dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
+                if ( dataFilterId.HasValue )
+                {
+                    var dataFilterService = new DataViewFilterService( rockContext );
+                    ParameterExpression paramExpression = contentChannelItemService.ParameterExpression;
+                    var itemType = typeof( Rock.Model.ContentChannelItem );
+                    var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression ) : null;
+
+                    contentChannelItemsQuery = contentChannelItemsQuery.Where( paramExpression, whereExpression, null );
+                }
+
+                contentChannelItems = contentChannelItemsQuery.ToList();
+
+                if ( contentChannelItems != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+                {
+                    string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
+                    AddCacheItem( itemCacheKey, contentChannelItems, itemCacheDuration.Value, cacheTags );
+                }
+
+                return contentChannelItems;
             }
-
-            ContentChannelCache contentChannel = GetContentChannel();
-
-            if ( contentChannel == null )
+            catch ( Exception ex )
             {
-                return null;
+                this.LogException( ex );
+                nbContentError.Text = "ERROR: There was a problem getting content";
+                nbContentError.NotificationBoxType = NotificationBoxType.Danger;
+                nbContentError.Details = ex.Message;
+                nbContentError.Visible = true;
+
+                // set the contentItemList to an empty list and continue on (but with an empty list of ContentChannelItems to use when rending the Lava)
+                contentChannelItems = new List<ContentChannelItem>();
+                return contentChannelItems;
             }
-
-            var rockContext = new RockContext();
-            var contentChannelItemService = new ContentChannelItemService( rockContext );
-            IQueryable<ContentChannelItem> contentChannelItemsQuery = contentChannelItemService.Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
-
-            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
-            if ( !allowMultipleContentItems )
-            {
-                // if allowMultipleContentItems = false, just get the first one
-                // if it was configured for allowMultipleContentItems previously, there might be more, but they won't show until allowMultipleContentItems is enabled again
-                contentChannelItemsQuery = contentChannelItemsQuery.Take( 1 );
-            }
-
-            int? dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
-            if ( dataFilterId.HasValue )
-            {
-                var dataFilterService = new DataViewFilterService( rockContext );
-                ParameterExpression paramExpression = contentChannelItemService.ParameterExpression;
-                var itemType = typeof( Rock.Model.ContentChannelItem );
-                var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                List<string> errorMessages = new List<string>();
-                Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
-
-                contentChannelItemsQuery = contentChannelItemsQuery.Where( paramExpression, whereExpression, null );
-            }
-
-            contentChannelItems = contentChannelItemsQuery.ToList();
-
-            if ( contentChannelItems != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
-            {
-                string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                AddCacheItem( itemCacheKey, contentChannelItems, itemCacheDuration.Value, cacheTags );
-            }
-
-            return contentChannelItems;
         }
 
         /// <summary>
@@ -1068,11 +1081,6 @@ namespace RockWeb.Blocks.Cms
         private FilterField AddFilterField( Control parentControl, Guid dataViewFilterGuid, int contentChannelTypeId )
         {
             FilterField filterField = new FilterField();
-
-            filterField.Entity = new ContentChannelItem
-            {
-                ContentChannelTypeId = contentChannelTypeId
-            };
 
             filterField.DataViewFilterGuid = dataViewFilterGuid;
 

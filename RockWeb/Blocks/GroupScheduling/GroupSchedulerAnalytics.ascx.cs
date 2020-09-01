@@ -158,8 +158,6 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected string DoughnutChartDeclineValuesJSON { get; set; }
 
-        private List<string> _errorMessages;
-
         #endregion Properties
 
         #region Overrides
@@ -458,7 +456,8 @@ var barChart = new Chart(barCtx, {{
                         break;
                     case "dataview":
                         var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
-                        var personsFromDv = dataView.GetQuery( null, rockContext, null, out _errorMessages ) as IQueryable<Person>;
+                        DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                        var personsFromDv = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                         var personAliasIds = personsFromDv.Select( d => d.Aliases.Where( a => a.AliasPersonId == d.Id ).Select( a => a.Id ).FirstOrDefault() ).ToList();
 
                         groupAttendances = groupAttendances.Where( a => personAliasIds.Contains( a.PersonAliasId.Value ) );

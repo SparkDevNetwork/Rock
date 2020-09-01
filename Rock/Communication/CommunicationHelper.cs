@@ -20,7 +20,10 @@ using Rock.Model;
 
 namespace Rock.Communication
 {
-    internal class CommunicationHelper
+    /// <summary>
+    /// This class is used to help consolidate the sending of communications.
+    /// </summary>
+    public class CommunicationHelper
     {
         /// <summary>
         /// Sends the message to a person via the specified medium type using the system communication.
@@ -30,7 +33,7 @@ namespace Rock.Communication
         /// <param name="systemCommunication">The system communication.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
-        internal static SendMessageResult SendMessage( Person person, int mediumType, SystemCommunication systemCommunication, Dictionary<string, object> mergeObjects )
+        public static SendMessageResult SendMessage( Person person, int mediumType, SystemCommunication systemCommunication, Dictionary<string, object> mergeObjects )
         {
             var results = new SendMessageResult();
             CreateMessageResult createMessageResults;

@@ -31,6 +31,7 @@ namespace Rock
         /// </summary>
         /// <param name="scheduleList">The schedule list.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
         [Obsolete( "Use OrderByOrderAndNextScheduledDateTime instead" )]
         public static List<Schedule> OrderByNextScheduledDateTime( this List<Schedule> scheduleList )
         {
@@ -56,7 +57,7 @@ namespace Rock
             // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
             var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
             List<Schedule> sortedScheduleList = scheduleList
-                .OrderBy(a => a.Order)
+                .OrderBy( a => a.Order )
                 .ThenBy( a => a.GetNextStartDateTime( occurrenceDate ) )
                 .ThenBy( a => a.Name )
                 .ThenBy( a => a.Id )

@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 using Rock.Communication;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls.Communication
 {
@@ -347,6 +348,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 pushData.MobilePageQueryString = kvlQuerystring.Value.AsDictionaryOrNull();
                 pushData.MobilePageId = ppMobilePage.SelectedValue.AsIntegerOrNull();
+                pushData.MobileApplicationId = pushData.MobilePageId.HasValue ? PageCache.Get( pushData.MobilePageId.Value )?.SiteId : null;
             }
 
             if ( communication.PushOpenAction == PushOpenAction.LinkToUrl )

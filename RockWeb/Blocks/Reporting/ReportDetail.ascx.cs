@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Displays the details of the given report." )]
 
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
-    [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
+    [LinkedPage( "Data View Page", "The page to edit data views", true, "", "", 1 )]
     [ReportField( "Report", "Select the report to present to the user.", false, "", "", order: 2 )]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean(true);
+                this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean( true );
 
                 var reportId = GetReportId();
                 if ( reportId.HasValue )
@@ -327,17 +327,55 @@ namespace RockWeb.Blocks.Reporting
             }
 
             int? databaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
-            string errorMessage;
-            ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, databaseTimeoutSeconds, isCommunication, out errorMessage );
-            if ( !string.IsNullOrWhiteSpace( errorMessage ) )
+            ReportingHelper.BindGridOptions bindGridOptions = new ReportingHelper.BindGridOptions()
             {
-                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
-                nbEditModeMessage.Text = errorMessage;
-                nbEditModeMessage.Visible = true;
+                CurrentPerson = this.CurrentPerson,
+                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
+                IsCommunication = isCommunication
+            };
+
+            nbErrorMessage.Visible = false;
+
+            try
+            {
+                if ( report.EntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( report.EntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        bindGridOptions.ReportDbContext = Reflection.GetDbContextForEntityType( entityType.GetEntityType() );
+                    }
+                }
+
+                ReportingHelper.BindGrid( report, gReport, bindGridOptions );
             }
-            else
+            catch ( Exception ex )
             {
-                nbEditModeMessage.Visible = true;
+                ExceptionLogService.LogException( ex );
+                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+
+                if ( sqlTimeoutException != null )
+                {
+                    nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbErrorMessage.Text = "This report did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                }
+                else
+                {
+                    if ( ex is RockDataViewFilterExpressionException )
+                    {
+                        RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
+                        nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( report.DataView );
+                    }
+                    else
+                    {
+                        nbErrorMessage.Text = "There was a problem with one of the filters for this report's dataview.";
+                    }
+
+                    nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+
+                    nbErrorMessage.Details = ex.Message;
+                    nbErrorMessage.Visible = true;
+                }
             }
         }
 
@@ -412,7 +450,7 @@ namespace RockWeb.Blocks.Reporting
 
             var newItem = reportService.GetNewFromTemplate( id );
 
-            if (newItem == null)
+            if ( newItem == null )
             {
                 return;
             }
@@ -671,7 +709,7 @@ namespace RockWeb.Blocks.Reporting
             // Check if we are editing an existing Report.
             int reportId = hfReportId.Value.AsInteger();
 
-            if (reportId == 0)
+            if ( reportId == 0 )
             {
                 // If not, check if we are editing a new copy of an existing Report.
                 reportId = PageParameter( "ReportId" ).AsInteger();
@@ -814,7 +852,7 @@ namespace RockWeb.Blocks.Reporting
                         if ( entityField.AttributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
-                            if (attribute != null )
+                            if ( attribute != null )
                             {
                                 // only show the Attribute field in the drop down if they have VIEW Auth to it
                                 isAuthorizedForField = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson );
@@ -874,7 +912,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 var commonFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == "Common" ).OrderBy( a => a.Text );
-                foreach ( var item in commonFieldListItems)
+                foreach ( var item in commonFieldListItems )
                 {
                     ddlFields.Items.Add( item );
                     listItems.Remove( item );
@@ -886,14 +924,14 @@ namespace RockWeb.Blocks.Reporting
                     ddlFields.Items.Add( item );
                     listItems.Remove( item );
                 }
-                
+
                 var attributeFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == string.Format( "{0} Attributes", entityType.Name ) ).OrderBy( a => a.Text );
                 foreach ( var item in attributeFieldListItems )
                 {
                     ddlFields.Items.Add( item );
                     listItems.Remove( item );
                 }
-                
+
                 foreach ( var item in listItems )
                 {
                     ddlFields.Items.Add( item );
@@ -1120,7 +1158,7 @@ namespace RockWeb.Blocks.Reporting
             tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
-            
+
 
             kvSortFields.CustomKeys = new Dictionary<string, string>();
             kvSortFields.CustomValues = new Dictionary<string, string>();
@@ -1172,8 +1210,8 @@ namespace RockWeb.Blocks.Reporting
                 lbDataView.Visible = UserCanEdit;
 
                 var queryParams = new Dictionary<string, string>();
-                queryParams.Add("DataViewId", report.DataViewId.ToString());
-                lbDataView.NavigateUrl = LinkedPageUrl("DataViewPage", queryParams);
+                queryParams.Add( "DataViewId", report.DataViewId.ToString() );
+                lbDataView.NavigateUrl = LinkedPageUrl( "DataViewPage", queryParams );
 
                 lbDataView.ToolTip = report.DataView.Name;
             }

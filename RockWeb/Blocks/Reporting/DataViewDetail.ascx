@@ -48,6 +48,9 @@
 
                     </fieldset>
 
+
+                    <Rock:NotificationBox ID="nbFiltersError" runat="server" NotificationBoxType="Danger" Visible="false" />
+
                     <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
 
                     <Rock:NotificationBox ID="nbPersistError" runat="server" NotificationBoxType="Warning" />

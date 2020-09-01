@@ -251,7 +251,7 @@ namespace Rock.CodeGeneration
                             var rockObsolete = member.GetCustomAttribute<RockObsolete>();
                             if ( rockObsolete == null )
                             {
-                                rockObsoleteWarnings.AppendLine( $" - {type}" );
+                                rockObsoleteWarnings.AppendLine( $" - {member.DeclaringType}.{member.Name}" );
                             }
                             else
                             {
