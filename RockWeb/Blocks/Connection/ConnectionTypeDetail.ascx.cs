@@ -136,6 +136,11 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gConnectionRequestAttributes.GridRebind += gConnectionRequestAttributes_GridRebind;
             gConnectionRequestAttributes.GridReorder += gConnectionRequestAttributes_GridReorder;
+            var securityFieldConnectionRequestAttributes = gConnectionRequestAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityFieldConnectionRequestAttributes != null )
+            {
+                securityFieldConnectionRequestAttributes.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             gActivityTypes.DataKeyNames = new string[] { "Guid" };
             gActivityTypes.Actions.ShowAdd = true;
@@ -990,7 +995,7 @@ namespace RockWeb.Blocks.Connection
             int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
             avcActivityAttributes.AddEditControls( connectionActivityType ?? new ConnectionActivityType() { ConnectionTypeId = connectionTypeId }, Rock.Security.Authorization.EDIT, CurrentPerson );
             hfConnectionTypeAddConnectionActivityTypeGuid.Value = connectionActivityTypeGuid.ToString();
-            ShowDialog( "ConnectionActivityTypes", true );
+            ShowDialog( "ConnectionActivityTypes", connectionActivityType != null );
         }
 
         /// <summary>
@@ -1142,7 +1147,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
             hfConnectionTypeAddConnectionStatusGuid.Value = connectionStatusGuid.ToString();
-            ShowDialog( "ConnectionStatuses", true );
+            ShowDialog( "ConnectionStatuses", connectionStatus != null );
         }
 
         /// <summary>
@@ -1647,18 +1652,18 @@ namespace RockWeb.Blocks.Connection
         /// Shows the dialog.
         /// </summary>
         /// <param name="dialog">The dialog.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( string dialog, bool setValues = false )
+        /// <param name="isExistingItem">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( string dialog, bool isExistingItem = false )
         {
             hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog( setValues );
+            ShowDialog( isExistingItem );
         }
 
         /// <summary>
         /// Shows the dialog.
         /// </summary>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( bool setValues = false )
+        /// <param name="isExistingItem">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( bool isExistingItem = false )
         {
             switch ( hfActiveDialog.Value )
             {
@@ -1666,9 +1671,15 @@ namespace RockWeb.Blocks.Connection
                     dlgAttribute.Show();
                     break;
                 case "CONNECTIONACTIVITYTYPES":
+                    dlgConnectionActivityTypes.SaveButtonText = isExistingItem ? "Save" : "Add";
+                    dlgConnectionActivityTypes.Title = isExistingItem ? "Update Activity" : "Create Activity";
+                    
                     dlgConnectionActivityTypes.Show();
                     break;
                 case "CONNECTIONSTATUSES":
+                    dlgConnectionStatuses.SaveButtonText = isExistingItem ? "Save" : "Add";
+                    dlgConnectionStatuses.Title = isExistingItem ? "Update Status" : "Create Status";
+
                     dlgConnectionStatuses.Show();
                     break;
                 case "CONNECTIONWORKFLOWS":

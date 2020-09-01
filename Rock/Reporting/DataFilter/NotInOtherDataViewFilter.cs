@@ -67,20 +67,25 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string s = "Not In Another Data View";
             var selectionConfig = SelectionConfig.Parse( selection );
 
             int? dataviewId = selectionConfig.DataViewId;
-            if ( dataviewId.HasValue )
+            if ( dataviewId.HasValue && dataviewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( dataviewId.Value );
+                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataviewId.Value );
                 if ( dataView != null )
                 {
-                    return string.Format( "Not Included in '{0}' Data View", dataView.Name );
+                    return $"Not Included in '{dataView.Name}' Data View";
+                }
+                else
+                {
+                    // a DataView id was specified, but we couldn't find it. So we have a problem.
+                    return $"Error. DataView not found for DataViewId: {dataviewId }";
                 }
             }
 
-            return s;
+            // no dataview was specified, so let's show...
+            return "Not In Another Data View";
         }
 
         /// <summary>

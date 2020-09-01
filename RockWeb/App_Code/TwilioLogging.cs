@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using Rock;
 
@@ -25,7 +23,7 @@ namespace RockWeb
     /// <summary>
     /// Summary description for TwilioLogging
     /// </summary>
-    public static class TwilioLogging
+    internal static class TwilioLogging
     {
         private static bool ShouldLogRequest( HttpContext context )
         {
@@ -54,7 +52,7 @@ namespace RockWeb
             WriteRequestToTwilioLog( context, formValues.AsDelimited( ", " ) );
         }
 
-        private static void WriteRequestToTwilioLog( HttpContext context, string message )
+        public static void WriteRequestToTwilioLog( HttpContext context, string message )
         {
             string logFile = context.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
 

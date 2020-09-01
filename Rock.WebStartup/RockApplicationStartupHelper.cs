@@ -326,6 +326,19 @@ namespace Rock.WebStartup
              * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
              */
 
+            // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
+            bool _migrationHistoryTableExists = DbService.ExecuteScaler(
+                @"SELECT convert(bit, 1) [Exists] 
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_SCHEMA = 'dbo'
+                    AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
+
+            if ( !_migrationHistoryTableExists )
+            {
+                // _MigrationHistory table doesn't exist, so we need to run EF Migrations
+                return true;
+            }
+
             // use reflection to find the last EF Migration (last Rock.Migrations.RockMigration since that is what all of Rock's EF migrations are based on)
             var migrationTypes = Rock.Reflection.SearchAssembly( typeof( Rock.Migrations.RockMigration ).Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
             var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();

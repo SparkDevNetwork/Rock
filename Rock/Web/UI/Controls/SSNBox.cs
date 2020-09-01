@@ -337,9 +337,9 @@ namespace Rock.Web.UI.Controls
                 if ( !string.IsNullOrEmpty( value ) )
                 {
                     string ssn = value.AsNumeric();
-                    ssnArea.Attributes["value"] = ssn.SafeSubstring( 0, 3 );
-                    ssnGroup.Attributes["value"] = ssn.SafeSubstring( 3, 2 );
-                    ssnSerial.Text = ssn.SafeSubstring( 5, 4 );
+                    ssnArea.Attributes["value"] = ssn.SubstringSafe( 0, 3 );
+                    ssnGroup.Attributes["value"] = ssn.SubstringSafe( 3, 2 );
+                    ssnSerial.Text = ssn.SubstringSafe( 5, 4 );
                 }
             }
         }
