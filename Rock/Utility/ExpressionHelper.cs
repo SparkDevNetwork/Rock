@@ -47,7 +47,7 @@ namespace Rock.Utility
              * If it isn't fully configured we won't filter. We can detect if the filter isn't configured by..
              * 
              *   1) There are less than 2 filterValues 
-             *   2) A comparisontype isn't specified ("0" means not specified) 
+             *   2) A comparisonType isn't specified ("0" means not specified) 
              *   3) Except of in the case of IsBlank or IsNotBlank, a "CompareTo null" (filterValues[1]) value means the filter value isn't specified
              *   
              *   If we have any of the above cases, we'll return Expression.Const(true), which means we won't filter on this)
@@ -62,7 +62,7 @@ namespace Rock.Utility
             string comparisonValue = filterValues[0];
             if ( comparisonValue == "0" )
             {
-                // if the comparison as a string is "0", that means no comparision type is specified (comparisonType enum starts at 1)
+                // if the comparison as a string is "0", that means no comparison type is specified (comparisonType enum starts at 1)
                 return Expression.Constant( true );
             }
 
@@ -239,7 +239,7 @@ namespace Rock.Utility
                 if ( filterExpression is NoAttributeFilterExpression )
                 {
                     // Special Case: If AttributeFilterExpression returns NoAttributeFilterExpression, just return the NoAttributeFilterExpression.
-                    // For example, If this is a CampusFieldType and they didn't pick any campus, we don't want to do any filtering for this datafilter.
+                    // For example, If this is a CampusFieldType and they didn't pick any campus, we don't want to do any filtering for this DataFilter.
                     return filterExpression;
                 }
                 else

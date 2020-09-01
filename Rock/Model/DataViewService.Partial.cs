@@ -64,7 +64,7 @@ namespace Rock.Model
         public List<int> GetIds( int dataViewId )
         {
             var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
-            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
                 DatabaseTimeoutSeconds = 180,
             };
