@@ -292,7 +292,7 @@ function ()
                 return null;
             }
 
-            return ddlDataView.SelectedValue.AsIntegerOrNull();
+            return ddlDataView.SelectedValueAsId();
         }
         #endregion
 
