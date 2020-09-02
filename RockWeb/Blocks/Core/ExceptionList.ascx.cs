@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -78,6 +79,14 @@ namespace RockWeb.Blocks.Administration
         Category = AttributeCategory.LinkedPages,
         Order = 5 )]
 
+    [IntegerField(
+        "Database Timeout",
+        Key = AttributeKey.DatabaseTimeoutSeconds,
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Order = 6 )]
+
     #endregion
 
     public partial class ExceptionList : RockBlock, ICustomGridColumns
@@ -94,6 +103,7 @@ namespace RockWeb.Blocks.Administration
             public const string ChartStyle = "ChartStyle";
             public const string ShowLegend = "ShowLegend";
             public const string LegendPosition = "LegendPosition";
+            public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
         }
 
         #endregion
@@ -466,6 +476,7 @@ namespace RockWeb.Blocks.Administration
             if ( _dataContext == null )
             {
                 _dataContext = new RockContext();
+                _dataContext.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull();
             }
 
             return _dataContext;
@@ -1375,29 +1386,23 @@ namespace RockWeb.Blocks.Administration
             }
             catch ( Exception ex )
             {
-                nbMessage.Text = "An error occurred while trying to retrieve the list of exceptions. Please use the filter to reduce the amount of exceptions.";
-                nbMessage.Details = ex.Message + "<pre>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</pre>" + FlattenInnerExceptions(ex);
-                nbMessage.Visible = true;
-            }
-        }
+                this.LogException( ex );
+                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
 
-        /// <summary>
-        /// Flattens exception's inner exceptions and returns an HTML formatted string
-        /// useful for debugging.
-        /// </summary>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private string FlattenInnerExceptions( Exception ex )
-        {
-            StringBuilder sb = new StringBuilder();
-            while ( ex != null && ex.InnerException != null )
-            {
-                sb.AppendLine( ex.InnerException.Message.ConvertCrLfToHtmlBr() +
-                    ( ( ex.InnerException.StackTrace != null ) ? "<pre>" + HttpUtility.HtmlEncode( ex.InnerException.StackTrace ) + "</pre>" : string.Empty ) );
-                ex = ex.InnerException;
-            }
+                if ( sqlTimeoutException != null )
+                {
+                    nbMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbMessage.Text = "This exception list query did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                }
+                else
+                {
 
-            return sb.ToString();
+                    nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbMessage.Text = "An error occurred while trying to retrieve the list of exceptions.";
+                    nbMessage.Details = ex.Message;
+                    nbMessage.Visible = true;
+                }
+            }
         }
 
         /// <summary>
