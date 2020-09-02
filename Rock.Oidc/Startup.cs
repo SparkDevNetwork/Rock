@@ -18,6 +18,7 @@ using System;
 using System.IdentityModel.Tokens;
 using Microsoft.Owin;
 using Owin;
+using Rock.Model;
 using Rock.Oidc.Authorization;
 using Rock.Oidc.Configuration;
 using Rock.Web.Cache;
@@ -41,13 +42,44 @@ namespace Rock.Oidc
             */
 
             var rockOidcSettings = RockOidcSettings.GetDefaultSettings();
+
+            /*
+	            9/2/2020 - MSB
+	            We need to make sure that the PublicApplicationRoot global attribute is valid and secure
+                before we try to start OIDC, because if it isn't all of rock would crash.
+		
+                Reason: Validation
+            */
+            var publicApplicationRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
+            if ( publicApplicationRoot.IsNullOrWhiteSpace() )
+            {
+                ExceptionLogService.LogException( "OpenID Connect Server could not start because no Public Application Root Global Attribute is specified." );
+                return;
+            }
+
+            publicApplicationRoot = publicApplicationRoot.EnsureTrailingForwardslash();
+
+            if ( !Uri.TryCreate( publicApplicationRoot, UriKind.RelativeOrAbsolute, out var publicApplicationRootUri ) || !publicApplicationRootUri.IsAbsoluteUri )
+            {
+                ExceptionLogService.LogException( "OpenID Connect Server could not start because the Public Application Root Global Attribute is invalid." );
+                return;
+            }
+
+            var isSecure = string.Equals( publicApplicationRootUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase );
+            if ( !isSecure && !System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                ExceptionLogService.LogException( "OpenID Connect Server could not start because the Public Application Root Global Attribute must be https." );
+                return;
+            }
+
             app.UseOAuthValidation();
 
             app.UseOpenIdConnectServer( options =>
             {
                 options.Provider = new AuthorizationProvider();
 
-                options.Issuer = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
+                options.Issuer = publicApplicationRootUri;
 
                 /*
 	                8/21/2020 - MSB
@@ -66,7 +98,7 @@ namespace Rock.Oidc
                 options.RefreshTokenLifetime = TimeSpan.FromSeconds( rockOidcSettings.RefreshTokenLifetime );
 
                 options.ApplicationCanDisplayErrors = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
-                options.AllowInsecureHttp = true;
+                options.AllowInsecureHttp = !isSecure || System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
 
                 var rockSigningCredentials = new RockOidcSigningCredentials( rockOidcSettings );
 
