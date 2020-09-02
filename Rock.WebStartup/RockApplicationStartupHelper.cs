@@ -344,7 +344,9 @@ namespace Rock.WebStartup
             var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
             var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
 
-            // now look in __MigrationHistory table to see what the last migration that ran was
+            // Now look in __MigrationHistory table to see what the last migration that ran was.
+            // Note that if you accidentally run an older branch (v11.1) against a database that was created from a newer branch (v12), it'll think you need to run migrations.
+            // But it will end up figuring that out when we ask it to run migrations
             var lastDbMigrationId = DbService.ExecuteScaler( "select max(MigrationId) from __MigrationHistory" ) as string;
 
             // if they aren't the same, run EF Migrations
