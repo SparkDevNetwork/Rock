@@ -7729,5 +7729,16 @@ END" );
         }
 
         #endregion Index Helpers
+
+        /// <summary>
+        /// Checks if a table column exists.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="columnName">Name of the column.</param>
+        /// <returns></returns>
+        public bool ColumnExists( string tableName, string columnName )
+        {
+            return ( ( string ) Migration.SqlScalar( $"SELECT 'true' FROM sys.columns WHERE Name = N'{columnName}' AND Object_ID = Object_ID(N'[dbo].[{tableName}]')" ) ).AsBoolean();
+        }
     }
 }

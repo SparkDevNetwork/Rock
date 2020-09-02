@@ -1388,6 +1388,7 @@ TransactionAccountDetails: [
                                 savedAccount.ReferenceNumber = referenceNumber;
                                 savedAccount.Name = txtSaveAccount.Text;
                                 savedAccount.TransactionCode = TransactionCode;
+                                savedAccount.GatewayPersonIdentifier = paymentDetail.GatewayPersonIdentifier;
                                 savedAccount.FinancialGatewayId = financialGateway.Id;
                                 savedAccount.FinancialPaymentDetail = new FinancialPaymentDetail();
                                 savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;

@@ -43,11 +43,9 @@ namespace Rock.Reporting
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
         /// <returns></returns>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use other GetCacheKey" )]
         public static string GetCacheKey( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
-            return GetCacheKey( entityType, null, includeOnlyReportingFields, limitToFilterableFields );
+            return $"EntityHelper:GetEntityFields:{entityType?.FullName}_{includeOnlyReportingFields}_{limitToFilterableFields}";
         }
 
         /// <summary>
@@ -58,9 +56,11 @@ namespace Rock.Reporting
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use other GetCacheKey" )]
         public static string GetCacheKey( Type entityType, IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
-            return $"EntityHelper:GetEntityFields:{entityType?.FullName}_{entity?.Guid}_{includeOnlyReportingFields}_{limitToFilterableFields}";
+            return GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields );
         }
 
         /// <summary>
@@ -131,7 +131,21 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the entity fields.
+        /// Gets the entity fields for a specific Entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
+        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
+        /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
+        public static List<EntityField> GetEntityFields( IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
+        {
+            return GetEntityFields( entity?.GetType(), includeOnlyReportingFields, limitToFilterableFields );
+        }
+
+        /// <summary>
+        /// Gets the entity fields for a specific Entity
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
@@ -139,37 +153,12 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
-            return GetEntityFields( entityType, null, includeOnlyReportingFields, limitToFilterableFields );
-        }
-
-        /// <summary>
-        /// Gets the entity fields for a specific Entity
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        public static List<EntityField> GetEntityFields( IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
-            return GetEntityFields( entity?.GetType(), entity, includeOnlyReportingFields, limitToFilterableFields );
-        }
-
-        /// <summary>
-        /// Gets the entity fields for a specific Entity
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        private static List<EntityField> GetEntityFields( Type entityType, IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
             List<EntityField> entityFields = null;
             _workflowTypeNameLookup = null;
 
             if ( HttpContext.Current != null )
             {
-                entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
+                entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
                 if ( entityFields != null )
                 {
                     return entityFields;
@@ -311,83 +300,68 @@ namespace Rock.Reporting
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
-                List<AttributeCache> cacheAttributeList;
-                if ( entity != null )
+
+                var entityAttributesCache = AttributeCache.GetByEntity( entityTypeCache.Id );
+
+                List<AttributeCache> cacheAttributeList = entityAttributesCache.SelectMany( a => a.AttributeIds ).Distinct().Select( a => AttributeCache.Get( a ) ).ToList();
+
+                if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                 {
-                    // if a specific entity is set, we only need to get the Attributes that the Entity has
-                    if ( entity is IHasAttributes )
-                    {
-                        ( entity as IHasAttributes ).LoadAttributes();
-                        cacheAttributeList = ( entity as IHasAttributes ).Attributes.Select( a => a.Value ).ToList();
-                    }
-                    else
-                    {
-                        cacheAttributeList = new List<AttributeCache>();
-                    }
+                    // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "GroupTypeId" ).ToList();
+                }
+                else if ( entityType == typeof( ConnectionRequest ) )
+                {
+                    // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "ConnectionOpportunityId"
+                                ).ToList();
+                }
+                else if ( entityType == typeof( Registration ) )
+                {
+                    // in the case of Registrations, show attributes that are entity global, but also ones that are qualified by RegistrationTemplateId
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "RegistrationTemplateId"
+                                ).ToList();
+                }
+                else if ( entityType == typeof( ContentChannelItem ) )
+                {
+                    // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
+                                a.EntityTypeQualifierColumn == "ContentChannelId"
+                                ).ToList();
+                }
+                else if ( entityType == typeof( Rock.Model.Workflow ) )
+                {
+                    // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId (and have a valid WorkflowTypeId)
+                    var validWorkflowTypeIds = WorkflowTypeCache.All().Select( a => a.Id.ToString() ).ToArray();
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                ( a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains( a.EntityTypeQualifierValue ) ) ).ToList();
                 }
                 else
                 {
-                    var entityAttributesCache = AttributeCache.GetByEntity( entityTypeCache.Id );
-
-                    cacheAttributeList = entityAttributesCache.SelectMany( a => a.AttributeIds ).Distinct().Select( a => AttributeCache.Get( a ) ).ToList();
-
-                    if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
-                    {
-                        // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
-                        cacheAttributeList = cacheAttributeList
-                                .Where( a =>
-                                    a.EntityTypeQualifierColumn == null ||
-                                    a.EntityTypeQualifierColumn == string.Empty ||
-                                    a.EntityTypeQualifierColumn == "GroupTypeId" ).ToList();
-                    }
-                    else if ( entityType == typeof( ConnectionRequest ) )
-                    {
-                        // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
-                        cacheAttributeList = cacheAttributeList
-                                .Where( a =>
-                                    a.EntityTypeQualifierColumn == null ||
-                                    a.EntityTypeQualifierColumn == string.Empty ||
-                                    a.EntityTypeQualifierColumn == "ConnectionOpportunityId"
-                                    ).ToList();
-                    }
-                    else if ( entityType == typeof( Registration ) )
-                    {
-                        // in the case of Registrations, show attributes that are entity global, but also ones that are qualified by RegistrationTemplateId
-                        cacheAttributeList = cacheAttributeList
-                                .Where( a =>
-                                    a.EntityTypeQualifierColumn == null ||
-                                    a.EntityTypeQualifierColumn == string.Empty ||
-                                    a.EntityTypeQualifierColumn == "RegistrationTemplateId"
-                                    ).ToList();
-                    }
-                    else if ( entityType == typeof( ContentChannelItem ) )
-                    {
-                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
-                        cacheAttributeList = cacheAttributeList
-                                .Where( a =>
-                                    a.EntityTypeQualifierColumn == null ||
-                                    a.EntityTypeQualifierColumn == string.Empty ||
-                                    a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
-                                    a.EntityTypeQualifierColumn == "ContentChannelId"
-                                    ).ToList();
-                    }
-                    else if ( entityType == typeof( Rock.Model.Workflow ) )
-                    {
-                        // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId (and have a valid WorkflowTypeId)
-                        var validWorkflowTypeIds = WorkflowTypeCache.All().Select( a => a.Id.ToString() ).ToArray();
-                        cacheAttributeList = cacheAttributeList
-                                .Where( a =>
-                                    a.EntityTypeQualifierColumn == null ||
-                                    a.EntityTypeQualifierColumn == string.Empty ||
-                                    ( a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains( a.EntityTypeQualifierValue ) ) ).ToList();
-                    }
-                    else
-                    {
-                        cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
-                    }
-
-                    EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList );
+                    cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
                 }
+
+                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList );
+
             }
 
             // Order the fields by title, name
@@ -402,7 +376,7 @@ namespace Rock.Reporting
 
             if ( HttpContext.Current != null )
             {
-                HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
+                HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
             }
 
             return sortedFields;
@@ -449,7 +423,7 @@ namespace Rock.Reporting
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
         [Obsolete( "Use AddEntityFieldsForAttributeList instead" )]
-        [RockObsolete( "1.10")]
+        [RockObsolete( "1.10" )]
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
         {
             var attributeList = new List<AttributeCache>();

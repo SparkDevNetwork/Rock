@@ -474,18 +474,6 @@ namespace RockWeb.Blocks.Cms
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             Guid? channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
-            if ( channelGuid.HasValue )
-            {
-                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
-                if ( contentChannel != null )
-                {
-                    filterField.Entity = new ContentChannelItem
-                    {
-                        ContentChannelId = contentChannel.Id,
-                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                    };
-                }
-            }
 
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
@@ -670,34 +658,24 @@ $(document).ready(function() {
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
 
-                var errorMessages = new List<string>();
                 List<ContentChannelItem> contentItemList = null;
                 List<TagModel> tags = null;
                 try
                 {
-                    var contentItemResults = GetContent( errorMessages, isQueryParameterFilteringEnabled, isTagListEnabled );
+                    var contentItemResults = GetContent( isQueryParameterFilteringEnabled, isTagListEnabled );
                     contentItemList = contentItemResults.Items ?? new List<ContentChannelItem>();
                     tags = contentItemResults.Tags ?? new List<TagModel>();
                 }
                 catch ( Exception ex )
                 {
                     this.LogException( ex );
-                    Exception exception = ex;
-                    while ( exception != null )
-                    {
-                        errorMessages.Add( exception.Message );
-                        exception = exception.InnerException;
-                    }
-
-                    contentItemList = new List<ContentChannelItem>();
-                }
-
-                if ( errorMessages.Any() )
-                {
-                    nbContentError.Text = "ERROR: There was a problem getting content...<br/> ";
+                    nbContentError.Text = "ERROR: There was a problem getting content";
                     nbContentError.NotificationBoxType = NotificationBoxType.Danger;
-                    nbContentError.Details = errorMessages.AsDelimited( "<br/>" );
+                    nbContentError.Details = ex.Message;
                     nbContentError.Visible = true;
+
+                    // set the contentItemList to an empty list and continue on (but with an empty list of ContentChannelItems to use when rending the Lava)
+                    contentItemList = new List<ContentChannelItem>();
                 }
 
                 var pagination = new Pagination();
@@ -982,7 +960,7 @@ $(document).ready(function() {
                         {
                             var dataFilterService = new DataViewFilterService( rockContext );
                             var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
+                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression ) : null;
 
                             contentChannelItemQuery = contentChannelItemQuery.Where( paramExpression, whereExpression, null );
                         }
@@ -1170,7 +1148,7 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns> a list of <see cref="Rock.Model.ContentChannelItem">ContentChannelItems</see></returns>
-        private ItemContentResults GetContent( List<string> errorMessages, bool isQueryParameterFilteringEnabled, bool isTagListEnabled )
+        private ItemContentResults GetContent( bool isQueryParameterFilteringEnabled, bool isTagListEnabled )
         {
             List<ContentChannelItem> items = null;
             List<TagModel> tags = null;
@@ -1212,8 +1190,7 @@ $(document).ready(function() {
                         itemId,
                         dataFilterId,
                         isQueryParameterFilteringEnabled,
-                        statuses,
-                        errorMessages );
+                        statuses );
 
                     if ( isTagListEnabled )
                     {
@@ -1352,8 +1329,8 @@ $(document).ready(function() {
             int? itemId,
             int? dataFilterId,
             bool isQueryParameterFilteringEnabled,
-            List<ContentChannelItemStatus> statuses,
-            List<string> errorMessages )
+            List<ContentChannelItemStatus> statuses
+            )
         {
             var contentChannelInfo = new ContentChannelService( rockContext ).GetSelect( channelGuid, s => new { s.Id, s.RequiresApproval, ContentChannelTypeDisableStatus = s.ContentChannelType.DisableStatus } );
             if ( contentChannelInfo == null )
@@ -1390,7 +1367,7 @@ $(document).ready(function() {
                 {
                     var dataFilterService = new DataViewFilterService( rockContext );
                     var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
+                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression ) : null;
 
                     contentChannelItemQuery = contentChannelItemQuery.Where( paramExpression, whereExpression, null );
                 }
@@ -1622,11 +1599,6 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                    filterControl.Entity = new ContentChannelItem
-                    {
-                        ContentChannelId = contentChannel.Id,
-                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                    };
 
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;

@@ -57,155 +57,32 @@ public class TwilioAsync : IHttpAsyncHandler
     }
 }
 
-class TwilioResponseAsync : IAsyncResult
+class TwilioResponseAsync : TwilioDefaultResponseAsync
 {
-    private bool _completed;
-    private readonly Object _state;
-    private readonly AsyncCallback _callback;
-    private readonly HttpContext _context;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TwilioResponseAsync"/> class.
+    /// </summary>
+    /// <param name="callback">The callback.</param>
+    /// <param name="context">The context.</param>
+    /// <param name="state">The state.</param>
+    public TwilioResponseAsync( AsyncCallback callback, HttpContext context, Object state ) : base( callback, context, state ) { }
 
-    bool IAsyncResult.IsCompleted { get { return _completed; } }
-    WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
-    Object IAsyncResult.AsyncState { get { return _state; } }
-    bool IAsyncResult.CompletedSynchronously { get { return false; } }
-
-    private const bool ENABLE_LOGGING = false;
-
-    public TwilioResponseAsync( AsyncCallback callback, HttpContext context, Object state )
+    /// <summary>
+    /// Initializes a new instance of the <see cref="T:TwilioDefaultResponseAsync" /> class.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="toPhone"></param>
+    /// <param name="fromPhone"></param>
+    /// <param name="body"></param>
+    /// <returns></returns>
+    public override Twilio.TwiML.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
     {
-        _callback = callback;
-        _context = context;
-        _state = state;
-        _completed = false;
-    }
+        var errorMessage = string.Empty;
 
-    public void StartAsyncWork()
-    {
-        ThreadPool.QueueUserWorkItem( ( workItemState ) =>
-        {
-            try
-            {
-                StartAsyncTask( workItemState );
-            }
-            catch ( Exception ex )
-            {
-                Rock.Model.ExceptionLogService.LogException( ex );
-                _context.Response.StatusCode = 500;
-                _completed = true;
-                _callback( this );
-            }
-        }, null );
-    }
+        new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
 
-    private void StartAsyncTask( Object workItemState )
-    {
-        var request = _context.Request;
-        var response = _context.Response;
-
-        response.ContentType = "text/plain";
-
-        if ( request.HttpMethod != "POST" )
-        {
-            response.Write( "Invalid request type." );
-        }
-        else
-        {
-            TwilioLogging.HandleRequestLogging( _context, ENABLE_LOGGING );
-
-            if ( request.Form["SmsStatus"] != null )
-            {
-                switch ( request.Form["SmsStatus"] )
-                {
-                    case "received":
-                        MessageReceived();
-                        break;
-                    case "undelivered":
-                        MessageUndelivered();
-                        break;
-                }
-
-                response.StatusCode = 200;
-            }
-            else
-            {
-                response.StatusCode = 500;
-            }
-        }
-
-        _completed = true;
-        _callback( this );
-    }
-
-    private void MessageUndelivered()
-    {
-        var request = _context.Request;
-        var messageSid = string.Empty;
-
-        if ( !string.IsNullOrEmpty( request.Form["MessageSid"] ) )
-        {
-            messageSid = request.Form["MessageSid"];
-
-            // get communication from the message side
-            using ( RockContext rockContext = new RockContext() )
-            {
-                CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
-
-                var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
-                if ( communicationRecipient != null )
-                {
-                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                    communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
-                    rockContext.SaveChanges();
-                }
-                else
-                {
-                    Rock.Model.ExceptionLogService.LogException( "No recipient was found with the specified MessageSid value!" );
-                }
-            }
-        }
-    }
-
-    private void MessageReceived()
-    {
-
-        var request = _context.Request;
-        var response = _context.Response;
-        string fromPhone = string.Empty;
-        string toPhone = string.Empty;
-        string body = string.Empty;
         var twilioMessage = new Twilio.TwiML.Message();
-        var messagingResponse = new Twilio.TwiML.MessagingResponse();
-
-        response.ContentType = "application/xml";
-
-        if ( !string.IsNullOrEmpty( request.Form["To"] ) )
-        {
-            toPhone = request.Form["To"];
-        }
-
-        if ( !string.IsNullOrEmpty( request.Form["From"] ) )
-        {
-            fromPhone = request.Form["From"];
-        }
-
-        if ( !string.IsNullOrEmpty( request.Form["Body"] ) )
-        {
-            body = request.Form["Body"];
-        }
-
-        if ( !( string.IsNullOrWhiteSpace( toPhone ) ) && !( string.IsNullOrWhiteSpace( fromPhone ) ) )
-        {
-            string errorMessage = string.Empty;
-
-            new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
-
-            if ( errorMessage != string.Empty )
-            {
-                twilioMessage.Body( errorMessage );
-                messagingResponse.Message( twilioMessage );
-            }
-        }
-
-        response.Write( messagingResponse.ToString() );
+        twilioMessage.Body( errorMessage );
+        return twilioMessage;
     }
 }

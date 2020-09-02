@@ -141,49 +141,85 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
         #endregion
 
-        #region SafeSubstring
+        #region SubstringSafe
 
         [TestMethod]
-        public void SafeSubstring_NullString()
+        public void SubstringSafe_NullString()
         {
             string test = null;
-            var output = test.SafeSubstring( 1, 3 );
+            var output = test.SubstringSafe( 1, 3 );
             Assert.That.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
-        public void SafeSubstring_NegativeIndex()
+        public void SubstringSafe_NegativeIndex()
         {
-            var output = "Test".SafeSubstring( -1, 3 );
+            var output = "Test".SubstringSafe( -1, 3 );
             Assert.That.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
-        public void SafeSubstring_IndexTooLarge()
+        public void SubstringSafe_IndexTooLarge()
         {
-            var output = "Test".SafeSubstring( 10, 3 );
+            var output = "Test".SubstringSafe( 10, 3 );
             Assert.That.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
-        public void SafeSubstring_NegativeLength()
+        public void SubstringSafe_NegativeLength()
         {
-            var output = "Test".SafeSubstring( 1, -3 );
+            var output = "Test".SubstringSafe( 1, -3 );
             Assert.That.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
-        public void SafeSubstring_LengthTooLarge()
+        public void SubstringSafe_LengthTooLarge()
         {
-            var output = "Test".SafeSubstring( 1, 30 );
+            var output = "Test".SubstringSafe( 1, 30 );
             Assert.That.AreEqual( "est", output );
         }
 
         [TestMethod]
-        public void SafeSubstring_EmptyString()
+        public void SubstringSafe_EmptyString()
         {
-            var output = "".SafeSubstring( 0, 3 );
+            var output = "".SubstringSafe( 0, 3 );
             Assert.That.AreEqual( string.Empty, output );
+        }
+
+        [TestMethod]
+        public void SubstringSafe_StartIndexOnly_EmptyString()
+        {
+            var output = "".SubstringSafe( 3 );
+            Assert.That.AreEqual( string.Empty, output );
+        }
+
+        [TestMethod]
+        public void SubstringSafe_StartIndexOnly_NullString()
+        {
+            string test = null;
+            var output = test.SubstringSafe( 1 );
+            Assert.That.AreEqual( string.Empty, output );
+        }
+
+        [TestMethod]
+        public void SubstringSafe_StartIndexOnly_NegativeIndex()
+        {
+            var output = "Test".SubstringSafe( -1 );
+            Assert.That.AreEqual( string.Empty, output );
+        }
+
+        [TestMethod]
+        public void SubstringSafe_StartIndexOnly_IndexTooLarge()
+        {
+            var output = "Test".SubstringSafe( 10 );
+            Assert.That.AreEqual( string.Empty, output );
+        }
+
+        [TestMethod]
+        public void SubstringSafe_StartIndexOnly_ProperUse()
+        {
+            var output = "Test".SubstringSafe( 1 );
+            Assert.That.AreEqual( "est", output );
         }
 
         #endregion

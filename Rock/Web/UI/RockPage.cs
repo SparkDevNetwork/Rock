@@ -1037,6 +1037,12 @@ namespace Rock.Web.UI
                                 {
                                     ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
                                 }
+
+                                Guid? contextGuid = PageParameter( type.Name + "Guid" ).AsGuidOrNull();
+                                if ( contextGuid.HasValue )
+                                {
+                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextGuid.Value ) );
+                                }
                             }
                         }
 
@@ -1047,6 +1053,12 @@ namespace Rock.Web.UI
                             if ( contextId.HasValue )
                             {
                                 ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
+                            }
+
+                            Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
+                            if ( contextGuid.HasValue )
+                            {
+                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
                             }
                         }
 
@@ -2205,9 +2217,9 @@ Sys.Application.add_load(function () {
                 {
                     if ( entity.Name.Equals( "Rock.Model.Person", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                        if ( keyModel.Id.HasValue || keyModel.Guid.HasValue )
                         {
-                            keyModel.Entity = new PersonService( new RockContext() )
+                            var qry = new PersonService( new RockContext() )
                                 .Queryable( true, true )
                                 .Include( p => p.MaritalStatusValue )
                                 .Include( p => p.ConnectionStatusValue )
@@ -2218,10 +2230,20 @@ Sys.Application.add_load(function () {
                                 .Include( p => p.TitleValue )
                                 .Include( p => p.GivingGroup )
                                 .Include( p => p.Photo )
-                                .Include( p => p.Aliases )
-                                .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
+                                .Include( p => p.Aliases );
+
+                            if ( keyModel.Id.HasValue )
+                            {
+                                qry = qry.Where( p => p.Id == keyModel.Id.Value );
+                            }
+                            else
+                            {
+                                qry = qry.Where( p => p.Guid == keyModel.Guid.Value );
+                            }
+
+                            keyModel.Entity = qry.FirstOrDefault();
                         }
-                        else
+                        else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                         {
                             keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
                         }
@@ -2248,12 +2270,17 @@ Sys.Application.add_load(function () {
                             System.Data.Entity.DbContext dbContext = Reflection.GetDbContextForEntityType( modelType );
                             IService serviceInstance = Reflection.GetServiceForEntityType( modelType, dbContext );
 
-                            if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                            if ( keyModel.Id.HasValue )
                             {
                                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                             }
-                            else
+                            else if ( keyModel.Guid.HasValue )
+                            {
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Guid } ) as Rock.Data.IEntity;
+                            }
+                            else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                             {
                                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey" );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;

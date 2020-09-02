@@ -1005,10 +1005,13 @@ namespace RockWeb.Blocks.Crm
 
             Guid? newPersonAttributeMatrixGuid = null;
 
+            // Get the set of Attribute Matrix references selected for the merge and ensure they are valid.
             var selectedAttributeMatrixGuidList = GetSelectedValues( property.Key ).Select( a => a.Value ).AsGuidList();
-            if ( selectedAttributeMatrixGuidList.Count > 1 )
+
+            var selectedAttributeMatrixList = attributeMatrixService.GetByGuids( selectedAttributeMatrixGuidList ).ToList();
+
+            if ( selectedAttributeMatrixList.Count > 1 )
             {
-                var selectedAttributeMatrixList = attributeMatrixService.GetByGuids( selectedAttributeMatrixGuidList ).ToList();
                 int attributeMatrixTemplateId;
                 if ( primaryPersonAttributeMatrix != null )
                 {
@@ -1016,22 +1019,32 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    attributeMatrixTemplateId = selectedAttributeMatrixList.Select( a => a.AttributeMatrixTemplateId ).First();
+                    attributeMatrixTemplateId = selectedAttributeMatrixList.Select( a => a.AttributeMatrixTemplateId ).FirstOrDefault();
                 }
 
-                var newPersonAttributeMatrix = new AttributeMatrix() { AttributeMatrixTemplateId = attributeMatrixTemplateId };
-                var combinedMatrixItems = selectedAttributeMatrixList.SelectMany( a => a.AttributeMatrixItems ).ToList();
+                // If a valid Attribute Matrix exists, merge all of the values into it.
+                if ( attributeMatrixTemplateId > 0 )
+                {
+                    // Create a new Attribute Matrix instance and assign a Guid so the Attribute Values can be linked to it.
+                    // We can't use SaveChanges() to get a server-generated Guid here, because it will cause a deadlock in the merge transaction.
+                    newPersonAttributeMatrixGuid = Guid.NewGuid();
 
-                newPersonAttributeMatrix.AttributeMatrixItems = combinedMatrixItems;
-                attributeMatrixService.Add( newPersonAttributeMatrix );
+                    var newPersonAttributeMatrix = new AttributeMatrix()
+                    {
+                        AttributeMatrixTemplateId = attributeMatrixTemplateId,
+                        Guid = newPersonAttributeMatrixGuid.Value
+                    };
 
-                rockContext.SaveChanges();
+                    var combinedMatrixItems = selectedAttributeMatrixList.SelectMany( a => a.AttributeMatrixItems ).ToList();
 
-                newPersonAttributeMatrixGuid = newPersonAttributeMatrix.Guid;
+                    newPersonAttributeMatrix.AttributeMatrixItems = combinedMatrixItems;
+
+                    attributeMatrixService.Add( newPersonAttributeMatrix );
+                }
             }
-            else if ( selectedAttributeMatrixGuidList.Count == 1 )
+            else if ( selectedAttributeMatrixList.Count == 1 )
             {
-                newPersonAttributeMatrixGuid = selectedAttributeMatrixGuidList.First();
+                newPersonAttributeMatrixGuid = selectedAttributeMatrixList.First().Guid;
             }
 
             if ( primaryPersonAttributeMatrixGuid != newPersonAttributeMatrixGuid )
