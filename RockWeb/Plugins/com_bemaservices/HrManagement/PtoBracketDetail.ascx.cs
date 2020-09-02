@@ -424,6 +424,8 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             {
                 hfPtoBracketTypeId.Value = string.Empty;
                 cbBracketTypeIsActive.Checked = true;
+                ddlPtoType.SetValue( (string)null );
+                tbDefaultHours.Text = string.Empty;
             }
 
             ShowDialog( "PtoBracketTypeDetails", true );
