@@ -78,7 +78,7 @@ namespace Rock.Utility
                             // override any tear mode command (^MMT) by injecting the cut mode (^MMC) command
                             printContent = printContent.ReplaceIfEndsWith( "^XZ", "^MMC^XZ" );
                         }
-                        else
+                        else if ( ! printContent.Contains( "^MMC" ) )
                         {
                             // inject suppress back-feed (^XB)
                             printContent = printContent.ReplaceIfEndsWith( "^XZ", "^XB^XZ" );
