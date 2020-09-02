@@ -72,7 +72,7 @@ namespace Rock.Model
         public int? ParentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that either is being filtered by or contains the property that the DataView is being filtered by.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Reporting.DataFilterComponent"/> that this filter is using.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being used in the filter.
@@ -137,10 +137,10 @@ namespace Rock.Model
         public virtual DataView RelatedDataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that the DataView is being filtered by or that contains the property/properties that the DataView is being filtered by.
+        /// Gets or sets the EntityType of the <see cref="Rock.Reporting.DataFilterComponent" /> that this filter is using.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> that the DataView is being filtered by.
+        /// The DataFilterComponent EntityType
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
@@ -176,7 +176,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Determines whether the specified action is authorized.
+        /// Determines whether the person is authorized for the DataViewFilter and Child filters
         /// </summary>
         /// <param name="action">A <see cref="System.String" /> containing the action that is being performed.</param>
         /// <param name="person">the <see cref="Rock.Model.Person" /> who is trying to perform the action.</param>
