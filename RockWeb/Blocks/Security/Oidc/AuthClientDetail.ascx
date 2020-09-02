@@ -38,9 +38,9 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <h6 class="text-danger">Allowed Scopes and Claims<Rock:HelpBlock runat="server" Text="These are the claims that are allowed to be returned if requested by the client." /></h6>
-                            
-                            <asp:Panel ID="litClaims" runat="server" />
+                            <Rock:PanelWidget ID="pwScopes" runat="server" Title="Allowed Scopes and Claims <i class='fa fa-info-circle' data-toggle='tooltip' data-placement='top' title='These are the claims that are allowed to be returned if requested by the client.'></i>" Expanded="true">
+                                <asp:Panel ID="litClaims" runat="server" />
+                            </Rock:PanelWidget>
                         </div>
                     </div>
                 </div>
