@@ -348,7 +348,7 @@ namespace Rock.Reporting.DataFilter
                 return null;
             }
 
-            return ddlDataView.SelectedValue.AsIntegerOrNull();
+            return ddlDataView.SelectedValueAsId();
         }
         #endregion
 
