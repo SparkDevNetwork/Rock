@@ -245,22 +245,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
-        /// </summary>
-        /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -308,15 +292,17 @@ $(document).ready(function() {
             }
 
             var adding = dataView.Id.Equals( 0 );
-            if ( adding )
-            {
-                service.Add( dataView );
-                // We need to save the new data view so we can bind the data view filters.
-                rockContext.SaveChanges();
-            }
-            
+
             rockContext.WrapTransaction( () =>
             {
+                if ( adding )
+                {
+                    service.Add( dataView );
+
+                    // We need to save the new data view so we can bind the data view filters.
+                    rockContext.SaveChanges();
+                }
+
                 if ( origDataViewFilterId.HasValue )
                 {
                     // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
