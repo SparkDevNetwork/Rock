@@ -1228,6 +1228,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 reservation.Name = tbEventName.Text;
 
                 var phoneNumber = _primaryContact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+
+                if ( phoneNumber.IsNull() )
+                {
+                    phoneNumber = _primaryContact.PhoneNumbers.First();
+                }
+
                 string email = _primaryContact.Email;
 
                 reservation.EventContactPersonAliasId = _primaryContact.PrimaryAliasId;
