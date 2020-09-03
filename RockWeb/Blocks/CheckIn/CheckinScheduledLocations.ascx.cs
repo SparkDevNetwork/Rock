@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var groupLocationQry = groupLocationService.Queryable();
 
-            var templateGroupPaths = new Dictionary<int, List<GroupTypePath>>();
+            var templateGroupPaths = new Dictionary<int, List<CheckinAreaPath>>();
             var currentAndDescendantGroupTypeIds = new List<int>();
             foreach ( var groupType in groupTypeService.Queryable().Where( a => this.LocalDeviceConfig.CurrentGroupTypeIds.Contains( a.Id ) ) )
             {
@@ -148,15 +148,15 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( !templateGroupPaths.ContainsKey( parentGroupType.Id ) )
                     {
-                        templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetAllAssociatedDescendentsPath( parentGroupType.Id ).ToList() );
+                        templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetCheckinAreaDescendantsPath( parentGroupType.Id ).ToList() );
                     }
                 }
 
                 currentAndDescendantGroupTypeIds.Add( groupType.Id );
-                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id ).ToList() );
+                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ).ToList() );
             }
 
-            var groupPaths = new List<GroupTypePath>();
+            var groupPaths = new List<CheckinAreaPath>();
             foreach ( var path in templateGroupPaths )
             {
                 groupPaths.AddRange( path.Value );

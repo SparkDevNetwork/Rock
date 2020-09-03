@@ -366,7 +366,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 if ( includeChildGroupTypes )
                 {
-                    var childGroupTypes = groupTypeService.GetAllAssociatedDescendents( groupType.Guid );
+                    var childGroupTypes = groupTypeService.GetCheckinAreaDescendants( groupType.Id );
                     if ( childGroupTypes.Any() )
                     {
                         groupTypeIds.AddRange( childGroupTypes.Select( a => a.Id ) );

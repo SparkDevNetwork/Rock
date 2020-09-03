@@ -802,6 +802,25 @@ namespace Rock.Model
         [DataMember, LavaIgnore]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
+            /* 2020-09-03 MDP
+             ChildGroupTypes (GroupTypeAssociation) is sort of used for two different things. Which can be a little confusing:
+             There is an explanation in Asana at https://app.asana.com/0/0/1191515790495258/f, but here is a summary...
+
+            1) In Checkin Configuration, Checkin Areas are GroupTypes under the covers.
+               In this case, it is used as a hierarchy tree. For example:
+                - Kids Areas
+                    - Area 1
+                        - Kittens Group
+                    - Area 2
+                        - Bobcat Group    
+                    - Area 3
+                        - Tigers Group
+                        - Bears Group
+            2) As the Allowed Child Types (Group Type Detail).
+               In this case, it is as used for child GroupTypes that are allowed to be added. It is *not* used as a hierarchy tree.
+               It would just be the Group Types you could choose from when adding a new group.
+             */
+
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
             set { _childGroupTypes = value; }
         }
