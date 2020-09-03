@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            var groupPaths = new List<GroupTypePath>();
+            var groupPaths = new List<CheckinAreaPath>();
             var groupLocationQry = groupLocationService.Queryable().Where( gl => gl.Group.IsActive && !gl.Group.IsArchived );
             int groupTypeId;
 
@@ -317,12 +317,12 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( groupTypeId != Rock.Constants.All.Id )
             {
-                var descendantGroupTypeIds = groupTypeService.GetAllAssociatedDescendents( groupTypeId ).Select( a => a.Id );
+                var descendantGroupTypeIds = groupTypeService.GetCheckinAreaDescendants( groupTypeId ).Select( a => a.Id );
 
                 // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
 
-                groupPaths = groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ).ToList();
+                groupPaths = groupTypeService.GetCheckinAreaDescendantsPath( groupTypeId ).ToList();
             }
             else
             {
@@ -331,11 +331,11 @@ namespace RockWeb.Blocks.CheckIn
                 { 
                     descendantGroupTypeIds.Add( groupType.Id );
 
-                    groupPaths.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupType.Id ).ToList() );
+                    groupPaths.AddRange( groupTypeService.GetCheckinAreaDescendantsPath( groupType.Id ).ToList() );
                     foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( groupType.Id ) )
                     {
                         descendantGroupTypeIds.Add( childGroupType.Id );
-                        descendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( childGroupType.Id ).Select( a => a.Id ).ToList() );
+                        descendantGroupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( childGroupType.Id ).Select( a => a.Id ).ToList() );
                     }
                 }
 
@@ -513,7 +513,7 @@ namespace RockWeb.Blocks.CheckIn
             var descendentGroupTypeIds = new List<int>();
             foreach ( int id in checkInGroupTypeIds )
             {
-                descendentGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( id ).Select( a => a.Id ).ToList() );
+                descendentGroupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( id ).Select( a => a.Id ).ToList() );
             }
 
             // Now query again for all the types that have a purpose of 'Check-in Template' or support check-in outside of being a descendant of the template
