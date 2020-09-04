@@ -143,8 +143,8 @@ namespace com.bemaservices.MinistrySafe.Migrations
         private void BackgroundCheckBadge()
         {
             // Person Profile Badge
-            RockMigrationHelper.UpdatePersonBadge( "MinistrySafe Background Check Badge", "Shows whether someone has taken a MinistrySafe Background Check.", "Rock.PersonProfile.Badge.Liquid", 0, "44FE66BE-C43F-43C7-AA8E-5209926C9945" );
-            RockMigrationHelper.AddPersonBadgeAttributeValue( "44FE66BE-C43F-43C7-AA8E-5209926C9945", "01C9BA59-D8D4-4137-90A6-B3C06C70BBC3", @"{% assign backgroundCheckDate = Person | Attribute:'BackgroundCheckDate' %}
+            UpdateBadge( "MinistrySafe Background Check Badge", "Shows whether someone has taken a MinistrySafe Background Check.", "Rock.Badge.Component.Liquid", 0, "44FE66BE-C43F-43C7-AA8E-5209926C9945" );
+            AddBadgeAttributeValue( "44FE66BE-C43F-43C7-AA8E-5209926C9945", "01C9BA59-D8D4-4137-90A6-B3C06C70BBC3", @"{% assign backgroundCheckDate = Person | Attribute:'BackgroundCheckDate' %}
 {% assign backgroundCheckResult = Person | Attribute:'BackgroundCheckResult' %}
 {% assign isDisabled = false %}
 {% assign badgeColor = '#939393' %}
@@ -760,7 +760,7 @@ namespace com.bemaservices.MinistrySafe.Migrations
                     Where [Guid] = 'C3F952C7-F515-4950-B0EB-8737A013CD85'
                 " );
 
-            RockMigrationHelper.UpdatePersonBadge( "MinistrySafe Awareness Training Badge", "Shows whether someone has taken a MinistrySafe Awareness Training, as well as their score.", "Rock.PersonProfile.Badge.Liquid", 0, "9E9B9FAF-C7B8-40AA-B0C9-24177058943B" );
+            UpdateBadge( "MinistrySafe Awareness Training Badge", "Shows whether someone has taken a MinistrySafe Awareness Training, as well as their score.", "Rock.Badge.Component.Liquid", 0, "9E9B9FAF-C7B8-40AA-B0C9-24177058943B" );
             RockMigrationHelper.AddDefinedType( "Global", "MinistrySafe Training Types", "", "95EF81D2-C192-4B9E-A7A3-5E1E90BDA3CE" );
             RockMigrationHelper.AddDefinedType( "Global", "MinistrySafe User Types", "", "559E79C6-2EAB-4A0D-A16F-59D9B63F002F" );
             RockMigrationHelper.UpdatePersonAttributeCategory( "MinistrySafe Awareness Training", "fa fa-lock", "", "CB481AB7-E0F9-4A3E-B846-0F5E5C94C038" );
@@ -794,6 +794,62 @@ namespace com.bemaservices.MinistrySafe.Migrations
                     Where [Guid] = '980731DB-3271-420E-A258-CECC9E7DFE77'
                 " );
 
+        }
+
+        public void UpdateBadge( string name, string description, string entityTypeName, int order, string guid )
+        {
+            Sql( string.Format( @"
+                    DECLARE @BadgeComponentEntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+                    DECLARE @EntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person')
+                    IF EXISTS ( SELECT * FROM [Badge] where [Guid] = '{4}')
+                    BEGIN
+                        UPDATE [Badge] set
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [BadgeComponentEntityTypeId] = @BadgeComponentEntityTypeId,
+                            [EntityTypeId] = @EntityTypeId,
+                            [Order] = {3}
+                        WHERE [Guid] = '{4}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Badge] ([Name],[Description],[BadgeComponentEntityTypeId],[EntityTypeId],[Order],[Guid])
+                            VALUES ('{0}', '{1}', @BadgeComponentEntityTypeId,@EntityTypeId, {3}, '{4}')
+                    END
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    entityTypeName,
+                    order,
+                    guid )
+            );
+        }
+
+        public void AddBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
+        {
+            Sql( string.Format( @"
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [Badge] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @PersonBadgeId
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@PersonBadgeId,
+                    '{2}',
+                    NEWID())
+",
+                    personBadgeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
         }
 
         public override void Down()
