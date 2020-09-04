@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Cms
             gParentItems.GridRebind += gParentItems_GridRebind;
             gParentItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
-            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID ); //e.preventDefault();
+            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID ); 
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
