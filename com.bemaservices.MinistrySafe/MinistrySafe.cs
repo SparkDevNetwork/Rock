@@ -433,14 +433,6 @@ namespace com.bemaservices.MinistrySafe
                 getPackagesResponse.Add( packageResponse );
             }
 
-            if ( true )
-            {
-                var packageResponse = new PackageResponse();
-                packageResponse.Name = "Leadership";
-                packageResponse.Code = "TEST_PACKAGE_12";
-                getPackagesResponse.Add( packageResponse );
-            }
-
             Dictionary<string, DefinedValue> packages;
             using ( var rockContext = new RockContext() )
             {
