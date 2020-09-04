@@ -21,7 +21,7 @@ namespace com.bemaservices.MinistrySafe.Migrations
 
 
             // Person Attribute "Training Request Date"
-            RockMigrationHelper.UpdatePersonAttribute( @"6B6AA175-4758-453F-8D83-FCD8044B5F36", @"CB481AB7-E0F9-4A3E-B846-0F5E5C94C038", @"Training Request Date", @"TrainingRequestDate", @"", @"", 1047, @"", @"8CB3B231-133C-4B32-B169-61EF5792F1E9" );
+            RockMigrationHelper.UpdatePersonAttribute( @"FE95430C-322D-4B67-9C77-DFD1D4408725", @"CB481AB7-E0F9-4A3E-B846-0F5E5C94C038", @"Training Request Date", @"TrainingRequestDate", @"", @"", 1047, @"", @"8CB3B231-133C-4B32-B169-61EF5792F1E9" );
 
             RockMigrationHelper.UpdateAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"datePickerControlType", @"Date Picker", @"DE6EDE02-DAA1-46DD-B278-08C6AEBD4544" );
             RockMigrationHelper.UpdateAttributeQualifier( @"8CB3B231-133C-4B32-B169-61EF5792F1E9", @"displayCurrentOption", @"False", @"FFBE1AF2-D6EB-4370-A7B6-9FD27583328F" );
