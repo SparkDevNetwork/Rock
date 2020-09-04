@@ -145,14 +145,11 @@ namespace com.bemaservices.MinistrySafe.Migrations
             // Person Profile Badge
             RockMigrationHelper.UpdatePersonBadge( "MinistrySafe Background Check Badge", "Shows whether someone has taken a MinistrySafe Background Check.", "Rock.PersonProfile.Badge.Liquid", 0, "44FE66BE-C43F-43C7-AA8E-5209926C9945" );
             RockMigrationHelper.AddPersonBadgeAttributeValue( "44FE66BE-C43F-43C7-AA8E-5209926C9945", "01C9BA59-D8D4-4137-90A6-B3C06C70BBC3", @"{% assign backgroundCheckDate = Person | Attribute:'BackgroundCheckDate' %}
-{% assign backgroundCheckResult = Person | Attribute:'BackgroundChecResult' %}
+{% assign backgroundCheckResult = Person | Attribute:'BackgroundCheckResult' %}
 {% assign isDisabled = false %}
 {% assign badgeColor = '#939393' %}
 
-{% if backgroundCheckResult == 'Pending' %}
-		{% capture tooltipText %}{{ Person.NickName }} is currently taking a MinistrySafe Background Check.{% endcapture %}
-		{% capture badgeColor %}yellow{% endcapture %}
-{% elseif backgroundCheckResult == 'Fail' %}
+{% if backgroundCheckResult == 'Fail' %}
 		{% capture tooltipText %}{{ Person.NickName }} has failed their MinistrySafe Background Check.{% endcapture %}
 		{% capture badgeColor %}red{% endcapture %}
 {% else %}
@@ -160,7 +157,7 @@ namespace com.bemaservices.MinistrySafe.Migrations
 		{% if daysSinceBackgroundCheck < -730 or backgroundCheckDate == blank %}
 				{% assign isDisabled = true %}
 				{% if daysSinceBackgroundCheck < -730 %}
-						{% capture tooltipText %}{{ Person.NickName }}'s MinistrySafe Background Check has expired.{% endcapture %}
+						{% capture tooltipText %}{{ Person.NickName }} has an expired MinistrySafe Background Check.{% endcapture %}
 				{% elseif backgroundCheckDate == blank %}
 						{% capture tooltipText %}{{ Person.NickName }} has not completed a MinistrySafe Background Check.{% endcapture %}
 				{% endif %}
@@ -175,6 +172,7 @@ namespace com.bemaservices.MinistrySafe.Migrations
 				<span class='duration {% if isDisabled == true %}badge-disabled{% endif %}'  style='color: {{badgeColor}};'></span>
 		</div>
 </div>
+
 " );
             RockMigrationHelper.AddBlockAttributeValue( "F3E6CC14-C540-4FFC-A5A9-48AD9CC0A61B", "F5AB231E-3836-4D52-BD03-BF79773C237A", "44FE66BE-C43F-43C7-AA8E-5209926C9945", true );
         }
