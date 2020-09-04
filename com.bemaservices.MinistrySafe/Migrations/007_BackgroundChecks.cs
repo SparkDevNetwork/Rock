@@ -182,7 +182,7 @@ namespace com.bemaservices.MinistrySafe.Migrations
         private void BackgroundCheckWorkflow()
         {
             #region EntityTypes
-
+            RockMigrationHelper.UpdateEntityType( "com.bemaservices.MinistrySafe.MinistrySafe", "Ministry Safe", "com.bemaservices.MinistrySafe.MinistrySafe, com.bemaservices.MinistrySafe, Version=1.0.0.3, Culture=neutral, PublicKeyToken=null", false, true, "09D99031-93EA-442A-8C9E-E8E3BA664240" );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.Workflow", "3540E9A7-FE30-43A9-8B0A-A372B63DFC93", true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowActivity", "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F", true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowActionType", "23E3273A-B137-48A3-9AFF-C8DC832DDCA6", true, true );
