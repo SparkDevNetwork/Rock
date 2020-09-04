@@ -1548,48 +1548,19 @@ namespace Rock.Web.UI
             }
         }
 
-
         /// <summary>
-        /// The verify block type instance properties lock object
-        /// </summary>
-        private static readonly object _verifyBlockTypeInstancePropertiesLockObj = new object();
-
-        /// <summary>
-        /// Verifies the block type instance properties.
+        /// Verifies the block type instance properties to make sure they are compiled and have the attributes updated.
         /// </summary>
         private void VerifyBlockTypeInstanceProperties()
         {
             var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id ).ToList();
-            foreach ( int blockTypeId in blockTypesIdToVerify )
+            if ( !blockTypesIdToVerify.Any() )
             {
-                Page.Trace.Warn( "\tCreating block attributes" );
-
-                try
-                {
-                    if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                    {
-                        // make sure that only one thread is trying to compile block properties so that we don't get collisions and unneeded compiler overhead
-                        lock ( _verifyBlockTypeInstancePropertiesLockObj )
-                        {
-                            if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                            {
-                                using ( var rockContext = new RockContext() )
-                                {
-                                    var blockTypeCache = BlockTypeCache.Get( blockTypeId );
-                                    Type blockCompiledType = blockTypeCache.GetCompiledType();
-
-                                    bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
-                                    BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // ignore if the block couldn't be compiled, it'll get logged and shown when the page tries to load the block into the page
-                }
+                return;
             }
+
+            Page.Trace.Warn( "\tCreating block attributes" );
+            BlockTypeService.VerifyBlockTypeInstanceProperties( blockTypesIdToVerify.ToArray() );
         }
 
         /// <summary>
