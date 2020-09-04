@@ -240,12 +240,15 @@ namespace Rock.Rest.Controllers
                     return NotFound();
                 }
 
+                var requestContext = new Net.RockRequestContext( Request );
+                requestContext.AddContextEntitiesForPage( pageCache );
+
                 //
                 // Set the basic block parameters.
                 //
                 rockBlock.BlockCache = blockCache;
                 rockBlock.PageCache = pageCache;
-                rockBlock.RequestContext = new Net.RockRequestContext( Request );
+                rockBlock.RequestContext = requestContext;
 
                 var actionParameters = new Dictionary<string, JToken>();
 
