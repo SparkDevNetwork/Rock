@@ -18,13 +18,35 @@ namespace com.bemaservices.MinistrySafe.Migrations
 
             AddBackgroundCheckPage();
 
+            BackgroundCheckDefinedTypeAttributes();
+
             BackgroundCheckWorkflow();
 
             BackgroundCheckBadge();
 
             BackgroundCheckReportPage();
 
+        }
 
+        private void BackgroundCheckDefinedTypeAttributes()
+        {
+            RockMigrationHelper.AddDefinedTypeAttribute( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "3EE69CBC-35CE-4496-88CC-8327A447603F", "MinistrySafe Package Price", "MinistrySafePackagePrice", "", 1044, "", "64066AB0-CFAB-4F2F-BFF9-5919B0961345" );
+            RockMigrationHelper.AddDefinedTypeAttribute( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "MinistrySafe User Type", "MinistrySafeUserType", "", 1046, "", "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D" );
+            RockMigrationHelper.AddDefinedTypeAttribute( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "9C204CD0-1233-41C5-818A-C5DA439445AA", "MinistrySafe Package Code", "MinistrySafePackageCode", "", 1043, "", "875B25A2-B9EA-4D29-AE3E-30D93216FBA5" );
+            RockMigrationHelper.AddDefinedTypeAttribute( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "9C204CD0-1233-41C5-818A-C5DA439445AA", "MinistrySafe Package Name", "MinistrySafePackageName", "", 1045, "", "BDF854B3-D62A-456B-A267-5DB95793CEC7" );
+            RockMigrationHelper.AddDefinedTypeAttribute( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "MinistrySafe Package Level", "MinistrySafePackageLevel", "", 1042, "", "7498F509-D8B5-49B5-8431-B3F36DB2BF06" );
+
+            RockMigrationHelper.AddAttributeQualifier( "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D", "allowmultiple", "False", "41DA4A9D-D39C-4BD7-9B1C-B8567BED5FA8" );
+            RockMigrationHelper.AddAttributeQualifier( "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D", "definedtype", "86", "90DD7CAA-DB3B-4FF0-9FD7-DD5DB1895791" );
+            RockMigrationHelper.AddAttributeQualifier( "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D", "displaydescription", "False", "15BDD6C9-25D8-4BEF-8B11-21DE63FBA632" );
+            RockMigrationHelper.AddAttributeQualifier( "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D", "enhancedselection", "False", "74A6B839-C25D-4C8B-A620-E5BB082E0198" );
+            RockMigrationHelper.AddAttributeQualifier( "7B18B548-E5EE-4973-8E9D-F0BF6F7A9F4D", "includeInactive", "False", "9BD5F440-9885-44D1-8394-7B24F5EFB3A4" );
+            RockMigrationHelper.AddAttributeQualifier( "875B25A2-B9EA-4D29-AE3E-30D93216FBA5", "ispassword", "False", "237D93E3-8DFD-40EF-B67E-5F81C134C25C" );
+            RockMigrationHelper.AddAttributeQualifier( "875B25A2-B9EA-4D29-AE3E-30D93216FBA5", "maxcharacters", "", "28C80A35-50B8-4FCC-98E2-3AA71C1E3B19" );
+            RockMigrationHelper.AddAttributeQualifier( "875B25A2-B9EA-4D29-AE3E-30D93216FBA5", "showcountdown", "False", "D2CB9558-246D-4BD2-B27A-A30E02EF9C51" );
+            RockMigrationHelper.AddAttributeQualifier( "BDF854B3-D62A-456B-A267-5DB95793CEC7", "ispassword", "False", "3F82C7EA-1370-427E-AAEB-3A766EF9B576" );
+            RockMigrationHelper.AddAttributeQualifier( "BDF854B3-D62A-456B-A267-5DB95793CEC7", "maxcharacters", "", "5B8F5DB4-B21C-4E3A-8B9F-43DF32E50592" );
+            RockMigrationHelper.AddAttributeQualifier( "BDF854B3-D62A-456B-A267-5DB95793CEC7", "showcountdown", "False", "4AD120D7-81F8-41CB-B1E6-E0AD0BA8CD43" );
         }
 
         private void BackgroundCheckReportPage()
