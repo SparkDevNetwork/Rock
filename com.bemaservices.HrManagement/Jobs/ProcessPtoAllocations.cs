@@ -43,12 +43,12 @@ namespace com.bemaservices.HrManagement.Jobs
         , Order = 2
         , DefaultValue = "2"
         , IsRequired = true )]
-    [EnumField( "New Allocation Accrual Schedule"
-        , "What should newly created allocations accrual schdule be"
-        , typeof( PtoAccrualSchedule )
-        , Order = 3
-        , DefaultValue = "1"
-        , IsRequired = true )]
+    //[EnumField( "New Allocation Accrual Schedule"
+    //    , "What should newly created allocations accrual schedule be"
+    //    , typeof( PtoAccrualSchedule )
+    //    , Order = 3
+    //    , DefaultValue = "1"
+    //    , IsRequired = true )]
     [CustomCheckboxListField( "Pto Types"
         , "The Pto Types to Create Allocations For"
         , "Select [Guid] as [Value], [Name] as [Text] From _com_bemaservices_HrManagement_PtoType t Where t.IsActive = 1"
@@ -86,7 +86,7 @@ namespace com.bemaservices.HrManagement.Jobs
             var defaultScheduleValue = dataMap.GetString( "NewAllocationAccrualSchedule" ).AsIntegerOrNull();
 
             PtoAllocationStatus defaultStatus = PtoAllocationStatus.Pending;
-            PtoAccrualSchedule defaultSchedule = PtoAccrualSchedule.None;
+            PtoAccrualSchedule defaultSchedule = PtoAccrualSchedule.Yearly;
 
             if ( defaultStatusValue.HasValue && Enum.IsDefined( typeof( PtoAllocationStatus ), defaultStatusValue.Value ) )
             {
