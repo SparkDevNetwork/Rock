@@ -181,6 +181,8 @@ namespace com.bemaservices.MinistrySafe.Migrations
 
         private void BackgroundCheckWorkflow()
         {
+            RockMigrationHelper.UpdateFieldType( "Background Check", "", "Rock", "Rock.Field.Types.BackgroundCheckFieldType", Rock.SystemGuid.FieldType.BACKGROUNDCHECK );
+
             #region EntityTypes
             RockMigrationHelper.UpdateEntityType( "com.bemaservices.MinistrySafe.MinistrySafe", "Ministry Safe", "com.bemaservices.MinistrySafe.MinistrySafe, com.bemaservices.MinistrySafe, Version=1.0.0.3, Culture=neutral, PublicKeyToken=null", false, true, "09D99031-93EA-442A-8C9E-E8E3BA664240" );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.Workflow", "3540E9A7-FE30-43A9-8B0A-A372B63DFC93", true, true );
@@ -674,6 +676,10 @@ namespace com.bemaservices.MinistrySafe.Migrations
 
         private void UpdateMinistrySafePage()
         {
+            RockMigrationHelper.AddEntityAttribute( "com.bemaservices.MinistrySafe.MinistrySafe", Rock.SystemGuid.FieldType.ENCRYPTED_TEXT, "", "", "Access Token", "", "MinistrySafe Access Token", 0, "", "d582affe-7331-43c6-a006-95c291db4bad" );
+            RockMigrationHelper.AddEntityAttribute( "com.bemaservices.MinistrySafe.MinistrySafe", Rock.SystemGuid.FieldType.BOOLEAN, "", "", "Is Staging Environment", "", "Checkr Access Token", 1, "", "80c0f4de-39e8-45e4-9cfc-8f59e401242c" );
+
+
             RockMigrationHelper.DeletePage( "5C7EA1BE-FC79-4821-8FA3-759F8C65C87B" );
             // Page: MinistrySafe
             RockMigrationHelper.AddPage( "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "MinistrySafe", "", "5C7EA1BE-FC79-4821-8FA3-759F8C65C87B", "fa fa-shield" ); // Site:Rock RMS
