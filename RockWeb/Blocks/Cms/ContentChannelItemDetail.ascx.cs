@@ -158,6 +158,9 @@ namespace RockWeb.Blocks.Cms
 
                 $(document).ready( function() {{
 
+                    // Change tracking enable/disabled added to prevent late arriving blur events from blocking the save
+                    var changeTrackingEnabled = true;
+
                     window.addEventListener('beforeunload', function(e) {{
                         if ( $('#{2}').val() == 'true' ) {{
                             var timeout = setTimeout( function() {{
@@ -172,17 +175,28 @@ namespace RockWeb.Blocks.Cms
                     }});
 
                     $('.js-item-details').find('input').blur( function() {{
-                        $('#{2}').val('true')
+                        contentChanged();
                     }});
 
                     $('.js-item-details').find('textarea').blur( function() {{
-                        $('#{2}').val('true')
+                        contentChanged();
                     }});
 
                     $('#{3}').on('summernote.blur', function() {{
-                        $('#{2}').val('true')
+                        contentChanged();
                     }});
                 }});
+
+                function contentChanged() {{
+                    if ( changeTrackingEnabled ) {{
+                        $('#{2}').val( 'true' );
+                    }}
+                }}
+
+                function clearDirtyBit( e ) {{
+                    changeTrackingEnabled = false;
+                    $('#{2}').val('false');
+                }}
 
                 function isDirty() {{
                     if ( $('#{2}').val() == 'true' ) {{
@@ -225,7 +239,7 @@ namespace RockWeb.Blocks.Cms
             gParentItems.GridRebind += gParentItems_GridRebind;
             gParentItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
-            string clearScript = string.Format( "$('#{0}').val('false');", hfIsDirty.ClientID );
+            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID ); //e.preventDefault();
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
