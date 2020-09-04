@@ -19,38 +19,35 @@ using Newtonsoft.Json;
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
     /// <summary>
-    /// JSON return structure for the get packages API call's response.
+    /// JSON return structure for the create candidate API call's response.
     /// </summary>
-    internal class GetUsersDataResponse
+    internal class BackgroundCheckResponse
     {
         /// <summary>
-        /// Gets or sets the slugified version of the package name.
+        /// Gets or sets the candidate ID.
         /// </summary>
         /// <value>
-        /// The slugified package name.
+        /// The candidate ID.
         /// </value>
         [JsonProperty( "id" )]
-        public int? Id { get; set; }
+        public string Id { get; set; }
 
-        [JsonProperty( "first_name" )]
-        public string FirstName { get; set; }
+        [JsonProperty( "order_date" )]
+        public string OrderDate { get; set; }
 
-        [JsonProperty( "last_name" )]
-        public string LastName { get; set; }
+        [JsonProperty( "status" )]
+        public string Status { get; set; }
+        
+        [JsonProperty( "applicant_interface_url" )]
+        public string ApplicantInterfaceUrl { get; set; }
 
-        [JsonProperty( "external_id" )]
-        public string PersonAliasId { get; set; }
+        [JsonProperty( "results_url" )]
+        public string ResultsUrl { get; set; }
 
-        [JsonProperty( "score" )]
-        public int? Score { get; set; }
+        [JsonProperty( "user_id" )]
+        public int? UserId { get; set; }
 
-        [JsonProperty( "user_type" )]
-        public string UserType { get; set; }
-
-        [JsonProperty( "direct_login_url" )]
-        public string DirectLoginUrl { get; set; }
-
-        [JsonProperty( "complete_date" )]
-        public string CompletedDateTime { get; set; }
+        [JsonProperty( "level" )]
+        public int? Level { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
     /// <summary>
     /// JSON return structure for the create invitation API call's response.
     /// </summary>
-    internal class AssignTrainingResponse
+    internal class TrainingResponse
     {
         [JsonProperty( "id" )]
         public string Id { get; set; }
@@ -31,6 +31,9 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
         [JsonProperty( "last_name" )]
         public string LastName { get; set; }
+
+        [JsonProperty( "email" )]
+        public string Email { get; set; }
 
         [JsonProperty( "external_id" )]
         public string PersonAliasId { get; set; }

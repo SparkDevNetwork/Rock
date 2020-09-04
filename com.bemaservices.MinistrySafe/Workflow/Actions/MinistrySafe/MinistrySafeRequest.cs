@@ -30,12 +30,12 @@ using com.bemaservices.MinistrySafe;
 namespace com.bemaservices.MinistrySafe.Workflow.Action
 {
     /// <summary>
-    /// Sends a Ministry Safe Request.
+    /// Sends a MinistrySafe Awareness Training.
     /// </summary>
     [ActionCategory( "BEMA Services > MinistrySafe" )]
-    [Description( "Sends a Ministry Safe Request." )]
+    [Description( "Sends a MinistrySafe Awareness Training." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "MinistrySafe Send Request" )]
+    [ExportMetadata( "ComponentName", "MinistrySafe Send Awareness Training" )]
 
     [WorkflowAttribute( "Person Attribute", "The Person attribute that contains the person who the training should be submitted for.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
@@ -63,7 +63,7 @@ namespace com.bemaservices.MinistrySafe.Workflow.Action
             var directLoginUrlAttribute = AttributeCache.Get( GetAttributeValue( action, "DirectLoginUrl" ).AsGuid() );
 
             var ministrySafe = new MinistrySafe();
-            return ministrySafe.SendRequest( rockContext, action.Activity.Workflow, personAttribute, userTypeAttribute,
+            return ministrySafe.SendTraining( rockContext, action.Activity.Workflow, personAttribute, userTypeAttribute,
                  surveyTypeAttribute, directLoginUrlAttribute, out errorMessages );
         }
     }

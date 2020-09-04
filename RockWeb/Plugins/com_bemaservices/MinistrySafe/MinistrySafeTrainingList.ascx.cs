@@ -31,12 +31,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 {
-    [DisplayName( "User List" )]
-    [Category( "BEMA Services > Ministry Safe" )]
-    [Description( "Lists all the Ministry Safe Users." )]
+    [DisplayName( "MinistrySafe Training List" )]
+    [Category( "BEMA Services > MinistrySafe" )]
+    [Description( "Lists all the MinistrySafe Trainings." )]
 
-    [LinkedPage( "Workflow Detail Page", "The page to view details about the Ministry Safe workflow" )]
-    public partial class UserList : RockBlock, ICustomGridColumns
+    [LinkedPage( "Workflow Detail Page", "The page to view details about the MinistrySafe workflow" )]
+    public partial class MinistrySafeTrainingList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -206,7 +206,7 @@ namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
                         g.PersonAlias != null &&
                         g.PersonAlias.Person != null )
                     .Where( g =>
-                        g.ForeignId == 2 || g.ForeignId == 3 );
+                        g.ForeignId == 2 || g.ForeignId == 3 || g.ForeignId == 4 );
 
                 // FirstName
                 string firstName = fUser.GetUserPreference( "First Name" );
