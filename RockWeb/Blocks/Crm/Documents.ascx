@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Documents.ascx.cs" Inherits="RockWeb.Blocks.Crm.Documents" %>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbMessage" runat="server" Text="Please configure a valid context entity in the block settings." Visible="false" NotificationBoxType="Warning"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbMessage" runat="server" Text="" Visible="false" NotificationBoxType="Warning" Mode="PassThrough"></Rock:NotificationBox>
         <asp:Panel ID="pnlList" runat="server">
             <div class="panel panel-block">
                 <div class="panel-heading">
