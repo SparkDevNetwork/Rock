@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an Achievement Attempts in Rock.
     /// </summary>
-    [RockDomain( "Achievements" )]
+    [RockDomain( "Engagement" )]
     [Table( "AchievementAttempt" )]
     [DataContract]
     public partial class AchievementAttempt : Model<AchievementAttempt>

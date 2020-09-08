@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an Achievement Type in Rock.
     /// </summary>
-    [RockDomain( "Achievements" )]
+    [RockDomain( "Engagement" )]
     [Table( "AchievementType" )]
     [DataContract]
     public partial class AchievementType : Model<AchievementType>, IHasActiveFlag, ICacheable

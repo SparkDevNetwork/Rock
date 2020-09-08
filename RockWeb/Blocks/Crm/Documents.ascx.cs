@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -130,7 +131,7 @@ namespace RockWeb.Blocks.Crm
 
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            if ( ! IsValidBlockSettings() )
+            if ( !IsValidBlockSettings() )
             {
                 return;
             }
@@ -150,15 +151,47 @@ namespace RockWeb.Blocks.Crm
         /// <returns>true if valid, false otherwise.</returns>
         private bool IsValidBlockSettings()
         {
-            if ( this.ContextEntity() == null )
+            var pageContextEntityTypes = this.RockPage.GetContextEntityTypes();
+            var blockContextEntityTypes = ContextTypesRequired;
+            bool hasError = false;
+
+            upPanel.Visible = true;
+            nbMessage.Text = string.Empty;
+            nbMessage.Visible = false;
+
+            // Ensure the block ContextEntity is configured
+            if ( !blockContextEntityTypes.Any() )
             {
+                nbMessage.Text = "The block context entity has not been configured. Go to block settings and select the Entity Type in the 'Context' drop-down list.<br/>";
+                hasError = true;
+            }
+
+            // Ensure the page ContextEntity page parameter is configured.
+            if ( !pageContextEntityTypes.Any() 
+                || !pageContextEntityTypes.Where( p => ContextTypesRequired.Contains( p ) ).Any() )
+            {
+                nbMessage.Text += "The page context entity has not been configured for this block. Go to Page Properties and click Advanced and enter a valid parameter name under 'Context Parameters'.<br/>";
+                hasError = true;
+            }
+
+            // Show the error if there is one
+            if ( hasError )
+            {
+                nbMessage.Text = nbMessage.Text.TrimEnd( "<br/>".ToCharArray() );
                 nbMessage.Visible = true;
                 pnlList.Visible = false;
                 return false;
             }
 
-            nbMessage.Visible = false;
-            pnlList.Visible = pnlAddEdit.Visible == false;
+            // If there isn't an entity at this point a new item is being created and there isn't an ID for it yet. So don't show the block.
+            if ( this.ContextEntity() == null )
+            {
+                upPanel.Visible = false;
+                return false;
+            }
+
+            // Show the list if the Add/Edit panel is not visible
+            pnlList.Visible = !pnlAddEdit.Visible;
             return true;
         }
 
