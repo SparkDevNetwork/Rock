@@ -536,6 +536,8 @@
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
+    <Compile Include="Data\DecimalPrecisionAttribute.cs" />
+    <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
@@ -723,7 +725,7 @@
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
-    <Compile Include="Model\AchievementAttempts.cs" />
+    <Compile Include="Model\AchievementAttempt.cs" />
     <Compile Include="Model\AchievementTypePrerequisite.cs" />
     <Compile Include="Model\AchievementTypeService.Partial.cs" />
     <Compile Include="Model\AchievementType.cs" />

@@ -170,13 +170,13 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.That.IsNotNull( attempts );
             Assert.That.AreEqual( 1, attempts.Count );
 
-            // The database stores progress with only 2 digits beyond the decimal
+            // The database stores progress with only 9 digits beyond the decimal
             var progress = decimal.Divide( COUNT, NUMBER_TO_ACHIEVE );
             var progressDifference = Math.Abs( progress - attempts[0].Progress );
 
             Assert.That.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptStartDateTime );
             Assert.That.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptEndDateTime );
-            Assert.That.IsTrue( progressDifference < .01m );
+            Assert.That.IsTrue( progressDifference < .000000001m );
             Assert.That.IsFalse( attempts[0].IsClosed );
             Assert.That.IsFalse( attempts[0].IsSuccessful );
         }
