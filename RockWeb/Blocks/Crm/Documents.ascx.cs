@@ -151,24 +151,26 @@ namespace RockWeb.Blocks.Crm
         /// <returns>true if valid, false otherwise.</returns>
         private bool IsValidBlockSettings()
         {
-            var pageContextEntityType = this.RockPage.GetContextEntityTypes().FirstOrDefault();
-            var blockContextEntityType = ContextTypesRequired.FirstOrDefault();
+            var pageContextEntityTypes = this.RockPage.GetContextEntityTypes();
+            var blockContextEntityTypes = ContextTypesRequired;
             bool hasError = false;
+
             upPanel.Visible = true;
             nbMessage.Text = string.Empty;
             nbMessage.Visible = false;
 
             // Ensure the block ContextEntity is configured
-            if ( blockContextEntityType == null )
+            if ( !blockContextEntityTypes.Any() )
             {
                 nbMessage.Text = "The block context entity has not been configured. Go to block settings and select the Entity Type in the 'Context' drop-down list.<br/>";
                 hasError = true;
             }
 
             // Ensure the page ContextEntity page parameter is configured.
-            if ( pageContextEntityType == null )
+            if ( !pageContextEntityTypes.Any() 
+                || !pageContextEntityTypes.Where( p => ContextTypesRequired.Contains( p ) ).Any() )
             {
-                nbMessage.Text += "The page context entity has not been configured. Go to Page Properties and click Advanced and enter a valid parameter name under 'Context Parameters'.";
+                nbMessage.Text += "The page context entity has not been configured for this block. Go to Page Properties and click Advanced and enter a valid parameter name under 'Context Parameters'.<br/>";
                 hasError = true;
             }
 
