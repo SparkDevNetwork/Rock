@@ -736,6 +736,10 @@ namespace Rock.SystemGuid
         /// The oidc client list scope page
         /// </summary>
         public const string OIDC_CLIENT_LIST_SCOPE_PAGE = "EF07798E-48D4-4261-97B2-501A8AD54E15";
-        
+
+        /// <summary>
+        /// The Content Channel View Enable Archive Summary Attribute
+        /// </summary>
+        public const string ENABLE_ARCHIVE_SUMMARY = "753217FB-D519-44CC-83FC-C451E37E553F";
     }
 }
