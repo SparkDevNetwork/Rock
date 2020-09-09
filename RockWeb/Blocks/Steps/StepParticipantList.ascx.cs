@@ -886,13 +886,13 @@ namespace RockWeb.Blocks.Steps
             rFilter.Visible = true;
             gSteps.Visible = true;
 
-            var campusCount = CampusCache.All().Count;
-            if (campusCount <= 1 )
+            var campusCount = CampusCache.All( false ).Count;
+            if ( campusCount <= 1 )
             {
                 var campusColumn = gSteps.ColumnsOfType<RockBoundField>().Where( a => a.DataField == "CampusName" ).FirstOrDefault();
                 if ( campusColumn != null )
                 {
-                    gSteps.Columns.Remove( campusColumn );
+                    campusColumn.Visible = false;
                 }
             }
 

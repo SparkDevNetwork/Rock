@@ -258,7 +258,7 @@ namespace Rock.Jobs
                 if ( !string.IsNullOrWhiteSpace( group.Schedule.iCalendarContent ) )
                 {
                     // If schedule has an iCal schedule, get occurrences between first and last dates
-                    foreach ( var occurrence in group.Schedule.GetOccurrences( startDate, endDate ) )
+                    foreach ( var occurrence in group.Schedule.GetICalOccurrences( startDate, endDate ) )
                     {
                         var startTime = occurrence.Period.StartTime.Value;
                         if ( dates.Contains( startTime.Date ) )

@@ -81,5 +81,9 @@ namespace Rock.Logging
         /// The other
         /// </summary>
         public const string Other = "OTHER";
+        /// <summary>
+        /// The lava
+        /// </summary>
+        public const string Lava = "LAVA";
     }
 }

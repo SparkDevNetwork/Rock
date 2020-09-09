@@ -65,6 +65,7 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IconCssClass" ValidateRequestMode="Disabled"/>
                             <Rock:NumberBox ID="nbDaysUntilRequestIdle" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="DaysUntilRequestIdle" Label="Days Until Request Considered Idle" ValidateRequestMode="Disabled" NumberType="Integer" MinimumValue="0"/>
+                            <Rock:PagePicker ID="ppConnectionRequestDetail" runat="server" Label="Connection Request Detail Page" Required="false" PromptForPageRoute="true" Help="Choose a page that should be used for viewing connection requests of this type. This is useful if you have different detail pages with different settings. A default page will be used if this is left blank." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />

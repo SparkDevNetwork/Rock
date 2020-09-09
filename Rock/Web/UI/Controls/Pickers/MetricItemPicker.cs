@@ -49,8 +49,6 @@ namespace Rock.Web.UI.Controls
         {
             ItemRestUrlExtraParams = string.Empty;
 
-            AddRestQueryValue( "lazyLoad", "false" );
-
             if ( this.CategoryGuids?.Any() == true )
             {
                 string includedCategoryIds = this.CategoryGuids

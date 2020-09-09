@@ -69,7 +69,13 @@
         <h3 class="flush">Total <span class="pull-right">{{ sumTotal | FormatAsCurrency }}</span></h3>
         <p class="italic text-gray-light">{{ startDate | Date:'MMM d, yyyy' }} - {{ endDate | Date:'MMM d, yyyy' }}</p>
     
-        <p class="md-text-right"><a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block">View {{ 'Now' | Date:'yyyy' }} Contributions</a></p>
+
+        <p class="md-text-right push-half-bottom">
+            <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">View {{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a> 
+            <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">View {{ 'Now' | Date:'yyyy' }} Contributions</a>
+        </p>
+
+        <p class="md-text-right hidden"><a href="https://newspring.cc/page/651?StatementYear=2019" class="btn btn-primary xs-btn-block">Print 2019 Contributions</a></p>
 
     </div></div>
     

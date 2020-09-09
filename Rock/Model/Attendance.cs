@@ -840,6 +840,27 @@ namespace Rock.Model
             return this.RSVP == RSVP.No;
         }
 
+        /// <summary>
+        /// Gets the scheduled attendance item status.
+        /// </summary>
+        /// <param name="rsvp">The RSVP.</param>
+        /// <param name="scheduledToAttend">The scheduled to attend.</param>
+        /// <returns></returns>
+        public static ScheduledAttendanceItemStatus GetScheduledAttendanceItemStatus( RSVP rsvp, bool? scheduledToAttend )
+        {
+            var status = ScheduledAttendanceItemStatus.Pending;
+            if ( rsvp == RSVP.No )
+            {
+                status = ScheduledAttendanceItemStatus.Declined;
+            }
+            else if ( scheduledToAttend == true )
+            {
+                status = ScheduledAttendanceItemStatus.Confirmed;
+            }
+
+            return status;
+        }
+
         #endregion
     }
 

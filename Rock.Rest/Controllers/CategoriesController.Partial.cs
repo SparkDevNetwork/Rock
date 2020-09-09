@@ -83,7 +83,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="categoryItem">The <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.</param>
         /// <param name="includedCategoryIds">The included category ids.</param>
-        /// <param name="metricCategoryService">The metric category service.</param>
+        /// <param name="metricCategoryService">The <see cref="MetricCategoryService"/>.</param>
         /// <returns></returns>
         private List<CategoryItem> GetAllMetricDescendants( CategoryItem categoryItem, string includedCategoryIds, MetricCategoryService metricCategoryService )
         {
@@ -261,7 +261,7 @@ namespace Rock.Rest.Controllers
 
                     if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
                     {
-                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
+                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByOrderAndNextScheduledDateTime().OfType<ICategorized>().ToList();
                     }
                     else
                     {

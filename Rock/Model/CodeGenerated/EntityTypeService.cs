@@ -348,6 +348,7 @@ namespace Rock.Model
             target.FriendlyName = source.FriendlyName;
             target.IndexDocumentUrl = source.IndexDocumentUrl;
             target.IndexResultTemplate = source.IndexResultTemplate;
+            target.IsAchievementsEnabled = source.IsAchievementsEnabled;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;

@@ -139,7 +139,11 @@
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
-                                        <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
+                                        <Rock:RockTemplateField HeaderText="Schedule(s)">
+                                            <ItemTemplate>
+                                                <asp:Literal ID="litSchedules" runat="server" Text='<%#Eval("Schedules") %>' />
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
                                         <Rock:EditField OnClick="gGroupLocations_Edit" />
                                         <Rock:DeleteField OnClick="gGroupLocations_Delete" />
                                     </Columns>
@@ -375,7 +379,8 @@
                 <div class="row">
                     <div class="col-md-3">
                         <asp:HiddenField ID="hfGroupLocationGuid" runat="server" />
-                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
+                        <asp:HiddenField ID="hfInactiveGroupLocationSchedules" runat="server" />
+                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" AllowInactiveSelection="false" />
                     </div>
                     <div class="col-md-9">
                         <%-- Group Location Schedule Capacities (if Group Scheduling Enabled) --%>
@@ -462,7 +467,7 @@
                             ID="ipScheduleIntervalMinutes"
                             runat="server"
                             Label="Sync Interval"
-                            Help="How often the group should sync in minutes. It will never be less then the Group Sync job execution interval."
+                            Help="Controls how often the group should sync to the Data View. It will never be less then the Group Sync job execution interval."
                             ValidationGroup="GroupSyncSettings"
                             DefaultValue="12"
                             DefaultInterval="Hour" />
@@ -572,10 +577,7 @@
                     if (jqObj != null) {
                         var domObj = jqObj.get(0);
                         if (domObj != null) {
-                            console.log(validatorId + ': found');
                             ValidatorEnable(domObj, enable);
-                        } else {
-                            console.log(validatorId + ': NOT found');
                         }
                     }
                 }

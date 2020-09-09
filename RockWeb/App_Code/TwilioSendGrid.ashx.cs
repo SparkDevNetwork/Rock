@@ -224,12 +224,12 @@ internal class SendGridResponseAsync : IAsyncResult
                     break;
                 case "delivered":
                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
-                    communicationRecipient.StatusNote = string.Format( "Confirmed delivered by Mailgun at {0}", timeStamp.ToString() );
+                    communicationRecipient.StatusNote = string.Format( "Confirmed delivered by SendGrid at {0}", timeStamp.ToString() );
                     break;
                 case "deferred":
                     // TODO: handle deferred.
                     break;
-                case "bounced":
+                case "bounce":
                     communicationRecipient.Status = CommunicationRecipientStatus.Failed;
                     communicationRecipient.StatusNote = payload.EventTypeReason + payload.ServerResponse;
 

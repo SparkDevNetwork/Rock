@@ -172,5 +172,14 @@ namespace Rock.Transactions
             Entity = entity;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowDetails"/> class.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        public LaunchWorkflowDetails( IEntity entity, Dictionary<string, string> attributeValues ) : this(entity)
+        {
+            AttributeValues = attributeValues;
+        }
     }
 }

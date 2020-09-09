@@ -245,22 +245,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
-        /// </summary>
-        /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -308,15 +292,17 @@ $(document).ready(function() {
             }
 
             var adding = dataView.Id.Equals( 0 );
-            if ( adding )
-            {
-                service.Add( dataView );
-                // We need to save the new data view so we can bind the data view filters.
-                rockContext.SaveChanges();
-            }
-            
+
             rockContext.WrapTransaction( () =>
             {
+                if ( adding )
+                {
+                    service.Add( dataView );
+
+                    // We need to save the new data view so we can bind the data view filters.
+                    rockContext.SaveChanges();
+                }
+
                 if ( origDataViewFilterId.HasValue )
                 {
                     // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
@@ -346,28 +332,18 @@ $(document).ready(function() {
                 catch ( Exception ex )
                 {
                     this.LogException( ex );
-                    Exception exception = ex;
-                    while ( exception != null )
+                    var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+                    if ( sqlTimeoutException != null )
                     {
-                        if ( exception is System.Data.SqlClient.SqlException )
-                        {
-                            // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                            if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                            {
-                                nbPersistError.NotificationBoxType = NotificationBoxType.Warning;
-                                nbPersistError.Text = "This dataview did not persist in a timely manner. You can try again or adjust the timeout setting of this block.";
-                                return;
-                            }
-                            else
-                            {
-                                exception = exception.InnerException;
-                            }
-                        }
-                        else
-                        {
-                            exception = exception.InnerException;
-                        }
+                        nbPersistError.NotificationBoxType = NotificationBoxType.Warning;
+                        nbPersistError.Text = "This dataview did not persist in a timely manner. You can try again or adjust the timeout setting of this block.";
+                        return;
                     }
+
+                    nbPersistError.NotificationBoxType = NotificationBoxType.Danger;
+                    nbPersistError.Text = "An error occurred when persisting the dataview";
+                    nbPreviewError.Details = ex.Message;
+                    return;
                 }
             }
 
@@ -901,7 +877,7 @@ $(document).ready(function() {
             }
 
             var status = "Since Creation";
-            if(lastRefreshDateTime != null )
+            if ( lastRefreshDateTime != null )
             {
                 status = string.Format( "Since {0}", lastRefreshDateTime.Value.ToShortDateString() );
             }
@@ -1036,6 +1012,15 @@ $(document).ready(function() {
         /// <returns></returns>
         private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
+            // Making an unsaved copy of the DataView so the runs do not get counted.
+            var dv = new DataView
+            {
+                Name = dataView.Name,
+                TransformEntityTypeId = dataView.TransformEntityTypeId,
+                EntityTypeId = dataView.EntityTypeId,
+                DataViewFilter = dataView.DataViewFilter
+            };
+
             grid.DataSource = null;
 
             // Only respect the ShowResults option if fetchRowCount is null
@@ -1044,11 +1029,10 @@ $(document).ready(function() {
                 return false;
             }
 
-            var errorMessages = new List<string>();
 
-            if ( dataView.EntityTypeId.HasValue )
+            if ( dv.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( dv.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -1058,9 +1042,15 @@ $(document).ready(function() {
                         try
                         {
                             grid.CreatePreviewColumns( entityType );
-                            var dbContext = dataView.GetDbContext();
-                            Stopwatch stopwatch = Stopwatch.StartNew();
-                            var qry = dataView.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
+                            var dbContext = dv.GetDbContext();
+                            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                            {
+                                SortProperty = grid.SortProperty,
+                                DbContext = dbContext,
+                                DatabaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
+                            };
+
+                            var qry = dv.GetQuery( dataViewGetQueryArgs );
 
                             if ( fetchRowCount.HasValue )
                             {
@@ -1069,63 +1059,51 @@ $(document).ready(function() {
 
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
-                            stopwatch.Stop();
-                            DataViewService.AddRunDataViewTransaction( dataView.Id,
-                                                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                         }
                         catch ( Exception ex )
                         {
                             this.LogException( ex );
-                            Exception exception = ex;
-                            while ( exception != null )
+                            var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+                            var errorBox = ( grid == gPreview ) ? nbPreviewError : nbGridError;
+
+                            if ( sqlTimeoutException != null )
                             {
-                                if ( exception is System.Data.SqlClient.SqlException )
+                                errorBox.NotificationBoxType = NotificationBoxType.Warning;
+                                errorBox.Text = "This dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                return false;
+                            }
+                            else
+                            {
+                                if ( ex is RockDataViewFilterExpressionException )
                                 {
-                                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                                    {
-                                        nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
-                                        nbEditModeMessage.Text = "This dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
-                                        return false;
-                                    }
-                                    else
-                                    {
-                                        errorMessages.Add( exception.Message );
-                                        exception = exception.InnerException;
-                                    }
+                                    RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
+                                    errorBox.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
                                 }
                                 else
                                 {
-                                    errorMessages.Add( exception.Message );
-                                    exception = exception.InnerException;
+                                    errorBox.Text = "There was a problem with one of the filters for this data view.";
                                 }
+
+                                errorBox.NotificationBoxType = NotificationBoxType.Danger;
+
+                                errorBox.Details = ex.Message;
+                                errorBox.Visible = true;
+                                return false;
                             }
                         }
                     }
                 }
             }
 
-            var errorBox = ( grid == gPreview ) ? nbPreviewError : nbGridError;
 
-            if ( errorMessages.Any() )
+            if ( dv.EntityTypeId.HasValue )
             {
-                errorBox.NotificationBoxType = NotificationBoxType.Warning;
-                errorBox.Text = "WARNING: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
-                errorBox.Visible = true;
-            }
-            else
-            {
-                errorBox.Visible = false;
-            }
-
-            if ( dataView.EntityTypeId.HasValue )
-            {
-                grid.RowItemText = EntityTypeCache.Get( dataView.EntityTypeId.Value ).FriendlyName;
+                grid.RowItemText = EntityTypeCache.Get( dv.EntityTypeId.Value ).FriendlyName;
             }
 
             if ( grid.DataSource != null )
             {
-                grid.ExportFilename = dataView.Name;
+                grid.ExportFilename = dv.Name;
                 return true;
             }
 
@@ -1243,7 +1221,7 @@ $(document).ready(function() {
                 rockContext.SaveChanges();
 
                 service.Delete( dataViewFilter );
-                
+
             }
         }
 
@@ -1261,6 +1239,22 @@ $(document).ready(function() {
             {
                 var filteredEntityType = EntityTypeCache.Get( filteredEntityTypeId.Value );
                 CreateFilterControl( phFilters, filter, filteredEntityType.Name, setSelection, rockContext );
+
+                var filtersWithErrors = phFilters.ControlsOfTypeRecursive<FilterField>().Where( a => a.HasFilterError ).ToList();
+                nbFiltersError.Visible = false;
+                if ( filtersWithErrors.Any() )
+                {
+                    nbFiltersError.Visible = true;
+                    if ( filtersWithErrors.Count == 1 )
+                    {
+                        var filterWithError = filtersWithErrors[0];
+                        nbFiltersError.Text = "One of the data filters has an <a href='#filtererror'>error</a>.";
+                    }
+                    else
+                    {
+                        nbFiltersError.Text = "There are data filter <a href='#filtererror'>errors</a>";
+                    }
+                }
             }
         }
 

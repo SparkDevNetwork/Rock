@@ -53,8 +53,7 @@ namespace Rock.NMI
         Key = AttributeKey.SecurityKey,
         Description = "The API key",
         IsRequired = true,
-        Order = 0
-        )]
+        Order = 0 )]
 
     [TextField(
         "Admin Username",
@@ -362,20 +361,22 @@ namespace Rock.NMI
 
             try
             {
-                if ( resultQueryString.IsNullOrWhiteSpace() )
+                if ( resultQueryString.IsNullOrWhiteSpace() || resultQueryString.Length <= 10 )
                 {
                     errorMessage = "invalid resultQueryString";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"Unable to process Step 3 Charge in NMI gateway.  Invalid Query String." ) );
                     return null;
                 }
 
                 var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
-                rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
+                rootElement.Add( new XElement( "token-id", resultQueryString.SubstringSafe( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
                 var threeStepChangeStep3Response = PostToGatewayThreeStepAPI<ThreeStepChargeStep3Response>( financialGateway, xdoc );
 
                 if ( threeStepChangeStep3Response == null )
                 {
                     errorMessage = "Invalid Response from NMI";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"An invalid response was received from the NMI gateway at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The token-id was: {resultQueryString.SubstringSafe( 10 )}" ) );
                     return null;
                 }
 
@@ -439,11 +440,19 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
+
+                string logMessage = webException.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"A WebException occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", webException ) );
+
                 return null;
             }
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
+
+                string logMessage = ex.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"An internal error occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", ex ) );
+
                 return null;
             }
         }
@@ -599,7 +608,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             try
             {
                 var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
-                rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
+                rootElement.Add( new XElement( "token-id", resultQueryString.SubstringSafe( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
                 var threeStepSubscriptionStep3Response = PostToGatewayThreeStepAPI<ThreeStepSubscriptionStep3Response>( financialGateway, xdoc );
 

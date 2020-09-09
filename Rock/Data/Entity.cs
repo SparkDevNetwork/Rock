@@ -576,12 +576,21 @@ namespace Rock.Data
     internal class KeyEntity
     {
         public string Key { get; set; }
-        public int Id { get; set; }
+
+        public int? Id { get; set; }
+
+        public Guid? Guid { get; set; }
+
         public IEntity Entity { get; set; }
 
         public KeyEntity( int id )
         {
             Id = id;
+        }
+
+        public KeyEntity( Guid guid )
+        {
+            Guid = guid;
         }
 
         public KeyEntity( string key )

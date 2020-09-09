@@ -75,8 +75,6 @@ namespace Rock.Attribute
                 return false;
             }
 
-            List<string> existingKeys = new List<string>();
-
             var entityProperties = new List<FieldAttribute>();
 
             // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
@@ -123,7 +121,6 @@ namespace Rock.Attribute
                 try
                 {
                     attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
-                    existingKeys.Add( entityProperty.Key );
                 }
                 catch ( Exception ex )
                 {
@@ -139,6 +136,7 @@ namespace Rock.Attribute
                 // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                 if ( !dynamicAttributesBlock )
                 {
+                    var existingKeys = entityProperties.Select( a => a.Key ).ToList();
                     foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                     {
                         if ( !existingKeys.Contains( a.Key ) )
@@ -548,10 +546,24 @@ This can be due to multiple threads updating the same attribute at the same time
                         attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
                     }
 
-                    foreach ( var attributeValue in attributeValueQuery )
+                    /* 2020-07-29 MDP
+                     Select just AttributeId, EntityId, and Value. That way the AttributeId_EntityId_Value index is the
+                     only thing that SQL needs to touch. This improves query performance around 10% since SQL doesn't
+                     have to look at the full row after finding the records in the index.
+                     */
+                    var attributeValueSelectQuery = attributeValueQuery.Select( a =>
+                        new
+                        {
+                            a.AttributeId,
+                            a.EntityId,
+                            a.Value
+                        } );
+
+                    foreach ( var attributeValueSelect in attributeValueSelectQuery )
                     {
-                        var attributeKey = AttributeCache.Get( attributeValue.AttributeId ).Key;
-                        attributeValues[attributeKey] = new AttributeValueCache( attributeValue );
+                        var attributeKey = AttributeCache.Get( attributeValueSelect.AttributeId ).Key;
+                        var attributeValueCache = new AttributeValueCache( attributeValueSelect.AttributeId, attributeValueSelect.EntityId, attributeValueSelect.Value );
+                        attributeValues[attributeKey] = attributeValueCache;
                     }
                 }
 

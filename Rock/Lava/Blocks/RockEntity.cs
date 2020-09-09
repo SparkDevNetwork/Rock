@@ -119,8 +119,12 @@ namespace Rock.Lava.Blocks
                 Type entityType = entityTypeCache.GetEntityType();
                 if ( entityType != null )
                 {
-                    // Get the database context
-                    var dbContext = Reflection.GetDbContextForEntityType( entityType );  // TODO why not use RockContext here?
+                    // Get the appropriate database context for this entity type.
+                    // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
+                    var dbContext = Reflection.GetDbContextForEntityType( entityType );
+
+                    // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
 
                     // Create an instance of the entity's service
                     IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
@@ -207,9 +211,12 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    // Make the query from the expression
-                    // Note: Use GetNoTracking to help improve performance
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+                    // Make the query from the expression.                    
+                    /* [2020-10-08] DL
+                     * "Get" is intentionally used here rather than "GetNoTracking" to allow lazy-loading of navigation properties from the Lava context.
+                     * (Refer https://github.com/SparkDevNetwork/Rock/issues/4293)
+                     */
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
 
                     if ( getMethod != null )
                     {
@@ -251,7 +258,7 @@ namespace Rock.Lava.Blocks
                         }
 
                         // if there was a dynamic expression add it now
-                        if ( parms.Any( p => p.Key == "expression" ) )
+                        if ( parms.Any( p => p.Key == "expression" ) ) 
                         {
                             queryResult = queryResult.Where( parms["expression"] );
                             hasFilter = true;
@@ -337,9 +344,6 @@ namespace Rock.Lava.Blocks
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
-                        // limit, default to 1000
-                        var recordLimit = ( parms.GetValueOrNull( "limit" ) ?? "1000" ).AsInteger();
-
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
                             int countResult = queryResult.Count();
@@ -361,11 +365,37 @@ namespace Rock.Lava.Blocks
                                     if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
                                     {
                                         itemsSecured.Add( item );
-                                        if ( itemsSecured.Count >= recordLimit )
-                                        {
-                                            // if we have already met the recordlimit, we don't have to check IsAuthorized anymore since no more records will be included
-                                            break;
-                                        }
+
+                                        /*
+	                                        8/13/2020 - JME 
+	                                        It might seem logical to break out of the loop if there is limit parameter provided once the
+                                            limit is reached. This though has two issues.
+
+                                            FIRST
+                                            Depending how it was implemented it can have the effect of breaking when an offset is
+                                            provided. 
+	                                            {% contentchannelitem where:'ContentChannelId == 1' limit:'3' %}
+                                                    {% for item in contentchannelitemItems %}
+                                                        {{ item.Id }} - {{ item.Title }}<br>
+                                                    {% endfor %}
+                                                {% endcontentchannelitem %}
+                                            Returns 3 items (correct)
+
+                                                {% contentchannelitem where:'ContentChannelId == 1' limit:'3' offset:'1' %}
+                                                    {% for item in contentchannelitemItems %}
+                                                        {{ item.Id }} - {{ item.Title }}<br>
+                                                    {% endfor %}
+                                                {% endcontentchannelitem %}
+                                            Returns only 2 items (incorrect) - because of the offset
+
+                                            SECOND
+                                            If the limit is moved before the security check it's possible that the the security checks
+                                            will remove items and will therefore not give you the amount of items that you asked for.
+
+                                            Unfortunately this has to be an inefficent process to ensure pagination works. I will also
+                                            add a detailed note to the documentation to encourage people to disable security checks,
+                                            especially when used with pagination, in the Lava docs.
+                                        */
                                     }
                                 }
 
@@ -378,7 +408,15 @@ namespace Rock.Lava.Blocks
                                 queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                             }
 
-                            queryResult = queryResult.Take( recordLimit );
+                            // limit, default to 1000
+                            if ( parms.Any( p => p.Key == "limit" ) )
+                            {
+                                queryResult = queryResult.Take( parms["limit"].AsInteger() );
+                            }
+                            else
+                            {
+                                queryResult = queryResult.Take( 1000 );
+                            }
 
                             var resultList = queryResult.ToList();
 
@@ -662,8 +700,7 @@ namespace Rock.Lava.Blocks
 
                 if ( isCorrectDataType )
                 {
-                    List<string> errorMessages = new List<string>();
-                    var whereExpression = dataViewSource.GetExpression( service, parmExpression, out errorMessages );
+                    var whereExpression = dataViewSource.GetExpression( service, parmExpression );
                     return whereExpression;
                 }
                 else

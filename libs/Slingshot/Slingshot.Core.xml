@@ -2952,6 +2952,12 @@
             Initalizes the package folder.
             </summary>
         </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.FinalizePackage(System.String)">
+            <summary>
+            Finalizes the package.
+            </summary>
+            <param name="exportFilename">The export filename.</param>
+        </member>
         <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteToPackage``1(``0)">
             <summary>
             Writes to package.
@@ -2959,11 +2965,70 @@
             <typeparam name="T"></typeparam>
             <param name="model">The model.</param>
         </member>
-        <member name="M:Slingshot.Core.Utilities.ImportPackage.FinalizePackage(System.String)">
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.GetTextWriter(System.String)">
             <summary>
-            Finalizes the package.
+            Gets the TextWriter.
             </summary>
-            <param name="exportFilename">The export filename.</param>
+            <param name="fileName">The file name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.EnsureWriters``1(``0)">
+            <summary>
+            Ensures that the <see cref="T:System.IO.TextWriter"/> is in the textWriters collection.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The model.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.GetCsvWriter(System.IO.TextWriter)">
+            <summary>
+            Gets the CsvWriter.
+            </summary>
+            <param name="textWriter">The <see cref="T:System.IO.TextWriter"/>.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.EnsureCsvWriter``1(``0)">
+            <summary>
+            Ensures that the <see cref="T:CsvHelper.CsvWriter"/> is in the csvWriters collection.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The model.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteCsvRecord``1(``0)">
+            <summary>
+            Writes an <see cref="T:Slingshot.Core.Model.IImportModel"/> record to the CSV file.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The <see cref="T:Slingshot.Core.Model.IImportModel"/>.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Person)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Person"/>.
+            </summary>
+            <param name="importPerson">The <see cref="T:Slingshot.Core.Model.Person"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.FinancialBatch)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.FinancialBatch"/>.
+            </summary>
+            <param name="importBatch">The <see cref="T:Slingshot.Core.Model.FinancialBatch"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.FinancialTransaction)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.FinancialTransaction"/>.
+            </summary>
+            <param name="importTransaction">The <see cref="T:Slingshot.Core.Model.FinancialTransaction"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Group)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Group"/>.
+            </summary>
+            <param name="importGroup">The <see cref="T:Slingshot.Core.Model.Group"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Business)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Business"/>.
+            </summary>
+            <param name="importBusiness">The <see cref="T:Slingshot.Core.Model.Business"/></param>
         </member>
     </members>
 </doc>

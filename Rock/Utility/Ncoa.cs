@@ -59,21 +59,13 @@ namespace Rock.Utility
                 throw new Exception( "Data View Filter issue(s): One of the filters contains a circular reference to the Data View itself." );
             }
 
-            // Evaluate the Data View that defines the candidate population.
-            List<string> errorMessages;
-
             var personService = new PersonService( rockContext );
 
             var personQuery = personService.Queryable().AsNoTracking();
 
             var paramExpression = personService.ParameterExpression;
 
-            var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
-
-            if ( errorMessages.Any() )
-            {
-                throw new Exception( "Data View Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-            }
+            var whereExpression = dataView.GetExpression( personService, paramExpression );
 
             return personQuery.Where( paramExpression, whereExpression, null ).Select( p => p.Id ).ToDictionary( p => p, p => p );
         }
@@ -148,6 +140,8 @@ namespace Rock.Utility
                         .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
                         .Select( v => new { State = v.Value, Country = v["Country"], Description = v.Description } ).ToLookup( v => v.Description, StringComparer.OrdinalIgnoreCase );
 
+                    var badSequences = new List<string>() { "<", "&#" };
+
                     return peopleHomelocation
                         .Select( g => new
                         {
@@ -168,7 +162,11 @@ namespace Rock.Utility
                                 Country = g.HomeLocation.Country.IsNullOrWhiteSpace() ? "US" : g.HomeLocation.Country
                             }
                         } )
-                        .Where( g => g.HomeLocation.State.IsNotNullOrWhiteSpace() && g.HomeLocation.State.Length == 2 )
+                        .Where( g => g.HomeLocation.State.IsNotNullOrWhiteSpace() )
+                        .Where( g => g.HomeLocation.State.Length == 2 )
+                        .Where( g => !badSequences.Any( x => g.HomeLocation.Street1?.Contains( x ) ?? false ) )
+                        .Where( g => !badSequences.Any( x => g.HomeLocation.Street2?.Contains( x ) ?? false ) )
+                        .Where( g => !badSequences.Any( x => g.HomeLocation.City?.Contains( x ) ?? false ) )
                         .ToDictionary( k => k.PersonId, v => v.HomeLocation );
                 }
 
@@ -651,7 +649,7 @@ namespace Rock.Utility
                     {
                         if ( campusLocation.Longitude != null && campusLocation.Latitude != null )
                         {
-                            var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), 4326 );
+                            var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), DbGeography.DefaultCoordinateSystemId );
                             if ( geo != null )
                             {
                                 campusGeoPoints.Add( geo );
@@ -699,7 +697,7 @@ namespace Rock.Utility
                 {
                     try
                     {
-                        var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), 4326 );
+                        var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), DbGeography.DefaultCoordinateSystemId );
                         if ( geoPoint != null )
                         {
                             foreach ( var campusGeoPoint in campusGeoPoints )

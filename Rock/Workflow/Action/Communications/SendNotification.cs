@@ -31,17 +31,18 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends push notification
     /// </summary>
-    [ActionCategory("Communications")]
-    [Description("Sends a push notification. The recipient can either be a person or group attribute.")]
-    [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Push Notification Send")]
+    [ActionCategory( "Communications" )]
+    [Description( "Sends a push notification. The recipient can either be a person or group attribute." )]
+    [Export( typeof( ActionComponent ) )]
+    [ExportMetadata( "ComponentName", "Push Notification Send" )]
 
-    [WorkflowTextOrAttribute("Recipient", "Attribute Value", "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
-        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" })]
-    [WorkflowTextOrAttribute("Title", "Attribute Value", "The title or an attribute that contains the title that should be sent.", false, "", "", 2, "Title", new string[] { "Rock.Field.Types.TextFieldType" })]
-    [WorkflowAttribute("Sound", "The choice of sound or an attribute that contains the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.BooleanFieldType" })]
-    [WorkflowTextOrAttribute("Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
-        new string[] { "Rock.Field.Types.TextFieldType" })]
+    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
+        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+    [WorkflowTextOrAttribute( "Title", "Attribute Value", "The title or an attribute that contains the title that should be sent.", false, "", "", 2, "Title", new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowAttribute( "Sound", "The choice of sound or an attribute that contains the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.BooleanFieldType" } )]
+    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
+        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Url", "Attribute Value", "The URL or an attribute that contains the URL that the notification should link to.", false, "", "", 4, "Url", new string[] { "Rock.Field.Types.TextFieldType" } )]
     public class SendPushNotification : ActionComponent
     {
         /// <summary>
@@ -76,13 +77,13 @@ namespace Rock.Workflow.Action
                                     Guid personAliasGuid = toAttributeValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        var personAlias = new PersonAliasService( rockContext ).Get(personAliasGuid);
-                                        List<string> devices = new PersonalDeviceService(rockContext).Queryable()
-                                            .Where(a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.NotificationsEnabled)
-                                            .Select(a => a.DeviceRegistrationId)
+                                        var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
+                                        List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
+                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.NotificationsEnabled )
+                                            .Select( a => a.DeviceRegistrationId )
                                             .ToList();
 
-                                        string deviceIds = String.Join(",", devices);
+                                        string deviceIds = String.Join( ",", devices );
 
                                         if ( devices.Count == 0 )
                                         {
@@ -96,7 +97,7 @@ namespace Rock.Workflow.Action
                                             recipients.Add( recipient );
                                             if ( person != null )
                                             {
-                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey , person );
+                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
                                         }
                                     }
@@ -137,9 +138,9 @@ namespace Rock.Workflow.Action
                                                 .Select( p => p.DeviceRegistrationId )
                                                 .ToList();
 
-                                            string deviceIds = String.Join(",", devices);
-                                               
-                                            if ( deviceIds.AsBoolean() )
+                                            string deviceIds = String.Join( ",", devices );
+
+                                            if ( deviceIds.IsNotNullOrWhiteSpace() )
                                             {
                                                 var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
                                                 recipients.Add( recipient );
@@ -157,7 +158,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( RockPushMessageRecipient.CreateAnonymous ( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
+                    recipients.Add( RockPushMessageRecipient.CreateAnonymous( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
                 }
             }
 
@@ -216,18 +217,39 @@ namespace Rock.Workflow.Action
             }
             sound = sound.AsBoolean() ? "default" : "";
 
-            if ( recipients.Any() && !string.IsNullOrWhiteSpace(message) )
+            string url = GetAttributeValue( action, "Url" );
+            Guid urlGuid = url.AsGuid();
+            if ( !urlGuid.IsEmpty() )
+            {
+                var attribute = AttributeCache.Get( urlGuid, rockContext );
+                if ( attribute != null )
+                {
+                    string urlAttributeValue = action.GetWorkflowAttributeValue( urlGuid );
+                    if ( !string.IsNullOrWhiteSpace( urlAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
+                        {
+                            url = urlAttributeValue;
+                        }
+                    }
+                }
+            }
+            PushData pushData = new PushData();
+            pushData.Url = url;
+
+            if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
                 var pushMessage = new RockPushMessage();
                 pushMessage.SetRecipients( recipients );
                 pushMessage.Title = title;
                 pushMessage.Message = message;
                 pushMessage.Sound = sound;
-                pushMessage.Send();
+                pushMessage.Data = pushData;
+
+                pushMessage.Send( out errorMessages );
             }
 
             return true;
         }
     }
 }
- 
