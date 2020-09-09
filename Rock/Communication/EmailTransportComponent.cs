@@ -149,8 +149,6 @@ namespace Rock.Communication
                 var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes );
                 var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
 
-                var publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
                 var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
@@ -463,7 +461,7 @@ namespace Rock.Communication
         {
             var resultEmailMessage = new RockEmailMessage();
 
-            var publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+            var publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
             var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
             resultEmailMessage.AppRoot = publicAppRoot;

@@ -78,8 +78,6 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
-                var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;

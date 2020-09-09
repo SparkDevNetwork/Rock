@@ -451,6 +451,7 @@
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SocialMediaAccountFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
+    <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
     <Compile Include="Attribute\EntityFieldAttribute.cs" />
@@ -494,7 +495,6 @@
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
-    <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\ValueListFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowActivityTypeAttribute.cs" />
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />

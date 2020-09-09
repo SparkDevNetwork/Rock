@@ -1863,7 +1863,7 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
-                string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
                 // Add HTML view
                 // Get the unsubscribe content and add a merge field for it
@@ -2139,7 +2139,7 @@ namespace RockWeb.Blocks.Communication
                         sizingPlugin.Limits.TotalBehavior = origLimit;
                     }
 
-                    string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                     imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
@@ -2161,7 +2161,7 @@ namespace RockWeb.Blocks.Communication
                         }
                     }
 
-                    string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;

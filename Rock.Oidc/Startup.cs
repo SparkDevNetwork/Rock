@@ -58,8 +58,6 @@ namespace Rock.Oidc
                 return;
             }
 
-            publicApplicationRoot = publicApplicationRoot.EnsureTrailingForwardslash();
-
             if ( !Uri.TryCreate( publicApplicationRoot, UriKind.RelativeOrAbsolute, out var publicApplicationRootUri ) || !publicApplicationRootUri.IsAbsoluteUri )
             {
                 ExceptionLogService.LogException( "OpenID Connect Server could not start because the Public Application Root Global Attribute is invalid." );
