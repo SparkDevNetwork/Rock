@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
         "Document Type",
         Description = "The type of document that should be used for the file.",
         IsRequired = true,
+        AllowMultiple = false,
         Order = 2,
         Key = AttributeKey.DocumentType )]
 
