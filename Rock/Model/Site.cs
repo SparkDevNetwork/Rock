@@ -886,7 +886,7 @@ namespace Rock.Model
                             // Need to build out full path
                             virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
                             var globalAttributes = GlobalAttributesCache.Get();
-                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                             virtualPath = $"{publicAppRoot}{virtualPath}";
                         }
                         else

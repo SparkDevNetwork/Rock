@@ -129,6 +129,10 @@
     <Compile Include="Migrations\202009081439056_AchievementAttemptPrecision.Designer.cs">
       <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs" />
+    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.Designer.cs">
+      <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1425,6 +1429,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009081439056_AchievementAttemptPrecision.resx">
       <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.resx">
+      <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

@@ -144,7 +144,7 @@ namespace Rock.Communication.Transport
                 {
                     var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = GlobalAttributesCache.Get();
-                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string serverKey = GetAttributeValue( "ServerKey" );

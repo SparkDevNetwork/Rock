@@ -4953,9 +4953,7 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl
-                    ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash()
-                    : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
 
                 url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
             }
