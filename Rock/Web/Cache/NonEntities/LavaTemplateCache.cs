@@ -60,7 +60,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed", true )]
-        public static new LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
+        public static LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
         {
             return ItemCache<LavaTemplateCache>.GetOrAddExisting( key, null );
         }

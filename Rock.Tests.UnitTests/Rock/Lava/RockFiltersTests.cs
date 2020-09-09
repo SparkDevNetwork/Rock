@@ -791,7 +791,7 @@ a comment --> sit amet</p>";
                 dynamic output = RockFilters.Client( "Global", "browser" );
                 Assert.That.AreEqual( "Chrome", output.UserAgent.Family as string );
                 Assert.That.AreEqual( "68", output.UserAgent.Major as string );
-                Assert.That.AreEqual( "Windows 10", output.OS.Family as string );
+                Assert.That.AreEqual( "Windows", output.OS.Family as string );
             }
         }
 

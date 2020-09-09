@@ -59,21 +59,13 @@ namespace Rock.Utility
                 throw new Exception( "Data View Filter issue(s): One of the filters contains a circular reference to the Data View itself." );
             }
 
-            // Evaluate the Data View that defines the candidate population.
-            List<string> errorMessages;
-
             var personService = new PersonService( rockContext );
 
             var personQuery = personService.Queryable().AsNoTracking();
 
             var paramExpression = personService.ParameterExpression;
 
-            var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
-
-            if ( errorMessages.Any() )
-            {
-                throw new Exception( "Data View Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-            }
+            var whereExpression = dataView.GetExpression( personService, paramExpression );
 
             return personQuery.Where( paramExpression, whereExpression, null ).Select( p => p.Id ).ToDictionary( p => p, p => p );
         }

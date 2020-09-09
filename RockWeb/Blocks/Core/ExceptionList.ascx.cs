@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -286,6 +288,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            nbMessage.Visible = false;
 
             if ( !_blockContextIsValid )
             {
@@ -1250,122 +1253,151 @@ namespace RockWeb.Blocks.Administration
         /// <returns></returns>
         private void OnPopulateListItems( RockContext dataContext, Grid listControl, Dictionary<string, string> filterSettingsKeyValueMap, SortProperty sortProperty )
         {
-            // Get the summary count attribute.
-            int summaryCountDays = Convert.ToInt32( GetAttributeValue( AttributeKey.SummaryCountDays ) );
-
-            var subsetCountField = gExceptionList.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "SubsetCount" );
-
-            if ( subsetCountField != null )
+            try
             {
-                // Set the header text for the subset/summary field.
-                subsetCountField.HeaderText = string.Format( "Last {0} days", summaryCountDays );
-            }
+                dataContext.Database.CommandTimeout = 60;
+                // Get the summary count attribute.
+                int summaryCountDays = Convert.ToInt32( GetAttributeValue( AttributeKey.SummaryCountDays ) );
 
-            // Get the subset/summary date.
-            DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
+                var subsetCountField = gExceptionList.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "SubsetCount" );
 
-            // Construct the query...
-            var exceptionService = new ExceptionLogService( dataContext );
-
-            var filterQuery = exceptionService.Queryable();
-
-            // Filter by: SiteId
-            int siteId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Site, string.Empty ).AsInteger();
-
-            if ( siteId != 0 )
-            {
-                filterQuery = filterQuery.Where( e => e.SiteId == siteId );
-            }
-
-            // Filter by: PageId
-            int pageId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Page, string.Empty ).AsInteger();
-
-            if ( pageId != 0 )
-            {
-                filterQuery = filterQuery.Where( e => e.PageId == pageId );
-            }
-
-            // Filter by: PersonId
-            int userPersonID = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.User, string.Empty ).AsInteger();
-
-            if ( userPersonID != 0 )
-            {
-                filterQuery = filterQuery.Where( e => e.CreatedByPersonAlias != null && e.CreatedByPersonAlias.PersonId == userPersonID );
-            }
-
-            // Filter by: Exception Type
-            var exceptionType = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.ExceptionType, string.Empty );
-
-            if ( !string.IsNullOrEmpty( exceptionType ) )
-            {
-                filterQuery = filterQuery.Where( e => e.ExceptionType != null && e.ExceptionType.Contains( exceptionType ) );
-            }
-
-            // Filter by: Date Range
-            var dateRangeSettings = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.DateRange, string.Empty );
-
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeSettings );
-
-            if ( dateRange.Start.HasValue )
-            {
-                filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
-            }
-            if ( dateRange.End.HasValue )
-            {
-                filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
-            }
-
-            // Exclude all inner exceptions.
-            filterQuery = exceptionService.FilterByOutermost( filterQuery );
-
-            // Select data for the list items.
-            var listItemQuery = filterQuery
-                                    .GroupBy( e => new
-                                    {
-                                        Type = e.ExceptionType,
-                                        Description = e.Description.Substring( 0, ExceptionLogService.DescriptionGroupingPrefixLength )
-                                    } )
-                                    .Select( eg => new ExceptionLogViewModel
-                                    {
-                                        Id = eg.Max( e => e.Id ),
-                                        ExceptionTypeName = eg.Key.Type,
-                                        Description = eg.FirstOrDefault( e => e.Id == eg.Max( e2 => e2.Id ) ).Description,
-                                        LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
-                                        TotalCount = eg.Count(),
-                                        SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
-                                    } );
-
-            // Apply sort parameters.
-            if ( gExceptionList.SortProperty != null )
-            {
-                listItemQuery = listItemQuery.Sort( gExceptionList.SortProperty );
-            }
-            else
-            {
-                listItemQuery = listItemQuery.OrderByDescending( e => e.LastExceptionDate );
-            }
-
-            // Get the query results.
-            var exceptions = listItemQuery.ToList();
-
-            // Abbreviate the Exception Type Name to reduce the list width.
-            foreach ( var exception in exceptions )
-            {
-                var periodIndex = exception.ExceptionTypeName.LastIndexOf( "." );
-
-                if ( periodIndex > 0 )
+                if ( subsetCountField != null )
                 {
-                    exception.ExceptionTypeName = exception.ExceptionTypeName.Substring( periodIndex + 1 );
+                    // Set the header text for the subset/summary field.
+                    subsetCountField.HeaderText = string.Format( "Last {0} days", summaryCountDays );
                 }
+
+                // Get the subset/summary date.
+                DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
+
+                // Construct the query...
+                var exceptionService = new ExceptionLogService( dataContext );
+
+                var filterQuery = exceptionService.Queryable().AsNoTracking();
+
+                // Filter by: SiteId
+                int siteId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Site, string.Empty ).AsInteger();
+
+                if ( siteId != 0 )
+                {
+                    filterQuery = filterQuery.Where( e => e.SiteId == siteId );
+                }
+
+                // Filter by: PageId
+                int pageId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Page, string.Empty ).AsInteger();
+
+                if ( pageId != 0 )
+                {
+                    filterQuery = filterQuery.Where( e => e.PageId == pageId );
+                }
+
+                // Filter by: PersonId
+                int userPersonID = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.User, string.Empty ).AsInteger();
+
+                if ( userPersonID != 0 )
+                {
+                    filterQuery = filterQuery.Where( e => e.CreatedByPersonAlias != null && e.CreatedByPersonAlias.PersonId == userPersonID );
+                }
+
+                // Filter by: Exception Type
+                var exceptionType = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.ExceptionType, string.Empty );
+
+                if ( !string.IsNullOrEmpty( exceptionType ) )
+                {
+                    filterQuery = filterQuery.Where( e => e.ExceptionType != null && e.ExceptionType.Contains( exceptionType ) );
+                }
+
+                // Filter by: Date Range
+                var dateRangeSettings = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.DateRange, string.Empty );
+
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeSettings );
+
+                if ( dateRange.Start.HasValue )
+                {
+                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
+                }
+                if ( dateRange.End.HasValue )
+                {
+                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
+                }
+
+                // Exclude all inner exceptions.
+                filterQuery = exceptionService.FilterByOutermost( filterQuery );
+
+                // Select data for the list items.
+                var listItemQuery = filterQuery
+                                        .GroupBy( e => new
+                                        {
+                                            Type = e.ExceptionType,
+                                            Description = e.Description.Substring( 0, ExceptionLogService.DescriptionGroupingPrefixLength )
+                                        } )
+                                        .Select( eg => new ExceptionLogViewModel
+                                        {
+                                            Id = eg.Max( e => e.Id ),
+                                            ExceptionTypeName = eg.Key.Type,
+                                            Description = eg.FirstOrDefault( e => e.Id == eg.Max( e2 => e2.Id ) ).Description,
+                                            LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
+                                            TotalCount = eg.Count(),
+                                            SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
+                                        } );
+
+                // Apply sort parameters.
+                if ( gExceptionList.SortProperty != null )
+                {
+                    listItemQuery = listItemQuery.Sort( gExceptionList.SortProperty );
+                }
+                else
+                {
+                    listItemQuery = listItemQuery.OrderByDescending( e => e.LastExceptionDate );
+                }
+
+                // Get the query results.
+                var exceptions = listItemQuery.ToList();
+
+                // Abbreviate the Exception Type Name to reduce the list width.
+                foreach ( var exception in exceptions )
+                {
+                    var periodIndex = exception.ExceptionTypeName.LastIndexOf( "." );
+
+                    if ( periodIndex > 0 )
+                    {
+                        exception.ExceptionTypeName = exception.ExceptionTypeName.Substring( periodIndex + 1 );
+                    }
+                }
+
+                // Populate the grid.
+                gExceptionList.DataSource = exceptions;
+
+                gExceptionList.DataBind();
+
+                // Update the chart.
+                InitializeCharts();
+            }
+            catch ( Exception ex )
+            {
+                nbMessage.Text = "An error occurred while trying to retrieve the list of exceptions. Please use the filter to reduce the amount of exceptions.";
+                nbMessage.Details = ex.Message + "<pre>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</pre>" + FlattenInnerExceptions(ex);
+                nbMessage.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Flattens exception's inner exceptions and returns an HTML formatted string
+        /// useful for debugging.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string FlattenInnerExceptions( Exception ex )
+        {
+            StringBuilder sb = new StringBuilder();
+            while ( ex != null && ex.InnerException != null )
+            {
+                sb.AppendLine( ex.InnerException.Message.ConvertCrLfToHtmlBr() +
+                    ( ( ex.InnerException.StackTrace != null ) ? "<pre>" + HttpUtility.HtmlEncode( ex.InnerException.StackTrace ) + "</pre>" : string.Empty ) );
+                ex = ex.InnerException;
             }
 
-            // Populate the grid.
-            gExceptionList.DataSource = exceptions;
-
-            gExceptionList.DataBind();
-
-            // Update the chart.
-            InitializeCharts();
+            return sb.ToString();
         }
 
         /// <summary>

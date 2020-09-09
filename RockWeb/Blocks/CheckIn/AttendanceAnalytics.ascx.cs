@@ -31,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -1473,10 +1474,9 @@ function(item) {
                     var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
-                        var errorMessages = new List<string>();
                         var dvPersonService = new PersonService( _rockContext );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
                         SortProperty sort = null;
                         var dataViewPersonIdQry = dvPersonService
@@ -1929,33 +1929,16 @@ function(item) {
         private void LogAndShowException( Exception exception )
         {
             LogException( exception );
-            string errorMessage = null;
-            string stackTrace = string.Empty;
-            while ( exception != null )
+            Exception sqlException = ReportingHelper.FindSqlTimeoutException( exception );
+            if ( sqlException != null )
             {
-                errorMessage = exception.Message;
-                stackTrace += exception.StackTrace;
-                if ( exception is System.Data.SqlClient.SqlException )
-                {
-                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                    {
-                        errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
-                        break;
-                    }
-                    else
-                    {
-                        exception = exception.InnerException;
-                    }
-                }
-                else
-                {
-                    exception = exception.InnerException;
-                }
+                nbAttendeesError.Text = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
+                nbAttendeesError.Visible = true;
+                return;
             }
 
-            nbAttendeesError.Text = errorMessage;
-            nbAttendeesError.Details = stackTrace;
+            nbAttendeesError.Text = "An error occurred";
+            nbAttendeesError.Details = exception.Message;
             nbAttendeesError.Visible = true;
         }
 

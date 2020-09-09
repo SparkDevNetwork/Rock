@@ -721,5 +721,21 @@ namespace Rock.SystemGuid
         /// The phone number text message template
         /// </summary>
         public const string PHONE_NUMBER_TEXT_MESSAGE_TEMPLATE = "7F12E9B4-0CD1-42C8-AE68-457212B0B459";
+
+        /// <summary>
+        /// The oidc scope list detail page
+        /// </summary>
+        public const string OIDC_SCOPE_LIST_DETAIL_PAGE = "4F4943D5-80D7-4472-B1D6-0AEA14B13CE1";
+
+        /// <summary>
+        /// The oidc client list detail page
+        /// </summary>
+        public const string OIDC_CLIENT_LIST_DETAIL_PAGE = "B889F2F5-800B-455C-A6E3-28E1AB6BE7BA";
+
+        /// <summary>
+        /// The oidc client list scope page
+        /// </summary>
+        public const string OIDC_CLIENT_LIST_SCOPE_PAGE = "EF07798E-48D4-4261-97B2-501A8AD54E15";
+        
     }
 }

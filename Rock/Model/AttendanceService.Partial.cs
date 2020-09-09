@@ -315,9 +315,8 @@ namespace Rock.Model
                 {
                     var personService = new PersonService( rockContext );
 
-                    var errorMessages = new List<string>();
                     var paramExpression = personService.ParameterExpression;
-                    var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var whereExpression = dataView.GetExpression( personService, paramExpression );
 
                     Rock.Web.UI.Controls.SortProperty sort = null;
                     var dataViewPersonIdQry = personService
@@ -904,8 +903,12 @@ namespace Rock.Model
 
                 if ( dataView != null )
                 {
-                    List<string> errorMessages;
-                    personQry = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<Person>;
+                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DbContext = rockContext
+                    };
+
+                    personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                 }
             }
 

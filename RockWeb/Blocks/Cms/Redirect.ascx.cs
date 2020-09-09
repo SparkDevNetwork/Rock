@@ -51,6 +51,15 @@ namespace RockWeb.Blocks.Cms
         Order = 2,
         Key = AttributeKey.Network )]
 
+    [BooleanField(
+        "Permanent Redirect",
+        Description = "If enabled, the redirect will be performed with a 301 status code which will indicate to search engines that this page has permanently moved to the new location. <span class='badge badge-warning'>Do not enable if using Lava.</span>",
+        IsRequired = false,
+        Order = 3,
+        DefaultBooleanValue = false,
+        ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKey.PermanentRedirect )]
+
     #endregion
     public partial class Redirect : Rock.Web.UI.RockBlock
     {
@@ -61,6 +70,7 @@ namespace RockWeb.Blocks.Cms
             public const string Url = "Url";
             public const string RedirectWhen = "RedirectWhen";
             public const string Network = "Network";
+            public const string PermanentRedirect = "PermanentRedirect";
         }
 
         #endregion Attribute Keys
@@ -147,7 +157,16 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                Response.Redirect( resolvedUrl, false );
+                if ( GetAttributeValue( AttributeKey.PermanentRedirect ).AsBoolean() )
+                {
+                    // Enforce browser only cache of only 5 minutes in case the admin messed up.
+                    Response.Cache.SetMaxAge( TimeSpan.FromSeconds( 300 ) );
+                    Response.RedirectPermanent( resolvedUrl, false );
+                }
+                else
+                {
+                    Response.Redirect( resolvedUrl, false );
+                }
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }

@@ -678,9 +678,8 @@ namespace Rock.Model
                 var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
                 foreach ( var segmentDataView in segmentDataViewList )
                 {
-                    List<string> errorMessages;
 
-                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var exp = segmentDataView.GetExpression( personService, paramExpression );
                     if ( exp != null )
                     {
                         if ( segmentExpression == null )

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [BooleanField(
         "Enable Live Refresh",
         Key = AttributeKey.EnableLiveRefresh,
-        Description = "The Email address to show.",
+        Description = "When enabled, the page content will automatically refresh based on the 'Refresh Interval' setting.",
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 0 )]
@@ -99,7 +99,6 @@ namespace RockWeb.Blocks.GroupScheduling
 
             // by default, the roster only shows for the current date, but this can override that
             public const string OccurrenceDate = "OccurrenceDate";
-
         }
 
         #endregion PageParameterKeys
@@ -112,14 +111,6 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         #endregion PageParameterKeys
-
-        #region Fields
-
-        #endregion
-
-        #region Properties
-
-        #endregion
 
         #region Base Control Methods
 
@@ -305,6 +296,7 @@ namespace RockWeb.Blocks.GroupScheduling
             // Only use teh ShowChildGroups option when there is 1 group selected
             if ( rosterConfiguration.IncludeChildGroups && pickedGroupIds.Count == 1 )
             {
+                // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                 var parentGroupId = pickedGroupIds[0];
                 var groupService = new GroupService( rockContext );
 
@@ -332,8 +324,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 .Where( a =>
                     allGroupIds.Contains( a.GroupId.Value )
                     && a.OccurrenceDate == occurrenceDate
-                    && scheduleIds.Contains( a.ScheduleId.Value )
-                    );
+                    && scheduleIds.Contains( a.ScheduleId.Value ) );
 
             // if specific locations are specified, use those, otherwise just show all
             if ( locationIds.Any() )

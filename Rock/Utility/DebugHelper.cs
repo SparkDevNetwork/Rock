@@ -208,7 +208,24 @@ namespace Rock
 
                         if ( p.SqlDbType == System.Data.SqlDbType.Int )
                         {
-                            return string.Format( "@{0} {1} = {2}", p.ParameterName, p.SqlDbType, p.SqlValue ?? "null" );
+                            Type valueType = p.Value?.GetType();
+                            object numericValue;
+
+                            // if this is a nullable enum, we'll have to look at p.Value instead of p.SqlValue to see what is really getting passed to SQL
+                            if ( valueType?.IsEnum == true && p.Value != null )
+                            {
+                                /* If this is an enum (for example GroupMemberStatus.Active), show the numeric 
+                                 * value getting passed to SQL
+                                 * p.Value will be the Enum, so convert it to int;
+                                 */
+                                numericValue = ( int ) p.Value;
+                            }
+                            else
+                            {
+                                numericValue = p.SqlValue;
+                            }
+
+                            return $"@{p.ParameterName} {p.SqlDbType} = {numericValue.ToString() ?? "null" }";
                         }
                         else if ( p.SqlDbType == System.Data.SqlDbType.Udt )
                         {

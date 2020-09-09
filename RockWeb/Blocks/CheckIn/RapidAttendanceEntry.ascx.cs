@@ -1466,7 +1466,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 var group = new GroupService( rockContext ).Get( groupId.Value );
                 var groupLocation = new GroupLocationService( rockContext ).Get( ddlLocation.SelectedValue.AsInteger() );
-                var schedules = groupLocation.Schedules.ToList();
+                var schedules = groupLocation.Schedules.Where( a => a.IsActive ).ToList();
 
                 // TODO: Should keep?
                 if ( group.Schedule != null )
@@ -1520,8 +1520,39 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                ShowMainPanel( PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull() );
+                if ( IsAttendanceSettingValid() )
+                {
+                    ShowMainPanel( PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    _attendanceSettingState = null;
+                    SelectedPersonId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+                    ShowAttendanceSetting();
+                }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the attendance setting is valid.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsAttendanceSettingValid()
+        {
+            var rockContext = new RockContext();
+            var groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
+            if ( groupLocation == null )
+            {
+                return false;
+            }
+
+            var schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
+            if ( schedule == null || !schedule.IsActive )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -12,6 +12,7 @@
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbBlockConfigurationWarning" runat="server" NotificationBoxType="Warning" Text="Please set the Entity Type in block settings" Visible="false" />
+                <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-4">
                         <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Dataview" OnSelectItem="FilterChanged" />

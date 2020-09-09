@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Report Filter control
+    /// DataView Filter control
     /// </summary>
     [ToolboxData( "<{0}:FilterField runat=server></{0}:FilterField>" )]
     public class FilterField : CompositeControl
@@ -42,6 +42,19 @@ namespace Rock.Web.UI.Controls
         /// The filter type dropdown
         /// </summary>
         protected RockDropDownList ddlFilterType;
+
+        /// <summary>
+        /// The database filter error
+        /// </summary>
+        protected NotificationBox nbFilterError;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [filter has error].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [filter has error]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasFilterError { get; private set; } = false;
 
         /// <summary>
         /// The delte button
@@ -237,6 +250,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The entity fields override.
         /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
         public Rock.Data.IEntity Entity { get; set; }
 
         /// <summary>
@@ -500,7 +515,11 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
             if ( component != null )
             {
-                return component.GetRelatedDataViewId( filterControls );
+                var relatedDataViewId = component.GetRelatedDataViewId( filterControls );
+                if ( relatedDataViewId.HasValue && relatedDataViewId > 0 )
+                {
+                    return relatedDataViewId;
+                }
             }
 
             return null;
@@ -517,19 +536,25 @@ namespace Rock.Web.UI.Controls
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
+            nbFilterError = new NotificationBox();
+            nbFilterError.ID = this.ID + "_nbFilterError";
+            nbFilterError.Visible = false;
+            HasFilterError = false;
+
+            var filterEntityType = EntityTypeCache.Get( FilterEntityTypeName );
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                if ( component is Reporting.DataFilter.PropertyFilter )
-                {
-                    ( component as Reporting.DataFilter.PropertyFilter ).Entity = this.Entity;
-                }
-
                 component.Options = FilterOptions;
                 filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }
             else
             {
+                nbFilterError.NotificationBoxType = NotificationBoxType.Danger;
+                nbFilterError.Text = $"Unable to determine filter component for {FilterEntityTypeName}. ";
+                nbFilterError.Visible = true;
+                HasFilterError = true;
+                Controls.Add( nbFilterError );
                 filterControls = new Control[0];
             }
 
@@ -539,6 +564,12 @@ namespace Rock.Web.UI.Controls
             ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
 
             ddlFilterType.Items.Clear();
+            if ( HasFilterError )
+            {
+                // if there is a FilterError, the filter component might not be listed, so it shows that nothing is selected if filtertype can't be found
+                ddlFilterType.Items.Add( new ListItem() );
+            }
+
             if ( AuthorizedComponents != null )
             {
                 foreach ( var section in AuthorizedComponents )
@@ -622,8 +653,9 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( component == null )
+            if ( component == null || HasFilterError )
             {
+                writer.Write( "<a name='filtererror'></a>" );
                 hfExpanded.Value = "True";
             }
 
@@ -656,7 +688,22 @@ namespace Rock.Web.UI.Controls
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, this.GetSelection() ) : "Select Filter" );
+
+                string filterHeaderSelectionHtml;
+                if ( HasFilterError )
+                {
+                    filterHeaderSelectionHtml = "<span class='label label-danger'>Filter has an error</span>";
+                }
+                else if ( component != null )
+                {
+                    filterHeaderSelectionHtml = component.FormatSelection( FilteredEntityType, this.GetSelection() );
+                }
+                else
+                {
+                    filterHeaderSelectionHtml = "Select Filter";
+                }
+
+                writer.Write( filterHeaderSelectionHtml );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
@@ -721,6 +768,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( Label );
                 writer.RenderEndTag();  // label
+            }
+
+            if ( HasFilterError )
+            {
+                nbFilterError.RenderControl( writer );
             }
 
             if ( component != null && !HideFilterCriteria )

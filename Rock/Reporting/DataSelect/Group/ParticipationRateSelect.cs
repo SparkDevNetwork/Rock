@@ -167,20 +167,13 @@ namespace Rock.Reporting.DataSelect.Group
             }
 
             // Evaluate the Data View that defines the candidate population.
-            List<string> errorMessages;
-
             var personService = new PersonService( context );
 
             var personQuery = personService.Queryable();
 
             var paramExpression = personService.ParameterExpression;
 
-            var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
-
-            if ( errorMessages.Any() )
-            {
-                throw new Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-            }
+            var whereExpression = dataView.GetExpression( personService, paramExpression );
 
             personQuery = personQuery.Where( paramExpression, whereExpression, null );
 
