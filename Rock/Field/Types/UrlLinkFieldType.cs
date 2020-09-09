@@ -61,7 +61,7 @@ namespace Rock.Field.Types
             controls.Add( cbShouldRequireTrailingForwardSlash );
             cbShouldRequireTrailingForwardSlash.AutoPostBack = true;
             cbShouldRequireTrailingForwardSlash.Label = "Ensure Trailing Forward Slash";
-            cbShouldRequireTrailingForwardSlash.Help = "Will ensure that the URL ends with a forward slash (/).";
+            cbShouldRequireTrailingForwardSlash.Help = "When set, the URL must end with a forward slash (/) to be valid.";
 
             return controls;
         }
@@ -75,7 +75,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ConfigurationKey.ShouldRequireTrailingForwardSlash, new ConfigurationValue( "Ensure Trailing Forward Slash",
-                "Will ensure that the URL ends with a forward slash (/).", "false" ) );
+                "When set, the URL must end with a forward slash (/) to be valid.", "false" ) );
 
             if ( controls != null && controls.Count == 1 )
             {

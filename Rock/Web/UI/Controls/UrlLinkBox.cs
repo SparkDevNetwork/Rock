@@ -32,6 +32,7 @@ namespace Rock.Web.UI.Controls
         // Modified from link above to support urls like "http://localhost:6229/Person/1/Edit" (Url does not have a period)
         private readonly string _regexUrl = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*$";
         private readonly string _regexUrlWithTrailingForwardSlash = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*\/$";
+        private readonly string _validationErrorMessage = "The link provided is not valid.";
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -71,7 +72,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShouldRequireTrailingForwardSlash { get; set; }
 
-        private string getUrlRegEx()
+        /// <summary>
+        /// Gets the regular expression for validating the URL depending on whether or not
+        /// the trailing forward slash is required.
+        /// </summary>
+        /// <returns></returns>
+        private string GetUrlRegEx()
         {
             if ( ShouldRequireTrailingForwardSlash )
             {
@@ -79,6 +85,21 @@ namespace Rock.Web.UI.Controls
             }
             return _regexUrl;
         }
+
+        /// <summary>
+        /// Gets the validation error message for value depending on whether or not
+        /// the trailing forward slash is required.
+        /// </summary>
+        /// <returns></returns>
+        private string GetValidationErrorMessage()
+        {
+            if ( ShouldRequireTrailingForwardSlash )
+            {
+                return _validationErrorMessage + " Please ensure the URL ends with a forward slash.";
+            }
+            return _validationErrorMessage;
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -91,8 +112,8 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            _regexValidator.ValidationExpression = getUrlRegEx();
-            _regexValidator.ErrorMessage = "The link provided is not valid";
+            _regexValidator.ValidationExpression = GetUrlRegEx();
+            _regexValidator.ErrorMessage = GetValidationErrorMessage();
             Controls.Add( _regexValidator );
         }
 
@@ -123,8 +144,8 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderDataValidator( writer );
 
-            _regexValidator.ValidationExpression = getUrlRegEx();
-            _regexValidator.ErrorMessage = "The link provided is not valid";
+            _regexValidator.ValidationExpression = GetUrlRegEx();
+            _regexValidator.ErrorMessage = GetValidationErrorMessage();
 
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );
