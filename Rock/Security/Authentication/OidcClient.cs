@@ -17,6 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
@@ -530,6 +532,25 @@ namespace Rock.Security.ExternalAuthentication
                         bytes = photoResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
                         contentType = photoResponse.Content.Headers.ContentType.MediaType;
                         photoExtension = GetValidExtensionFromContentType( contentType );
+
+                        // if content type is empty assume jpeg.
+                        if ( contentType.IsNullOrWhiteSpace() )
+                        {
+                            using ( MemoryStream mem = new MemoryStream( bytes ) )
+                            {
+                                using ( var yourImage = Image.FromStream( mem ) )
+                                {
+                                    contentType = "image/jpeg";
+                                    photoExtension = "jpg";
+
+                                    using ( MemoryStream tempImage = new MemoryStream() )
+                                    {
+                                        yourImage.Save( tempImage, ImageFormat.Jpeg );
+                                        bytes = tempImage.ToArray();
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
