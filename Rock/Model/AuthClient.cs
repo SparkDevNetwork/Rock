@@ -25,7 +25,7 @@ namespace Rock.Model
     /// Represents an Authentication Client
     /// </summary>
 
-    [RockDomain( "Auth" )]
+    [RockDomain( "Core" )]
     [Table( "AuthClient" )]
     [DataContract]
     public class AuthClient : Model<AuthClient>, IHasActiveFlag

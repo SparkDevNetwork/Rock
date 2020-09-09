@@ -26,7 +26,7 @@ namespace Rock.Model
     /// </summary>
     /// <seealso cref="Model{AuthScope}" />
     /// <seealso cref="Rock.Data.IHasActiveFlag" />
-    [RockDomain( "Auth" )]
+    [RockDomain( "Core" )]
     [Table( "AuthScope" )]
     [DataContract]
     public class AuthScope : Model<AuthScope>, IHasActiveFlag
