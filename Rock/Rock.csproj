@@ -546,8 +546,10 @@
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
+    <Compile Include="Jobs\JobMigration.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
+    <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />

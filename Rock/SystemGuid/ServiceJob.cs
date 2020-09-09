@@ -97,6 +97,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID = "C3882742-714B-4E82-8894-4B944142CDC7";
 
         /// <summary>
+        /// The Job to run Post v12 to update interaction indexes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES = "090CB437-F74B-49B0-8B51-BF2A491DD36D";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
