@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// This job is used to convert a history record's Summary to the actual fields that were added in v8. Once all the values have been converted, this job will delete itself.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisplayName( "Migrate History Summary Data" )]
+    [DisplayName( "Rock Update Helper v8.0 - Migrate History Summary Data" )]
     [Description( "This job is used to convert a history record's Summary to the actual fields that were added in v8. Once all the values have been converted, this job will delete itself." )]
 
     [DisallowConcurrentExecution]

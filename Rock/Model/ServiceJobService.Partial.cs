@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.Compilation;
 
 using Quartz;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -114,6 +115,26 @@ namespace Rock.Model
                 .Build();
 
             return trigger;
+        }
+
+        /// <summary>
+        /// Deletes the job.
+        /// </summary>
+        /// <param name="jobId">The job identifier.</param>
+        public static void DeleteJob( int jobId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var jobService = new ServiceJobService( rockContext );
+                var job = jobService.Get( jobId );
+
+                if ( job != null )
+                {
+                    jobService.Delete( job );
+                    rockContext.SaveChanges();
+                    return;
+                }
+            }
         }
     }
 }
