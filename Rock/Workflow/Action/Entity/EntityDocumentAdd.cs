@@ -39,7 +39,7 @@ namespace Rock.Workflow.Action
 
     [DocumentTypeField(
         "Document Type",
-        Description = "The type of document that should be used for the file.",
+        Description = "The type of document that should be used for the file.  The type selected must be a type that is valid for the selected Entity Type above.",
         IsRequired = true,
         AllowMultiple = false,
         Order = 2,
@@ -47,7 +47,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Document Attribute",
-        Description = "The workflow attribute that contains the doocument.",
+        Description = "The workflow attribute that contains the document.",
         IsRequired = true,
         Order = 3,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType" },
@@ -146,7 +146,7 @@ namespace Rock.Workflow.Action
             var documentype = documentypesForContextEntityType.FirstOrDefault( d => attributeFilteredDocumentType == d.Id );
             if ( documentype == null )
             {
-                var message = string.Format( "Document Type not matching the entity type." );
+                var message = string.Format( "The Document Type does not match the selected entity type." );
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
@@ -156,10 +156,12 @@ namespace Rock.Workflow.Action
 
             if ( binaryFile == null )
             {
-                action.AddLogEntry( "The document to add to the entity was not be found.", true );
-                return true; // returning true here to allow the action to run 'successfully' without a document. This allows the action to be easily used when the document is optional without a bunch of action filter tests.
-            }
+                action.AddLogEntry( "The document to add to the entity was not found.", true );
 
+                // returning true here to allow the action to run 'successfully' without a document.
+                // This allows the action to be easily used when the document is optional without a bunch of action filter tests.
+                return true; 
+            }
 
             var documentService = new DocumentService( rockContext );
             var document = new Document();
