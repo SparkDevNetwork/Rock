@@ -62,7 +62,7 @@ namespace Rock.Field.Types
             cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
             cbAllowMultipleValues.Label = "Allow Multiple Values";
             cbAllowMultipleValues.Text = "Yes";
-            cbAllowMultipleValues.Help = "When set, allows multiple location types to be selected.";
+            cbAllowMultipleValues.Help = "When set, allows multiple document types to be selected.";
 
             return controls;
         }
@@ -75,11 +75,11 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple location types to be selected.", "True" ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple document types to be selected.", "True" ) );
 
             if ( controls != null )
             {
-                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[0] as CheckBox : null;
+                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
 
                 if ( cbAllowMultipleValues != null )
                 {
@@ -99,7 +99,7 @@ namespace Rock.Field.Types
         {
             if ( controls != null && configurationValues != null )
             {
-                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[0] as CheckBox : null;
+                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
 
                 if ( cbAllowMultipleValues != null )
                 {
