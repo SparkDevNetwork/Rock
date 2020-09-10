@@ -1553,7 +1553,8 @@ namespace Rock.Web.UI
         /// </summary>
         private void VerifyBlockTypeInstanceProperties()
         {
-            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id ).ToList();
+            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id );
+
             if ( !blockTypesIdToVerify.Any() )
             {
                 return;
