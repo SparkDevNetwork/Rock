@@ -24,7 +24,7 @@ namespace Rock.Workflow.Action
 
     [EntityTypeField(
         "Entity Type",
-        Description = "The type of entity the document will be applied to.",
+        Description = "The type of entity the document will be applied to. Rock only supports Person, Group, and Group Member at this time.",
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.EntityType )]
@@ -32,9 +32,10 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute(
         "Entity Id or Guid",
         "Entity Attribute",
-        Description = "The Id or Guid of the Entity <span class='tip tip-lava'></span>.",
+        Description = "The Id or Guid of the Entity. Rock only supports Person, Group, and Group Member at this time. <span class='tip tip-lava'></span>.",
         IsRequired = true,
         Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupMemberFieldType" },
         Key = AttributeKey.EntityIdOrGuid )]
 
     [DocumentTypeField(
@@ -123,6 +124,12 @@ namespace Rock.Workflow.Action
             if ( entityGuid.HasValue )
             {
                 entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
+
+                if ( entityObject == null && entityType.GetEntityType() == typeof( Rock.Model.Person ) )
+                {
+                    var personAliasService = new PersonAliasService( _rockContext );
+                    entityObject = personAliasService.GetPerson( entityGuid.Value );
+                }
             }
             else
             {
@@ -160,7 +167,7 @@ namespace Rock.Workflow.Action
 
                 // returning true here to allow the action to run 'successfully' without a document.
                 // This allows the action to be easily used when the document is optional without a bunch of action filter tests.
-                return true; 
+                return true;
             }
 
             var documentService = new DocumentService( rockContext );
