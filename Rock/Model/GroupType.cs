@@ -1161,6 +1161,43 @@ namespace Rock.Model
             return groupTypeIds;
         }
 
+        public List<int> GetAllDependentGroupTypeIds( Rock.Data.RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeIds = new List<int>(10);
+
+            var groupType = this;
+
+            //
+            // Loop until we find a recursive loop or run out of parent group types.
+            //
+            List<int> childGroupTypeIds = null;
+            do
+            {
+                if ( childGroupTypeIds == null )
+                {
+                    childGroupTypeIds = groupTypeService
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( t => t.InheritedGroupTypeId == groupType.Id )
+                                    .Select( t => t.Id ).ToList();
+                } else
+                {
+                    childGroupTypeIds = groupTypeService
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( t => t.InheritedGroupTypeId != null && childGroupTypeIds.Contains(t.InheritedGroupTypeId.Value) )
+                                    .Select( t => t.Id ).ToList();
+                }
+                groupTypeIds.AddRange( childGroupTypeIds );
+
+            } while ( childGroupTypeIds.Count > 0 );
+
+            return groupTypeIds;
+        }
+
         /// <summary>
         /// Gets a list of all attributes defined for the GroupTypes specified that
         /// match the entityTypeQualifierColumn and the GroupType Ids.
