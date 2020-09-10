@@ -7,12 +7,12 @@ body {
   background-color: @background-color;
   -ms-content-zooming: none; /* Disables zooming */
 
-  & when not (@logo-image-url = "") {
+  & when not (@logo-image = "") {
     &::before {
       display: block;
       height: 52px;
       content: " ";
-      background: url(@logo-image-url);
+      background: url(@logo-image);
       background-color: transparent;
       background-repeat: no-repeat;
       background-position: 50%;

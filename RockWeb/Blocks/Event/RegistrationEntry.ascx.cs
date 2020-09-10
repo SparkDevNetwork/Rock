@@ -774,10 +774,17 @@ namespace RockWeb.Blocks.Event
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
-                                        // Redirect for Digital Signature Cookie Initialization
+                                        // Redirect to the digital signature provider page to initialize a cookie.
+                                        // The returnUrl specifies the current Rock page as the address to return to once the cookie has been created.
                                         var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "Redirected=True";
-                                        string redirectUrl = string.Format( "{0}?Redirect_Uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
+
+                                        /*
+                                         *[2020-08-26] DL
+                                         * The SignNow provider requires that the "redirect_uri" parameter be specified in lowercase.
+                                         * If this causes a problem with any other providers, we may need to add a placeholder token for the redirect parameter value to the CookieInitializationUrl instead.
+                                         */
+                                        string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
                                     }
                                     else
@@ -1583,6 +1590,11 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     validDiscount = false;
+                }
+
+                if ( validDiscount )
+                {
+                    ShowDiscountAppliedNotificationBox( discount );
                 }
 
                 RegistrationState.DiscountCode = validDiscount ? discountCode : string.Empty;
@@ -3087,9 +3099,7 @@ namespace RockWeb.Blocks.Event
                     // Save the signed document
                     try
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue &&
-                            !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) &&
-                            registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
                         {
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
@@ -3101,10 +3111,26 @@ namespace RockWeb.Blocks.Event
                             document.Status = SignatureDocumentStatus.Signed;
                             document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
                             document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
-                            documentService.Add( document );
-                            rockContext.SaveChanges();
 
-                            registrantInfo.SignatureDocumentId = document.Id;
+                            if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                            {
+                                // This document has already been saved, probably on a previous save where a credit card processing error occurred.
+                                // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
+                                document.Id = registrantInfo.SignatureDocumentId.Value;
+                                documentService.Add( document );
+                                rockContext.SaveChanges();
+                            }
+                            else
+                            {
+                                documentService.Add( document );
+
+                                // Save the changes to get the document ID
+                                rockContext.SaveChanges();
+
+                                // Set the registrant info and then save again
+                                registrantInfo.SignatureDocumentId = document.Id;
+                                rockContext.SaveChanges();
+                            }
 
                             var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
@@ -3159,6 +3185,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
+            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            {
+                person.PrimaryCampusId = campusId;
+                rockContext.SaveChanges();
+            }
+
             int? familyId = null;
 
             if ( person.Id > 0 )
@@ -3214,42 +3246,53 @@ namespace RockWeb.Blocks.Event
             }
 
             // If we have family ID and a meaninful location then update that info
-            if ( familyId.HasValue && location != null && location.IsMinimumViableAddress() )
+            if ( familyId.HasValue )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
-                var existingLocation = new LocationService( rockContext ).Get(
-                    location.Street1,
-                    location.Street2,
-                    location.City,
-                    location.State,
-                    location.PostalCode,
-                    location.Country,
-                    familyGroup,
-                    true,
-                    false );
 
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null && familyGroup != null )
+                if ( !familyGroup.CampusId.HasValue && campusId.HasValue )
                 {
-                    if ( existingLocation != null )
+                    familyGroup.CampusId = campusId;
+                    rockContext.SaveChanges();
+                }
+
+                if ( location != null && location.IsMinimumViableAddress() )
+                {
+
+                    var existingLocation = new LocationService( rockContext ).Get(
+                        location.Street1,
+                        location.Street2,
+                        location.City,
+                        location.State,
+                        location.PostalCode,
+                        location.Country,
+                        familyGroup,
+                        true,
+                        false );
+
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null && familyGroup != null )
                     {
-                        // A location exists but is not associated with this family group
-                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
-                    }
-                    else
-                    {
-                        // Create a new location and save it to the family group
-                        GroupService.AddNewGroupAddress(
-                            rockContext,
-                            familyGroup,
-                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                            location.Street1,
-                            location.Street2,
-                            location.City,
-                            location.State,
-                            location.PostalCode,
-                            location.Country,
-                            true );
+                        if ( existingLocation != null )
+                        {
+                            // A location exists but is not associated with this family group
+                            GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                        }
+                        else
+                        {
+                            // Create a new location and save it to the family group
+                            GroupService.AddNewGroupAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1,
+                                location.Street2,
+                                location.City,
+                                location.State,
+                                location.PostalCode,
+                                location.Country,
+                                true );
+                        }
                     }
                 }
             }
@@ -5156,6 +5199,30 @@ namespace RockWeb.Blocks.Event
         #region Summary/Payment Controls
 
         /// <summary>
+        /// Shows the discount applied notification box with information about the discount and its application.
+        /// </summary>
+        /// <param name="discount">The discount.</param>
+        private void ShowDiscountAppliedNotificationBox( RegistrationTemplateDiscount discount )
+        {
+            string discountRegistrantNumberString = "for all registrants";
+
+            if ( discount.MaxRegistrants.IsNotNullOrZero() )
+            {
+                if ( RegistrationState.RegistrantCount > discount.MaxRegistrants )
+                {
+                    discountRegistrantNumberString = discount.MaxRegistrants == 1 ? "for 1 registrant" : string.Format( "for {0} registrants", discount.MaxRegistrants );
+                }
+            }
+
+            string discountTypeAndAmountString = discount.DiscountPercentage > 0.0m ? discount.DiscountPercentage.FormatAsPercent() : discount.DiscountAmount.FormatAsCurrency();
+            string appliedTypeString = discount.AutoApplyDiscount ? "automatically" : "successfully";
+
+            nbDiscountCode.Visible = true;
+            nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
+            nbDiscountCode.Text = string.Format( "Your {0} {1} {2} was {3} applied.", discountTypeAndAmountString, DiscountCodeTerm.ToLower(), discountRegistrantNumberString, appliedTypeString );
+        }
+
+        /// <summary>
         /// Creates the summary controls.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
@@ -5299,6 +5366,10 @@ namespace RockWeb.Blocks.Event
                             nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
                             nbDiscountCode.Visible = true;
                         }
+                        else
+                        {
+                            ShowDiscountAppliedNotificationBox( discount );
+                        }
                     }
 
                     tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
@@ -5334,38 +5405,56 @@ namespace RockWeb.Blocks.Event
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach ( var registrant in RegistrationState.Registrants )
                 {
-                    var costSummary = new RegistrationCostSummaryInfo();
-                    costSummary.Type = RegistrationCostSummaryType.Cost;
-                    costSummary.Description = string.Format(
-                        "{0} {1}",
-                        registrant.GetFirstName( RegistrationTemplate ),
-                        registrant.GetLastName( RegistrationTemplate ) );
+                    // Use this to hold the amount of discount remaining if the discount is greater than the registrant cost. The remaining dollars can be applied to eligable fees.
+                    decimal discountAmountRemaining = 0.0m;
 
+                    // The registrant name for the payment summary grid
+                    var costSummary = new RegistrationCostSummaryInfo
+                    {
+                        Type = RegistrationCostSummaryType.Cost,
+                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) )
+                    };
+
+                    // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
                     if ( registrant.OnWaitList )
                     {
                         costSummary.Description += " (Waiting List)";
-                        costSummary.Cost = 0.0M;
-                        costSummary.DiscountedCost = 0.0M;
-                        costSummary.MinPayment = 0.0M;
-                        costSummary.DefaultPayment = 0.0M;
+                        costSummary.Cost = 0.0m;
+                        costSummary.DiscountedCost = 0.0m;
+                        costSummary.MinPayment = 0.0m;
+                        costSummary.DefaultPayment = 0.0m;
                     }
                     else
                     {
+                        // Add the registrant cost to the cost summary
                         costSummary.Cost = registrant.Cost;
-                        if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
+
+                        // Default the DiscountedCost to the same as the actual cost
+                        costSummary.DiscountedCost = registrant.Cost;
+
+                        // Check if a discount should be applied to the registrant and set the DiscountedCost
+                        if ( registrant.DiscountApplies )
                         {
-                            if ( RegistrationState.DiscountPercentage >= 1.0m )
+                            // Apply the percentage if it exists
+                            if ( RegistrationState.DiscountPercentage > 0.0m )
                             {
-                                costSummary.DiscountedCost = 0.0m;
+                                // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
+                                costSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
                             }
-                            else
+                            else if ( RegistrationState.DiscountAmount > 0 ) // Apply the discount amount
                             {
-                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
+                                if ( RegistrationState.DiscountAmount > costSummary.Cost )
+                                {
+                                    discountAmountRemaining = RegistrationState.DiscountAmount - costSummary.Cost;
+                                    costSummary.DiscountedCost = 0.0m;
+                                }
+                                else
+                                {
+                                    // Compute the DiscountedCost using the DiscountAmount
+                                    costSummary.DiscountedCost = costSummary.Cost - RegistrationState.DiscountAmount;
+                                }
                             }
-                        }
-                        else
-                        {
-                            costSummary.DiscountedCost = costSummary.Cost;
                         }
 
                         // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
@@ -5373,11 +5462,14 @@ namespace RockWeb.Blocks.Event
                         costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
                     }
 
+                    // Add the cost to the list
                     costs.Add( costSummary );
 
                     foreach ( var fee in registrant.FeeValues )
                     {
+                        // Get the fee from the template
                         var templateFee = RegistrationTemplate.Fees.Where( f => f.Id == fee.Key ).FirstOrDefault();
+
                         if ( fee.Value != null )
                         {
                             foreach ( var feeInfo in fee.Value )
@@ -5390,30 +5482,43 @@ namespace RockWeb.Blocks.Event
                                     feeInfo.Quantity,
                                     cost.FormatAsCurrency() );
 
-                                var feeCostSummary = new RegistrationCostSummaryInfo();
-                                feeCostSummary.Type = RegistrationCostSummaryType.Fee;
-                                feeCostSummary.Description = desc;
-                                feeCostSummary.Cost = feeInfo.Quantity * cost;
+                                var feeCostSummary = new RegistrationCostSummaryInfo
+                                {
+                                    Type = RegistrationCostSummaryType.Fee,
+                                    Description = desc,
+                                    Cost = feeInfo.Quantity * cost,
 
-                                if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
+                                    // Default the DiscountedCost to be the same as the Cost
+                                    DiscountedCost = feeInfo.Quantity * cost
+                                };
+
+                                if ( templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                                 {
-                                    if ( RegistrationState.DiscountPercentage >= 1.0m )
+                                    if ( RegistrationState.DiscountPercentage > 0.0m )
                                     {
-                                        feeCostSummary.DiscountedCost = 0.0m;
+                                        feeCostSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost - ( feeCostSummary.Cost * RegistrationState.DiscountPercentage );
                                     }
-                                    else
+                                    else if ( RegistrationState.DiscountAmount > 0 && discountAmountRemaining > 0 )
                                     {
-                                        feeCostSummary.DiscountedCost = feeCostSummary.Cost - ( feeCostSummary.Cost * RegistrationState.DiscountPercentage );
+                                        // If there is any discount amount remaining after subracting it from the cost then it can be applied here
+                                        // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
+                                        if ( discountAmountRemaining > feeCostSummary.Cost )
+                                        {
+                                            discountAmountRemaining -= feeCostSummary.DiscountedCost;
+                                            feeCostSummary.DiscountedCost = 0.0m;
+                                        }
+                                        else
+                                        {
+                                            // Compute the DiscountedCost using the DiscountAmountRemaining
+                                            feeCostSummary.DiscountedCost = feeCostSummary.Cost - discountAmountRemaining;
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    feeCostSummary.DiscountedCost = feeCostSummary.Cost;
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
                                 feeCostSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : feeCostSummary.DiscountedCost;
 
+                                // Add the fee cost to the list
                                 costs.Add( feeCostSummary );
                             }
                         }
@@ -5435,23 +5540,6 @@ namespace RockWeb.Blocks.Event
                     if ( costs.Any( c => c.DefaultPayment.HasValue ) )
                     {
                         defaultPayment = costs.Where( c => c.DefaultPayment.HasValue ).Sum( c => c.DefaultPayment.Value );
-                    }
-
-                    // Add row for amount discount
-                    if ( RegistrationState.DiscountAmount > 0.0m )
-                    {
-                        decimal totalDiscount = 0.0m - ( RegistrationState.Registrants.Where( r => r.DiscountApplies ).Count() * RegistrationState.DiscountAmount );
-                        if ( costs.Sum( c => c.Cost ) + totalDiscount < 0 )
-                        {
-                            totalDiscount = 0.0m - costs.Sum( c => c.Cost );
-                        }
-                        costs.Add( new RegistrationCostSummaryInfo
-                        {
-                            Type = RegistrationCostSummaryType.Discount,
-                            Description = "Discount",
-                            Cost = totalDiscount,
-                            DiscountedCost = totalDiscount
-                        } );
                     }
 
                     // Get the totals
@@ -5849,9 +5937,21 @@ namespace RockWeb.Blocks.Event
 
                 if ( validDiscount )
                 {
+                    string discountRegistrantNumberString = "for all registrants";
+
+                    if ( discount.MaxRegistrants.IsNotNullOrZero() )
+                    {
+                        if ( RegistrationState.RegistrantCount > discount.MaxRegistrants )
+                        {
+                            discountRegistrantNumberString = discount.MaxRegistrants == 1 ? "for 1 registrant" : string.Format( "for {0} registrants", discount.MaxRegistrants );
+                        }
+                    }
+
+                    string discountTypeAndAmountString = discount.DiscountPercentage > 0.0m ? discount.DiscountPercentage.FormatAsPercent() : discount.DiscountAmount.FormatAsCurrency();
+                    
                     nbDiscountCode.Visible = true;
                     nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                    nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
+                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code,  discountTypeAndAmountString, discountRegistrantNumberString );
                     return true;
                 }
             }

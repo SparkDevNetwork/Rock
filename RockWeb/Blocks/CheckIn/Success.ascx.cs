@@ -43,12 +43,39 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays the details of a successful checkin." )]
 
-    [LinkedPage( "Person Select Page", "", false, "", "", 5 )]
-    [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
-    [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
-        "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
+    #region Block Attributes
+
+    [LinkedPage( "Person Select Page",
+        Key = AttributeKey.PersonSelectPage,
+        IsRequired = false,
+        Order = 5 )]
+
+    [TextField( "Title",
+        Key = AttributeKey.Title,
+        IsRequired = false,
+        DefaultValue = "Checked-in",
+        Category = "Text",
+        Order = 6 )]
+
+    [TextField( "Detail Message",
+        Key = AttributeKey.DetailMessage,
+        Description = "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code",
+        IsRequired = false,
+        DefaultValue = "{0} was checked into {1} in {2} at {3}",
+        Category = "Text",
+        Order = 7 )]
+
+    #endregion Block Attributes
+
     public partial class Success : CheckInBlock
     {
+        private static class AttributeKey
+        {
+            public const string PersonSelectPage = "PersonSelectPage";
+            public const string Title = "Title";
+            public const string DetailMessage = "DetailMessage";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -132,8 +159,8 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     try
                     {
-                        lTitle.Text = GetAttributeValue( "Title" );
-                        string detailMsg = GetAttributeValue( "DetailMessage" );
+                        lTitle.Text = GetAttributeValue( AttributeKey.Title );
+                        string detailMsg = GetAttributeValue( AttributeKey.DetailMessage );
 
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
@@ -290,7 +317,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 SaveState();
-                NavigateToLinkedPage( "PersonSelectPage" );
+                NavigateToLinkedPage( AttributeKey.PersonSelectPage );
 
             }
             else
