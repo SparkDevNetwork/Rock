@@ -73,31 +73,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// The DateFormat configuration control
-        /// </summary>
-        protected RockTextBox _tbDateFormat;
-
-        /// <summary>
-        /// The 'Display as Elapsed Time' configuration control
-        /// </summary>
-        protected RockCheckBox _cbDisplayDiff;
-        
-        /// <summary>
-        /// The Date Picker Control Type configuration control
-        /// </summary>
-        protected RockDropDownList _ddlDatePickerMode;
-        
-        /// <summary>
-        /// The Display Current configuration control
-        /// </summary>
-        protected RockCheckBox _cbDisplayCurrent;
-
-        /// <summary>
-        /// The future year count (for the date parts picker)
-        /// </summary>
-        protected NumberBox _nbFutureYearCount;
-
-        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <returns></returns>
@@ -105,40 +80,50 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            _tbDateFormat = new RockTextBox();
-            controls.Add( _tbDateFormat );
-            _tbDateFormat.Label = "Date Format";
-            _tbDateFormat.Help = "The format string to use for date (default is system short date).";
+            var tbDateFormat = new RockTextBox();
+            controls.Add( tbDateFormat );
+            tbDateFormat.Label = "Date Format";
+            tbDateFormat.Help = "The format string to use for date (default is system short date).";
 
-            _cbDisplayDiff = new RockCheckBox();
-            controls.Add( _cbDisplayDiff );
-            _cbDisplayDiff.Label = "Display as Elapsed Time";
-            _cbDisplayDiff.Text = "Yes";
-            _cbDisplayDiff.Help = "Display value as an elapsed time.";
+            var cbDisplayDiff = new RockCheckBox();
+            controls.Add( cbDisplayDiff );
+            cbDisplayDiff.Label = "Display as Elapsed Time";
+            cbDisplayDiff.Text = "Yes";
+            cbDisplayDiff.Help = "Display value as an elapsed time.";
 
-            _ddlDatePickerMode = new RockDropDownList();
-            controls.Add( _ddlDatePickerMode );
-            _ddlDatePickerMode.Items.Clear();
-            _ddlDatePickerMode.Items.Add( new ListItem( "Date Picker", DatePickerControlType.DatePicker.ConvertToString() ) );
-            _ddlDatePickerMode.Items.Add( new ListItem( "Date Parts Picker", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
-            _ddlDatePickerMode.Label = "Control Type";
-            _ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
-            _ddlDatePickerMode.AutoPostBack = true;
-            _ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
+            var ddlDatePickerMode = new RockDropDownList();
+            controls.Add( ddlDatePickerMode );
+            ddlDatePickerMode.Items.Clear();
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Picker", DatePickerControlType.DatePicker.ConvertToString() ) );
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Parts Picker", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
+            ddlDatePickerMode.Label = "Control Type";
+            ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
+            ddlDatePickerMode.AutoPostBack = true;
+            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
 
-            _cbDisplayCurrent = new RockCheckBox();
-            controls.Add( _cbDisplayCurrent );
-            _cbDisplayCurrent.AutoPostBack = true;
-            _cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
-            _cbDisplayCurrent.Label = "Display Current Option";
-            _cbDisplayCurrent.Text = "Yes";
-            _cbDisplayCurrent.Help = "Include option to specify value as the current date.";
+            var cbDisplayCurrent = new RockCheckBox();
+            controls.Add( cbDisplayCurrent );
+            cbDisplayCurrent.AutoPostBack = true;
+            cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
+            cbDisplayCurrent.Label = "Display Current Option";
+            cbDisplayCurrent.Text = "Yes";
+            cbDisplayCurrent.Help = "Include option to specify value as the current date.";
 
-            _nbFutureYearCount = new NumberBox();
-            controls.Add( _nbFutureYearCount );
-            _nbFutureYearCount.Label = "Future Years";
-            _nbFutureYearCount.Text = "";
-            _nbFutureYearCount.Help = "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.";
+            var nbFutureYearCount = new NumberBox();
+            controls.Add( nbFutureYearCount );
+            nbFutureYearCount.Label = "Future Years";
+            nbFutureYearCount.Text = "";
+            nbFutureYearCount.Help = "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.";
+
+            // if this is the child type of DateTimeFieldType, change the labels and visibility of the controls as needed
+            if ( this is DateTimeFieldType )
+            {
+                tbDateFormat.Label = "Date Time Format";
+                tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
+                ddlDatePickerMode.Visible = false;
+                nbFutureYearCount.Visible = false;
+                cbDisplayCurrent.Help = "Include option to specify value as the current time.";
+            }
 
             return controls;
         }
@@ -152,7 +137,7 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 3 )
+            if ( controls != null && controls.Count > 5 )
             {
                 var tbDateFormat = controls[0] as RockTextBox;
                 var cbDisplayDiff = controls[1] as RockCheckBox;
@@ -697,6 +682,21 @@ namespace Rock.Field.Types
                         }
                         else
                         {
+                            /*
+                             * Convert expressions to int if the property type is an int
+                             */
+                            if(propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            {
+                                if( constantExpressionLower != null )
+                                {
+                                    constantExpressionLower = Expression.Constant( Convert.ToDateTime( constantExpressionLower.Value ).ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                                }
+                                if ( constantExpressionUpper != null )
+                                {
+                                    constantExpressionUpper = Expression.Constant( Convert.ToDateTime( constantExpressionUpper.Value ).ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                                }
+                            }
+
                             return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
                         }
                     }
@@ -706,6 +706,11 @@ namespace Rock.Field.Types
                         if ( dateTime.HasValue )
                         {
                             ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
+                            if (propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            {
+                                constantExpression = Expression.Constant( dateTime?.ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
+                            } 
+                            
                             return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                         }
                         else

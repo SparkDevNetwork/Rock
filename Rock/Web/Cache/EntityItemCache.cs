@@ -32,12 +32,19 @@ namespace Rock.Web.Cache
         where T : IItemCache
     {
         /***********
-            NOTE: The properties (Id, Guid, ForeignKey, etc) need to be declared here (on the bottom-most class) to support backward binary-compatibility with pre-v8 plugins.
+          2018-07-20  MDP
+            IMPORTANT NOTE!: The properties (Id, Guid, ForeignKey, etc) need to be declared here (on the bottom-most class) to support backward binary-compatibility with pre-v8 plugins.
             It seems to be related to issues discussed in https://blogs.msdn.microsoft.com/ericlippert/2010/03/29/putting-a-base-in-the-middle/
 
             So, this EntityItemCache<T> is intentionally somewhat of a duplicate of ItemCache<T> because of this issue. However, the duplicate methods call ItemCache<T> manually
             to minimize the amount of duplicate code.
-        ************/
+        
+        Update:
+           2020-06-26 MDP
+            Do not add or remove any properties from this class! This could break any plugins compiled against a pre-v1.8 Rock.dll. 
+            
+         
+         ************/
 
         #region Properties
 
@@ -118,9 +125,11 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
         protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
         {
-            return ItemCache<T>.GetOrAddExisting( key, itemFactory, expiration );
+            return GetOrAddExisting( key, itemFactory );
         }
 
         /// <summary>
@@ -141,9 +150,11 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
         protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
         {
-            return ItemCache<T>.GetOrAddExisting( key, itemFactory, expiration );
+            return GetOrAddExisting( key, itemFactory );
         }
 
         /// <summary>
@@ -151,10 +162,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="item">The item.</param>
-        /// <param name="expiration">The expiration.</param>
-        protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
+        protected static void UpdateCacheItem( string key, T item )
         {
-            ItemCache<T>.UpdateCacheItem( key, item, expiration );
+            ItemCache<T>.UpdateCacheItem( key, item );
         }
 
         /// <summary>
@@ -231,11 +241,15 @@ namespace Rock.Web.Cache
             ItemCache<T>.FlushItem( key );
         }
 
-        internal static void AddToAllIds( int key)
+        internal static void AddToAllIds( int key )
         {
             ItemCache<T>.AddToAllIds( key );
         }
 
+        internal static void AddToAllIds( string key )
+        {
+            ItemCache<T>.AddToAllIds( key );
+        }
         /// <summary>
         /// Flushes the object from the cache without removing it from AllIds.
         /// Call this to force the cache to reload the object from the database the next time it is requested. 

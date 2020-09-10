@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var batchId = PageParameter( "batchId" ).AsInteger();
+            var batchId = PageParameter( "BatchId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( batchId );
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Finance
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? batchId = PageParameter( pageReference, "batchId" ).AsIntegerOrNull();
+            int? batchId = PageParameter( pageReference, "BatchId" ).AsIntegerOrNull();
             if ( batchId != null )
             {
                 string batchName = new FinancialBatchService( new RockContext() )
@@ -296,7 +296,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     // If created a new batch, navigate to same page so that transaction list displays correctly
                     var pageReference = CurrentPageReference;
-                    pageReference.Parameters.AddOrReplace( "batchId", batch.Id.ToString() );
+                    pageReference.Parameters.AddOrReplace( "BatchId", batch.Id.ToString() );
                     NavigateToPage( pageReference );
                 }
                 else

@@ -342,7 +342,7 @@ namespace Rock.SystemGuid
         /// </summary>
         ///
         [RockObsolete( "1.8" )]
-        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
+        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.", true )]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
@@ -456,6 +456,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Transport Attributes
+
+        /// <summary>
+        /// The communication transport SMTP server Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_TRANSPORT_SMTP_SERVER = "6CFFDF99-E93A-49B8-B440-0EF93878A51F";
+
+        #endregion
+
         #region DefinedType Attributes
 
         /// <summary>
@@ -476,6 +485,45 @@ namespace Rock.SystemGuid
         /// The defined value attribute for storing if a device type supports cameras.
         /// </summary>
         public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
+
+        #endregion
+
+        #region Country Attributes
+
+        /// <summary>
+        /// Country - Locality Label
+        /// </summary>
+        public const string COUNTRY_LOCALITY_LABEL = "1C234A6D-007F-4410-814E-13E9AE8654B4";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 1.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_1_REQUIREMENT = "8B7410F4-7EFB-4ABC-BFD0-B8A9A7ADB27D";
+
+        /// <summary>
+        /// Country Address Requirement Level for Address Line 2.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LINE_2_REQUIREMENT = "0FCBA54C-0B88-45A8-9303-E9783F2A2D0E";
+
+        /// <summary>
+        /// Country Address Requirement Level for City.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_CITY_REQUIREMENT = "EE9B4454-ACBF-416F-8080-2885A3CD6CA6";
+
+        /// <summary>
+        /// Country Address Requirement Level for Locality.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_LOCALITY_REQUIREMENT = "A0B0B033-9DA9-45F4-A593-B40EDCDB2D00";
+
+        /// <summary>
+        /// Country Address Requirement Level for State.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_STATE_REQUIREMENT = "E488AE1D-FC76-44FE-A48D-271E6DF44C24";
+
+        /// <summary>
+        /// Country Address Requirement Level for Postal Code.
+        /// </summary>
+        public const string COUNTRY_ADDRESS_POSTCODE_REQUIREMENT = "0037453D-0D26-4F02-8AB3-6AD675D85AAE";
 
         #endregion
 
@@ -534,5 +582,144 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
 
         #endregion JWT Config Attributes
+
+        #region Workflow Action Attributes
+
+        /// <summary>
+        /// The Campus workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS = "B07F920E-8450-4D1F-985D-6241E4F5E5CB";
+
+        /// <summary>
+        /// The Campus Role workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_ROLE = "5F8F5E6B-5888-4834-B47B-36664FB3A96C";
+
+        /// <summary>
+        /// The Campus Team Member workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_TEAM_MEMBER = "7CFEDCB2-EA8F-421F-BA5E-B0D8BD10EA92";
+
+        /// <summary>
+        /// The Person workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_PERSON = "C10C4C89-2B91-4D9A-8D5F-A3E65758A878";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for FromEmailAddress
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_FROM_EMAIL_ADDRESS = "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SendToEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SEND_TO_EMAIL_ADDRESSES = "0C4C13B8-7076-4872-925A-F950886B5E16";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SendToGroupRole
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SEND_TO_GROUP_ROLE = "D43C2686-7E02-4A70-8D99-3BCD8ECAFB2F";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for Subject
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SUBJECT = "5D9B13B6-CD96-4C7C-86FA-4512B9D28386";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for Body
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_BODY = "4D245B9E-6B03-46E7-8482-A51FBA190E4D";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for CcEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_CC_EMAIL_ADDRESSES = "99FFD423-2AB6-481B-8749-B4793A16B620";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for BccEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_BCC_EMAIL_ADDRESSES = "3A131021-CB73-44A8-A142-B42832B77F60";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentOne
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_ONE = "C2C7DA55-3018-4645-B9EE-4BCD11855F2C";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentTwo
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_TWO = "FFD9193A-451F-40E6-9776-74D5DCAC1450";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentThree
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_THREE = "A059767A-5592-4926-948A-1065AF4E9748";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SaveCommunicationHistory
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SAVE_COMMUNICATION_HISTORY = "65E69B78-37D8-4A88-B8AC-71893D2F75EF";
+
+        #endregion Workflow Action Attributes
+
+        /// <summary>
+        /// The defined value logging domains to log
+        /// </summary>
+        public const string DEFINED_VALUE_LOGGING_DOMAINS_TO_LOG = "9BEA544F-0636-485E-8772-B63180E529F9";
+
+        /// <summary>
+        /// The defined value log system settings
+        /// </summary>
+        public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
+
+        /// <summary>
+        /// The phone number lookup title
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP_TITLE = "7FD2383A-A2E8-4158-8E78-2E2E0C6CBA11";
+
+        /// <summary>
+        /// The phone number initial instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INITIAL_INSTRUCTIONS = "D9DFC4E4-A1F7-435C-8CF4-AD67CFA3F26E";
+
+        /// <summary>
+        /// The phone number verification instructions
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_INSTRUCTIONS = "B14CA36A-CC8F-4858-A2B8-AE0966EDEF2D";
+
+        /// <summary>
+        /// The phone number individual selection instructions
+        /// </summary>
+        public const string PHONE_NUMBER_INDIVIDUAL_SELECTION_INSTRUCTIONS = "1DFA50D7-0819-4659-96DE-D25F80B880E5";
+
+        /// <summary>
+        /// The phone number not found message
+        /// </summary>
+        public const string PHONE_NUMBER_NOT_FOUND_MESSAGE = "F752712B-C2CA-4541-8347-A632652E0764";
+
+        /// <summary>
+        /// The phone number authentication level
+        /// </summary>
+        public const string PHONE_NUMBER_AUTHENTICATION_LEVEL = "92C72C91-8670-4B1B-B529-F744EEE38B5A";
+
+        /// <summary>
+        /// The phone number verification time limit
+        /// </summary>
+        public const string PHONE_NUMBER_VERIFICATION_TIME_LIMIT = "4569E05C-DE8F-40D4-8DF7-4DE6A564FF6E";
+
+        /// <summary>
+        /// The phone number ip throttle limit
+        /// </summary>
+        public const string PHONE_NUMBER_IP_THROTTLE_LIMIT = "2D148814-418A-45A3-9A98-1498363759E7";
+
+        /// <summary>
+        /// The phone number SMS number
+        /// </summary>
+        public const string PHONE_NUMBER_SMS_NUMBER = "AE2979DF-EDE5-4389-ACBA-0FF7680BFE52";
+
+        /// <summary>
+        /// The phone number text message template
+        /// </summary>
+        public const string PHONE_NUMBER_TEXT_MESSAGE_TEMPLATE = "7F12E9B4-0CD1-42C8-AE68-457212B0B459";
     }
 }

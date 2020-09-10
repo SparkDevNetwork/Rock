@@ -166,14 +166,17 @@
 
         // Normally, SwaggerUI will load the entire Model into a single page, but Rock has a lot of models, so we'll break it up one controller at a time
         // Fetch a list of all the REST Controllers in Rock to make.  When the user clicks on one, the SwaggerUI will be loaded for that Controller
+
+        // make sure that all the RestController have been registerd
         $.get('%(RootUrl)' + '/api/RestControllers/EnsureRestControllers', function ()
         {
-            $.get('%(RootUrl)' + '/api/RestControllers?$select=Name&$orderby=Name', function (data)
+            // get the list of controller, not including obsolete controllers
+            $.get('%(RootUrl)' + '/api/RestControllers/RestControllerNames?includeObsolete=false', function (data)
             {
                 var $rockControllerList = $('#rock-controller-list ul');
-                $.each(data, function (index, value)
+                $.each(data, function (index, controllerName)
                 {
-                    $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + value.Name + '\')">' + value.Name + '</a></li>');
+                    $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + controllerName + '\')">' + controllerName + '</a></li>');
                 });
 
                 // if the URL includes a hash to a specific controller, load up the UI for that controller

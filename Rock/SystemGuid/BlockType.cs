@@ -162,24 +162,47 @@ namespace Rock.SystemGuid
 
         #endregion Assessment Block Types
 
-        #region Group RSVP Block Types
+        #region Groups Block Types
 
         /// <summary>
-        /// Group RSVP List block type guid.
+        /// Groups category Group Member Detail block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_DETAIL = "AAE2E5C3-9279-4AB0-9682-F4D19519D678";
+
+        /// <summary>
+        /// Groups category Group Member List block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_LIST = "88B7EFA9-7419-4D05-9F88-38B936E61EDD";
+
+        #endregion
+
+        #region RSVP Block Types
+
+        /// <summary>
+        /// RSVP category List block type guid.
         /// </summary>
         public const string RSVP_LIST = "16CE8B41-FD1B-43F2-8C8E-4E878470E8BD";
 
         /// <summary>
-        /// Group RSVP Detail block type guid.
+        /// RSVP category Detail block type guid.
         /// </summary>
         public const string RSVP_DETAIL = "2BC5CC6B-3618-4848-BCD9-1796AA35E7FD";
 
         /// <summary>
-        /// Group RSVP Response block type guid.
+        /// RSVP category Response block type guid.
         /// </summary>
         public const string RSVP_RESPONSE = "EEFD83FB-6EE1-44F4-A012-7569F979CD6B";
 
         #endregion
 
+        /// <summary>
+        /// The log viewer
+        /// </summary>
+        public const string LOG_VIEWER = "6059FC03-E398-4359-8632-909B63FFA550";
+
+        /// <summary>
+        /// The phone number lookup block type.
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP = "51BB37DA-6F3E-40EC-B80E-D381E13E01B2";
     }
 }

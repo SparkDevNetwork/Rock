@@ -76,7 +76,19 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string PushData { get; set; }
+
+        /// <summary />
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary />
         public string PushMessage { get; set; }
+
+        /// <summary />
+        public int /* PushOpenAction*/? PushOpenAction { get; set; }
+
+        /// <summary />
+        public string PushOpenMessage { get; set; }
 
         /// <summary />
         public string PushSound { get; set; }
@@ -145,7 +157,11 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.LavaFieldsJson = source.LavaFieldsJson;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.PushData = source.PushData;
+            this.PushImageBinaryFileId = source.PushImageBinaryFileId;
             this.PushMessage = source.PushMessage;
+            this.PushOpenAction = source.PushOpenAction;
+            this.PushOpenMessage = source.PushOpenMessage;
             this.PushSound = source.PushSound;
             this.PushTitle = source.PushTitle;
             this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;

@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles for specific blocks.
 
     1. Group Viewer - styles for the group viewer block.
@@ -23,3 +23,9 @@
   margin-bottom: 24px;
 }
 
+.resource-list {
+  @media (min-width: @screen-md-min) {
+    top: 16px;
+    max-height: ~"calc(100vh - 112px)";
+  }
+}

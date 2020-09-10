@@ -50,4 +50,47 @@ namespace Rock.Model
         }
 
     }
+
+    #region Extension Methods
+    /// <summary>
+    /// Extension methods used to query GroupSync.
+    /// </summary>
+    public static class CommunicationRecipientServiceExtensions
+    {
+        /// <summary>
+        /// Gets the Communication Recipients for the specified communication id.
+        /// </summary>
+        /// <param name="communicationRecipient">The communication recipient.</param>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<CommunicationRecipient> ByCommunicationId( this IQueryable<CommunicationRecipient> communicationRecipient, int communicationId )
+        {
+            return communicationRecipient.Where( x => x.CommunicationId == communicationId);
+        }
+
+        /// <summary>
+        /// Gets the Communication Recipients for the specified status.
+        /// </summary>
+        /// <param name="communicationRecipient">The communication recipient.</param>
+        /// <param name="communicationRecipientStatus">The communication recipient status.</param>
+        /// <returns></returns>
+        public static IQueryable<CommunicationRecipient> ByStatus( this IQueryable<CommunicationRecipient> communicationRecipient, CommunicationRecipientStatus communicationRecipientStatus )
+        {
+            return communicationRecipient.Where( x => x.Status == communicationRecipientStatus );
+        }
+
+        /// <summary>
+        /// Gets the Communication Recipients for the specified medium entity type identifier.
+        /// </summary>
+        /// <param name="communicationRecipient">The communication recipient.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<CommunicationRecipient> ByMediumEntityTypeId( this IQueryable<CommunicationRecipient> communicationRecipient, int mediumEntityTypeId )
+        {
+            return communicationRecipient
+                        .Where( x => x.MediumEntityTypeId != null)
+                        .Where(x => x.MediumEntityTypeId == mediumEntityTypeId );
+        }
+    }
+    #endregion
 }

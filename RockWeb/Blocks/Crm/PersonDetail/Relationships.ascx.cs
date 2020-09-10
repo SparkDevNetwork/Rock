@@ -35,12 +35,54 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view relationships of a particular person." )]
 
-    [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
-    [BooleanField( "Show Role", "Should the member's role be displayed with their name" )]
-    [BooleanField( "Create Group", "Should group be created if a group/role cannot be found for the current person.", true )]
-    [IntegerField( "Max Relationships To Display", "", false, 50 )]
+    #region Block Attributes
+
+    //[GroupRoleField(
+    //    Name = "Group Type/Role Filter",
+    //    Key = AttributeKey.GroupTypeRoleFilter,
+    //    Description = "The Group Type and role to display other members from.",
+    //    IsRequired = false,
+    //    Order = 0 )]
+
+    [GroupRoleField( null, "Group Type/Role Filter", "The Group Type and role to display other members from.", false, null, null, 0, AttributeKey.GroupTypeRoleFilter )]
+
+    [BooleanField(
+        "Show Role",
+        Key = AttributeKey.ShowRole,
+        Description = "Should the member's role be displayed with their name",
+        Order = 1 )]
+
+    [BooleanField(
+        "Create Group",
+        Key = AttributeKey.CreateGroup,
+        Description = "Should group be created if a group/role cannot be found for the current person.",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+
+    [IntegerField(
+        "Max Relationships To Display",
+        Key = AttributeKey.MaxRelationshipsToDisplay,
+        Description = "The maximum number of relationships to display.",
+        IsRequired = false,
+        DefaultIntegerValue = 50,
+        Order = 3 )]
+
+    #endregion Block Attributes
+
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string GroupTypeRoleFilter = "GroupType/RoleFilter";
+            public const string ShowRole = "ShowRole";
+            public const string CreateGroup = "CreateGroup";
+            public const string MaxRelationshipsToDisplay = "MaxRelationshipsToDisplay";
+        }
+        #endregion Attribute Keys
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance can edit.
         /// </summary>
@@ -73,6 +115,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </value>
         protected bool IsInverseRelationshipsOwner { get; set; }
 
+        #endregion Properties
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -81,14 +127,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ownerRoleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
+            ownerRoleGuid = GetAttributeValue( AttributeKey.GroupTypeRoleFilter ).AsGuidOrNull() ?? Guid.Empty;
 
             // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
             var ownerRole = new GroupTypeRoleService( new RockContext() ).Get( ownerRoleGuid );
             if ( ownerRole != null )
             {
                 ownerRole.LoadAttributes();
-                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" ) 
+                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" )
                     && ( ownerRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) || ownerRole.IsLeader );
             }
             else
@@ -106,7 +152,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lbAdd.Visible = CanEdit && IsInverseRelationshipsOwner;
 
             string script = @"
-    $('a.remove-relationship').click(function(){
+    $('a.remove-relationship').on('click', function(){
         return confirm('Are you sure you want to remove this relationship?');
     });
 ";
@@ -125,7 +171,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 upRelationships.Visible = true;
 
-                ShowRole = GetAttributeValue( "ShowRole" ).AsBoolean();
+                ShowRole = GetAttributeValue( AttributeKey.ShowRole ).AsBoolean();
 
                 if ( !Page.IsPostBack )
                 {
@@ -141,6 +187,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 upRelationships.Visible = false;
             }
         }
+
+        #endregion Base Control Methods
+
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the lbAdd control.
@@ -270,7 +320,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             if ( IsInverseRelationshipsOwner )
                             {
-                                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean() );
+                                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, GetAttributeValue( AttributeKey.CreateGroup ).AsBoolean() );
                                 if ( inverseGroupMember != null )
                                 {
                                     rockContext.SaveChanges();
@@ -291,6 +341,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        #endregion Events
+
+        #region Methods
+
         /// <summary>
         /// Binds the data.
         /// </summary>
@@ -310,7 +364,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .Select( m => m.Group )
                             .FirstOrDefault();
 
-                        if ( group == null && GetAttributeValue( "CreateGroup" ).AsBoolean() )
+                        if ( group == null && GetAttributeValue( AttributeKey.CreateGroup ).AsBoolean() )
                         {
                             var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
@@ -342,7 +396,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
-                                int? maxRelationshipsToDisplay = this.GetAttributeValue( "MaxRelationshipsToDisplay" ).AsIntegerOrNull();
+                                int? maxRelationshipsToDisplay = this.GetAttributeValue( AttributeKey.MaxRelationshipsToDisplay ).AsIntegerOrNull();
 
                                 IQueryable<GroupMember> qryGroupMembers = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
                                     .Where( m => m.PersonId != Person.Id )
@@ -379,7 +433,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="groupMemberId">The group member identifier.</param>
         private void ShowModal( Person person, int? roleId, int? groupMemberId )
         {
-            Guid roleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
+            Guid roleGuid = GetAttributeValue( AttributeKey.GroupTypeRoleFilter ).AsGuidOrNull() ?? Guid.Empty;
             if ( roleGuid != Guid.Empty )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
@@ -429,5 +483,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.Hide();
             hfRoleId.Value = string.Empty;
         }
+
+        #endregion Methods
+
     }
 }

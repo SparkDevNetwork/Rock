@@ -1042,7 +1042,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( !report.DataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 {
                     isAuthorized = false;
-                    authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
+                    authorizationMessage = "INFO: This report uses a data view that you do not have access to view.";
                 }
             }
 

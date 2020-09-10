@@ -40,15 +40,33 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing a list of note watches" )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+    
+    [EntityTypeField( "Entity Type",
+        Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EntityType )]
 
-    [EntityTypeField( "Entity Type", "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.", required: false, order: 0 )]
-    [NoteTypeField( "Note Type", "Set Note Type to limit this block to a specific note type", allowMultiple: false, required: false, order: 1 )]
+    [NoteTypeField( "Note Type",
+        Description = "Set Note Type to limit this block to a specific note type",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.NoteType )]
 
     // Context Aware will limit the list to watchers that are equal to the Person or Group context
     [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
     public partial class NoteWatchList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string EntityType = "EntityType";
+            public const string NoteType = "NoteType";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -151,7 +169,7 @@ namespace RockWeb.Blocks.Core
                 queryParams.Add( "GroupId", contextGroup.Id.ToString() );
             }
 
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
@@ -233,8 +251,8 @@ namespace RockWeb.Blocks.Core
 
             var qry = noteWatchService.Queryable().Include( a => a.WatcherPersonAlias.Person ).Include( a => a.WatcherGroup );
 
-            Guid? blockEntityTypeGuid = this.GetAttributeValue( "EntityType" ).AsGuidOrNull();
-            Guid? blockNoteTypeGuid = this.GetAttributeValue( "NoteType" ).AsGuidOrNull();
+            Guid? blockEntityTypeGuid = this.GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            Guid? blockNoteTypeGuid = this.GetAttributeValue( AttributeKey.NoteType ).AsGuidOrNull();
             if ( blockNoteTypeGuid.HasValue )
             {
                 // if a NoteType was specified in block settings, only list note watches for the specified note type

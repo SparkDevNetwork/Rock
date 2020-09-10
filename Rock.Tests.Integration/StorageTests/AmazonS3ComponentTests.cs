@@ -13,584 +13,94 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Rock.Storage.AssetStorage;
+using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
-
-using Subtext.TestLibrary;
+using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.StorageTests
 {
-    /// <summary>
-    /// This class tests the AmazonS3 storage component. It currently requires
-    /// that your S3 storage provider be defined in Rock with ID #1.
-    /// </summary>
-    /// <remarks>
-    /// Some data under the TestData folder is needed for these tests.  These are auto-magically copied
-    /// from the build output directory to the deployment directory as described here:
-    /// https://stackoverflow.com/questions/3738819/do-mstest-deployment-items-only-work-when-present-in-the-project-test-settings-f?rq=1
-    /// </remarks>
     [TestClass]
-    [DeploymentItem( @"app.ConnectionStrings.config" )]
-    [DeploymentItem( @"TestData\", "TestData" )]
-    public class AmazonS3ComponentTests
+    public class AmazonCloudComponentTests : BaseStorageComponentTests
     {
-        //private string AWSAccessKey = "";
-        //private string AWSSecretKey = @"";
-        //private RegionEndpoint AWSRegion = RegionEndpoint.USWest1;
-        //private string Bucket = "rockphotostest0";
-        //private string UnitTestRootFolder = "UnitTestFolder";
-
-        private static string webContentFolder = string.Empty;
-
-        [TestInitialize]
-        public void Initialize()
+        static AmazonCloudComponentTests()
         {
-            // Set up a fake webContentFolder that we will use with the Asset Storage component BECAUSE
-            // there is a file-system dependency to determine the asset's file type (via GetFileTypeIcon)
-
-            webContentFolder = Path.Combine( TestContext.DeploymentDirectory, "TestData", "Content" );
-            EnsureFolder( webContentFolder );
+            _assetStorageProviderServiceGuid = "A3000000-8CF7-4441-A3FA-FB45AD1FF9B9".AsGuid();
         }
 
-        private AssetStorageProvider GetAssetStorageProvider()
+        [ClassInitialize()]
+        public static void ClassInit( TestContext context )
         {
-            var assetStorageProviderService = new AssetStorageProviderService( new Data.RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageProviderService.Get( 1 );// need mock
-            assetStorageProvider.LoadAttributes();
-            assetStorageProvider.SetAttributeValue( "RootFolder", "UnitTestFolder" );
-
-            return assetStorageProvider;
+            CreateAssetStorageProvider( context );
+            ClassInitialize( context );
         }
 
-        //[TestMethod]
-        //public void TestListRootBucket()
-        //{
-        //    var assetStorageProvider = GetAssetStorageProvider();
-        //    var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-        //    var asset = new Asset {
-        //        Key = "UnitTestFolder/",
-        //        Type = AssetType.Folder
-        //    };
-
-        //    var assets = s3Component.ListFoldersInFolder( assetStorageProvider, asset );
-        //}
-
-        /// <summary>
-        /// Create a folder in the bucket using a key (the full name);
-        /// This folder is used for other tests.
-        /// </summary>
-        [TestMethod]
-        public void TestAWSCreateRootFolderUsingKey()
+        [ClassCleanup()]
+        public static void ClassCleanup()
         {
-            var assetStorageProvider = GetAssetStorageProvider();
-            var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-            var asset = new Asset();
-            asset.Key = assetStorageProvider.GetAttributeValue( "RootFolder" );
-            asset.Type = AssetType.Folder;
-
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+            InternalClassCleanup();
         }
 
-        /// <summary>
-        /// Create folders using RootFolder and Asset.Name
-        /// These folders are used for other tests.
-        /// Requires TestAWSCreateFolderByKey
-        /// </summary>
-        [TestMethod]
-        public void TestAWSCreateFolderByName()
+        private static void CreateAssetStorageProvider( TestContext testContext )
         {
-            var assetStorageProvider = GetAssetStorageProvider();
-            var s3Component = assetStorageProvider.GetAssetStorageComponent();
+            AssetStorageProvider assetStorageProvider = null;
 
-            var asset = new Asset();
-            asset.Name = "SubFolder1/";
-            asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+            var accessKey = testContext.Properties["AWSAccessKey"].ToStringSafe();
+            var secretKey = testContext.Properties["AWSSecretKey"].ToStringSafe();
 
-            asset = new Asset();
-            asset.Name = "SubFolder1/SubFolder1a/";
-            asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
-        }
-
-        [TestMethod]
-        public void TestCreate2kFolders()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            try
             {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var subFolder = new Asset();
-                subFolder.Name = "TwoThousandFolders/";
-                subFolder.Type = AssetType.Folder;
-                s3Component.CreateFolder( assetStorageProvider, subFolder );
-
-
-                int i = 0;
-                while ( i < 2000 )
+                using ( var rockContext = new RockContext() )
                 {
-                    subFolder = new Asset();
-                    subFolder.Name = $"TwoThousandFolders/TestFolder-{i}/";
-                    subFolder.Type = AssetType.Folder;
+                    var assetStorageProviderService = new AssetStorageProviderService( rockContext );
+                    assetStorageProvider = assetStorageProviderService.Get( _assetStorageProviderServiceGuid );
 
-                    Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, subFolder ) );
-                    i++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Upload a file using RootFolder and Asset.Name.
-        /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
-        /// </summary>
-        [TestMethod]
-        public void TestUploadObjectByName()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                Asset asset = new Asset();
-                asset.Name = ( "SubFolder1/TestUploadObjectByName.jpg" );
-                asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
-
-                bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
-                Assert.IsTrue( hasUploaded );
-            }
-        }
-
-        /// <summary>
-        /// Upload a file using Asset.Key.
-        /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
-        /// </summary>
-        [TestMethod]
-        public void TestUploadObjectByKey()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                Asset asset = new Asset();
-                asset.Key = ( "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg" );
-                asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
-
-                bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
-                Assert.IsTrue( hasUploaded );
-            }
-        }
-
-        /// <summary>
-        /// Get a recursive list of objects using Asset.Key
-        /// </summary>
-        [TestMethod]
-        public void TestListObjectsByKey()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Key = ( "UnitTestFolder/" );
-
-                var assetList = s3Component.ListObjects( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "UnitTestFolder" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
-            }
-        }
-
-        /// <summary>
-        /// Get a list of files and folders in a single folder using RootFolder
-        /// </summary>
-        [TestMethod]
-        public void TestListObjectsInFolder()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Key = "UnitTestFolder/SubFolder1/";
-                asset.Type = AssetType.Folder;
-
-                var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
-            }
-        }
-
-        /// <summary>
-        /// Upload > 2K objects. Used to test listing that requires more than one request.
-        /// </summary>
-        [TestMethod]
-        public void TestUpload2kObjects()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var subFolder = new Asset();
-                subFolder.Name = "TwoThousandObjects/";
-                subFolder.Type = AssetType.Folder;
-
-                s3Component.CreateFolder( assetStorageProvider, subFolder );
-
-                int i = 0;
-                while ( i < 10 )
-                {
-                    subFolder = new Asset();
-                    subFolder.Name = $"TwoThousandObjects/TestFolder-{i}/";
-                    subFolder.Type = AssetType.Folder;
-
-                    s3Component.CreateFolder( assetStorageProvider, subFolder );
-                    i++;
-                }
-
-                FileStream fs;
-                i = 0;
-                while ( i < 2000 )
-                {
-                    using ( fs = new FileStream( @"TestData\TextDoc.txt", FileMode.Open ) )
+                    if ( assetStorageProvider == null )
                     {
-                        Asset asset = new Asset { Name = $"TwoThousandObjects/TestFile-{i}.txt", AssetStream = fs };
-                        s3Component.UploadObject( assetStorageProvider, asset );
-                        i++;
+                        var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_AMAZONS3.AsGuid() );
+
+                        assetStorageProvider = new AssetStorageProvider();
+                        assetStorageProvider.Name = "TEST Amazon S3 AssetStorageProvider";
+                        assetStorageProvider.Guid = _assetStorageProviderServiceGuid;
+                        assetStorageProvider.EntityTypeId = entityType.Id;
+                        assetStorageProvider.IsActive = true;
+
+                        assetStorageProviderService.Add( assetStorageProvider );
+
+                        rockContext.SaveChanges();
+
+                        var assetStorageProviderComponentEntityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
+                        var assetStorageProviderEntityType = EntityTypeCache.Get<Rock.Model.AssetStorageProvider>();
+
+                        Helper.UpdateAttributes(
+                                assetStorageProviderComponentEntityType.GetEntityType(),
+                                assetStorageProviderEntityType.Id,
+                                "EntityTypeId",
+                                assetStorageProviderComponentEntityType.Id.ToString(),
+                                rockContext );
+
                     }
+
+                    assetStorageProvider.LoadAttributes();
+                    assetStorageProvider.SetAttributeValue( "GenerateSingedURLs", "False" ); // The attribute Key has that typo.
+                    assetStorageProvider.SetAttributeValue( "AWSRegion", testContext.Properties["AWSRegion"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "Bucket", testContext.Properties["AWSBucket"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "Expiration", "525600" );
+                    assetStorageProvider.SetAttributeValue( "RootFolder", testContext.Properties["UnitTestRootFolder"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "AWSProfileName", testContext.Properties["AWSProfileName"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "AWSAccessKey", accessKey );
+                    assetStorageProvider.SetAttributeValue( "AWSSecretKey", secretKey );
+
+                    assetStorageProvider.SaveAttributeValues( rockContext );
                 }
             }
-        }
-
-        /// <summary>
-        /// Get a list of keys that requires more than one request.
-        /// </summary>
-        [TestMethod]
-        public void TestList2KObjectsInFolder()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            catch ( System.Exception ex )
             {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Key = "UnitTestFolder/TwoThousandObjects/";
-                asset.Type = AssetType.Folder;
-
-                var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
+                Assert.That.Inconclusive( $"Unable to get the Amazon S3 Asset Storage Provider ({ex.Message})." );
             }
         }
-
-        /// <summary>
-        /// Create a download link for an asset on the fly.
-        /// </summary>
-        [TestMethod]
-        public void TestCreateDownloadLink()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                Asset asset = new Asset();
-                asset.Type = AssetType.File;
-                asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
-
-                string url = s3Component.CreateDownloadLink( assetStorageProvider, asset );
-                bool valid = false;
-
-                try
-                {
-                    System.Net.HttpWebRequest request = System.Net.WebRequest.Create( url ) as System.Net.HttpWebRequest;
-                    request.Method = "GET";
-                    System.Net.HttpWebResponse response = request.GetResponse() as System.Net.HttpWebResponse;
-                    response.Close();
-                    valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false;
-                }
-                catch
-                {
-                    valid = false;
-                }
-
-                Assert.IsTrue( valid );
-            }
-        }
-
-        /// <summary>
-        /// Get a file from storage.
-        /// </summary>
-        [TestMethod]
-        public void TestGetObject()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                TestUploadObjectByName();
-
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Type = AssetType.File;
-                asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
-
-                bool valid = true;
-
-                try
-                {
-                    var responseAsset = s3Component.GetObject( assetStorageProvider, asset, false );
-                    using ( responseAsset.AssetStream )
-                    using ( FileStream fs = new FileStream( $@"C:\temp\{responseAsset.Name}", FileMode.Create ) )
-                    {
-                        responseAsset.AssetStream.CopyTo( fs );
-                    }
-                }
-                catch
-                {
-                    valid = false;
-                }
-
-                Assert.IsTrue( valid );
-            }
-        }
-
-        /// <summary>
-        /// List only the folders.
-        /// </summary>
-        [TestMethod]
-        public void TestListFolders()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Key = "UnitTestFolder/TwoThousandObjects/";
-                asset.Type = AssetType.Folder;
-
-                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), asset );
-
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-2" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-3" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-4" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-5" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-7" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-8" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-9" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
-            }
-        }
-
-        /// <summary>
-        /// Tests the ListFoldersInFolder method with 2K folders.
-        /// This method will create the folders, get a list of them, and then delete the folders when it is done.
-        /// There is no dependency on other tests.
-        /// </summary>
-        [TestMethod]
-        public void TestList2kFolders()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                // Create a folder to hold all of the subfolders.
-                var subFolder = new Asset();
-                subFolder.Name = "TwoThousandFolders/";
-                subFolder.Type = AssetType.Folder;
-
-                // Delete the subfolder holding all 2K folders
-                s3Component.DeleteAsset( assetStorageProvider, subFolder );
-                s3Component.CreateFolder( assetStorageProvider, subFolder );
-
-                // Create the 2K folders
-                int i = 0;
-                while ( i < 2000 )
-                {
-                    var asset = new Asset();
-                    asset.Name = $"TwoThousandFolders/TestFolder-{i}/";
-                    asset.Type = AssetType.Folder;
-
-                    Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
-                    i++;
-                }
-
-                // Get a list of the 2K folders
-                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), subFolder );
-
-                // Verify that all 2K folders are in the list
-                i = 0;
-                while ( i < 2000 )
-                {
-                    string folderName = $"TestFolder-{i}";
-
-                    Assert.IsTrue( assetList.Any( a => a.Name == folderName ) );
-                    i++;
-                }
-
-                // Delete the subfolder holding all 2K folders
-                s3Component.DeleteAsset( assetStorageProvider, subFolder );
-            }
-        }
-
-        /// <summary>
-        /// List only the files.
-        /// </summary>
-        [TestMethod]
-        public void TestListFiles()
-        {
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                var asset = new Asset();
-                asset.Key = "UnitTestFolder/SubFolder1/";
-                asset.Type = AssetType.Folder;
-
-                var assetList = s3Component.ListFilesInFolder( assetStorageProvider, asset );
-
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "SubFolder1a" ) );
-            }
-        }
-
-        /// <summary>
-        /// Rename an existing file.
-        /// </summary>
-        [TestMethod]
-        public void TestRenameAsset()
-        {
-            // Make sure the file is there so we can rename it
-            TestUploadObjectByKey();
-
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
-            {
-                var assetStorageProvider = GetAssetStorageProvider();
-                var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-                Asset asset = new Asset();
-                asset.Type = AssetType.File;
-                asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg";
-
-                var origAssetList = s3Component.ListObjects( assetStorageProvider, asset );
-
-                if ( origAssetList.Count == 1 )
-                {
-                    Assert.IsTrue( s3Component.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
-
-                    asset = new Asset();
-                    asset.Type = AssetType.File;
-                    asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey";
-
-                    var assetList = s3Component.ListObjects( assetStorageProvider, asset );
-                    Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                    Assert.IsFalse( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" ) );
-                }
-                else
-                {
-                    Assert.Inconclusive( "File (UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg) was not present for 'rename' test." );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Delete a single file.
-        /// </summary>
-        [TestMethod]
-        public void TestDeleteFile()
-        {
-            var assetStorageProvider = GetAssetStorageProvider();
-            var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-            Asset asset = new Asset();
-            asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
-            asset.Type = AssetType.File;
-
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
-            Assert.IsTrue( hasDeleted );
-        }
-
-        /// <summary>
-        /// Delete all of the test data.
-        /// </summary>
-        [TestMethod]
-        public void TestDeleteFolder()
-        {
-            var assetStorageProvider = GetAssetStorageProvider();
-            var s3Component = assetStorageProvider.GetAssetStorageComponent();
-
-            // Create a folder so we can test the delete 
-            var assetSetup = new Asset();
-            assetSetup.Name = "DELETE_FOLDER/";
-            assetSetup.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, assetSetup ) );
-
-            // Now we can run our test...
-            Asset asset = new Asset();
-            asset.Key = ( "DELETE_FOLDER/" );
-            asset.Type = AssetType.Folder;
-
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
-            Assert.IsTrue( hasDeleted );
-        }
-
-        #region Utility Methods to help us fake the HttpContext
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        /// Gets or sets the test context.
-        /// </summary>
-        /// <value>
-        /// The test context.
-        /// </value>
-        public TestContext TestContext
-        {
-            get { return testContextInstance; }
-            set { testContextInstance = value; }
-        }
-    
-        /// <summary>
-        /// Ensures the folder exists for the upcoming test.
-        /// </summary>
-        /// <param name="foldername">The foldername.</param>
-        private static void EnsureFolder( string foldername )
-        {
-            var path = Path.Combine( webContentFolder, foldername );
-            Directory.CreateDirectory( path );
-        }
-        #endregion
-
     }
 }

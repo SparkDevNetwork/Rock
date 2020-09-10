@@ -326,6 +326,15 @@ namespace RockWeb.Blocks.Event
 
                                 break;
 
+                            case RegistrationPersonFieldType.ConnectionStatus:
+                                var dvpConnectionStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                if ( dvpConnectionStatusFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus, dvpConnectionStatusFilter.SelectedValue );
+                                }
+
+                                break;
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_MOBILE_PHONE_ID ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -467,6 +476,15 @@ namespace RockWeb.Blocks.Event
 
                                 break;
 
+                            case RegistrationPersonFieldType.ConnectionStatus:
+                                var dvpConnectionStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                if ( dvpConnectionStatusFilter != null )
+                                {
+                                    dvpConnectionStatusFilter.SetValue( ( Guid? ) null );
+                                }
+
+                                break;
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_MOBILE_PHONE_ID ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -585,6 +603,20 @@ namespace RockWeb.Blocks.Event
 
                     break;
 
+                case "Connection Status":
+                    int? connStatId = e.Value.AsIntegerOrNull();
+                    if ( connStatId.HasValue )
+                    {
+                        var connectionStatus = DefinedValueCache.Get( connStatId.Value );
+                        e.Value = connectionStatus != null ? connectionStatus.Value : string.Empty;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+
+                    break;
+
                 case "In Group":
                     e.Value = e.Value;
                     break;
@@ -633,7 +665,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
                     lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
-                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-pencil-square-o text-danger'></i>" : string.Empty );
+                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-edit text-danger'></i>" : string.Empty );
                 }
                 else
                 {
@@ -1275,6 +1307,21 @@ namespace RockWeb.Blocks.Event
                                         qry = qry.Where( r =>
                                             r.PersonAlias.Person.MaritalStatusValueId.HasValue &&
                                             r.PersonAlias.Person.MaritalStatusValueId.Value == maritalStatusId.Value );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.ConnectionStatus:
+                                var dvpConnectionStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_CONNECTION_STATUS_ID ) as DefinedValuePicker;
+                                if ( dvpConnectionStatusFilter != null )
+                                {
+                                    var connectionStatusId = dvpConnectionStatusFilter.SelectedValue.AsIntegerOrNull();
+                                    if ( connectionStatusId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                           r.PersonAlias.Person.ConnectionStatusValueId.HasValue &&
+                                           r.PersonAlias.Person.ConnectionStatusValueId.Value == connectionStatusId.Value );
                                     }
                                 }
 

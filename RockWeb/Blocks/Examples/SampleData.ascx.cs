@@ -273,6 +273,9 @@ namespace RockWeb.Blocks.Examples
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
             RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+
+            // from https://stackoverflow.com/a/30976223/1755417
+            tbPassword.Attributes["autocomplete"] = "new-password";
         }
 
         /// <summary>
@@ -2974,7 +2977,8 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
-                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() )
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() ),
+                            CountryCode = "1"
                         };
 
                         // Format number since default SaveChanges() is not being used.

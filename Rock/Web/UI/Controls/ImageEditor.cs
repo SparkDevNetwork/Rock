@@ -1051,12 +1051,12 @@ $('#{6}').Jcrop({{
 }});
 
 // prompt to upload image
-$('#{8}').click( function (e, data) {{
-    $('#{0}').click();
+$('#{8}').on('click', function (e, data) {{
+    $('#{0}').trigger('click');
 }});
 
 // hide/show buttons and remove this button when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
-$('#{5}').click(function () {{
+$('#{5}').on('click', function () {{
     $('#{8}').show();
     $('#{9}').hide();
     $('#{5}').remove();

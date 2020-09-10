@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities using another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
-    public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides
+    public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides, IRelatedChildDataView
     {
         #region Properties
 
@@ -163,7 +163,7 @@ namespace Rock.Reporting.DataFilter
             // if selecting another dataview, default the cbUsePersisted to True
             Control control = sender as Control;
             FilterField filterField = control.FirstParentControlOfType<FilterField>();
-            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.CssClass.Contains( "js-usepersisted" ) ).FirstOrDefault();
+            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.HasCssClass( "js-usepersisted" ) ).FirstOrDefault();
             if ( cbUsePersisted != null )
             {
                 cbUsePersisted.Checked = true;
@@ -324,6 +324,26 @@ namespace Rock.Reporting.DataFilter
             return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = ( DataViewItemPicker ) controls[0];
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
 
         #region IDataFilterWithOverrides
@@ -350,7 +370,7 @@ namespace Rock.Reporting.DataFilter
                 // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
                 if ( IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
                 {
-                    throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection(entityType, selection) } data filter." );
+                    throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection( entityType, selection ) } data filter." );
                 }
 
                 var errorMessages = new List<string>();

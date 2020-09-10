@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Linq;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
@@ -24,8 +26,11 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class LocationFieldAttribute : FieldAttribute
     {
+        private const string ALLOWED_PICKER_MODES = "allowedPickerModes";
+        private const string CURRENT_PICKER_MODE = "currentPickerMode";
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="LocationFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -37,6 +42,51 @@ namespace Rock.Attribute
         public LocationFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.LocationFieldType).FullName )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the allowed picker modes.
+        /// </summary>
+        /// <value>
+        /// The allowed picker modes.
+        /// </value>
+        public LocationPickerMode[] AllowedPickerModes
+        {
+            get
+            {
+                var configValues = FieldConfigurationValues.GetValueOrNull( ALLOWED_PICKER_MODES );
+                if ( configValues != null )
+                {
+                    return configValues.Split( ',' ).Select( a => a.ConvertToEnum<LocationPickerMode>() ).ToArray();
+                }
+                return null;
+            }
+            set
+            {
+                if ( value != null )
+                {
+                    var flattenedClassNames = value.ToList().AsDelimited( "," );
+                    FieldConfigurationValues.Add( ALLOWED_PICKER_MODES, new Field.ConfigurationValue( flattenedClassNames ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current picker mode.
+        /// </summary>
+        /// <value>
+        ///  The current picker mode.
+        /// </value>
+        public LocationPickerMode CurrentPickerMode
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( CURRENT_PICKER_MODE ).ConvertToEnumOrNull<LocationPickerMode>() ?? LocationPickerMode.Address;
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( CURRENT_PICKER_MODE, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
 
     }

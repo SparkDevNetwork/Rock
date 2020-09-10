@@ -23,20 +23,18 @@
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Name" />
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Description" />
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
-                                <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Text="Yes" Help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+                                
                                 <Rock:RockCheckBox ID="cbRequiresViewSecurity" runat="server" Label="Requires View Security" Text="Yes" Help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
                                 <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true" />
                                 <div class="attributes">
-                                    <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                                    <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
                                 </div>
                             </div>
                             <div class="col-md-6">
-
                                 <h5>Attributes</h5>
                                 <p>
                                     Attributes allow for providing different values for each binary file of this type.
                                 </p>
-
                                 <div class="grid">
                                     <Rock:Grid ID="gBinaryFileAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
                                         <Columns>
@@ -46,12 +44,18 @@
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
+
+                                <h5>Cache Settings</h5>
+                                <Rock:RockCheckBox ID="cbCacheToServerFileSystem" runat="server" Label="Cache To Server File System" Help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+
+                                <h5>Cache Control Header Settings</h5>
+                                <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                             </div>
                         </div>
 
                         <h3>Preferred File Settings</h3>
                         <div class="row">
-                            
+
                             <div class="col-md-6">
                                 <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
                                 <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />

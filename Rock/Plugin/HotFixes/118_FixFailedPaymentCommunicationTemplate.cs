@@ -28,6 +28,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+            // FixFailedPaymentTemplate();
+        }
+
+        
+        private void FixFailedPaymentTemplate()
+        {
             // Fixes issue where Template Editor would corrupt the HTML on template that had Lava logic in them.
             // This migration fixes and corruption that might have happened on the 'Failed Communication' Template which is the only core template that had that problem
             // NOTE the REPLACE(asdf , char(13) + char(10), char(10)) on stuff to account for inconsistant line endings

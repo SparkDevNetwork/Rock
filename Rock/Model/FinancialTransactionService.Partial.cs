@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <param name="transactionCode">The transaction code.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code" )]
+        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code", true )]
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
             return this.GetByTransactionCode( null, transactionCode );
@@ -74,26 +74,6 @@ namespace Rock.Model
         public IQueryable<FinancialTransaction> GetFutureTransactions()
         {
             return Queryable().Where( t => t.FutureProcessingDateTime.HasValue );
-        }
-
-        /// <summary>
-        /// Deletes the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public override bool Delete( FinancialTransaction item )
-        {
-            if ( item.FinancialPaymentDetailId.HasValue )
-            {
-                var paymentDetailsService = new FinancialPaymentDetailService( ( Rock.Data.RockContext ) this.Context );
-                var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
-                if ( paymentDetail != null )
-                {
-                    paymentDetailsService.Delete( paymentDetail );
-                }
-            }
-
-            return base.Delete( item );
         }
 
         /// <summary>
@@ -158,7 +138,7 @@ namespace Rock.Model
                     return null;
                 }
 
-                var gatewayComponent = transaction.FinancialGateway.GetGatewayComponent();
+                var gatewayComponent = transaction.FinancialGateway?.GetGatewayComponent();
                 if ( gatewayComponent == null )
                 {
                     errorMessage = "Could not get the Gateway component in order to process the refund";

@@ -1207,10 +1207,14 @@ namespace RockWeb.Blocks.Cms
                     rblRole.DataBind();
                     rblRole.Visible = true;
                     rblRole.Required = true;
+
+                    tbFirstName.Enabled = true;
+                    tbLastName.Enabled = true;
                 }
                 else
                 {
                     person = new PersonService( rockContext ).Get( personGuid );
+
                     if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
                     {
                         tbFirstName.Enabled = false;
@@ -1222,11 +1226,6 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( person != null )
                     {
-                        if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
-                        {
-                            tbFirstName.Enabled = false;
-                            tbLastName.Enabled = false;
-                        }
                         imgPhoto.BinaryFileId = person.PhotoId;
                         imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
                         dvpTitle.SetValue( person.TitleValueId );

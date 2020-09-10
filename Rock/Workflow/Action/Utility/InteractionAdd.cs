@@ -198,7 +198,7 @@ namespace Rock.Workflow.Action
                     int? interactionComponentId = new InteractionComponentService( rockContext )
                         .Queryable()
                         .AsNoTracking()
-                        .Where( c => c.EntityId.HasValue && c.EntityId.Value == entityId.Value )
+                        .Where( c => c.EntityId.HasValue && c.InteractionChannelId == channel.Id && c.EntityId.Value == entityId.Value )
                         .Select( c => c.Id )
                         .Cast<int?>()
                         .FirstOrDefault();
@@ -216,7 +216,7 @@ namespace Rock.Workflow.Action
                     if ( id.HasValue )
                     {
                         var component = InteractionComponentCache.Get( id.Value );
-                        if ( component != null && component.ChannelId == channel.Id )
+                        if ( component != null && component.InteractionChannelId == channel.Id )
                         {
                             return component;
                         }
@@ -227,7 +227,7 @@ namespace Rock.Workflow.Action
                     if ( guid.HasValue )
                     {
                         var component = InteractionComponentCache.Get( guid.Value );
-                        if ( component != null && component.ChannelId == channel.Id )
+                        if ( component != null && component.InteractionChannelId == channel.Id )
                         {
                             return component;
                         }
@@ -254,7 +254,7 @@ namespace Rock.Workflow.Action
                         {
                             var interactionComponent = new InteractionComponent();
                             interactionComponent.Name = identifier;
-                            interactionComponent.ChannelId = channel.Id;
+                            interactionComponent.InteractionChannelId = channel.Id;
                             new InteractionComponentService( newRockContext ).Add( interactionComponent );
                             newRockContext.SaveChanges();
 

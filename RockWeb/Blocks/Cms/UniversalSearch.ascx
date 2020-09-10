@@ -18,7 +18,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block" DefaultButton="btnSearch">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-search"></i> Universal Search</h1>
             </div>
@@ -34,7 +34,7 @@
                         <asp:LinkButton ID="btnSearch" CssClass="btn btn-primary" runat="server" OnClick="btnSearch_Click">Go</asp:LinkButton>
                     </span>
                 </div>
-                
+
 
                 <div class="clearfix margin-t-sm">
                     <asp:LinkButton ID="lbRefineSearch" runat="server" Text="Refine Search" OnClick="lbRefineSearch_Click" CssClass="pull-right" />
@@ -48,9 +48,9 @@
                         <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" CssClass="js-model-filter" RepeatDirection="Horizontal" Label="Information Types" />
 
                         <hr id="hrSeparator" runat="server" />
-                        
+
                         <div class="row">
-                            <asp:PlaceHolder ID="phFilters" runat="server" />  
+                            <asp:PlaceHolder ID="phFilters" runat="server" />
                         </div>
                     </div>
                 </asp:Panel>
@@ -65,7 +65,7 @@
                     </ul>
                 </asp:Panel>
             </div>
-                
+
         </asp:Panel>
 
         <asp:Panel ID="pnlEditModal" runat="server" Visible="false">
@@ -111,11 +111,11 @@
 
         <script>
             Sys.Application.add_load( function () {
-                $(".model-cannavigate").click(function () {
+                $(".model-cannavigate").on("click", function () {
                     window.document.location = $(this).data("href");
                 });
 
-                $(".js-model-filter input").change(function () {
+                $(".js-model-filter input").on('change', function () {
 
                     var entityId = $(this).val();
                     var selector = ".js-entity-id-" + entityId + " input";

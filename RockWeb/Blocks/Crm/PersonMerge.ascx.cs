@@ -40,23 +40,27 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Merge" )]
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
+
     [SecurityAction( SecurityActionKey.ViewAllAttributes, "Grants permission to view all person attribute values." )]
 
     #region Block Attributes
 
-    [BooleanField( "Reset Login Confirmation",
+    [BooleanField(
+        "Reset Login Confirmation",
         Description = RESET_LOGIN_CONFIRMATION_DESCRIPTION,
         DefaultBooleanValue = true,
         Order = 0,
         Key = AttributeKey.ResetLoginConfirmation )]
 
-    [LinkedPage( "Person Detail Page",
+    [LinkedPage(
+        "Person Detail Page",
         Description = "The page to navigate to after the merge is completed.",
         IsRequired = true,
         Order = 1,
         Key = AttributeKey.PersonDetailPage )]
 
     #endregion Block Attributes
+
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
         #region Security Actions
@@ -75,8 +79,10 @@ namespace RockWeb.Blocks.Crm
 
         private const string FAMILY_VALUES = "FamilyValues";
         private const string FAMILY_NAME = "FamilyName";
+        private const string BUSINESS_ATTRIBUTES = "BusinessAttributes";
         private const string CAMPUS = "Campus";
         private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.";
+        private const string BUSINESS_INFORMATION = "BusinessInformation";
 
         #endregion Constants
 
@@ -97,9 +103,12 @@ namespace RockWeb.Blocks.Crm
             "PhoneNumbers",
             "Addresses",
             "PersonAttributes",
+            "BusinessAttributes",
             "FamilyAttributes",
-            FAMILY_VALUES
-        };
+            FAMILY_VALUES,
+            BUSINESS_INFORMATION,
+            BUSINESS_ATTRIBUTES
+    };
 
         #endregion
 
@@ -259,6 +268,8 @@ namespace RockWeb.Blocks.Crm
                     var people = new PersonService( new RockContext() ).Queryable( true ).Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.Users )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
+
+                    ppAdd.Visible = !people.All( a => a.IsBusiness() );
 
                     // Create the data structure used to build the grid.
                     MergeData = new MergeData( people, headingKeys, CurrentPerson, IsUserAuthorized( PersonMerge.SecurityActionKey.ViewAllAttributes ) );
@@ -432,9 +443,24 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            /*
+            01/02/2020 - SK
+            Similar code is used in ExpungePerson in PersonService class
+            https://github.com/SparkDevNetwork/Rock/blob/develop/Rock/Model/CodeGenerated/PersonService.cs
+            and might also to consider for any future changes made to current method.
+            */
+
             if ( MergeData.People.Count < 2 )
             {
                 nbPeople.Visible = true;
+                return;
+            }
+
+            if ( MergeDataIncludesAnonymousGiver() )
+            {
+                nbError.Heading = "Merge Error";
+                nbError.Text = string.Format( "<p>You can't merge the Anonymous Giver unless it is the primary selected person.</p>" );
+                nbError.Visible = true;
                 return;
             }
 
@@ -442,6 +468,8 @@ namespace RockWeb.Blocks.Crm
                 GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() &&
                 MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 &&
                 MergeData.People.Where( p => p.HasLogins ).Any();
+
+            bool isBusiness = MergeData.People.Any( a => a.IsBusiness );
 
             GetValuesSelection();
 
@@ -481,11 +509,14 @@ namespace RockWeb.Blocks.Crm
                         // Photo Id
                         primaryPerson.PhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsIntegerOrNull();
                         primaryPerson.TitleValueId = GetNewIntValue( "Title" );
-                        primaryPerson.FirstName = GetNewStringValue( "FirstName" );
-                        primaryPerson.NickName = GetNewStringValue( "NickName" );
-                        primaryPerson.MiddleName = GetNewStringValue( "MiddleName" );
+                        if ( !isBusiness )
+                        {
+                            primaryPerson.FirstName = GetNewStringValue( "FirstName" );
+                            primaryPerson.NickName = GetNewStringValue( "NickName" );
+                            primaryPerson.MiddleName = GetNewStringValue( "MiddleName" );
+                            primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
+                        }
                         primaryPerson.LastName = GetNewStringValue( "LastName" );
-                        primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
@@ -741,6 +772,14 @@ namespace RockWeb.Blocks.Crm
                             }
                         }
 
+                        // If merging records into the Anonymous Giver record, remove any UserLogins.
+                        bool mergingWithAnonymousGiver = ( primaryPerson.Guid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+                        if ( mergingWithAnonymousGiver )
+                        {
+                            RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+                        }
+
+
                         // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
                         var entitySetService = new EntitySetService( rockContext );
                         var entitySet = entitySetService.Get( MergeData.EntitySetId );
@@ -772,7 +811,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            NavigateToLinkedPage( AttributeKey.PersonDetailPage, "PersonId", primaryPersonId.Value );
+            NavigateToLinkedPage( AttributeKey.PersonDetailPage, isBusiness ? "BusinessId" : "PersonId", primaryPersonId.Value );
         }
 
         /// <summary>
@@ -1052,7 +1091,7 @@ namespace RockWeb.Blocks.Crm
                     personCol.PersonId = person.Id;
                     personCol.PersonName = person.FullName;
                     personCol.ID = "person_" + person.Id;
-                    personCol.HeaderContent = GetValuesColumnHeader( person.Id );
+                    personCol.HeaderContent = GetValuesColumnHeader( person.Id, person.IsBusiness );
                     personCol.ModifiedDateTime = person.ModifiedDateTime;
                     personCol.ModifiedBy = person.ModifiedBy;
                     personCol.OnDelete += personCol_OnDelete;
@@ -1065,8 +1104,9 @@ namespace RockWeb.Blocks.Crm
         /// Gets the values column header.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
+        /// <param name="isBusiness">Whether it should be business?</param>
         /// <returns></returns>
-        private string GetValuesColumnHeader( int personId )
+        private string GetValuesColumnHeader( int personId , bool isBusiness )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
@@ -1092,13 +1132,18 @@ namespace RockWeb.Blocks.Crm
             {
                 sbHeaderData.Append( "<div class='merge-heading-family'>" );
 
-                var nickNames = groupMemberService.Queryable( "Person" )
+                List<string> nickNames = new List<string>();
+                if ( !isBusiness )
+                {
+                    nickNames = groupMemberService.Queryable( "Person" )
                     .Where( m => m.GroupId == family.Id )
                     .OrderBy( m => m.GroupRole.Order )
                     .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
                     .ThenByDescending( m => m.Person.Gender )
                     .Select( m => m.Person.NickName )
                     .ToList();
+                }
+
                 if ( nickNames.Any() )
                 {
                     sbHeaderData.AppendFormat( "{0} ({1})", family.Name, nickNames.AsDelimited( ", " ) );
@@ -1275,6 +1320,31 @@ namespace RockWeb.Blocks.Crm
             return selectedPersonValues.ToArray();
         }
 
+        /// <summary>
+        /// Removes any UserLogin records associated with the Anonymous Giver.
+        /// </summary>
+        /// <param name="userLoginService">The <see cref="UserLoginService"/>.</param>
+        private void RemoveAnonymousGiverUserLogins( UserLoginService userLoginService, RockContext rockContext )
+        {
+            var personIds = MergeData.People.Select( a => a.Id ).ToList();
+
+            var logins = userLoginService.Queryable()
+                .Where( l => l.PersonId.HasValue && personIds.Contains( l.PersonId.Value ) );
+
+            userLoginService.DeleteRange( logins );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Checks to see if one of the records being merged (other than the primary record) is the Anonymous Giver account.
+        /// </summary>
+        private bool MergeDataIncludesAnonymousGiver()
+        {
+            var mergePersonGuids = MergeData.People.Where( p => p.Id != MergeData.PrimaryPersonId ).Select( p => p.Guid );
+            return mergePersonGuids.Contains( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+        }
+
         #endregion
     }
 
@@ -1301,6 +1371,8 @@ namespace RockWeb.Blocks.Crm
         #region Constants
 
         private const string FAMILY_VALUES = "FamilyValues";
+        private const string BUSINESS_INFORMATION = "BusinessInformation";
+        private const string BUSINESS_ATTRIBUTES = "BusinessAttributes";
         private const string FAMILY_NAME = "FamilyName";
         private const string CAMPUS = "Campus";
 
@@ -1365,9 +1437,11 @@ namespace RockWeb.Blocks.Crm
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
 
+            bool isBusiness = people.All( a => a.IsBusiness() );
+
             foreach ( var person in people )
             {
-                AddPerson( person );
+                AddPerson( person, isBusiness );
             }
 
             // Add Phone Numbers
@@ -1460,7 +1534,14 @@ namespace RockWeb.Blocks.Crm
 
             foreach ( var person in people )
             {
-                AddProperty( "PersonAttributes", "Person Attributes", 0, string.Empty );
+                if ( isBusiness )
+                {
+                    AddProperty( BUSINESS_ATTRIBUTES, "Business Attributes", 0, string.Empty );
+                }
+                else
+                {
+                    AddProperty( "PersonAttributes", "Person Attributes", 0, string.Empty );
+                }
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
@@ -1477,7 +1558,15 @@ namespace RockWeb.Blocks.Crm
 
             foreach ( var person in people )
             {
-                AddProperty( FAMILY_VALUES, FAMILY_VALUES.SplitCase(), 0, string.Empty );
+                if ( isBusiness )
+                {
+                    AddProperty( BUSINESS_INFORMATION, "Business Information", 0, string.Empty );
+                }
+                else
+                {
+                    AddProperty( FAMILY_VALUES, FAMILY_VALUES.SplitCase(), 0, string.Empty );
+                }
+                
                 var family = person.GetFamily();
                 if ( family != null )
                 {
@@ -1485,7 +1574,15 @@ namespace RockWeb.Blocks.Crm
                     AddProperty( CAMPUS, CAMPUS, person.Id, family.CampusId.HasValue ? family.CampusId.ToString() : string.Empty, family.CampusId.HasValue ? family.Campus.Name : string.Empty );
                 }
 
-                AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
+                if ( isBusiness )
+                {
+                    AddProperty( "BusinessAttributes", "Business Attributes", 0, string.Empty );
+                }
+                else
+                {
+                    AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
+                }
+
                 if ( family != null )
                 {
                     family.LoadAttributes();
@@ -1512,7 +1609,8 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            SetPrimary( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
+            var primaryPerson = people.OrderBy( p => p.CreatedDateTime ).FirstOrDefault();
+            SetPrimary( primaryPerson.Id, primaryPerson.Guid );
         }
 
         #endregion
@@ -1525,7 +1623,7 @@ namespace RockWeb.Blocks.Crm
         /// Sets the primary.
         /// </summary>
         /// <param name="primaryPersonId">The primary person identifier.</param>
-        public void SetPrimary( int primaryPersonId )
+        public void SetPrimary( int primaryPersonId, Guid primaryPersonGuid )
         {
             PrimaryPersonId = primaryPersonId;
 
@@ -1533,7 +1631,12 @@ namespace RockWeb.Blocks.Crm
             {
                 PersonPropertyValue value = null;
 
-                if ( personProperty.Values.Any( v => v.Value != null && v.Value != string.Empty ) )
+                // If the Primary Person Guid is the anonymous giver, always set that record value as default.
+                if ( primaryPersonGuid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() )
+                {
+                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId ).FirstOrDefault();
+                }
+                else if ( personProperty.Values.Any( v => v.Value != null && v.Value != string.Empty ) )
                 {
                     // Find primary person's non-blank value
                     value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.Value != null && v.Value != string.Empty ).FirstOrDefault();
@@ -1662,18 +1765,25 @@ namespace RockWeb.Blocks.Crm
 
         #region Private Methods
 
-        private void AddPerson( Person person )
+        private void AddPerson( Person person, bool isBusiness )
         {
             string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px'>", Person.GetPersonPhotoUrl( person ) + "&width=65" );
 
             People.Add( new MergePerson( person ) );
             AddProperty( "Photo", "Photo", person.Id, person.PhotoId.ToString(), personPhotoTag );
             AddProperty( "Title", person.Id, person.TitleValue );
-            AddProperty( "FirstName", person.Id, person.FirstName );
-            AddProperty( "NickName", person.Id, person.NickName );
-            AddProperty( "MiddleName", person.Id, person.MiddleName );
-            AddProperty( "LastName", person.Id, person.LastName );
-            AddProperty( "Suffix", person.Id, person.SuffixValue );
+            if ( !isBusiness )
+            {
+                AddProperty( "FirstName", person.Id, person.FirstName );
+                AddProperty( "NickName", person.Id, person.NickName );
+                AddProperty( "MiddleName", person.Id, person.MiddleName );
+                AddProperty( "LastName", person.Id, person.LastName );
+                AddProperty( "Suffix", person.Id, person.SuffixValue );
+            }
+            else
+            {
+                AddProperty( "LastName", "Business Name", person.Id, person.LastName );
+            }
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
@@ -1825,6 +1935,8 @@ namespace RockWeb.Blocks.Crm
 
         public bool HasLogins { get; set; }
 
+        public bool IsBusiness { get; set; }
+
         public Guid Guid { get; set; }
 
         public MergePerson( Person person )
@@ -1836,7 +1948,7 @@ namespace RockWeb.Blocks.Crm
             Email = person.Email;
             HasLogins = person.Users.Any();
             Guid = person.Guid;
-
+            IsBusiness = person.IsBusiness();
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )
             {

@@ -98,7 +98,7 @@
                                 if (confirmResult) {
                                     // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                                     setTimeout(function () {
-                                        var postbackArg = 'file-delete:' + selectedFileId.replace(/\\/g, "/");
+                                        var postbackArg = 'file-delete:' + selectedFileId.replace(/\\/g, "/").replace(/'/g, "\\'");
                                         window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                                     });
                                 }
@@ -127,7 +127,7 @@
                             $('#<%=hfSelectedFolder.ClientID%>').val(data);
                             // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                             setTimeout(function () {
-                                var postbackArg = 'folder-selected:' + relativeFolderPath.replace(/\\/g, "/");
+                                var postbackArg = 'folder-selected:' + relativeFolderPath.replace(/\\/g, "/").replace(/'/g, "\\'");
                                 window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                             });
                         });

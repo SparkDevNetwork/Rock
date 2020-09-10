@@ -33,7 +33,7 @@
                         </div>
                     </asp:Panel>
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ></Rock:EmailBox>
-                    <Rock:AddressControl ID="acAddress" runat="server" />
+                    <Rock:AddressControl ID="acAddress" runat="server" Label="Address" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlCol2" runat="server" CssClass="col-md-6">

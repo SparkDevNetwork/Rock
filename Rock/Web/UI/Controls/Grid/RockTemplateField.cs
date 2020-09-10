@@ -103,7 +103,7 @@ namespace Rock.Web.UI.Controls
             var textControls = dataControlFieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
             if ( textControls.Any() )
             {
-                return textControls.Select( a => a.Text.StripHtml() ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
+                return textControls.Select( a => a.Text.ConvertBrToCrLf().StripHtml() ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
             }
 
             return null;
@@ -124,7 +124,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                ViewState["OnRowSelectedEnabled"] = true;
+                ViewState["OnRowSelectedEnabled"] = value;
             }
         }
     }

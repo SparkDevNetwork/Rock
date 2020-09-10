@@ -118,7 +118,7 @@
                      <%-- workaround for RadioButtons in Repeaters https://stackoverflow.com/a/16793570/1755417 --%>
                     $('.js-group-at-address-choice').attr('Name', 'groupAtAddressChoice');
 
-                    $('.js-group-at-address-choice').click(function (a, b, c) {
+                    $('.js-group-at-address-choice').on('click', function (a, b, c) {
                         $('.js-group-at-address-choice').not($(this)).prop('checked', false);
 
                         $('.js-selected-group-at-address-choice').val($(this).attr('data-groupid'));

@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssessmentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCheckInSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceImport.cs" />
@@ -231,6 +232,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsPipeline.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Step.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepProgram.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepStatus.cs" />
@@ -242,7 +244,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakAchievementAttempt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeAchievementType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeExclusion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemCommunication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />

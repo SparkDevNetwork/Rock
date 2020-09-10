@@ -313,11 +313,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
 
             var mediumType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() );
-            var interactionTransaction = new InteractionTransaction( mediumType, contentChannelItem.ContentChannel, contentChannelItem )
-            {
-                InteractionSummary = contentChannelItem.Title,
-                CurrentPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId
-            };
+            var interactionTransaction = new InteractionTransaction(
+                mediumType,
+                contentChannelItem.ContentChannel,
+                contentChannelItem,
+                new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title, PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId } );
 
             interactionTransaction.Enqueue();
         }

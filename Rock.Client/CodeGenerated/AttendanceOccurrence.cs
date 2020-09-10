@@ -76,6 +76,9 @@ namespace Rock.Client
         public DateTime OccurrenceDate { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate OccurrenceSourceDate { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -133,6 +136,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
+            this.OccurrenceSourceDate = source.OccurrenceSourceDate;
             this.ScheduleId = source.ScheduleId;
             this.ShowDeclineReasons = source.ShowDeclineReasons;
             this.StepTypeId = source.StepTypeId;
@@ -154,6 +158,9 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<Attendance> Attendees { get; set; }
+
+        /// <summary />
+        public int OccurrenceDateKey { get; set; }
 
         /// <summary />
         public StepType StepType { get; set; }

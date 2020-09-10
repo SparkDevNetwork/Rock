@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "businessId" ).AsInteger() );
+                ShowDetail( PageParameter( "BusinessId" ).AsInteger() );
             }
 
             if ( !string.IsNullOrWhiteSpace( hfModalOpen.Value ) )
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Finance
             } );
 
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "businessId", hfBusinessId.Value );
+            queryParams.Add( "BusinessId", hfBusinessId.Value );
             NavigateToCurrentPage( queryParams );
         }
 

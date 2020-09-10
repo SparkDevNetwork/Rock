@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Prayer
             lbDelete.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'prayer request');";
 
             string scriptFormat = @"
-    $('#{0} .btn-toggle').click(function (e) {{
+    $('#{0} .btn-toggle').on('click', function (e) {{
 
         e.stopImmediatePropagation();
 
@@ -420,7 +420,6 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            cpCampus.Items.Clear();
             cpCampus.SelectedCampusId = prayerRequest.CampusId;
 
             pnlDetails.Visible = true;

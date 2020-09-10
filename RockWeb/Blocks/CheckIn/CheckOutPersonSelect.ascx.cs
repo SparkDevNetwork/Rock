@@ -61,9 +61,8 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }}
 
-        $('a.btn-checkin-select').click( function() {{
-            //$(this).toggleClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+        $('a.btn-checkin-select').on('click', function() {{
+            $(this).toggleClass('active').find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
@@ -84,7 +83,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                NavigateToHomePage(); 
+                NavigateToHomePage();
             }
             else
             {
@@ -115,9 +114,6 @@ namespace RockWeb.Blocks.CheckIn
             {
                 var pnlPhoto = e.Item.FindControl( "pnlPhoto" ) as Panel;
                 pnlPhoto.Visible = !_hidePhotos;
-
-                var pnlPerson = e.Item.FindControl( "pnlPerson" ) as Panel;
-                pnlPerson.CssClass = ( _hidePhotos ? "col-md-11 col-sm-10 col-xs-8" : "col-md-10 col-sm-8 col-xs-6" ) + " family-personselect";
             }
         }
 
@@ -167,6 +163,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void ProcessSelection()
         {
             ProcessSelection( maWarning, false );
+        }
+
+        protected string GetSelectedClass( bool selected )
+        {
+            return selected ? "active" : "";
         }
 
         protected string GetCheckboxClass( bool selected )

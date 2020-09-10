@@ -36,12 +36,12 @@ using Rock.Data;
 using Rock.Web;
 
 /// <summary>
-/// 
+///
 /// </summary>
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Page/Zone Blocks Editor" )]
     [Category( "CMS" )]
@@ -154,7 +154,6 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    //page.RemoveBlocks();
                     PageCache.Remove( page.Id );
 
                     if ( block.LayoutId.HasValue )
@@ -179,7 +178,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlZones_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowDetailForZone( ddlZones.SelectedValue );
+            // Note: nothing should be done here since this is already been take care of when OnLoad calls ShowDetailForZone
         }
 
         /// <summary>
@@ -221,6 +220,31 @@ namespace RockWeb.Blocks.Cms
 
                 // update SiteBlock, LayoutBlock and PageBlock repeaters
                 var zoneBlocks = page.Blocks.Where( a => a.Zone == zoneName ).ToList();
+
+                var blockTypes = zoneBlocks.Select( a => a.BlockType ).Distinct().ToList();
+
+                // if the blockType has changed since it IsInstancePropertiesVerified, check for updated attributes
+                foreach ( var blockType in blockTypes )
+                {
+                    if ( blockType != null && !blockType.IsInstancePropertiesVerified )
+                    {
+                        try
+                        {
+                            int blockTypeId = blockType.Id;
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var blockCompiledType = blockType.GetCompiledType();
+                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+                                bool attributesUpdated = Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
+                                BlockTypeCache.Get( blockTypeId ).MarkInstancePropertiesVerified( true );
+                            }
+                        }
+                        catch
+                        {
+                            // ignore if it can't be compiled
+                        }
+                    }
+                }
 
                 rptSiteBlocks.DataSource = zoneBlocks.Where(a => a.BlockLocation == BlockLocation.Site).ToList();
                 rptSiteBlocks.DataBind();
@@ -333,7 +357,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            
+
             // if the layout block doesn't have a master page, or if there are other ContentPlaceHolders that we didn't know about, add any other zones that we haven't added already
             var layoutZones = layoutControlNodes.Where( a => a.Attributes["Name"] != null ).Select( a => a.Attributes["Name"].Value ).ToList();
             foreach ( var layoutZone in layoutZones )
@@ -343,7 +367,7 @@ namespace RockWeb.Blocks.Cms
                     zoneNames.Add( layoutZone );
                 }
             }
-            
+
 
             // remove any spaces
             zoneNames = zoneNames.Select( a => a.Replace( " ", string.Empty ) ).ToList();
@@ -420,7 +444,8 @@ namespace RockWeb.Blocks.Cms
             btnMoveBlock.ID = string.Format( "btnMoveBlock_{0}", block.Id );
             btnMoveBlock.CommandName = "BlockId";
             btnMoveBlock.CommandArgument = block.Id.ToString();
-            btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square fa fa-external-link";
+            btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square";
+            btnMoveBlock.Text = "<i class='fa fa-external-link'></i>";
             btnMoveBlock.ToolTip = "Move Block";
             btnMoveBlock.Click += btnMoveBlock_Click;
             pnlAdminButtons.Controls.Add( btnMoveBlock );
@@ -483,7 +508,13 @@ namespace RockWeb.Blocks.Cms
 
             if ( customAdminControls.Any() && blockControl != null)
             {
-                pnlBlocksHolder.Controls.Add( blockControl );
+                // Set a flag to indicate that the block should only render the necessary elements to allow configuration.
+                // Rendering the block content here may disrupt the formatting of the page.
+                blockControl.ConfigurationRenderModeIsEnabled = true;
+
+                // if the block an ID so that viewstate (in the dynamicplaceholder) can be tracked by id
+                blockControl.ID = string.Format( "config_block_control_{0}", block.Id );
+                phBlockHolder.Controls.Add( blockControl );
             }
         }
 
@@ -574,7 +605,7 @@ namespace RockWeb.Blocks.Cms
                     @"<div class='panel-heading'>
                         <a class='btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation'><i class='fa fa-bars'></i></a>
                         <span>{0} ({1})</span>
-                      
+
                         <div class='block-config-buttons pull-right'>
                         ",
                     block.Name,
@@ -826,6 +857,6 @@ namespace RockWeb.Blocks.Cms
             pnlDetails.Visible = visible;
         }
 
-        
+
     }
 }

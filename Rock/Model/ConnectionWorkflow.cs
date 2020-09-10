@@ -246,7 +246,12 @@ public enum ConnectionWorkflowTriggerType
     /// <summary>
     /// Request Assigned
     /// </summary>
-    RequestAssigned = 8
+    RequestAssigned = 8,
+
+    /// <summary>
+    /// Future Follow-up Date Reached
+    /// </summary>
+    FutureFollowupDateReached = 9
 
 }
 

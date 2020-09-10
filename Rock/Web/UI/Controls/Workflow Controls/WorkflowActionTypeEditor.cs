@@ -130,7 +130,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // action animation
-$('.workflow-action > header').click(function () {
+$('.workflow-action > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -141,12 +141,12 @@ $('.workflow-action > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
-$('.workflow-action a.js-action-delete').click(function (event) {
+$('.workflow-action a.js-action-delete').on('click', function (event) {
     event.stopImmediatePropagation();
     return Rock.dialogs.confirmDelete(event, 'Action Type', 'This will also delete all the actions of this type from any existing persisted workflows!');
 });
 
-$('.workflow-action a.js-workflow-action-criteria').click(function (event) {
+$('.workflow-action a.js-workflow-action-criteria').on('click', function (event) {
     event.stopImmediatePropagation();
     $(this).closest('.workflow-action').find('div.conditional-run-criteria').slideToggle();
 });
@@ -169,11 +169,11 @@ $('.js-action-criteria-comparison').change( function (event) {
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.workflow-action a.workflow-action-reorder').click(function (event) {
+$('.workflow-action a.workflow-action-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
-$('a.workflow-formfield-reorder').click(function (event) {
+$('a.workflow-formfield-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 

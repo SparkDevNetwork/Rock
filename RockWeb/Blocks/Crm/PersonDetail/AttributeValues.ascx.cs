@@ -40,60 +40,68 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows for editing the value(s) of a set of attributes for person." )]
 
-    [AttributeCategoryField( "Category",
-        allowMultiple: true,
-        Key = AttributeKeys.Category,
+    #region Block Attributes
+
+    [AttributeCategoryField(
+        "Category",
+        Key = AttributeKey.Category,
         AllowMultiple = true,
         Description = "The Attribute Categories to display attributes from",
         EntityTypeName = "Rock.Model.Person",
         IsRequired = true,
         Order = 0 )]
 
-    [TextField("Attribute Order",
-        Key = AttributeKeys.AttributeOrder,
+    [TextField(
+        "Attribute Order",
+        Key = AttributeKey.AttributeOrder,
         Description = "The order to use for displaying attributes.  Note: this value is set through the block's UI and does not need to be set here.",
         IsRequired = false,
         Order = 1)]
 
-    [BooleanField("Use Abbreviated Name",
-        Key = AttributeKeys.UseAbbreviatedName,
+    [BooleanField(
+        "Use Abbreviated Name",
+        Key = AttributeKey.UseAbbreviatedName,
         Description = "Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",
         IsRequired = true,
         DefaultBooleanValue = false,
-        Order = 2
-        )]
+        Order = 2 )]
 
     [TextField( "Block Title",
-        Key = AttributeKeys.BlockTitle,
+        Key = AttributeKey.BlockTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "",
         Order = 3 )]
 
-    [TextField( "Block Icon",
-        Key = AttributeKeys.BlockIcon,
+    [TextField(
+        "Block Icon",
+        Key = AttributeKey.BlockIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "",
         Order = 4 )]
 
-    [BooleanField( "Show Category Names as Separators",
-        Key = AttributeKeys.ShowCategoryNamesasSeparators,
+    [BooleanField(
+        "Show Category Names as Separators",
+        Key = AttributeKey.ShowCategoryNamesAsSeparators,
         Description = "If enabled, attributes will be grouped by category and will include the category name as a heading separator.",
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 5 )]
+
+    #endregion Block Attributes
+
     public partial class AttributeValues : PersonBlock
     {
         #region Attribute Keys
-        private static class AttributeKeys
+        private static class AttributeKey
         {
             public const string Category = "Category";
             public const string AttributeOrder = "AttributeOrder";
             public const string UseAbbreviatedName = "UseAbbreviatedName";
             public const string BlockTitle = "BlockTitle";
             public const string BlockIcon = "BlockIcon";
-            public const string ShowCategoryNamesasSeparators = "ShowCategoryNamesasSeparators";
+            public const string ShowCategoryNamesAsSeparators = "ShowCategoryNamesasSeparators";
         }
 
         #endregion Attribute Keys
@@ -299,7 +307,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     // Split and delineate again to remove trailing delimiter
                     var attributeOrder = hfAttributeOrder.Value.SplitDelimitedValues().ToList().AsDelimited( "|" );
 
-                    SetAttributeValue( "AttributeOrder", attributeOrder );
+                    SetAttributeValue( AttributeKey.AttributeOrder, attributeOrder );
                     SaveAttributeValues();
 
                     BindData();
@@ -327,11 +335,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             AttributeCategoriesList = new Dictionary<int, List<int>>();
 
-            var categories = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
+            var categories = GetAttributeValue( AttributeKey.Category ).SplitDelimitedValues( false ).AsGuidList();
             if ( categories.Any() )
             {
                 var orderOverride = new List<int>();
-                GetAttributeValue( "AttributeOrder" ).SplitDelimitedValues().ToList().ForEach( a => orderOverride.Add( a.AsInteger() ) );
+                GetAttributeValue( AttributeKey.AttributeOrder ).SplitDelimitedValues().ToList().ForEach( a => orderOverride.Add( a.AsInteger() ) );
 
                 var orderedAttributeList = new AttributeService( new RockContext() ).Queryable().Where( a => a.IsActive && a.Categories.Any( c => categories.Contains( c.Guid ) ) )
                     .OrderBy( a => a.Order )
@@ -365,13 +373,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void SetPanelTitleAndIcon()
         {
             CategoryCache category = null;
-            var categories = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
+            var categories = GetAttributeValue( AttributeKey.Category ).SplitDelimitedValues( false ).AsGuidList();
             if ( categories.Count == 1 )
             {
                 category = CategoryCache.Get( categories.First() );
             }
 
-            string panelTitle = this.GetAttributeValue( AttributeKeys.BlockTitle );
+            string panelTitle = this.GetAttributeValue( AttributeKey.BlockTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
@@ -385,7 +393,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 lTitle.Text = "Attribute Values";
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.BlockIcon );
+            string panelIcon = this.GetAttributeValue( AttributeKey.BlockIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -398,7 +406,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void CreateControls( bool setValues )
         {
-            var showCategoryNamesasSeparators = GetAttributeValue( AttributeKeys.ShowCategoryNamesasSeparators ).AsBoolean();
+            var showCategoryNamesasSeparators = GetAttributeValue( AttributeKey.ShowCategoryNamesAsSeparators ).AsBoolean();
             fsAttributes.Controls.Clear();
 
             string validationGroup = string.Format("vgAttributeValues_{0}", this.BlockId );
@@ -411,7 +419,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( showCategoryNamesasSeparators )
                 {
-                    var categoryGuids = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
+                    var categoryGuids = GetAttributeValue( AttributeKey.Category ).SplitDelimitedValues( false ).AsGuidList();
                     var categories = new CategoryService( new RockContext() ).GetByGuids( categoryGuids ).OrderBy( a => a.Order );
                     foreach ( var category in categories )
                     {
@@ -450,7 +458,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var attribute = AttributeCache.Get( attributeId );
                 string attributeValue = Person.GetAttributeValue( attribute.Key );
                 string formattedValue = string.Empty;
-                string attributeLabel = GetAttributeValue( AttributeKeys.UseAbbreviatedName ).AsBoolean() == false ? attribute.Name : attribute.AbbreviatedName;
+                string attributeLabel = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean() == false ? attribute.Name : attribute.AbbreviatedName;
 
                 if ( ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {

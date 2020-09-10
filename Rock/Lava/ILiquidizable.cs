@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace Rock.Lava
 {
     /// <summary>
-    /// Represents an object model that supports specific ordering
+    /// Represents an object model that can be used with Lava
     /// </summary>
     public interface ILiquidizable: DotLiquid.ILiquidizable, DotLiquid.IIndexable
     {

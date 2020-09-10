@@ -37,9 +37,26 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Route List")]
     [Category("CMS")]
     [Description("Displays a list of page routes.")]
-    [LinkedPage("Detail Page")]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    #endregion
     public partial class PageRouteList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Control Methods
 
         /// <summary>
@@ -105,7 +122,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pageRouteId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "PageRouteId", 0 );
         }
 
         /// <summary>
@@ -115,7 +132,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pageRouteId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "PageRouteId", e.RowKeyId );
         }
 
         /// <summary>

@@ -35,9 +35,26 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Business List" )]
     [Category( "Finance" )]
     [Description( "Lists all businesses and provides filtering by business name" )]
-    [LinkedPage( "Detail Page" )]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    #endregion Block Attributes
     public partial class BusinessList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Control Methods
 
         /// <summary>
@@ -58,6 +75,7 @@ namespace RockWeb.Blocks.Finance
             gBusinessList.Actions.AddClick += gBusinessList_AddClick;
             gBusinessList.GridRebind += gBusinessList_GridRebind;
             gBusinessList.IsDeleteEnabled = canEdit;
+            gBusinessList.PersonIdField = "Id";
         }
 
         /// <summary>
@@ -142,8 +160,8 @@ namespace RockWeb.Blocks.Finance
         private void gBusinessList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "businessId", "0" );
-            NavigateToLinkedPage( "DetailPage", parms );
+            parms.Add( "BusinessId", "0" );
+            NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
         /// <summary>
@@ -155,8 +173,8 @@ namespace RockWeb.Blocks.Finance
         {
             var parms = new Dictionary<string, string>();
             var businessId = e.RowKeyId;
-            parms.Add( "businessId", businessId.ToString() );
-            NavigateToLinkedPage( "DetailPage", parms );
+            parms.Add( "BusinessId", businessId.ToString() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
         #endregion Events

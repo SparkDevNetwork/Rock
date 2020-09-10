@@ -37,11 +37,26 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description( "Lists Lava Shortcode in the system." )]
 
-    [LinkedPage("Detail Page")]
+    #region Block Attributes
+
+    [LinkedPage(
+       "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion Block Attributes
     public partial class LavaShortcodeList : RockBlock
     {
 
         public bool canAddEditDelete = false;
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
 
         #region Control Methods
 
@@ -94,7 +109,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddShortcut_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "lavaShortcodeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LavaShortcodeId", 0 );
         }
 
         /// <summary>
@@ -108,7 +123,7 @@ namespace RockWeb.Blocks.Cms
             RepeaterItem item = ( RepeaterItem ) btn.NamingContainer;
             HiddenField hfShortcodeId = ( HiddenField ) item.FindControl( "hfShortcodeId" );
 
-            NavigateToLinkedPage( "DetailPage", "lavaShortcodeId", hfShortcodeId.ValueAsInt() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LavaShortcodeId", hfShortcodeId.ValueAsInt() );
         }
 
         /// <summary>

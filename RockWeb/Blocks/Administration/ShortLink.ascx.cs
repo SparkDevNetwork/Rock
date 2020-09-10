@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Administration
 
                 SetSiteUrl();
 
-                string url = PageParameter( "url" );
+                string url = PageParameter( "Url" );
                 if ( url.IsNotNullOrWhiteSpace() )
                 {
                     tbUrl.Text = url;

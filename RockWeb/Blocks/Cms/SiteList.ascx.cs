@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Site List" )]
     [Category( "CMS" )]
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             string deleteScript = @"
-                $('table.js-grid-site-list a.grid-delete-button').click(function( e ){
+                $('table.js-grid-site-list a.grid-delete-button').on('click', function( e ){
                     var $btn = $(this);
                     e.preventDefault();
                     var siteName = $btn.closest('tr').find('.js-name').text();
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SiteId", 0 );
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SiteId", e.RowKeyId );
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                 } );
-                
+
             }
 
             BindGrid();
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Cms
                 gSites.ColumnsOfType<RockTemplateField>().First( c => c.ID == "colDomains" ).Visible = false;
             }
 
-            // Default show inactive to false if no filter (user preference) applied. 
+            // Default show inactive to false if no filter (user preference) applied.
             bool showInactiveSites = rFilterSite.GetUserPreference( INCLUE_INACTIVE ).AsBoolean();
 
             if ( siteType.Count() > 0 )

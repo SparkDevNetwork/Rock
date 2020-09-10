@@ -476,15 +476,20 @@ namespace Rock.Web.UI.Controls
                 fieldTypeName = entityType.SingleValueFieldType.Name.Replace(" ", string.Empty);
 
                 entityTypeEditControl = entityType.SingleValueFieldType.Field.EditControl( new Dictionary<string, Field.ConfigurationValue>(), string.Format( "{0}_{1}_Picker", this.ID, fieldTypeName ) );
-
-                /*
-                 * 1/27/2020 - JPH
-                 * Some pickers contain logic to hide the control in certain cases. For example, the CampusPicker will not be visible in the case that
-                 * there is only one Campus. Within the context of the EntityPicker, we need for the control to always be visible so the proper default
-                 * value will be saved to the database.
-                 */
-                entityTypeEditControl.Visible = true;
             }
+
+            if ( entityTypeEditControl == null )
+            {
+                return;
+            }
+
+            /*
+            * 1/27/2020 - JPH
+            * Some pickers contain logic to hide the control in certain cases. For example, the CampusPicker will not be visible in the case that
+            * there is only one Campus. Within the context of the EntityPicker, we need for the control to always be visible so the proper default
+            * value will be saved to the database.
+            */
+            entityTypeEditControl.Visible = true;
 
             // only set the _entityTypeEditControl is needs to be
             if ( _entityTypeEditControl == null || !_entityTypeEditControl.GetType().Equals( entityTypeEditControl.GetType() ) || _entityTypeEditControl.ID != entityTypeEditControl.ID )

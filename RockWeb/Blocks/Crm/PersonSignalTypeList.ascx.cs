@@ -34,9 +34,20 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows a list of all signal types." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
     public partial class PersonSignalTypeList : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -91,7 +102,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPersonSignalType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "SignalTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SignalTypeId", 0 );
         }
 
         /// <summary>
@@ -101,7 +112,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonSignalType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "SignalTypeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SignalTypeId", e.RowKeyId );
         }
 
         /// <summary>

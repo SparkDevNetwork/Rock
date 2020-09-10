@@ -10,6 +10,26 @@
     <Parameter name="webAppUrl" value="http://localhost" />
     <Parameter name="webAppUserName" value="" />
     <Parameter name="webAppPassword" value="" />
+
+    
+    <!-- AWS Amazon S3 Storage Provider tests -->
+    <Parameter name="AWSAccessKey" value="" />
+    <Parameter name="AWSSecretKey" value="" />
+    <Parameter name="AWSProfileName" value="rocksolid3saccount" />
+    <Parameter name="AWSBucket" value="rocksolidchurch-comm-team" />
+    <Parameter name="AWSRegion" value="us-east-1" />
+    <Parameter name="UnitTestRootFolder" value="UnitTestFolder" />
+
+    <!-- Azure Cloud Storage Provider tests -->
+    <Parameter name="AzureStorageAccountName" value="" />
+    <Parameter name="AzureAccountAccessKey" value="" />
+    <Parameter name="AzureDefaultContainerName" value="" />
+    <Parameter name="AzureCustomDomain" value="" />
+
+    <!-- Google Cloud Storage Provider tests -->
+    <Parameter name="GoogleBucketName" value="" />
+    <Parameter name="GoogleServiceAccountJsonKey" value="" />
+    
   </TestRunParameters>
   
   <!-- MSTest adapter -->

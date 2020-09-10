@@ -13,6 +13,7 @@
 @import "../../../Styles/_checkin-core.less";
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
+@import "../../../Styles/_checkin-mobile.less";
 
 @import "_variables.less";
 @import "_variable-overrides.less";
@@ -105,6 +106,27 @@ body {
   body {
     background-image: @logo-image-retina;
     background-size: @logo-image-retina-size;
+  }
+}
+
+.administration {
+  .checkin-scroll-panel {
+    background: @btn-primary-bg;
+    border-radius: @border-radius-base;
+
+    > .scroller {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+  }
+}
+
+.checkin-messages,
+.checkin-summary {
+  li {
+    border-radius: @border-radius-base;
+    background: @btn-primary-bg;
+    padding: 15px;
   }
 }
 

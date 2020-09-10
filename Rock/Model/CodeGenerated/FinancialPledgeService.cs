@@ -90,12 +90,14 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountId = source.AccountId;
             target.EndDate = source.EndDate;
+            target.EndSourceDate = source.EndSourceDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.PersonAliasId = source.PersonAliasId;
             target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             target.StartDate = source.StartDate;
+            target.StartSourceDate = source.StartSourceDate;
             target.TotalAmount = source.TotalAmount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -28,12 +28,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddUpgradeSQLServerMessage();
-            FixAgeCalcError();
-            AttendanceAnalyticsSortAttendeesByCampus();
-            UpdateSampleDataUrl();
-            RemoveGlobalAttributeRouteDomainMatching();
-            Issue3478();
+            //AddUpgradeSQLServerMessage();
+            //FixAgeCalcError();
+            //AttendanceAnalyticsSortAttendeesByCampus();
+            //UpdateSampleDataUrl();
+            //RemoveGlobalAttributeRouteDomainMatching();
+            //Issue3478();
         }
 
         /// <summary>

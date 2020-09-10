@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -31,6 +32,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process communications
     /// </summary>
+    [DisplayName( "Send Communications" )]
+    [Description( "Job to send any future communications or communications not sent immediately by Rock." )]
+
     [IntegerField( "Delay Period", "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).", false, 30, "", 0 )]
     [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
     [DisallowConcurrentExecution]
@@ -91,17 +95,19 @@ namespace Rock.Jobs
             }
 
             // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
-            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
+            var expireDateTimeEndWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
+
+            // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
+            var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
+
             var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                 .Where( cr =>
                     cr.Communication.Status == CommunicationStatus.Approved &&
                     cr.Status == CommunicationRecipientStatus.Pending &&
                     (
-                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < beginWindow )
-                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < beginWindow )
+                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < expireDateTimeEndWindow && cr.Communication.CreatedDateTime > expireDateTimeBeginWindow )
+                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime  > expireDateTimeBeginWindow)
                     ) );
-
-            var count = qryExpiredRecipients.Count();
 
             rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
         }

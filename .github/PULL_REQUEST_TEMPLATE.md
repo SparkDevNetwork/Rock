@@ -1,3 +1,8 @@
+
+## Notice
+
+**We cannot guarantee that your pull request will be accepted.**  There are many factors involved.  We take into consideration whether or not the Rock system you run is a standard, main-line build.  If it is not, there is a lower chance we will accept your request (since it may impact a part of the system you don't regularly use).  Features that would be used by less than 80% of Rock organizations, or ones that don't match the goals of Rock, are other important factors.
+
 ## Proposed Changes
 
 <!--

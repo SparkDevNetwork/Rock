@@ -131,6 +131,15 @@ namespace Rock.Model
         }
         private bool _isActive = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable request security].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable request security]; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        public bool EnableRequestSecurity { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -88,7 +88,7 @@ namespace Rock.UniversalSearch.Crawler
             IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
 
             _site = site;
-            
+
             _startUrl = _site.IndexStartingLocation;
             var startingUri = new Uri( _startUrl );
 
@@ -134,12 +134,12 @@ namespace Rock.UniversalSearch.Crawler
         /// <summary>
         /// Crawls a page.
         /// </summary>
-        /// <param name="url">The url to crawl.</param>
+        /// <param name="url">The URL to crawl.</param>
         private void CrawlPage( string url )
         {
             try
             {
-                // clean up the url a bit
+                // clean up the URL a bit
                 url = StandardizeUrl( url );
 
                 if ( !PageHasBeenCrawled( url ) )
@@ -362,8 +362,8 @@ namespace Rock.UniversalSearch.Crawler
             {
                 return;
             }
-                
-            // make sure it's not an element we don't want text from 
+
+            // make sure it's not an element we don't want text from
             var classValue = string.Empty;
 
             if ( node.Attributes["class"] != null )
@@ -395,7 +395,7 @@ namespace Rock.UniversalSearch.Crawler
         /// <summary>
         /// Checks to see if the page has been crawled.
         /// </summary>
-        /// <param name="url">The url that has potentially been crawled.</param>
+        /// <param name="url">The URL that has potentially been crawled.</param>
         /// <returns>Boolean indicating whether or not the page has been crawled.</returns>
         private bool PageHasBeenCrawled( string url )
         {
@@ -421,7 +421,7 @@ namespace Rock.UniversalSearch.Crawler
         /// <summary>
         /// Gets the response text for a given url.
         /// </summary>
-        /// <param name="url">The url whose text needs to be fetched.</param>
+        /// <param name="url">The URL whose text needs to be fetched.</param>
         /// <returns>The text of the response.</returns>
         private string GetWebText( string url )
         {
@@ -535,7 +535,7 @@ namespace Rock.UniversalSearch.Crawler
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class CrawlUrl
         {

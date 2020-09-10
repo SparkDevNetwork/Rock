@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "GroupTypeId" ).AsInteger() );
             }
             else
             {
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupTypeId = PageParameter( pageReference, "groupTypeId" ).AsIntegerOrNull();
+            int? groupTypeId = PageParameter( pageReference, "GroupTypeId" ).AsIntegerOrNull();
             if ( groupTypeId != null )
             {
                 GroupType groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId.Value );
@@ -2031,7 +2031,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                // get the non-editable stuff from the GroupTypeAttributesState and put it back into the object...
+                // get the non-editable stuff from the state and put it back into the object...
                 var attributeState = GroupTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
                 if ( attributeState != null )
                 {
@@ -2201,7 +2201,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                // get the non-editable stuff from the GroupAttributesState and put it back into the object...
+                // get the non-editable stuff from the state and put it back into the object...
                 var attributeState = GroupAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
                 if ( attributeState != null )
                 {
@@ -2365,7 +2365,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                // get the non-editable stuff from the GroupAttributesState and put it back into the object...
+                // get the non-editable stuff from the state and put it back into the object...
                 var attributeState = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
                 if ( attributeState != null )
                 {

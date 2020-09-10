@@ -308,9 +308,9 @@ namespace RockWeb.Blocks.CheckIn
                     )
                     &&
                     (
-                        ! CurrentCheckInState.CheckInType.AllowCheckout ||
+                        ! CurrentCheckInState.AllowCheckout ||
                         (
-                            CurrentCheckInState.CheckInType.AllowCheckout &&
+                            CurrentCheckInState.AllowCheckout &&
                             CurrentCheckInState.CheckIn.Families.All( f => f.CheckOutPeople.Count == 0 )
                         )
                     );

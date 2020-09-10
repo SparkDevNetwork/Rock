@@ -30,42 +30,42 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddOrUpdateTemplateBlockTemplate(
-                "674CF1E3-561C-430D-B4A8-39957AC1BCF1",
-                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST,
-                "Default",
-                @"<StackLayout>
-    <Label StyleClass=""heading1"" Text=""{{ Title | Escape }}"" />
-    <Label Text=""{{ Members | Size }} members"" LineHeight=""0.8"" />
+//            RockMigrationHelper.AddOrUpdateTemplateBlockTemplate(
+//                "674CF1E3-561C-430D-B4A8-39957AC1BCF1",
+//                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST,
+//                "Default",
+//                @"<StackLayout>
+//    <Label StyleClass=""heading1"" Text=""{{ Title | Escape }}"" />
+//    <Label Text=""{{ Members | Size }} members"" LineHeight=""0.8"" />
 
-    {% if Members != empty %}
-    <StackLayout Spacing=""0"" Margin=""0,20,0,0"">
-        <BoxView Color=""#ccc"" HeightRequest=""1"" />
-        {% for member in Members %}
-        <StackLayout Orientation=""Horizontal"" HeightRequest=""60"">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Command=""{Binding PushPage}"" CommandParameter=""{{ DetailPage }}?MemberId={{ member.Id }}"" />
-            </StackLayout.GestureRecognizers>
-            {%- if member.PhotoId != null -%}
-                <Rock:Image Source=""{{ member.PhotoUrl | Append:'&width=60' | Escape }}"" WidthRequest=""60"" BackgroundColor=""#ccc"" />
-            {%- else -%}
-                <Rock:Image Source=""{{ member.PhotoUrl | Escape }}"" WidthRequest=""60"" BackgroundColor=""#ccc"" />
-            {%- endif -%}
+//    {% if Members != empty %}
+//    <StackLayout Spacing=""0"" Margin=""0,20,0,0"">
+//        <BoxView Color=""#ccc"" HeightRequest=""1"" />
+//        {% for member in Members %}
+//        <StackLayout Orientation=""Horizontal"" HeightRequest=""60"">
+//            <StackLayout.GestureRecognizers>
+//                <TapGestureRecognizer Command=""{Binding PushPage}"" CommandParameter=""{{ DetailPage }}?MemberId={{ member.Id }}"" />
+//            </StackLayout.GestureRecognizers>
+//            {%- if member.PhotoId != null -%}
+//                <Rock:Image Source=""{{ member.PhotoUrl | Append:'&width=60' | Escape }}"" WidthRequest=""60"" BackgroundColor=""#ccc"" />
+//            {%- else -%}
+//                <Rock:Image Source=""{{ member.PhotoUrl | Escape }}"" WidthRequest=""60"" BackgroundColor=""#ccc"" />
+//            {%- endif -%}
 
-            <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"" VerticalOptions=""Center"">
-                <Label FontSize=""16"" FontAttributes=""Bold"" Text=""{{ member.FullName | Escape }}"" />
-                <Label LineHeight=""0.85"" FontSize=""12"" TextColor=""#888"" Text=""{{ member.GroupRole | Escape }}"" />
-            </StackLayout>
-            <Rock:Icon IconClass=""chevron-right"" Margin=""0,0,20,0"" VerticalOptions=""Center"" />
-        </StackLayout>
-        <BoxView Color=""#ccc"" HeightRequest=""1"" />
-        {% endfor %}
-    </StackLayout>
-    {% endif %}
-</StackLayout>",
-                STANDARD_ICON_SVG,
-                "standard-template.svg",
-                "image/svg+xml" );
+//            <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"" VerticalOptions=""Center"">
+//                <Label FontSize=""16"" FontAttributes=""Bold"" Text=""{{ member.FullName | Escape }}"" />
+//                <Label LineHeight=""0.85"" FontSize=""12"" TextColor=""#888"" Text=""{{ member.GroupRole | Escape }}"" />
+//            </StackLayout>
+//            <Rock:Icon IconClass=""chevron-right"" Margin=""0,0,20,0"" VerticalOptions=""Center"" />
+//        </StackLayout>
+//        <BoxView Color=""#ccc"" HeightRequest=""1"" />
+//        {% endfor %}
+//    </StackLayout>
+//    {% endif %}
+//</StackLayout>",
+//                STANDARD_ICON_SVG,
+//                "standard-template.svg",
+//                "image/svg+xml" );
         }
 
         /// <summary>

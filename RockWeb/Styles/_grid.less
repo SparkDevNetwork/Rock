@@ -149,9 +149,9 @@ td.wrap-contents {
     }
   }
 
-  .btn-link {
+  .btn-filter-toggle {
     position: absolute;
-    z-index: 100;
+    z-index: 9; // Stack behind Calendars
     margin: @table-cell-padding;
     color: @ui-5;
     text-decoration: none;
@@ -212,7 +212,7 @@ td.wrap-contents {
   > a:not(.btn) {
     display: inline;
     color: @grid-column-header-text-color;
-    &::after{
+    &::after {
       display: inline;
       width: 15px;
       padding-left: 5px;
@@ -229,15 +229,14 @@ td.wrap-contents {
       color: @link-color;
     }
   }
-  &:hover a:not(.btn)::after{
-    content: @fa-var-caret-down;
+
+  &:hover a:not(.btn)::after {
     opacity: 1;
   }
 
   // sorting
   &.descending a:not(.btn)::after {
     color: @grid-column-header-text-color;
-    content: @fa-var-caret-down;
     opacity: 1;
   }
 
@@ -322,6 +321,9 @@ td.grid-col-actions {
 
   .btn {
     margin-left: 8px;
+  }
+
+  .btn-grid-action {
     color: @grid-footer-button-text-color;
     background-color: @grid-footer-button-bg;
     border-color: @grid-footer-button-border;

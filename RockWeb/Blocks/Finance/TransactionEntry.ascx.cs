@@ -283,7 +283,7 @@ TransactionAccountDetails: [
 
         protected bool DisplayPhone
         {
-            get {return ViewState["DisplayPhone"].ToString().AsBoolean(); }
+            get { return ViewState["DisplayPhone"].ToString().AsBoolean(); }
             set { ViewState["DisplayPhone"] = value; }
         }
         #endregion
@@ -297,6 +297,8 @@ TransactionAccountDetails: [
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            this.BlockUpdated += TransactionEntry_BlockUpdated;
 
             _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
             _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
@@ -338,6 +340,17 @@ TransactionAccountDetails: [
             }
 
             RegisterScript();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the TransactionEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void TransactionEntry_BlockUpdated( object sender, EventArgs e )
+        {
+            // if block settings have changed, reload the page
+            this.NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -461,10 +474,25 @@ TransactionAccountDetails: [
                 return;
             }
 
-            if ( ( _ccGatewayComponent is IHostedGatewayComponent ) || _achGatewayComponent is IHostedGatewayComponent )
+            var ccHostedGatewayComponent = _ccGatewayComponent as IHostedGatewayComponent;
+            var achHostedGatewayComponent = _achGatewayComponent as IHostedGatewayComponent;
+            bool gatewaySupportsUnhostedPayment = true;
+
+            if ( ccHostedGatewayComponent != null && !ccHostedGatewayComponent.GetSupportedHostedGatewayModes( _ccGateway ).Contains( HostedGatewayMode.Unhosted ) )
             {
+                gatewaySupportsUnhostedPayment = false;
+            }
+
+            if ( achHostedGatewayComponent != null && !achHostedGatewayComponent.GetSupportedHostedGatewayModes( _achGateway ).Contains( HostedGatewayMode.Unhosted ) )
+            {
+                gatewaySupportsUnhostedPayment = false;
+            }
+
+            if ( !gatewaySupportsUnhostedPayment )
+            {
+
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block does not support Gateways that have a hosted payment interface." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block does only supports Gateways that have a un-hosted payment interface." );
                 return;
             }
 
@@ -476,7 +504,7 @@ TransactionAccountDetails: [
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "Transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
             {
                 InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
             }
@@ -543,7 +571,7 @@ TransactionAccountDetails: [
             }
 
             // Update the total amount
-            lblTotalAmount.Text = GlobalAttributesCache.Value("CurrencySymbol") + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = GlobalAttributesCache.Value( "CurrencySymbol" ) + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -693,7 +721,7 @@ TransactionAccountDetails: [
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Danger, "Before we finish...", errorMessage );
+                        ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
                     }
                 }
                 else
@@ -705,7 +733,7 @@ TransactionAccountDetails: [
             }
             else
             {
-                ShowMessage( NotificationBoxType.Danger, "Before we finish...", errorMessage );
+                ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
             }
         }
 
@@ -883,7 +911,7 @@ TransactionAccountDetails: [
 
                         if ( !ScheduleId.HasValue )
                         {
-                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( (financialGateway != null ? financialGateway.Id : (int?)null), TransactionCode );
+                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( ( financialGateway != null ? financialGateway.Id : ( int? ) null ), TransactionCode );
                             if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                             {
                                 if ( transaction.FinancialGateway != null )
@@ -1741,7 +1769,7 @@ TransactionAccountDetails: [
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
                         // Same logic as PledgeEntry.ascx.cs
-                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim());
+                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim() );
                         person = personService.FindPerson( personQuery, true );
                     }
 
@@ -2660,7 +2688,25 @@ TransactionAccountDetails: [
             FinancialPaymentDetail paymentDetail = null;
             if ( schedule != null )
             {
-                var scheduledTransaction = threeStepGateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
+                ReferencePaymentInfo referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
+                FinancialScheduledTransaction scheduledTransaction;
+                if ( referencePaymentInfo != null && referencePaymentInfo.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                {
+                    /* MDP 2020-02-28
+                     * ThreeStepGateway.AddScheduledPaymentStep3 doesn't support using Saved Accounts for scheduled transactions.
+                     * It returns a 'ccnumber is required' error, and we weren't able to find a solution
+                     * So we ended up just disabling SavedAccounts when doing a Scheduled Transaction (prior to v11)
+                     *
+                     * Starting with V11, we can use the DirectPost API to schedule transactions with saved accounts to get around that issue
+                     */
+
+                    // If this is a saved account, we can juse use the regular DirectPost API of the ThreeStepGateway (see above note)
+                    scheduledTransaction = ( threeStepGateway as GatewayComponent ).AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
+                }
+                else
+                {
+                    scheduledTransaction = threeStepGateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
+                }
                 if ( scheduledTransaction == null )
                 {
                     return false;
@@ -2905,7 +2951,7 @@ TransactionAccountDetails: [
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }            
+            }
 
             transaction.LoadAttributes( rockContext );
 
@@ -2926,7 +2972,7 @@ TransactionAccountDetails: [
             {
                 rockContext.SaveChanges();
             }
-            
+
             transaction.BatchId = batch.Id;
 
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -3078,10 +3124,18 @@ TransactionAccountDetails: [
                 NotificationBox nb = nbMessage;
                 switch ( hfCurrentPage.Value.AsInteger() )
                 {
-                    case 1: nb = nbSelectionMessage; break;
-                    case 2: nb = nbSelectionMessage; break;
-                    case 3: nb = nbConfirmationMessage; break;
-                    case 4: nb = nbSuccessMessage; break;
+                    case 1:
+                        nb = nbSelectionMessage;
+                        break;
+                    case 2:
+                        nb = nbSelectionMessage;
+                        break;
+                    case 3:
+                        nb = nbConfirmationMessage;
+                        break;
+                    case 4:
+                        nb = nbSuccessMessage;
+                        break;
                 }
 
                 nb.Text = text;
@@ -3141,18 +3195,18 @@ TransactionAccountDetails: [
         // Detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
-        if ( typeof {21} != 'undefined' ) {{
+        if ( typeof {4} != 'undefined' ) {{
             //// Toggle credit card display if saved card option is available
-            $('input[name=""{22}""]').change(function () {{
+            $('input[name=""{5}""]').on('change', function () {{
 
-                var radioDisplay = $('#{23}').css('display');
-                var selectedVal = $('input[name=""{22}""]:checked').val();
+                var radioDisplay = $('#{6}').css('display');
+                var selectedVal = $('input[name=""{5}""]:checked').val();
 
                 if ( selectedVal == 0 && radioDisplay == 'none') {{
-                    $('#{23}').slideDown();
+                    $('#{6}').slideDown();
                 }}
                 else if (selectedVal != 0 && radioDisplay != 'none') {{
-                    $('#{23}').slideUp();
+                    $('#{6}').slideUp();
                 }}
             }});
         }}
@@ -3163,7 +3217,7 @@ TransactionAccountDetails: [
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
-        $('a[id$=""btnNext""]').click(function() {{
+        $('a[id$=""btnNext""]').on('click', function() {{
             $(this).unbind('click');
             if (typeof (Page_ClientValidate) == 'function') {{
                 if (Page_IsValid) {{
@@ -3172,80 +3226,12 @@ TransactionAccountDetails: [
             }}
             if (Page_IsValid) {{
 			    $(this).addClass('disabled');
-			    $(this).click(function () {{
+			    $(this).on('click', function () {{
 				    return false;
 			    }});
             }}
         }});
     }});
-
-    // Posts the iframe (step 2)
-    $('#aStep2Submit').on('click', function(e) {{
-        e.preventDefault();
-        if (typeof (Page_ClientValidate) == 'function') {{
-            if (Page_IsValid && Page_ClientValidate('{7}') ) {{
-                $(this).prop('disabled', true);
-                $('#updateProgress').show();
-                var src = $('#{4}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-
-                if ( $('#{16}').is(':visible') && $('#{16}').prop('checked') ) {{
-                    $form.find('.js-billing-address1').val( $('#{17}_tbStreet1').val() );
-                    $form.find('.js-billing-city').val( $('#{17}_tbCity').val() );
-                    if ( $('#{17}_ddlState').length ) {{
-                        $form.find('.js-billing-state').val( $('#{17}_ddlState').val() );
-                    }} else {{
-                        $form.find('.js-billing-state').val( $('#{17}_tbState').val() );
-                    }}
-                    $form.find('.js-billing-postal').val( $('#{17}_tbPostalCode').val() );
-                    $form.find('.js-billing-country').val( $('#{17}_ddlCountry').val() );
-                }}
-
-                if ( $('#{1}').val() == 'CreditCard' ) {{
-                    $form.find('.js-cc-first-name').val( $('#{18}').val() );
-                    $form.find('.js-cc-last-name').val( $('#{19}').val() );
-                    $form.find('.js-cc-full-name').val( $('#{20}').val() );
-                    $form.find('.js-cc-number').val( $('#{8}').val() );
-                    var mm = $('#{9}_monthDropDownList').val();
-                    var yy = $('#{9}_yearDropDownList_').val();
-                    mm = mm.length == 1 ? '0' + mm : mm;
-                    yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                    $form.find('.js-cc-expiration').val( mm + yy );
-                    $form.find('.js-cc-cvv').val( $('#{10}').val() );
-                }} else {{
-                    $form.find('.js-account-name').val( $('#{11}').val() );
-                    $form.find('.js-account-number').val( $('#{12}').val() );
-                    $form.find('.js-routing-number').val( $('#{13}').val() );
-                    $form.find('.js-account-type').val( $('#{14}').find('input:checked').val() );
-                    $form.find('.js-entity-type').val( 'personal' );
-                }}
-
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
-    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
-    // The qry parameter value is saved to a hidden field and a post back is performed
-    $('#iframeStep2').on('load', function(e) {{
-        var location = this.contentWindow.location;
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
-            $('#{5}').val(qryString);
-            window.location = ""javascript:{6}"";
-        }} else {{
-            if ( $('#{15}').val() == 'true' ) {{
-                $('#updateProgress').show();
-                var src = $('#{4}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-                $form.attr('action', src );
-                $form.submit();
-                $('#updateProgress').hide();
-            }}
-        }}
-    }});
-
 ";
             string script = string.Format(
                 scriptFormat,
@@ -3253,29 +3239,19 @@ TransactionAccountDetails: [
                 hfPaymentTab.ClientID,          // {1}
                 oneTimeFrequencyId,             // {2}
                 GlobalAttributesCache.Value( "CurrencySymbol" ), // {3)
-                hfStep2Url.ClientID,            // {4}
-                hfStep2ReturnQueryString.ClientID,   // {5}
-                this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ), // {6}
-                this.BlockValidationGroup,      // {7}
-                txtCreditCard.ClientID,         // {8}
-                mypExpiration.ClientID,         // {9}
-                txtCVV.ClientID,                // {10}
-                txtAccountName.ClientID,        // {11}
-                txtAccountNumber.ClientID,      // {12}
-                txtRoutingNumber.ClientID,      // {13}
-                rblAccountType.ClientID,        // {14}
-                hfStep2AutoSubmit.ClientID,     // {15}
-                cbBillingAddress.ClientID,      // {16}
-                acBillingAddress.ClientID,      // {17}
-                txtCardFirstName.ClientID,      // {18}
-                txtCardLastName.ClientID,       // {19}
-                txtCardName.ClientID,           // {20}
-                rblSavedAccount.ClientID,       // {21}
-                rblSavedAccount.UniqueID,       // {22}
-                divNewPayment.ClientID          // {23}
+                rblSavedAccount.ClientID,       // {4}
+                rblSavedAccount.UniqueID,       // {5}
+                divNewPayment.ClientID          // {6}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
+
+            bool usingNMIThreeStep = this._ccGatewayComponent is Rock.NMI.Gateway || this._achGatewayComponent is Rock.NMI.Gateway;
+            if ( usingNMIThreeStep )
+            {
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "three-step-script", threeStepScript, true );
+            }
 
             if ( _using3StepGateway )
             {

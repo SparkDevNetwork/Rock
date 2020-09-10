@@ -3,7 +3,7 @@
 
 <script type="text/javascript">
     function clearDialog() {
-        $('#rock-config-cancel-trigger').click();
+        $('#rock-config-cancel-trigger').trigger('click');
     }
 </script>
 

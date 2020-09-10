@@ -156,15 +156,15 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/groups/getchildren/" ) %>',
-                        restParams: '?rootGroupId=' + ($('#<%=hfRootGroupId.ClientID%>').val() || 0)
-                            + '&limitToSecurityRoleGroups=' + ($('#<%=hfLimitToSecurityRoleGroups.ClientID%>').val() || false)
-                            + '&includedGroupTypeIds=' + ($('#<%=hfGroupTypesInclude.ClientID%>').val() || '0')
-                            + '&excludedGroupTypeIds=' + ($('#<%=hfGroupTypesExclude.ClientID%>').val() || '0')
-                            + '&includeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false)
-                            + '&countsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false)
-                            + '&includeNoCampus=' + ($('#<%=hfIncludeNoCampus.ClientID%>').val() || false)
-                        + '&campusId=' + ($('#<%=hfCampusFilter.ClientID%>').val() || 0)
-                        + '&limitToPublic=' + ($('#<%=hfLimitPublicGroups.ClientID%>').val() || false),
+                        restParams: '?RootGroupId=' + ($('#<%=hfRootGroupId.ClientID%>').val() || 0)
+                            + '&LimitToSecurityRoleGroups=' + ($('#<%=hfLimitToSecurityRoleGroups.ClientID%>').val() || false)
+                            + '&IncludedGroupTypeIds=' + ($('#<%=hfGroupTypesInclude.ClientID%>').val() || '0')
+                            + '&ExcludedGroupTypeIds=' + ($('#<%=hfGroupTypesExclude.ClientID%>').val() || '0')
+                            + '&IncludeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false)
+                            + '&CountsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false)
+                            + '&IncludeNoCampus=' + ($('#<%=hfIncludeNoCampus.ClientID%>').val() || false)
+                        + '&CampusId=' + ($('#<%=hfCampusFilter.ClientID%>').val() || 0)
+                        + '&LimitToPublic=' + ($('#<%=hfLimitPublicGroups.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

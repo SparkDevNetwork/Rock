@@ -53,12 +53,12 @@ namespace Rock.Security.ExternalAuthentication
         /// The _oauth token
         /// </summary>
         private string _oauthToken = null;
-        
+
         /// <summary>
         /// The _oauth token secret
         /// </summary>
         private string _oauthTokenSecret = null;
-        
+
         /// <summary>
         /// The _return URL
         /// </summary>
@@ -311,7 +311,7 @@ namespace Rock.Security.ExternalAuthentication
             using ( var rockContext = new RockContext() )
             {
 
-                // Query for an existing user 
+                // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
 
@@ -387,7 +387,7 @@ namespace Rock.Security.ExternalAuthentication
                             // If person does not have a photo, use their Twitter photo if it exists
                             if ( !person.PhotoId.HasValue && !twitterImageDefault && !string.IsNullOrWhiteSpace( twitterImageUrl ) )
                             {
-                                // Download the photo from the url provided
+                                // Download the photo from the URL provided
                                 var restClient = new RestClient( twitterImageUrl );
                                 var restRequest = new RestRequest( Method.GET );
                                 var restResponse = restClient.Execute( restRequest );
@@ -441,7 +441,7 @@ namespace Rock.Security.ExternalAuthentication
         {
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class Coordinates
             {
@@ -462,7 +462,7 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class Geo
             {
@@ -483,14 +483,14 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class Attributes
             {
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class BoundingBox
             {
@@ -511,7 +511,7 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class Place
             {
@@ -581,7 +581,7 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class Status
             {
@@ -714,7 +714,7 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class RootObject
             {

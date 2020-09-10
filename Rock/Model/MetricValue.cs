@@ -100,6 +100,22 @@ namespace Rock.Model
         [Previewable]
         public DateTime? MetricValueDateTime { get; set; }
 
+        /// <summary>
+        /// Gets the metric value date key.
+        /// </summary>
+        /// <value>
+        /// The metric value date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? MetricValueDateKey
+        {
+            get => ( MetricValueDateTime == null || MetricValueDateTime.Value == default ) ?
+                        ( int? ) null :
+                        MetricValueDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #endregion
 
         #region Virtual Properties
@@ -127,6 +143,14 @@ namespace Rock.Model
         }
         private ICollection<MetricValuePartition> _metricValuePartitions;
 
+        /// <summary>
+        /// Gets or sets the metric value source date.
+        /// </summary>
+        /// <value>
+        /// The metric value source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate MetricValueSourceDate { get; set; }
         #endregion
 
         #region Methods
@@ -242,6 +266,10 @@ namespace Rock.Model
         public MetricValueConfiguration()
         {
             this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.MetricValueSourceDate ).WithMany().HasForeignKey( r => r.MetricValueDateKey ).WillCascadeOnDelete( false );
         }
     }
 

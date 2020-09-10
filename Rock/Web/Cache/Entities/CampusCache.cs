@@ -109,6 +109,24 @@ namespace Rock.Web.Cache
         public string TimeZoneId { get; private set; }
 
         /// <summary>
+        /// Gets or sets the campus status value identifier.
+        /// </summary>
+        /// <value>
+        /// The campus status value identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusStatusValueId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the campus type value identifier.
+        /// </summary>
+        /// <value>
+        /// The campus type value identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusTypeValueId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -254,6 +272,8 @@ namespace Rock.Web.Cache
             Url = campus.Url;
             LocationId = campus.LocationId;
             TimeZoneId = campus.TimeZoneId;
+            CampusStatusValueId = campus.CampusStatusValueId;
+            CampusTypeValueId = campus.CampusTypeValueId;
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;

@@ -141,7 +141,7 @@ namespace RockWeb
 
                             UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
                             var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UserAgent.ToString();
+                            var clientBrowser = client.UA.ToString();
                             var clientType = InteractionDeviceType.GetClientType( userAgent );
 
                             interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );

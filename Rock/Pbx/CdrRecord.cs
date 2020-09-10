@@ -114,7 +114,7 @@ namespace Rock.Pbx
             var peopleWithMobileNumber = personService.Queryable()
                 .Where( p =>
                     p.PhoneNumbers.Any( n =>
-                        ( n.CountryCode + n.Number ) == phoneNumber.Replace( "+", "" ) &&
+                        ( n.FullNumber ) == phoneNumber.Replace( "+", "" ) &&
                         n.NumberTypeValueId == mobilePhoneType.Id )
                     )
                 .Select( p => p.Id );
@@ -135,7 +135,7 @@ namespace Rock.Pbx
                 var peopleWithAnyNumber = personService.Queryable()
                     .Where( p =>
                         p.PhoneNumbers.Any( n =>
-                            ( n.CountryCode + n.Number ) == phoneNumber.Replace( "+", "" ) &&
+                            n.FullNumber == phoneNumber.Replace( "+", "" ) &&
                             n.NumberTypeValueId == mobilePhoneType.Id )
                         )
                     .Select( p => p.Id );

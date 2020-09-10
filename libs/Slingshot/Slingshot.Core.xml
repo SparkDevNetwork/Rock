@@ -2610,6 +2610,13 @@
             <param name="defaultValue">The default value.</param>
             <returns></returns>
         </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.RemoveCrLf(System.String)">
+            <summary>
+            Removes any carriage return and/or line feed characters.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
         <member name="M:Slingshot.Core.ExtensionMethods.RemoveSpecialCharacters(System.String)">
             <summary>
             Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;

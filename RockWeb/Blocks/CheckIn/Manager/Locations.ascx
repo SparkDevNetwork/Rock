@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('.js-cancel-checkin').click(function (event) {
+        $('.js-cancel-checkin').on('click', function (event) {
             event.stopImmediatePropagation();
             var personName = $(this).closest(".list-group-item").find(".js-checkin-person-name").first().text();
             return Rock.dialogs.confirmDelete(event, 'Checkin for ' + personName);
@@ -43,16 +43,16 @@
                 <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable clearfix" >
                     <asp:PlaceHolder runat="server">
                         <div class="margin-t-sm pull-left">
-                            <i class="fa fa-chevron-left"></i> 
+                            <i class="fa fa-chevron-left"></i>
                             <asp:Literal ID="lNavHeading" runat="server" />
                         </div>
                         <div class="pull-right margin-v-sm">
                             <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </div>
                         <asp:Panel ID="pnlThreshold" runat="server" CssClass="pull-right margin-r-md margin-t-sm js-threshold paneleditor">
-                            <span class="paneleditor-label">Threshold:</span> 
+                            <span class="paneleditor-label">Threshold:</span>
                             <Rock:HiddenFieldWithClass ID="hfThreshold" runat="server" CssClass="js-threshold-hf" />
-                            <asp:Label ID="lThreshold" runat="server" CssClass="js-threshold-view js-threshold-l" /> 
+                            <asp:Label ID="lThreshold" runat="server" CssClass="js-threshold-view js-threshold-l" />
                             <a class="btn btn-default btn-xs js-threshold-view js-threshold-btn-edit"><i class="fa fa-edit"></i></a>
                             <Rock:NumberBox ID="nbThreshold" runat="server" CssClass="input-width-xs js-threshold-edit js-threshold-nb paneleditor-input" NumberType="Integer" style="display:none"></Rock:NumberBox>
                             <asp:LinkButton id="lbUpdateThreshold" runat="server" CssClass="btn btn-success btn-xs js-threshold-edit js-threshold-btn-save paneleditor-button" OnClick="lbUpdateThreshold_Click" style="display:none"><i class="fa fa-check"></i></asp:LinkButton>
@@ -87,7 +87,7 @@
                                 </div>
                                 <span class="pull-right margin-t-sm">
                                     <asp:Literal ID="lStatus" runat="server" />
-                                    <asp:LinkButton ID="lbRemoveAttendance" runat="server" CssClass="js-cancel-checkin btn btn-xs btn-danger" 
+                                    <asp:LinkButton ID="lbRemoveAttendance" runat="server" CssClass="js-cancel-checkin btn btn-xs btn-danger"
                                         CommandArgument='<%# Eval("Id") %>' CommandName="Delete" Visible='<%# (bool)Eval("ShowCancel") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                 </span>
                             </li>

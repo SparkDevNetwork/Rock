@@ -37,7 +37,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
     [Description( "Select Group Members according to their membership of Groups from a Group Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Data View" )]
-    public class GroupDataViewFilter : DataFilterComponent
+    public class GroupDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties
 
@@ -96,7 +96,7 @@ function ()
 {    
     var result = 'Members of Groups in Data View';
     
-    var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();    
+    var dataViewName = $('.js-data-view-picker', $content).find('.js-item-name-value').val().trim();
     result += ' ""' + dataViewName + '""';
 
     var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();    
@@ -139,7 +139,7 @@ function ()
             {
                 var dataView = new DataViewService( context ).Get( settings.DataViewGuid.GetValueOrDefault() );
 
-                result = string.Format( "Members of Groups in Data View \"{0}\"", (dataView != null ? dataView.ToString() : string.Empty ));
+                result = string.Format( "Members of Groups in Data View \"{0}\"", ( dataView != null ? dataView.ToString() : string.Empty ) );
             }
 
             return result;
@@ -159,18 +159,18 @@ function ()
         {
             var settings = new SelectSettings( selection );
 
-            var context = (RockContext)serviceInstance.Context;
+            var context = ( RockContext ) serviceInstance.Context;
 
             //
             // Evaluate the Data View that defines the candidate Groups.
             //
             var dataView = DataComponentSettingsHelper.GetDataViewForFilterComponent( settings.DataViewGuid, context );
-            
+
             var groupService = new GroupService( context );
 
             var groupQuery = groupService.Queryable();
 
-            if (dataView != null)
+            if ( dataView != null )
             {
                 groupQuery = DataComponentSettingsHelper.FilterByDataView( groupQuery, dataView, groupService );
             }
@@ -211,6 +211,7 @@ function ()
             // Define Control: Group Data View Picker
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.CssClass = "js-data-view-picker";
             dvpDataView.Label = "Is Member of Group from Data View";
             dvpDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
             filterControl.Controls.Add( dvpDataView );
@@ -273,6 +274,26 @@ function ()
             }
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValue.AsIntegerOrNull();
+        }
         #endregion
 
         #region Settings
@@ -315,7 +336,7 @@ function ()
             {
                 var settings = new List<string>();
 
-                settings.Add( DataViewGuid.ToStringSafe() );                
+                settings.Add( DataViewGuid.ToStringSafe() );
 
                 return settings;
             }

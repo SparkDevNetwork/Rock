@@ -36,9 +36,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Displays a timeline of a person's history in groups" )]
 
-    [GroupTypesField( "Group Types", "List of Group Types that this block defaults to, and the user is able to choose from in the options filter. Leave blank to include all group types that have history enabled.", required: false, order: 1 )]
+    [GroupTypesField(
+        "Group Types",
+        Key = AttributeKey.GroupTypes,
+        Description = "List of Group Types that this block defaults to, and the user is able to choose from in the options filter. Leave blank to include all group types that have history enabled.",
+        IsRequired = false,
+        Order = 0 )]
+
     public partial class PersonGroupHistory : PersonBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string GroupTypes = "GroupTypes";
+        }
+        #endregion Attribute Keys
+
         private List<int> _blockSettingsGroupTypeIds = null;
 
         #region Base Control Methods
@@ -63,7 +76,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ApplyBlockSettings()
         {
-            _blockSettingsGroupTypeIds = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList().Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+            _blockSettingsGroupTypeIds = this.GetAttributeValue( AttributeKey.GroupTypes ).SplitDelimitedValues().AsGuidList().Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
 
             IEnumerable<GroupTypeCache> groupTypes = GroupTypeCache.All();
 
@@ -90,7 +103,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( !Page.IsPostBack )
             {
                 // first page load, so set the selected group types from user preferences
-                var userGroupTypes = this.GetBlockUserPreference( "GroupTypes" ).SplitDelimitedValues().AsIntegerList();
+                var userGroupTypes = this.GetBlockUserPreference( AttributeKey.GroupTypes ).SplitDelimitedValues().AsIntegerList();
                 gtGroupTypesFilter.SetValues( userGroupTypes );
 
                 int? personId = this.Person != null ? this.Person.Id : ( int? ) null;
@@ -169,7 +182,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApplyOptions_Click( object sender, EventArgs e )
         {
-            this.SetBlockUserPreference( "GroupTypes", gtGroupTypesFilter.SelectedGroupTypeIds.AsDelimited( "," ) );
+            this.SetBlockUserPreference( AttributeKey.GroupTypes, gtGroupTypesFilter.SelectedGroupTypeIds.AsDelimited( "," ) );
             ShowDetail( hfPersonId.Value.AsInteger() );
         }
 

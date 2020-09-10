@@ -605,7 +605,12 @@ namespace RockWeb.Blocks.Mobile
             ddlBlockTypeCategory.Items.Clear();
             foreach ( var c in categories.OrderBy( c => c ) )
             {
-                ddlBlockTypeCategory.Items.Add( c );
+                var text = c;
+                if ( c.StartsWith( "Mobile >" ) )
+                {
+                    text = c.Replace( "Mobile >", string.Empty ).Trim();
+                }
+                ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
             }
             ddlBlockTypeCategory.SetValue( selectedCategory );
 
@@ -884,15 +889,15 @@ namespace RockWeb.Blocks.Mobile
 
             if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
             }
             else if ( additionalSettings.ProcessLavaOnServer )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
             }
             else if ( additionalSettings.ProcessLavaOnClient )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
             }
 
             if ( additionalSettings.CacheDuration != 0  )
@@ -929,7 +934,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
                 {
-                    markup.Append( "<i class='fa fa-wifi margin-r-sm color-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
+                    markup.Append( "<i class='fa fa-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
                 }
                 else
                 {

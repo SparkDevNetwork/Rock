@@ -12,6 +12,7 @@
         <div class="checkin-scroll-panel">
             <div class="scroller">
                 <asp:Literal ID="lCheckinResultsHtml" runat="server" />
+                <asp:Literal ID="lCheckinQRCodeHtml" runat="server" />
             </div>
         </div>
     </div>

@@ -98,10 +98,10 @@ namespace Rock.Web.Cache
         public int MinimumDaysToRetake { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration of the valid.
+        /// Gets or sets the duration (in days) that the assessment is considered valid.
         /// </summary>
         /// <value>
-        /// The duration of the valid.
+        /// The duration (in days) the <see cref="Rock.Model.AssessmentType"/> is considered valid.
         /// </value>
         [DataMember]
         public int ValidDuration { get; set; }

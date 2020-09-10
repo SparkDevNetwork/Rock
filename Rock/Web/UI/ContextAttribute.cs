@@ -80,14 +80,15 @@ namespace Rock.Web.UI
         /// </summary>
         public class Context
         {
+            private Type _entityType;
+
             /// <summary>
             /// Create a context
             /// </summary>
             /// <param name="entityType"></param>
             public Context( Type entityType )
             {
-                EntityType = EntityTypeCache.Get( entityType );
-                DefaultParameterName = entityType.Name + "Id";
+                _entityType = entityType;
             }
 
             /// <summary>
@@ -96,7 +97,18 @@ namespace Rock.Web.UI
             /// <value>
             /// The type of the entity.
             /// </value>
-            public EntityTypeCache EntityType { get; private set; }
+            public EntityTypeCache EntityType
+            {
+                get
+                {
+                    if ( _entityType == null)
+                    {
+                        return null;
+                    }
+                    
+                    return EntityTypeCache.Get( _entityType );
+                }
+            }
 
             /// <summary>
             /// Gets the default name of the parameter.
@@ -104,7 +116,7 @@ namespace Rock.Web.UI
             /// <value>
             /// The default name of the parameter.
             /// </value>
-            public string DefaultParameterName { get; private set; }
+            public string DefaultParameterName => $"{_entityType.Name}Id";
         }
     }
 }

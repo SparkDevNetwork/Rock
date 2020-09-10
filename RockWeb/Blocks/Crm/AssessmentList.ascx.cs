@@ -70,7 +70,8 @@ namespace Rockweb.Blocks.Crm
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = lavaTemplateDefaultValue,
-        Order = 3)]
+        Order = 3 )]
+
     #endregion Block Attributes
 
     public partial class AssessmentList : Rock.Web.UI.RockBlock
