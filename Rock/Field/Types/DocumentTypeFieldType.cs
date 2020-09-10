@@ -30,6 +30,7 @@ namespace Rock.Field.Types
 {
     class DocumentTypeFieldType : FieldType
     {
+        private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
 
         #region Configuration
 
@@ -40,7 +41,71 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
+            configKeys.Add( ALLOW_MULTIPLE_KEY );
             return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add checkbox for deciding if the document types is rendered as a drop
+            // down list or a list.
+            var cbAllowMultipleValues = new RockCheckBox();
+            controls.Add( cbAllowMultipleValues );
+            cbAllowMultipleValues.AutoPostBack = true;
+            cbAllowMultipleValues.Checked = true;
+            cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
+            cbAllowMultipleValues.Label = "Allow Multiple Values";
+            cbAllowMultipleValues.Text = "Yes";
+            cbAllowMultipleValues.Help = "When set, allows multiple document types to be selected.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple document types to be selected.", "True" ) );
+
+            if ( controls != null )
+            {
+                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
+
+                if ( cbAllowMultipleValues != null )
+                {
+                    configurationValues[ALLOW_MULTIPLE_KEY].Value = cbAllowMultipleValues.Checked.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null )
+            {
+                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
+
+                if ( cbAllowMultipleValues != null )
+                {
+                    cbAllowMultipleValues.Checked = configurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean( true );
+                }
+            }
         }
 
         #endregion Configuration
@@ -64,13 +129,14 @@ namespace Rock.Field.Types
             }
 
             // This is a list of IDs, we'll want it to be document type names instead
-            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( int.Parse ).ToList();
 
             return DocumentTypeCache.All()
                 .Where( v => selectedValues.Contains( v.Id ) )
                 .Select( v => v.Name )
                 .ToList()
-                .AsDelimited( ", " );;
+                .AsDelimited( ", " );
+            ;
         }
 
         #endregion Formatting
@@ -87,16 +153,46 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            RockListBox editControl = new RockListBox { ID = id, DisplayDropAsAbsolute = true };
+            Control editControl;
 
             var values = DocumentTypeCache.All().Select( v => new { v.Id, v.Name } ).OrderBy( v => v.Name ).ToList();
-            foreach ( var value in values )
+
+            bool allowMultiple = true;
+
+            if ( configurationValues != null &&
+                 configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
             {
-                editControl.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                allowMultiple = configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean( true );
             }
 
-            if ( editControl.Items.Count > 0 )
+            if ( !allowMultiple )
             {
+                // Select single member
+                editControl = new RockDropDownList { ID = id };
+            }
+            else
+            {
+                // Select multiple members
+                editControl = new RockListBox { ID = id, DisplayDropAsAbsolute = true };
+            }
+
+            var items = new List<ListItem>();
+            foreach ( var value in values )
+            {
+                items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+            }
+
+            if ( items.Count > 0 )
+            {
+                if ( editControl is RockListBox )
+                {
+                    ( editControl as RockListBox ).Items.AddRange( items.ToArray() );
+                }
+                else
+                {
+                    ( editControl as RockDropDownList ).Items.AddRange( items.ToArray() );
+                }
+
                 return editControl;
             }
 
@@ -138,12 +234,12 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value == null ||  control == null || !( control is ListControl ) )
+            if ( value == null || control == null || !( control is ListControl ) )
             {
                 return;
             }
 
-            var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
             ListControl editControl = ( ListControl ) control;
             foreach ( ListItem li in editControl.Items )

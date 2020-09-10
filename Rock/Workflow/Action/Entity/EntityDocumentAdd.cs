@@ -24,7 +24,7 @@ namespace Rock.Workflow.Action
 
     [EntityTypeField(
         "Entity Type",
-        Description = "The type of entity the document will be applied to.",
+        Description = "The type of entity the document will be applied to. Rock only supports Person, Group, and Group Member at this time.",
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.EntityType )]
@@ -32,21 +32,23 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute(
         "Entity Id or Guid",
         "Entity Attribute",
-        Description = "The Id or Guid of the Entity <span class='tip tip-lava'></span>.",
+        Description = "The Id or Guid of the Entity. Rock only supports Person, Group, and Group Member at this time. <span class='tip tip-lava'></span>.",
         IsRequired = true,
         Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupMemberFieldType" },
         Key = AttributeKey.EntityIdOrGuid )]
 
     [DocumentTypeField(
         "Document Type",
-        Description = "The type of document that should be used for the file.",
+        Description = "The type of document that should be used for the file.  The type selected must be a type that is valid for the selected Entity Type above.",
         IsRequired = true,
+        AllowMultiple = false,
         Order = 2,
         Key = AttributeKey.DocumentType )]
 
     [WorkflowAttribute(
         "Document Attribute",
-        Description = "The workflow attribute that contains the doocument.",
+        Description = "The workflow attribute that contains the document.",
         IsRequired = true,
         Order = 3,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType" },
@@ -122,6 +124,12 @@ namespace Rock.Workflow.Action
             if ( entityGuid.HasValue )
             {
                 entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
+
+                if ( entityObject == null && entityType.GetEntityType() == typeof( Rock.Model.Person ) )
+                {
+                    var personAliasService = new PersonAliasService( _rockContext );
+                    entityObject = personAliasService.GetPerson( entityGuid.Value );
+                }
             }
             else
             {
@@ -145,7 +153,7 @@ namespace Rock.Workflow.Action
             var documentype = documentypesForContextEntityType.FirstOrDefault( d => attributeFilteredDocumentType == d.Id );
             if ( documentype == null )
             {
-                var message = string.Format( "Document Type not matching the entity type." );
+                var message = string.Format( "The Document Type does not match the selected entity type." );
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
@@ -155,10 +163,12 @@ namespace Rock.Workflow.Action
 
             if ( binaryFile == null )
             {
-                action.AddLogEntry( "The document to add to the entity was not be found.", true );
-                return true; // returning true here to allow the action to run 'successfully' without a document. This allows the action to be easily used when the document is optional without a bunch of action filter tests.
-            }
+                action.AddLogEntry( "The document to add to the entity was not found.", true );
 
+                // returning true here to allow the action to run 'successfully' without a document.
+                // This allows the action to be easily used when the document is optional without a bunch of action filter tests.
+                return true;
+            }
 
             var documentService = new DocumentService( rockContext );
             var document = new Document();
