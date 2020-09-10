@@ -59,6 +59,9 @@ namespace Rock.Client
         public string IndexResultTemplate { get; set; }
 
         /// <summary />
+        public bool IsAchievementsEnabled { get; set; }
+
+        /// <summary />
         public bool IsCommon { get; set; }
 
         /// <summary />
@@ -103,6 +106,7 @@ namespace Rock.Client
             this.FriendlyName = source.FriendlyName;
             this.IndexDocumentUrl = source.IndexDocumentUrl;
             this.IndexResultTemplate = source.IndexResultTemplate;
+            this.IsAchievementsEnabled = source.IsAchievementsEnabled;
             this.IsCommon = source.IsCommon;
             this.IsEntity = source.IsEntity;
             this.IsIndexingEnabled = source.IsIndexingEnabled;

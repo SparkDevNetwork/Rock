@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Web.Cache;
+using static Rock.Security.Authorization;
 
 namespace Rock.CheckIn
 {
@@ -134,16 +136,16 @@ namespace Rock.CheckIn
         /// <param name="page">The page.</param>
         public void SaveToCookie( System.Web.UI.Page page )
         {
-            var localDeviceConfigCookie = page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
-            if ( localDeviceConfigCookie == null )
-            {
-                localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
-            }
+            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
 
+            var localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
             localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
             localDeviceConfigCookie.Value = this.ToJson( Newtonsoft.Json.Formatting.None );
+            localDeviceConfigCookie.Path += sameSiteCookieValue;
 
-            page.Response.Cookies.Set( localDeviceConfigCookie );
+            page.Request.Cookies.Remove(CheckInCookieKey.LocalDeviceConfig);
+            page.Response.Cookies.Add( localDeviceConfigCookie );
         }
 
         /// <summary>

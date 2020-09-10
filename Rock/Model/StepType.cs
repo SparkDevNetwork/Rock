@@ -18,9 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Steps" )]
     [Table( "StepType" )]
     [DataContract]
-    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag
+    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants
 
@@ -194,6 +196,29 @@ namespace Rock.Model
 
         #endregion IOrdered
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StepTypeCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StepTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
+
         #region Virtual Properties
 
         /// <summary>
@@ -271,18 +296,18 @@ namespace Rock.Model
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
 
         /// <summary>
-        /// Gets or sets the streak type achievement types.
+        /// Gets or sets the achievement types.
         /// </summary>
         /// <value>
         /// The streak type achievement types.
         /// </value>
         [DataMember]
-        public virtual ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes
+        public virtual ICollection<AchievementType> AchievementTypes
         {
-            get => _streakTypeAchievementTypes ?? ( _streakTypeAchievementTypes = new Collection<StreakTypeAchievementType>() );
-            set => _streakTypeAchievementTypes = value;
+            get => _achievementTypes ?? ( _achievementTypes = new Collection<AchievementType>() );
+            set => _achievementTypes = value;
         }
-        private ICollection<StreakTypeAchievementType> _streakTypeAchievementTypes;
+        private ICollection<AchievementType> _achievementTypes;
 
         #endregion Virtual Properties
 

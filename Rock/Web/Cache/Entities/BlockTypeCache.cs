@@ -151,7 +151,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets or sets the security actions.
+        /// Gets the security actions.
         /// </summary>
         /// <value>
         /// The security actions.

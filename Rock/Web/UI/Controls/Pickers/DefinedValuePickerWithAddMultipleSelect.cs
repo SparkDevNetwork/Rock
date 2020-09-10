@@ -83,6 +83,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public override void LoadDefinedValues()
         {
+            EnsureChildControls();
+
             if ( DefinedTypeId.HasValue )
             {
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );

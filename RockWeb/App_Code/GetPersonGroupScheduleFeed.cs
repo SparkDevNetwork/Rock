@@ -24,11 +24,12 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 
-using DDay.iCal;
-using DDay.iCal.Serialization.iCalendar;
+using Ical.Net;
+using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.DataTypes;
+using Calendar = Ical.Net.Calendar;
 
 using System.Globalization;
-using Rock.Web.Cache;
 using System.Data.Entity;
 
 namespace RockWeb
@@ -66,9 +67,9 @@ namespace RockWeb
                     return;
                 }
 
-                iCalendar icalendar = CreateICalendar( calendarProps, interactionDeviceType );
+                var icalendar = CreateICalendar( calendarProps, interactionDeviceType );
 
-                iCalendarSerializer serializer = new iCalendarSerializer();
+                var serializer = new CalendarSerializer();
                 string s = serializer.SerializeToString( icalendar );
 
                 httpContext.Response.Clear();
@@ -90,14 +91,14 @@ namespace RockWeb
         /// </summary>
         /// <param name="calendarProps">The calendar props.</param>
         /// <returns></returns>
-        private iCalendar CreateICalendar( CalendarProps calendarProps, string interactionDeviceType )
+        private Calendar CreateICalendar( CalendarProps calendarProps, string interactionDeviceType )
         {
             // Get a list of confirmed attendances filtered by calendarProps
             List<Attendance> attendances = GetAttendances( calendarProps );
 
             // Create the iCalendar
-            iCalendar icalendar = new iCalendar();
-            icalendar.AddLocalTimeZone();
+            var icalendar = new Calendar();
+            icalendar.AddTimeZone( TimeZoneInfo.Local );
             TimeSpan duration = TimeSpan.MinValue;
             int currentScheduleId = -1;
 
@@ -131,17 +132,16 @@ namespace RockWeb
                     {
                         // We have to get the duration from Schedule.iCal for this attendance.
                         // Attendances are ordered by scheduleId so this only happens once for each unique schedule.
-                        iCalendarSerializer serializer = new iCalendarSerializer();
-                        iCalendarCollection ical = ( iCalendarCollection ) serializer.Deserialize( schedule.iCalendarContent.ToStreamReader() );
+                        var serializer = new CalendarSerializer();
+                        var ical = ( CalendarCollection ) serializer.Deserialize( schedule.iCalendarContent.ToStreamReader() );
                         duration = ical[0].Events[0].Duration;
                         currentScheduleId = schedule.Id;
                     }
 
-                    var iCalEvent = new DDay.iCal.Event();
+                    var iCalEvent = new Event();
                     iCalEvent.Summary = scheduleName;
                     iCalEvent.Location = locationName;
-                    iCalEvent.DTStart = new DDay.iCal.iCalDateTime( attendance.StartDateTime );
-                    iCalEvent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
+                    iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );
                     iCalEvent.Duration = duration;
 
                     // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.

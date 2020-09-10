@@ -112,20 +112,26 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string s = "Another Data View";
 
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            if ( selectionConfig.DataViewId.HasValue )
+            int? dataviewId = selectionConfig.DataViewId;
+            if ( dataviewId.HasValue && dataviewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( selectionConfig.DataViewId.Value );
+                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataviewId.Value );
                 if ( dataView != null )
                 {
-                    return string.Format( "Included in '{0}' Data View", dataView.Name );
+                    return $"Included in '{dataView.Name}' Data View";
+                }
+                else
+                {
+                    // a DataView id was specified, but we couldn't find it. So we have a problem.
+                    return $"#DataView not found for DataViewId: {dataviewId}#";
                 }
             }
 
-            return s;
+            // no dataview was specified, so let's show...
+            return "Another Data View";
         }
 
         /// <summary>
@@ -299,7 +305,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         private DataView GetSelectedDataView( SelectionConfig selectionConfig )
         {
-            if ( selectionConfig.DataViewId.HasValue )
+            if ( selectionConfig.DataViewId.HasValue && selectionConfig.DataViewId > 0 )
             {
                 var dataView = new DataViewService( new RockContext() ).Get( selectionConfig.DataViewId.Value );
                 return dataView;
@@ -342,7 +348,7 @@ namespace Rock.Reporting.DataFilter
                 return null;
             }
 
-            return ddlDataView.SelectedValue.AsIntegerOrNull();
+            return ddlDataView.SelectedValueAsId();
         }
         #endregion
 
@@ -364,27 +370,29 @@ namespace Rock.Reporting.DataFilter
 
             var dataView = this.GetSelectedDataView( selectionConfig );
 
+            if ( dataView == null )
+            {
+                if ( selectionConfig.DataViewId.HasValue && selectionConfig.DataViewId > 0 )
+                {
+                    // if there is DataViewId but it isn't in the database, the DataView might have been deleted.  If so, this could return unexpected results.
+                    throw new RockDataViewFilterExpressionException( $"DataViewFilter unable to determine DataView for DataViewId {selectionConfig.DataViewId}" );
+                }
+            }
+
             if ( dataView != null && dataView.DataViewFilter != null )
             {
-
                 // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
-                if ( IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
+                if ( DataViewService.IsViewInFilter( dataView, dataView.DataViewFilter ) )
                 {
                     throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection( entityType, selection ) } data filter." );
                 }
 
-                var errorMessages = new List<string>();
                 if ( selectionConfig.UsePersisted == false )
                 {
                     dataViewFilterOverrides?.IgnoreDataViewPersistedValues.Add( dataView.Id );
                 }
 
-                Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides, out errorMessages );
-                if ( errorMessages.Any() )
-                {
-                    throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-                }
-
+                Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides );
                 return expression;
             }
 
@@ -392,51 +400,5 @@ namespace Rock.Reporting.DataFilter
         }
 
         #endregion IDataFilterWithOverrides
-
-        #region Private Methods
-
-        /// <summary>
-        /// Determines whether [is view in filter] [the specified data view id].
-        /// </summary>
-        /// <param name="dataViewId">The data view id.</param>
-        /// <param name="filter">The filter.</param>
-        /// <returns>
-        ///   <c>true</c> if [is view in filter] [the specified data view id]; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
-        {
-            if ( filter.EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( filter.EntityTypeId.Value );
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                if ( component is OtherDataViewFilter otherDataViewFilter )
-                {
-                    var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
-                    if ( otherDataView.Id == dataViewId )
-                    {
-                        // if we discover that this DataView is also used in one of its child views, we've got infinite recursion
-                        return true;
-                    }
-                    else
-                    {
-                        // dig down recursively thru the *other* DataView's child filters to see if any of it's child filters is using this dataview
-                        return IsViewInFilter( dataViewId, otherDataView.DataViewFilter );
-                    }
-                }
-            }
-
-            foreach ( var childFilter in filter.ChildFilters )
-            {
-                // dig down recursively thru *this* DataView's child filters 
-                if ( IsViewInFilter( dataViewId, childFilter ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,6 +12,29 @@ namespace Rock.Tests.Shared
     /// </summary>
     public static partial class AssertExtensions
     {
+        /// <summary>
+        /// Asserts that the two string can be considered equivalent regardless of newlines.
+        /// </summary>
+        /// <param name="expected">The expected string.</param>
+        /// <param name="actual">The actual sting.</param>
+        public static void AreEqualIgnoreNewline( this Assert assert, string expected, string actual )
+        {
+            if ( expected == null && actual == null )
+            {
+                return;
+            }
+            else if ( expected == null )
+            {
+                throw new NullReferenceException( "The expected string was null" );
+            }
+            else if ( actual == null )
+            {
+                throw new NullReferenceException( "The actual string was null" );
+            }
+
+            Assert.AreEqual( expected.Trim().ToStripNewlines(), actual.Trim().ToStripNewlines() );
+        }
+
         public static void AreEqual<T>( this Assert assert, T expected, T actual )
         {
             Assert.AreEqual( expected, actual );
@@ -65,7 +89,6 @@ namespace Rock.Tests.Shared
         {
             Assert.AreEqual( expected, actual, ignoreCase, message, parameters );
         }
-
         public static void AreNotEqual( this Assert assert, System.String notExpected, System.String actual, System.Boolean ignoreCase, System.Globalization.CultureInfo culture )
         {
             Assert.AreNotEqual( notExpected, actual, ignoreCase, culture );
@@ -203,13 +226,11 @@ namespace Rock.Tests.Shared
         {
             Assert.ThrowsException<T>( action );
         }
-
         public static void ThrowsException<T>( this Assert assert, Action action, string message )
             where T : Exception
         {
             Assert.ThrowsException<T>( action, message );
         }
-
         public static void ThrowsException<T>( this Assert assert, Func<object> action )
             where T : Exception
         {
@@ -265,6 +286,19 @@ namespace Rock.Tests.Shared
             throw new AssertFailedException( "Collection is empty, but a value was expected." );
         }
 
+        #endregion
+
+        #region helpers
+
+        private static string ToStripNewlines( this string s )
+        {
+            if ( s == null )
+            {
+                return string.Empty;
+            }
+
+            return s.Replace( "\r", "" ).Replace( "\n", "" ).ToString( CultureInfo.InvariantCulture );
+        }
         #endregion
     }
 }

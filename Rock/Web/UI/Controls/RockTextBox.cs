@@ -221,6 +221,9 @@ namespace Rock.Web.UI.Controls
             set
             {
                 base.ValidationGroup = value;
+
+                EnsureChildControls();
+
                 if ( RequiredFieldValidator != null )
                 {
                     RequiredFieldValidator.ValidationGroup = value;

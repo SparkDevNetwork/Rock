@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 using Rock.Communication;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls.Communication
 {
@@ -104,7 +105,7 @@ namespace Rock.Web.UI.Controls.Communication
             base.OnLoad( e );
 
             // These values need to be reset here because viewstate retains them if their hidden.
-            var pushOpenAction = ( PushOpenAction ) rbOpenAction.SelectedValue.AsIntegerOrNull();
+            var pushOpenAction = GetSelectedOpenActionOrDefault();
             if ( pushOpenAction != PushOpenAction.ShowDetails )
             {
                 htmlAdditionalDetails.Text = null;
@@ -286,7 +287,10 @@ namespace Rock.Web.UI.Controls.Communication
             tbMessage.Text = communication.PushMessage;
 
             iupPushImage.BinaryFileId = communication.PushImageBinaryFileId;
-            rbOpenAction.SelectedValue = communication.PushOpenAction.ConvertToInt().ToString();
+            if ( communication.PushOpenAction != null )
+            {
+                rbOpenAction.SelectedValue = communication.PushOpenAction.ConvertToInt().ToString();
+            }
 
             var pushData = new PushData();
             if ( communication.PushData.IsNotNullOrWhiteSpace() )
@@ -330,7 +334,7 @@ namespace Rock.Web.UI.Controls.Communication
             communication.PushTitle = tbTitle.Text;
             communication.PushMessage = tbMessage.Text;
             communication.PushImageBinaryFileId = iupPushImage.BinaryFileId;
-            communication.PushOpenAction = ( PushOpenAction ) rbOpenAction.SelectedValue.AsIntegerOrNull();
+            communication.PushOpenAction = GetSelectedOpenActionOrDefault();
 
             var pushData = new PushData();
 
@@ -344,6 +348,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 pushData.MobilePageQueryString = kvlQuerystring.Value.AsDictionaryOrNull();
                 pushData.MobilePageId = ppMobilePage.SelectedValue.AsIntegerOrNull();
+                pushData.MobileApplicationId = pushData.MobilePageId.HasValue ? PageCache.Get( pushData.MobilePageId.Value )?.SiteId : null;
             }
 
             if ( communication.PushOpenAction == PushOpenAction.LinkToUrl )
@@ -407,12 +412,6 @@ namespace Rock.Web.UI.Controls.Communication
                 AutoPostBack = true
             };
 
-            rbOpenAction.Items.Add( new ListItem
-            {
-                Text = "No Action",
-                Value = PushOpenAction.NoAction.ConvertToInt().ToString()
-            } );
-
             if ( Transport is IRockMobilePush )
             {
                 rbOpenAction.Items.AddRange( new ListItem[] {
@@ -427,18 +426,35 @@ namespace Rock.Web.UI.Controls.Communication
                         Value = PushOpenAction.ShowDetails.ConvertToInt().ToString()
                     }
                 } );
-
             }
-
-            rbOpenAction.Items.Add( new ListItem
+            else
             {
-                Text = "Link to URL",
-                Value = PushOpenAction.LinkToUrl.ConvertToInt().ToString()
-            } );
+                rbOpenAction.Items.AddRange( new ListItem[] {
+                    new ListItem {
+                        Text = "No Action",
+                        Value = PushOpenAction.NoAction.ConvertToInt().ToString()
+                    },
+                    new ListItem
+                    {
+                        Text = "Link to URL",
+                        Value = PushOpenAction.LinkToUrl.ConvertToInt().ToString()
+                    }
+                } );
+            }
 
             rbOpenAction.SelectedValue = PushOpenAction.NoAction.ConvertToInt().ToString();
 
             return rbOpenAction;
+        }
+
+        private PushOpenAction? GetSelectedOpenActionOrDefault()
+        {
+            var pushOpenAction = rbOpenAction.SelectedValue.AsIntegerOrNull();
+            if ( pushOpenAction == null )
+            {
+                return null;
+            }
+            return ( PushOpenAction ) pushOpenAction;
         }
         #endregion
     }

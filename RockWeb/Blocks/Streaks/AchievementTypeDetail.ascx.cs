@@ -36,7 +36,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Streaks
 {
     [DisplayName( "Achievement Type Detail" )]
-    [Category( "Streaks" )]
+    [Category( "Achievements" )]
     [Description( "Displays the details of the given Achievement Type for editing." )]
 
     public partial class AchievementTypeDetail : RockBlock, IDetailBlock
@@ -54,9 +54,9 @@ namespace RockWeb.Blocks.Streaks
             public const string StreakTypeId = "StreakTypeId";
 
             /// <summary>
-            /// The streak type achievement type identifier
+            /// The achievement type identifier
             /// </summary>
-            public const string StreakTypeAchievementTypeId = "StreakTypeAchievementTypeId";
+            public const string AchievementTypeId = "AchievementTypeId";
         }
 
         #endregion Keys
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Streaks
         private void InitializeActionButtons()
         {
             btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Attempt data that occurs after a person\\'s most recent successful attempt will be deleted and rebuilt from streak data. This process occurs real-time (not in a job).');";
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated achievement attempts will also be deleted!');", StreakTypeAchievementType.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated achievement attempts will also be deleted!');", AchievementType.FriendlyTypeName );
         }
 
         /// <summary>
@@ -142,9 +142,9 @@ namespace RockWeb.Blocks.Streaks
         protected void btnRebuild_Click( object sender, EventArgs e )
         {
             var achievementTypeCache = GetAchievementTypeCache();
-            StreakTypeAchievementTypeService.Process( achievementTypeCache.Id );
+            AchievementTypeService.Process( achievementTypeCache.Id );
             NavigateToCurrentPage( new Dictionary<string, string> {
-                { PageParameterKey.StreakTypeAchievementTypeId, achievementTypeCache.Id.ToString() }
+                { PageParameterKey.AchievementTypeId, achievementTypeCache.Id.ToString() }
             } );
         }
 
@@ -245,6 +245,7 @@ namespace RockWeb.Blocks.Streaks
         protected void cpAchievementComponent_SelectedIndexChanged( object sender, EventArgs e )
         {
             RenderComponentAttributeControls();
+            SyncPrerequisiteList();
         }
 
         /// <summary>
@@ -406,14 +407,14 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void RenderComponentAttributeControls()
         {
-            var achievementType = GetAchievementType() ?? new StreakTypeAchievementType();
+            var achievementType = GetAchievementType() ?? new AchievementType();
 
             if ( IsAddMode() )
             {
-                achievementType.AchievementEntityTypeId = cpAchievementComponent.SelectedEntityTypeId ?? 0;
+                achievementType.ComponentEntityTypeId = cpAchievementComponent.SelectedEntityTypeId ?? 0;
             }
 
-            var componentEntityType = EntityTypeCache.Get( achievementType.AchievementEntityTypeId );
+            var componentEntityType = EntityTypeCache.Get( achievementType.ComponentEntityTypeId );
 
             if ( componentEntityType != null )
             {
@@ -429,6 +430,40 @@ namespace RockWeb.Blocks.Streaks
             avcComponentAttributes.ExcludedAttributes = achievementType.Attributes.Values
                 .Where( a => a.Key == "Order" || a.Key == "Active" ).ToArray();
             avcComponentAttributes.AddEditControls( achievementType, true );
+        }
+
+        /// <summary>
+        /// Gets the achievement component.
+        /// </summary>
+        /// <returns></returns>
+        private AchievementComponent GetAchievementComponent()
+        {
+            var achievementType = GetAchievementType();
+            var componentEntityTypeId = achievementType != null ? achievementType.ComponentEntityTypeId : ( int? ) null;
+
+            if ( !componentEntityTypeId.HasValue )
+            {
+                componentEntityTypeId = cpAchievementComponent.SelectedEntityTypeId;
+            }
+
+            var componentEntityType = componentEntityTypeId.HasValue ? EntityTypeCache.Get( componentEntityTypeId.Value ) : null;
+            return componentEntityType == null ? null : AchievementContainer.GetComponent( componentEntityType.Name );
+        }
+
+        /// <summary>
+        /// Gets the achievement configuration.
+        /// </summary>
+        /// <returns></returns>
+        private AchievementConfiguration GetAchievementConfiguration()
+        {
+            var component = GetAchievementComponent();
+
+            if ( component == null )
+            {
+                return null;
+            }
+
+            return component.SupportedConfiguration;
         }
 
         /// <summary>
@@ -504,12 +539,17 @@ namespace RockWeb.Blocks.Streaks
 
             if ( isNew )
             {
-                achievementType = new StreakTypeAchievementType();
+                achievementType = new AchievementType();
                 achievementTypeService.Add( achievementType );
+                achievementType.ComponentEntityTypeId = cpAchievementComponent.SelectedEntityTypeId ?? 0;
 
-                var streakTypeCache = GetStreakTypeCache();
-                achievementType.StreakTypeId = streakTypeCache != null ? streakTypeCache.Id : ( stpStreakType.SelectedValueAsInt() ?? 0 );
-                achievementType.AchievementEntityTypeId = cpAchievementComponent.SelectedEntityTypeId ?? 0;
+                var configuration = GetAchievementConfiguration();
+
+                if ( configuration != null )
+                {
+                    achievementType.SourceEntityTypeId = configuration.SourceEntityTypeCache.Id;
+                    achievementType.AchieverEntityTypeId = configuration.AchieverEntityTypeCache.Id;
+                }
             }
 
             achievementType.Name = tbName.Text;
@@ -541,12 +581,12 @@ namespace RockWeb.Blocks.Streaks
             }
 
             // Upsert Prerequisites
-            var prerequisiteService = new StreakTypeAchievementTypePrerequisiteService( rockContext );
+            var prerequisiteService = new AchievementTypePrerequisiteService( rockContext );
             var selectedPrerequisiteAchievementTypeIds = cblPrerequsities.SelectedValuesAsInt;
 
             // Remove existing prerequisites that are not selected
             var removePrerequisiteAchievementTypes = achievementType.Prerequisites
-                .Where( statp => !selectedPrerequisiteAchievementTypeIds.Contains( statp.PrerequisiteStreakTypeAchievementTypeId ) ).ToList();
+                .Where( statp => !selectedPrerequisiteAchievementTypeIds.Contains( statp.PrerequisiteAchievementTypeId ) ).ToList();
 
             foreach ( var prerequisite in removePrerequisiteAchievementTypes )
             {
@@ -556,14 +596,14 @@ namespace RockWeb.Blocks.Streaks
 
             // Add selected achievement types prerequisites that are not existing
             var addPrerequisiteAchievementTypeIds = selectedPrerequisiteAchievementTypeIds
-                .Where( statId => !achievementType.Prerequisites.Any( statp => statp.PrerequisiteStreakTypeAchievementTypeId == statId ) );
+                .Where( statId => !achievementType.Prerequisites.Any( statp => statp.PrerequisiteAchievementTypeId == statId ) );
 
             foreach ( var prerequisiteAchievementTypeId in addPrerequisiteAchievementTypeIds )
             {
-                achievementType.Prerequisites.Add( new StreakTypeAchievementTypePrerequisite
+                achievementType.Prerequisites.Add( new AchievementTypePrerequisite
                 {
-                    StreakTypeAchievementTypeId = achievementType.Id,
-                    PrerequisiteStreakTypeAchievementTypeId = prerequisiteAchievementTypeId
+                    AchievementTypeId = achievementType.Id,
+                    PrerequisiteAchievementTypeId = prerequisiteAchievementTypeId
                 } );
             }
 
@@ -572,16 +612,16 @@ namespace RockWeb.Blocks.Streaks
             if ( !isNew )
             {
                 var achievementTypeCache = GetAchievementTypeCache();
-                var eligibleAchievementTypes = StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+                var eligibleAchievementTypes = AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
 
                 foreach ( var prerequisite in achievementType.Prerequisites )
                 {
-                    if ( !eligibleAchievementTypes.Any( stat => stat.Id == prerequisite.PrerequisiteStreakTypeAchievementTypeId ) )
+                    if ( !eligibleAchievementTypes.Any( stat => stat.Id == prerequisite.PrerequisiteAchievementTypeId ) )
                     {
                         cvCustomValidator.IsValid = false;
                         cvCustomValidator.ErrorMessage = string.Format(
                             "This achievement type cannot have prerequisite \"{0}\" because it would create a circular dependency.",
-                            prerequisite.PrerequisiteStreakTypeAchievementType.Name );
+                            prerequisite.PrerequisiteAchievementType.Name );
                         return;
                     }
                 }
@@ -623,9 +663,16 @@ namespace RockWeb.Blocks.Streaks
             avcComponentAttributes.GetEditValues( achievementType );
             achievementType.SaveAttributeValues( rockContext );
 
+            // Now that the component attributes are saved, generate the config JSON from the component
+            var updatedCacheItem = AchievementTypeCache.Get( achievementType.Id );
+            var component = updatedCacheItem.AchievementComponent;
+            var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
+            achievementType.ComponentConfigJson = configDictionary.ToJson();
+            rockContext.SaveChanges();
+
             // If the save was successful, reload the page using the new record Id.
             NavigateToPage( RockPage.Guid, new Dictionary<string, string> {
-                { PageParameterKey.StreakTypeAchievementTypeId, achievementType.Id.ToString() }
+                { PageParameterKey.AchievementTypeId, achievementType.Id.ToString() }
             } );
         }
 
@@ -679,7 +726,6 @@ namespace RockWeb.Blocks.Streaks
             pnlViewDetails.Visible = false;
             HideSecondaryBlocks( true );
 
-            stpStreakType.Visible = false; // Cannot change the streak type
             cpAchievementComponent.Enabled = false; // Cannot change the component type
 
             var achievementTypeCache = GetAchievementTypeCache();
@@ -695,7 +741,6 @@ namespace RockWeb.Blocks.Streaks
             nbMaxAccomplishments.IntegerValue = achievementType.MaxAccomplishmentsAllowed;
             cpAchievementComponent.SetValue( achievementType.AchievementEntityType.Guid.ToString().ToUpper() );
             tbIconCssClass.Text = achievementType.AchievementIconCssClass;
-            stpStreakType.SetValue( achievementType.StreakTypeId );
             ceResultsLava.Text = achievementType.ResultsLavaTemplate;
             ceBadgeLava.Text = achievementType.BadgeLavaTemplate;
             cpCategory.SetValue( achievementType.CategoryId );
@@ -709,10 +754,6 @@ namespace RockWeb.Blocks.Streaks
             spstStepType.StepTypeId = achievementType.AchievementStepTypeId;
             SyncStepControls();
             sspStepStatus.SetValue( achievementType.AchievementStepStatusId );
-
-            /*
-            achievementType.CategoryId = tbName.Text;
-            */
 
             SyncOverAchievementAndMaxControls();
             RenderComponentAttributeControls();
@@ -729,25 +770,15 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            StreakTypePicker.LoadDropDownItems( stpStreakType, false );
-
             pnlEditDetails.Visible = true;
             pnlViewDetails.Visible = false;
             HideSecondaryBlocks( true );
             spstStepType.Enabled = true; // Can only set this when adding a new achievement type
 
-            lReadOnlyTitle.Text = ActionTitle.Add( StreakTypeAchievementType.FriendlyTypeName ).FormatAsHtmlTitle();
+            lReadOnlyTitle.Text = ActionTitle.Add( AchievementType.FriendlyTypeName ).FormatAsHtmlTitle();
 
             nbMaxAccomplishments.IntegerValue = 1;
             cbActive.Checked = true;
-
-            var streakTypeCache = GetStreakTypeCache();
-            stpStreakType.Visible = streakTypeCache == null;
-
-            if ( streakTypeCache != null )
-            {
-                stpStreakType.SetValue( streakTypeCache.Id.ToString() );
-            }
 
             SyncStepControls();
             SyncOverAchievementAndMaxControls();
@@ -823,13 +854,22 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void SyncPrerequisiteList()
         {
-            var streakTypeCache = GetStreakTypeCache();
+            var config = GetAchievementConfiguration();
             var achievementTypeCache = GetAchievementTypeCache();
             var isNew = IsAddMode();
 
-            var eligiblePrerequisites = isNew ?
-                StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( streakTypeCache ) :
-                StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+            List<AchievementTypeCache> eligiblePrerequisites;
+
+            if ( isNew )
+            {
+                eligiblePrerequisites = config == null ?
+                    new List<AchievementTypeCache>() :
+                    AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCachesForNewAchievement( config.AchieverEntityTypeCache.Id );
+            }
+            else
+            {
+                eligiblePrerequisites = AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+            }
 
             cblPrerequsities.DataSource = eligiblePrerequisites;
             cblPrerequsities.DataBind();
@@ -837,7 +877,7 @@ namespace RockWeb.Blocks.Streaks
 
             if ( !isNew )
             {
-                cblPrerequsities.SetValues( achievementTypeCache.Prerequisites.Select( statp => statp.PrerequisiteStreakTypeAchievementTypeId ) );
+                cblPrerequsities.SetValues( achievementTypeCache.Prerequisites.Select( statp => statp.PrerequisiteAchievementTypeId ) );
             }
         }
 
@@ -898,11 +938,11 @@ namespace RockWeb.Blocks.Streaks
         /// Get the actual achievement type model for deleting or editing
         /// </summary>
         /// <returns></returns>
-        private StreakTypeAchievementType GetAchievementType()
+        private AchievementType GetAchievementType()
         {
             if ( _achievementType == null )
             {
-                var achievementTypeId = PageParameter( PageParameterKey.StreakTypeAchievementTypeId ).AsIntegerOrNull();
+                var achievementTypeId = PageParameter( PageParameterKey.AchievementTypeId ).AsIntegerOrNull();
 
                 if ( achievementTypeId.HasValue && achievementTypeId.Value > 0 )
                 {
@@ -914,31 +954,15 @@ namespace RockWeb.Blocks.Streaks
 
             return _achievementType;
         }
-        private StreakTypeAchievementType _achievementType = null;
+        private AchievementType _achievementType = null;
 
         /// <summary>
         /// Gets the achievement type cache.
         /// </summary>
         /// <returns></returns>
-        private StreakTypeAchievementTypeCache GetAchievementTypeCache()
+        private AchievementTypeCache GetAchievementTypeCache()
         {
-            return StreakTypeAchievementTypeCache.Get( PageParameter( PageParameterKey.StreakTypeAchievementTypeId ).AsInteger() );
-        }
-
-        /// <summary>
-        /// Gets the achievement type cache.
-        /// </summary>
-        /// <returns></returns>
-        private StreakTypeCache GetStreakTypeCache()
-        {
-            var achievementTypeCache = GetAchievementTypeCache();
-
-            if ( achievementTypeCache != null )
-            {
-                return achievementTypeCache.StreakTypeCache;
-            }
-
-            return StreakTypeCache.Get( PageParameter( PageParameterKey.StreakTypeId ).AsInteger() );
+            return AchievementTypeCache.Get( PageParameter( PageParameterKey.AchievementTypeId ).AsInteger() );
         }
 
         /// <summary>
@@ -957,46 +981,62 @@ namespace RockWeb.Blocks.Streaks
         private RockContext _rockContext = null;
 
         /// <summary>
+        /// Gets the entity type service.
+        /// </summary>
+        /// <returns></returns>
+        private EntityTypeService GetEntityTypeService()
+        {
+            if ( _entityTypeService == null )
+            {
+                var rockContext = GetRockContext();
+                _entityTypeService = new EntityTypeService( rockContext );
+            }
+
+            return _entityTypeService;
+        }
+        private EntityTypeService _entityTypeService = null;
+
+        /// <summary>
         /// Get the achievement type service
         /// </summary>
         /// <returns></returns>
-        private StreakTypeAchievementTypeService GetAchievementTypeService()
+        private AchievementTypeService GetAchievementTypeService()
         {
             if ( _achievementTypeService == null )
             {
                 var rockContext = GetRockContext();
-                _achievementTypeService = new StreakTypeAchievementTypeService( rockContext );
+                _achievementTypeService = new AchievementTypeService( rockContext );
             }
 
             return _achievementTypeService;
         }
-        private StreakTypeAchievementTypeService _achievementTypeService = null;
+        private AchievementTypeService _achievementTypeService = null;
 
         /// <summary>
         /// Gets the attempt service.
         /// </summary>
         /// <returns></returns>
-        private StreakAchievementAttemptService GetAttemptService()
+        private AchievementAttemptService GetAttemptService()
         {
-            if ( _streakAchievementAttemptService == null )
+            if ( _achievementAttemptService == null )
             {
                 var rockContext = GetRockContext();
-                _streakAchievementAttemptService = new StreakAchievementAttemptService( rockContext );
+                _achievementAttemptService = new AchievementAttemptService( rockContext );
             }
 
-            return _streakAchievementAttemptService;
+            return _achievementAttemptService;
         }
-        private StreakAchievementAttemptService _streakAchievementAttemptService = null;
+        private AchievementAttemptService _achievementAttemptService = null;
 
         /// <summary>
         /// Gets the attempts query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<StreakAchievementAttempt> GetAttemptsQuery()
+        private IQueryable<AchievementAttempt> GetAttemptsQuery()
         {
             var achievementType = GetAchievementType();
             var attemptService = GetAttemptService();
-            var query = attemptService.Queryable().AsNoTracking().Where( saa => saa.StreakTypeAchievementTypeId == achievementType.Id );
+            var query = attemptService.Queryable().AsNoTracking().Where( saa => saa.AchievementTypeId == achievementType.Id );
             return query;
         }
 
@@ -1004,12 +1044,12 @@ namespace RockWeb.Blocks.Streaks
         /// Gets the attempts query for the chart. Only successes.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<StreakAchievementAttempt> GetChartQuery()
+        private IQueryable<AchievementAttempt> GetChartQuery()
         {
             var achievementType = GetAchievementType();
             var attemptService = GetAttemptService();
             var query = attemptService.Queryable().AsNoTracking().Where( saa =>
-                saa.StreakTypeAchievementTypeId == achievementType.Id &&
+                saa.AchievementTypeId == achievementType.Id &&
                 saa.IsSuccessful &&
                 saa.AchievementAttemptEndDateTime.HasValue );
             return query;

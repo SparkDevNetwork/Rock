@@ -127,10 +127,12 @@ namespace RockWeb.Blocks.Cms
             this.BlockUpdated += PageMenu_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upContent );
 
+            var cssFile =GetAttributeValue( AttributeKey.CSSFile );
+
             // add css file to page
-            if ( GetAttributeValue( AttributeKey.CSSFile ).Trim() != string.Empty )
+            if ( cssFile.IsNotNullOrWhiteSpace() )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( AttributeKey.CSSFile ) ), false );
+                RockPage.AddCSSLink( ResolveRockUrl( cssFile ), false );
             }
         }
 

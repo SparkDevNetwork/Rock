@@ -336,7 +336,6 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
                 contentChannel.ChannelUrl = tbChannelUrl.Text;
-                contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
@@ -795,7 +794,6 @@ namespace RockWeb.Blocks.Cms
                 divTag.Attributes["style"] = cbEnableTag.Checked ? "display:block" : "display:none";
 
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
-                tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
 
                 ChildContentChannelsList = new List<int>();
@@ -1014,11 +1012,10 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Check if there is any approver configured.
         /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        /// <param name="contentChannel">The content channel.</param>
         public bool IsApproverConfigured( ContentChannel contentChannel )
         {
             var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
 
             var authService = new AuthService( rockContext );
             var contentChannelEntityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannel>().Id;
@@ -1028,35 +1025,7 @@ namespace RockWeb.Blocks.Cms
             // Get a list of all PersonIds that are allowed that are included in the Auths
             // Then, when we get a list of all the allowed people that are in the auth as a specific Person or part of a Role (Group), we'll run all those people thru NoteType.IsAuthorized
             // That way, we don't have to figure out all the logic of Allow/Deny based on Order, etc
-            List<int> authPersonIdListAll = new List<int>();
-            var approvalAuthsAllowed = approvalAuths.Where( a => a.AllowOrDeny == "A" ).ToList();
-
-
-            bool isValid = false;
-            foreach ( var approvalAuth in approvalAuthsAllowed )
-            {
-                int? personId = null;
-
-                if ( approvalAuth.PersonAlias != null )
-                {
-                    personId = approvalAuth.PersonAlias.PersonId;
-                }
-
-                if ( personId.HasValue )
-                {
-                    isValid = true;
-                    break;
-                }
-                else if ( approvalAuth.GroupId.HasValue )
-                {
-                    isValid = true;
-                    break;
-                }
-                else if ( approvalAuth.SpecialRole != SpecialRole.None )
-                {
-                    // Not Supported: Get people that belong to Special Roles like AllUsers, AllAuthenticatedUser, and AllUnAuthenicatedUsers doesn't really make sense, so ignore it
-                }
-            }
+            bool isValid = approvalAuths.Any( a => a.AllowOrDeny == "A" && ( a.PersonAlias != null || a.GroupId != null ) );
 
             return isValid;
         }

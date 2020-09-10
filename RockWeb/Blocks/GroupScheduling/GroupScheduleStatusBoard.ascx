@@ -7,6 +7,14 @@
                 <h1 class="panel-title"><i class="fa fa-calendar"></i>Schedule Status Board
                 </h1>
                 <div class="panel-labels">
+                    <asp:LinkButton ID="btnRosters" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnRosters_Click">
+                        <i class="fa fa-calendar-check"></i>
+                        Rosters
+                    </asp:LinkButton>
+                    <asp:LinkButton ID="btnSendCommunications" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnSendCommunications_Click">
+                        <i class="fa fa-envelope"></i>
+                        Send Communications
+                    </asp:LinkButton>
                     <asp:LinkButton ID="btnGroups" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnGroups_Click">
                         <i class="fa fa-users"></i>
                         Groups
@@ -21,6 +29,7 @@
             <div class="scrollable">
                 <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false" />
                 <div>
+                    <%-- HTML for Status Board --%>
                     <asp:Literal ID="lGroupStatusTableHTML" runat="server" Visible="true" />
                 </div>
             </div>
@@ -45,8 +54,14 @@
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize();
 
+                var $groupSchedulerLink = $('.js-group-scheduler-link');
+
+                $groupSchedulerLink.on('click', function (e) {
+                    e.stopImmediatePropagation();
+                });
+
                 $('.js-group-header').on('click', function () {
-                    $(this).find('.fa').css({'transform' : 'rotate(-90deg)'});
+                    $(this).find('.js-toggle-panel').css({'transform' : 'rotate(-90deg)'});
                     var $groupLocations = $(this).closest('.js-group-locations');
                     var locationsExpanded = $groupLocations.data('locations-expanded') == 1;
                     if (locationsExpanded) {
@@ -58,7 +73,7 @@
                         $groupLocations.data('locations-expanded', 0);
                     }
                     else {
-                    $(this).find('.fa').css({'transform' : 'rotate(0deg)'});
+                        $(this).find('.js-toggle-panel').css({'transform' : 'rotate(0deg)'});
                         $('.js-location-row', $groupLocations).children('td')
                             .children()
                             .slideDown();

@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -29,10 +27,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using Rock.Store;
-using System.Text;
-using Rock.Security;
-using DDay.iCal;
+using Ical.Net.DataTypes;
 
 namespace RockWeb.Blocks.Event
 {
@@ -395,7 +390,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( o.Schedule != null )
                     {
-                        eventOccurrenceDate.ScheduleOccurrences = o.Schedule.GetOccurrences( beginDate, endDate ).ToList();
+                        eventOccurrenceDate.ScheduleOccurrences = o.Schedule.GetICalOccurrences( beginDate, endDate ).ToList();
                     }
                     else
                     {
@@ -441,6 +436,8 @@ namespace RockWeb.Blocks.Event
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
                             Time = datetime.ToShortTimeString(),
+                            EndDate = occurrenceEndTime != null ? occurrenceEndTime.Value.ToShortDateString() : null,
+                            EndTime = occurrenceEndTime != null ? occurrenceEndTime.Value.ToShortTimeString() : null,
                             Campus = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             LocationDescription = eventItemOccurrence.Location,
@@ -713,7 +710,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Campus", "Location", "LocationDescription", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Campus", "Location", "LocationDescription", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
         public class EventOccurrenceSummary
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
@@ -725,6 +722,10 @@ namespace RockWeb.Blocks.Event
             public string Date { get; set; }
 
             public string Time { get; set; }
+
+            public string EndDate { get; set; }
+
+            public string EndTime { get; set; }
 
             public string Campus { get; set; }
 
@@ -742,7 +743,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// A class to store the event item occurrences dates
+        /// A block-level viewmodel for event item occurrences dates.
         /// </summary>
         public class EventOccurrenceDate
         {

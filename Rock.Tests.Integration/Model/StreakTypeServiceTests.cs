@@ -43,7 +43,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         /// </summary>
         private static void CreateStreakTypeData()
         {
-            var personAlias = new PersonAliasService( _rockContext ).Queryable().First( pa => pa.Person.Guid == TestGuids.TestPeople.TedDecker.AsGuid() );
+            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
+            var personAlias = new PersonAliasService( _rockContext ).Queryable().First( pa => pa.Person.Guid == tedDeckerGuid );
             _personAliasId = personAlias.Id;
             _personId = personAlias.PersonId;
 

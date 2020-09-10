@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( Streak item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<StreakAchievementAttempt>( Context ).Queryable().Any( a => a.StreakId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Streak.FriendlyTypeName, StreakAchievementAttempt.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

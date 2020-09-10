@@ -425,7 +425,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the group descendents Common Table Expression.
+        /// Gets the group descendants Common Table Expression.
         /// </summary>
         /// <param name="parentGroupId">The parent group identifier.</param>
         /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
@@ -506,6 +506,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines if the specified group has descendants at all or active descendants (based on param).
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns></returns>
+        public bool HasDescendantGroups( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
+
+            var sql = $@"
+                {cte}
+                SELECT 1 WHERE EXISTS( SELECT [Id] from CTE );";
+
+            return ( Context as RockContext ).Database.SqlQuery<int>( sql ).Any();
+        }
+
+        /// <summary>
         /// Returns a List of <see cref="GroupTypeCache">Group Types</see> of the groups that are descendents of the specified parentGroupId
         /// </summary>
         /// <param name="parentGroupId">The parent group identifier.</param>
@@ -547,6 +564,66 @@ namespace Rock.Model
 
             // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
             return result.OrderBy( a => 0 );
+        }
+
+        /// <summary>
+        /// Get all the group ids that have RSVP enabled,including all ancenstorsOfThoseGroups.
+        /// Use this to detect if a group has RSVP enabled, or a group has a child group with RSVP enabled
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetGroupIdsWithRSVPEnabledWithAncestors()
+        {
+            var rsvpEnabledGroupTypeIds = GroupTypeCache.All().Where( a => a.EnableRSVP ).Select( a => a.Id ).ToList();
+
+            if ( !rsvpEnabledGroupTypeIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            var sql = $@" ;with CTE as (
+                select g1.*
+                    from [Group] g1
+                    where g1.GroupTypeId in ({rsvpEnabledGroupTypeIds.AsDelimited( "," )})
+                    and g1.[IsArchived] = 0
+                union all
+                select [a].* from [Group] [a]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]  and a.[IsArchived] = 0
+                )
+                select distinct Id from CTE";
+
+            var groupsWithRSVPEnabled = this.Context.Database.SqlQuery<int>( sql ).ToList();
+
+            return groupsWithRSVPEnabled;
+        }
+
+        /// <summary>
+        /// Get all the group ids that have scheduling enabled,including all ancenstorsOfThoseGroups.
+        /// Use this to detect if a group has scheduling enabled, or a group has a child group with scheduling enabled
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetGroupIdsWithSchedulingEnabledWithAncestors()
+        {
+            var schedulingEnabledGroupTypeIds = GroupTypeCache.All().Where( a => a.IsSchedulingEnabled ).Select( a => a.Id ).ToList();
+
+            if ( !schedulingEnabledGroupTypeIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            var sql = $@" ;with CTE as (
+                select g1.*
+                    from [Group] g1 
+                    where g1.GroupTypeId in ({schedulingEnabledGroupTypeIds.AsDelimited( "," )})
+                    and g1.DisableScheduling != 1  and [IsArchived] = 0
+                union all
+                select [a].* from [Group] [a]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]  and a.[IsArchived] = 0
+                )
+                select distinct Id from CTE";
+
+            var groupsWithSchedulingEnabled = this.Context.Database.SqlQuery<int>( sql ).ToList();
+
+            return groupsWithSchedulingEnabled;
         }
 
         /// <summary>
@@ -1297,7 +1374,7 @@ namespace Rock.Model
     public static class GroupServiceExtensions
     {
         /// <summary>
-        /// Given an IQueryable of Groups, returns just the heads of households for those groups
+        /// Given an IQueryable of Groups, returns a queryable of just the heads of households for those groups
         /// </summary>
         /// <param name="groups">The groups.</param>
         /// <returns></returns>
@@ -1365,51 +1442,104 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Groups that have active leaders.
+        /// Returns a queryable of Groups that have active leaders.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="groupQuery">The group query.</param>
         /// <returns></returns>
-        public static IQueryable<Group> HasActiveLeader( this IQueryable<Group> group )
+        public static IQueryable<Group> HasActiveLeader( this IQueryable<Group> groupQuery )
         {
-            return group
+            return groupQuery
                     .Where( g => g.Members.Any( m =>
                                     m.GroupMemberStatus == GroupMemberStatus.Active &&
                                     m.GroupRole.IsLeader ) );
         }
 
         /// <summary>
-        /// Groups with the specified Group Type Id.
+        /// Returns a queryable of Groups with the specified Group Type Id.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="groupQuery">The group query.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public static IQueryable<Group> IsGroupType( this IQueryable<Group> group, int groupTypeId )
+        public static IQueryable<Group> IsGroupType( this IQueryable<Group> groupQuery, int groupTypeId )
         {
-            return group
+            return groupQuery
                     .Where( g => g.GroupTypeId == groupTypeId );
         }
 
         /// <summary>
-        /// Groups that are active.
+        /// Returns a queryable of Groups that are active.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="groupQuery">The group query.</param>
         /// <returns></returns>
-        public static IQueryable<Group> IsActive( this IQueryable<Group> group )
+        public static IQueryable<Group> IsActive( this IQueryable<Group> groupQuery )
         {
-            return group
+            return groupQuery
                     .Where( g => g.IsActive );
         }
 
         /// <summary>
-        /// Groups that have a Schedule Id.
+        /// Returns a queryable of Groups that have a Schedule Id.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="groupQuery">The group query.</param>
         /// <returns></returns>
-        public static IQueryable<Group> HasSchedule( this IQueryable<Group> group )
+        public static IQueryable<Group> HasSchedule( this IQueryable<Group> groupQuery )
         {
-            return group
+            return groupQuery
                     .Where( g => g.ScheduleId != null );
         }
+
+        /// <summary>
+        /// Returns a queryable of Groups have that Group Scheduling Enabled
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> HasSchedulingEnabled( this IQueryable<Group> groupQuery )
+        {
+            return groupQuery
+                    .Where( g => g.GroupType.IsSchedulingEnabled && g.DisableScheduling == false );
+        }
+
+        /// <summary>
+        /// Returns a queryable of group scheduling <see cref="Schedule">Schedules</see> associated with group scheduling for the specified groupQuery.
+        /// Only schedules for groups that have group scheduling enabled, and have active group locations will be returned.
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        /// <returns></returns>
+        public static IQueryable<Schedule> GetGroupSchedulingSchedules( this IQueryable<Group> groupQuery )
+        {
+            var groupsWithSchedulingEnabledQuery = groupQuery.HasSchedulingEnabled();
+
+            var groupLocationsQuery = groupsWithSchedulingEnabledQuery.SelectMany( a => a.GroupLocations );
+
+            var schedulesQuery = groupLocationsQuery
+                .Where( gl => gl.Location.IsActive )
+                .SelectMany( gl => gl.Schedules )
+                .Distinct()
+                .Where( s => s.IsActive );
+
+            return schedulesQuery;
+        }
+
+        /// <summary>
+        /// Returns a queryable of group scheduling <see cref="GroupLocation">group locations</see> associated with group scheduling for the specified groupQuery.
+        /// Only group locations for groups that have group scheduling enabled, and have active group locations will be returned.
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupLocation> GetGroupSchedulingGroupLocations( this IQueryable<Group> groupQuery )
+        {
+            var groupsWithSchedulingEnabledQuery = groupQuery.HasSchedulingEnabled();
+            var groupLocationsQuery = groupsWithSchedulingEnabledQuery.SelectMany( a => a.GroupLocations );
+
+            groupLocationsQuery = groupLocationsQuery
+                .Where( a => groupQuery.Any( x => x.Id == a.GroupId ) )
+                .Where( a => a.Group.GroupType.IsSchedulingEnabled == true && a.Group.DisableScheduling == false )
+                .Where( gl => gl.Location.IsActive )
+                .Distinct();
+
+            return groupLocationsQuery;
+        }
     }
+
     #endregion
 }

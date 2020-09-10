@@ -379,7 +379,8 @@
                 <div class="row">
                     <div class="col-md-3">
                         <asp:HiddenField ID="hfGroupLocationGuid" runat="server" />
-                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
+                        <asp:HiddenField ID="hfInactiveGroupLocationSchedules" runat="server" />
+                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" AllowInactiveSelection="false" />
                     </div>
                     <div class="col-md-9">
                         <%-- Group Location Schedule Capacities (if Group Scheduling Enabled) --%>
@@ -576,10 +577,7 @@
                     if (jqObj != null) {
                         var domObj = jqObj.get(0);
                         if (domObj != null) {
-                            console.log(validatorId + ': found');
                             ValidatorEnable(domObj, enable);
-                        } else {
-                            console.log(validatorId + ': NOT found');
                         }
                     }
                 }

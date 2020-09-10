@@ -613,6 +613,10 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            // Set the ModifiedDateTime field to ensure that at least one property of the primary entity is updated before saving changes.
+            // This forces the Rock.Data.DbContext.RockPostSave method to be triggered even in cases where only related entities have been modified by the user.
+            groupType.ModifiedDateTime = RockDateTime.Now;
+
             // need WrapTransaction due to Attribute saves    
             rockContext.WrapTransaction( () =>
             {

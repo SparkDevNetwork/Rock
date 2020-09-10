@@ -382,14 +382,21 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _catalog = RockInstanceConfig.Database.DatabaseName;
+                RockInstanceDatabaseConfiguration databaseConfig = RockInstanceConfig.Database;
+                _catalog = databaseConfig.DatabaseName;
 
-                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, RockInstanceConfig.Database.ServerName ) );
-                databaseResults.Append( string.Format( "<br />Database Version: {0}", RockInstanceConfig.Database.Version ) );
-                databaseResults.AppendFormat( "<br />Database Size: {0} MB", RockInstanceConfig.Database.DatabaseSize );
-                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", RockInstanceConfig.Database.LogSize );
-                databaseResults.AppendFormat( "<br />Recovery Model: {0}", RockInstanceConfig.Database.RecoverMode );
-                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", RockInstanceConfig.Database.SnapshotIsolationAllowed.ToYesNo(), RockInstanceConfig.Database.ReadCommittedSnapshotEnabled.ToYesNo() );
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, databaseConfig.ServerName ) );
+                databaseResults.Append( string.Format( "<br />Database Version: {0}", databaseConfig.Version ) );
+                databaseResults.Append( string.Format( "<br />Database Friendly Version: {0}", databaseConfig.VersionFriendlyName ) );
+                databaseResults.AppendFormat( "<br />Database Size: {0} MB", databaseConfig.DatabaseSize );
+                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", databaseConfig.LogSize );
+                databaseResults.AppendFormat( "<br />Recovery Model: {0}", databaseConfig.RecoverMode );
+                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", databaseConfig.SnapshotIsolationAllowed.ToYesNo(), databaseConfig.ReadCommittedSnapshotEnabled.ToYesNo() );
+
+                if ( databaseConfig.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+                {
+                    databaseResults.AppendFormat( "<br />Azure Service Tier Objective: {0}", databaseConfig.ServiceObjective );
+                }
             }
             catch ( Exception ex )
             {
@@ -531,7 +538,14 @@ namespace RockWeb.Blocks.Administration
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
-            lCacheOverview.Text = GetCacheInfo();
+            var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
+            if ( cacheStatisticsEnabled )
+            {
+                pnlHideCacheStatistics.Visible = false;
+                pnlShowCacheStatistics.Visible = true;
+                lCacheOverview.Text = GetCacheInfo();
+            }
+
             lRoutes.Text = GetRoutesInfo();
             lThreads.Text = GetThreadInfo();
         }

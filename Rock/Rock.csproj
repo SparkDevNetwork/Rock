@@ -41,6 +41,9 @@
     <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
       <HintPath>..\packages\AngleSharp.0.9.9.2\lib\net45\AngleSharp.dll</HintPath>
     </Reference>
+    <Reference Include="antlr.runtime, Version=2.7.6.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.3.5\lib\net45\antlr.runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
@@ -138,6 +141,15 @@
     <Reference Include="Humanizer">
       <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
     </Reference>
+    <Reference Include="Ical.Net, Version=2.1.0.20781, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.3.5\lib\net45\Ical.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Ical.Net.Collections, Version=2.1.0.20780, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.3.5\lib\net45\Ical.Net.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IdentityModel.3.0.0\lib\net452\IdentityModel.dll</HintPath>
+    </Reference>
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
     </Reference>
@@ -183,17 +195,23 @@
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.5\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IdentityModel.Protocols, Version=2.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Protocols.2.1.5\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=2.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.2.1.5\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.1.5\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.2.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.11.0.2\lib\net20\Microsoft.SqlServer.Types.dll</HintPath>
@@ -212,6 +230,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NodaTime, Version=1.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.3.5\lib\net45\NodaTime.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core, Version=2.11.1.812, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\NuGet.Core.2.11.1\lib\net40-Client\NuGet.Core.dll</HintPath>
@@ -264,6 +285,7 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.1.5\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
@@ -316,6 +338,9 @@
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
+    <Reference Include="xxHashSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\xxHashSharp.1.0.0\lib\net45\xxHashSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.8.6.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
       <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.8.6\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
@@ -325,9 +350,14 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Achievement\AchievementComponent.cs" />
+    <Compile Include="Achievement\AchievementConfiguration.cs" />
     <Compile Include="Achievement\AchievementContainer.cs" />
+    <Compile Include="Achievement\AchieverAttemptItem.cs" />
+    <Compile Include="Achievement\Component\StepProgramAchievement.cs" />
+    <Compile Include="Achievement\Component\InteractionSourcedAccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\AccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
+    <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Address\MelissaData.cs" />
     <Compile Include="Address\ServiceObjects.cs" />
@@ -346,11 +376,14 @@
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\AchievementTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
@@ -469,6 +502,7 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Badge\Component\Achievement.cs" />
     <Compile Include="Badge\HighlightLabelBadge.cs" />
     <Compile Include="Badge\IconBadge.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
@@ -477,6 +511,7 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\StructuredContentView.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
@@ -498,10 +533,15 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
+    <Compile Include="Data\SaveChangesResult.cs" />
+    <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
+    <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
@@ -520,12 +560,34 @@
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
+    <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
+    <Compile Include="Model\AuthClaim.cs" />
+    <Compile Include="Model\AuthClient.cs" />
+    <Compile Include="Model\AuthClientService.Partial.cs" />
+    <Compile Include="Model\AuthScope.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\AuthClaimService.cs" />
+    <Compile Include="Model\CodeGenerated\AuthClientService.cs" />
+    <Compile Include="Model\CodeGenerated\AuthScopeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
+    <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
+    <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
+    <Compile Include="Reporting\ReportGetQueryableArgs.cs" />
+    <Compile Include="Reporting\RockReportingException.cs" />
+    <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />
+    <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
+    <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
+    <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
+    <Compile Include="Security\Authentication\OidcClient.cs" />
+    <Compile Include="SystemGuid\AuthScope.cs" />
+    <Compile Include="SystemKey\DeviceAttributeKey.cs" />
+    <Compile Include="SystemKey\TwilioAttributeKey.cs" />
+    <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
@@ -580,6 +642,8 @@
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
@@ -638,9 +702,9 @@
     <Compile Include="Model\CodeGenerated\SmsPipelineService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
-    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementAttemptService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementTypePrerequisiteService.cs" />
+    <Compile Include="Model\CodeGenerated\AchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\DocumentTypeService.Partial.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
@@ -659,10 +723,10 @@
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
-    <Compile Include="Model\StreakAchievementAttempts.cs" />
-    <Compile Include="Model\StreakTypeAchievementTypePrerequisite.cs" />
-    <Compile Include="Model\StreakTypeAchievementTypeService.Partial.cs" />
-    <Compile Include="Model\StreakTypeAchievementType.cs" />
+    <Compile Include="Model\AchievementAttempts.cs" />
+    <Compile Include="Model\AchievementTypePrerequisite.cs" />
+    <Compile Include="Model\AchievementTypeService.Partial.cs" />
+    <Compile Include="Model\AchievementType.cs" />
     <Compile Include="Model\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
@@ -689,7 +753,7 @@
     <Compile Include="Transactions\RunDataViewTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
-    <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
+    <Compile Include="Transactions\AchievementAttemptChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
@@ -703,8 +767,8 @@
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypePrerequisiteCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
@@ -943,7 +1007,7 @@
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
-    <Compile Include="Utility\StringRockExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
@@ -1601,7 +1665,6 @@
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowLogService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.cs" />
@@ -2158,7 +2221,6 @@
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
     <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
@@ -2167,7 +2229,7 @@
     <Compile Include="Web\UI\Controls\Pickers\InteractionChannelPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\InteractionChannelInteractionComponentPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />
@@ -2865,6 +2927,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />

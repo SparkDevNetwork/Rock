@@ -61,16 +61,76 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202006231558281_PrayerRequestWorkflowAction.cs" />
-    <Compile Include="Migrations\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
+    <Compile Include="Migrations\202007211806064_Rollup_0721.cs" />
+    <Compile Include="Migrations\202007211806064_Rollup_0721.Designer.cs">
+      <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.cs" />
+    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.Designer.cs">
+      <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.cs" />
+    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008031623133_EntityAchievements.cs" />
+    <Compile Include="Migrations\202008031623133_EntityAchievements.Designer.cs">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008042038088_StepAchievements.cs" />
+    <Compile Include="Migrations\202008042038088_StepAchievements.Designer.cs">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008042327182_Rollup_0804.cs" />
+    <Compile Include="Migrations\202008042327182_Rollup_0804.Designer.cs">
+      <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.cs" />
+    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.Designer.cs">
+      <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.cs" />
+    <Compile Include="Migrations\202008071645528_AchievementIndexes.Designer.cs">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.cs" />
+    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.Designer.cs">
+      <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.cs" />
+    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.Designer.cs">
+      <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.cs" />
+    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.Designer.cs">
+      <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008182000056_Rollup_0818.cs" />
+    <Compile Include="Migrations\202008182000056_Rollup_0818.Designer.cs">
+      <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.cs" />
+    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.Designer.cs">
+      <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.cs" />
+    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.Designer.cs">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009011709326_Rollup_0901.cs" />
+    <Compile Include="Migrations\202009011709326_Rollup_0901.Designer.cs">
+      <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202006232344588_Rollup_0623.cs" />
-    <Compile Include="Migrations\202006232344588_Rollup_0623.Designer.cs">
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006232344588_Rollup_0623.cs" />
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006232344588_Rollup_0623.Designer.cs">
       <DependentUpon>202006232344588_Rollup_0623.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202007072028366_Rollup_0707.cs" />
-    <Compile Include="Migrations\202007072028366_Rollup_0707.Designer.cs">
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202007072028366_Rollup_0707.cs" />
+    <Compile Include="Migrations\Version 11.0\Version 1.11.0\202007072028366_Rollup_0707.Designer.cs">
       <DependentUpon>202007072028366_Rollup_0707.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
@@ -1307,13 +1367,58 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202006231558281_PrayerRequestWorkflowAction.resx">
+    <EmbeddedResource Include="Migrations\202007211806064_Rollup_0721.resx">
+      <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.resx">
+      <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
+      <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008031623133_EntityAchievements.resx">
+      <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008042038088_StepAchievements.resx">
+      <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008042327182_Rollup_0804.resx">
+      <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.resx">
+      <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008071645528_AchievementIndexes.resx">
+      <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008101306418_InteractionIndexUpdate.resx">
+      <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008121743577_UpdatePersonalDeviceModel.resx">
+      <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008181633260_GroupSchedulingV2.resx">
+      <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008182000056_Rollup_0818.resx">
+      <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008211513093_AddOidcModelsAndPages.resx">
+      <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008272036178_AddDocumentsToPersonMerge.resx">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009011709326_Rollup_0901.resx">
+      <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202006232344588_Rollup_0623.resx">
+    <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006232344588_Rollup_0623.resx">
       <DependentUpon>202006232344588_Rollup_0623.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202007072028366_Rollup_0707.resx">
+    <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202007072028366_Rollup_0707.resx">
       <DependentUpon>202007072028366_Rollup_0707.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202002182206291_Rollup_0218.resx">
@@ -2254,6 +2359,9 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 11.0\Version 1.11.0\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
     </Content>
@@ -2571,7 +2679,7 @@
 CALL CopyToPackage.bat
 </PreBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
