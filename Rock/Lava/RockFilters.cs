@@ -2656,53 +2656,51 @@ namespace Rock.Lava
             {
                 var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
-                Location location = null;
+                // Get all GroupMember records tied to this Person and the Family GroupType. Note that a given Person can belong to multiple families.
+                var groupMemberQuery = new GroupMemberService( GetRockContext( context ) )
+                    .Queryable( "GroupLocations.Location" )
+                    .AsNoTracking()
+                    .Where( m => m.PersonId == person.Id &&
+                                 m.Group.GroupTypeId == familyGroupTypeId );
+
+                /*
+                    8/5/2020 - JH
+                    If this Person has a primary family defined, use that to determine the Group whose Location should be used.
+                    Otherwise, simply use the previous logic leveraging GroupMember.GroupOrder.
+
+                    Reason: Change Lava 'Address' filter to use person's primary family property.
+                */
+                if ( person.PrimaryFamilyId.HasValue )
+                {
+                    groupMemberQuery = groupMemberQuery
+                        .Where( m => m.GroupId == person.PrimaryFamilyId.Value );
+                }
+
+                // Get all GroupLocations tied to the GroupMembers queried up to this point.
+                var groupLocationQuery = groupMemberQuery
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .SelectMany( m => m.Group.GroupLocations );
 
                 switch ( addressType )
                 {
                     case "Mailing":
-                        location = new GroupMemberService( GetRockContext( context ) )
-                            .Queryable( "GroupLocations.Location" )
-                            .AsNoTracking()
-                            .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.Group.GroupTypeId == familyGroupTypeId )
-                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                            .SelectMany( m => m.Group.GroupLocations )
-                            .Where( gl =>
-                                gl.IsMailingLocation == true )
-                            .Select( gl => gl.Location )
-                            .FirstOrDefault();
+                        groupLocationQuery = groupLocationQuery
+                            .Where( gl => gl.IsMailingLocation == true );
                         break;
                     case "MapLocation":
-                        location = new GroupMemberService( GetRockContext( context ) )
-                            .Queryable( "GroupLocations.Location" )
-                            .AsNoTracking()
-                            .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.Group.GroupTypeId == familyGroupTypeId )
-                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                            .SelectMany( m => m.Group.GroupLocations )
-                            .Where( gl =>
-                                gl.IsMappedLocation == true )
-                            .Select( gl => gl.Location )
-                            .FirstOrDefault();
+                        groupLocationQuery = groupLocationQuery
+                            .Where( gl => gl.IsMappedLocation == true );
                         break;
                     default:
-                        location = new GroupMemberService( GetRockContext( context ) )
-                            .Queryable( "GroupLocations.Location" )
-                            .AsNoTracking()
-                            .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.Group.GroupTypeId == familyGroupTypeId )
-                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                            .SelectMany( m => m.Group.GroupLocations )
-                            .Where( gl =>
-                                gl.GroupLocationTypeValue.Value == addressType )
-                            .Select( gl => gl.Location )
-                            .FirstOrDefault();
+                        groupLocationQuery = groupLocationQuery
+                            .Where( gl => gl.GroupLocationTypeValue.Value == addressType );
                         break;
                 }
+
+                // Select the first GroupLocation's Location.
+                Location location = groupLocationQuery
+                    .Select( gl => gl.Location )
+                    .FirstOrDefault();
 
                 if ( location != null )
                 {

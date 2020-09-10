@@ -66,39 +66,39 @@ namespace RockWeb.Blocks.Crm
         private static class CodeEditorValue
         {
             public const string LavaTemplate = @"
-<div class=""panel panel-block"">       
+<div class=""panel panel-block"">
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
-            <div class=""panel-panel-title""><i class=""fa fa-mobile""></i> {{ Person.FullName }}</div>
+            <div class='panel-panel-title'><i class=""fa fa-mobile""></i> {{ Person.FullName }}</div>
         </h4>
     </div>
     <div class=""panel-body"">
-        <div class=""row row-eq-height-md"">
-            {% for item in PersonalDevices %}
-                <div class=""col-md-3 col-sm-4"">                  
-                    <div class=""well margin-b-none rollover-container"">                        
-                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
+        <div class=""row row-eq-height-md flex-wrap"">
+            {%- for item in PersonalDevices -%}
+                <div class=""col-md-3 col-sm-4 mb-4"">
+                    <div class=""well mb-0 rollover-container h-100"">
+                        <a class=""pull-right rollover-item btn btn-xs btn-square btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
                         <div style=""min-height: 120px;"">
-                            <h3 class=""margin-v-none"">
-                                {% if item.DeviceIconCssClass != '' %}
+                            <h3 class=""my-0"">
+                                {%- if item.DeviceIconCssClass != '' -%}
                                     <i class=""fa {{ item.DeviceIconCssClass }}""></i>
-                                {% endif %}
-                                {% if item.PersonalDevice.NotificationsEnabled == true %}
+                                {%- endif -%}
+                                {%- if item.PersonalDevice.NotificationsEnabled == true -%}
                                     <i class=""fa fa-comment-o""></i>
-                                {% endif %}
+                                {%- endif -%}
                             </h3>
                             <dl>
-                                {% if item.PlatformValue != '' %}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{% endif %}
-                                {% if item.PersonalDevice.CreatedDateTime != null %}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{% endif %}                              
-                                {% if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null %}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{% endif %}
+                                {%- if item.PlatformValue != '' -%}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{%- endif -%}
+                                {%- if item.PersonalDevice.CreatedDateTime != null -%}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{%- endif -%}
+                                {%- if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null -%}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{%- endif -%}
                             </dl>
                         </div>
-                        {% if LinkUrl != '' %}
+                        {%- if LinkUrl != '' -%}
                             <a href=""{{ LinkUrl | Replace:'[Id]',item.PersonalDevice.Id }}"" class=""btn btn-default btn-xs""> Interactions</a>
-                        {% endif %}
+                        {%- endif -%}
                     </div>
                 </div>
-            {% endfor %}
+            {%- endfor -%}
         </div>
     </div>
 </div>

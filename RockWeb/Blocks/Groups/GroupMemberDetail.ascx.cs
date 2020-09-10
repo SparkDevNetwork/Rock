@@ -302,6 +302,17 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                groupMember.PersonId = personId.Value;
+                groupMember.GroupRoleId = role.Id;
+                groupMember.Note = tbNote.Text;
+                groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+                groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+                if ( cbIsNotified.Visible )
+                {
+                    groupMember.IsNotified = cbIsNotified.Checked;
+                }
+
                 // check for matching archived group member with same person and role if this is a new group member or if the person and/or role has changed
                 if ( checkForArchivedGroupMember )
                 {
@@ -322,6 +333,8 @@ namespace RockWeb.Blocks.Groups
                     GroupMember archivedGroupMember;
                     if ( groupService.ExistsAsArchived( group, personId.Value, role.Id, out archivedGroupMember ) )
                     {
+                        archivedGroupMember.GroupMemberStatus = groupMember.GroupMemberStatus;
+
                         // if the archived groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
                         // So, make sure a message is displayed in the validation summary
 
@@ -350,16 +363,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                groupMember.PersonId = personId.Value;
-                groupMember.GroupRoleId = role.Id;
-                groupMember.Note = tbNote.Text;
-                groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
-                groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
-
-                if ( cbIsNotified.Visible )
-                {
-                    groupMember.IsNotified = cbIsNotified.Checked;
-                }
+                
 
                 if ( pnlRequirements.Visible )
                 {
