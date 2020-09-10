@@ -36,6 +36,7 @@ using Rock.Web.UI.Controls;
  * 
  * Additional Features:
  * - FE1) Added ability to add parents of children to any communication sent
+ * - FE2) Added ability to use the Rock Communication Block for indiviual emails
  */
 
 namespace RockWeb.Plugins.com_bemaservices.Groups
@@ -75,6 +76,14 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     /* BEMA.FE1.Eend */
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Send Indiviual Communications throught Rock.",
+        Key = BemaAttributeKey.IndiviualCommunicationsThroughRock,
+        Description = "When clicking on a member's email address, send the user to the rock communication entry page vs an email link.",
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE2.Eend */
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
@@ -82,6 +91,7 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
         private static class BemaAttributeKey
         {
             public const string SendToParents = "SendToParents";
+            public const string IndiviualCommunicationsThroughRock = "IndiviualCommunicationsThroughRock";
         }
 
         #endregion
@@ -692,6 +702,13 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
                         case "SendAlternateCommunication":
                             SendAlternateCommunication();
                             break;
+
+                        /* BEMA.FE2.Start */
+                        case "SendIndiviualCommunication":
+                            groupMemberId = int.Parse( parameters );
+                            SendIndiviualCommunication( groupMemberId );
+                            break;
+                        /* BEMA.FE2.End */
                     }
                 }
             }
@@ -1272,6 +1289,67 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
                 queryParameters.Add( "CommunicationId", communication.Id.ToString() );
 
                 NavigateToLinkedPage( "AlternateCommunicationPage", queryParameters );
+            }
+        }
+        /* BEMA.FE2.Start */
+        /// <summary>
+        /// Sends a communication to the selected Group Member.
+        /// </summary>
+        private void SendIndiviualCommunication( int groupMemberId )
+        {
+            // create communication
+            if ( this.CurrentPerson != null && groupMemberId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.CommunicationService( rockContext );
+                var communication = new Rock.Model.Communication();
+                communication.IsBulkCommunication = false;
+                communication.Status = Rock.Model.CommunicationStatus.Transient;
+
+                communication.SenderPersonAliasId = this.CurrentPersonAliasId;
+
+                service.Add( communication );
+
+                var personAliasId = new GroupMemberService( rockContext ).Get( groupMemberId )
+                                    .Person.PrimaryAliasId;
+
+                var personAliasIds = new List<int?>();
+
+                personAliasIds.Add( personAliasId );
+
+                /* BEMA.FE1.Start */
+                if ( GetAttributeValue( BemaAttributeKey.SendToParents ).AsBoolean() )
+                {
+                    int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                    int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+
+                    var parentAliasIds = new PersonService( rockContext ).Queryable()
+                        .Where( p => p.Members.Where( a => a.GroupRoleId == adultRoleId )
+                            .Any( a => a.Group.Members
+                            .Any( c => c.GroupRoleId == childRoleId && c.Person.Aliases.Select( x => x.Id ).Contains( personAliasId.Value ) ) ) )
+                        .ToList()
+                        .Select( p => p.PrimaryAliasId )
+                        .ToList();
+
+                    personAliasIds.AddRange( parentAliasIds );
+
+                }
+                /* BEMA.FE1.End */
+
+                // Get the primary aliases
+                foreach ( int personAlias in personAliasIds )
+                {
+                    var recipient = new Rock.Model.CommunicationRecipient();
+                    recipient.PersonAliasId = personAlias;
+                    communication.Recipients.Add( recipient );
+                }
+
+                rockContext.SaveChanges();
+
+                Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
+
+                NavigateToLinkedPage( "CommunicationPage", queryParameters );
             }
         }
 
