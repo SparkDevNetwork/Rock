@@ -60,7 +60,7 @@ namespace Rock.Rest.Controllers
 
             var launchPacket = new LaunchPacket
             {
-                LatestVersionId = ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
+                LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
                 IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
 

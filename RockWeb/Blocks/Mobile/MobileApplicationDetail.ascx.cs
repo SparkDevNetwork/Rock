@@ -1001,12 +1001,14 @@ namespace RockWeb.Blocks.Mobile
         protected void lbDeploy_Click( object sender, EventArgs e )
         {
             var applicationId = PageParameter( "SiteId" ).AsInteger();
+            var deploymentDateTime = RockDateTime.Now;
+            var versionId = ( int ) ( deploymentDateTime.ToJavascriptMilliseconds() / 1000 );
 
             //
             // Generate the packages and then encode to JSON.
             //
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
+            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone, versionId );
+            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet, versionId );
             var phoneJson = phonePackage.ToJson();
             var tabletJson = tabletPackage.ToJson();
 
@@ -1069,7 +1071,8 @@ namespace RockWeb.Blocks.Mobile
                 // Update the last deployment date.
                 //
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
-                additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                additionalSettings.LastDeploymentDate = deploymentDateTime;
+                additionalSettings.LastDeploymentVersionId = versionId;
                 additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
                 additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
                 site.AdditionalSettings = additionalSettings.ToJson();
