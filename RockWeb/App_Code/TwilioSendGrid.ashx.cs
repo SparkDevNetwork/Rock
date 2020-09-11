@@ -221,6 +221,16 @@ internal class SendGridResponseAsync : IAsyncResult
                 case "dropped":
                     communicationRecipient.Status = CommunicationRecipientStatus.Failed;
                     communicationRecipient.StatusNote = payload.EventTypeReason;
+
+                    if ( payload.EventTypeReason == "Bounced Address" )
+                    {
+                        Rock.Communication.Email.ProcessBounce(
+                            payload.Email,
+                            Rock.Communication.BounceType.HardBounce,
+                            payload.EventTypeReason,
+                            timeStamp );
+                    }
+
                     break;
                 case "delivered":
                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
