@@ -2151,6 +2151,28 @@ namespace Rock.NMI
 
     #region ThreeStepClasses
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [JsonConverter( typeof( StringEnumConverter ) )]
+    public enum NMIThreeStepPaymentType
+    {
+        /// <summary>
+        /// credit card (default)
+        /// </summary>
+        creditcard,
+
+        /// <summary>
+        /// check (ACH)
+        /// </summary>
+        check,
+
+        /// <summary>
+        /// cash (unused by Rock)
+        /// </summary>
+        cash
+    }
+
     internal class ThreeStepResponse : BaseResponse
     {
         [JsonProperty( "result" )]

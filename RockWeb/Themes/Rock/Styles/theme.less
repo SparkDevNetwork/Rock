@@ -363,11 +363,20 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
+  }
+
+  .btn-default,
+  .btn-danger {
+    background-color: transparent;
     border-color: transparent;
   }
 
   .btn-default {
-    background: transparent;
+    &:focus,
+    &:hover,
+    &:active {
+      background-color: darken(@btn-default-bg, 10%);
+    }
   }
 
   .btn-danger {
@@ -375,6 +384,7 @@ textarea,
     &:active,
     &:hover {
       color: @btn-danger-bg;
+      background: fade(@btn-danger-bg, 10%);
     }
 
     &:focus,
