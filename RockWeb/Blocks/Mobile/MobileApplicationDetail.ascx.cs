@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,16 +28,17 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile;
-using Rock.Common.Mobile.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
@@ -1018,31 +1020,68 @@ namespace RockWeb.Blocks.Mobile
                 var site = new SiteService( rockContext ).Get( applicationId );
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
 
+                // Enable this once the shell updates have been installed.
+                var enableCompression = true;
+                var mimeType = enableCompression ? "application/gzip" : "application/json";
+                var filenameExtension = enableCompression ? "json.gz" : "json";
+
                 //
                 // Prepare the phone configuration file.
                 //
+                Stream phoneJsonStream;
+                if ( enableCompression )
+                {
+                    phoneJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( phoneJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( phoneJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    phoneJsonStream.Position = 0;
+                }
+                else
+                {
+                    phoneJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) );
+                }
+
                 var phoneFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = phoneJson.Length,
-                    FileName = "phone.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                    FileName = "phone." + filenameExtension,
+                    ContentStream = phoneJsonStream
                 };
                 binaryFileService.Add( phoneFile );
 
                 //
                 // Prepare the tablet configuration file.
                 //
+                Stream tabletJsonStream;
+                if ( enableCompression )
+                {
+                    tabletJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( tabletJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( tabletJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    tabletJsonStream.Position = 0;
+                }
+                else
+                {
+                    tabletJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) );
+                }
+
                 var tabletFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = tabletJson.Length,
-                    FileName = "tablet.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                    FileName = "tablet." + filenameExtension,
+                    ContentStream = tabletJsonStream
                 };
                 binaryFileService.Add( tabletFile );
 
