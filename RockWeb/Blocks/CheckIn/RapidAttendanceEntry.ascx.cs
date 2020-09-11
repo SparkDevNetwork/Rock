@@ -1339,9 +1339,11 @@ namespace RockWeb.Blocks.CheckIn
                         phoneNumberService.Delete( phoneNumber );
                     }
 
+                    rockContext.SaveChanges();
+
                     person.LoadAttributes();
                     avcPersonAttributes.GetEditValues( person );
-                    rockContext.SaveChanges();
+                    person.SaveAttributeValues();
                 }
             } );
 
