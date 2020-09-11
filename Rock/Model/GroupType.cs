@@ -1180,6 +1180,11 @@ namespace Rock.Model
             return groupTypeIds;
         }
 
+        /// <summary>
+        /// Gets all dependent group type ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public List<int> GetAllDependentGroupTypeIds( Rock.Data.RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();

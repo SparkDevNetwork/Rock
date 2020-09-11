@@ -93,7 +93,7 @@ namespace Rock.Communication
             }
 
             emailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}. {emailNote}";
-            return emailNote.SafeSubstring( 0, 250 );
+            return emailNote.SubstringSafe( 0, 250 );
         }
 
         /// <summary>
