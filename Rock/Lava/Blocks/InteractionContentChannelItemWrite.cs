@@ -131,7 +131,6 @@ namespace Rock.Lava.Blocks
 
             string operation = parms.GetValueOrNull( ParameterKey.Operation );
             string summary = parms.GetValueOrNull( ParameterKey.Summary );
-
             string source = parms.GetValueOrNull( ParameterKey.Source );
             string medium = parms.GetValueOrNull( ParameterKey.Medium );
             string campaign = parms.GetValueOrNull( ParameterKey.Campaign );
@@ -163,7 +162,6 @@ namespace Rock.Lava.Blocks
                 InteractionOperation = operation,
                 InteractionSummary = summary ?? contentChannelItem.Title,
                 PersonAliasId = personAliasId,
-
                 InteractionSource = source,
                 InteractionMedium = medium,
                 InteractionCampaign = campaign,

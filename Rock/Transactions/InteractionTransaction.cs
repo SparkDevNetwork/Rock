@@ -641,7 +641,6 @@ namespace Rock.Transactions
             this.InteractionChannelCustom1 = EnforceLengthLimitation( this.InteractionChannelCustom1, 500 );
             this.InteractionChannelCustom2 = EnforceLengthLimitation( this.InteractionChannelCustom2, 2000 );
             this.InteractionChannelCustomIndexed1 = EnforceLengthLimitation( this.InteractionChannelCustomIndexed1, 500 );
-
             this.InteractionSource = EnforceLengthLimitation( this.InteractionSource, 25 );
             this.InteractionMedium = EnforceLengthLimitation( this.InteractionMedium, 25 );
             this.InteractionCampaign = EnforceLengthLimitation( this.InteractionCampaign, 50 );
