@@ -40,7 +40,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
-            List<string> configKeys = new List<string>();
+            var configKeys = new List<string>();
             configKeys.Add( ALLOW_MULTIPLE_KEY );
             return configKeys;
         }
@@ -74,12 +74,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple document types to be selected.", "True" ) );
 
             if ( controls != null )
             {
-                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
+                var cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
 
                 if ( cbAllowMultipleValues != null )
                 {
@@ -99,7 +99,7 @@ namespace Rock.Field.Types
         {
             if ( controls != null && configurationValues != null )
             {
-                CheckBox cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
+                var cbAllowMultipleValues = controls.Count > 0 ? controls[0] as CheckBox : null;
 
                 if ( cbAllowMultipleValues != null )
                 {
@@ -122,7 +122,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( string.IsNullOrWhiteSpace( value ) )
+            if ( value.IsNullOrWhiteSpace() )
             {
                 return base.FormatValue( parentControl, value, configurationValues, condensed );
 
@@ -153,11 +153,11 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            Control editControl;
+            ListControl editControl;
 
             var values = DocumentTypeCache.All().Select( v => new { v.Id, v.Name } ).OrderBy( v => v.Name ).ToList();
 
-            bool allowMultiple = true;
+            var allowMultiple = true;
 
             if ( configurationValues != null &&
                  configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
@@ -211,7 +211,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                ListControl editControl = ( ListControl ) control;
+                var editControl = ( ListControl ) control;
                 foreach ( ListItem li in editControl.Items )
                 {
                     if ( li.Selected )
@@ -241,7 +241,7 @@ namespace Rock.Field.Types
 
             var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-            ListControl editControl = ( ListControl ) control;
+            var editControl = ( ListControl ) control;
             foreach ( ListItem li in editControl.Items )
             {
                 li.Selected = values.Contains( li.Value );
