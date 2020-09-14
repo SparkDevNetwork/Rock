@@ -1021,7 +1021,8 @@ $(document).ready(function() {
                 EntityTypeId = dataView.EntityTypeId,
                 EntityType = dataView.EntityType,
                 DataViewFilterId = dataView.DataViewFilterId,
-                DataViewFilter = dataView.DataViewFilter
+                DataViewFilter = dataView.DataViewFilter,
+                IncludeDeceased = dataView.IncludeDeceased
             };
 
             grid.DataSource = null;
@@ -1144,6 +1145,7 @@ $(document).ready(function() {
             dv.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dv.EntityType = etpEntityType.SelectedEntityTypeId.HasValue ? new EntityTypeService( rockContext ).Get( dv.EntityTypeId.Value ) : null;
             dv.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            dv.IncludeDeceased = cbIncludeDeceased.Checked;
             ShowPreview( dv );
         }
 
