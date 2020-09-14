@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -138,7 +137,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( _objectCacheKeyReferences == null )
+                if ( _objectCacheKeyReferences.IsNull() )
                 {
                     _objectCacheKeyReferences = new List<CacheKeyReference>();
                 }
@@ -151,6 +150,30 @@ namespace Rock.Web.Cache
             }
         } 
         private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
+
+        /// <summary>
+        /// Gets or sets the keys for items stored in the string cache. The region is optional, but the key
+        /// is required. This list of keys is not guaranteed to be up to date. Some of the items represented
+        /// by the keys could have expired and therefore not be available any longer. All item keys though should
+        /// be in the list.
+        /// </summary>
+        /// <value>
+        /// The string cache key references.
+        /// </value>
+        public static List<CacheKeyReference> StringCacheKeyReferences
+        {
+            get
+            {
+                if ( _stringCacheKeyReferences.IsNull() )
+                {
+                    _stringCacheKeyReferences = new List<CacheKeyReference>();
+                }
+                return _stringCacheKeyReferences;
+            }
+            set {
+                _stringCacheKeyReferences = value;            }
+        }
+        private static List<CacheKeyReference> _stringCacheKeyReferences = new List<CacheKeyReference>();
 
         #endregion
 
@@ -343,6 +366,8 @@ namespace Rock.Web.Cache
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
+
+                        _stringCacheKeyReferences.Add( new CacheKeyReference { Key = cacheTag, Region = region } );
                     }
                 }
             }
@@ -488,6 +513,10 @@ namespace Rock.Web.Cache
             {
                 case "System.String":
                     RockCacheManager<List<string>>.Instance.Clear();
+
+                    // Clear string cache keys
+                    _stringCacheKeyReferences = new List<CacheKeyReference>();
+
                     return $"Cache for {cacheTypeName} cleared.";
 
                 case "System.Int32":
@@ -496,6 +525,10 @@ namespace Rock.Web.Cache
 
                 case "Object":
                     RockCacheManager<object>.Instance.Clear();
+
+                    // Clear object cache keys
+                    _objectCacheKeyReferences = new List<CacheKeyReference>();
+
                     return $"Cache for {cacheTypeName} cleared.";
 
                 default:
