@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +34,6 @@ namespace Rock.Workflow.Action
         Description = "The Id or Guid of the Entity. Rock only supports Person, Group, and Group Member at this time. <span class='tip tip-lava'></span>.",
         IsRequired = true,
         Order = 1,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupMemberFieldType" },
         Key = AttributeKey.EntityIdOrGuid )]
 
     [DocumentTypeField(
@@ -58,14 +56,14 @@ namespace Rock.Workflow.Action
         "Document Name",
         Key = AttributeKey.DocumentName,
         Description = "The name to the use for the document. <span class='tip tip-lava'></span>.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 4 )]
 
     [MemoField(
         "Document Description",
         Description = "The description to use for the document. <span class='tip tip-lava'></span>",
         IsRequired = false,
-        Order = 5 ,
+        Order = 5,
         Key = AttributeKey.DocumentDescription )]
 
     #endregion
@@ -107,53 +105,52 @@ namespace Rock.Workflow.Action
 
             if ( entityType == null )
             {
-                var message = string.Format( "Entity Type could not be found for selected value ('{0}')!", entityTypeGuid.ToString() );
+                var message = $"Entity Type could not be found for selected value ('{entityTypeGuid.ToString()}')!";
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
             }
 
             var mergeFields = GetMergeFields( action );
-            RockContext _rockContext = new RockContext();
+            var _rockContext = new RockContext();
 
             // Get the entity
-            EntityTypeService entityTypeService = new EntityTypeService( _rockContext );
+            var entityTypeService = new EntityTypeService( _rockContext );
             IEntity entityObject = null;
-            string entityIdGuidString = GetAttributeValue( action, AttributeKey.EntityIdOrGuid, true ).ResolveMergeFields( mergeFields ).Trim();
-            var entityGuid = entityIdGuidString.AsGuidOrNull();
-            if ( entityGuid.HasValue )
+            var entityIdGuidString = GetAttributeValue( action, AttributeKey.EntityIdOrGuid, true ).ResolveMergeFields( mergeFields ).Trim();
+            var entityId = entityIdGuidString.AsIntegerOrNull();
+            if ( entityId.HasValue )
             {
-                entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
-
-                if ( entityObject == null && entityType.GetEntityType() == typeof( Rock.Model.Person ) )
-                {
-                    var personAliasService = new PersonAliasService( _rockContext );
-                    entityObject = personAliasService.GetPerson( entityGuid.Value );
-                }
+                entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
             }
             else
             {
-                var entityId = entityIdGuidString.AsIntegerOrNull();
-                if ( entityId.HasValue )
+                var entityGuid = entityIdGuidString.AsGuidOrNull();
+                if ( entityGuid.HasValue )
                 {
-                    entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
+                    entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
+                }
+
+                if ( entityObject == null )
+                {
+                    entityObject = GetEntityFromAttributeValue( action, rockContext );
                 }
             }
 
             if ( entityObject == null )
             {
-                var message = string.Format( "Entity could not be found for selected value ('{0}')!", entityIdGuidString );
+                var message = $"Entity could not be found for selected value ('{entityIdGuidString}')!";
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
             }
 
-            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, false );
+            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, false );
             var attributeFilteredDocumentType = GetAttributeValue( action, AttributeKey.DocumentType ).Split( ',' ).Select( int.Parse ).FirstOrDefault();
             var documentype = documentypesForContextEntityType.FirstOrDefault( d => attributeFilteredDocumentType == d.Id );
             if ( documentype == null )
             {
-                var message = string.Format( "The Document Type does not match the selected entity type." );
+                var message = "The Document Type does not match the selected entity type.";
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
@@ -170,18 +167,53 @@ namespace Rock.Workflow.Action
                 return true;
             }
 
-            var documentService = new DocumentService( rockContext );
+            var documentName = GetAttributeValue( action, AttributeKey.DocumentName ).ResolveMergeFields( mergeFields );
+            if ( documentName.IsNullOrWhiteSpace() )
+            {
+                documentName = Path.GetFileNameWithoutExtension( binaryFile.FileName );
+            }
+
             var document = new Document();
-            documentService.Add( document );
-            document.Name = GetAttributeValue( action, AttributeKey.DocumentName ).ResolveMergeFields( mergeFields );
+            document.Name = documentName;
             document.Description = GetAttributeValue( action, AttributeKey.DocumentDescription ).ResolveMergeFields( mergeFields );
             document.EntityId = entityObject.Id;
             document.DocumentTypeId = documentype.Id;
             document.SetBinaryFile( binaryFile.Id, rockContext );
+
+            var documentService = new DocumentService( rockContext );
+            documentService.Add( document );
             rockContext.SaveChanges();
 
             action.AddLogEntry( "Added document to the Entity." );
             return true;
         }
+
+        /// <summary>
+        /// Gets a model from the attribute value
+        /// </summary>
+        private IEntity GetEntityFromAttributeValue( WorkflowAction action, RockContext rockContext )
+        {
+            var value = GetActionAttributeValue( action, AttributeKey.EntityIdOrGuid );
+            var attributeGuid = value.AsGuidOrNull();
+            if ( attributeGuid.HasValue )
+            {
+                var attribute = AttributeCache.Get( attributeGuid.Value );
+                if ( attribute != null )
+                {
+                    value = action.GetWorkflowAttributeValue( attributeGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( value ) )
+                    {
+                        var field = attribute.FieldType.Field;
+                        if ( field is Rock.Field.IEntityFieldType )
+                        {
+                            return ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( value, rockContext );
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }
+
