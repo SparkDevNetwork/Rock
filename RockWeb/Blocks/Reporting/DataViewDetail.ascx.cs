@@ -1028,7 +1028,8 @@ $(document).ready(function() {
                 Name = dataView.Name,
                 TransformEntityTypeId = dataView.TransformEntityTypeId,
                 EntityTypeId = dataView.EntityTypeId,
-                DataViewFilter = dataView.DataViewFilter
+                DataViewFilter = dataView.DataViewFilter,
+                IncludeDeceased = dataView.IncludeDeceased
             };
 
             grid.DataSource = null;
@@ -1150,6 +1151,7 @@ $(document).ready(function() {
             dv.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dv.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dv.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            dv.IncludeDeceased = cbIncludeDeceased.Checked;
             ShowPreview( dv );
         }
 
