@@ -1021,7 +1021,7 @@ namespace RockWeb.Blocks.Mobile
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
 
                 // Enable this once the shell updates have been installed.
-                var enableCompression = true;
+                var enableCompression = false;
                 var mimeType = enableCompression ? "application/gzip" : "application/json";
                 var filenameExtension = enableCompression ? "json.gz" : "json";
 
