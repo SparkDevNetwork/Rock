@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-
 using CacheManager.Core;
 using CacheManager.Core.Internal;
 
@@ -227,11 +226,13 @@ namespace Rock.Web.Cache
             if ( region.IsNotNullOrWhiteSpace() )
             {
                 Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
+                UpdateCacheReferences( key, region, updateValue );
             }
             else
             {
                 Cache.AddOrUpdate( key, updateValue, v => updateValue );
-            }
+                UpdateCacheReferences( key, region, updateValue );
+            }            
         }
 
         /// <summary>
@@ -275,6 +276,27 @@ namespace Rock.Web.Cache
 
             return cacheStatistics;
         }
+
+        #region Private Methods
+        /// <summary>
+        /// Updates the cache references for lists of strings and objects. This allows us to retrieve all items from the cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <param name="item">Type of the item.</param>
+        private void UpdateCacheReferences( string key, string region, T item )
+        {
+            if ( item is List<string> )
+            {
+                RockCache.StringCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+
+            if ( item is List<object> )
+            {
+                RockCache.ObjectCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+        }
+        #endregion
     }
 
     /// <summary>

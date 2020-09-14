@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic;
@@ -159,6 +160,39 @@ namespace RockWeb.Blocks.Utility
 
             // Output object cache size
             lOutput.Text = string.Format( "Object Cache: {0:n0} KB", objectCacheSize / 1024 );
+
+            // Determine the size of the string cache
+            var stringCacheKeys = RockCache.StringCacheKeyReferences;
+
+            var stringCacheSize = 0;
+
+            foreach ( var stringCacheKey in stringCacheKeys )
+            {
+                // Cache tags are in an empty region. Calls without a region throw an exception
+                if ( stringCacheKey.Region.IsNotNullOrWhiteSpace() )
+                {
+                    var value = RockCacheManager<List<string>>.Instance.Cache.Get( stringCacheKey.Key, stringCacheKey.Region );
+
+                    if ( value.IsNotNull() )
+                    {
+                        stringCacheSize += value.ToJson().Length;
+                    }
+                }
+                else
+                {
+                    var cacheItem = RockCache.Get( stringCacheKey.Key, stringCacheKey.Region );
+                    if ( cacheItem.IsNotNull() )
+                    {
+                        stringCacheSize += cacheItem.ToJson().Length;
+                    }
+                }
+            }
+
+            totalCacheSize += stringCacheSize;
+
+            // Output object cache size
+            lOutput.Text += string.Format( "<br>String Cache: {0:n0} KB", stringCacheSize / 1024 );
+
 
             lOutput.Text += "<hr>";
             lOutput.Text += "<h4>Model Cache Sizes</h4>";
