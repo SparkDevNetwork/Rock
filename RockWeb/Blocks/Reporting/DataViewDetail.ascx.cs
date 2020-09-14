@@ -1017,7 +1017,10 @@ $(document).ready(function() {
             {
                 Name = dataView.Name,
                 TransformEntityTypeId = dataView.TransformEntityTypeId,
+                TransformEntityType = dataView.TransformEntityType,
                 EntityTypeId = dataView.EntityTypeId,
+                EntityType = dataView.EntityType,
+                DataViewFilterId = dataView.DataViewFilterId,
                 DataViewFilter = dataView.DataViewFilter
             };
 
@@ -1134,8 +1137,12 @@ $(document).ready(function() {
         protected void btnPreview_Click( object sender, EventArgs e )
         {
             DataView dv = new DataView();
+            var rockContext = new RockContext();
+
             dv.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
+            dv.TransformEntityType = dv.TransformEntityTypeId.HasValue ? new EntityTypeService( rockContext ).Get( dv.TransformEntityTypeId.Value ) : null;
             dv.EntityTypeId = etpEntityType.SelectedEntityTypeId;
+            dv.EntityType = etpEntityType.SelectedEntityTypeId.HasValue ? new EntityTypeService( rockContext ).Get( dv.EntityTypeId.Value ) : null;
             dv.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             ShowPreview( dv );
         }
