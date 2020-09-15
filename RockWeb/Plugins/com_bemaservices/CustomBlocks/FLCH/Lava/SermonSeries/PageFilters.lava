@@ -1,0 +1,78 @@
+{% assign congregation = 'Global' | PageParameter:'congregation' %}
+{% assign service = 'Global' | PageParameter:'service' %}
+
+<div class="row margin-t-lg filter-row">
+    {% campus where:'ShowOnWebsite == True' %}
+
+    <div class="col-md-4 col-sm-6" style="padding-bottom: 0px; padding-top: 0px;">
+        <div class="form-group sermon-filter">
+            <label class="control-label gray-uppercase-text margin-b-none">Congregation</label>
+            <div class="control-wrapper filter-text">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+
+                        <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown" aria-expanded="false">
+                            {% if congregation == null or congregation == '' or congregation == 'all' %}
+                                All Congregations
+                                {% assign congregation = 'all' %}
+                            {% else %}
+                                {{ congregation | Replace:'-',' ' | TitleCase }}
+                            {% endif %}
+                            <b class="fa fa-chevron-down margin-l-sm"></b>
+                        </a>
+
+                        <ul id="congregation_ulDropdownMenu" class="dropdown-menu">
+
+                            <li>
+                                <a href="/services">All Congregations</a>
+                            </li>
+
+                            {% for campus in campusItems %}
+                                {% assign selectedCampus = congregation | Replace:'-',' ' | TitleCase %}
+                                {% if selectedCampus == campus.Name %}
+                                    {% assign campusGuid = campus.Guid %}
+                                {% endif %}
+                                <li>
+                                    <a href="/{{ 'Global' | Page:'Title' | TitleCase | Replace:' ','' }}/{{ campus.Name | Replace:' ','-' | Downcase }}/adults">{{campus.Name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% endcampus %}
+    {% definedvalue  where:'DefinedTypeId == 91 && Campus == "{{ campusGuid }}" && IsActive == True' sort:'Order' %}
+    <div class="col-md-4 col-sm-6" style="padding-bottom: 0px; padding-top: 0px;">
+        <div class="form-group sermon-filter">
+            <label class="control-label gray-uppercase-text margin-b-none">Service</label>
+            <div class="control-wrapper filter-text">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+
+                        <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown" aria-expanded="false">
+                            {% if service == null or service == empty %}
+                                {% assign service = 'adults' %}
+                            {% endif %}
+                            {{ service | Replace:'-',' ' | TitleCase }}
+                            <b class="fa fa-chevron-down margin-l-sm"></b>
+                        </a>
+
+                        <ul id="service" class="dropdown-menu">
+
+                            {% for value in definedvalueItems %}
+                                <li>
+                                    <a href="/{{ 'Global' | Page:'Title' | TitleCase | Replace:' ','' }}/{{ congregation }}/{{ value | Attribute:'Service' | Replace:' ','-' | Downcase }}">{{ value | Attribute:'Service' }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% enddefinedvalue %}
+</div>

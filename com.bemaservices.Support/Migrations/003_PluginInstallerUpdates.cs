@@ -10,7 +10,7 @@ namespace com.bemaservices.Support
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, "", "", "BEMA Base Client Package Version", "Currently installed BEMA Base Client Package version number", 0, "0.0.0.0", com.bemaservices.Support.SystemGuid.Attribute.BEMA_CODE_VERSION_ATTRIBUTE_GUID, "BEMABaseClientPackageVersion" );
+            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, "", "", "BEMA Base Client Package Version", "Currently installed BEMA Base Client Package version number", 0, "0.0.0.0", com.bemaservices.Support.SystemGuid.Attribute.BEMA_STANDARD_PACKAGE_VERSION_ATTRIBUTE_GUID, "BEMABaseClientPackageVersion" );
             Sql( string.Format( @"
                         Update Attribute
                         Set [Name] = 'BEMA Custom Client Package Version',
@@ -18,7 +18,7 @@ namespace com.bemaservices.Support
                             [Key] = 'BEMACustomClientPackageVersion',
                             [Description] = 'Currently installed BEMA Custom Client Package version number'
                         Where Guid = '{0}'"
-                ,com.bemaservices.Support.SystemGuid.Attribute.CLIENT_CODE_VERSION_ATTRIBUTE_GUID ) );
+                ,com.bemaservices.Support.SystemGuid.Attribute.BEMA_CLIENT_PACKAGE_VERSION_ATTRIBUTE_GUID ) );
         }
 
         /// <summary>

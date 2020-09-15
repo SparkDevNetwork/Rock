@@ -44,6 +44,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Reporting
     public partial class BemaReportConfiguration : RockBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
+        private static readonly int REPORT_LIMIT = 5;
 
         protected override void OnInit( EventArgs e )
         {
@@ -143,7 +144,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Reporting
                 }
 
                 var rootPage = new PageService( new RockContext() ).Get( rootPageCache.Id );
-                rptReports.DataSource = rootPage.Pages;
+                rptReports.DataSource = rootPage.Pages.OrderBy( p => p.Id ).Take( REPORT_LIMIT );
                 rptReports.DataBind();
 
             }

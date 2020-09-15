@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -438,7 +438,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             /* Bema.FE3 Start */
             // If using custom filters, don't do the default campus filtering
 
-            if( !GetAttributeValue(BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters).AsBoolean() )
+            if ( !GetAttributeValue( BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean() )
             {
                 if ( selectedCampusIdList.Any() )
                 {
@@ -519,10 +519,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( occurrenceEndTime != null && occurrenceEndTime.Value.Date > datetime.Date )
                     {
                         var multiDate = datetime;
-                        while ( multiDate <= occurrenceEndTime.Date && multiDate <= endDate )
+                        var datePerEventCount = 0;
+                        while ( multiDate < eventItemOccurrence.Schedule.EffectiveEndDate.Value && datePerEventCount < 367 )
                         {
                             CalendarEventDates.Add( multiDate.Date );
                             multiDate = multiDate.AddDays( 1 );
+                            datePerEventCount++;
                         }
                     }
                     else
@@ -547,16 +549,17 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                             OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
                             DetailPage = string.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
                         } );
+
+                        /* BEMA.FE2.Start */
+                        if ( GetAttributeValue( BemaAttributeKey.IsLimitedToNextEventItemRecurrence ).AsBoolean() )
+                        {
+                            break;
+                        }
+                        /* BEMA.FE2.End */
+
                     }
                 }
             }
-
-            /* BEMA.FE2.Start */
-            if ( GetAttributeValue( BemaAttributeKey.IsLimitedToNextEventItemRecurrence ).AsBoolean() )
-            {
-                eventOccurrenceSummaries = GrabFirstRecurrenceForEachEvent( beginDate, endDate, occurrencesWithDates );
-            }
-            /* BEMA.FE2.End */
 
             var eventSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
@@ -1046,94 +1049,5 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
         #endregion
 
-        /* BEMA.FE2.Start */
-        #region BEMA Custom Code
-
-        private List<EventOccurrenceSummary> GrabFirstRecurrenceForEachEvent( DateTime beginDate, DateTime endDate, List<EventOccurrenceDate> occurrencesWithDates )
-        {
-            List<EventOccurrenceSummary> eventOccurrenceSummaries;
-            var sortedOccurrencesWithDates = occurrencesWithDates
-                .Select( o => new EventOccurrenceNextDate
-                {
-                    EventItemOccurrence = o.EventItemOccurrence,
-                    ScheduleOccurrences = o.ScheduleOccurrences,
-                    NextDateTime = o.ScheduleOccurrences.Min( so => so.Period.StartTime.Value )
-                } )
-                .ToList();
-
-            var sortedEventsWithDates = sortedOccurrencesWithDates
-                .GroupBy( o => o.EventItemOccurrence.EventItem )
-                .Select( o => new EventNextDate
-                {
-                    EventItem = o.Key,
-                    EventOccurrenceNextDates = o.ToList(),
-                    EventOccurrenceNextDate = o.OrderBy( ol => ol.NextDateTime ).First()
-                } )
-                .ToList();
-
-            CalendarEventDates = new List<DateTime>();
-
-            eventOccurrenceSummaries = new List<EventOccurrenceSummary>();
-            foreach ( var sortedEvent in sortedEventsWithDates )
-            {
-                var eventItemOccurrence = sortedEvent.EventOccurrenceNextDate.EventItemOccurrence;
-                var datetime = sortedEvent.EventOccurrenceNextDate.NextDateTime;
-
-                if ( eventItemOccurrence.Schedule.EffectiveEndDate.HasValue && ( eventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.Schedule.EffectiveEndDate ) )
-                {
-                    var multiDate = eventItemOccurrence.Schedule.EffectiveStartDate;
-                    while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ) )
-                    {
-                        CalendarEventDates.Add( multiDate.Value.Date );
-                        multiDate = multiDate.Value.AddDays( 1 );
-                    }
-                }
-                else
-                {
-                    CalendarEventDates.Add( datetime.Date );
-                }
-
-                if ( datetime >= beginDate && datetime < endDate )
-                {
-                    eventOccurrenceSummaries.Add( new EventOccurrenceSummary
-                    {
-                        EventItemOccurrence = eventItemOccurrence,
-                        Name = eventItemOccurrence.EventItem.Name,
-                        DateTime = datetime,
-                        Date = datetime.ToShortDateString(),
-                        Time = datetime.ToShortTimeString(),
-                        Campus = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
-                        Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
-                        LocationDescription = eventItemOccurrence.Location,
-                        Description = eventItemOccurrence.EventItem.Description,
-                        Summary = eventItemOccurrence.EventItem.Summary,
-                        OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
-                        DetailPage = string.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
-                    } );
-                }
-            }
-
-            return eventOccurrenceSummaries;
-        }
-
-        public class EventOccurrenceNextDate
-        {
-            public EventItemOccurrence EventItemOccurrence { get; set; }
-
-            public List<Occurrence> ScheduleOccurrences { get; set; }
-
-            public DateTime NextDateTime { get; set; }
-        }
-        public class EventNextDate
-        {
-            public EventItem EventItem { get; set; }
-
-            public List<EventOccurrenceNextDate> EventOccurrenceNextDates { get; set; }
-
-            public EventOccurrenceNextDate EventOccurrenceNextDate { get; set; }
-        }
-        #endregion
-
-        /* BEMA.FE2.End */
     }
 }

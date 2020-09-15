@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,11 +31,12 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.2.2)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
- * 
+ *
  * Additional Features:
  * - FE1) Added Ability to enter Project Codes for Event Registrations
+ * - FE2) Added Ability to copy Registration Instances
  */
 
 namespace RockWeb.Plugins.com_bemaservices.Event
@@ -86,6 +87,24 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Order = 1 )]
     /* BEMA.FE1.End */
 
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Allow Copying of Registration Instances",
+        Key = BemaAttributeKey.AllowRegistrationInstanceCopy,
+        Description = "Is copying Registration Instances allowed?",
+        DefaultValue = "False",
+        Category = "BEMA Additional Features",
+        Order = 2 )]
+
+    [BooleanField(
+        "Allow Copying of Registration Linkages",
+        Key = BemaAttributeKey.AllowRegistrationLinkageCopy,
+        Description = "When copying registration instances, should Rock also copy any linkages?",
+        DefaultValue = "False",
+        Category = "BEMA Additional Features",
+        Order = 3 )]
+    /* BEMA.FE2.End */
+
     public partial class RegistrationInstanceDetail : RegistrationInstanceBlock, IDetailBlock
     {
         #region Attribute Keys
@@ -128,6 +147,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public const string UseProjectCodes = "UseProjectCodes";
             public const string ProjectCodeAttribute = "ProjectCodeAttribute";
+            public const string AllowRegistrationInstanceCopy = "AllowRegistrationInstanceCopy";
+            public const string AllowRegistrationLinkageCopy = "AllowRegistrationLinkageCopy";
         }
 
         #endregion
@@ -150,7 +171,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-			
+
             /* BEMA.FE1.Start */
             if ( GetAttributeValue( BemaAttributeKey.UseProjectCodes ).AsBoolean() )
             {
@@ -314,6 +335,88 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             queryParms.Add( PageParameterKey.RegistrationInstanceId, PageParameter( PageParameterKey.RegistrationInstanceId ) );
             NavigateToLinkedPage( AttributeKey.PaymentReminderPage, queryParms );
         }
+
+        /* BEMA.FE2.Start */
+
+        /// <summary>
+        /// Handles the Click event of the btnCopy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            if ( GetAttributeValue( BemaAttributeKey.AllowRegistrationInstanceCopy ).AsBoolean() )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationInstanceService = new RegistrationInstanceService( rockContext );
+                    var registrationInstance = registrationInstanceService.Get( hfRegistrationInstanceId.Value.AsInteger() );
+
+                    if ( registrationInstance != null )
+                    {
+                        var newRegistrationInstance = new RegistrationInstance();
+                        registrationInstanceService.Add( newRegistrationInstance );
+
+                        newRegistrationInstance.Id = 0;
+                        newRegistrationInstance.ForeignGuid = null;
+                        newRegistrationInstance.ForeignKey = null;
+                        newRegistrationInstance.Name = registrationInstance.Name + " - Copy";
+                        newRegistrationInstance.RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
+                        newRegistrationInstance.ReminderSent = false;
+                        newRegistrationInstance.CreatedByPersonAliasId = CurrentPersonAlias.Id;
+                        newRegistrationInstance.CreatedDateTime = RockDateTime.Now;
+                        newRegistrationInstance.ModifiedByPersonAliasId = CurrentPersonAlias.Id;
+                        newRegistrationInstance.ModifiedDateTime = RockDateTime.Now;
+                        newRegistrationInstance.Guid = Guid.NewGuid();
+                        newRegistrationInstance.ForeignId = null;
+
+                        newRegistrationInstance.AccountId = registrationInstance.AccountId;
+                        newRegistrationInstance.AdditionalConfirmationDetails = registrationInstance.AdditionalConfirmationDetails;
+                        newRegistrationInstance.AdditionalReminderDetails = registrationInstance.AdditionalReminderDetails;
+                        newRegistrationInstance.ContactEmail = registrationInstance.ContactEmail;
+                        newRegistrationInstance.ContactPersonAliasId = registrationInstance.ContactPersonAliasId;
+                        newRegistrationInstance.ContactPhone = registrationInstance.ContactPhone;
+                        newRegistrationInstance.Cost = registrationInstance.Cost;
+                        newRegistrationInstance.DefaultPayment = registrationInstance.DefaultPayment;
+                        newRegistrationInstance.Details = registrationInstance.Details;
+                        newRegistrationInstance.EndDateTime = registrationInstance.EndDateTime;
+                        newRegistrationInstance.SendReminderDateTime = registrationInstance.SendReminderDateTime;
+                        newRegistrationInstance.StartDateTime = registrationInstance.StartDateTime;
+                        newRegistrationInstance.RegistrationInstructions = registrationInstance.RegistrationInstructions;
+                        newRegistrationInstance.RegistrationWorkflowTypeId = registrationInstance.RegistrationWorkflowTypeId;
+                        newRegistrationInstance.IsActive = registrationInstance.IsActive;
+                        newRegistrationInstance.MaxAttendees = registrationInstance.MaxAttendees;
+                        newRegistrationInstance.MinimumInitialPayment = registrationInstance.MinimumInitialPayment;
+
+                        if ( GetAttributeValue( BemaAttributeKey.AllowRegistrationLinkageCopy ).AsBoolean() )
+                        {
+                            var newLinkageState = new List<EventItemOccurrenceGroupMap>();
+
+                            foreach ( var linkage in registrationInstance.Linkages )
+                            {
+                                var newLinkage = linkage.Clone( false );
+                                newLinkage.RegistrationInstanceId = 0;
+                                newLinkage.RegistrationInstance = null;
+                                newLinkage.Id = 0;
+                                newLinkage.Guid = Guid.NewGuid();
+                                newLinkageState.Add( newLinkage );
+                            }
+
+                            newRegistrationInstance.Linkages = newLinkageState;
+                        }
+
+                        rockContext.SaveChanges();
+
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "RegistrationTemplateId", PageParameter( "RegistrationTemplateId" ) );
+                        qryParams.Add( "RegistrationInstanceId", newRegistrationInstance.Id.ToString() );
+                        NavigateToCurrentPage( qryParams );
+                    }
+                }
+            }
+        }
+
+        /* BEMA.FE2.End */
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -586,6 +689,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 }
 
                 /* BEMA.FE1.Start */
+				lProjectCode.Visible = false;
                 if ( GetAttributeValue( BemaAttributeKey.UseProjectCodes ).AsBoolean() )
                 {
                     var projectCodeGuid = GetAttributeValue( BemaAttributeKey.ProjectCodeAttribute ).AsGuidOrNull();
@@ -594,6 +698,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         var projectCodeAttributeKey = AttributeCache.Get( projectCodeGuid.Value ).Key;
                         registrationInstance.LoadAttributes( rockContext );
                         lProjectCode.Text = registrationInstance.GetAttributeValue( projectCodeAttributeKey );
+						lProjectCode.Visible = true;
                     }
                 }
                 /* BEMA.FE1.End */
@@ -643,6 +748,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             rieDetails.SetValue( instance );
 
             /* BEMA.FE1.Start */
+			tbProjectCode.Visible = false;
             if ( GetAttributeValue( BemaAttributeKey.UseProjectCodes ).AsBoolean() )
             {
                 var projectCodeGuid = GetAttributeValue( BemaAttributeKey.ProjectCodeAttribute ).AsGuidOrNull();
@@ -651,6 +757,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     var projectCodeAttributeKey = AttributeCache.Get( projectCodeGuid.Value ).Key;
                     instance.LoadAttributes( rockContext );
                     tbProjectCode.Text = instance.GetAttributeValue( projectCodeAttributeKey );
+					tbProjectCode.Visible = true;
                 }
             }
             /* BEMA.FE1.End */

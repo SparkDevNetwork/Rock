@@ -73,32 +73,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Migrations\001_InitialSetup.cs" />
-    <None Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs.exclude" />
-    <None Include="Migrations\003_GivingHistoryByMonthLineGraph.cs.exclude" />
-    <None Include="Migrations\004_StaffGivingSQLReport.cs.exclude" />
-    <None Include="Migrations\005_GiversWithoutPledges.cs.exclude" />
-    <None Include="Migrations\006_AlternateBusinessList.cs.exclude" />
-    <None Include="Migrations\007_PersonAuthorizedOnPage.cs.exclude" />
-    <None Include="Migrations\008_LargeDonations.cs.exclude" />
-    <None Include="Migrations\009_DuplicateContentChannelItemSlugs.cs.exclude" />
-    <None Include="Migrations\010_DuplicateEmails.cs.exclude" />
-    <None Include="Migrations\011_PledgeProgressReport.cs.exclude" />
-    <None Include="Migrations\012_ConnectionRequestsChart.cs.exclude" />
-    <None Include="Migrations\013_BaptismOverTimeChart.cs.exclude" />
-    <None Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs.exclude" />
-    <None Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs.exclude" />
-    <None Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs.exclude" />
-    <None Include="Migrations\017_FamilyCampusNotLastTransaction.cs.exclude" />
-    <None Include="Migrations\018_GivingByFinancialAccount.cs.exclude" />
-
+    <Compile Include="Migrations\002_PagesAllowingUnencryptedTraffic.cs" />
+    <Compile Include="Migrations\003_GivingHistoryByMonthLineGraph.cs" />
+    <Compile Include="Migrations\004_StaffGivingSQLReport.cs" />
+    <Compile Include="Migrations\005_GiversWithoutPledges.cs" />
+    <Compile Include="Migrations\006_AlternateBusinessList.cs" />
+    <Compile Include="Migrations\007_PersonAuthorizedOnPage.cs" />
+    <Compile Include="Migrations\008_LargeDonations.cs" />
+    <Compile Include="Migrations\009_DuplicateContentChannelItemSlugs.cs" />
+    <Compile Include="Migrations\010_DuplicateEmails.cs" />
+    <Compile Include="Migrations\011_PledgeProgressReport.cs" />
+    <Compile Include="Migrations\012_ConnectionRequestsChart.cs" />
+    <Compile Include="Migrations\013_BaptismOverTimeChart.cs" />
+    <Compile Include="Migrations\014_FamiliesWithMoreThanOneMailingAddress.cs" />
+    <Compile Include="Migrations\015_FamiliesWithMoreThanTwoAdults.cs" />
+    <Compile Include="Migrations\016_AttendanceMetricsHistoryDashboard.cs" />
+    <Compile Include="Migrations\017_FamilyCampusNotLastTransaction.cs" />
+    <Compile Include="Migrations\018_GivingByFinancialAccount.cs" />
+    <Compile Include="Migrations\019_PledgeAnalytics.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <!-- There may be a better way of building this reference, but I don't see it -->

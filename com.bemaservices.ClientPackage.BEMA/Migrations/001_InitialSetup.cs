@@ -37,6 +37,10 @@ namespace com.bemaservices.ClientPackage.BEMA
             // Attrib Value for Block:BEMA Report Configuration, Attribute:Root Page Page: Configure BEMA Reports, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "F099C0A7-7175-4A9D-9005-39CD53CBED88", "9E0DF4EE-8627-4A22-9049-777E9BC9E25B", @"2571cbbd-7cca-4b24-aaab-107fd136298b" );
 
+
+             // Hide Pages from view
+            RockMigrationHelper.AddSecurityAuthForPage( "2571CBBD-7CCA-4B24-AAAB-107FD136298B", 0, "View", false, "", 1, "957DF695-849C-4C1C-BEAF-3F2DB7EBEA70" );
+            RockMigrationHelper.AddSecurityAuthForPage( "6C3F5510-0B1D-4E35-971B-5285472A542C", 0, "View", false, "", 1, "C693B273-0658-4413-A225-9DAFDF5CCD19" );
         }
 
         /// <summary>
