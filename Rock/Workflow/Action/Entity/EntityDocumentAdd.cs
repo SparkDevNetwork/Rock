@@ -130,11 +130,12 @@ namespace Rock.Workflow.Action
                 {
                     entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
                 }
+            }
 
-                if ( entityObject == null )
-                {
-                    entityObject = GetEntityFromAttributeValue( action, rockContext );
-                }
+            if ( entityObject == null )
+            {
+                var value = GetActionAttributeValue( action, AttributeKey.EntityIdOrGuid );
+                entityObject = action.GetEntityFromAttributeValue( value, rockContext );
             }
 
             if ( entityObject == null )
@@ -186,33 +187,6 @@ namespace Rock.Workflow.Action
 
             action.AddLogEntry( "Added document to the Entity." );
             return true;
-        }
-
-        /// <summary>
-        /// Gets a model from the attribute value
-        /// </summary>
-        private IEntity GetEntityFromAttributeValue( WorkflowAction action, RockContext rockContext )
-        {
-            var value = GetActionAttributeValue( action, AttributeKey.EntityIdOrGuid );
-            var attributeGuid = value.AsGuidOrNull();
-            if ( attributeGuid.HasValue )
-            {
-                var attribute = AttributeCache.Get( attributeGuid.Value );
-                if ( attribute != null )
-                {
-                    value = action.GetWorkflowAttributeValue( attributeGuid.Value );
-                    if ( !string.IsNullOrWhiteSpace( value ) )
-                    {
-                        var field = attribute.FieldType.Field;
-                        if ( field is Rock.Field.IEntityFieldType )
-                        {
-                            return ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( value, rockContext );
-                        }
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }
