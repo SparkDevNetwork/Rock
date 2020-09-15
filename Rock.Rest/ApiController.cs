@@ -170,7 +170,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets items associated with a campus uisng the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// Gets items associated with a campus using the EntityCampusFilter model. The Entity must implement ICampusFilterable.
         /// </summary>
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
@@ -433,22 +433,7 @@ namespace Rock.Rest
             var rockContext = new RockContext();
             var dataView = new DataViewService( rockContext ).Get( id );
 
-            if ( dataView == null )
-            {
-                throw new HttpResponseException( HttpStatusCode.NotFound );
-            }
-
-            var controllerEntityType = EntityTypeCache.Get<T>();
-            if ( dataView.EntityTypeId != controllerEntityType?.Id )
-            {
-                HttpResponseMessage errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"{dataView.Name} is not a {controllerEntityType?.Name} dataview" );
-                throw new HttpResponseException( errorResponse );
-            }
-
-            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
-            CheckCanView( dataView, GetPerson() );
-
-            SetProxyCreation( false );
+            ValidateDataView( dataView );
 
             var paramExpression = Service.ParameterExpression;
             var whereExpression = dataView.GetExpression( Service, paramExpression );
@@ -471,6 +456,27 @@ namespace Rock.Rest
 
             var dataView = new DataViewService( rockContext ).Get( dataViewId );
 
+            ValidateDataView( dataView );
+
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DbContext = rockContext
+            };
+
+            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
+            qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
+
+            return qryGroupsInDataView.Any();
+        }
+
+        /// <summary>
+        /// Checks to makes sure DataView exists, has the correct entityType, and person has View rights, etc
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        private void ValidateDataView( DataView dataView )
+        {
             if ( dataView == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -483,19 +489,8 @@ namespace Rock.Rest
                 throw new HttpResponseException( errorResponse );
             }
 
-            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
+            // since DataViews can be secured at the DataView or Category level, specifically check for CanView
             CheckCanView( dataView, GetPerson() );
-
-            var errorMessages = new List<string>();
-            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
-            qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
-
-            return qryGroupsInDataView.Any();
         }
 
         /// <summary>

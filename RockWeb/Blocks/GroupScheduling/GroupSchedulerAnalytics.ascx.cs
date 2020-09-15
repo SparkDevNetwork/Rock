@@ -456,7 +456,7 @@ var barChart = new Chart(barCtx, {{
                         break;
                     case "dataview":
                         var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
-                        DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                        var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
                         var personsFromDv = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                         var personAliasIds = personsFromDv.Select( d => d.Aliases.Where( a => a.AliasPersonId == d.Id ).Select( a => a.Id ).FirstOrDefault() ).ToList();
 

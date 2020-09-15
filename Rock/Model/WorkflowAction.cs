@@ -327,6 +327,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a entity from the attribute value -- but it only works for attributes who's field type is an IEntityFieldType.
+        /// </summary>
+        /// <param name="value">The action attribute value</param>
+        /// <param name="rockContext">The context</param>
+        /// <returns>The model if it can be resolved or null</returns>
+        public IEntity GetEntityFromAttributeValue( string value, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var attributeGuid = value.AsGuidOrNull();
+            if ( attributeGuid.HasValue )
+            {
+                var attribute = AttributeCache.Get( attributeGuid.Value );
+                if ( attribute != null )
+                {
+                    value = GetWorkflowAttributeValue( attributeGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( value ) )
+                    {
+                        var field = attribute.FieldType.Field;
+                        if ( field is Rock.Field.IEntityFieldType )
+                        {
+                            return ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( value, rockContext );
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets a worklow attribute value.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -581,7 +612,7 @@ namespace Rock.Model
             ///   <c>true</c> if [is read only]; otherwise, <c>false</c>.
             /// </value>
             public bool IsReadOnly { get; set; }
-            
+
             /// <summary>
             /// Gets or sets a value indicating whether this instance is required.
             /// </summary>

@@ -19,6 +19,7 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {
@@ -52,6 +53,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.DynamicContent,
         Order = 2 )]
 
+    [EntityTypeField( "Context Entity Type",
+        Description = "The type of entity that will provide context for this block",
+        IsRequired = false,
+        Key = AttributeKeys.ContextEntityType,
+        Order = 3 )]
+
     [CodeEditorField( "Callback Logic",
         Description = "If you provided any callback commands in your Content then you can specify the Lava logic for handling those commands here. <span class='tip tip-laval'></span>",
         IsRequired = false,
@@ -62,6 +69,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [ContextAware]
     public class Content : RockMobileBlockType
     {
         /// <summary>
@@ -83,6 +91,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The enabled lava commands key
             /// </summary>
             public const string EnabledLavaCommands = "EnabledLavaCommands";
+
+            /// <summary>
+            /// The context entity type key
+            /// </summary>
+            public const string ContextEntityType = "ContextEntityType";
 
             /// <summary>
             /// The callback logic key

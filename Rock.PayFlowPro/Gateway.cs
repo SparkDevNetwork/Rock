@@ -180,7 +180,7 @@ namespace Rock.PayFlowPro
             BrowserInfo browser = new BrowserInfo();
             browser.ButtonSource = "SparkDevelopmentNetwork_SP";
             invoice.BrowserInfo = browser;
-            
+
             var tender = GetTender( paymentInfo );
 
             if ( tender != null )
@@ -222,7 +222,7 @@ namespace Rock.PayFlowPro
                             var rockContext = new RockContext();
                             var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                                 .Queryable()
-                                .Where( s => 
+                                .Where( s =>
                                     s.TransactionCode == reference.TransactionCode &&
                                     s.FinancialGatewayId.HasValue &&
                                     s.FinancialGatewayId.Value == financialGateway.Id )
@@ -505,7 +505,7 @@ namespace Rock.PayFlowPro
             errorMessage = string.Empty;
 
             var financialGateway = GetFinancialGateway( transaction );
-            
+
             var ppTransaction = new RecurringCancelTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
@@ -690,7 +690,7 @@ namespace Rock.PayFlowPro
                     decimal amount = decimal.MinValue;
                     string tenderType = string.Empty;
 
-                    if ( transactionCodes.ContainsKey(transactionId) )
+                    if ( transactionCodes.ContainsKey( transactionId ) )
                     {
                         int rowNumber = transactionCodes[transactionId];
                         amount = decimal.TryParse( customTable.Rows[rowNumber]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
@@ -710,8 +710,8 @@ namespace Rock.PayFlowPro
                         }
                     }
 
-                    if (foundTxn)
-                    { 
+                    if ( foundTxn )
+                    {
                         var payment = new Payment();
                         payment.Amount = amount;
                         payment.TransactionDateTime = recurringBillingRow["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
@@ -773,7 +773,7 @@ namespace Rock.PayFlowPro
             return scheduledTransaction != null ? GetFinancialGateway( scheduledTransaction.FinancialGateway, scheduledTransaction.FinancialGatewayId ) : null;
         }
 
-        private FinancialGateway GetFinancialGateway( FinancialGateway financialGateway, int? financialGatewayId)
+        private FinancialGateway GetFinancialGateway( FinancialGateway financialGateway, int? financialGatewayId )
         {
             if ( financialGateway != null )
             {
@@ -906,15 +906,16 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
+                if ( reference.CurrencyTypeValue != null && reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
                 {
-                    return new ACHTender( (BankAcct)null );
+                    return new ACHTender( ( BankAcct ) null );
                 }
                 else
                 {
-                    return new CardTender( (CreditCard)null );
+                    return new CardTender( ( CreditCard ) null );
                 }
             }
+
             return null;
         }
 

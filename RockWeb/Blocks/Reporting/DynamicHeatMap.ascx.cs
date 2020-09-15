@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( dataView != null )
             {
-                DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
                 qryPersonIds = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Person>().Select( a => a.Id );
             }
 

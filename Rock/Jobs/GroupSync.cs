@@ -145,7 +145,7 @@ namespace Rock.Jobs
                         Stopwatch stopwatch = Stopwatch.StartNew();
 
                         // Get the person id's from the data view (source)
-                        DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                        var dataViewGetQueryArgs = new DataViewGetQueryArgs
                         {
                             DbContext = rockContext,
                             DatabaseTimeoutSeconds = commandTimeout

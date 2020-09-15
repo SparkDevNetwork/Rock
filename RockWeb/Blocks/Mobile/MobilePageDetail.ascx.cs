@@ -87,6 +87,14 @@ namespace RockWeb.Blocks.Mobile
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
+
+            if ( pnlEditPage.Visible )
+            {
+                int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
+                var pageCache = PageCache.Get( pageId );
+
+                BuildDynamicContextControls( pageCache );
+            }
         }
 
         /// <summary>
@@ -648,6 +656,8 @@ namespace RockWeb.Blocks.Mobile
                 {
                     return;
                 }
+
+                BuildDynamicContextControls( pageCache );
             }
 
             if ( page == null )
@@ -707,6 +717,102 @@ namespace RockWeb.Blocks.Mobile
             pnlBlocks.Visible = false;
         }
 
+        /// <summary>
+        /// Builds the dynamic context controls.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        private void BuildDynamicContextControls( PageCache pageCache )
+        {
+            var blockContexts = new List<BlockContextsInfo>();
+            phContext.Controls.Clear();
+
+            foreach ( var block in pageCache.Blocks )
+            {
+                try
+                {
+                    List<EntityTypeCache> contextTypesRequired = null;
+
+                    var blockCompiledType = block.BlockType.GetCompiledType();
+                    contextTypesRequired = GetContextTypesRequired( block );
+
+                    foreach ( var context in contextTypesRequired )
+                    {
+                        var blockContextsInfo = blockContexts.FirstOrDefault( t => t.EntityTypeName == context.Name );
+                        if ( blockContextsInfo == null )
+                        {
+                            blockContextsInfo = new BlockContextsInfo { EntityTypeName = context.Name, EntityTypeFriendlyName = context.FriendlyName, BlockList = new List<BlockCache>() };
+                            blockContexts.Add( blockContextsInfo );
+                        }
+
+                        blockContextsInfo.BlockList.Add( block );
+                    }
+                }
+                catch
+                {
+                    // if the blocktype can't compile, just ignore it since we are just trying to find out if it had a blockContext
+                }
+            }
+
+            phContextPanel.Visible = blockContexts.Count > 0;
+
+            foreach ( var context in blockContexts.OrderBy( t => t.EntityTypeName ) )
+            {
+                var tbContext = new RockTextBox();
+                tbContext.ID = string.Format( "context_{0}", context.EntityTypeName.Replace( '.', '_' ) );
+                tbContext.Required = false;
+                tbContext.Label = context.EntityTypeFriendlyName + " Parameter Name";
+                tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
+                    "block".PluralizeIf( context.BlockList.Count > 1 ), string.Join( ", ", context.BlockList ) );
+                if ( pageCache.PageContexts.ContainsKey( context.EntityTypeName ) )
+                {
+                    tbContext.Text = pageCache.PageContexts[context.EntityTypeName];
+                }
+
+                phContext.Controls.Add( tbContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        private List<EntityTypeCache> GetContextTypesRequired( BlockCache block )
+        {
+            var contextTypesRequired = new List<EntityTypeCache>();
+
+            int properties = 0;
+            foreach ( var attribute in block.BlockType.GetCompiledType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+            {
+                var contextAttribute = ( ContextAwareAttribute ) attribute;
+
+                if ( !contextAttribute.Contexts.Any() )
+                {
+                    // If the entity type was not specified in the attribute, look for a property that defines it
+                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
+                    properties++;
+
+                    Guid guid = Guid.Empty;
+                    if ( Guid.TryParse( block.GetAttributeValue( propertyKeyName ), out guid ) )
+                    {
+                        contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
+                    }
+                }
+                else
+                {
+                    foreach ( var context in contextAttribute.Contexts )
+                    {
+                        var entityType = context.EntityType;
+
+                        if ( entityType != null && !contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
+                        {
+                            contextTypesRequired.Add( entityType );
+                        }
+                    }
+                }
+            }
+
+            return contextTypesRequired;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -720,6 +826,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
+            var contextService = new PageContextService( rockContext );
             int parentPageId = SiteCache.Get( PageParameter( PageParameterKeys.SiteId ).AsInteger() ).DefaultPageId.Value;
 
             var page = pageService.Get( PageParameter( PageParameterKeys.Page ).AsInteger() );
@@ -753,6 +860,28 @@ namespace RockWeb.Blocks.Mobile
             {
                 oldIconId = page.IconBinaryFileId;
                 page.IconBinaryFileId = imgPageIcon.BinaryFileId;
+            }
+
+            // update PageContexts
+            foreach ( var pageContext in page.PageContexts.ToList() )
+            {
+                contextService.Delete( pageContext );
+            }
+
+            page.PageContexts.Clear();
+            foreach ( var control in phContext.Controls )
+            {
+                if ( control is RockTextBox )
+                {
+                    var tbContext = control as RockTextBox;
+                    if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                    {
+                        var pageContext = new PageContext();
+                        pageContext.Entity = tbContext.ID.Substring( 8 ).Replace( '_', '.' );
+                        pageContext.IdParameter = tbContext.Text;
+                        page.PageContexts.Add( pageContext );
+                    }
+                }
             }
 
             rockContext.WrapTransaction( () =>
@@ -1124,6 +1253,36 @@ namespace RockWeb.Blocks.Mobile
             public string Type { get; set; }
 
             public int Id { get; set; }
+        }
+
+        /// <summary>
+        /// Contains information about entity context needed by blocks.
+        /// </summary>
+        private class BlockContextsInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the entity type.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type.
+            /// </value>
+            public string EntityTypeName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the name of the entity type friendly.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type friendly.
+            /// </value>
+            public string EntityTypeFriendlyName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the block list.
+            /// </summary>
+            /// <value>
+            /// The block list.
+            /// </value>
+            public List<BlockCache> BlockList { get; internal set; }
         }
 
         #endregion

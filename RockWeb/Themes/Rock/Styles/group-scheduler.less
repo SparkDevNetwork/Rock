@@ -87,8 +87,6 @@
 }
 
 .resource-list {
-
-  // .panel-body {
   position: relative;
   top: auto !important;
   display: -ms-flexbox !important;
@@ -99,18 +97,14 @@
   width: 100%;
   max-height: none !important;
   overflow: hidden;
-  // }
 
   .scroll-list {
     flex-shrink: 1 !important;
     flex-grow: 1 !important;
     height: 100%;
     min-height: 0;
-    padding: 12px;
     overflow-y: scroll;
     background-color: fade(@panel-heading-bg, 40%);
-    // -ms-flex-positive: 1 !important;
-    // -ms-flex-negative: 1 !important;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -125,6 +119,10 @@
       &:hover {
         background-color: rgba(0,0,0, .3);
       }
+    }
+
+    .resource-container {
+      padding: 12px;
     }
   }
 }
@@ -151,8 +149,8 @@
     flex-direction: row !important;
     flex-wrap: nowrap;
     flex-shrink: 0;
-    justify-content: space-between !important;
     align-items: center;
+    justify-content: space-between !important;
 
     &::before {
       display: block;
@@ -226,16 +224,15 @@
   }
 
   .resource-name {
-    //display: block;
     margin-right: 20px;
+    font-weight: @font-weight-semibold;
     white-space: nowrap;
   }
 
-  .resource-preference-header,
-  .resource-scheduled-header {
+  .resource-header {
     display: block;
-    font-weight: @font-weight-semibold;
     margin-top: 6px;
+    font-weight: @font-weight-semibold;
   }
 
   .resource-preference,
@@ -383,7 +380,7 @@
     box-shadow: none;
 
     .resource-meta,
-    .resource-preference,
+    .resource-preferences,
     .resource-scheduled,
     .resource-lastattendeddate {
       display: none;
@@ -611,7 +608,7 @@
 }
 
 .scheduler-target-container .resource.gu-transit {
-  padding-right: 32px
+  padding-right: 32px;
 }
 
 .resource.gu-mirror {

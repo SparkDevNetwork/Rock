@@ -208,31 +208,87 @@ namespace RockWeb
                 throw startupException;
             }
 
-            // Update attributes for new workflow actions, instead of doing them on demand
-            // Not sure why we did this but this is the commit c23a4021d2ce7be96a30bae8c431c113f942f26f
-            new Thread( () =>
-            {
-                Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
-            } ).Start();
+            StartBlockTypeCompilationThread();
 
+            StartWorkflowActionUpdateAttributesThread();
+
+            StartCompileThemesThread();
+        }
+
+        // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
+        private static CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
+
+        /// <summary>
+        /// Starts the compile themes thread.
+        /// </summary>
+        private static void StartCompileThemesThread()
+        {
             // compile less files
             new Thread( () =>
             {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
                 var stopwatchCompileLess = Stopwatch.StartNew();
+
                 Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
-                RockTheme.CompileAll( out messages );
+
+                // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                RockTheme.CompileAll( out messages, _threadCancellationTokenSource.Token );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     if ( messages.IsNullOrWhiteSpace() )
                     {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less files compiled successfully. ", + stopwatchCompileLess.Elapsed.TotalSeconds ) );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less files compiled successfully. ", +stopwatchCompileLess.Elapsed.TotalSeconds ) );
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
                     }
                 }
+            } ).Start();
+        }
+
+        /// <summary>
+        /// Starts the workflow action update attributes thread.
+        /// </summary>
+        private static void StartWorkflowActionUpdateAttributesThread()
+        {
+            // Update attributes for new workflow actions, instead of doing them on demand
+            // Not sure why we did this but this is the commit c23a4021d2ce7be96a30bae8c431c113f942f26f
+            new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
+            } ).Start();
+        }
+
+        /// <summary>
+        /// Starts the block type compilation thread.
+        /// </summary>
+        private static void StartBlockTypeCompilationThread()
+        {
+            new Thread( () =>
+            {
+                // Set to background thread so that this thread doesn't prevent Rock from shutting down.
+                Thread.CurrentThread.IsBackground = true;
+
+                // Set priority to lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority
+                Thread.CurrentThread.Priority = ThreadPriority.Lowest;
+
+                Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
+
+                // get a list of all block types that are used by blocks
+                var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
+                    .Where( a => a.Blocks.Any() )
+                    .OrderBy( a => a.Category )
+                    .Select( a => a.Id ).ToArray();
+
+                // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
+
+                Debug.WriteLine( string.Format( "[{0,5:#} seconds] All block types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
             } ).Start();
         }
 
@@ -439,6 +495,12 @@ namespace RockWeb
         {
             try
             {
+                // Tell our CompileThemesThread and BlockTypeCompilationThread to cancel if they aren't done when Rock shuts down
+                if ( _threadCancellationTokenSource != null )
+                {
+                    _threadCancellationTokenSource.Cancel();
+                }
+
                 // Log the reason that the application end was fired
                 var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
 

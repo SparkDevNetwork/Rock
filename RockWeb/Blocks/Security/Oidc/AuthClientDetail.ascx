@@ -14,7 +14,7 @@
                     <asp:HiddenField ID="hfRestUserId" runat="server" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbName" Required="true" Label="Name" runat="server" CssClass="form-group" />
+                            <Rock:DataTextBox ID="tbName" Required="true" Label="Name" runat="server" CssClass="form-group" SourceTypeName="Rock.Model.AuthClient, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-sm-6">
                             <Rock:RockCheckBox ID="cbActive" runat="server" Checked="true" Label="Active" />
@@ -22,7 +22,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbClientId" Label="Client Id" runat="server" CssClass="form-group" />
+                            <Rock:DataTextBox ID="tbClientId" Label="Client Id" runat="server" CssClass="form-group" SourceTypeName="Rock.Model.AuthClient, Rock" PropertyName="ClientId" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox TextMode="Password" ID="tbClientSecret" Label="Client Secret" runat="server" CssClass="form-group" />
@@ -30,17 +30,17 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbRedirectUri" Label="Redirect Uri" runat="server" CssClass="form-group" />
+                            <Rock:DataTextBox ID="tbRedirectUri" Label="Redirect Uri" runat="server" CssClass="form-group" SourceTypeName="Rock.Model.AuthClient, Rock" PropertyName="RedirectUri" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbPostLogoutRedirectUri" Label="Logout Redirect Uri" runat="server" CssClass="form-group" />
+                            <Rock:DataTextBox ID="tbPostLogoutRedirectUri" Label="Logout Redirect Uri" runat="server" CssClass="form-group" SourceTypeName="Rock.Model.AuthClient, Rock" PropertyName="PostLogoutRedirectUri" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <h6 class="text-danger">Allowed Scopes and Claims<Rock:HelpBlock runat="server" Text="These are the claims that are allowed to be returned if requested by the client." /></h6>
-                            
-                            <asp:Panel ID="litClaims" runat="server" />
+                            <Rock:PanelWidget ID="pwScopes" runat="server" Title="Allowed Scopes and Claims <i class='fa fa-info-circle' data-toggle='tooltip' data-placement='top' title='These are the claims that are allowed to be returned if requested by the client.'></i>" Expanded="true">
+                                <asp:Panel ID="litClaims" runat="server" />
+                            </Rock:PanelWidget>
                         </div>
                     </div>
                 </div>

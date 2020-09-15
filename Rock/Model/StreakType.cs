@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak Type in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "StreakType" )]
     [DataContract]
     public partial class StreakType : Model<StreakType>, IHasActiveFlag, ICacheable

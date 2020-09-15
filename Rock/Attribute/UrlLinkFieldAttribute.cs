@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -37,6 +38,24 @@ namespace Rock.Attribute
         public UrlLinkFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.UrlLinkFieldType ).FullName )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the true text.
+        /// </summary>
+        /// <value>
+        /// The true text.
+        /// </value>
+        public bool ShouldRequireTrailingForwardSlash
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue("false")).Value.AsBoolean();
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
     }
 }

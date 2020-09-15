@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string FamilyId = "FamilyId";
         }
 
-        #endregion PageParameterKe
+        #endregion PageParameterKeys
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.CheckIn
                     NavigateToNextPage( queryParams );
                     return;
                 }
-                 
+
                 ShowDetail();
             }
             else
@@ -238,12 +238,35 @@ namespace RockWeb.Blocks.CheckIn
             var urlCheckinTypeId = PageParameter( PageParameterKey.CheckinConfigId ).AsIntegerOrNull();
             var urlGroupTypeIds = ( PageParameter( PageParameterKey.GroupTypeIds ) ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
 
-            if ( urlKioskId.HasValue && urlCheckinTypeId.HasValue && urlGroupTypeIds.Any() )
+            /* 2020-09-10 MDP
+             If both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds are specified, set the local device configuration from those.
+             Then if PageParameterKey.KioskId is also specified set the KioskId from that, otherwise determine it from the IP Address
+             see https://app.asana.com/0/1121505495628584/1191546188992881/f
+             
+             */
+
+            if ( urlCheckinTypeId.HasValue && urlGroupTypeIds.Any() )
             {
-                // all parameters that we need is in the URL, so set localDeviceConfig from that
-                this.LocalDeviceConfig.CurrentKioskId = urlKioskId;
+                // both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds are specified in the url, so set localDeviceConfig from that
                 this.LocalDeviceConfig.CurrentCheckinTypeId = urlCheckinTypeId;
                 this.LocalDeviceConfig.CurrentGroupTypeIds = urlGroupTypeIds;
+
+                if ( urlKioskId.HasValue )
+                {
+                    this.LocalDeviceConfig.CurrentKioskId = urlKioskId;
+                }
+                else
+                {
+                    // if both  CheckinConfigId and GroupTypeIds where specified in the URL, but device wasn't,
+                    // we'll attempt to get the Kiosk from IPAddress
+                    // if we find it, we are successfully configured from that
+                    // but if we can't find the kiosk, we'll return false, stay on this page, and the configuration will need to be set manually
+                    var device = GetKioskFromIpOrName();
+                    if ( device == null )
+                    {
+                        return false;
+                    }
+                }
 
                 // If the local device is fully configured return true
                 if ( this.LocalDeviceConfig.IsConfigured() )
@@ -258,40 +281,56 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Gets the name of the kiosk from ip or.
+        /// </summary>
+        /// <returns></returns>
+        public Device GetKioskFromIpOrName()
+        {
+            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            bool skipReverseLookup = !GetAttributeValue( AttributeKey.EnableKioskMatchByName ).AsBoolean();
+            using ( var rockContext = new RockContext() )
+            {
+                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, skipReverseLookup );
+                return device;
+            }
+        }
+
+        /// <summary>
         /// Attempts to match a known kiosk based on the IP address of the client.
         /// </summary>
         private void AttemptKioskMatchByIpOrName()
         {
-            // try to find matching kiosk by REMOTE_ADDR (ip/name).
-            var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             using ( var rockContext = new RockContext() )
             {
-                bool skipReverseLookup = !GetAttributeValue( AttributeKey.EnableKioskMatchByName ).AsBoolean();
-                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, skipReverseLookup );
-                if ( device != null )
+                var device = GetKioskFromIpOrName();
+                if ( device == null )
                 {
-                    ClearMobileCookie();
-                    LocalDeviceConfig.CurrentKioskId = device.Id;
-                    LocalDeviceConfig.CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext );
+                    return;
+                }
 
-                    if ( !LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
+                ClearMobileCookie();
+                LocalDeviceConfig.CurrentKioskId = device.Id;
+                LocalDeviceConfig.CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext );
+
+                if ( !LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
+                {
+                    foreach ( int groupTypeId in LocalDeviceConfig.CurrentGroupTypeIds )
                     {
-                        foreach ( int groupTypeId in LocalDeviceConfig.CurrentGroupTypeIds )
+                        var checkinType = GetCheckinType( groupTypeId );
+                        if ( checkinType != null )
                         {
-                            var checkinType = GetCheckinType( groupTypeId );
-                            if ( checkinType != null )
-                            {
-                                LocalDeviceConfig.CurrentCheckinTypeId = checkinType.Id;
-                                break;
-                            }
+                            LocalDeviceConfig.CurrentCheckinTypeId = checkinType.Id;
+                            break;
                         }
                     }
-
-                    CurrentCheckInState = null;
-                    CurrentWorkflow = null;
-                    SaveState();
-                    NavigateToNextPage();
                 }
+
+                CurrentCheckInState = null;
+                CurrentWorkflow = null;
+                SaveState();
+                NavigateToNextPage();
+
             }
         }
 

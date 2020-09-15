@@ -2948,7 +2948,6 @@ END" );
             }
 
             var addUpdateSql = $@"
-
                 DECLARE @FieldTypeId int
                 SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
 
@@ -2977,6 +2976,45 @@ END" );
             Migration.Sql( addUpdateSql );
         }
 
+        /// <summary>
+        /// Updates the global attribute.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateGlobalAttribute( string key, string entityTypeQualifierColumn, string entityTypeQualifierValue, string guid, string fieldTypeGuid, string name, string description, int order )
+        {
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                key = name.Replace( " ", string.Empty );
+            }
+
+            var updateSql = $@"
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+
+                UPDATE [Attribute]
+                SET [Guid] = '{guid}',
+                    [FieldTypeId] = @FieldTypeId,
+                    [Name] = '{name}',
+                    [Description] = '{description}',
+                    [Order] = {order},
+                    [IsGridColumn]=0,
+                    [IsMultiValue]=0,
+                    [IsRequired]=0,
+                    [IsSystem]=1
+                WHERE [EntityTypeId] IS NULL
+                AND [Key] = '{key}'
+                AND [EntityTypeQualifierColumn] = '{entityTypeQualifierColumn}'
+                AND [EntityTypeQualifierValue] = '{entityTypeQualifierValue}'";
+
+            Migration.Sql( updateSql );
+        }
 
         /// <summary>
         /// Adds a global attribute. If one already exists it is deleted.
