@@ -40,74 +40,81 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Allows quick self service attendance recording." )]
 
     #region Block Attributes
-
+    [LocationField(
+        "Location",
+        Description = "Optional location....",
+        IsRequired = false,
+        Order = 0,
+        CurrentPickerMode = LocationPickerMode.Named,
+        AllowedPickerModes = new LocationPickerMode[] { LocationPickerMode.Named },
+        Key = AttributeKey.Location )]
     [GroupTypeField(
         "Check-in Configuration",
         groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE,
         Description = "This will be the group type that we will use to determine where to check them in.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SERVICE_ATTENDANCE,
-        Order = 0,
+        Order = 1,
         Key = AttributeKey.CheckinConfiguration )]
     [BooleanField(
         "Primary Person Birthday Shown",
         Description = "Should birthday be displayed for primary person?",
         DefaultBooleanValue = true,
-        Order = 1,
+        Order = 2,
         Key = AttributeKey.PrimaryPersonBirthdayShown )]
     [BooleanField(
         "Primary Person Birthday Required",
         Description = "Determine if birthday for primary person is required.",
         DefaultBooleanValue = false,
-        Order = 2,
+        Order = 3,
         Key = AttributeKey.PrimaryPersonBirthdayRequired )]
     [BooleanField(
         "Primary Person Address Shown",
         Description = "Should address be displayed for primary person?",
         DefaultBooleanValue = true,
-        Order = 3,
+        Order = 4,
         Key = AttributeKey.PrimaryPersonAddressShown )]
     [BooleanField(
         "Primary Person Address Required",
         Description = "Determine if address for primary person is required.",
         DefaultBooleanValue = false,
-        Order = 4,
+        Order = 5,
         Key = AttributeKey.PrimaryPersonAddressRequired )]
     [BooleanField(
         "Primary Person Mobile Phone Shown",
         Description = "Should mobile phone be displayed for primary person?",
         DefaultBooleanValue = true,
-        Order = 5,
+        Order = 6,
         Key = AttributeKey.PrimaryPersonMobilePhoneShown )]
     [BooleanField(
         "Primary Person Mobile Phone Required",
         Description = "Determine if mobile phone for primary person is required.",
         DefaultBooleanValue = false,
-        Order = 6,
+        Order = 7,
         Key = AttributeKey.PrimaryPersonMobilePhoneRequired )]
     [BooleanField(
         "Other Person Birthday Shown",
         Description = "Should birthday be displayed for other person?",
         DefaultBooleanValue = true,
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.OtherPersonBirthdayShown )]
     [BooleanField(
         "Other Person Birthday Required",
         Description = "Determine if birthday for other person is required.",
         DefaultBooleanValue = false,
-        Order = 8,
+        Order = 9,
         Key = AttributeKey.OtherPersonBirthdayRequired )]
     [BooleanField(
         "Other Person Mobile Phone Shown",
         Description = "Should mobile phone be displayed for other person?",
         DefaultBooleanValue = true,
-        Order = 9,
+        Order = 10,
         Key = AttributeKey.OtherPersonMobilePhoneShown )]
     [BooleanField(
         "Other Person Mobile Phone Required",
         Description = "Determine if mobile phone for other person is required.",
         DefaultBooleanValue = false,
-        Order = 10,
+        Order = 11,
         Key = AttributeKey.OtherPersonMobilePhoneRequired )]
     [CustomEnhancedListField(
         "Known Relationship Types",
@@ -123,20 +130,20 @@ AND R.[Name] <> 'Child'
 ORDER BY [Text]",
         DefaultValue = "6b05f48e-5235-45de-970e-fe145bd28e1d",
         IsRequired = false,
-        Order = 11,
+        Order = 12,
         Key = AttributeKey.KnownRelationshipTypes )]
     [UrlLinkField(
         "Redirect URL",
         Description = "The URL to redirect the individual to when they check-in.",
         IsRequired = false,
-        Order = 12,
+        Order = 13,
         Key = AttributeKey.RedirectURL )]
     [TextField(
         "Check-in Button Text",
         Description = "The text that should be shown on the check-in button.",
         IsRequired = false,
         DefaultValue = "Check-in",
-        Order = 13,
+        Order = 14,
         Key = AttributeKey.CheckinButtonText )]
     [WorkflowTypeField(
         "Workflow",
@@ -144,20 +151,20 @@ ORDER BY [Text]",
         Key = AttributeKey.Workflow,
         Description = "The optional workflow type to launch when a person is checked in. The primary person will be passed to the workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: GroupId, LocationId (if found), ScheduleId (if found), CheckedInPersonIds. (NOTE: If you want a workflow 'form' type of workflow use the Redirect URL setting instead.)",
         IsRequired = false,
-        Order = 14 )]
+        Order = 15 )]
     [IntegerField(
         "Hide Individuals Younger Than",
         Description = "The age that should be used as the cut-off for displaying on the attendance list. The value of 14 will hide individuals younger than 14. Individuals without an age will always be shown. Defaults to blank.",
         Key = AttributeKey.HideIndividualsYoungerThan,
         IsRequired =false,
-        Order = 25
+        Order = 26
         )]
     [DefinedValueField(
         "Hide Individuals in Grade Less Than",
         Description = "Individuals in grades lower than this value will not be show on the attendance list. Defaults to empty (not set).",
         Key = AttributeKey.HideIndividualsInGradeLessThan,
         IsRequired = false,
-        Order = 26,
+        Order = 27,
         DisplayDescription = true,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.SCHOOL_GRADES
         )]
@@ -168,7 +175,7 @@ ORDER BY [Text]",
         Description = "The title to display on the primary watcher panel.",
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 15,
+        Order = 16,
         DefaultValue = "Tell Us a Little About You...",
         Key = AttributeKey.UnknownIndividualPanel1Title )]
     [CodeEditorField(
@@ -179,7 +186,7 @@ ORDER BY [Text]",
         EditorHeight = 200,
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 16,
+        Order = 17,
         DefaultValue = " We love to learn a little about you so that we can best serve you and your family.",
         Key = AttributeKey.UnknownIndividualPanel1IntroText )]
     [TextField(
@@ -187,7 +194,7 @@ ORDER BY [Text]",
         Description = "The title to display on the other watcher panel.",
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 17,
+        Order = 18,
         DefaultValue = "Who Else Is Joining You?",
         Key = AttributeKey.UnknownIndividualPanel2Title )]
     [CodeEditorField(
@@ -199,7 +206,7 @@ ORDER BY [Text]",
         IsRequired = false,
         DefaultValue = "We'd love to know more about others watching with you.",
         Category = AttributeCategory.Messages,
-        Order = 18,
+        Order = 19,
         Key = AttributeKey.UnknownIndividualPanel2IntroText )]
     [TextField(
         "Unknown Individual Panel 3 Title",
@@ -207,7 +214,7 @@ ORDER BY [Text]",
         IsRequired = false,
         Category = AttributeCategory.Messages,
         DefaultValue = "Would You Like to Create An Account?",
-        Order = 19,
+        Order = 20,
         Key = AttributeKey.UnknownIndividualPanel3Title )]
     [CodeEditorField(
         "Unknown Individual Panel 3 Intro Text",
@@ -218,14 +225,14 @@ ORDER BY [Text]",
         EditorHeight = 200,
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 20,
+        Order = 21,
         Key = AttributeKey.UnknownIndividualPanel3IntroText )]
     [TextField(
         "Known Individual Panel 1 Title",
         Description = "The title to display on the known individual panel.",
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 21,
+        Order = 22,
         DefaultValue = "Great to see you {{ CurrentPerson.NickName }}!",
         Key = AttributeKey.KnownIndividualPanel1Title )]
     [CodeEditorField(
@@ -237,14 +244,14 @@ ORDER BY [Text]",
         IsRequired = false,
         Category = AttributeCategory.Messages,
         DefaultValue = "We'd love to know who is watching with you today.",
-        Order = 22,
+        Order = 23,
         Key = AttributeKey.KnownIndividualPanel1IntroText )]
     [TextField(
         "Known Individual Panel 2 Title",
         Description = "The title to display on the success panel.",
         IsRequired = false,
         Category = AttributeCategory.Messages,
-        Order = 23,
+        Order = 24,
         DefaultValue = "Thanks for Connecting!",
         Key = AttributeKey.KnownIndividualPanel2Title )]
     [CodeEditorField(
@@ -256,20 +263,21 @@ ORDER BY [Text]",
         IsRequired = false,
         DefaultValue = "Thank you for connecting with us today. We hope that your enjoy the service!",
         Category = AttributeCategory.Messages,
-        Order = 24,
+        Order = 25,
         Key = AttributeKey.KnownIndividualPanel2IntroText )]
     #endregion Messages Block Attribute Settings
 
     #endregion Block Attributes
     public partial class AttendanceSelfEntry : RockBlock
     {
-        #region Attribute Keys
+        #region Keys
 
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
         private static class AttributeKey
         {
+            public const string Location = "Location";
             public const string CheckinConfiguration = "CheckinConfiguration";
             public const string PrimaryPersonBirthdayShown = "PrimaryPersonBirthdayShown";
             public const string PrimaryPersonBirthdayRequired = "PrimaryPersonBirthdayRequired";
@@ -299,10 +307,6 @@ ORDER BY [Text]",
             public const string HideIndividualsInGradeLessThan = "HideIndividualsInGradeLessThan";
         }
 
-        #endregion
-
-        #region Attribute Categories
-
         /// <summary>
         /// Keys to use for Block Attribute Categories
         /// </summary>
@@ -311,10 +315,17 @@ ORDER BY [Text]",
             public const string Messages = "Messages";
         }
 
-        #endregion
+        /// <summary>
+        /// Kyes to use for parameters passed into the block
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string LocationId = "LocationId";
+        }
 
-        #region ViewStateKeys
-
+        /// <summary>
+        /// Keys used to access values stored in the ViewState obj.
+        /// </summary>
         private static class ViewStateKey
         {
             public const string OtherWatchers = "OtherWatchers";
@@ -322,7 +333,7 @@ ORDER BY [Text]",
             public const string Location = "Location";
         }
 
-        #endregion ViewStateKeys
+        #endregion Keys
 
         #region Fields
 
@@ -857,7 +868,7 @@ ORDER BY [Text]",
             var rockContext = new RockContext();
 
             var groupType = GroupTypeCache.Get( configuredGroupTypeGuid );
-            var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupType.Id, 10 ).Select( a => a.Id ).ToList();
+            var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id ).ToList();
 
             var groups = new GroupService( rockContext )
                     .Queryable()
@@ -871,8 +882,12 @@ ORDER BY [Text]",
             Group attendanceGroup = null;
             if ( groups.Any() )
             {
+                Guid? locationGuid = GetAttributeValue( AttributeKey.Location ).AsGuidOrNull();
+                int? LocationIdParam = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+
+                // Try to set the locationId to the value specified by the block setting (preferred) or PageParameter. A null is okay here.
+                int? locationId = locationGuid.HasValue ? new LocationService( rockContext ).GetId( locationGuid.Value ) : LocationIdParam;
                 int? scheduleId = null;
-                int? locationId = null;
                 var campusCurrentDateTime = RockDateTime.Now;
 
                 foreach ( var group in groups )
@@ -886,15 +901,31 @@ ORDER BY [Text]",
                         }
                     }
 
-                    foreach ( var groupLocation in group.GroupLocations )
+                    // If we have the location and it is valid then use it
+                    if ( locationId.HasValue && group.GroupLocations.Select( l => l.LocationId == locationId ).Any() )
                     {
+                        GroupLocation groupLocation = group.GroupLocations.Where( l => l.LocationId == locationId ).FirstOrDefault();
                         var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
                         if ( schedule != null )
                         {
-                            locationId = groupLocation.LocationId;
                             scheduleId = schedule.Id;
                             attendanceGroup = group;
-                            break;
+                        }
+                    }
+
+                    // If we don't have the location or it was invalid or if the location specified didn't have a schedule then we need to loop through the group locations.
+                    if ( !scheduleId.HasValue )
+                    {
+                        foreach ( var groupLocation in group.GroupLocations )
+                        {
+                            var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
+                            if ( schedule != null )
+                            {
+                                locationId = groupLocation.LocationId;
+                                scheduleId = schedule.Id;
+                                attendanceGroup = group;
+                                break;
+                            }
                         }
                     }
 

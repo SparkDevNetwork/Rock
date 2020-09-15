@@ -106,9 +106,9 @@ namespace Rock.Rest.Controllers
 
             //
             // If no session guids were found or an error occurred trying to
-            // parse them, then return an error.
+            // parse them, or the list was only nulls, then return an error.
             //
-            if ( sessionGuids == null || sessionGuids.Count == 0 )
+            if ( sessionGuids == null || sessionGuids.Count == 0 || !sessionGuids.Any( i => i != null ) )
             {
                 return new PrintSessionLabelsResponse
                 {
@@ -150,7 +150,7 @@ namespace Rock.Rest.Controllers
                 //
                 var labels = attendanceService.Queryable()
                     .AsNoTracking()
-                    .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
+                    .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) && a.AttendanceData != null )
                     .DistinctBy( a => a.AttendanceCheckInSessionId )
                     .Select( a => a.AttendanceData.LabelData )
                     .ToList()
@@ -160,6 +160,21 @@ namespace Rock.Rest.Controllers
                     .OrderBy( a => a.PersonId )
                     .ThenBy( a => a.Order )
                     .ToList();
+
+                //
+                // If there are no labels, then there is nothing more to do here.
+                //
+                if ( !labels.Any() )
+                {
+                    return new PrintSessionLabelsResponse
+                    {
+                        Labels = new List<CheckInLabel>(),
+                        Messages = new List<string>
+                        {
+                            "No labels to print. You're all set."
+                        }
+                    };
+                }
 
                 foreach ( var label in labels )
                 {

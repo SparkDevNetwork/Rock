@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnLoad( e );
 
-            if ( ! Page.IsPostBack )
+            if ( !Page.IsPostBack )
             {
                 if ( CurrentPerson != null )
                 {
@@ -194,13 +194,14 @@ namespace RockWeb.Blocks.Prayer
 
                 dtbRequest.Text = PageParameter( "Request" );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
-            }
 
-            var prayerRequest = new PrayerRequest { Id = 0 };
-            prayerRequest.LoadAttributes();
-            avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
-            avcEditAttributes.AddEditControls( prayerRequest );
-            avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
+
+                var prayerRequest = new PrayerRequest { Id = 0 };
+                prayerRequest.LoadAttributes();
+                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+                avcEditAttributes.AddEditControls( prayerRequest );
+                avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
+            }
         }
 
         #endregion

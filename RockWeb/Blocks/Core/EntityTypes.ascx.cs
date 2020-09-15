@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !Page.IsPostBack )
                 {
-                    EntityTypeService.RegisterEntityTypes( Request.MapPath( "~" ) );
+                    EntityTypeService.RegisterEntityTypes();
                     BindFilter();
                     BindGrid();
                 }

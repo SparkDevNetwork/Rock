@@ -98,6 +98,7 @@ namespace RockWeb.Blocks.Core
             gLocations.Actions.ShowAdd = true;
             gLocations.Actions.AddClick += gLocations_AddClick;
             gLocations.GridRebind += gLocations_GridRebind;
+            geopFence.SelectGeography += geopFence_SelectGeography;
         }
 
         /// <summary>
@@ -144,7 +145,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            Page.Validate();
             Device device = null;
+            nbGeoFence.Visible = false;
 
             var rockContext = new RockContext();
             var deviceService = new DeviceService( rockContext );
@@ -193,6 +196,16 @@ namespace RockWeb.Blocks.Core
                 if ( device.Location == null )
                 {
                     device.Location = new Location();
+                }
+
+                // Custom validation checking
+                string errorMessage = string.Empty;
+                if ( ! geopFence.IsGeoFenceValid( out errorMessage ) )
+                {
+                    geopFence.RequiredErrorMessage = "error";
+                    nbGeoFence.Visible = true;
+                    nbGeoFence.Text = errorMessage;
+                    return;
                 }
 
                 device.Location.GeoPoint = geopPoint.SelectedValue;
@@ -356,6 +369,25 @@ namespace RockWeb.Blocks.Core
             mdLocationPicker.Hide();
         }
 
+        /// <summary>
+        /// Handles the SelectGeography event of the geopFence control.
+        /// We're doing this to check if the fence they just picked was valid for Rock.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void geopFence_SelectGeography( object sender, EventArgs e )
+        {
+            string message = string.Empty;
+            if ( !geopFence.IsGeoFenceValid( out message ) )
+            {
+                nbGeoFence.Visible = true;
+                nbGeoFence.Text = message;
+            }
+            else
+            {
+                nbGeoFence.Visible = false;
+            }
+        }
         #endregion
 
         #region Methods

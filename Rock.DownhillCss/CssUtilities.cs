@@ -48,8 +48,15 @@ namespace Rock.DownhillCss
 
             StringBuilder frameworkCss = new StringBuilder();
 
-            // Apply Reset First
-            frameworkCss.Append( resetStylesMobile );
+            // Apply Reset & Base CSS First - It is import that this is first so that the utility classes outrank the base CSS
+            if (settings.Platform == DownhillPlatform.Mobile)
+            {
+                frameworkCss.Append( baseStylesMobile );
+            }
+            else
+            {
+                frameworkCss.Append( baseStylesWeb );
+            }
 
             // Alerts
             AlertStyles( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
@@ -75,15 +82,7 @@ namespace Rock.DownhillCss
             // Build Border Width Utilities
             BorderWidths( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
-            // Add base styles that are not generated
-            if ( settings.Platform == DownhillPlatform.Mobile )
-            {
-                frameworkCss.Append( baseStylesMobile );
-            }
-            else
-            {
-                frameworkCss.Append( baseStylesWeb );
-            }
+            
 
             return CssUtilities.ParseCss( frameworkCss.ToString(), settings );
         }
@@ -565,10 +564,9 @@ namespace Rock.DownhillCss
         #region Platform Base Styles
         private static string baseStylesWeb = @"";
 
-        private static string resetStylesMobile = @"
-/*
-    Resets
-    -----------------------------------------------------------
+        private static string baseStylesMobile = @"/*
+Resets
+-----------------------------------------------------------
 */
 
 /* Fixes frame backgrounds from being black while in dark mode */
@@ -576,6 +574,7 @@ namespace Rock.DownhillCss
 ^editor {
     background-color: transparent;
     color: ?color-text;
+    margin: -5, -10;
 }
 
 ^frame {
@@ -591,12 +590,14 @@ NavigationPage {
 }
 
 ^label {
-    font-size: default;
+    font-size: ?font-size-default;
     color: ?color-text;
 }
-";
 
-        private static string baseStylesMobile = @"
+icon {
+    color: ?color-text;
+}
+
 /*
     Utility Classes
     -----------------------------------------------------------
@@ -617,28 +618,28 @@ NavigationPage {
 .h2 {
     color: ?color-heading;
     font-style: bold;
-    font-size: title;
+    font-size: 28;
     line-height: 1;
 }
 
 .h3 {
     color: ?color-heading;
     font-style: bold;
-    font-size: subtitle;
+    font-size: 22;
     line-height: 1.05;
 }
 
 .h4 {
     color: ?color-heading;
     font-style: bold;
-    font-size: default;
+    font-size: 16;
     line-height: 1.1;
 }
 
 .h5, .h6 {
     color: ?color-heading;
     font-style: bold;
-    font-size: small;
+    font-size: 13;
     line-height: 1.25;
 }
 
@@ -678,7 +679,7 @@ NavigationPage {
 
 /* Text Named Sizes */
 .text {
-    font-size: default;
+    font-size: ?font-size-default;
     color: ?color-text;
 }
 
@@ -717,13 +718,13 @@ NavigationPage {
 
 .title {
     font-style: bold;
-    font-size: default;
+    font-size: ?font-size-default;
     line-height: 1;
 }
 
 /* Body Styles */
 .paragraph {
-    font-size: default;
+    font-size: ?font-size-default;
     color: ?color-text;
     line-height: 1.15;
     margin-bottom: 24;
@@ -876,6 +877,21 @@ NavigationPage {
     -----------------------------------------------------------
 */
 
+/* Flyout Styling */
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
+}
+
 /* Countdown */
 .countdown-field {
     width: 32;
@@ -906,9 +922,54 @@ NavigationPage {
 .less-than-15-min {}
 .less-than-5-min{}
 
+/* Modal */
+.modal {
+    background-color: #ffffff;
+    padding: 0;
+    margin: 48 16;
+    border-radius: 8;
+}
+
+.modal-anchor-top {
+    margin: 0 0 48 0;
+}
+
+.modal-anchor-bottom {
+    margin: 48 0 0 0;
+}
+
+.modal-header {
+    background-color: ?color-brand;
+    padding: 16;
+}
+
+.modal-body {
+    padding: 16;
+    background-color: #ffffff;
+}
+
+.modal-anchor-top .modal-body {
+    padding-top: 32;
+}
+
+.modal-anchor-bottom .modal-body {
+    padding-bottom: 32;
+}
+
+.modal-close,
+.modal-title {
+    color: #ffffff; 
+}
+
+.modal-title {
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
 /* Divider */
 .divider {
-    background-color: ?color-gray-400;
+    background-color: ?color-gray-200;
     height: 1;
 }
 
@@ -922,22 +983,6 @@ NavigationPage {
 
 .divider-thickest {
     height: 8;
-}
-
-/* Forms Styling */
-.form-group {
-    margin: 0 0 12 0;
-}
-
-.form-group .form-group-title {
-    margin: 0 0 5 0;
-    color: ?color-primary;
-    font-size: 12;
-}
-
-.form-field {
-    padding: 12;
-    color: #282828;
 }
 
 /* Buttons */
@@ -1193,6 +1238,10 @@ NavigationPage {
     color: rgba(255,255,255,0.5);
 }
 
+.calendar-monthcalendar {
+    margin-bottom: 32;
+}
+
 .calendar-header {
     font-style: bold;
 }
@@ -1212,13 +1261,17 @@ NavigationPage {
 }
 
 .calendar-events-heading {
-    margin-top: 32;
+    margin-top: 0;
     text-align: center;
+    margin-bottom: 16;
 }
 
 .calendar-events-day {
-    text-align: left;
-    margin-bottom: 8;
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 16;
+    line-height: 1.1;
+    margin-bottom: 0;
 }
 
 .calendar-event {
@@ -1235,6 +1288,7 @@ NavigationPage {
 
 .calendar-event-title {
     font-style: bold;
+    font-size: 16;
 }
 
 .calendar-event-text {
@@ -1275,14 +1329,39 @@ NavigationPage {
 }
 
 /* Forms Styles */
+
+.form-group {
+    margin: 0 0 12 0;
+}
+
+.form-group .form-group-title {
+    margin: 0 0 5 0;
+    color: ?color-primary;
+    font-size: 12;
+}
+
+.form-field {
+    padding: 12;
+    color: #282828;
+}
 ^borderlessentry,
 ^datepicker,
 ^checkbox, 
 ^picker,
 ^entry, 
-^switch {
+^switch,
+^editor {
     color: ?color-text;
-    font-size: default;
+    font-size: ?font-size-default;
+}
+
+^literal {
+    line-height: 1.15;
+    margin-bottom: 16;
+}
+
+^editor {
+    margin: -5, -10;
 }
 
 /* Field Titles */
@@ -1294,7 +1373,7 @@ fieldgroupheader .title,
 formfield .title {
     color: ?color-text;
     font-style: bold;
-    font-size: default;
+    font-size: ?font-size-default;
 }
 
 fieldgroupheader.error .title,

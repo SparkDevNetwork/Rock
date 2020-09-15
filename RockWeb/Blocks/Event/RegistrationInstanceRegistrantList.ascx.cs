@@ -114,6 +114,7 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
         private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, PhoneNumber> _workPhoneNumbers = new Dictionary<int, PhoneNumber>();
         private List<RegistrationTemplatePlacement> _registrationTemplatePlacements = null;
         private List<PlacementGroupInfo> _placementGroupInfoList = null;
         private RockLiteralField _placementsField = null;
@@ -781,7 +782,7 @@ namespace RockWeb.Blocks.Event
             if ( _mobilePhoneNumbers.Any() )
             {
                 var mobileNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
-                var mobileField = e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
+                var mobileField = e.Row.FindControl( "lMobile" ) as Literal ?? e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
                 if ( mobileField != null )
                 {
                     if ( mobileNumber == null || mobileNumber.NumberFormatted.IsNullOrWhiteSpace() )
@@ -798,7 +799,7 @@ namespace RockWeb.Blocks.Event
             if ( _homePhoneNumbers.Any() )
             {
                 var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
-                var homePhoneField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
+                var homePhoneField = e.Row.FindControl( "lHomePhone" ) as Literal ?? e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
                 if ( homePhoneField != null )
                 {
                     if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
@@ -808,6 +809,23 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                    }
+                }
+            }
+
+            if ( _workPhoneNumbers.Any() )
+            {
+                var workPhoneNumber = _workPhoneNumbers[registrant.PersonId.Value];
+                var workPhoneField = e.Row.FindControl( "lWorkPhone" ) as Literal ?? e.Row.FindControl( "lRegistrantsWorkPhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsWorkPhone" ) as Literal;
+                if ( workPhoneField != null )
+                {
+                    if ( workPhoneNumber == null || workPhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        workPhoneField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        workPhoneField.Text = workPhoneNumber.IsUnlisted ? "Unlisted" : workPhoneNumber.NumberFormatted;
                     }
                 }
             }
@@ -1177,6 +1195,7 @@ namespace RockWeb.Blocks.Event
                 {
                     _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _workPhoneNumbers = GetPersonWorkPhoneLookup( rockContext, this.RegistrantFields, personIds );
 
                     // Filter by any selected
                     foreach ( var personFieldType in RegistrantFields
@@ -1545,7 +1564,7 @@ namespace RockWeb.Blocks.Event
                                     .Select( f => f.Attribute )
                                     .ToList()
                                 .ForEach( a => attributes
-                                    .Add( a.Id.ToString() + a.Key, a ) );
+                                    .AddOrIgnore( a.Id.ToString() + a.Key, a ) );
 
                             // Initialize the grid's object list
                             gRegistrants.ObjectList = new Dictionary<string, object>();

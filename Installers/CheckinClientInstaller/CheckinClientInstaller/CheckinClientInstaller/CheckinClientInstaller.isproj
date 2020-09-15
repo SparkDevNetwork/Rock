@@ -9,7 +9,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<!-- The InstallShieldProject item selects the project to build -->
-		<InstallShieldProject Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).isl"/>
+		<InstallShieldProject Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).ise"/>
 		<!-- The InstallShieldReleaseFlags sets Release Flags -->
 		<!--<InstallShieldReleaseFlags Include=""/>-->
 		<!-- The InstallShieldMergeModulePath specifies what directories are
@@ -27,9 +27,9 @@
 			<TargetPath>My Test Exe.exe</TargetPath>
 		</TaggedOutputs> -->
 	</ItemGroup>
-	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2015Limited\InstallShield.targets"/>
+	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2018\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\..\Rock-WindowsCheckin\CheckinClient.csproj">
+		<ProjectReference Include="..\..\..\..\..\Rock-WindowsCheckin\CheckinClient.csproj">
 			<Name>CheckinClient</Name>
 			<Project>{ED157BE8-7C1E-4FED-8B79-88A8722FE994}</Project>
 		</ProjectReference>

@@ -52,5 +52,15 @@ namespace Rock
             var unshiftedFloor = shiftedFloor / shiftFactor;
             return unshiftedFloor;
         }
+
+        /// <summary>
+        /// Converts a decimal to a percentage and returns a string with the percent sign
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatAsPercent( this decimal value )
+        {
+            return $"{( ( int ) Math.Round( value *= 100 ) ).ToString()}%";
+        }
     }
 }

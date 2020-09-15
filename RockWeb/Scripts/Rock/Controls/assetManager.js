@@ -73,6 +73,8 @@
                     $('.js-assetselect').addClass('aspNetDisabled');
                 }
 
+                $fileCheckboxes.removeAttr('checked');
+
                 // Can only add if either an asset or folder is selected
                 if ($selectFolder.val() == "" && $assetStorageId.val() == "-1") {
                     $('.js-createfolder').addClass('aspNetDisabled');
