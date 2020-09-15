@@ -2309,8 +2309,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     if ( dataField is RockTemplateField )
                     {
                         var rockTemplateField = dataField as RockTemplateField;
-                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
                         {
+                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
                             visibleFields.Add( fieldOrder++, rockTemplateField );
                         }
 
