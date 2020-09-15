@@ -131,8 +131,8 @@ namespace Rock.Web.UI.Controls
         public string TitleField { get; set; }
 
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included
+        /// in the export. See <seealso cref="ExcelExportBehavior" />.
         /// </summary>
         public override ExcelExportBehavior ExcelExportBehavior
         {
