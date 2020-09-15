@@ -55,6 +55,11 @@ namespace Rock.Lava.Blocks
             public const string ChannelCustom2 = "channelcustom2";
             public const string ChannelCustomIndexed1 = "channelcustomindexed1";
             public const string PersonAliasId = "personaliasid";
+            public const string Source = "source";
+            public const string Medium = "medium";
+            public const string Campaign = "campaign";
+            public const string Content = "content";
+            public const string Term = "term";
         }
 
         #endregion Parameter Keys
@@ -132,6 +137,11 @@ namespace Rock.Lava.Blocks
 
             string operation = parms.GetValueOrNull( ParameterKey.Operation );
             string summary = parms.GetValueOrNull( ParameterKey.Summary );
+            string source = parms.GetValueOrNull( ParameterKey.Source );
+            string medium = parms.GetValueOrNull( ParameterKey.Medium );
+            string campaign = parms.GetValueOrNull( ParameterKey.Campaign );
+            string content = parms.GetValueOrNull( ParameterKey.Content );
+            string term = parms.GetValueOrNull( ParameterKey.Term );
 
             int? relatedEntityTypeId = parms.GetValueOrNull( ParameterKey.RelatedEntityTypeId ).AsIntegerOrNull();
             int? relatedEntityId = parms.GetValueOrNull( ParameterKey.RelatedEntityId ).AsIntegerOrNull();
@@ -175,7 +185,12 @@ namespace Rock.Lava.Blocks
                 InteractionChannelCustom1 = channelCustom1,
                 InteractionChannelCustom2 = channelCustom2,
                 InteractionChannelCustomIndexed1 = channelCustomIndexed1,
-                PersonAliasId = personAliasId
+                PersonAliasId = personAliasId,
+                InteractionSource = source,
+                InteractionMedium = medium,
+                InteractionCampaign = campaign,
+                InteractionContent = content,
+                InteractionTerm = term
             };
 
             var interactionTransaction = new InteractionTransaction( info );

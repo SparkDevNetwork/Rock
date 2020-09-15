@@ -293,7 +293,7 @@ namespace Rock.Rest.Controllers
             int groupTypeId = GroupTypeCache.Get( groupTypeGuid ).Id;
 
             var rockContext = new RockContext();
-            var groupTypeChildList = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId, 20 ).Select( t => t.Id ).ToList();
+            var groupTypeChildList = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupTypeId ).Select( t => t.Id ).ToList();
             groupTypeChildList.Add( groupTypeId );
 
             var groups = new GroupService( rockContext )

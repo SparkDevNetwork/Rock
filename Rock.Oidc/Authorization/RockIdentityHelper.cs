@@ -109,7 +109,7 @@ namespace Rock.Oidc.Authorization
                         if ( user.Person.PhotoId != null )
                         {
                             var photoGuid = HttpUtility.UrlEncode( user.Person.Photo.Guid.ToString() );
-                            var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                            var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
                             return $"{publicAppRoot}GetImage.ashx?guid={photoGuid}";
                         }

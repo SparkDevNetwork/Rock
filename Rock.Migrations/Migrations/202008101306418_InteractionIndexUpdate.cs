@@ -29,11 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            //RockMigrationHelper.DropIndexIfExists( "Interaction", "IX_InteractionComponentId_InteractionDateTime" );
-
-            //RockMigrationHelper.CreateIndexIfNotExists( "Interaction",
-            //    new[] { "InteractionComponentId", "InteractionDateTime" },
-            //    new[] { "InteractionTimeToServe", "Operation", "InteractionSessionId" } );
+            AddJobToUpdateInteractionIndexes();
         }
         
         /// <summary>
@@ -41,7 +37,48 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            // Intentionally blank
+            RemoveJobToUpdateInteractionIndexes();
+        }
+
+        private void AddJobToUpdateInteractionIndexes()
+        {
+            Sql( $@"
+            IF NOT EXISTS (
+                SELECT 1
+                FROM [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV12DataMigrationsAddInteractionIndexes'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES}'
+            )
+            BEGIN
+                INSERT INTO [ServiceJob] (
+                    [IsSystem]
+                    ,[IsActive]
+                    ,[Name]
+                    ,[Description]
+                    ,[Class]
+                    ,[CronExpression]
+                    ,[NotificationStatus]
+                    ,[Guid]
+                ) VALUES (
+                    1
+                    ,1
+                    ,'Rock Update Helper v12.0 - Interaction Index Update'
+                    ,'This job will update the indexes on the interactions table.'
+                    ,'Rock.Jobs.PostV12DataMigrationsAddInteractionIndexes'
+                    ,'0 0 21 1/1 * ? *'
+                    ,1
+                    ,'{SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES}'
+                );
+            END" );
+        }
+
+        private void RemoveJobToUpdateInteractionIndexes()
+        {
+            Sql( $@"
+                DELETE [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV12DataMigrationsAddInteractionIndexes'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES}'
+                " );
         }
     }
 }

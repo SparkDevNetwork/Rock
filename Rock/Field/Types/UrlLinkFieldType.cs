@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-
+using System.Collections.Generic;
+using System.Web.UI;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -27,6 +28,82 @@ namespace Rock.Field.Types
     [Serializable]
     public class UrlLinkFieldType : FieldType
     {
+        /// <summary>
+        /// URL Link FieldType Configuration Keys
+        /// </summary>
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The key for should require a trailing forward slash.
+            /// </summary>
+            public const string ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash";
+        }
+
+        #region Configuration
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            return new List<string> { ConfigurationKey.ShouldRequireTrailingForwardSlash };
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = new List<Control>();
+
+            var cbShouldRequireTrailingForwardSlash = new RockCheckBox();
+            controls.Add( cbShouldRequireTrailingForwardSlash );
+            cbShouldRequireTrailingForwardSlash.AutoPostBack = true;
+            cbShouldRequireTrailingForwardSlash.Label = "Ensure Trailing Forward Slash";
+            cbShouldRequireTrailingForwardSlash.Help = "When set, the URL must end with a forward slash (/) to be valid.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ConfigurationKey.ShouldRequireTrailingForwardSlash, new ConfigurationValue( "Ensure Trailing Forward Slash",
+                "When set, the URL must end with a forward slash (/) to be valid.", "false" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                var cbShouldRequireTrailingForwardSlash = controls[0] as RockCheckBox;
+                configurationValues[ConfigurationKey.ShouldRequireTrailingForwardSlash].Value = cbShouldRequireTrailingForwardSlash.Checked.ToString();
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                var cbShouldRequireTrailingForwardSlash = controls[0] as RockCheckBox;
+
+                if ( configurationValues.ContainsKey( ConfigurationKey.ShouldRequireTrailingForwardSlash ) )
+                {
+                    cbShouldRequireTrailingForwardSlash.Checked = configurationValues[ConfigurationKey.ShouldRequireTrailingForwardSlash].Value.AsBoolean();
+                }
+            }
+        }
+        #endregion
 
         #region Formatting
 
@@ -71,7 +148,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new UrlLinkBox { ID = id }; 
+            var shouldRequireTrailingForwardSlash = configurationValues.GetValueOrNull( ConfigurationKey.ShouldRequireTrailingForwardSlash )?.AsBoolean();
+            return new UrlLinkBox { ID = id, ShouldRequireTrailingForwardSlash = shouldRequireTrailingForwardSlash ?? false }; 
         }
 
         /// <summary>

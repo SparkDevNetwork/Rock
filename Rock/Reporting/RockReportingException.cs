@@ -31,7 +31,7 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Sets the data filter, unless it has been set already
-        /// Use thiis if it DataFilter wasn't known at the time the exception was raised.
+        /// Use this if this DataFilter wasn't known at the time the exception was raised.
         /// </summary>
         /// <param name="dataViewFilter">The data view filter.</param>
         public void SetDataFilterIfNotSet( DataViewFilter dataViewFilter )
@@ -50,7 +50,7 @@ namespace Rock.Reporting
             }
             catch
             {
-                // if we werent able to lazy-load DataView (or some other problem), just ignore
+                // if we weren't able to lazy-load DataView (or some other problem), just ignore
                 DataView = null;
             }
 
@@ -113,7 +113,7 @@ namespace Rock.Reporting
                 if ( DataView != null && callerDataView != null && callerDataView?.Id != DataView?.Id )
                 {
                     // if the DataView that generated this error isn't the same as the DataView that was run, it must have been from an "OtherDataView" filter
-                    return $"An error has occurred within related dataview: {DataView}";
+                    return $"An error has occurred within related DataView: {DataView}";
                 }
 
                 if ( entityType != null )

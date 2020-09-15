@@ -86,6 +86,18 @@ namespace Rock.Mobile
         public DateTime? LastDeploymentDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the last deployment version identifier.
+        /// </summary>
+        /// <value>
+        /// The last deployment version identifier.
+        /// </value>
+        /// <remarks>
+        /// This must match the value stored in <see cref="Rock.Common.Mobile.UpdatePackage.ApplicationVersionId"/>
+        /// otherwise the shell will keep downloading the same version over and over again.
+        /// </remarks>
+        public int? LastDeploymentVersionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the phone update package URL.
         /// </summary>
         /// <value>

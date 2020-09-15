@@ -141,6 +141,7 @@
     <Compile Include="Lava\CachingTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Lava\RockEntityTests.cs" />
+    <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />

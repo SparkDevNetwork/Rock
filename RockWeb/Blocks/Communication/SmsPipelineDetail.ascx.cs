@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Communication
             lSmsName.Text = smsPipeline.Name;
 
             var globalAttributes = GlobalAttributesCache.Get();
-            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
             lWebhookUrl.Text = string.Format( "{0}{1}?{2}={3}", publicAppRoot, "Webhooks/TwilioSms.ashx", PageParameterKey.EntityId, GetSmsPipelineId() );
         }
 

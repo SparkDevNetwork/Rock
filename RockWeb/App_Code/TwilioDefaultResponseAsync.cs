@@ -257,8 +257,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         // path and query (e.g., /Webhooks/TwilioSms.ashx?SmsPipelineId=2)
         var requestUrl = GlobalAttributesCache
             .Get()
-            .GetValue( "PublicApplicationRoot" )
-            .EnsureTrailingForwardslash() + request.Url.PathAndQuery.RemoveLeadingForwardslash();
+            .GetValue( "PublicApplicationRoot" ) + request.Url.PathAndQuery.RemoveLeadingForwardslash();
 
         isValid = requestValidator.Validate( requestUrl, request.Form, signature );
 

@@ -550,6 +550,14 @@ namespace Rock.Model
                 throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine DataView EntityType for { dataViewEntityTypeCache }." );
             }
 
+            // DataViews must have a DataViewFilter (something has gone wrong it doesn't have one)
+            // Note that DataViewFilterId might be null even though DataViewFilter is not null
+            // This is because the DataViewFilter might be just in memory and not saved to the database (for example, a Preview or a DynamicReport)
+            if ( this.DataViewFilter == null )
+            {
+                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"DataViewFilter is null for DataView { this.Name } ({this.Id})." );
+            }
+
             bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
             if ( dataViewFilterOverrides != null )
             {

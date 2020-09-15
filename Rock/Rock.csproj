@@ -451,6 +451,7 @@
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SocialMediaAccountFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
+    <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
     <Compile Include="Attribute\EntityFieldAttribute.cs" />
@@ -494,7 +495,6 @@
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
-    <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\ValueListFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowActivityTypeAttribute.cs" />
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
@@ -536,6 +536,8 @@
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
+    <Compile Include="Data\DecimalPrecisionAttribute.cs" />
+    <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
@@ -544,8 +546,10 @@
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
+    <Compile Include="Jobs\JobMigration.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
+    <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -574,6 +578,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
     <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
@@ -723,7 +728,7 @@
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
-    <Compile Include="Model\AchievementAttempts.cs" />
+    <Compile Include="Model\AchievementAttempt.cs" />
     <Compile Include="Model\AchievementTypePrerequisite.cs" />
     <Compile Include="Model\AchievementTypeService.Partial.cs" />
     <Compile Include="Model\AchievementType.cs" />
@@ -2737,6 +2742,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Entity\EntityDocumentAdd.cs" />
     <Compile Include="Workflow\Action\Finance\GetSavedAccount.cs" />
     <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
@@ -2776,8 +2782,8 @@
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
@@ -2927,6 +2933,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge.sql">
+      <DependentUpon>135_MigrationRollupsFor11_2_0.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>

@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Achievement Type Prerequisite in Rock.
     /// </summary>
-    [RockDomain( "Achievements" )]
+    [RockDomain( "Engagement" )]
     [Table( "AchievementTypePrerequisite" )]
     [DataContract]
     public partial class AchievementTypePrerequisite : Model<AchievementTypePrerequisite>, ICacheable

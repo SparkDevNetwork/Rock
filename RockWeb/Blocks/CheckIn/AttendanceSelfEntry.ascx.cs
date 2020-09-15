@@ -868,7 +868,7 @@ ORDER BY [Text]",
             var rockContext = new RockContext();
 
             var groupType = GroupTypeCache.Get( configuredGroupTypeGuid );
-            var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id ).ToList();
+            var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ).ToList();
 
             var groups = new GroupService( rockContext )
                     .Queryable()
