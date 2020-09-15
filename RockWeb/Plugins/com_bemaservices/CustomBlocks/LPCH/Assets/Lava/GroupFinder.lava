@@ -1,0 +1,490 @@
+﻿<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
+
+<style>
+.sg-card {
+    position: relative;
+    margin: 0 auto 16px;
+    height: 210px;
+    max-width: 352px;
+    background: #fff;
+    border: 1px solid #f8f8f8;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-box-shadow: 0 1px 4px rgba(0,0,0,.24);
+    box-shadow: 0 1px 4px rgba(0,0,0,.24);
+}
+.sg-card .sg-card-side-bar {
+    position: absolute;
+    text-align: center;
+    background-color: #eee;
+    top: -1px;
+    right: -1px;
+    display: inline-block;
+    width: 88px;
+    height: calc(100% + 2px);
+}
+.sg-card .sg-card-meta {
+    border-top-left-radius: 4px;
+    width: 88px;
+    color: #fff;
+    padding: 16px 0;
+    min-height: 68px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+.sg-card .sg-card-meta-seperator {
+    width: 10px;
+    border-style: solid;
+    border-width: 13px 10px 0;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    margin-left: 50%;
+}
+.sg-card .sg-card-info {
+    margin-top: 14px;
+    line-height: 16px;
+}
+.sg-card .sg-card-content {
+    display: inline-block;
+    height: calc(100% - 48px);
+    margin-right: 100px;
+    padding-left: 16px;
+    width: calc(100% - 100px);
+    position: relative;
+    overflow-wrap: break-word;
+}
+.sg-card .sg-day-of-week {
+    line-height: 21px;
+}
+.sg-card .sg-card-info-age, .sg-card .sg-card-info-kids {
+    line-height: 14px;
+    color: #777779;
+}
+.sg-card .sg-card-name {
+    line-height: 21px;
+    margin-bottom: 4px;
+}
+.sg-card .sg-card-campus {
+    color: #777779;
+}
+.sg-card .sg-card-description {
+    font-size: 14px;
+}
+.sg-card .description-fade {
+    background: -webkit-gradient(linear,left bottom,left top,color-stop(36.2%,#fff),color-stop(114.1%,hsla(0,0%,100%,0)));
+    background: linear-gradient(1turn,#fff 36.2%,hsla(0,0%,100%,0) 114.1%);
+    position: absolute;
+    height: 100px;
+    width: 100%;
+    bottom: -40px;
+}
+.sg-card .more-info-text {
+    position: absolute;
+    bottom: 16px;
+    left: 100px;
+}
+
+.fontSize-body {
+    font-size: 18px;
+    font-weight: normal;
+    font-stretch: normal;
+    line-height: 1.56;
+    letter-spacing: -0.1px;
+}
+.fontSize-xxs {
+    font-size: 12px;
+}
+.fontSize-xs {
+    font-size: 16px;
+}
+.border-radius-md {
+    border-radius: 4px;
+}
+.p-t-1 {
+    padding-top: 1rem !important;
+}
+.m-b-1 {
+    margin-bottom: 1rem !important;
+}
+.m-b-half {
+    margin-bottom: 0.5rem !important;
+}
+.multiselect__tag{
+  background-color: #eee !important;
+  color: black !important;
+}
+
+</style>
+<div id="app">
+
+  <div class="row margin-b-md">
+    <div class="col-md-3">
+      <div class="form-group">
+        <label class="control-label">Location</label>
+        <div class="control-wrapper">
+          <multiselect v-model="campusValues" :options="campusOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Name" track-by="Name" :preselect-first="false" @input="campusFilterChange()">
+            <template slot="selection" slot-scope="{ campusValues, search, isOpen }"><span class="multiselect__single" v-if="campusValues.length &amp;&amp; !isOpen">{{ campusValues.length }} options selected</span></template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="form-group">
+        <label class="control-label">Meeting Day</label>
+        <div class="control-wrapper">
+          <multiselect v-model="meetingDayValues" :options="meetingDayOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="text" track-by="text" :preselect-first="false" @input="meetingDayFilterChange()">
+            <template slot="selection" slot-scope="{ meetingDayValues, search, isOpen }"><span class="multiselect__single" v-if="meetingDayValues.length &amp;&amp; !isOpen">{{ meetingDayValues.length }} options selected</span></template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="form-group">
+        <label class="control-label">Category</label>
+        <div class="control-wrapper">
+          <multiselect v-model="categoryValues" :options="categoryOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Value" track-by="Value" :preselect-first="false" @input="categoryFilterChange()">
+            <template slot="selection" slot-scope="{ categoryValues, search, isOpen }"><span class="multiselect__single" v-if="categoryValues.length &amp;&amp; !isOpen">{{ categoryValues.length }} options selected</span></template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="form-group">
+        <label class="control-label">Age Range</label>
+        <div class="control-wrapper">
+          <multiselect v-model="ageRangeValues" :options="ageRangeOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="" label="Value" track-by="Value" :preselect-first="false" @input="ageRangeFilterChange()">
+            <template slot="selection" slot-scope="{ ageRangeValues, search, isOpen }"><span class="multiselect__single" v-if="ageRangeValues.length &amp;&amp; !isOpen">{{ ageRangeValues.length }} options selected</span></template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {%raw%}<h5>{{groupCount}} Groups Found</h5> {% endraw %}
+    <div v-if="groups.length === 0 && groupCount != 0" class="loading">Loading...</div>
+    <div v-for="i in Math.ceil(groups.length / 3)" class="row">
+      <div v-for="group in groups.slice((i - 1) * 3, i * 3)" class="col-md-4">
+        {% raw %}
+          <div class="columns column-block">
+            <div class="sg-card border-radius-md">
+              <div class="sg-card-content p-t-1">
+                <h2 class="sg-card-name fontSize-body">{{group.Name}}</h2>
+                <p class="sg-card-campus fontSize-xs">{{group.Campus}}</p>
+                <p class="sg-card-description">{{group.Description}}.</p>
+                <div class="description-fade"></div>
+              </div>
+              <div class="sg-card-side-bar">
+                <div class="sg-card-meta" :style="'background-color:' + group.Color+';'">
+                  <div class="fontSize-body sg-day-of-week">{{group.DayOfWeek}}</div>
+                  <div class="fontSize-xxs">{{group.TimeOfDay}}</div>
+                  <div class="fontSize-xxs">{{group.Frequency}}</div>
+                </div>
+                <div class="sg-card-info m-b-1" :style="'color:' + group.Color+';'">{{group.Category}}</div>
+                <div class="fontSize-xxs m-b-half sg-card-info-age">{{group.AgeRange}}</div>
+              </div>
+              <a class="more-info-text" :href="'/page/611?Group=' + group.Guid" target="_blank">More Info</a>
+            </div>
+          </div>
+        {% endraw %}
+      </div>
+    </div>
+</div>
+
+<script>
+{% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
+{% assign campusIds = campusIdString | Split:',' %}
+{% capture selectedCampuses %}
+  {% if campusIdString != '' %}
+    {% campus where:'IsActive == true' %}
+      {% for campus in campusItems %}
+        {% assign idString = campus.Id | ToString %}
+        {% for campusId in campusIds %}
+          {% if campusId == idString %}
+            {{campus | ToJSON }},
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endcampus %}
+  {% else %}
+    {% assign campus = CurrentPerson | Campus %}
+    {{ campus | ToJSON }},
+  {% endif %}
+{% endcapture %}
+
+{% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString %}
+{% assign meetingDays = meetingDayString | Split:',' %}
+{% capture selectedMeetingDays %}
+  {% if meetingDayString != '' %}
+    {% for meetingDay in meetingDays %}
+      {% if meetingDay == '0' %}
+        { value:0, text:'Sunday'},
+      {% endif %}
+      {% if meetingDay == '1' %}
+        { value:1, text:'Monday'},
+      {% endif %}
+      {% if meetingDay == '2' %}
+        { value:2, text:'Tuesday'},
+      {% endif %}
+      {% if meetingDay == '3' %}
+        { value:3, text:'Wednesday'},
+      {% endif %}
+      {% if meetingDay == '4' %}
+        { value:4, text:'Thursday'},
+      {% endif %}
+      {% if meetingDay == '5' %}
+        { value:5, text:'Friday'},
+      {% endif %}
+      {% if meetingDay == '6' %}
+        { value:6, text:'Saturday'},
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+
+{% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
+{% assign categoryIds = categoryIdString | Split:',' %}
+{% capture selectedCategories %}
+  {% if categoryIdString != '' %}
+    {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+          {% assign idString = definedValue.Id | ToString %}
+          {% for categoryId in categoryIds %}
+            {% if categoryId == idString %}
+              {{definedValue | ToJSON }},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  {% endif %}
+{% endcapture %}
+
+{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRangeIds' | ToString %}
+{% assign ageRangeIds = ageRangeIdString | Split:',' %}
+{% capture selectedAgeRanges %}
+  {% if ageRangeIdString != '' %}
+    {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+          {% assign idString = definedValue.Id | ToString %}
+          {% for ageRangeId in ageRangeIds %}
+            {% if ageRangeId == idString %}
+              {{definedValue | ToJSON }},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  {% endif %}
+{% endcapture %}
+
+
+var app = new Vue({
+  el: '#app',
+  components: {
+    Multiselect: window.VueMultiselect.default
+  },
+  data () {
+    return {
+      bottom: false,
+      groups: [],
+      campusId: "",
+      meetingDay:"",
+      categoryId: "",
+      ageRange: "",
+      limit: 10,
+      groupCount: 0,
+      meetingDayValues: [{{selectedMeetingDays | ReplaceLast:',','' }}],
+      meetingDayOptions: [
+                      { value:0, text:'Sunday'},
+                      { value:1, text:'Monday'},
+                      { value:2, text:'Tuesday'},
+                      { value:3, text:'Wednesday'},
+                      { value:4, text:'Thursday'},
+                      { value:5, text:'Friday'},
+                      { value:6, text:'Saturday'},
+                        ],
+      campusValues: [{{selectedCampuses | ReplaceLast:',','' }}],
+      campusOptions: {% campus where:'IsActive == true' %}
+              {{campusItems | ToJSON}}
+            {% endcampus %},
+      categoryValues: [{{selectedCategories | ReplaceLast:',','' }}],
+      categoryOptions: {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+              {% for definedtype in definedtypeItems %}
+                {{definedtype.DefinedValues | ToJSON}}
+              {% endfor %}
+            {% enddefinedtype %},
+      ageRangeValues: [{{selectedAgeRanges| ReplaceLast:',','' }}],
+      ageRangeOptions: {% definedtype where:'Guid == "64C9BFA7-EE35-4829-802E-004CD2F78971"' %}
+              {% for definedtype in definedtypeItems %}
+                {{definedtype.DefinedValues | ToJSON}}
+              {% endfor %}
+            {% enddefinedtype %}
+    }
+  },
+  watch: {
+    bottom(bottom) {
+      if (bottom) {
+        if(this.groupCount> this.groups.length){
+          this.addGroups();
+        }
+      }
+    }
+  },
+  created() {
+    window.addEventListener('scroll', () => {
+      this.bottom = this.bottomVisible()
+    })
+    this.getGroupCount();
+    this.addGroups()
+  },
+  methods: {
+    bottomVisible() {
+      const scrollY = window.scrollY
+      const visible = document.documentElement.clientHeight
+      const pageHeight = document.documentElement.scrollHeight
+      const bottomOfPage = visible + scrollY >= pageHeight
+      return bottomOfPage || pageHeight < visible
+    },
+    getGroupCount() {
+      var url = '/api/com_bemaservices/GroupTools/GetGroupCount?GroupTypeIds=25'+ this.getFilterParameters();
+      axios.get(url)
+        .then(response => {
+        this.groupCount =  response.data;
+      })
+    },
+    addGroups() {
+      var url = '/api/com_bemaservices/GroupTools/GetGroups?GroupTypeIds=25&Limit=' + this.limit + '&Offset=' + this.groups.length + this.getFilterParameters();
+      axios.get(url)
+        .then(response => {
+          response.data.forEach((value, index) => {
+              this.groups.push(value);
+          });
+          if (this.bottomVisible()) {
+            if(this.groupCount> this.groups.length){
+              this.addGroups();
+            }
+          }
+      })
+    },
+    insertParam(key, value) {
+        if ('URLSearchParams' in window) {
+          var searchParams = new URLSearchParams(window.location.search)
+          searchParams.set(key,value);
+          var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+          history.pushState(null, '', newRelativePathQuery);
+      }
+    },
+    categoryFilterChange(){
+      var categoryIdsString = "";
+      this.categoryValues.forEach(function(categoryValue){
+        categoryIdsString += categoryValue.Id + ",";
+      });
+
+      if(categoryIdsString != ""){
+        categoryIdsString = categoryIdsString.slice(0,-1);
+      }
+
+      this.insertParam("CategoryIds", categoryIdsString);
+      this.filterChange();
+    },
+    ageRangeFilterChange(){
+      var ageRangeIdsString = "";
+      this.ageRangeValues.forEach(function(ageRangeValue){
+        ageRangeIdsString += ageRangeValue.Id + ",";
+      });
+      if(ageRangeIdsString != ""){
+        ageRangeIdsString = ageRangeIdsString.slice(0,-1);
+      }
+
+      this.insertParam("AgeRangeIds", ageRangeIdsString);
+      this.filterChange();
+    },
+    campusFilterChange(){
+      var campusIdsString = "";
+      this.campusValues.forEach(function(campusValue){
+        campusIdsString += campusValue.Id + ",";
+      });
+      if(campusIdsString != ""){
+        campusIdsString = campusIdsString.slice(0,-1);
+      }
+
+      this.insertParam("CampusIds", campusIdsString);
+      this.filterChange();
+    },
+    meetingDayFilterChange(){
+      var meetingDaysString = "";
+      this.meetingDayValues.forEach(function(meetingDayValue){
+        meetingDaysString += meetingDayValue.value + ",";
+      });
+
+      if(meetingDaysString != ""){
+        meetingDaysString = meetingDaysString.slice(0,-1);
+      }
+
+      this.insertParam("MeetingDays", meetingDaysString);
+      this.filterChange();
+    },
+    filterChange(){
+      this.groups = [];
+      this.getGroupCount();
+      this.addGroups();
+    },
+    getFilterParameters(){
+      var url = ""
+
+      var campusIdsString = "";
+      this.campusValues.forEach(function(campusValue){
+        campusIdsString += campusValue.Id + ",";
+      });
+      if(campusIdsString != ""){
+        url += '&CampusIds='+campusIdsString.slice(0,-1);
+      }
+
+      var meetingDaysString = "";
+      this.meetingDayValues.forEach(function(meetingDayValue){
+        meetingDaysString += meetingDayValue.value + ",";
+      });
+      if(meetingDaysString != ""){
+        url += '&MeetingDays='+meetingDaysString.slice(0,-1);
+      }
+
+      var categoryIdsString = "";
+      this.categoryValues.forEach(function(categoryValue){
+        categoryIdsString += categoryValue.Id + ",";
+      });
+      if(categoryIdsString != ""){
+        url += '&CategoryIds='+categoryIdsString.slice(0,-1);
+      }
+
+      var ageRangeIdsString = "";
+      this.ageRangeValues.forEach(function(ageRangeValue){
+        ageRangeIdsString += ageRangeValue.Id + ",";
+      });
+      if(ageRangeIdsString != ""){
+        url += '&AgeRangeIds='+ageRangeIdsString.slice(0,-1);
+      }
+      return url;
+    }
+
+  }
+})
+</script>
