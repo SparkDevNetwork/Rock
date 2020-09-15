@@ -21,7 +21,7 @@ namespace com.bemaservices.HrManagement.Migrations
         /// </summary>
         public override void Up()
         {
-            PtoAllocationWorkflow();
+         //   PtoAllocationWorkflow();
             PtoRequestWorkflow();
         }
 
@@ -111,9 +111,9 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Person", "Person", "", 0, @"", "FF9B21ED-F47A-4961-A7DB-7CF8D90D96C3", false ); // PTO Request:Person
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "6B6AA175-4758-453F-8D83-FCD8044B5F36", "Start Date", "StartDate", "", 1, @"", "F6FB28D8-AE58-445E-9373-46CDA04E6CC5", false ); // PTO Request:Start Date
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "6B6AA175-4758-453F-8D83-FCD8044B5F36", "End Date", "EndDate", "", 2, @"", "286C5A76-9113-49C4-A209-078E856BD0B2", false ); // PTO Request:End Date
-            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "AD020DAF-8E5E-4AC3-BE4A-FFA5EDA8FBAA", "PTO Allocation", "PTOAllocation", "", 3, @"", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", false ); // PTO Request:PTO Allocation
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", SystemGuid.FieldType.PTO_ALLOCATION, "PTO Allocation", "PTOAllocation", "", 3, @"", "C9E17918-4ECF-4029-A2F3-BF95D4EED4E3", false ); // PTO Request:PTO Allocation
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Approval State", "ApprovalState", "", 4, @"0", "FFC543BE-7B65-425B-A56C-AD441986FA2C", false ); // PTO Request:Approval State
-            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "90ECF283-5344-4168-9224-E0D26E9B7ECB", "PTO Request", "PTORequest", "", 5, @"", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", false ); // PTO Request:PTO Request
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", SystemGuid.FieldType.PTO_REQUEST, "PTO Request", "PTORequest", "", 5, @"", "9FE62EB5-6604-416F-899B-F836C1DEC7A5", false ); // PTO Request:PTO Request
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Supervisor", "Supervisor", "", 6, @"", "203AB4E9-065C-4D49-8DA5-9C7C61F49A01", false ); // PTO Request:Supervisor
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Supervisor Attribute", "SupervisorAttribute", "", 7, @"67afd5a3-28f3-404f-a3b8-88630061f294", "CB12115A-8783-472C-B980-FE404D67F12E", false ); // PTO Request:Supervisor Attribute
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "EBF1D986-8BBD-4888-8A7E-43AF5914751C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "HasViewRights", "HasViewRights", "", 8, @"", "160380E7-EF1F-4D6A-82C3-712FABD0C263", false ); // PTO Request:HasViewRights
@@ -904,11 +904,6 @@ Thank you!<br/>
 
         public void PtoAllocationWorkflow()
         {
-            #region FieldTypes
-
-
-            #endregion
-
             #region EntityTypes
 
             RockMigrationHelper.UpdateEntityType( "Rock.Model.Workflow", "3540E9A7-FE30-43A9-8B0A-A372B63DFC93", true, true );
