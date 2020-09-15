@@ -29,7 +29,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddModelMapIcons();
+            //AddModelMapIcons();
         }
 
         /// <summary>
