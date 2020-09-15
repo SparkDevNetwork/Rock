@@ -312,15 +312,15 @@ namespace Rock.Model
         /// Finds all the <see cref="Rock.Model.BlockType">BlockTypes</see> within a given path.
         /// </summary>
         /// <param name="physWebAppPath">The physical web application path.</param>
-        /// <param name="list">A <see cref="System.Collections.Generic.Dictionary{String, String}" /> containing all the <see cref="Rock.Model.BlockType">BlockTypes</see> that have been found.</param>
-        /// <param name="folder">A <see cref="System.String" /> containing the subdirectory to to search through.</param>
+        /// <param name="list">A <see cref="System.Collections.Generic.Dictionary{String, String}"/> containing all the <see cref="Rock.Model.BlockType">BlockTypes</see> that have been found.</param>
+        /// <param name="folder">A <see cref="System.String"/> containing the subdirectory to to search through.</param>
         private static void FindAllBlocksInPath( string physWebAppPath, Dictionary<string, string> list, string folder )
         {
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
-            string physicalPath = $"{physWebAppPath.EnsureTrailingBackslash()}{folder}";
+            string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
 
             // Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
-            string virtualPath = $"~/{folder}/";
+            string virtualPath = string.Format( "~/{0}/", folder );
 
             // search for all blocks under the physical path 
             DirectoryInfo di = new DirectoryInfo( physicalPath );
