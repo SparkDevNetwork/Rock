@@ -1,0 +1,195 @@
+<p>Reserve rooms and resources based on availability.</p>
+
+<p>
+The administrator configurable approval system allows setting up a single, 
+overall approval team to control the approval process and/or separate groups
+to approve certain rooms &amp; resources.
+</p>
+
+<p>Room Managment release v1.5.5 is compatible with Rock v10 and has a bug fix.</p>
+
+<h3>Release Notes</h3>
+
+<ul>
+	<li> v1.5.5 - 8/17/2020
+		<ul>
+			<li>Fixed issue where location layout photos were marked temporary.</li>
+			<li>Fixed issue where copying a reservation could cause overlapping reservation resources and reservation locations.</li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+	<li> v1.5.4 - 8/4/2020
+		<ul>
+			<li>Fixed issue where copying a reservation could cause overlapping reservation resources and reservation locations.</li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+	<li> v1.5.3 - 6/23/2020
+		<ul>
+			<li>Fixed issue where people who update would get many emails because the PopulateFirstLastOccurrenceDateTimes job was modifying past reservations. (Fixes #168)</li>
+			<li>Deleting Reservation Types no longer throws errors. (Fixes #150)</li>
+			<li>Added .ics download button to ReservationDetail. (Fixes #112)</li>
+			<li>Added fix for security issues several people were encountering in the 1.5.x build.</li>
+			<li>Added SelectedDate in the page parameters.</li>
+			<li>Fixed issue with the Reservation Workflow Trigger cache not being reloaded. (Fixes #135)</li>
+			<li>Scheduled Location Picker no longer grays out parent locations (Fixes #140)</li>
+			<li>Approval Notification now uses admin contact instead of requestor.</li>
+			<li>Display start and end dates in certain places in the UI (Fixes #92, #110)</li>
+			<li>Added default Cleanup Time to ReservationTypes.</li>
+			<li>Added descriptive email Titles. (Fixes #115)</li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+	<li> v1.5.2 - 3/21/2020
+		<ul>
+			<li>Fixed error when linked event is deleted from the Calendar page. (Fixes #147)</li>
+			<li>Fixed issue where reservation questions were hidden from non-Rock admins.</li>
+			<li>Fixed error that could occur when EventContact for Reservation was not set.</li>
+			<li>Added a limiter for reservations with no end date.</li>
+			<li>Added a calendar view (experimental).</li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+	<li> v1.5.1 - 2/14/2020
+		<ul>
+			<li>Added linking Reservations to Rock Event Registration.</li>
+			<li>Added security checking to Reservation attributes.</li>
+			<li>Added feature to pick the first allowed reservation type for new reservations instead of the standard reservation type</li>
+			<li>Added ability to set fields in the Reservation Detail block based off of page parameters.</li>
+			<li>Updated compatibility with Rock v10.</li>
+        </ul>
+    </li>
+</ul>
+
+
+<p>Room Managment release v1.4.1 has several new features and bug fixes.</p>
+
+<h3>Release Notes</h3>
+
+<ul>
+	<li> v1.4.1 - 9/26/2019
+		<ul>
+			<li>Added location layouts so reservation requesters can choose from pre-defined list of possible room layouts.</li>
+			<li>Added feature to see all reservations needing "my approval".</li>
+			<li>Added feature to see all "my reservations".</li>
+			<li>Added 'printable report' dropdown selection options.</li>
+			<li>Added 'reservation view' dropdown selection options for quickly changing between stock and custom view modes.</li>
+			<li>Added reservation attributes (added to the reservation type).</li>
+			<li>Improved performance of various parts such as popup pickers.</li>
+			<li>Enhanced to add a confirm panel when deleting a reservation.</li>
+			<li>Fixed a problem that could cause duplicate ministry names to appear in the filter in certain blocks. (Fixes #121)</li>
+			<li>Fixed an issue that would cause some locations to be greyed out in the location picker. (Fixes #120)</li>
+			<li>Fixed a problem that was preventing Reservation Types from honoring the configured settings. (Fixes #125)</li>
+			<li>Fixed a problem that could occur when a view mode saved preference was no longer an option. (Fixes #95) </li>
+			<li>Fixed to not show inactive campuses on the ReservationDetail block. (Fixes #119)</li>
+			<li>Fixed reservation reminders to go to Administrative Contact or Event Contact. (Fixes #107)</li>
+			<li>Fixed reservation questions so they can be re-ordered. (Fixes #94)</li>
+			<li>Fixed a bug with the API ~/api/Reservations/GetReservationOccurrences. (Fixes #89)</li>
+		</ul>
+	</li>
+	
+	<li> v1.3.3 - 4/11/2019
+		<ul>
+			<li>ReservationWorkflowTrigger no longer required for ReservationWorkflows. (Fixes #81)</li>
+			<li>Location Picker now correctly greys out reserved rooms. (Fixes #114)</li>
+			<li>Added ability to specify additional users / roles to give delete reservation access to.</li>
+			<li>Fixed bug where any person making changes to an approved reservation would be set as the approver.</li>
+			<li>Reservation Detail now blocks people from adding the same resource / location twice.</li>
+			<li>Reservation detail now correctly removes approval from copied resources and locations.</li>
+			<li>Ministry dropdown now only lists ministries for the specified Reservation Type.</li>
+		</ul>
+	</li>
+
+	<li> v1.3.2 - 10/16/2018
+		<ul>
+			<li>Fixed problem with some people not being able to create reservations when the super admin group or final approval group was enabled. (Fixes #91)</li>
+			<li>Solved bug where triggers were firing on reservations not associated with the trigger's reservation type</li>
+			<li>Added the 'FriendlyReservationTime' property to Reservation so that using the 'execute' lava function is no longer needed to get the schedule and duration.</li>
+		</ul>
+	</li>
+
+	<li> v1.3.1 - 9/16/2018
+		<ul>
+			<li>New reservation 'change history' shows what changes have been made to a reservation since it was created.</li>
+			<li>New 'view mode' allows viewing a reservation without necessarily being able to edit it.</li>
+			<li>Added additional filtering reservations by location and/or resource on the main page.</li>
+			<li>New Reservation Types for managing different kinds of reservations.</li>
+			<li>New report template configuration allows you to customize printable reports using Lava or custom code.</li>
+			<li>New 'copy reservation' feature allows making a copy of a complex reservation that can be modified as needed.</li>
+			<li>New 'save then add' feature to allow adding multiple locations or resources to a reservation quicker.</li>
+			<li>Added ability to 'manually launch configured workflows' -- useful for creating custom actions for an existing reservation.</li>
+			<li>Fixed a bug with incorrect resource quantity showing in the resource picker (Fixes #73).</li>
+			<li>Don't show inactive campuses in the campus filter.</li>
+			<li>Added more reservation fields (EventContactPersonAlias, EventContactEmail, EventContactPhoneNumber, and MinistryName) that can be displayed with custom Reservation.lava.</li>
+			<li>Added support for getting the "Note" and Requester's PersonAlias value into the ReservationSummary for use with Reservation.lava.</li>
+			<li> Inactive Locations no longer shown on the Available Resources block (Fixes #80).</li>
+			<li>A variety of small bug fixes
+					<div class="alert alert-info">
+					<b>NOTE:</b> With the new view and/or edit capability, the staff worker role has administrate access
+					with the new Standard Reservation type.  This was done in order to
+					maintain functionality with the previous releases. If you wish to limit staff to only edit reservations that they created or
+					that they are the administrative contact for you can change the security on the Standard Reservation Type so the Staff role only has Edit access.</div>
+			</li>
+		</ul>
+	</li>
+
+	<li> v1.2.2 - 3/12/2018
+		<ul>
+			<li>Fixed bug that was preventing the reservation "duration" from being computed due to the EnabledLavaCommands not being passed to the new Rock v7 Send() methods.</li>
+			<li>Fixes the bug where the Location's attribute values are not being set in the edit control.</li>
+			<li>Fixes issue where people in the Final Approval Group can't approve reservations.</li>
+			<li>Updated ReservationLava to be compatible with Rock v7.</li>
+			<li>Updated ReservationChangeTransaction to use WorkflowTypeCache instead of WorkflowType objects.</li>
+		</ul>
+	</li>
+
+	<li> v1.2.1 - 1/25/2018
+		<ul>
+			<li>Fixed a bug in the stock Approval workflow (<a href="https://github.com/CentralAZ/Rock-CentralAZ/issues/63">Fixes #63</a>).</li>
+
+			<li>Improved reservation entry to keep focus on campus field when selecting a different campus.</li>
+			<li>Improved performance when viewing/loading complex reserations.</li>
+		</ul>
+	</li>
+
+	<li> v1.2.0 - 11/22/2017
+		<ul>
+			<li>Added more details about locations or resources that are already reserved when trying to save a new reservation.</li>
+			<li>Added "Copy Questions From..." feature on Resource and Location Questions.</li>
+			<li>Fixed bugs regarding reservations that were in confict with other parent or child locations.</li>
+			<li>Fixed filters on Search Reservations and Available Reservations pages.</li>
+			<li>Changes to improve performance during certain operations.</li>
+			<li>Changed Reservation Detail event contact to select the person's cell phone first (if any), or home, or work.</li>
+			<li>Made the Event Contact required for reservations but this can be changed via block settings.</li>
+			<li>Fixed a bug that was preventing the Approval workflow from getting the reservation correctly.</li>
+			<li>Fixed css for printing so that it more closely matches a reasonable screen size.</li>
+			<li>Various other bug fixes.</li>
+		</ul>
+	</li>
+	<li> v1.1.1 - 10/04/2017
+		<ul>
+			<li>Added Questions and Answers feature on Reservation Resources and Locations.</li>
+			<li>Changed reservation formatting (Reservation.lava) to use tables for better alignment on screen.</li>
+			<li>Added approval completion indicators on the main reservations list (via Lava).</li>
+			<li>Fixed a problem with Reservation approval where the Final Approval Group was not being honored.</li>
+		</ul>
+	</li>
+	<li> v1.0.1 - 9/11/2017
+		<ul>
+			<li>Fixed a problem with the sample data that would occur if someone had deleted their Main campus (Id 1).</li>
+		</ul>
+	</li>
+	<li> v1.0.0 - 8/28/2017
+	   <ul>
+	       <li>Initial release.</li>
+	   </ul>
+	</li>
+</ul>
