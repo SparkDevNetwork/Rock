@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Quartz.Util;
 using Rock.Plugin;
 
 namespace com.bemaservices.RoomManagement.Migrations
@@ -31,10 +32,10 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             // Page: Room Management
-            RockMigrationHelper.AddPage( "7F2581A1-941E-4D51-8A9D-5BE9B881B003", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Room Management", "", "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation Lava", "Renders a list of reservations in lava.", "~/Plugins/com_bemaservices/RoomManagement/ReservationLava.ascx", "com_bemaservices > Room Management", "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635" );
-            RockMigrationHelper.AddBlock( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Feature", "", "", 0, "AF897B42-21AA-4A56-B0D7-9E5303D4CE53" );
-            RockMigrationHelper.AddBlock( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "", "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635", "Reservation Lava", "Main", "", "", 0, "F71B7715-EBF5-4CDF-867E-B1018B2AECD5" );
+            RockMigrationHelper.AddPage( true, "7F2581A1-941E-4D51-8A9D-5BE9B881B003", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Room Management", "", "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Lava", "Renders a list of reservations in lava.", "~/Plugins/com_bemaservices/RoomManagement/ReservationLava.ascx", "com_bemaservices > Room Management", "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635" );
+            RockMigrationHelper.AddBlock( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Feature", "", "", 0, "AF897B42-21AA-4A56-B0D7-9E5303D4CE53" );
+            RockMigrationHelper.AddBlock( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "", "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635", "Reservation Lava", "Main", "", "", 0, "F71B7715-EBF5-4CDF-867E-B1018B2AECD5" );
             RockMigrationHelper.AddBlockTypeAttribute( "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Default View Option", "DefaultViewOption", "", "Determines the default view option", 1, @"Week", "FFCF0C2C-8FEA-4851-AB0D-D72F50B375EC" );
             RockMigrationHelper.AddBlockTypeAttribute( "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Details Page", "DetailsPage", "", "Detail page for events", 2, @"", "DB7FBF03-B31F-4695-804C-EE93DC411621" );
             RockMigrationHelper.AddBlockTypeAttribute( "D0EC5F69-5BB1-4BCA-B0F0-3FE2B9267635", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Campus Filter Display Mode", "CampusFilterDisplayMode", "", "", 3, @"1", "C9C37A37-06E1-4EB7-A63F-9F7C51319A94" );
@@ -72,26 +73,26 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "F71B7715-EBF5-4CDF-867E-B1018B2AECD5", "90B5D912-8506-4C3D-89E2-8A91512BB30D", @"0" ); // Start of Week Day
 
             // Page: New Reservation
-            RockMigrationHelper.AddPage( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "New Reservation", "", "4CBD2B96-E076-46DF-A576-356BCA5E577F", "" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation Detail", "Block for viewing a reservation detail", "~/Plugins/com_bemaservices/RoomManagement/ReservationDetail.ascx", "com_bemaservices > Room Management", "C938B1DE-9AB3-46D9-AB28-57BFCA362AEB" );
-            RockMigrationHelper.AddBlock( "4CBD2B96-E076-46DF-A576-356BCA5E577F", "", "C938B1DE-9AB3-46D9-AB28-57BFCA362AEB", "Reservation Detail", "Main", "", "", 0, "65091E04-77CE-411C-989F-EAD7D15778A0" );
+            RockMigrationHelper.AddPage( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "New Reservation", "", "4CBD2B96-E076-46DF-A576-356BCA5E577F", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Detail", "Block for viewing a reservation detail", "~/Plugins/com_bemaservices/RoomManagement/ReservationDetail.ascx", "com_bemaservices > Room Management", "C938B1DE-9AB3-46D9-AB28-57BFCA362AEB" );
+            RockMigrationHelper.AddBlock( true, "4CBD2B96-E076-46DF-A576-356BCA5E577F", "", "C938B1DE-9AB3-46D9-AB28-57BFCA362AEB", "Reservation Detail", "Main", "", "", 0, "65091E04-77CE-411C-989F-EAD7D15778A0" );
             Sql( "UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '4CBD2B96-E076-46DF-A576-356BCA5E577F'" );
 
             // Page: Search Reservations
-            RockMigrationHelper.AddPage( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Search Reservations", "", "1C58D731-F590-4AAC-8B8C-FD42B428B69A", "" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation List", "Block for viewing a list of reservations.", "~/Plugins/com_bemaservices/RoomManagement/ReservationList.ascx", "com_bemaservices > Room Management", "8169F541-9544-4A41-BD90-0DC2D0144AFD" );
-            RockMigrationHelper.AddBlock( "1C58D731-F590-4AAC-8B8C-FD42B428B69A", "", "8169F541-9544-4A41-BD90-0DC2D0144AFD", "Reservation List", "Main", "", "", 0, "4D4882F8-5ACC-4AE1-BC75-4FFDDA26F270" );
+            RockMigrationHelper.AddPage( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Search Reservations", "", "1C58D731-F590-4AAC-8B8C-FD42B428B69A", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation List", "Block for viewing a list of reservations.", "~/Plugins/com_bemaservices/RoomManagement/ReservationList.ascx", "com_bemaservices > Room Management", "8169F541-9544-4A41-BD90-0DC2D0144AFD" );
+            RockMigrationHelper.AddBlock( true, "1C58D731-F590-4AAC-8B8C-FD42B428B69A", "", "8169F541-9544-4A41-BD90-0DC2D0144AFD", "Reservation List", "Main", "", "", 0, "4D4882F8-5ACC-4AE1-BC75-4FFDDA26F270" );
             RockMigrationHelper.AddBlockTypeAttribute( "8169F541-9544-4A41-BD90-0DC2D0144AFD", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"4cbd2b96-e076-46df-a576-356bca5e577f", "3DD653FB-771D-4EE5-8C75-1BF1B6F773B8" );
 
             // Page: Available Resources
-            RockMigrationHelper.AddPage( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Available Resources", "", "81CC9A85-06F6-43B9-8476-9DF8A987EF55", "" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Availability List", "Block for viewing the availability of resources.", "~/Plugins/com_bemaservices/RoomManagement/AvailabilityList.ascx", "com_bemaservices > Room Management", "2A01E437-AB13-47B0-B3D4-96915801B693" );
-            RockMigrationHelper.AddBlock( "81CC9A85-06F6-43B9-8476-9DF8A987EF55", "", "2A01E437-AB13-47B0-B3D4-96915801B693", "Availability List", "Main", "", "", 0, "1B4F3A33-656B-4FCB-A446-D481782DE8B4" );
+            RockMigrationHelper.AddPage( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Available Resources", "", "81CC9A85-06F6-43B9-8476-9DF8A987EF55", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Availability List", "Block for viewing the availability of resources.", "~/Plugins/com_bemaservices/RoomManagement/AvailabilityList.ascx", "com_bemaservices > Room Management", "2A01E437-AB13-47B0-B3D4-96915801B693" );
+            RockMigrationHelper.AddBlock( true, "81CC9A85-06F6-43B9-8476-9DF8A987EF55", "", "2A01E437-AB13-47B0-B3D4-96915801B693", "Availability List", "Main", "", "", 0, "1B4F3A33-656B-4FCB-A446-D481782DE8B4" );
             RockMigrationHelper.AddBlockTypeAttribute( "2A01E437-AB13-47B0-B3D4-96915801B693", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"4cbd2b96-e076-46df-a576-356bca5e577f", "85ECB608-B64E-43C0-986C-FC8FD38F9D81" );
 
             // Page: Admin Tools
-            RockMigrationHelper.AddPage( "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Admin Tools", "", "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "" ); // Site:Rock RMS
-            RockMigrationHelper.AddBlock( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Main", "", "", 0, "41639D13-F7A6-45FE-BF32-2F17371A181C" );
+            RockMigrationHelper.AddPage( true, "7638AF8B-E4C0-4C02-93B8-72A829ECACDB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Admin Tools", "", "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "" ); // Site:Rock RMS
+            RockMigrationHelper.AddBlock( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Main", "", "", 0, "41639D13-F7A6-45FE-BF32-2F17371A181C" );
             RockMigrationHelper.AddBlockAttributeValue( "41639D13-F7A6-45FE-BF32-2F17371A181C", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" ); // CSS File
             RockMigrationHelper.AddBlockAttributeValue( "41639D13-F7A6-45FE-BF32-2F17371A181C", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"False" ); // Include Current Parameters
             RockMigrationHelper.AddBlockAttributeValue( "41639D13-F7A6-45FE-BF32-2F17371A181C", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageListAsBlocks.lava' %}" ); // Template
@@ -103,33 +104,38 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "41639D13-F7A6-45FE-BF32-2F17371A181C", "0A49DABE-42EE-40E5-9E06-0E6530944865", @"" ); // Include Page List
 
             // Page: Resources
-            RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resources", "", "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "fa fa-lightbulb-o" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Resource List", "Block for viewing a list of resources.", "~/Plugins/com_bemaservices/RoomManagement/ResourceList.ascx", "com_bemaservices > Room Management", "84F92545-49C5-4FF6-A7B1-099A9662F42D" );
-            RockMigrationHelper.AddBlock( "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "", "84F92545-49C5-4FF6-A7B1-099A9662F42D", "Resource List", "Main", "", "", 0, "BFFDFD88-EA8D-47D1-80F0-4B0D05523E69" );
+            RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resources", "", "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "fa fa-lightbulb-o" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Resource List", "Block for viewing a list of resources.", "~/Plugins/com_bemaservices/RoomManagement/ResourceList.ascx", "com_bemaservices > Room Management", "84F92545-49C5-4FF6-A7B1-099A9662F42D" );
+            RockMigrationHelper.AddBlock( true, "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "", "84F92545-49C5-4FF6-A7B1-099A9662F42D", "Resource List", "Main", "", "", 0, "BFFDFD88-EA8D-47D1-80F0-4B0D05523E69" );
             RockMigrationHelper.AddBlockTypeAttribute( "84F92545-49C5-4FF6-A7B1-099A9662F42D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "0C023434-43B7-4086-B469-B541FE47561C" );
             RockMigrationHelper.AddBlockAttributeValue( "BFFDFD88-EA8D-47D1-80F0-4B0D05523E69", "0C023434-43B7-4086-B469-B541FE47561C", @"b75a0c7e-4a15-4892-a857-bade8b5dd4ca" ); // Detail Page
             Sql( "UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '15EDB2B6-BB6B-431E-A9AA-829489D87EDD'" );
 
             // Page: Resource Categories
-            RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resource Categories", "", "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "fa fa-folder" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resource Categories", "", "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "fa fa-folder" ); // Site:Rock RMS
             Sql( "UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '455FFF96-AE2A-435A-B3E2-F6C32754E53A'" );
-            RockMigrationHelper.UpdateBlockType( "Categories", "Block for managing categories for a specific, configured entity type.", "~/Blocks/Core/Categories.ascx", "Core", "620FC4A2-6587-409F-8972-22065919D9AC" );
-            RockMigrationHelper.AddBlock( "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "", "620FC4A2-6587-409F-8972-22065919D9AC", "Categories", "Main", "", "", 0, "07FFD3C4-5E22-4026-AAE3-EABE608D316A" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Categories", "Block for managing categories for a specific, configured entity type.", "~/Blocks/Core/Categories.ascx", "Core", "620FC4A2-6587-409F-8972-22065919D9AC" );
+            RockMigrationHelper.AddBlock( true, "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "", "620FC4A2-6587-409F-8972-22065919D9AC", "Categories", "Main", "", "", 0, "07FFD3C4-5E22-4026-AAE3-EABE608D316A" );
             RockMigrationHelper.AddBlockTypeAttribute( "620FC4A2-6587-409F-8972-22065919D9AC", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "EntityType", "", "The entity type to manage categories for.", 0, @"", "C405A507-7889-4287-8342-105B89710044" );
             RockMigrationHelper.AddBlockAttributeValue( "07FFD3C4-5E22-4026-AAE3-EABE608D316A", "C405A507-7889-4287-8342-105B89710044", @"35584736-8fe2-48da-9121-3afd07a2da8d" ); // Entity Type
 
             // Page: Resource Detail
-            RockMigrationHelper.AddPage( "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resource Detail", "", "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Resource Detail", "Displays the details of the resource.", "~/Plugins/com_bemaservices/RoomManagement/ResourceDetail.ascx", "com_bemaservices > Room Management", "88C8A452-6878-4938-913F-CA3EF87D50ED" );
-            RockMigrationHelper.AddBlock( "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "", "88C8A452-6878-4938-913F-CA3EF87D50ED", "Resource Detail", "Main", "", "", 0, "89E210D9-7645-4CB8-9AE1-CB5512074D69" );
+            RockMigrationHelper.AddPage( true, "15EDB2B6-BB6B-431E-A9AA-829489D87EDD", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resource Detail", "", "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Resource Detail", "Displays the details of the resource.", "~/Plugins/com_bemaservices/RoomManagement/ResourceDetail.ascx", "com_bemaservices > Room Management", "88C8A452-6878-4938-913F-CA3EF87D50ED" );
+            RockMigrationHelper.AddBlock( true, "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "", "88C8A452-6878-4938-913F-CA3EF87D50ED", "Resource Detail", "Main", "", "", 0, "89E210D9-7645-4CB8-9AE1-CB5512074D69" );
 
             // Page: Reservation Configuration
-            RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Configuration", "", "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "fa fa-gear" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation Configuration", "Displays the details of the given Connection Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationConfiguration.ascx", "com_bemaservices > Room Management", "6931E212-A76A-4DBB-9B97-86E5CDD0793A" );
-            RockMigrationHelper.AddBlock( "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "", "6931E212-A76A-4DBB-9B97-86E5CDD0793A", "Reservation Configuration", "Main", "", "", 0, "2B864E89-27DE-41F9-A24B-8D2EA5C40D10" );
+            RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Configuration", "", "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "fa fa-gear" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Configuration", "Displays the details of the given Connection Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationConfiguration.ascx", "com_bemaservices > Room Management", "6931E212-A76A-4DBB-9B97-86E5CDD0793A" );
+            RockMigrationHelper.AddBlock( true, "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "", "6931E212-A76A-4DBB-9B97-86E5CDD0793A", "Reservation Configuration", "Main", "", "", 0, "2B864E89-27DE-41F9-A24B-8D2EA5C40D10" );
 
             // Add Security
-            RockMigrationHelper.AddSecurityRoleGroup( "RSR - Room Management Administration", "Group of individuals who can administration the custom Room Management module.", "FBE0324F-F29A-4ACF-8EC3-5386C5562D70" );
+            var adminGroupId = SqlScalar( "Select Top 1 Id From [Group] Where Guid = 'FBE0324F-F29A-4ACF-8EC3-5386C5562D70'" ).ToString();
+            if ( adminGroupId.IsNullOrWhiteSpace() )
+            {
+                RockMigrationHelper.AddSecurityRoleGroup( "RSR - Room Management Administration", "Group of individuals who can administration the custom Room Management module.", "FBE0324F-F29A-4ACF-8EC3-5386C5562D70" );
+            }
+
             RockMigrationHelper.AddSecurityAuthForPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", 0, "View", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS, 0, "BB566890-2A22-40CA-ACD3-F8EB3EC51860" );
             RockMigrationHelper.AddSecurityAuthForPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", 1, "View", true, "FBE0324F-F29A-4ACF-8EC3-5386C5562D70", 0, "404EEA33-5551-4048-9A04-D9AEAA0B18B0" );
             RockMigrationHelper.AddSecurityAuthForPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", 2, "View", false, "", 1, "56FF0CCC-8129-4228-9060-206589A62B23" );
@@ -161,7 +167,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.DeleteBlock( "BFFDFD88-EA8D-47D1-80F0-4B0D05523E69" );
             RockMigrationHelper.DeleteBlockType( "84F92545-49C5-4FF6-A7B1-099A9662F42D" );
             RockMigrationHelper.DeletePage( "15EDB2B6-BB6B-431E-A9AA-829489D87EDD" ); //  Page: Resources
-                     
+
             RockMigrationHelper.DeleteBlock( "41639D13-F7A6-45FE-BF32-2F17371A181C" );
             RockMigrationHelper.DeletePage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40" ); //  Page: Admin Tools
 

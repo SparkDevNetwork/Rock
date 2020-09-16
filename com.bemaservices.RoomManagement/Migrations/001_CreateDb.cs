@@ -155,15 +155,15 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_RequesterAliasId] 
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation]  WITH CHECK ADD  CONSTRAINT [FK_dbo.Reservation_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation] CHECK CONSTRAINT [FK_dbo.Reservation_dbo.PersonAlias_CreatedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_CreatedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation]  WITH CHECK ADD  CONSTRAINT [FK_dbo.Reservation_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation] CHECK CONSTRAINT [FK_dbo.Reservation_dbo.PersonAlias_ModifiedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Reservation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_ModifiedByPersonAliasId]
 " );
             Sql( @"
 
@@ -198,15 +198,15 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_Campus]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK_dbo.Resource_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] CHECK CONSTRAINT [FK_dbo.Resource_dbo.PersonAlias_CreatedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_CreatedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK_dbo.Resource_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] CHECK CONSTRAINT [FK_dbo.Resource_dbo.PersonAlias_ModifiedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_ModifiedByPersonAliasId]
 " );
             Sql( @"
 
@@ -240,15 +240,15 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationResource_Resource]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationResource_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_CreatedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationResource_CreatedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationResource_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Reservation_ModifiedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationResource] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationResource_ModifiedByPersonAliasId]
 
 " );
             Sql( @"
@@ -281,15 +281,15 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocation_Location]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation]  WITH CHECK ADD  CONSTRAINT [FK_dbo.ReservationLocation_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocation_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation] CHECK CONSTRAINT [FK_dbo.ReservationLocation_dbo.PersonAlias_CreatedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocation_CreatedByPersonAliasId]
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation]  WITH CHECK ADD  CONSTRAINT [FK_dbo.ReservationLocation_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation]  WITH CHECK ADD  CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocation_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation] CHECK CONSTRAINT [FK_dbo.ReservationLocation_dbo.PersonAlias_ModifiedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocation] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocation_ModifiedByPersonAliasId]
 " );
             Sql( @"
 
@@ -378,16 +378,16 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationWorkflow] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationWorkflow_WorkflowId]
 " );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.Reservation", "839768A3-10D6-446C-A65B-B8F9EFD7808F", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationLocation", "07084E96-2907-4741-80DF-016AB5981D12", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationMinistry", "5DFCA44E-7090-455C-8C7B-D02CF6331A0F", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationResource", "A9A1F735-0298-4137-BCC1-A9117B6543C9", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationStatus", "5241B2B1-AEF2-4EB9-9737-55604069D93B", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationWorkflow", "3660E6A9-B3DA-4CCB-8FC8-B182BC1A2587", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationWorkflowTrigger", "CD0C935B-C3EF-465B-964E-A3AB686D8F51", true, true );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.Resource", "35584736-8FE2-48DA-9121-3AFD07A2DA8D", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Reservation", "839768A3-10D6-446C-A65B-B8F9EFD7808F", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationLocation", "07084E96-2907-4741-80DF-016AB5981D12", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationMinistry", "5DFCA44E-7090-455C-8C7B-D02CF6331A0F", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationResource", "A9A1F735-0298-4137-BCC1-A9117B6543C9", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationStatus", "5241B2B1-AEF2-4EB9-9737-55604069D93B", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationWorkflow", "3660E6A9-B3DA-4CCB-8FC8-B182BC1A2587", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationWorkflowTrigger", "CD0C935B-C3EF-465B-964E-A3AB686D8F51", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Resource", "35584736-8FE2-48DA-9121-3AFD07A2DA8D", true, true );
 
-            RockMigrationHelper.UpdateFieldType( "ReservationStatuses", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationStatusesFieldType", "335E190C-88FE-4BE2-BE36-3F8B85AF39F2" );
+            UpdateFieldTypeByGuid( "ReservationStatuses", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationStatusesFieldType", "335E190C-88FE-4BE2-BE36-3F8B85AF39F2" );
         }
 
         /// <summary>
@@ -455,6 +455,85 @@ namespace com.bemaservices.RoomManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationStatus] DROP CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationStatus_CreatedByPersonAliasId]
                 DROP TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationStatus]
 " );
+        }
+
+        public void UpdateEntityTypeByGuid( string name, string guid, bool isEntity, bool isSecured )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [EntityType] SET
+                        [IsEntity] = {1},
+                        [IsSecured] = {2},
+                        [Name] = '{0}'
+                    WHERE [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                    BEGIN
+                        UPDATE [EntityType] SET
+                            [IsEntity] = {1},
+                            [IsSecured] = {2},
+                            [Guid] = '{3}'
+                        WHERE [Name] = '{0}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [EntityType] ([Name], [IsEntity], [IsSecured], [IsCommon], [Guid])
+                        VALUES ('{0}', {1}, {2}, 0, '{3}')
+                    END
+                END
+",
+                name,
+                isEntity ? "1" : "0",
+                isSecured ? "1" : "0",
+                guid ) );
+        }
+
+        public void UpdateFieldTypeByGuid( string name, string description, string assembly, string className, string guid, bool IsSystem = true )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [FieldType] WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [FieldType] SET
+                        [Name] = '{0}',
+                        [Description] = '{1}',
+                        [Guid] = '{4}',
+                        [IsSystem] = {5},
+                        [Assembly] = '{2}',
+                        [Class] = '{3}'
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Id int
+                    SET @Id = (SELECT [Id] FROM [FieldType] WHERE [Assembly] = '{2}' AND [Class] = '{3}')
+                    IF @Id IS NULL
+                    BEGIN
+                        INSERT INTO [FieldType] (
+                            [Name],[Description],[Assembly],[Class],[Guid],[IsSystem])
+                        VALUES(
+                            '{0}','{1}','{2}','{3}','{4}',{5})
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE [FieldType] SET
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [Guid] = '{4}',
+                            [IsSystem] = {5}
+                        WHERE [Assembly] = '{2}'
+                        AND [Class] = '{3}'
+                    END
+                END
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    assembly,
+                    className,
+                    guid,
+                    IsSystem ? "1" : "0" ) );
         }
     }
 }
