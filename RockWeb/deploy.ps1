@@ -161,8 +161,7 @@ $params = '{
   "deployment": {
      "revision": "'+$env:APPVEYOR_BUILD_VERSION+'",
      "description": "Appveyor Deployment",
-     "user": "AppveyorCI",
-     "timestamp": "'+$(Get-Date -f s)+'"
+     "user": "AppveyorCI"
   }
 }'
 $path = "https://api.newrelic.com/v2/applications/$env:NEWRELIC_APP_ID/deployments.json"
