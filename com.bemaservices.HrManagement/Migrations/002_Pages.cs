@@ -264,6 +264,8 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "060395F3-DA4C-481B-B53F-4B915C74697F", "FA8C97BF-DA0E-4EDE-8C7D-9D4FBF710D12", @"False" );
             // Attrib Value for Block:Pto Request List, Attribute:PTO Request Workflow Page: Human Resources, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "060395F3-DA4C-481B-B53F-4B915C74697F", "0A159929-0871-4115-AB10-C4943EAA5A7C", @"ebf1d986-8bbd-4888-8a7e-43af5914751c" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "B4BA7334-890C-4569-B33B-555713E42E58", "{% include '~/Plugins/com_bemaservices/HrManagement/Assets/Lava/TimeOffSummary.lava' %}", "B9CD5B95-DEBA-4D8C-B9CB-CBA3F6BC9D77" );
             // Add/Update PageContext for Page:Human Resources, Entity: Rock.Model.Person, Parameter: PersonId
             RockMigrationHelper.UpdatePageContext( "34A9F1E4-8249-4F39-B861-F28210E8C70A", "Rock.Model.Person", "PersonId", "ED667F0F-B9F1-4D14-8076-69F7F1C72DE2" );
 
@@ -281,6 +283,49 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddSecurityAuthForBlock( "597C5907-D760-4C6C-8E0D-98F67A6DEB72", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "A4561B3D-E14F-4E3F-B212-917122EC9E79" );
             RockMigrationHelper.AddSecurityAuthForBlock( "61B8867D-07E4-4486-9858-B09C9ED90C1B", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "42697E5A-288C-4552-8DBA-F6E7694009C0" );
 
+            // Page: PTO Requests
+            RockMigrationHelper.AddPage( "F159FB38-FEF9-4F08-8A5C-5E112B1DD88F", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "PTO Requests", "", "CB752D0E-BEBD-4001-92C0-63EA3B0B0B60", "fa fa-clock" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Pto Request List", "Lists all the pto requests.", "~/Plugins/com_bemaservices/HrManagement/PtoRequestList.ascx", "BEMA Services > HR Management", "7DBC964F-C656-4015-8E5B-E99C3A65AE26" );
+            // Add Block to Page: PTO Requests, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "CB752D0E-BEBD-4001-92C0-63EA3B0B0B60", "", "7DBC964F-C656-4015-8E5B-E99C3A65AE26", "Pto Request List", "Main", "", "", 0, "FD58CCE6-50F5-4EE8-8C79-2D304A1ACF91" );
+            // Attrib for BlockType: Pto Request List:Entity Type
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "ContextEntityType", "", "The type of entity that will provide context for this block", 0, @"", "65BCE14E-C8C9-45B1-A063-D2EBE0A753C5" );
+            // Attrib for BlockType: Pto Request List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "06D0BBF8-EDD6-4783-9038-932A998FDCCD" );
+            // Attrib for BlockType: Pto Request List:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "FA8C97BF-DA0E-4EDE-8C7D-9D4FBF710D12" );
+            // Attrib for BlockType: Pto Request List:PTO Request Workflow
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", "46A03F59-55D3-4ACE-ADD5-B4642225DD20", "PTO Request Workflow", "PTORequestWorkflow", "", "The Workflow used to add, modify, and delete pto requests.", 0, @"EBF1D986-8BBD-4888-8A7E-43AF5914751C", "0A159929-0871-4115-AB10-C4943EAA5A7C" );
+
+            // Page: Employee List
+            RockMigrationHelper.AddPage( "F159FB38-FEF9-4F08-8A5C-5E112B1DD88F", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Employee List", "", "25D0F177-86CF-4C10-9A4D-695E22A357C4", "fa fa-users" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "HR Employee List", "Lists all the employees along with their PTO information.", "~/Plugins/com_bemaservices/HrManagement/HrEmployeeList.ascx", "BEMA Services > HR Management", "601C2443-C67D-4D4F-9CA2-D42AF186D5EB" );
+            // Add Block to Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "25D0F177-86CF-4C10-9A4D-695E22A357C4", "", "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "HR Employee List", "Main", "", "", 0, "CA7CC1DE-1B27-4972-8D71-086278C6EEED" );
+            // Attrib for BlockType: HR Employee List:Person Hired Date Attribute
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Person Hired Date Attribute", "HireDate", "", "The Person Attribute that contains the Person's Hired Date.  This will be used to determine if the person is currently staff or not.", 0, @"", "D9436CCA-BD78-49F0-88F6-27262C0E6372" );
+            // Attrib for BlockType: HR Employee List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "30E50E69-C0C3-4193-B096-15851854D9DC" );
+            // Attrib for BlockType: HR Employee List:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "52603F66-1CAE-4860-9F56-35061441B6EF" );
+            // Attrib for BlockType: HR Employee List:Person Fired Date Attribute
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Person Fired Date Attribute", "FireDate", "", "The Person Attribute that contains the Person's Fired Date.  This will be used to determine if the person is currently staff or not.", 1, @"", "CE9D4482-8130-45FF-BA04-5E95FA231C35" );
+            // Attrib for BlockType: HR Employee List:Person Supervisor Attribute
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Person Supervisor Attribute", "Supervisor", "", "The Person Attribute that contains the Person's Supervisor.", 2, @"", "B0EF7BA8-E480-4C66-9EDB-729721020CCA" );
+            // Attrib for BlockType: HR Employee List:Person Ministry Area Attribute
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Person Ministry Area Attribute", "MinistryArea", "", "The Person Attribute that contains the Person's Ministry Area.", 3, @"", "77BCA48F-B955-4FEE-9564-796AB28596B6" );
+            // Attrib for BlockType: HR Employee List:Detail Page
+            RockMigrationHelper.UpdateBlockTypeAttribute( "601C2443-C67D-4D4F-9CA2-D42AF186D5EB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 4, @"", "1096F3B7-4CF9-44B8-9E4F-CAA44CCC2BD1" );
+            // Attrib Value for Block:HR Employee List, Attribute:Person Fired Date Attribute Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "CA7CC1DE-1B27-4972-8D71-086278C6EEED", "CE9D4482-8130-45FF-BA04-5E95FA231C35", @"10ce7b9c-3d65-4f11-ae7d-dd23c5e5189c" );
+            // Attrib Value for Block:HR Employee List, Attribute:Person Hired Date Attribute Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "CA7CC1DE-1B27-4972-8D71-086278C6EEED", "D9436CCA-BD78-49F0-88F6-27262C0E6372", @"ccbf546c-41de-41af-9426-4a385d8d9663" );
+            // Attrib Value for Block:HR Employee List, Attribute:Person Supervisor Attribute Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "CA7CC1DE-1B27-4972-8D71-086278C6EEED", "B0EF7BA8-E480-4C66-9EDB-729721020CCA", @"67afd5a3-28f3-404f-a3b8-88630061f294" );
+            // Attrib Value for Block:HR Employee List, Attribute:Person Ministry Area Attribute Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "CA7CC1DE-1B27-4972-8D71-086278C6EEED", "77BCA48F-B955-4FEE-9564-796AB28596B6", @"" );
+            // Attrib Value for Block:HR Employee List, Attribute:core.CustomGridEnableStickyHeaders Page: Employee List, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "CA7CC1DE-1B27-4972-8D71-086278C6EEED", "52603F66-1CAE-4860-9F56-35061441B6EF", @"False" );
         }
 
         /// <summary>
