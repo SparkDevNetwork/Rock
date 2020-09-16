@@ -154,7 +154,22 @@ $accessRule= New-Object System.Security.AccessControl.FileSystemAccessRule("Ever
 $acl.AddAccessRule($accessRule)
 Set-Acl "$webroot\App_Data\Run.Migration" $acl
 
-### 6. Restart Server and App Pool
+### 6. Record Deployment Marker in New Relic
+
+Write-Host "Recording Deployment in New Relic"
+$params = '{
+  "deployment": {
+     "revision": "'+$env:APPVEYOR_BUILD_VERSION+'",
+     "description": "Appveyor Deployment",
+     "user": "AppveyorCI",
+     "timestamp": "'+$(Get-Date -f s)+'"
+  }
+}'
+$path = "https://api.newrelic.com/v2/applications/$env:NEWRELIC_APP_ID/deployments.json"
+
+Invoke-WebRequest -Uri $path -Method POST -Headers @{'X-Api-Key'=$env:NEWRELIC_API_KEY} -ContentType 'application/json' -Body $params
+
+### 7. Restart Server and App Pool
 
 # start web publishing service
 Write-Host "Starting Web Publishing Service"
@@ -165,7 +180,7 @@ Write-Host "Starting ApplicationPool and Website"
 Start-WebAppPool -Name (Get-Website -Name "$env:APPLICATION_SITE_NAME").applicationPool
 Start-Website -Name "$env:APPLICATION_SITE_NAME"
 
-### 7. Cleanup
+### 8. Cleanup
 
 # delete deploy scripts
 If (Test-Path "$webroot\deploy.ps1"){

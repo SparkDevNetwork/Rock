@@ -95,6 +95,7 @@ write-output "$(Get-Date -Format G) Continuing on..."
 
 Write-Host "Saving server-specific files";
 
+Backup-RockFile "newrelic.config"
 Backup-RockFile "web.config"
 Backup-RockFile "web.connectionstrings.config"
 Backup-RockFile "Assets\Fonts\FontAwesome"
