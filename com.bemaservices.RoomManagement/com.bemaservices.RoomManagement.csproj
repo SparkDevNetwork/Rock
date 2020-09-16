@@ -185,6 +185,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="builds\.version" />
+    <None Include="builds\install\deletefile.lst" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -222,6 +224,7 @@
       <CopyFiles Include="$(OutputPath)com.bemaservices.RoomManagement.dll;$(OutputPath)itextsharp.dll;$(OutputPath)com.bemaservices.RoomManagement.xml" />
       <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\RoomManagement\**\*.*" />
       <VersionFile Include="builds\.version" />
+      <InstallFile Include="builds\install\deletefile.lst" />
     </ItemGroup>
     <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
     <MakeDir Directories="$(BuildDir)\tmp\content" Condition="!Exists('$(BuildDir)\tmp\content')" />
@@ -232,7 +235,9 @@
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
     <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\RoomManagement\%(RecursiveDir)%(Filename)%(Extension)')" />
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
+    <!--Copy SourceFiles="@(InstallFile)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\install\%(RecursiveDir)%(Filename)%(Extension)')" -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
+    <Copy SourceFiles="@(InstallFile)" DestinationFolder="$(BuildDir)\tmp\install" />
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
   </Target>
   <!-- Create the package zip file -->
