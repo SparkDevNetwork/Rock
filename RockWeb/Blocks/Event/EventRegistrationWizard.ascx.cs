@@ -1014,7 +1014,7 @@ namespace RockWeb.Blocks.Event
             }
 
 
-            var registrationTemplates = registrationTemplateQuery.ToList();
+            var registrationTemplates = registrationTemplateQuery.ToList().OrderBy( r => r.Name );
             ddlTemplate.DataSource = registrationTemplates;
             ddlTemplate.DataBind();
         }
