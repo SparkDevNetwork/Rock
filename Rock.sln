@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1022
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
@@ -147,6 +147,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.ClientPackage.VOCH", "com.bemaservices.ClientPackage.VOCH\com.bemaservices.ClientPackage.VOCH.csproj", "{F8A8D100-48E5-4020-A8AC-1406E59B01AE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.ClientTools", "com.bemaservices.ClientTools\com.bemaservices.ClientTools.csproj", "{8233726C-9303-4784-84C7-EE9379F668DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement\com.bemaservices.RoomManagement.csproj", "{E3C37E39-0DAE-4826-B38F-EB6A4D23842F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -394,6 +396,10 @@ Global
 		{8233726C-9303-4784-84C7-EE9379F668DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8233726C-9303-4784-84C7-EE9379F668DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8233726C-9303-4784-84C7-EE9379F668DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3C37E39-0DAE-4826-B38F-EB6A4D23842F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3C37E39-0DAE-4826-B38F-EB6A4D23842F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3C37E39-0DAE-4826-B38F-EB6A4D23842F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3C37E39-0DAE-4826-B38F-EB6A4D23842F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
