@@ -22,7 +22,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to set a URL.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class UrlLinkFieldAttribute : FieldAttribute
     {
         /// <summary>
@@ -41,20 +41,38 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the true text.
+        /// Gets or sets a value indicating whether a trailing forward slash should be required.
         /// </summary>
         /// <value>
-        /// The true text.
+        ///   <c>true</c> if a trailing forward slash should be required; otherwise, <c>false</c>.
         /// </value>
         public bool ShouldRequireTrailingForwardSlash
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue("false")).Value.AsBoolean();
+                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
             }
             set
             {
                 FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the value should always show condensed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the value should always show condensed; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldAlwaysShowCondensed
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }
