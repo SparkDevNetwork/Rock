@@ -167,7 +167,7 @@ $params = '{
 $path = "https://api.newrelic.com/v2/applications/$env:NEWRELIC_APP_ID/deployments.json"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Invoke-WebRequest -Uri $path -Method POST -Headers @{'X-Api-Key'=$env:NEWRELIC_API_KEY} -ContentType 'application/json' -Body $params
+Invoke-WebRequest -Uri $path -UseBasicParsing -Method POST -Headers @{'X-Api-Key'=$env:NEWRELIC_API_KEY} -ContentType 'application/json' -Body $params
 
 ### 7. Restart Server and App Pool
 
