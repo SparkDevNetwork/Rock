@@ -210,7 +210,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 ddlKiosk.DataSource = new DeviceService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId
+                    && d.IsActive)
                     .OrderBy( d => d.Name )
                     .Select( d => new
                     {
