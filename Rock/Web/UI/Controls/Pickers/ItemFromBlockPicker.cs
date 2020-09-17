@@ -449,6 +449,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the modal CSS class.
+        /// If js hooks are needed to find this modal, this is the place to add them.
+        /// </summary>
+        /// <value>
+        /// The modal CSS class.
+        /// </value>
+        public string ModalCssClass
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pickerDialog.ModalCssClass;
+            }
+            set
+            {
+                EnsureChildControls();
+                _pickerDialog.ModalCssClass = value;
+            }
+        }
+
+        /// <summary>
         /// Shows the modal.
         /// </summary>
         public void ShowModal()
