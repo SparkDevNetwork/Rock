@@ -3162,7 +3162,10 @@ TransactionAccountDetails: [
 
             string scriptFormat = @"
     Sys.Application.add_load(function () {{
-     
+       // Prevent Scroll on Number Fields
+        $('input[type=number]').on('wheel', function(e){{
+		  return false;
+          }});
 
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
