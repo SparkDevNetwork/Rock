@@ -22,7 +22,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 13, "1.6.0" )]
+    [MigrationNumber( 13, "1.9.4" )]
     public class QuestionsAndAnswers : Migration
     {
         /// <summary>
@@ -76,7 +76,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Question] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Question_ModifiedByPersonAliasId]
 
 " );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.Question", "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35", true, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Question", "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35", true, true );
 
             // Fix bug where setup photos are added as temporary binary files
             Sql( @"UPDATE [BinaryFile]
@@ -100,6 +100,40 @@ namespace com.bemaservices.RoomManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Question] DROP CONSTRAINT [FK__com_bemaservices_RoomManagement_Question_Resource]
                 DROP TABLE [dbo].[_com_bemaservices_RoomManagement_Question]
             " );
+        }
+
+        public void UpdateEntityTypeByGuid( string name, string guid, bool isEntity, bool isSecured )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [EntityType] SET
+                        [IsEntity] = {1},
+                        [IsSecured] = {2},
+                        [Name] = '{0}'
+                    WHERE [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                    BEGIN
+                        UPDATE [EntityType] SET
+                            [IsEntity] = {1},
+                            [IsSecured] = {2},
+                            [Guid] = '{3}'
+                        WHERE [Name] = '{0}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [EntityType] ([Name], [IsEntity], [IsSecured], [IsCommon], [Guid])
+                        VALUES ('{0}', {1}, {2}, 0, '{3}')
+                    END
+                END
+",
+                name,
+                isEntity ? "1" : "0",
+                isSecured ? "1" : "0",
+                guid ) );
         }
     }
 }

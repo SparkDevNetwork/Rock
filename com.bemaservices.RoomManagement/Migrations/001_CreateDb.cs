@@ -592,5 +592,86 @@ namespace com.bemaservices.RoomManagement.Migrations
                     guid,
                     IsSystem ? "1" : "0" ) );
         }
+
+        public void UpdateEntityAttributeByGuid( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
+        {
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                key = name.Replace( " ", string.Empty );
+            }
+
+            Sql( string.Format( @"
+
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [Guid] = '{7}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [EntityTypeId] = @EntityTypeId,
+                        [EntityTypeQualifierColumn] = '{8}',
+                        [EntityTypeQualifierValue] = '{9}',
+                        [Key] = '{2}'
+                    WHERE [Guid] = '{7}'
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = '{8}'
+                    AND [EntityTypeQualifierValue] = '{9}'
+                    AND [Key] = '{2}' )
+                    BEGIN
+                        UPDATE [Attribute] SET
+                            [Name] = '{3}',
+                            [Description] = '{4}',
+                            [Order] = {5},
+                            [DefaultValue] = '{6}',
+                            [Guid] = '{7}'
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = '{8}'
+                        AND [EntityTypeQualifierValue] = '{9}'
+                        AND [Key] = '{2}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Attribute] (
+                            [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                            [Key],[Name],[Description],
+                            [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                            [Guid])
+                        VALUES(
+                            1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
+                            '{2}','{3}','{4}',
+                            {5},0,'{6}',0,0,
+                            '{7}')
+                    END
+                END
+",
+                    entityTypeName,
+                    fieldTypeGuid,
+                    key,
+                    name,
+                    description?.Replace( "'", "''" ) ?? string.Empty,
+                    order,
+                    defaultValue?.Replace( "'", "''" ) ?? string.Empty,
+                    guid,
+                    entityTypeQualifierColumn,
+                    entityTypeQualifierValue )
+            );
+        }
+
     }
 }

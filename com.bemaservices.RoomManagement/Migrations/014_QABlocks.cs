@@ -22,7 +22,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 14, "1.6.0" )]
+    [MigrationNumber( 14, "1.9.4" )]
     public class QABlocks : Migration
     {
         /// <summary>
@@ -31,11 +31,11 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             // Page: Resource Detail
-            RockMigrationHelper.UpdateBlockType( "Question List", "A list of questions tied to a resource or location", "~/Plugins/com_bemaservices/RoomManagement/QuestionList.ascx", "com_bemaservices > Room Management", "349C4CDB-713E-4E23-9628-17B9938DDFC5" );
-            RockMigrationHelper.AddBlock( "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "", "349C4CDB-713E-4E23-9628-17B9938DDFC5", "Question List", "Main", "", "", 1, "39D13192-23CC-42BE-BAEF-705DEB77EF28" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Question List", "A list of questions tied to a resource or location", "~/Plugins/com_bemaservices/RoomManagement/QuestionList.ascx", "com_bemaservices > Room Management", "349C4CDB-713E-4E23-9628-17B9938DDFC5" );
+            RockMigrationHelper.AddBlock( true, "B75A0C7E-4A15-4892-A857-BADE8B5DD4CA", "", "349C4CDB-713E-4E23-9628-17B9938DDFC5", "Question List", "Main", "", "", 1, "39D13192-23CC-42BE-BAEF-705DEB77EF28" );
 
             // Page: Named Locations
-            RockMigrationHelper.AddBlock( "2BECFB85-D566-464F-B6AC-0BE90189A418", "", "349C4CDB-713E-4E23-9628-17B9938DDFC5", "Question List", "Main", "", "", 2, "177C531A-F93D-400C-8923-624D07D7B57D" );
+            RockMigrationHelper.AddBlock( true, "2BECFB85-D566-464F-B6AC-0BE90189A418", "", "349C4CDB-713E-4E23-9628-17B9938DDFC5", "Question List", "Main", "", "", 2, "177C531A-F93D-400C-8923-624D07D7B57D" );
         }
 
         /// <summary>

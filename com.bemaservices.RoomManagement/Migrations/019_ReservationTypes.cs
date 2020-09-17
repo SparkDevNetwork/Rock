@@ -28,7 +28,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 19, "1.6.0" )]
+    [MigrationNumber( 19, "1.9.4" )]
     public class ReservationType : Migration
     {
         /// <summary>
@@ -95,7 +95,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             // Make the ReservationDetails block's attributes KNOWN Guids:
             RockMigrationHelper.UpdateBlockTypeAttribute( "C938B1DE-9AB3-46D9-AB28-57BFCA362AEB", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Contact Details", "RequireContactDetails", "", "Should the Event and Administrative Contact be required to be supplied?", 3, @"True", "1C8DE8CB-E078-4483-9648-7C2CC57E6985" );
 
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationType", "Reservation Type", "com.bemaservices.RoomManagement.Model.ReservationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "AC498297-D28C-47C0-B53B-4BF54D895DEB" );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationType", "Reservation Type", "com.bemaservices.RoomManagement.Model.ReservationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "AC498297-D28C-47C0-B53B-4BF54D895DEB" );
 
             string sqlQry = GenerateDefaultReservationTypeSql();
             Sql( sqlQry );
@@ -134,11 +134,13 @@ namespace com.bemaservices.RoomManagement.Migrations
                 " );
             RockMigrationHelper.DeleteBlock( "2B864E89-27DE-41F9-A24B-8D2EA5C40D10" );
             RockMigrationHelper.DeleteBlockType( "6931E212-A76A-4DBB-9B97-86E5CDD0793A" );
+
+            RockMigrationHelper.DeletePage( "DC6D7ACE-E23F-4CE6-9D66-A63348A1EF4E" ); //  Page: Reservation Type Detail
             RockMigrationHelper.DeletePage( "CFF84B6D-C852-4FC4-B602-9F045EDC8854" ); //  Page: Reservation Configuration
 
             // Page: Reservation Types
             RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Types", "", "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "fa fa-gear" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation Type List", "Block to display the reservation types.", "~/Plugins/com_bemaservices/RoomManagement/ReservationTypeList.ascx", "com_bemaservices > Room Management", "F28B44CF-D49D-4A45-8189-381A1F942C86" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Type List", "Block to display the reservation types.", "~/Plugins/com_bemaservices/RoomManagement/ReservationTypeList.ascx", "com_bemaservices > Room Management", "F28B44CF-D49D-4A45-8189-381A1F942C86" );
             // Add Block to Page: Reservation Types, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "", "F28B44CF-D49D-4A45-8189-381A1F942C86", "Reservation Type List", "Main", "", "", 0, "87FCDDF1-D938-4BC9-AEA3-32F2B3F86494" );
             // Attrib for BlockType: Reservation Type List:Detail Page
@@ -150,7 +152,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             // Page: Reservation Type Detail
             RockMigrationHelper.AddPage( true, "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Type Detail", "", "DC6D7ACE-E23F-4CE6-9D66-A63348A1EF4E", "" ); // Site:Rock RMS
             Sql( "UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = 'DC6D7ACE-E23F-4CE6-9D66-A63348A1EF4E'" );
-            RockMigrationHelper.UpdateBlockType( "Reservation Type Detail", "Displays the details of the given Reservation Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationTypeDetail.ascx", "com_bemaservices > Room Management", "CBAAEC6D-9B97-4FCB-96A9-5C53FB4E030E" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Type Detail", "Displays the details of the given Reservation Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationTypeDetail.ascx", "com_bemaservices > Room Management", "CBAAEC6D-9B97-4FCB-96A9-5C53FB4E030E" );
             // Add Block to Page: Reservation Type Detail, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "DC6D7ACE-E23F-4CE6-9D66-A63348A1EF4E", "", "CBAAEC6D-9B97-4FCB-96A9-5C53FB4E030E", "Reservation Type Detail", "Main", "", "", 0, "160ED605-4BC3-46FD-8C24-A1BB9AD4ECB4" );
 
@@ -180,9 +182,9 @@ namespace com.bemaservices.RoomManagement.Migrations
             }
 
             // Report Templates
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate", "Default Template", "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "9b74314a-37e0-40f2-906c-2862c93f8888" );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate", "Lava Template", "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "7ef82cca-7874-4b8d-adb7-896f05095354" );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate", "Advanced Template", "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "97a7ffda-1b75-473f-a680-c9a7602b5c60" );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate", "Default Template", "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "9b74314a-37e0-40f2-906c-2862c93f8888" );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate", "Lava Template", "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "7ef82cca-7874-4b8d-adb7-896f05095354" );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate", "Advanced Template", "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "97a7ffda-1b75-473f-a680-c9a7602b5c60" );
 
             RockMigrationHelper.AddEntityAttribute( "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "True", "D4B18C56-9D42-4B4D-A0AA-CD8A9D5D3C77" );
             RockMigrationHelper.AddAttributeValue( "D4B18C56-9D42-4B4D-A0AA-CD8A9D5D3C77", 0, "True", "9C14AD2E-596C-4768-BF60-F652F2A008B0" );
@@ -212,6 +214,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             // Attrib Value for Block:History Log, Attribute:Heading Page: New Reservation, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "A981B5ED-F5B4-41AE-96A3-2BC10CCF110B", "614CD413-DCB7-4DA2-80A0-C7ABE5A11047", @"{{ Entity.Name}} (ID:{{ Entity.Id }})" );
             // Add/Update PageContext for Page:New Reservation, Entity: com.bemaservices.RoomManagement.Model.Reservation, Parameter: ReservationId
+            RockMigrationHelper.DeletePageContext( "2C95976A-ED4F-4229-BEBA-311382A6C953" );
             RockMigrationHelper.UpdatePageContext( "4CBD2B96-E076-46DF-A576-356BCA5E577F", "com.bemaservices.RoomManagement.Model.Reservation", "ReservationId", "2C95976A-ED4F-4229-BEBA-311382A6C953" );
 
             // Security
@@ -239,7 +242,7 @@ namespace com.bemaservices.RoomManagement.Migrations
 
             // Page: Reservation Configuration
             RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Configuration", "", "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "fa fa-gear" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Reservation Configuration", "Displays the details of the given Connection Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationConfiguration.ascx", "com_bemaservices > Room Management", "6931E212-A76A-4DBB-9B97-86E5CDD0793A" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation Configuration", "Displays the details of the given Connection Type for editing.", "~/Plugins/com_bemaservices/RoomManagement/ReservationConfiguration.ascx", "com_bemaservices > Room Management", "6931E212-A76A-4DBB-9B97-86E5CDD0793A" );
             RockMigrationHelper.AddBlock( "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "", "6931E212-A76A-4DBB-9B97-86E5CDD0793A", "Reservation Configuration", "Main", "", "", 0, "2B864E89-27DE-41F9-A24B-8D2EA5C40D10" );
 
             Sql( @"
@@ -526,6 +529,63 @@ VALUES
                     actionTypeGuid,
                     value.Replace( "'", "''" ) )
             );
+        }
+
+        public void UpdateEntityTypeByGuid( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{5}' )
+                BEGIN
+                    UPDATE [EntityType] SET
+                        [FriendlyName] = '{1}',
+                        [AssemblyName] = '{2}',
+                        [IsEntity] = {3},
+                        [IsSecured] = {4},
+                        [Name] = '{0}'
+                    WHERE [Guid] = '{5}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Guid uniqueidentifier
+                    SET @Guid = (SELECT [Guid] FROM [EntityType] WHERE [Name] = '{0}')
+                    IF @Guid IS NULL
+                    BEGIN
+                        INSERT INTO [EntityType] (
+                            [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
+                        VALUES(
+                            '{0}','{1}','{2}',{3},{4},0,'{5}')
+                    END
+                    ELSE
+                    BEGIN
+
+                        UPDATE [EntityType] SET
+                            [FriendlyName] = '{1}',
+                            [AssemblyName] = '{2}',
+                            [IsEntity] = {3},
+                            [IsSecured] = {4},
+                            [Guid] = '{5}'
+                        WHERE [Name] = '{0}'
+
+                        -- Update any attribute values that might have been using entity's old guid value
+	                    DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
+	                    DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
+	                    DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+
+                        UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+	                    FROM [AttributeValue] V
+	                    INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
+	                    WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                        OPTION (RECOMPILE)
+
+                    END
+                END
+",
+                    name.Replace( "'", "''" ),
+                    friendlyName.Replace( "'", "''" ),
+                    assemblyName.Replace( "'", "''" ),
+                    isEntity ? "1" : "0",
+                    isSecured ? "1" : "0",
+                    guid ) );
         }
     }
 }
