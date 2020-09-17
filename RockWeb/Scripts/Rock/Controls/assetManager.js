@@ -27,7 +27,24 @@
                 var $deleteFolder = $assetBrowser.find('.js-deletefolder');
                 var $createFolderNotification = $assetBrowser.find('.js-createfolder-notification');
 
-                var $singleSelectControls = $assetBrowser.find('.js-singleselect');
+
+                // 2020-09-07 MDP
+                // Asset manager can be used in 3 ways.
+                // 1) An ItemFromBlockPicker control (An Asset attribute).
+                // 2) Within the HTML Editor as a summernote plugin.
+                // 3) In Home > CMS Configuration > Asset Manager.
+                // The OK/Save button is the parent modal (but different types of modals) in case 1 and 2, and without an OK/Save button in case 3.
+                // So to find all the js-singleselect items in cases 1 and 2, we'll have to look in the modal so that the OK/Save button is found
+                var $assetManagerModal = $assetBrowser.closest('.js-AssetManager-modal');
+                var $singleSelectControls;
+                if ($assetManagerModal.length) {
+                    // this would be cases #1 and #2
+                    $singleSelectControls = $assetManagerModal.find('.js-singleselect');
+                } else {
+                    // this would be case #3
+                    $singleSelectControls = $assetBrowser.find('.js-singleselect');
+                }
+
                 var $minSelectControls = $assetBrowser.find('.js-minselect');
                 var $fileCheckboxes = $assetBrowser.find('.js-checkbox');
 
