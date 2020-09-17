@@ -41,6 +41,8 @@ namespace RockWeb.Blocks.Security.Oidc
     [Description( "Displays the details of the given OpenID Connect Client." )]
     public partial class AuthClientDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
+        private const string CLIENT_SECRET_PLACE_HOLDER = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+
         private class PageParameterKeys
         {
             /// <summary>
@@ -142,10 +144,12 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 authClient = new AuthClientService( rockContext ).Get( clientId );
                 lTitle.Text = ActionTitle.Edit( "Client" ).FormatAsHtmlTitle();
+                tbClientSecret.Text = CLIENT_SECRET_PLACE_HOLDER;
             }
             else
             {
                 lTitle.Text = ActionTitle.Add( "Client" ).FormatAsHtmlTitle();
+                tbClientSecret.Text = string.Empty;
             }
 
             if ( authClient == null )
@@ -293,6 +297,12 @@ namespace RockWeb.Blocks.Security.Oidc
                 return;
             }
 
+            if ( tbClientSecret.Text.IsNullOrWhiteSpace() )
+            {
+                DisplayErrorMessage( "A Client Secret is required." );
+                return;
+            }
+
             authClient.Name = tbName.Text;
             authClient.IsActive = cbActive.Checked;
             authClient.ClientId = tbClientId.Text;
@@ -300,7 +310,7 @@ namespace RockWeb.Blocks.Security.Oidc
             authClient.RedirectUri = tbRedirectUri.Text;
             authClient.PostLogoutRedirectUri = tbPostLogoutRedirectUri.Text;
 
-            if ( tbClientSecret.Text.IsNotNullOrWhiteSpace() )
+            if ( tbClientSecret.Text != CLIENT_SECRET_PLACE_HOLDER )
             {
                 var entityTypeName = EntityTypeCache.Get<Rock.Security.Authentication.Database>().Name;
                 var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Rock.Security.Authentication.Database;
@@ -365,6 +375,23 @@ namespace RockWeb.Blocks.Security.Oidc
             /// The name of the claim public.
             /// </value>
             public string ClaimPublicName { get; set; }
+        }
+
+        protected void lbGenerateClientSecret_Click( object sender, EventArgs e )
+        {
+            tbClientSecret.Text = Rock.Utility.KeyHelper.GenerateKey( ( RockContext rockContext, string key ) =>
+            {
+                var entityTypeName = EntityTypeCache.Get<Rock.Security.Authentication.Database>().Name;
+                var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Rock.Security.Authentication.Database;
+                var encryptedClientSecret = databaseAuth.EncryptString( key );
+
+                return new AuthClientService( rockContext ).Queryable().Any( a => a.ClientSecretHash == encryptedClientSecret );
+            } );
+        }
+
+        protected void lbGenerateClientId_Click( object sender, EventArgs e )
+        {
+            tbClientId.Text = Guid.NewGuid().ToString();
         }
     }
 }
