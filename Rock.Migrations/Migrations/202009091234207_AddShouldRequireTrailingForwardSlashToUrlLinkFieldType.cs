@@ -62,11 +62,12 @@ namespace Rock.Migrations
 
         private void UpdateAttributeValues()
         {
-            var currentValue = @"{% capture assessmentsLink %}{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}/assessments?{{ Person.ImpersonationParameter }}{% endcapture %}";
+            var currentValue = @"{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}/assessments?{{ Person.ImpersonationParameter }}";
 
-            var newValue = @"{% capture assessmentsLink %}{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}assessments?{{ Person.ImpersonationParameter }}{% endcapture %}";
+            var newValue = @"{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}assessments?{{ Person.ImpersonationParameter }}";
 
-            UpdateTableColumn( "AttributeValue", "Value", currentValue, newValue );
+            UpdateTableColumn( "AttributeValue", "Value", currentValue, newValue, 
+                $"AND EXISTS(SELECT 1 FROM [Attribute] WHERE [AttributeValue].[AttributeId] = [Attribute].[Id] AND [Attribute].[Guid] = '{SystemGuid.Attribute.WORKFLOW_ACTION_SEND_EMAIL_BODY}')" );
         }
 
 
@@ -95,13 +96,14 @@ namespace Rock.Migrations
             UpdateTableColumn( "DefinedValue", "Description", currentValue, newValue );
         }
 
-        private void UpdateTableColumn( string tableName, string columnName, string currentValue, string newValue )
+        private void UpdateTableColumn( string tableName, string columnName, string currentValue, string newValue, string additionalWhere = "" )
         {
             var normalizedColumn = RockMigrationHelper.NormalizeColumnCRLF( columnName );
 
             Sql( $@"UPDATE [{tableName}]
                     SET [{columnName}] = REPLACE({normalizedColumn}, '{currentValue}', '{newValue}')
-                    WHERE {normalizedColumn} LIKE '%{currentValue}%'" );
+                    WHERE {normalizedColumn} LIKE '%{currentValue}%'
+                    {additionalWhere}" );
         }
 
         /// <summary>
