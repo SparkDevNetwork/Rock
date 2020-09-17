@@ -84,6 +84,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The SMS pipeline identifier.
         /// </value>
+        [DataMember]
         public int SmsPipelineId { get; set; }
 
         /// <summary>

@@ -210,7 +210,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 ddlKiosk.DataSource = new DeviceService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId
+                    && d.IsActive)
                     .OrderBy( d => d.Name )
                     .Select( d => new
                     {
@@ -281,7 +282,9 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Gets the name of the kiosk from ip or.
+        /// Attempts to find the Device record for this kiosk by looking
+        /// for a matching Device that has kiosk's IP Address, and optional host name
+        /// if it can't be found from IP Address.
         /// </summary>
         /// <returns></returns>
         public Device GetKioskFromIpOrName()
