@@ -28,7 +28,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 21, "1.6.0" )]
+    [MigrationNumber( 21, "1.9.4" )]
     public class LocationLayout : Migration
     {
         /// <summary>
@@ -82,7 +82,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                 REFERENCES [dbo].[_com_bemaservices_RoomManagement_LocationLayout] ([Id])
 " );
             // Page: Named Locations
-            RockMigrationHelper.UpdateBlockType( "Location Layout List", "A list of layouts tied to a location", "~/Plugins/com_bemaservices/RoomManagement/LocationLayoutList.ascx", "com_bemaservices > Room Management", "AA41242C-DF95-40E2-B184-0E024A07FDFF" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Location Layout List", "A list of layouts tied to a location", "~/Plugins/com_bemaservices/RoomManagement/LocationLayoutList.ascx", "com_bemaservices > Room Management", "AA41242C-DF95-40E2-B184-0E024A07FDFF" );
             // Add Block to Page: Named Locations, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "2BECFB85-D566-464F-B6AC-0BE90189A418","","AA41242C-DF95-40E2-B184-0E024A07FDFF","Location Layout List","Main","","",1,"BA2F9650-C9E9-4819-8293-445AC14DAD81");   
             // Attrib for BlockType: Location Layout List:Layout Image Height

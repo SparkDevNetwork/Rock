@@ -31,7 +31,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 22, "1.6.0" )]
+    [MigrationNumber( 22, "1.9.4" )]
     public class ReservationReports : Migration
     {
         /// <summary>
@@ -40,7 +40,7 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             //throw new NotImplementedException();
-            RockMigrationHelper.UpdateFieldType( "Report Template", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType", "6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8");
+            UpdateFieldTypeByGuid( "Report Template", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType", "6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8" );
 
             RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.DEFINED_TYPE, "Room Management", "", "", "731C5F16-62EA-4DE0-A1FC-6EE2263BF816" );
             RockMigrationHelper.AddDefinedType( "Room Management", "Printable Reports", "Printable Reports used by the Room Management System", "13B169EA-A090-45FF-8B11-A9E02776E35E", @"" );
@@ -87,6 +87,9 @@ namespace com.bemaservices.RoomManagement.Migrations
             var lavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
 
             var selectedDefinedValueGuid = "";
+            var instance = ReportTemplateContainer.Instance;
+            var components = instance.Components;
+            var values = components.Values;
             var allReportTemplates = ReportTemplateContainer.Instance.Components.Values
                 .Where( v => v.Value.IsActive == true )
                 .Select( v => v.Value.EntityType );
@@ -102,7 +105,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     var reportTemplateGuidString = reportTemplate.Guid.ToString();
                     var valueName = "";
                     var description = "";
-                    var lavaCode = "";                  
+                    var lavaCode = "";
 
                     switch ( reportTemplateGuidString )
                     {
@@ -128,7 +131,7 @@ namespace com.bemaservices.RoomManagement.Migrations
 
                     }
 
-                     if ( selectedReportTemplateGuid == reportTemplateGuidString )
+                    if ( selectedReportTemplateGuid == reportTemplateGuidString )
                     {
                         selectedDefinedValueGuid = definedValueGuidString;
                     }
@@ -168,9 +171,9 @@ namespace com.bemaservices.RoomManagement.Migrations
 
 
             // Page: Printable Reports
-            RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Printable Reports", "", "267C476B-16F7-4201-9453-5784E2B4C98F", "fa fa-file-alt" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Defined Type Detail", "Displays the details of the given defined type.", "~/Blocks/Core/DefinedTypeDetail.ascx", "Core", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" );
-            RockMigrationHelper.UpdateBlockType( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
+            RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Printable Reports", "", "267C476B-16F7-4201-9453-5784E2B4C98F", "fa fa-file-alt" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Defined Type Detail", "Displays the details of the given defined type.", "~/Blocks/Core/DefinedTypeDetail.ascx", "Core", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
             // Add Block to Page: Printable Reports, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "267C476B-16F7-4201-9453-5784E2B4C98F", "", "08C35F15-9AF7-468F-9D50-CDFD3D21220C", "Defined Type Detail", "Main", "", "", 0, "41F4477E-2D32-4202-8BD8-60A473D96DF7" );
             // Add Block to Page: Printable Reports, Site: Rock RMS
@@ -193,29 +196,29 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "B22FB153-BFEE-486C-85CC-7FE9D375E35F", "2CD75CE0-D3C8-470D-8DE1-A2964AB98887", @"False" );
 
             // Page: Reservation Views
-            RockMigrationHelper.AddPage("0FF1D7F4-BF6D-444A-BD71-645BD764EC40","D65F783D-87A9-4CC9-8110-E83466A0EADB","Reservation Views","","A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335","fa fa-file-alt"); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType("Defined Type Detail","Displays the details of the given defined type.","~/Blocks/Core/DefinedTypeDetail.ascx","Core","08C35F15-9AF7-468F-9D50-CDFD3D21220C");
-            RockMigrationHelper.UpdateBlockType("Defined Value List","Block for viewing values for a defined type.","~/Blocks/Core/DefinedValueList.ascx","Core","0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE");
+            RockMigrationHelper.AddPage( true, "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Reservation Views", "", "A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335", "fa fa-file-alt" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Defined Type Detail", "Displays the details of the given defined type.", "~/Blocks/Core/DefinedTypeDetail.ascx", "Core", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
             // Add Block to Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335","","08C35F15-9AF7-468F-9D50-CDFD3D21220C","Defined Type Detail","Main","","",0,"B01CE8D3-4915-44B2-9553-7039F34888BE");   
+            RockMigrationHelper.AddBlock( true, "A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335", "", "08C35F15-9AF7-468F-9D50-CDFD3D21220C", "Defined Type Detail", "Main", "", "", 0, "B01CE8D3-4915-44B2-9553-7039F34888BE" );
             // Add Block to Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335","","0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE","Defined Value List","Main","","",1,"CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9");   
+            RockMigrationHelper.AddBlock( true, "A5EB7D31-A0F0-4EE7-8366-A5EBC0DE6335", "", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "Defined Value List", "Main", "", "", 1, "CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9" );
             // Attrib for BlockType: Defined Type Detail:Defined Type
-            RockMigrationHelper.UpdateBlockTypeAttribute("08C35F15-9AF7-468F-9D50-CDFD3D21220C","BC48720C-3610-4BCF-AE66-D255A17F1CDF","Defined Type","DefinedType","","If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).",0,@"","0305EF98-C791-4626-9996-F189B9BB674C");  
+            RockMigrationHelper.UpdateBlockTypeAttribute( "08C35F15-9AF7-468F-9D50-CDFD3D21220C", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "", "If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", 0, @"", "0305EF98-C791-4626-9996-F189B9BB674C" );
             // Attrib for BlockType: Defined Value List:core.CustomGridColumnsConfig
-            RockMigrationHelper.UpdateBlockTypeAttribute("0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE","9C204CD0-1233-41C5-818A-C5DA439445AA","core.CustomGridColumnsConfig","core.CustomGridColumnsConfig","","",0,@"","87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF");  
+            RockMigrationHelper.UpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF" );
             // Attrib for BlockType: Defined Value List:Defined Type
-            RockMigrationHelper.UpdateBlockTypeAttribute("0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE","BC48720C-3610-4BCF-AE66-D255A17F1CDF","Defined Type","DefinedType","","If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).",0,@"","9280D61F-C4F3-4A3E-A9BB-BCD67FF78637");  
+            RockMigrationHelper.UpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "", "If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).", 0, @"", "9280D61F-C4F3-4A3E-A9BB-BCD67FF78637" );
             // Attrib for BlockType: Defined Value List:core.CustomGridEnableStickyHeaders
-            RockMigrationHelper.UpdateBlockTypeAttribute("0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","core.CustomGridEnableStickyHeaders","core.CustomGridEnableStickyHeaders","","",0,@"False","2CD75CE0-D3C8-470D-8DE1-A2964AB98887");  
+            RockMigrationHelper.UpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", "", 0, @"False", "2CD75CE0-D3C8-470D-8DE1-A2964AB98887" );
             // Attrib Value for Block:Defined Type Detail, Attribute:Defined Type Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("B01CE8D3-4915-44B2-9553-7039F34888BE","0305EF98-C791-4626-9996-F189B9BB674C",@"32EC3B34-01CF-4513-BC2E-58ECFA91D010");  
+            RockMigrationHelper.AddBlockAttributeValue( "B01CE8D3-4915-44B2-9553-7039F34888BE", "0305EF98-C791-4626-9996-F189B9BB674C", @"32EC3B34-01CF-4513-BC2E-58ECFA91D010" );
             // Attrib Value for Block:Defined Value List, Attribute:Defined Type Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9","9280D61F-C4F3-4A3E-A9BB-BCD67FF78637",@"32EC3B34-01CF-4513-BC2E-58ECFA91D010");  
+            RockMigrationHelper.AddBlockAttributeValue( "CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9", "9280D61F-C4F3-4A3E-A9BB-BCD67FF78637", @"32EC3B34-01CF-4513-BC2E-58ECFA91D010" );
             // Attrib Value for Block:Defined Value List, Attribute:core.CustomGridColumnsConfig Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9","87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF",@"");  
+            RockMigrationHelper.AddBlockAttributeValue( "CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9", "87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF", @"" );
             // Attrib Value for Block:Defined Value List, Attribute:core.CustomGridEnableStickyHeaders Page: Reservation Views, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9","2CD75CE0-D3C8-470D-8DE1-A2964AB98887",@"False");  
+            RockMigrationHelper.AddBlockAttributeValue( "CB1EB73E-3DE7-4326-A915-BE37A6CE0FF9", "2CD75CE0-D3C8-470D-8DE1-A2964AB98887", @"False" );
         }
 
         /// <summary>
@@ -262,5 +265,51 @@ namespace com.bemaservices.RoomManagement.Migrations
             }
 
         }
+
+        public void UpdateFieldTypeByGuid( string name, string description, string assembly, string className, string guid, bool IsSystem = true )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [FieldType] WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [FieldType] SET
+                        [Name] = '{0}',
+                        [Description] = '{1}',
+                        [Guid] = '{4}',
+                        [IsSystem] = {5},
+                        [Assembly] = '{2}',
+                        [Class] = '{3}'
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Id int
+                    SET @Id = (SELECT [Id] FROM [FieldType] WHERE [Assembly] = '{2}' AND [Class] = '{3}')
+                    IF @Id IS NULL
+                    BEGIN
+                        INSERT INTO [FieldType] (
+                            [Name],[Description],[Assembly],[Class],[Guid],[IsSystem])
+                        VALUES(
+                            '{0}','{1}','{2}','{3}','{4}',{5})
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE [FieldType] SET
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [Guid] = '{4}',
+                            [IsSystem] = {5}
+                        WHERE [Assembly] = '{2}'
+                        AND [Class] = '{3}'
+                    END
+                END
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    assembly,
+                    className,
+                    guid,
+                    IsSystem ? "1" : "0" ) );
+        }
+
     }
 }

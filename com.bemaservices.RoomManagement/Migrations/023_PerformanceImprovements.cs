@@ -24,7 +24,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// fields on the Reservation table.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 23, "1.8.2" )]
+    [MigrationNumber( 23, "1.9.4" )]
     public class PerformanceImprovements : Migration
     {
         /// <summary>

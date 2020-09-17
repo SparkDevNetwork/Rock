@@ -76,7 +76,7 @@ ON DELETE CASCADE
 
 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocationType_LocationTypeValueId]
 " );
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Model.ReservationLocationType", "Reservation Location Type", "com.bemaservices.RoomManagement.Model.ReservationLocationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "834F278F-49E6-4BEA-B724-E7723F9EE4C9" );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationLocationType", "Reservation Location Type", "com.bemaservices.RoomManagement.Model.ReservationLocationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "834F278F-49E6-4BEA-B724-E7723F9EE4C9" );
 
             Sql( @"
 INSERT INTO [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType]
@@ -95,6 +95,63 @@ Outer Apply DefinedValue dv where dv.DefinedTypeId = (Select Top 1 Id From Defin
         /// </summary>
         public override void Down()
         {
+        }
+
+         public void UpdateEntityTypeByGuid( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{5}' )
+                BEGIN
+                    UPDATE [EntityType] SET
+                        [FriendlyName] = '{1}',
+                        [AssemblyName] = '{2}',
+                        [IsEntity] = {3},
+                        [IsSecured] = {4},
+                        [Name] = '{0}'
+                    WHERE [Guid] = '{5}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Guid uniqueidentifier
+                    SET @Guid = (SELECT [Guid] FROM [EntityType] WHERE [Name] = '{0}')
+                    IF @Guid IS NULL
+                    BEGIN
+                        INSERT INTO [EntityType] (
+                            [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
+                        VALUES(
+                            '{0}','{1}','{2}',{3},{4},0,'{5}')
+                    END
+                    ELSE
+                    BEGIN
+
+                        UPDATE [EntityType] SET
+                            [FriendlyName] = '{1}',
+                            [AssemblyName] = '{2}',
+                            [IsEntity] = {3},
+                            [IsSecured] = {4},
+                            [Guid] = '{5}'
+                        WHERE [Name] = '{0}'
+
+                        -- Update any attribute values that might have been using entity's old guid value
+	                    DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
+	                    DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
+	                    DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+
+                        UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+	                    FROM [AttributeValue] V
+	                    INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
+	                    WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                        OPTION (RECOMPILE)
+
+                    END
+                END
+",
+                    name.Replace( "'", "''" ),
+                    friendlyName.Replace( "'", "''" ),
+                    assemblyName.Replace( "'", "''" ),
+                    isEntity ? "1" : "0",
+                    isSecured ? "1" : "0",
+                    guid ) );
         }
     }
 }

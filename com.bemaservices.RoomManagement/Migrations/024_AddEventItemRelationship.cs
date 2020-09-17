@@ -22,7 +22,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration to add the EventItem (occurrence) relationship
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 24, "1.8.2" )]
+    [MigrationNumber( 24, "1.9.4" )]
     public class AddEventItemRelationship : Migration
     {
         /// <summary>
@@ -41,7 +41,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                 " );
 
             // Page: Event Occurrence
-            RockMigrationHelper.UpdateBlockType( "Reservation List", "Block for viewing a list of reservations.", "~/Plugins/com_bemaservices/RoomManagement/ReservationList.ascx", "com_bemaservices > Room Management", "8169F541-9544-4A41-BD90-0DC2D0144AFD" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Reservation List", "Block for viewing a list of reservations.", "~/Plugins/com_bemaservices/RoomManagement/ReservationList.ascx", "com_bemaservices > Room Management", "8169F541-9544-4A41-BD90-0DC2D0144AFD" );
             // Add Block to Page: Event Occurrence, Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "4B0C44EE-28E3-4753-A95B-8C57CD958FD1", "", "8169F541-9544-4A41-BD90-0DC2D0144AFD", "Reservation List", "Main", "", "", 4, "B16EB997-3107-4A64-AA9B-93CF01460622" );
             // Attrib for BlockType: Reservation List:Related Entity Query String Parameter
