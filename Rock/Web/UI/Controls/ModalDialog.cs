@@ -167,6 +167,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets additional CSS classes for the modal
+        /// If js hooks are needed this is the place to add them.
+        /// </summary>
+        /// <value>
+        /// The modal CSS class.
+        /// </value>
+        public string ModalCssClass
+        {
+            get => ViewState["ModalCssClass"] as string ?? string.Empty;
+            set => ViewState["ModalCssClass"] = value;
+        }
+
+        /// <summary>
         /// Gets the Control for the SaveButton
         /// </summary>
         /// <value>
@@ -448,6 +461,11 @@ namespace Rock.Web.UI.Controls
             _serverSaveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
             _serverSaveLink.AddCssClass( SaveButtonCssClass );
+            if ( ModalCssClass.IsNotNullOrWhiteSpace() )
+            {
+                _dialogPanel.AddCssClass( ModalCssClass );
+            }
+
             if ( SaveButtonCausesValidation )
             {
                 _serverSaveLink.CausesValidation = true;
