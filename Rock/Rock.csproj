@@ -515,6 +515,7 @@
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\EventItemOccurrenceListByAudienceLava.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
