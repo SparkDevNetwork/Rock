@@ -26,7 +26,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 3, "1.4.5" )]
+    [MigrationNumber( 3, "1.9.4" )]
     public class SampleData : Migration
     {
         /// <summary>
@@ -35,12 +35,12 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             int entityTypeId = EntityTypeCache.Get( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE.AsGuid() ).Id;
-            Sql( String.Format( @"INSERT [dbo].[Category] ( [IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconCssClass], [Guid], [Order], [Description], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignKey], [HighlightColor], [ForeignGuid], [ForeignId]) VALUES ( 0, NULL, {0}, NULL, NULL, N'Vehicles', N'', N'ae3f4a8d-46d7-4520-934c-85d80167b22c', 0, N'', CAST(N'2016-06-08 09:03:33.357' AS DateTime), CAST(N'2016-06-08 09:03:33.357' AS DateTime), NULL, NULL, NULL, N'', NULL, NULL)
-                    INSERT [dbo].[Category] ( [IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconCssClass], [Guid], [Order], [Description], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignKey], [HighlightColor], [ForeignGuid], [ForeignId]) VALUES ( 0, NULL, {0}, NULL, NULL, N'Tables', N'', N'baf88943-64ea-4a6a-8e1e-f4efc5a6ceca', 1, N'', CAST(N'2016-06-08 09:03:37.957' AS DateTime), CAST(N'2016-06-08 09:03:37.957' AS DateTime), NULL, NULL, NULL, N'', NULL, NULL)
-                    INSERT [dbo].[Category] ( [IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconCssClass], [Guid], [Order], [Description], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignKey], [HighlightColor], [ForeignGuid], [ForeignId]) VALUES ( 0, NULL, {0}, NULL, NULL, N'Projectors', N'', N'd29a2afc-bd90-428b-9065-2ffd09fb6f6b', 2, N'', CAST(N'2016-06-08 09:03:43.350' AS DateTime), CAST(N'2016-06-08 09:03:43.350' AS DateTime), NULL, NULL, NULL, N'', NULL, NULL)
-                    INSERT [dbo].[Category] ( [IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconCssClass], [Guid], [Order], [Description], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignKey], [HighlightColor], [ForeignGuid], [ForeignId]) VALUES ( 0, NULL, {0}, NULL, NULL, N'Chairs', N'', N'355ac2fd-0831-4a11-9294-5568fdfa8fc3', 3, N'', CAST(N'2016-06-08 09:03:48.073' AS DateTime), CAST(N'2016-06-08 09:03:48.073' AS DateTime), NULL, NULL, NULL, N'', NULL, NULL)
-                    INSERT [dbo].[Category] ( [IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconCssClass], [Guid], [Order], [Description], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignKey], [HighlightColor], [ForeignGuid], [ForeignId]) VALUES ( 0, NULL, {0}, NULL, NULL, N'Other', N'', N'ddede1a7-c02b-4322-9d5b-a73cdb9224c6', 4, N'', CAST(N'2016-06-08 09:03:52.830' AS DateTime), CAST(N'2016-06-08 09:03:52.830' AS DateTime), NULL, NULL, NULL, N'', NULL, NULL)
-                    ", entityTypeId ) );
+            RockMigrationHelper.UpdateCategory( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE, "Vehicles", "", "", "AE3F4A8D-46D7-4520-934C-85D80167B22C", 0 );
+            RockMigrationHelper.UpdateCategory( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE, "Tables", "", "", "BAF88943-64EA-4A6A-8E1E-F4EFC5A6CECA", 1 );
+            RockMigrationHelper.UpdateCategory( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE, "Projectors", "", "", "D29A2AFC-BD90-428B-9065-2FFD09FB6F6B", 2 );
+            RockMigrationHelper.UpdateCategory( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE, "Chairs", "", "", "355AC2FD-0831-4A11-9294-5568FDFA8FC3", 3 );
+            RockMigrationHelper.UpdateCategory( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESOURCE, "Other", "", "", "DDEDE1A7-C02B-4322-9D5B-A73CDB9224C6", 4 );
+
             Sql( @"
                     DECLARE @CampusId int = (SELECT TOP 1 [Id] FROM [Campus] ORDER BY [Id])
                     DECLARE @VehicleId int = (Select Top 1 Id From Category Where Guid = 'ae3f4a8d-46d7-4520-934c-85d80167b22c')
