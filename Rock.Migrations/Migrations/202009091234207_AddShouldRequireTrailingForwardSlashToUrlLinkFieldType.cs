@@ -55,7 +55,7 @@ namespace Rock.Migrations
 		                    AND a.EntityTypeQualifierValue = ''
 		                    AND av.[EntityId] IS NULL" );
 
-            UpdateAttributeValues();
+            //UpdateAttributeValues();
             UpdateRegistrationTemplates();
             UpdateDefinedValues();
         }
