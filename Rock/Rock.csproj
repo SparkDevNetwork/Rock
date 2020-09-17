@@ -594,6 +594,7 @@
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
+    <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
