@@ -80,13 +80,13 @@ namespace com.bemaservices.RoomManagement.Migrations
 
             #region FieldTypes
 
-            RockMigrationHelper.UpdateFieldType( "Reservation Approval State", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType", "F4ACC5B8-98BB-4611-B6B7-065BBC47503B" );
+            UpdateFieldTypeByGuid( "Reservation Approval State", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType", "F4ACC5B8-98BB-4611-B6B7-065BBC47503B" );
 
             #endregion
 
             #region EntityTypes
 
-            RockMigrationHelper.UpdateEntityType( "com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState", "3894452A-E763-41AC-8260-10373646D8A0", false, true );
+            UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState", "3894452A-E763-41AC-8260-10373646D8A0", false, true );
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "ACA008E2-2406-457E-8E4C-6922E03757A4" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Approval State Attribute", "ApprovalStateAttribute", "The attribute that contains the reservation approval state.", 1, @"", "2E185FB5-FC8E-41BE-B7FE-702F74B47539" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Approval State Attribute
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Reservation Attribute", "ReservationAttribute", "The attribute that contains the reservation.", 0, @"", "1D4F819F-145D-4A7F-AB4E-AD7C06759042" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Reservation Attribute
@@ -356,6 +356,85 @@ INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationWorkflowTrigger] ([Wor
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Resource] DROP CONSTRAINT [FK__com_bemaservices_RoomManagement_Resource_ApprovalGroup]
                 ALTER TABLE [_com_bemaservices_RoomManagement_Resource] DROP COLUMN ApprovalGroupId
             " );
+        }
+
+                public void UpdateEntityTypeByGuid( string name, string guid, bool isEntity, bool isSecured )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [EntityType] SET
+                        [IsEntity] = {1},
+                        [IsSecured] = {2},
+                        [Name] = '{0}'
+                    WHERE [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                    BEGIN
+                        UPDATE [EntityType] SET
+                            [IsEntity] = {1},
+                            [IsSecured] = {2},
+                            [Guid] = '{3}'
+                        WHERE [Name] = '{0}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [EntityType] ([Name], [IsEntity], [IsSecured], [IsCommon], [Guid])
+                        VALUES ('{0}', {1}, {2}, 0, '{3}')
+                    END
+                END
+",
+                name,
+                isEntity ? "1" : "0",
+                isSecured ? "1" : "0",
+                guid ) );
+        }
+
+        public void UpdateFieldTypeByGuid( string name, string description, string assembly, string className, string guid, bool IsSystem = true )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [FieldType] WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [FieldType] SET
+                        [Name] = '{0}',
+                        [Description] = '{1}',
+                        [Guid] = '{4}',
+                        [IsSystem] = {5},
+                        [Assembly] = '{2}',
+                        [Class] = '{3}'
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Id int
+                    SET @Id = (SELECT [Id] FROM [FieldType] WHERE [Assembly] = '{2}' AND [Class] = '{3}')
+                    IF @Id IS NULL
+                    BEGIN
+                        INSERT INTO [FieldType] (
+                            [Name],[Description],[Assembly],[Class],[Guid],[IsSystem])
+                        VALUES(
+                            '{0}','{1}','{2}','{3}','{4}',{5})
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE [FieldType] SET
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [Guid] = '{4}',
+                            [IsSystem] = {5}
+                        WHERE [Assembly] = '{2}'
+                        AND [Class] = '{3}'
+                    END
+                END
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    assembly,
+                    className,
+                    guid,
+                    IsSystem ? "1" : "0" ) );
         }
     }
 }

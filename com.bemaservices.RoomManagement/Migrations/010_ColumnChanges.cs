@@ -22,7 +22,7 @@ namespace com.bemaservices.RoomManagement.Migrations
     /// Migration for the RoomManagement system.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 10, "1.6.0" )]
+    [MigrationNumber( 10, "1.9.4" )]
     public class ColumnChanges : Migration
     {
         /// <summary>
