@@ -309,10 +309,10 @@ SELECT
                 IndexName = row["Index"].ToString(),
                 IndexType = row["IndexType"].ToString(),
                 FragmentationPercent = row["FragmentationPercent"].ToString().AsIntegerOrNull()
-            } ).ToList();
+            } );
 
             // let C# do the sorting.
-            var sortedIndexInfoList = indexInfoList.OrderBy( a => a.TableName ).ThenBy( a => a.IndexName ).ToList();
+            var sortedIndexInfoList = indexInfoList.OrderBy( a => a.TableName ).ThenBy( a => a.IndexName );
 
             foreach ( var indexInfo in sortedIndexInfoList )
             {
