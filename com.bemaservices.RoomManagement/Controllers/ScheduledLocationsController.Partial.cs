@@ -110,7 +110,7 @@ namespace Rock.Rest.Controllers
                 {
                     var descendantLocations = locationService.GetAllDescendents( location.Id );
                     bool isValidLocationType = ( !reservationLocationTypeList.Any() || !location.LocationTypeValueId.HasValue || reservationLocationTypeList.Contains( location.LocationTypeValueId.Value ) );
-                    bool hasValidDescendant = ( !reservationLocationTypeList.Any() || !location.LocationTypeValueId.HasValue || descendantLocations.Any( dl => reservationLocationTypeList.Contains( dl.LocationTypeValueId.Value ) ) );
+                    bool hasValidDescendant = ( !reservationLocationTypeList.Any() || descendantLocations.Any( dl => !dl.LocationTypeValueId.HasValue || reservationLocationTypeList.Contains( dl.LocationTypeValueId.Value ) ) );
                     if ( isValidLocationType || hasValidDescendant )
                     {
                         locationList.Add( location );
