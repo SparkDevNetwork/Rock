@@ -273,42 +273,59 @@ namespace Rock.Blocks.Types.Mobile.Events
         #region Methods
 
         /// <summary>
+        /// Gets the filtered campuses.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<CampusCache> GetFilteredCampuses()
+        {
+            if ( RequestContext.GetPageParameter( "CampusGuid" ).IsNotNullOrWhiteSpace() )
+            {
+                var campusCache = CampusCache.Get( RequestContext.GetPageParameter( "CampusGuid" ).AsGuid() );
+
+                return campusCache != null ? new CampusCache[] { campusCache } : new CampusCache[0];
+            }
+            else if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
+            {
+                var contextCampus = RequestContext.GetContextEntity<Campus>();
+
+                return contextCampus != null ? new[] { CampusCache.Get( contextCampus.Id ) } : new CampusCache[0];
+            }
+            else if ( Campuses.Any() )
+            {
+                return Campuses.Select( a => CampusCache.Get( a ) )
+                    .Where( a => a != null )
+                    .ToList();
+            }
+            else
+            {
+                return new CampusCache[0];
+            }
+        }
+
+        /// <summary>
         /// Gets the occurrences that should be displayed.
         /// </summary>
-        /// <returns>An enumerable of <see cref="EventItemOccurrence"/> items to be displayed.</returns>
-        private IEnumerable<EventItemOccurrence> GetOccurrences()
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// An enumerable of <see cref="EventItemOccurrence" /> items to be displayed.
+        /// </returns>
+        private IEnumerable<EventItemOccurrence> GetOccurrences( RockContext rockContext )
         {
             if ( !Audience.HasValue )
             {
                 return null;
             }
 
-            var rockContext = new RockContext();
-
             // get event occurrences
             var qry = new EventItemOccurrenceService( rockContext ).Queryable()
                 .Where( e => e.EventItem.EventItemAudiences.Any( a => a.DefinedValue.Guid == Audience.Value ) && e.EventItem.IsActive );
 
-            // filter occurrences for campus (always include the "All Campuses" events)
-            if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
+            // filter by campus
+            var campusIds = GetFilteredCampuses().Select( a => a.Id ).ToList();
+            if ( campusIds.Any() )
             {
-                var contextCampus = RequestContext.GetContextEntity<Campus>();
-
-                if ( contextCampus != null )
-                {
-                    // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
-                    qry = qry.Where( e => !e.CampusId.HasValue || e.CampusId == contextCampus.Id );
-                }
-            }
-            else
-            {
-                if ( Campuses.Any() )
-                {
-                    var selectedCampusIds = Campuses.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
-
-                    // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
-                    qry = qry.Where( e => !e.CampusId.HasValue || selectedCampusIds.Contains( e.CampusId.Value ) );
-                }
+                // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                qry = qry.Where( e => !e.CampusId.HasValue || campusIds.Contains( e.CampusId.Value ) );
             }
 
             // filter by calendar
@@ -350,11 +367,25 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public object GetInitialContent()
         {
+            var rockContext = new RockContext();
+
             var mergeFields = RequestContext.GetCommonMergeFields();
+
             mergeFields.Add( "CurrentPage", PageCache );
             mergeFields.Add( "ListTitle", ListTitle );
             mergeFields.Add( "EventDetailPage", EventDetailPage );
-            mergeFields.Add( "EventItemOccurrences", GetOccurrences() );
+            mergeFields.Add( "EventItemOccurrences", GetOccurrences( rockContext ) );
+            mergeFields.Add( "FilteredCampuses", GetFilteredCampuses() );
+
+            if ( Audience.HasValue )
+            {
+                mergeFields.Add( "Audience", DefinedValueCache.Get( Audience.Value ) );
+            }
+
+            if ( Calendar.HasValue )
+            {
+                mergeFields.Add( "Calendar", new EventCalendarService( rockContext ).Get( Calendar.Value ) );
+            }
 
             return new CallbackResponse
             {
