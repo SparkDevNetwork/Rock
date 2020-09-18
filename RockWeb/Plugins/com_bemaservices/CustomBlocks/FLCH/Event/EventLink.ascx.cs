@@ -22,7 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using com.centralaz.RoomManagement.Model;
+using com.bemaservices.RoomManagement.Model;
 using DDay.iCal;
 using Rock;
 using Rock.Attribute;
@@ -34,7 +34,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using com.centralaz.RoomManagement.Attribute;
+using com.bemaservices.RoomManagement.Attribute;
 using Attribute = Rock.Model.Attribute;
 using Newtonsoft.Json;
 

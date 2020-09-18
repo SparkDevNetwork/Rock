@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventLink.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Event.EventLink" %>
 
-<%@ Register TagPrefix="CentralAZ" Assembly="com.centralaz.RoomManagement" Namespace="com.centralaz.RoomManagement.Web.UI.Controls" %>
+<%@ Register TagPrefix="BEMA" Assembly="com.bemaservices.RoomManagement" Namespace="com.bemaservices.RoomManagement.Web.UI.Controls" %>
 <script type="text/javascript">
     $(document).ready(function () {
         contentSlug.init({
@@ -103,7 +103,7 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="true" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" />
+                                        <BEMA:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="true" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" />
                                     </div>
 
                                 </div>
