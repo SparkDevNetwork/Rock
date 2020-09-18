@@ -39,24 +39,36 @@ namespace com.bemaservices.RoomManagement.Migrations
 
             // Job for Populating FirstOccurrenceStartDateTime and LastOccurrenceEndDateTime fields (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( $@"
-    INSERT INTO [dbo].[ServiceJob]
-           ([IsSystem]
-           ,[IsActive]
-           ,[Name]
-           ,[Description]
-           ,[Class]
-           ,[CronExpression]
-           ,[NotificationStatus]
-           ,[Guid])
-     VALUES
-        (0	
-         ,1	
-         ,'Populate FirstOccurrenceStartDateTime and LastOccurrenceEndDateTime fields on the Reservation table.'
-         ,'Populates FirstOccurrenceStartDateTime and LastOccurrenceEndDateTime fields on the Reservation table. Once all data has been populated, the job will remove itself.'
-         ,'com.bemaservices.RoomManagement.Jobs.PopulateFirstLastOccurrenceDateTimes'
-         ,'0 0 21 1/1 * ? *'
-         ,3
-         ,'{ SystemGuid.ServiceJob.POPULATE_FIRST_LAST_OCCURRENCE_DATETIMES }')" );
+            IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'com.bemaservices.RoomManagement.Jobs.PopulateFirstLastOccurrenceDateTimes' AND [Guid] = '{ SystemGuid.ServiceJob.POPULATE_FIRST_LAST_OCCURRENCE_DATETIMES }' )
+              BEGIN
+               IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'com.centralaz.RoomManagement.Jobs.PopulateFirstLastOccurrenceDateTimes' AND [Guid] = '{ SystemGuid.ServiceJob.POPULATE_FIRST_LAST_OCCURRENCE_DATETIMES }' )
+                BEGIN
+                    INSERT INTO [dbo].[ServiceJob]
+                           ([IsSystem]
+                           ,[IsActive]
+                           ,[Name]
+                           ,[Description]
+                           ,[Class]
+                           ,[CronExpression]
+                           ,[NotificationStatus]
+                           ,[Guid])
+                     VALUES
+                        (0	
+                         ,1	
+                         ,'Populate FirstOccurrenceStartDateTime and LastOccurrenceEndDateTime fields on the Reservation table.'
+                         ,'Populates FirstOccurrenceStartDateTime and LastOccurrenceEndDateTime fields on the Reservation table. Once all data has been populated, the job will remove itself.'
+                         ,'com.bemaservices.RoomManagement.Jobs.PopulateFirstLastOccurrenceDateTimes'
+                         ,'0 0 21 1/1 * ? *'
+                         ,3
+                         ,'{ SystemGuid.ServiceJob.POPULATE_FIRST_LAST_OCCURRENCE_DATETIMES }')
+                END
+                ELSE
+                BEGIN
+                   UPDATE [ServiceJob]
+                   SET [Class]= 'com.bemaservices.RoomManagement.Jobs.FireWorkflowFromReservationInDateRange'
+                   WHERE Guid = '6832E24B-5650-41D3-9EBA-1D2D213F768C'
+                END
+            END" );
 
         }
 

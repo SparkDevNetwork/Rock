@@ -37,9 +37,8 @@
     <DocumentationFile>bin\Release\com.bemaservices.RoomManagement.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\DDay.iCal.dll</HintPath>
+    <Reference Include="DDay.iCal">
+      <HintPath>..\RockWeb\Bin\DDay.iCal.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -96,6 +95,7 @@
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
     <Compile Include="Jobs\PopulateFirstLastOccurrenceDateTimes.cs" />
+    <Compile Include="Migrations\030_BemaTransition.cs" />
     <Compile Include="Migrations\029_ReservationLocationTypes.cs" />
     <Compile Include="Migrations\028_Bugfixes155.cs" />
     <Compile Include="Migrations\027_Bugfixes154.cs" />

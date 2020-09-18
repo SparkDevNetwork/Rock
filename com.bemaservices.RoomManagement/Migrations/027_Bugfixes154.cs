@@ -37,6 +37,8 @@ namespace com.bemaservices.RoomManagement.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.DeleteSecurityAuth( "7f3ee024-bff0-4872-b3d1-585b74fbc2d4" );
+            RockMigrationHelper.DeleteSecurityAuth( "6cf7e214-98f3-4071-8f71-d6d7fd9c4989" );
             RockMigrationHelper.AddSecurityAuthForEntityType( "com.bemaservices.RoomManagement.Model.ReservationType", 0, "Edit", true, Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS, 0, "6cf7e214-98f3-4071-8f71-d6d7fd9c4989" );
             RockMigrationHelper.AddSecurityAuthForEntityType( "com.bemaservices.RoomManagement.Model.ReservationType", 1, "Edit", true, Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS, 0, "7f3ee024-bff0-4872-b3d1-585b74fbc2d4" );
 
