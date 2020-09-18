@@ -86,10 +86,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             var lavaTemplate = GetAttributeValueFromBlock( blockId, "52C3F839-A092-441F-B3F9-10617BE391EC".AsGuid() );
             var lavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
 
-            var selectedDefinedValueGuid = "";
-            var instance = ReportTemplateContainer.Instance;
-            var components = instance.Components;
-            var values = components.Values;
+            AttributeCache.RemoveEntityAttributes();
             var allReportTemplates = ReportTemplateContainer.Instance.Components.Values
                 .Where( v => v.Value.IsActive == true )
                 .Select( v => v.Value.EntityType );
