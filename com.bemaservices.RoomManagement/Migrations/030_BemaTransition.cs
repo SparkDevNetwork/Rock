@@ -76,6 +76,10 @@ namespace com.bemaservices.RoomManagement.Migrations
                 Update Page
                 Set [Order] = 2
                 Where Guid = 'CFF84B6D-C852-4FC4-B602-9F045EDC8854'
+
+                Update [dbo].[_com_bemaservices_RoomManagement_ReservationType]
+                Set DefaultCleanupTime = DefaultSetupTime
+                Where DefaultCleanupTime is null
             " );
 
         }
