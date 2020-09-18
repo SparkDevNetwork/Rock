@@ -72,6 +72,10 @@ namespace com.bemaservices.RoomManagement.Migrations
                 Update AttributeValue
                 Set Value = Replace(Value, 'centralaz.RoomManagement', 'bemaservices.RoomManagement')
                 Where Value like '%centralaz.RoomManagement%'
+
+                Update Page
+                Set [Order] = 2
+                Where Guid = 'CFF84B6D-C852-4FC4-B602-9F045EDC8854'
             " );
 
         }
