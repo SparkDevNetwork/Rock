@@ -130,8 +130,8 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.AddBlock( true, "CFF84B6D-C852-4FC4-B602-9F045EDC8854", "", "6931E212-A76A-4DBB-9B97-86E5CDD0793A", "Reservation Configuration", "Main", "", "", 0, "2B864E89-27DE-41F9-A24B-8D2EA5C40D10" );
 
             // Add Security
-            var adminGroupId = SqlScalar( "Select Top 1 Id From [Group] Where Guid = 'FBE0324F-F29A-4ACF-8EC3-5386C5562D70'" ).ToString();
-            if ( adminGroupId.IsNullOrWhiteSpace() )
+            var adminGroupId = SqlScalar( "Select Top 1 Id From [Group] Where Guid = 'FBE0324F-F29A-4ACF-8EC3-5386C5562D70'" );
+            if ( adminGroupId != null && adminGroupId.ToString().IsNullOrWhiteSpace() )
             {
                 RockMigrationHelper.AddSecurityRoleGroup( "RSR - Room Management Administration", "Group of individuals who can administration the custom Room Management module.", "FBE0324F-F29A-4ACF-8EC3-5386C5562D70" );
             }
