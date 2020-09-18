@@ -1,0 +1,218 @@
+<!-- 
+ Notes and Requester information is available using {{reservationSummary.Note}}
+ and {{reservationSummary.RequesterAlias.Person}}
+-->
+  {% assign reservationCount = ReservationSummaries | Size %}
+
+  {% if reservationCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no reservations in this time frame.</div>
+  </div>
+  {% endif %}
+
+  {% for reservationDate in ReservationSummaries %}
+  {% assign firstReservation = reservationDate | First %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+		<h2 class="panel-title pull-left">
+			{{ firstReservation.CalendarDate }}
+		</h2>
+    </div>
+	<div class="table-responsive">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th class="col-xs-1">
+						<b>Name</b>
+					</th>
+					<th class="col-xs-2">
+						<b>Event Time</b>
+					</th>
+					<th class="col-xs-2">
+						 <b>Reservation Time</b>
+					</th>
+					<th class="col-xs-2">
+					  <b>Locations</b>
+					</th>
+					<th class="col-xs-2">
+					  <b>Resources</b>
+					</th>
+					<th class="col-xs-1 hidden-xs hidden-sm">
+					  <b>Setup</b>
+					</th>
+					<th class="col-xs-1">
+					  <b>Status</b>
+					</th>
+					<th class="col-xs-1">
+					</th>
+				</tr>
+			</thead>
+
+			<tbody>
+			{% for reservationSummary in reservationDate %}
+			<!-- Start with one total item because the overall status must also be approved -->
+			{% assign totalItems = 1 %}
+			{% assign approvedItems = 0 %}
+			{% assign approvalNeededBy = "" %}
+
+			{% if reservationSummary.ApprovalState == 'Unapproved' %}
+				{% assign textclass = 'text-warning' %}
+				{% assign rowclass = 'warning' %}
+			{% elseif reservationSummary.ApprovalState == 'Changes Needed' %}
+				{% assign textclass = 'text-info' %}
+				{% assign rowclass = 'info' %}
+			{% else %}
+				{% assign textclass = '' %}
+				{% assign rowclass = '' %}
+			{% endif %}
+		
+			<!-- if it's approved, increment the approved counter -->
+			{% if reservationSummary.ApprovalState == 'Approved' %}
+				{% assign approvedItems = approvedItems|Plus:1 %}
+			{% endif %}
+		
+				<tr class="{{ rowclass }} js-clickable-row" data-href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}">
+					<td><span class="{{ textclass }}">{{ reservationSummary.ReservationName }}</span></td>
+					<td><span class="{{ textclass }}">{{ reservationSummary.EventDateTimeDescription }}</span></td>
+					<td><span class="{{ textclass }}">{{ reservationSummary.ReservationDateTimeDescription }}</span></td>
+					<td><span class="{{ textclass }}">
+						<ul>
+						{% assign totalItems = reservationSummary.Locations | Size  | Plus: totalItems %}
+						{% for reservationLocation in reservationSummary.Locations %}
+						<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>
+							{% else %}
+							{% assign approvalGroup = reservationLocation.Location | Attribute:'ApprovalGroup','Object' %}
+							{% capture linkToApprover %}<li><a href='/Group/{{approvalGroup.Id}}'>{{approvalGroup.Name}}</a> for {{reservationLocation.Location.Name}} </li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
+							{% endif %}
+							{% if reservationLocation.LocationLayoutId != null %}
+							{% assign layout = reservationLocation.LocationLayout %}
+							<i class="fa fa-info-circle"
+							data-toggle="popover" 
+							data-html="true" 
+							data-trigger="hover click focus" 
+							data-delay="{&quot;hide&quot;: 1500}" 
+							data-placement="right" 
+							title="{{layout.Name}}" data-content="<p>{{layout.Description}}</p>{% if layout.LayoutPhotoId %}
+						<a href='/GetImage.ashx?id={{layout.LayoutPhotoId}}' target='_blank'><img src='/GetImage.ashx?id={{layout.LayoutPhotoId}}&maxwidth=200&maxheight=200'/></a>
+						{% endif %}"
+						></i>
+							{% endif %}
+						</li>
+						{% endfor %}
+						</ul>
+					</span></td>
+					<td><span class="{{ textclass }}">
+					  <ul>
+  						{% assign totalItems = reservationSummary.Resources | Size | Plus: totalItems %}
+						{% for reservationResource in reservationSummary.Resources %}
+						<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>
+							{% else %}{% capture linkToApprover %}<li><a href='/Group/{{reservationResource.Resource.ApprovalGroupId}}'>{{reservationResource.Resource.ApprovalGroup.Name}}</a> for {{reservationResource.Resource.Name}}</li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
+							{% endif %}
+						</li>
+						{% endfor %}
+						</ul>
+					</span></td>
+					<td class="hidden-xs hidden-sm"><span class="{{ textclass }}">
+					  {% if reservationSummary.SetupPhotoId %}
+						<a href='{{ reservationSummary.SetupPhotoLink }}' target='_blank'><img src='{{ reservationSummary.SetupPhotoLink }}&maxwidth=30&maxheight=30'/></a>
+						{% endif %}
+					</span></td>
+					<td><span class="{{ textclass }}">
+					  {{ reservationSummary.ApprovalState }}
+					</span></td>
+					<td>
+						<div class="second circle" data-size="50" data-thickness="8" data-value="{{ approvedItems | DividedBy:totalItems}}" data-start-angle="11" data-line-cap="round" 
+							{% assign perComp = approvedItems | DividedBy:totalItems %}
+							{% if perComp >= 1 %}
+								data-fill="{&quot;color&quot;: &quot;#3aeabb&quot;}" data-animation-start-value="1.0" 
+							{% else %}
+								{% if approvalNeededBy == '' %}
+									{% assign approvalNeededBy = '<li>final approver group</li>' %}
+								{% endif %}
+							data-fill="{&quot;gradient&quot;: [&quot;#fdd250&quot;,&quot;#f46242&quot;], &quot;gradientAngle&quot;: 1}"
+							data-toggle="popover" data-html="true" data-trigger="hover click focus" data-delay="{&quot;hide&quot;: 1500}" data-placement="left" title="Needed Approvals" data-content="<ul>{{approvalNeededBy}}</ul>"
+							{% endif %}
+						>
+						 <strong></strong>
+						</div>
+					</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+  </div>
+  {% endfor %}
+
+<script type="text/javascript">
+
+function pageLoad(sender, args) {
+  InitialiseSettings();
+}
+
+function InitialiseSettings(){
+		$('.second.circle').circleProgress({
+			}).on('circle-animation-progress', function(event, progress, stepValue) {
+			$(this).find('strong').html(Math.floor(stepValue*100) + '<i>%</i>');
+		});
+
+        $('[data-toggle="popover"]').popover();
+
+		$(".js-clickable-row").click(function() {
+				window.location = $(this).data("href");
+		});
+}
+
+  $( document ).ready(function() {
+		$('.js-group-item').tooltip();
+		InitialiseSettings();
+  });
+
+
+
+</script>
+
+<style>
+.circles {
+  margin-bottom: -10px;
+}
+
+.circle {
+  width: 100px;
+  margin: 6px 6px 20px;
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.circle canvas {
+  vertical-align: top;
+}
+
+.circle strong {
+  position: absolute;
+  top: 5px;
+  left: 2px;
+  width: 100%;
+  text-align: center;
+  line-height: 40px;
+  font-size: 12px;
+}
+
+.circle strong i {
+  font-style: normal;
+  font-size: 0.6em;
+  font-weight: normal;
+}
+
+.circle span {
+  display: block;
+  color: #aaa;
+  margin-top: 12px;
+}
+
+.js-clickable-row {
+	cursor:pointer;
+}
+</style>

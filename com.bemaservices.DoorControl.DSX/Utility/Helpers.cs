@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using com.bemaservices.DoorControl.DSX.Models;
-using com.centralaz.RoomManagement.Model;
+using com.bemaservices.RoomManagement.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;

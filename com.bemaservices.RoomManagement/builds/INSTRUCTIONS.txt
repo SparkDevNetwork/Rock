@@ -1,0 +1,11 @@
+0) Pull latest from Github
+1) Update the version number in this folder (ex: 1.5.0.0)
+2) Open the BEMA Software Services solution in the correct branch
+3) Set to Release mode
+4) Build solution
+5) Go find the X.Y.Z folder under \builds\
+6) Update the package with the latest version.
+7) Use and update the Description.html (release notes), Documentation Url, Post Install Instructions, etc. from the last version. (The Release Notes are needed for the updated plugin in the Rock Shop)
+   a) To get a summary of + changes between two commits that contain "[RM]", you can use command:
+
+      git log --pretty=oneline 9eae5f03..237e9510 | grep " + " | cut -c 42- | grep '\[RM\]'

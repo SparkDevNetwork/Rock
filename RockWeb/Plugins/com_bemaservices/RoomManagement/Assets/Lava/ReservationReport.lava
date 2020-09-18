@@ -1,0 +1,105 @@
+<br><br>
+<div>
+	<img src='{{ImageUrl}}' height='55' width='100' style='float:right;'></img>
+	</div>
+<br>
+  {% assign reservationCount = ReservationSummaries | Size %}
+
+  {% assign titleStyle = 'font-size:16px;font-weight:bold;font-family:{{ReportFont}}' %}
+  {% assign headerStyle = 'font-size:12px;font-weight:bold;font-family:{{ReportFont}};color:dimgray;border: 6px solid black;' %}
+  {% assign subHeaderStyle = 'font-size:10px;font-weight:bold;font-family:{{ReportFont}};color:dimgray;' %}
+  {% assign itemNormalStyle = 'font-size:8px;font-weight:normal;font-family:{{ReportFont}};' %}
+  {% assign itemUnapprovedStyle = 'font-size:8px;font-weight:italic;font-family:{{ReportFont}};color:magenta;' %}
+  {% assign noteStyle = 'font-size:8px;font-weight:normal;font-family:{{ReportFont}};color:gray;' %}
+  {% assign borderStyle = 'border:1 solid magenta:border-bottom:1;' %}
+
+  <h1 style='{{titleStyle}}'>Reservations for {{FilterStartDate | Date:'MMMM d'}} - {{FilterEndDate | Date:'MMMM d'}}</h1>
+  {% if reservationCount == 0 %}
+  <h1 style='{{titleStyle}}'> There are no reservations in this time frame.</h1>
+  {% endif %}
+
+  {% for reservationDate in ReservationSummaries %} 
+  <br>
+  {% assign firstReservation = reservationDate | First %}
+
+	<h2 style='{{headerStyle}}'>
+		{{ firstReservation.CalendarDate }}
+	</h2>
+	<table>
+		<tbody>
+			<tr style='{{subHeaderStyle}}'>
+				<th class='col-xs-2'>
+					<b>Name</b>
+				</th>
+				<th class='col-xs-2'>
+					<b>Event Time</b>
+				</th>
+				<th class='col-xs-2'>
+					<b>Reservation Time</b>
+				</th>
+				<th class='col-xs-2'>
+					<b>Locations</b>
+				</th>
+				<th class='col-xs-2'>
+					<b>Resources</b>
+				</th>
+				<th class='col-xs-1 hidden-xs hidden-sm'>
+					<b>Has Layout?</b>
+				</th>
+				<th class='col-xs-1'>
+					<b>Status</b>
+				</th>
+			</tr>
+		</tbody>
+	</table>
+
+	<hr width='100%"'>
+	<table>			
+		<tbody>
+		{% for reservationSummary in reservationDate %}
+
+		{% if reservationSummary.ApprovalState == 'Approved' %}
+			{% assign rowClass = itemNormalStyle %}
+		{% else %}
+			{% assign rowClass = itemUnapprovedStyle %}
+		{% endif %}
+		
+			<tr style='{{rowClass}}'>
+				<td><span>{{ reservationSummary.ReservationName }}</span></td>
+				<td><span>{{ reservationSummary.EventDateTimeDescription }}</span></td>
+				<td><span>{{ reservationSummary.ReservationDateTimeDescription }}</span></td>
+				<td><span>
+					<ul>
+					{% for reservationLocation in reservationSummary.Locations %}
+					<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %}<i class='fa fa-check'></i>{% endif %}</li>
+					{% endfor %}
+					</ul>
+				</span></td>
+				<td><span>
+					<ul>
+					{% for reservationResource in reservationSummary.Resources %}
+					<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %}<i class='fa fa-check'></i>{% endif %}</li>
+					{% endfor %}
+					</ul>
+				</span></td>
+				<td><span>
+					{% if reservationSummary.SetupPhotoId %}
+					<p> Yes </p>
+					{% else %}
+					<p> No </p>
+					{% endif %}
+				</span></td>
+				<td><span>
+					{{ reservationSummary.ApprovalState }}
+				</span></td>				
+			</tr>
+		{% if reservationSummary.Note != empty %}
+		<tr style='{{noteStyle}}'>
+		<td></td>
+		<td colspan='6'>{{reservationSummary.Note}}</td>
+		</tr>
+		{% endif %}
+		{% endfor %}
+		</tbody>
+	</table>
+  {% endfor %}

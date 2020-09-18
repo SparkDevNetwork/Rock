@@ -5,11 +5,11 @@ using Rock;
 using Rock.Attribute;
 namespace com.bemaservices.DoorControl.DSX.Jobs
 {
-    [AttributeField( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION, AttributeKeys.OverrideGroupAttribute, "This is the Reservation Attribute that stores the DSX Override Information.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_DOOR_OVERRIDES_ATTRIBUTE )]
+    [AttributeField( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESERVATION, AttributeKeys.OverrideGroupAttribute, "This is the Reservation Attribute that stores the DSX Override Information.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_DOOR_OVERRIDES_ATTRIBUTE )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", AttributeKeys.OverrideLocationAttribute, "This is the Location Attribute that stores the DSX Override Group Identifier", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.LOCATION_OVERRIDE_GROUP )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", AttributeKeys.SharedLocationAttribute, "This is the Location Attribute that stores a list of shared rooms.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.LOCATION_SHARED_DOOR_ATTRIBUTE )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", AttributeKeys.RoomNameLocationAttribute, "This is the Location Attribute that stores the Room Name" )]
-    [AttributeField( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION, AttributeKeys.ProcessDoorLockAttribute, "This is the Reservation Attribute that determines if the normal door lock process should happen.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_PROCESS_DOOR_LOCK_ATTRIBUTE )]
+    [AttributeField( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESERVATION, AttributeKeys.ProcessDoorLockAttribute, "This is the Reservation Attribute that determines if the normal door lock process should happen.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_PROCESS_DOOR_LOCK_ATTRIBUTE )]
     [TextField( AttributeKeys.DSXSQLServer, "The DSX SQL Server Name we will be pushing data into", true, "", "DSX Settings", 0 )]
     [TextField( AttributeKeys.DSXDatabaseName, "The DSX Database we will be pushing data into", true, "", "DSX Settings", 1 )]
     [TextField( AttributeKeys.DSXSQLUsername, "The DSX SQL Username for connecting to the DB", true, "", "DSX Settings", 2 )]
