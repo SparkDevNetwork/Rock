@@ -1,0 +1,27 @@
+{% assign person = 'Global' | PageParameter:'PersonId' | PersonById %}
+<h2 class="h4 xs-h5 text-uppercase strongest sm-push-top xs-push-top">{{ person.NickName | Possessive }} Notes</h2>
+
+<script>
+  $(document).ready(function(){
+    $('.js-dropdown-toggle').dropdown();
+    $('.notes .note-editor').addClass('soft-half').addClass('shadowed').addClass('push-bottom').addClass('xs-push-half-bottom');
+  });
+</script>
+
+
+
+{% assign canEditGeneralNotes =  4 | HasRightsTo:'Edit','Rock.Model.NoteType' %}
+
+{% if canEditGeneralNotes %}
+<p class="xs-push-half-bottom">
+  <a href="#" class="btn btn-primary xs-btn-block xs-flush-bottom js-addnote shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add a Note</a>
+</p>
+{% endif %}
+
+
+  <ul class="list-unstyled js-notelist flush">
+      {% for note in NoteList limit:limit %}
+        {% assign noteReplyDepth = 0 %}
+        {% include '~/Themes/NewSpring/assets/Lava/LAYOUT/groups-notes-item.lava' %}
+      {% endfor %}
+  </ul>
