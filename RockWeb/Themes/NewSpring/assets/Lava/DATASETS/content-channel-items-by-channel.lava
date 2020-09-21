@@ -82,7 +82,7 @@
           {%- elseif itemChannelImageLandscape and itemChannelImageLandscape != empty -%}
             {{ itemChannelImageLandscape }}
           {%- endif -%}
-        {%- endcapture -%}{
+        {%- endcapture -%}{% capture contentType %}{% if category and category != empty -%}{{ item.ContentChannel | Attribute:'ContentFormat' | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel | Attribute:'ContentFormat' | ToJSON }}{%- endif -%}{% endcapture %}{
         "Id": {{ item.Id }},
         "Title": {{ item.Title | Replace:"'","’" | ToJSON }},
         "Slug": {{ item.PrimarySlug | ToJSON }},
@@ -95,8 +95,8 @@
         "Dataset": {{ dataset | ToJSON }},
         "ChannelId": {{ item.ContentChannel.Id }},
         "ChannelName": {{ item.ContentChannel.Name | ToJSON }},
-        "ContentType": {% if category and category != empty -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel.Name | Split:' - ' | Last | Singularize | ToJSON }}{%- endif -%},
-        "ChannelVerb": "{% if video and video != empty %}Watch{% else %}{{ item.ContentChannel | Attribute:'ChannelVerb' }}{% endif %}",
+        "ContentType": {% if item.ContentChannel.Name contains 'KidSpring' %}{{ contentType | Replace:'Sermon','Lesson' }}{% else %}{{ contentType }}{% endif %},
+        "ChannelVerb": "{% if video and video != empty %}Watch{% else %}{{ item.ContentChannel | Attribute:'ContentFormat','Object' | Attribute:'Verb' }}{% endif %}",
         "ChannelUrl": {{ item.ContentChannel.ChannelUrl | ToJSON }},
         "ItemsOrderedManually": {{ itemsManuallyOrdered | ToJSON }},
         "ChildItemsOrderedManually": {{ childItemsManuallyOrdered | ToJSON }},

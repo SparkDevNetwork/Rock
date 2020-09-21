@@ -236,6 +236,11 @@
 		font-size: 90%;
 	}
 
+	.label.sans-serif,
+	.sans-serif .label {
+		padding: .5em .8em .4em;
+	}
+
 	.label.circular {
 		padding: .3em .8em .25em;
 	}
@@ -281,6 +286,16 @@
 	
 	.xs-btn-xs {
 		.button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+	}
+
+	// Notes
+	.note-editor .settings .commands {
+		margin-top: 20px;
+	}
+
+	// Checkboxes
+	.checkbox .label-text:before {
+		top: 0px;
 	}
 
 	// Positioning

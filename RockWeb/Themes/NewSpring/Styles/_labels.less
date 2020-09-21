@@ -1,18 +1,27 @@
 // Labels
 label {
-	font-family: @font-family-sans-serif;
 	font-weight: 500;
 }
 
 .label {
 	text-decoration: none;
+	letter-spacing: -.5px;
+	
 
-	&.sans-serif {
-		padding: .3em + .05 .6em .3em;
+	&.sans-serif, .sans-serif & {
+		padding: .5em .6em;
+
+		small {
+			padding: 0;
+		}
+	}
+
+	&.text-uppercase {
+		padding: .3em .6em;
 	}
 
 	&.circular {
-		padding: .4em .8em;
+		padding: .4em .7em;
 	}
 
 	&.rounded {

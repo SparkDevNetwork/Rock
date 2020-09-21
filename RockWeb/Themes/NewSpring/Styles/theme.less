@@ -1,6 +1,3 @@
-@base-spacing-unit: 30px;
-@nav-width: 75px;
-
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
@@ -10,8 +7,11 @@
 @import "_variables";
 @import '_bootstrap-overrides';
 @import '_animations';
+@import '_accordions';
+@import '_charts';
 @import '_layout';
 @import '_navigation';
+@import '_notes';
 @import '_cards';
 @import '_swiper';
 @import '_ratios';
@@ -88,8 +88,8 @@ h6, .h6 {
 	}
 }
 
-h1, .h1 {
-	letter-spacing: -1.5px;
+.picker h4 {
+	letter-spacing: 0;
 }
 
 img { max-width: 100%; }

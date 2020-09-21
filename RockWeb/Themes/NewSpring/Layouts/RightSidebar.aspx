@@ -18,9 +18,9 @@
         <Rock:Zone Name="Feature" runat="server" />
 
          <div class="row">
-            <div class="col-xs-12 col-sm-7 col-md-8 col-lg-9">
+            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
                 <Rock:Zone Name="Main" runat="server" />
-            </div><div class="col-xs-12 col-sm-5 col-md-4 col-lg-3">
+            </div><div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
                 <Rock:Zone Name="Section A" runat="server" />
             </div>
         </div>
