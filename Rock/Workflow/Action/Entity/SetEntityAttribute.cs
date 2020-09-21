@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
 
     [EntityTypeField(
         "Entity Type",
+        IncludeGlobalAttributeOption = false,
         Description = "The type of Entity.",
         IsRequired = true,
         Order = 0,

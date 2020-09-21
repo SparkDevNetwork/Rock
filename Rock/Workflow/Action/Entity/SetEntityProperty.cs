@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
         Description = "The type of Entity.",
         IsRequired = true,
         Order = 0,
+        IncludeGlobalAttributeOption = false,
         Key = AttributeKey.EntityType )]
     [WorkflowTextOrAttribute(
         "Entity Id or Guid",
