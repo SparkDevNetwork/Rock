@@ -48,6 +48,12 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// Gets the Achievement Type page guid
+        /// ParentPage: <see cref="ENGAGEMENT"/>
+        /// </summary>
+        public const string ACHIEVEMENT_TYPES = "FCE0D006-F854-4107-9298-667563FA8D77";
+
+        /// <summary>
         /// Gets the Add Transaction page guid
         /// ParentPage: Contributions
         /// </summary>
@@ -1949,5 +1955,35 @@ namespace Rock.SystemGuid
         /// The phone number lookup page.
         /// </summary>
         public const string PHONE_NUMBER_LOOKUP = "9F8D906F-ADB6-42AC-9777-D9712A5D097F";
+
+        /// <summary>
+        /// The oidc scopes page.
+        /// </summary>
+        public const string OIDC_SCOPE_LIST = "06FA872A-18B0-431A-917E-6F7B2EA8ED95";
+
+        /// <summary>
+        /// The oidc clients page.
+        /// </summary>
+        public const string OIDC_CLIENT_LIST = "0A18B520-915E-429B-AC49-7A7F73B19BAA";
+
+        /// <summary>
+        /// The oidc give permission page.
+        /// </summary>
+        public const string OIDC_GIVE_PERMISSION = "73941D90-4CA1-46F8-A5D1-5B4BD2E53B3D";
+
+        /// <summary>
+        /// The oidc logout page.
+        /// </summary>
+        public const string OIDC_LOGOUT = "FC20F56F-A7FB-4B89-9C66-98BC43816C8F";
+
+        /// <summary>
+        /// The oidc scope detail page.
+        /// </summary>
+        public const string OIDC_SCOPE_DETAIL = "55E70873-B882-4864-8B97-66F8ED3588C7";
+
+        /// <summary>
+        /// The oidc client detail page.
+        /// </summary>
+        public const string OIDC_CLIENT_DETAIL = "41E6A833-1697-4463-9962-01DFD123D4C9";
     }
 }

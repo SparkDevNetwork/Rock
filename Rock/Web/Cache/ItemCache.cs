@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -28,7 +29,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class ItemCache<T> : IItemCache
+    public abstract class ItemCache<T> : IItemCache, IHasLifespan
         where T : IItemCache
     {
         private const string _AllRegion = "AllItems";
@@ -78,10 +79,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
+        /// <param name="keyFactory">The key factory to create a list of keys for the type. This will only be used if a list does not already exist.</param>
         /// <returns></returns>
-        internal protected static T GetOrAddExisting( int key, Func<T> itemFactory )
+        internal protected static T GetOrAddExisting( int key, Func<T> itemFactory, Func<List<string>> keyFactory = null )
         {
-            return GetOrAddExisting( key.ToString(), itemFactory );
+            return GetOrAddExisting( key.ToString(), itemFactory, keyFactory );
         }
 
         /// <summary>
@@ -117,11 +119,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
+        /// <param name="keyFactory">The key factory to create a list of keys for the type. This will only be used if a list does not already exist.</param>
         /// <returns></returns>
-        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory )
+        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, Func<List<string>> keyFactory = null )
         {
             string qualifiedKey = QualifiedKey( key );
-
             var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
 
             if ( value != null )
@@ -134,7 +136,7 @@ namespace Rock.Web.Cache
             value = itemFactory();
             if ( value != null )
             {
-                UpdateCacheItem( key, value );
+                UpdateCacheItem( key, value, keyFactory );
             }
 
             return value;
@@ -145,7 +147,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="item">The item.</param>
-        internal protected static void UpdateCacheItem( string key, T item )
+        /// <param name="keyFactory">The key factory to create a list of keys for the type. This will only be used if a list does not already exist.</param>
+        internal protected static void UpdateCacheItem( string key, T item, Func<List<string>> keyFactory = null )
         {
             string qualifiedKey = QualifiedKey( key );
 
@@ -157,30 +160,41 @@ namespace Rock.Web.Cache
             // Do any postcache processing that this item cache type may need to do
             item.PostCached();
 
-            AddToAllIds( key );
+            AddToAllIds( key, keyFactory );
         }
 
         /// <summary>
         /// Ensure that the Key is part of the AllIds list
         /// </summary>
         /// <param name="key">The key.</param>
-        internal static void AddToAllIds( string key )
+        /// <param name="keyFactory">The key factory to create a list of keys for the type. This will only be used if a list does not already exist.</param>
+        internal static void AddToAllIds( string key, Func<List<string>> keyFactory = null )
         {
-            // Get the dictionary of all item ids
+            // Get the list of all item ids
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
-            if ( allKeys == null )
-            {
-                // All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
-                return;
-            }
-
-            if ( allKeys.Contains( key ) )
+            if ( allKeys != null && allKeys.Contains( key ) )
             {
                 // already has it so no need to update the cache
                 return;
             }
 
-            // If the key is not part of the dictionary all ready
+            if ( allKeys == null ) 
+            {
+                // If the list doesn't exist then see if we can get it using the delegate
+                if ( keyFactory != null )
+                {
+                    allKeys = GetOrAddKeys( keyFactory );
+                    if ( allKeys != null )
+                    {
+                        RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+                    }
+                }
+
+                // At this point the method has all the data that is possible to get if there are no current keys stored in the cache, so return.
+                return;
+            }
+            
+            // The key is not part of the list so add it and update the cache
             lock ( _obj )
             {
                 // Add it.
@@ -284,6 +298,18 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Flushes all items
+        /// </summary>
+        internal static void FlushAllItems()
+        {
+            var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
+            foreach( var id in allIds )
+            {
+                FlushItem( id );
+            }
+        }
+
+        /// <summary>
         /// Removes the specified key from cache and from AllIds. Call this if Deleting the object from the database.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -307,11 +333,11 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
-            // So let's call remove instead if using redis.
+            // Calling the clear on the instance when using redis will clear all of the cache items for evert type, which is bad.
+            // So instead we need to loop through all of the keys for the type and flush them individually
             if ( RockCache.IsCacheSerialized )
             {
-                FlushItem( AllString );
+                FlushAllItems();
             }
             else
             {

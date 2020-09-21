@@ -28,9 +28,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.MovePage(
-                SystemGuid.Page.REGISTRATION_INSTANCE_LINKAGE,
-                SystemGuid.Page.REGISTRATION_INSTANCE_LINKAGES );
+            //RockMigrationHelper.MovePage(
+            //    SystemGuid.Page.REGISTRATION_INSTANCE_LINKAGE,
+            //    SystemGuid.Page.REGISTRATION_INSTANCE_LINKAGES );
         }
 
         /// <summary>

@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/RecentEngagement/{streakTypeId}" )]
-        public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, [FromUri]int? personId = null, [FromUri] int? unitCount = 24 )
+        public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, [FromUri] int? personId = null, [FromUri] int? unitCount = 24 )
         {
             // If not specified, use the current person id
             if ( !personId.HasValue )
@@ -99,7 +99,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/Enroll/{streakTypeId}" )]
-        public virtual HttpResponseMessage Enroll( int streakTypeId, [FromUri]int? personId = null, [FromUri] DateTime? enrollmentDate = null, [FromUri] int? locationId = null )
+        public virtual HttpResponseMessage Enroll( int streakTypeId, [FromUri] int? personId = null, [FromUri] DateTime? enrollmentDate = null, [FromUri] int? locationId = null )
         {
             // Make sure the streak type exists
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
@@ -235,8 +235,8 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/StreakData/{streakTypeIdList}" )]
         public virtual List<StreakData> GetStreakData( string streakTypeIdList,
-            [FromUri]int? personId = null, [FromUri]DateTime? startDate = null, [FromUri]DateTime? endDate = null,
-            [FromUri]bool createObjectArray = false, [FromUri]bool includeBitMaps = false, [FromUri]int? maxStreaksToReturn = null )
+            [FromUri] int? personId = null, [FromUri] DateTime? startDate = null, [FromUri] DateTime? endDate = null,
+            [FromUri] bool createObjectArray = false, [FromUri] bool includeBitMaps = false, [FromUri] int? maxStreaksToReturn = null )
         {
             if ( streakTypeIdList.IsNullOrWhiteSpace() )
             {
@@ -310,8 +310,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/StreakTypes/MarkEngagement/{streakTypeId}" )]
         [Obsolete( "The groupId and scheduleId params will be removed. Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead." )]
         [RockObsolete( "1.12" )]
-        public virtual HttpResponseMessage MarkEngagement( int streakTypeId, [FromUri]int? personId = null,
-            [FromUri]DateTime? dateOfEngagement = null, [FromUri]int? groupId = null, [FromUri]int? locationId = null, [FromUri]int? scheduleId = null )
+        public virtual HttpResponseMessage MarkEngagement( int streakTypeId, [FromUri] int? personId = null,
+            [FromUri] DateTime? dateOfEngagement = null, [FromUri] int? groupId = null, [FromUri] int? locationId = null, [FromUri] int? scheduleId = null )
         {
             /* 1/31/2020 BJW
              *
@@ -349,7 +349,8 @@ namespace Rock.Rest.Controllers
             if ( scheduleId.HasValue || groupId.HasValue )
             {
                 // This condition should be removed in v13 as these params will be removed
-                var attendanceEngagementArgs = new AttendanceEngagementArgs {
+                var attendanceEngagementArgs = new AttendanceEngagementArgs
+                {
                     GroupId = groupId,
                     LocationId = locationId,
                     ScheduleId = scheduleId
@@ -379,16 +380,19 @@ namespace Rock.Rest.Controllers
         /// Notes that the person has engaged through interaction. This will update the occurrence map and also add an
         /// interaction record (if enabled).
         /// </summary>
-        /// <param name="streakTypeId"></param>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <param name="interactionEngagementArgs">Data used to create an interaction record if enabled in the streak type</param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="dateOfEngagement">Defaults to now</param>
-        /// <param name="interactionEngagementArgs">Data used to create an interaction record if enabled in the streak type</param>
+        /// <param name="returnAchievements">if set to <c>true</c> [return achievements].</param>
         /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/MarkInteractionEngagement/{streakTypeId}" )]
-        public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody]InteractionEngagementArgs interactionEngagementArgs,
-            [FromUri]int? personId = null, [FromUri]DateTime? dateOfEngagement = null )
+        public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody] InteractionEngagementArgs interactionEngagementArgs,
+            [FromUri] int? personId = null, [FromUri] DateTime? dateOfEngagement = null, [FromUri] bool returnAchievements = false )
         {
             // Make sure the streak type exists
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
@@ -417,25 +421,35 @@ namespace Rock.Rest.Controllers
 
             // Save to the DB
             var rockContext = Service.Context as RockContext;
-            rockContext.SaveChanges();
+            var result = rockContext.SaveChanges( new SaveChangesArgs { IsAchievementsEnabled = returnAchievements } );
 
-            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            if ( returnAchievements )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, new MarkEngagementResponse( result.AchievementAttempts ) );
+            }
+            else
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            }
         }
 
         /// <summary>
         /// Notes that the person has engaged through attendance. This will update the occurrence map and also add an
         /// attendance record (if enabled).
         /// </summary>
-        /// <param name="streakTypeId"></param>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <param name="attendanceEngagementArgs">Optional data used to create an attendance record if enabled in the streak type</param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="dateOfEngagement">Defaults to now</param>
-        /// <param name="attendanceEngagementArgs">Optional data used to create an attendance record if enabled in the streak type</param>
+        /// <param name="returnAchievements">if set to <c>true</c> [return achievements].</param>
         /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/MarkAttendanceEngagement/{streakTypeId}" )]
-        public virtual HttpResponseMessage MarkAttendanceEngagement( int streakTypeId, [FromBody]AttendanceEngagementArgs attendanceEngagementArgs,
-            [FromUri]int? personId = null, [FromUri]DateTime? dateOfEngagement = null )
+        public virtual HttpResponseMessage MarkAttendanceEngagement( int streakTypeId, [FromBody] AttendanceEngagementArgs attendanceEngagementArgs,
+            [FromUri] int? personId = null, [FromUri] DateTime? dateOfEngagement = null, [FromUri] bool returnAchievements = false )
         {
             // Make sure the streak type exists
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
@@ -464,9 +478,16 @@ namespace Rock.Rest.Controllers
 
             // Save to the DB
             var rockContext = Service.Context as RockContext;
-            rockContext.SaveChanges();
+            var result = rockContext.SaveChanges( new SaveChangesArgs { IsAchievementsEnabled = returnAchievements } );
 
-            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            if ( returnAchievements )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, new MarkEngagementResponse( result.AchievementAttempts ) );
+            }
+            else
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            }
         }
 
         /// <summary>
@@ -485,6 +506,76 @@ namespace Rock.Rest.Controllers
             }
 
             return personId.Value;
+        }
+
+        /// <summary>
+        /// Mark Engagement Response
+        /// </summary>
+        public sealed class MarkEngagementResponse
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MarkEngagementResponse"/> class.
+            /// </summary>
+            /// <param name="achievementAttempts">The achievement attempts.</param>
+            public MarkEngagementResponse( List<AchievementAttempt> achievementAttempts )
+            {
+                if ( achievementAttempts == null )
+                {
+                    AchievementAttempts = new List<AttemptListItem>();
+                }
+                else
+                {
+                    AchievementAttempts = achievementAttempts.Select( aa => new AttemptListItem( aa ) ).ToList();
+                }
+            }
+
+            /// <summary>
+            /// Gets the achievement attempts.
+            /// </summary>
+            public List<AttemptListItem> AchievementAttempts { get; private set; }
+
+            /// <summary>
+            /// Attempt List Item
+            /// </summary>
+            public sealed class AttemptListItem
+            {
+                /// <summary>
+                /// Initializes a new instance of the <see cref="MarkEngagementResponse"/> class.
+                /// </summary>
+                public AttemptListItem( AchievementAttempt achievementAttempt )
+                {
+                    AchievementAttemptId = achievementAttempt.Id;
+                    AchievementTypeId = achievementAttempt.AchievementTypeId;
+                    AchievementTypeGuid = achievementAttempt.AchievementType?.Guid ?? AchievementTypeCache.Get( AchievementTypeId )?.Guid;
+                    Progress = achievementAttempt.Progress;
+                    IsComplete = Progress >= 1;
+                }
+
+                /// <summary>
+                /// Gets or sets the achievement attempt identifier.
+                /// </summary>
+                public int AchievementAttemptId { get; private set; }
+
+                /// <summary>
+                /// Gets or sets the achievement type identifier.
+                /// </summary>
+                public int AchievementTypeId { get; private set; }
+
+                /// <summary>
+                /// Gets or sets the achievement type unique identifier.
+                /// </summary>
+                public Guid? AchievementTypeGuid { get; private set; }
+
+                /// <summary>
+                /// Gets or sets the progress.
+                /// </summary>
+                public decimal Progress { get; private set; }
+
+                /// <summary>
+                /// Gets or sets a value indicating whether this instance is complete.
+                /// </summary>
+                public bool IsComplete { get; private set; }
+            }
         }
     }
 }

@@ -35,74 +35,495 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    #region Block Attributes
-
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
     [DisplayName( "Transaction Entry" )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
-    [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
-    [FinancialGatewayField( "ACH Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false,
-        Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
-    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
-        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 4 )]
-    [CodeEditorField( "Account Header Template", "The Lava Template to use as the amount input label for each account", CodeEditorMode.Lava, CodeEditorTheme.Rock, 50, true, "{{ Account.PublicName }}", order: 3 )]
-    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 7 )]
-    [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
-        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 8 )]
-    [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow",
-        "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
-    [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 10, "DisplayPhone" )]
-    [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 11, "DisplayEmail" )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
-        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 12 )]
-    [SystemCommunicationField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 13, "ConfirmAccountTemplate" )]
-    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
-    // Text Options
+    #region Block Attributes
 
-    [TextField( "Panel Title", "The text to display in panel heading", false, "Gifts", "Text Options", 14 )]
-    [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 15 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 16 )]
-    [TextField( "Personal Info Title", "The text to display as heading of section for entering personal information.", false, "Personal Information", "Text Options", 17 )]
-    [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 18 )]
-    [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 19 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+    #region Default Category
+
+    [FinancialGatewayField( "Credit Card Gateway",
+        Key = AttributeKey.CCGateway,
+        Description = "The payment gateway to use for Credit Card transactions.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 0 )]
+
+    [FinancialGatewayField( "ACH Gateway",
+        Key = AttributeKey.ACHGateway,
+        Description = "The payment gateway to use for ACH (bank account) transactions.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 1 )]
+
+    [TextField( "Batch Name Prefix",
+        Key = AttributeKey.BatchNamePrefix,
+        Description = "The batch prefix name to use when creating a new batch.",
+        IsRequired = false,
+        DefaultValue = "Online Giving",
+        Order = 2 )]
+
+    [DefinedValueField( "Source",
+        Key = AttributeKey.Source,
+        Description = "The Financial Source Type to use when creating transactions.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
+        Order = 3 )]
+
+    [BooleanField( "Impersonation",
+        Key = AttributeKey.Impersonation,
+        Description = "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users.",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [CustomDropdownListField( "Layout Style",
+        Key = AttributeKey.LayoutStyle,
+        Description = "How the sections of this page should be displayed.",
+        ListSource = "Vertical,Fluid",
+        IsRequired = false,
+        DefaultValue = "Vertical",
+        Order = 5 )]
+
+    [CodeEditorField( "Account Header Template",
+        Key = AttributeKey.AccountHeaderTemplate,
+        Description = "The Lava Template to use as the amount input label for each account.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 50,
+        IsRequired = true,
+        DefaultValue = "{{ Account.PublicName }}",
+        Order = 6 )]
+
+    [AccountsField( "Accounts",
+        Key = AttributeKey.Accounts,
+        Description = "The accounts to display.  By default all active accounts with a Public Name will be displayed.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 7 )]
+
+    [BooleanField( "Additional Accounts",
+        Key = AttributeKey.AdditionalAccounts,
+        Description = "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available.",
+        TrueText = "Display option for selecting additional accounts",
+        FalseText = "Don't display option",
+        DefaultBooleanValue = true,
+        Order = 8 )]
+
+    [BooleanField( "Scheduled Transactions",
+        Key = AttributeKey.AllowScheduled,
+        Description = "If the selected gateway(s) allow scheduled transactions, should that option be provided to user.",
+        TrueText = "Allow",
+        FalseText = "Don't Allow",
+        DefaultBooleanValue = true,
+        Order = 9 )]
+
+    [BooleanField( "Prompt for Phone",
+        Key = AttributeKey.DisplayPhone,
+        Description = "Should the user be prompted for their phone number?",
+        DefaultBooleanValue = false,
+        Order = 10 )]
+
+    [BooleanField( "Prompt for Email",
+        Key = AttributeKey.DisplayEmail,
+        Description = "Should the user be prompted for their email address?",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+
+    [GroupLocationTypeField( "Address Type",
+        Key = AttributeKey.AddressType,
+        Description = "The location type to use for the person's address.",
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        Order = 12 )]
+
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        Order = 13 )]
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 14 )]
+
+    [BooleanField( "Enable Comment Entry",
+        Key = AttributeKey.EnableCommentEntry,
+        Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)",
+        DefaultBooleanValue = false,
+        Order = 15 )]
+
+    [TextField( "Comment Entry Label",
+        Key = AttributeKey.CommentEntryLabel,
+        Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
+        IsRequired = false,
+        DefaultValue = "Comment",
+        Order = 16 )]
+
+    [BooleanField( "Enable Business Giving",
+        Key = AttributeKey.EnableBusinessGiving,
+        Description = "Should the option to give as a business be displayed?",
+        DefaultBooleanValue = true,
+        Order = 17 )]
+
+    [BooleanField( "Enable Anonymous Giving",
+        Key = AttributeKey.EnableAnonymousGiving,
+        Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
+        DefaultBooleanValue = false,
+        Order = 18 )]
+
+    #endregion Default Category
+
+    #region Email Templates
+
+    [SystemCommunicationField( "Confirm Account",
+        Key = AttributeKey.ConfirmAccountTemplate,
+        Description = "Confirm Account Email Template",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Category = CategoryKey.EmailTemplates,
+        Order = 1 )]
+
+    [SystemCommunicationField( "Receipt Email",
+        Key = AttributeKey.ReceiptEmail,
+        Description = "The system email to use to send the receipt.",
+        IsRequired = false,
+        Category = CategoryKey.EmailTemplates,
+        Order = 2 )]
+
+    #endregion Email Templates
+
+    #region Text Options
+
+    [TextField( "Panel Title",
+        Key = AttributeKey.PanelTitle,
+        Description = "The text to display in panel heading",
+        IsRequired = false,
+        DefaultValue = "Gifts",
+        Category = CategoryKey.TextOptions,
+        Order = 1 )]
+
+    [TextField( "Contribution Info Title",
+        Key = AttributeKey.ContributionInfoTitle,
+        Description = "The text to display as heading of section for selecting account and amount.",
+        IsRequired = false,
+        DefaultValue = "Contribution Information",
+        Category = CategoryKey.TextOptions,
+        Order = 2 )]
+
+    [TextField( "Add Account Text",
+        Key = AttributeKey.AddAccountText,
+        Description = "The button text to display for adding an additional account",
+        IsRequired = false,
+        DefaultValue = "Add Another Account",
+        Category = CategoryKey.TextOptions,
+        Order = 3 )]
+
+    [TextField( "Personal Info Title",
+        Key = AttributeKey.PersonalInfoTitle,
+        Description = "The text to display as heading of section for entering personal information.",
+        IsRequired = false,
+        DefaultValue = "Personal Information",
+        Category = CategoryKey.TextOptions,
+        Order = 4 )]
+
+    [TextField( "Payment Info Title",
+        Key = AttributeKey.PaymentInfoTitle,
+        Description = "The text to display as heading of section for entering credit card or bank account information.",
+        IsRequired = false,
+        DefaultValue = "Payment Information",
+        Category = CategoryKey.TextOptions,
+        Order = 5 )]
+
+    [TextField( "Confirmation Title",
+        Key = AttributeKey.ConfirmationTitle,
+        Description = "The text to display as heading of section for confirming information entered.",
+        IsRequired = false,
+        DefaultValue = "Confirm Information",
+        Category = CategoryKey.TextOptions,
+        Order = 6 )]
+
+    [CodeEditorField( "Confirmation Header",
+        Key = AttributeKey.ConfirmationHeader,
+        Description = "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = AttributeString.ConfirmationHeader ,
+        Category = CategoryKey.TextOptions,
+        Order = 7 )]
+
+    [CodeEditorField( "Confirmation Footer",
+        Key = AttributeKey.ConfirmationFooter,
+        Description = "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = AttributeString.ConfirmationFooter,
+        Category = CategoryKey.TextOptions,
+        Order = 8)]
+
+    [TextField( "Success Title",
+        Key = AttributeKey.SuccessTitle,
+        Description = "The text to display as heading of section for displaying details of gift.",
+        IsRequired = false,
+        DefaultValue = "Gift Information",
+        Category = CategoryKey.TextOptions,
+        Order = 9 )]
+
+    [CodeEditorField( "Success Header",
+        Key = AttributeKey.SuccessHeader,
+        Description = "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = AttributeString.SuccessHeader,
+        Category = CategoryKey.TextOptions,
+        Order = 10)]
+
+    [CodeEditorField( "Success Footer",
+        Key = AttributeKey.SuccessFooter,
+        Description = "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = @"",
+        Category = CategoryKey.TextOptions,
+        Order = 11)]
+
+    [TextField( "Save Account Title",
+        Key = AttributeKey.SaveAccountTitle,
+        Description = "The text to display as heading of section for saving payment information.",
+        IsRequired = false,
+        DefaultValue = "Make Giving Even Easier",
+        Category = CategoryKey.TextOptions,
+        Order = 12 )]
+
+    [CodeEditorField( "Payment Comment",
+        Key = AttributeKey.PaymentComment,
+        Description = AttributeString.PaymentCommentDescription,
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = "Online Contribution",
+        Category = CategoryKey.TextOptions,
+        Order = 13 )]
+
+    [TextField( "Anonymous Giving Tooltip",
+        Key = AttributeKey.AnonymousGivingTooltip,
+        Description = "The tooltip for the 'Give Anonymously' checkbox.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = CategoryKey.TextOptions,
+        Order = 14 )]
+
+    #endregion Text Options
+
+    #region Advanced
+
+    [BooleanField( "Allow Account Options In URL",
+        Key = AttributeKey.AllowAccountsInURL,
+        Description = "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true",
+        DefaultBooleanValue = false,
+        Category =CategoryKey.Advanced,
+        Order = 1 )]
+
+    [BooleanField( "Only Public Accounts In URL",
+        Key = AttributeKey.OnlyPublicAccountsInURL,
+        Description = "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.",
+        DefaultBooleanValue = true,
+        Category = CategoryKey.Advanced,
+        Order = 2 )]
+
+    [CodeEditorField( "Invalid Account Message",
+        Key = AttributeKey.InvalidAccountMessage,
+        Description = "Display this text (HTML) as an error alert if an invalid 'account' or 'glaccount' is passed through the URL.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = "The configured financial accounts are not valid for accepting financial transactions.",
+        Category = CategoryKey.Advanced,
+        Order = 3 )]
+
+    [CustomDropdownListField( "Account Campus Context",
+        Key = AttributeKey.AccountCampusContext,
+        Description = "Should any context be applied to the Account List",
+        ListSource = "-1^No Account Campus Context Filter Applied,0^Only Accounts with Current Campus Context,1^Accounts with No Campus and Current Campus Context",
+        IsRequired = false,
+        DefaultValue = "-1",
+        Category = CategoryKey.Advanced,
+        Order = 4 )]
+
+    [AttributeField( "Allowed Transaction Attributes From URL",
+        Key = AttributeKey.AllowedTransactionAttributesFromURL,
+        Description = "Specify any Transaction Attributes that can be populated from the URL.  The URL should be formatted like: ?Attribute_AttributeKey1=hello&Attribute_AttributeKey2=world",
+        EntityTypeGuid = Rock.SystemGuid.EntityType.FINANCIAL_TRANSACTION,
+        IsRequired = false,
+        AllowMultiple = true,
+        DefaultValue = "",
+        Category = CategoryKey.Advanced,
+        Order = 5 )]
+
+    [DefinedValueField( "Transaction Type",
+        Key = AttributeKey.TransactionType,
+        Description = "",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION,
+        Category = CategoryKey.Advanced,
+        Order = 6 )]
+
+    [EntityTypeField( "Transaction Entity Type",
+        Key = AttributeKey.TransactionEntityType,
+        Description = "The Entity Type for the Transaction Detail Record (usually left blank)",
+        IsRequired = false,
+        Category = CategoryKey.Advanced,
+        Order = 7 )]
+
+    [TextField( "Entity Id Param",
+        Key = AttributeKey.EntityIdParam,
+        Description = "The Page Parameter that will be used to set the EntityId value for the Transaction Detail Record (requires Transaction Entry Type to be configured)",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = CategoryKey.Advanced,
+        Order = 8 )]
+
+    [CodeEditorField( "Transaction Header",
+        Key = AttributeKey.TransactionHeader,
+        Description = "The Lava template which will be displayed prior to the Amount entry",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = CategoryKey.Advanced,
+        Order = 9 )]
+
+    [BooleanField( "Enable Initial Back button",
+        Key = AttributeKey.EnableInitialBackbutton,
+        Description = "Show a Back button on the initial page that will navigate to wherever the user was prior to the transaction entry",
+        DefaultBooleanValue = false,
+        Category = CategoryKey.Advanced,
+        Order = 10 )]
+
+    #endregion Advanced
+
+    #endregion Block Attributes
+
+    public partial class TransactionEntry : Rock.Web.UI.RockBlock
+    {
+        #region Block Keys
+
+        private static class CategoryKey
+        {
+            public const string EmailTemplates = "Email Templates";
+            public const string TextOptions = "Text Options";
+            public const string Advanced = "Advanced";
+        }
+
+        private static class AttributeKey
+        {
+            // Default Category
+            public const string CCGateway = "CCGateway";
+            public const string ACHGateway = "ACHGateway";
+            public const string BatchNamePrefix = "BatchNamePrefix";
+            public const string Source = "Source";
+            public const string Impersonation = "Impersonation";
+            public const string LayoutStyle = "LayoutStyle";
+            public const string AccountHeaderTemplate = "AccountHeaderTemplate";
+            public const string Accounts = "Accounts";
+            public const string AdditionalAccounts = "AdditionalAccounts";
+            public const string AllowScheduled = "AllowScheduled";
+            public const string DisplayPhone = "DisplayPhone";
+            public const string DisplayEmail = "DisplayEmail";
+            public const string AddressType = "AddressType";
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
+            public const string EnableCommentEntry = "EnableCommentEntry";
+            public const string CommentEntryLabel = "CommentEntryLabel";
+            public const string EnableBusinessGiving = "EnableBusinessGiving";
+            public const string EnableAnonymousGiving = "EnableAnonymousGiving";
+
+            // Email Templates Category
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+            public const string ReceiptEmail = "ReceiptEmail";
+
+            // Text Options Category
+            public const string PanelTitle = "PanelTitle";
+            public const string ContributionInfoTitle = "ContributionInfoTitle";
+            public const string AddAccountText = "AddAccountText";
+            public const string PersonalInfoTitle = "PersonalInfoTitle";
+            public const string PaymentInfoTitle = "PaymentInfoTitle";
+            public const string ConfirmationTitle = "ConfirmationTitle";
+            public const string SuccessTitle = "SuccessTitle";
+            public const string SaveAccountTitle = "SaveAccountTitle";
+            public const string ConfirmationHeader = "ConfirmationHeader";
+            public const string ConfirmationFooter = "ConfirmationFooter";
+            public const string SuccessHeader = "SuccessHeader";
+            public const string SuccessFooter = "SuccessFooter";
+            public const string PaymentComment = "PaymentComment";
+            public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
+
+            // Advanced Category
+            public const string AllowAccountsInURL = "AllowAccountsInURL";
+            public const string OnlyPublicAccountsInURL = "OnlyPublicAccountsInURL";
+            public const string InvalidAccountMessage = "InvalidAccountMessage";
+            public const string AccountCampusContext = "AccountCampusContext";
+            public const string AllowedTransactionAttributesFromURL = "AllowedTransactionAttributesFromURL";
+            public const string TransactionType = "TransactionType";
+            public const string TransactionEntityType = "TransactionEntityType";
+            public const string EntityIdParam = "EntityIdParam";
+            public const string TransactionHeader = "TransactionHeader";
+            public const string EnableInitialBackbutton = "EnableInitialBackbutton";
+        }
+
+        private static class AttributeString
+        {
+            public const string ConfirmationHeader = @"
 <p>
     Please confirm the information below. Once you have confirmed that the information is
     accurate click the 'Finish' button to complete your transaction.
 </p>
-", "Text Options", 20 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+";
+            public const string ConfirmationFooter = @"
 <div class='alert alert-info'>
     By clicking the 'finish' button below I agree to allow {{ OrganizationName }}
     to transfer the amount above from my account. I acknowledge that I may
     update the transaction information at any time by returning to this website. Please
     call the Finance Office if you have any additional questions.
 </div>
-", "Text Options", 21 )]
-    [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 22 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+";
+            public const string SuccessHeader = @"
 <p>
     Thank you for your generous contribution.  Your support is helping {{ 'Global' | Attribute:'OrganizationName' }} actively
     achieve our mission.  We are so grateful for your commitment.
 </p>
-", "Text Options", 23 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
-", "Text Options", 24 )]
-    [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 25 )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 26 )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 27 )]
-    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 28 )]
-    [CodeEditorField( "Payment Comment", @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>. Merge fields include: <pre>CurrentPerson: {},
+";
+
+            public const string PaymentCommentDescription = @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>. Merge fields include: <pre>CurrentPerson: {},
 PageParameters {},
 TransactionDateTime: '8/29/2016',
 CurrencyType: {
@@ -140,33 +561,24 @@ TransactionAccountDetails: [
     'PublicName': 'Building Fund',
     'AmountFormatted': '$10.00'
   }
-]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
-    [BooleanField( "Enable Comment Entry", "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
-    [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
-    [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 31 )]
-    [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
-    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 33 )]
+]</pre>";
+        }
 
-    #endregion
+        private static class PageParameterKey
+        {
+            public const string AccountGlCodes = "AccountGlCodes";
+            public const string AccountIds = "AccountIds";
+            public const string AmountLimit = "AmountLimit";
+            public const string AttributePrefix = "Attribute_";
+            public const string Frequency = "Frequency";
+            public const string Person = "Person";
+            public const string ScheduledTransactionId = "ScheduledTransactionId";
+            public const string StartDate = "StartDate";
+            public const string Transfer = "Transfer";
+        }
 
-    #region Advanced Block Attributes
+        #endregion Block Keys
 
-    [BooleanField( "Allow Account Options In URL", "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true", false, "Advanced", key: "AllowAccountsInURL", order: 1 )]
-    [BooleanField( "Only Public Accounts In URL", "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.", true, "Advanced", 2 )]
-    [CodeEditorField( "Invalid Account Message", "Display this text (HTML) as an error alert if an invalid 'account' or 'glaccount' is passed through the URL.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "Advanced", 3 )]
-    [CustomDropdownListField( "Account Campus Context", "Should any context be applied to the Account List", "-1^No Account Campus Context Filter Applied,0^Only Accounts with Current Campus Context,1^Accounts with No Campus and Current Campus Context", false, "-1", "Advanced", 4 )]
-    [AttributeField( Rock.SystemGuid.EntityType.FINANCIAL_TRANSACTION, "Allowed Transaction Attributes From URL", "Specify any Transaction Attributes that can be populated from the URL.  The URL should be formatted like: ?Attribute_AttributeKey1=hello&Attribute_AttributeKey2=world", false, true, "", "Advanced", 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Type", "", true, false, Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION, "Advanced", order: 6 )]
-    [EntityTypeField( "Transaction Entity Type", "The Entity Type for the Transaction Detail Record (usually left blank)", false, "Advanced", order: 7 )]
-    [TextField( "Entity Id Param", "The Page Parameter that will be used to set the EntityId value for the Transaction Detail Record (requires Transaction Entry Type to be configured)", false, "", "Advanced", order: 8 )]
-    [CodeEditorField( "Transaction Header", "The Lava template which will be displayed prior to the Amount entry", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "Advanced", order: 9 )]
-    [BooleanField( "Enable Initial Back button", "Show a Back button on the initial page that will navigate to wherever the user was prior to the transaction entry", false, "Advanced", order: 10 )]
-
-    #endregion
-
-    public partial class TransactionEntry : Rock.Web.UI.RockBlock
-    {
         #region Fields
 
         private Person _targetPerson = null;
@@ -300,8 +712,8 @@ TransactionAccountDetails: [
 
             this.BlockUpdated += TransactionEntry_BlockUpdated;
 
-            _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
-            _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
+            _allowAccountsInUrl = GetAttributeValue( AttributeKey.AllowAccountsInURL ).AsBoolean( false );
+            _onlyPublicAccountsInUrl = GetAttributeValue( AttributeKey.OnlyPublicAccountsInURL ).AsBoolean( true );
 
             // Add handler for page navigation
             RockPage page = Page as RockPage;
@@ -318,7 +730,7 @@ TransactionAccountDetails: [
             }
 
             // Determine account campus context mode
-            _accountCampusContextFilter = GetAttributeValue( "AccountCampusContext" ).AsType<int>();
+            _accountCampusContextFilter = GetAttributeValue( AttributeKey.AccountCampusContext ).AsType<int>();
             if ( _accountCampusContextFilter > -1 )
             {
                 var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
@@ -329,7 +741,7 @@ TransactionAccountDetails: [
             }
 
             // Determine account campus context mode
-            _accountCampusContextFilter = GetAttributeValue( "AccountCampusContext" ).AsType<int>();
+            _accountCampusContextFilter = GetAttributeValue( AttributeKey.AccountCampusContext ).AsType<int>();
             if ( _accountCampusContextFilter > -1 )
             {
                 var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
@@ -376,9 +788,9 @@ TransactionAccountDetails: [
                 string accountParameterType = string.Empty;
                 using ( var rockContext = new RockContext() )
                 {
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountIds" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.AccountIds ) ) )
                     {
-                        var accountIds = Server.UrlDecode( PageParameter( "AccountIds" ) );
+                        var accountIds = Server.UrlDecode( PageParameter( PageParameterKey.AccountIds ) );
                         var financialAccountService = new FinancialAccountService( rockContext );
 
                         accountParameterType = "invalid";
@@ -413,9 +825,9 @@ TransactionAccountDetails: [
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountGlCodes" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.AccountGlCodes ) ) )
                     {
-                        var accountCodes = Server.UrlDecode( PageParameter( "AccountGlCodes" ) );
+                        var accountCodes = Server.UrlDecode( PageParameter( PageParameterKey.AccountGlCodes ) );
                         var financialAccountService = new FinancialAccountService( rockContext );
 
                         Dictionary<string, decimal> glAccountParameter = new Dictionary<string, decimal>();
@@ -452,10 +864,10 @@ TransactionAccountDetails: [
                     }
                 }
 
-                if ( accountParameterType == "invalid" && !string.IsNullOrEmpty( GetAttributeValue( "InvalidAccountMessage" ) ) )
+                if ( accountParameterType == "invalid" )
                 {
                     SetPage( 0 );
-                    ShowMessage( NotificationBoxType.Danger, "Invalid Account Provided", GetAttributeValue( "InvalidAccountMessage" ) );
+                    ShowMessage( NotificationBoxType.Danger, "Invalid Account Provided", GetAttributeValue( AttributeKey.InvalidAccountMessage ) );
                     return;
                 }
             }
@@ -504,9 +916,9 @@ TransactionAccountDetails: [
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "Transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Transfer ) ) && !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ScheduledTransactionId ) ) )
             {
-                InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
+                InitializeTransfer( PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull() );
             }
 
             if ( !Page.IsPostBack )
@@ -954,7 +1366,7 @@ TransactionAccountDetails: [
                                 mergeFields.Add( "Person", person );
                                 mergeFields.Add( "User", user );
 
-                                var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                                var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountTemplate ).AsGuid() );
                                 emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
@@ -976,6 +1388,7 @@ TransactionAccountDetails: [
                                 savedAccount.ReferenceNumber = referenceNumber;
                                 savedAccount.Name = txtSaveAccount.Text;
                                 savedAccount.TransactionCode = TransactionCode;
+                                savedAccount.GatewayPersonIdentifier = paymentDetail.GatewayPersonIdentifier;
                                 savedAccount.FinancialGatewayId = financialGateway.Id;
                                 savedAccount.FinancialPaymentDetail = new FinancialPaymentDetail();
                                 savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
@@ -1038,13 +1451,13 @@ TransactionAccountDetails: [
         private IEntity GetTransactionEntity()
         {
             IEntity transactionEntity = null;
-            Guid? transactionEntityTypeGuid = GetAttributeValue( "TransactionEntityType" ).AsGuidOrNull();
+            Guid? transactionEntityTypeGuid = GetAttributeValue( AttributeKey.TransactionEntityType ).AsGuidOrNull();
             if ( transactionEntityTypeGuid.HasValue )
             {
                 var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
                 if ( transactionEntityType != null )
                 {
-                    var entityId = this.PageParameter( this.GetAttributeValue( "EntityIdParam" ) ).AsIntegerOrNull();
+                    var entityId = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) ).AsIntegerOrNull();
                     if ( entityId.HasValue )
                     {
                         var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
@@ -1064,9 +1477,9 @@ TransactionAccountDetails: [
         private void SetTargetPerson( RockContext rockContext )
         {
             // If impersonation is allowed, and a valid person key was used, set the target to that person
-            if ( GetAttributeValue( "Impersonation" ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false )
             {
-                string personKey = PageParameter( "Person" );
+                string personKey = PageParameter( PageParameterKey.Person );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
                 {
                     var incrementKeyUsage = !this.IsPostBack;
@@ -1090,11 +1503,11 @@ TransactionAccountDetails: [
 
         private void SetGatewayOptions( RockContext rockContext )
         {
-            _ccGateway = GetGateway( rockContext, "CCGateway" );
+            _ccGateway = GetGateway( rockContext, AttributeKey.CCGateway );
             _ccGatewayComponent = GetGatewayComponent( rockContext, _ccGateway );
             bool ccEnabled = _ccGatewayComponent != null;
 
-            _achGateway = GetGateway( rockContext, "ACHGateway" );
+            _achGateway = GetGateway( rockContext, AttributeKey.ACHGateway );
             _achGatewayComponent = GetGatewayComponent( rockContext, _achGateway );
             bool achEnabled = _achGatewayComponent != null;
 
@@ -1106,7 +1519,7 @@ TransactionAccountDetails: [
             _ccSavedAccountFreqSupported = GetSavedAcccountFreqSupported( _ccGatewayComponent );
             _achSavedAccountFreqSupported = GetSavedAcccountFreqSupported( _achGatewayComponent );
 
-            bool allowScheduled = GetAttributeValue( "AllowScheduled" ).AsBoolean();
+            bool allowScheduled = GetAttributeValue( AttributeKey.AllowScheduled ).AsBoolean();
             if ( allowScheduled && ( ccEnabled || achEnabled ) )
             {
                 var supportedFrequencies = ccEnabled ? _ccGatewayComponent.SupportedPaymentSchedules : _achGatewayComponent.SupportedPaymentSchedules;
@@ -1137,18 +1550,18 @@ TransactionAccountDetails: [
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.StartDate ) ) )
                     {
-                        dtpStartDate.SelectedDate = PageParameter( "StartDate" ).AsDateTime() ?? RockDateTime.Today;
+                        dtpStartDate.SelectedDate = PageParameter( PageParameterKey.StartDate ).AsDateTime() ?? RockDateTime.Today;
                         if ( dtpStartDate.SelectedDate < RockDateTime.Today )
                         {
                             dtpStartDate.SelectedDate = RockDateTime.Today;
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Frequency ) ) )
                     {
-                        var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
+                        var frequencyValues = PageParameter( PageParameterKey.Frequency ).Split( new char[] { '^' } );
                         if ( btnFrequency.Items.FindByValue( frequencyValues[0] ) != null )
                         {
                             btnFrequency.SelectedValue = frequencyValues[0];
@@ -1325,7 +1738,7 @@ TransactionAccountDetails: [
                     mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
                 }
 
-                mergeFields.Add( "AmountLimit", this.PageParameter( "AmountLimit" ).AsDecimalOrNull() );
+                mergeFields.Add( "AmountLimit", this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull() );
 
                 if ( hfTransactionGuid.Value.AsGuidOrNull().HasValue )
                 {
@@ -1333,11 +1746,11 @@ TransactionAccountDetails: [
                     mergeFields.Add( "FinancialTransaction", financialTransaction );
                 }
 
-                lTransactionHeader.Text = GetAttributeValue( "TransactionHeader" ).ResolveMergeFields( mergeFields );
-                lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( mergeFields );
-                lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( mergeFields );
-                lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( mergeFields );
-                lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( mergeFields );
+                lTransactionHeader.Text = GetAttributeValue( AttributeKey.TransactionHeader ).ResolveMergeFields( mergeFields );
+                lConfirmationHeader.Text = GetAttributeValue( AttributeKey.ConfirmationHeader ).ResolveMergeFields( mergeFields );
+                lConfirmationFooter.Text = GetAttributeValue( AttributeKey.ConfirmationFooter ).ResolveMergeFields( mergeFields );
+                lSuccessHeader.Text = GetAttributeValue( AttributeKey.SuccessHeader ).ResolveMergeFields( mergeFields );
+                lSuccessFooter.Text = GetAttributeValue( AttributeKey.SuccessFooter ).ResolveMergeFields( mergeFields );
             }
         }
 
@@ -1346,28 +1759,28 @@ TransactionAccountDetails: [
         /// </summary>
         private void SetControlOptions()
         {
-            FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
+            FluidLayout = GetAttributeValue( AttributeKey.LayoutStyle ) == "Fluid";
 
             // Set page/panel titles
-            lPanelTitle1.Text = GetAttributeValue( "PanelTitle" );
-            lPanelTitle2.Text = GetAttributeValue( "PanelTitle" );
-            lContributionInfoTitle.Text = GetAttributeValue( "ContributionInfoTitle" );
-            lPersonalInfoTitle.Text = GetAttributeValue( "PersonalInfoTitle" );
-            lPaymentInfoTitle.Text = GetAttributeValue( "PaymentInfoTitle" );
-            lConfirmationTitle.Text = GetAttributeValue( "ConfirmationTitle" );
-            lSuccessTitle.Text = GetAttributeValue( "SuccessTitle" );
-            lSaveAcccountTitle.Text = GetAttributeValue( "SaveAccountTitle" );
+            lPanelTitle1.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lPanelTitle2.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lContributionInfoTitle.Text = GetAttributeValue( AttributeKey.ContributionInfoTitle );
+            lPersonalInfoTitle.Text = GetAttributeValue( AttributeKey.PersonalInfoTitle );
+            lPaymentInfoTitle.Text = GetAttributeValue( AttributeKey.PaymentInfoTitle );
+            lConfirmationTitle.Text = GetAttributeValue( AttributeKey.ConfirmationTitle );
+            lSuccessTitle.Text = GetAttributeValue( AttributeKey.SuccessTitle );
+            lSaveAcccountTitle.Text = GetAttributeValue( AttributeKey.SaveAccountTitle );
 
-            btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
+            btnAddAccount.Title = GetAttributeValue( AttributeKey.AddAccountText );
 
             divRepeatingPayments.Visible = btnFrequency.Items.Count > 0;
 
-            bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
+            bool displayEmail = GetAttributeValue( AttributeKey.DisplayEmail ).AsBoolean();
             txtEmail.Visible = displayEmail;
             tdEmailConfirm.Visible = displayEmail;
             tdEmailReceipt.Visible = displayEmail;
 
-            DisplayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+            DisplayPhone = GetAttributeValue( AttributeKey.DisplayPhone ).AsBoolean();
             pnbPhone.Visible = DisplayPhone;
             pnbBusinessContactPhone.Visible = DisplayPhone;
             tdPhoneConfirm.Visible = DisplayPhone;
@@ -1381,10 +1794,10 @@ TransactionAccountDetails: [
             txtFirstName.Visible = person == null;
             txtLastName.Visible = person == null;
 
-            cbGiveAnonymously.Visible = GetAttributeValue( "EnableAnonymousGiving" ).AsBoolean();
-            cbGiveAnonymously.ToolTip = GetAttributeValue( "AnonymousGivingTooltip" );
+            cbGiveAnonymously.Visible = GetAttributeValue( AttributeKey.EnableAnonymousGiving ).AsBoolean();
+            cbGiveAnonymously.ToolTip = GetAttributeValue( AttributeKey.AnonymousGivingTooltip );
 
-            if ( GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() )
             {
                 tglGiveAsOption.Checked = true;
                 SetGiveAsOptions();
@@ -1395,8 +1808,8 @@ TransactionAccountDetails: [
             }
 
             // Evaluate if comment entry box should be displayed
-            txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
-            txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
+            txtCommentEntry.Label = GetAttributeValue( AttributeKey.CommentEntryLabel );
+            txtCommentEntry.Visible = GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean();
 
             // Set the payment method tabs
             bool ccEnabled = _ccGatewayComponent != null;
@@ -1439,10 +1852,10 @@ TransactionAccountDetails: [
         private void GetAccounts()
         {
             var rockContext = new RockContext();
-            var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
+            var selectedGuids = GetAttributeValues( AttributeKey.Accounts ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
+            bool additionalAccounts = GetAttributeValue( AttributeKey.AdditionalAccounts ).AsBoolean( true );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
@@ -1552,7 +1965,7 @@ TransactionAccountDetails: [
         /// </summary>
         private void SetGiveAsOptions()
         {
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
             acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
@@ -1610,7 +2023,7 @@ TransactionAccountDetails: [
             }
             else
             {
-                lPersonalInfoTitle.Text = GetAttributeValue( "PersonalInfoTitle" );
+                lPersonalInfoTitle.Text = GetAttributeValue( AttributeKey.PersonalInfoTitle );
             }
         }
 
@@ -1655,7 +2068,7 @@ TransactionAccountDetails: [
                     }
                 }
                 Guid addressTypeGuid = Guid.Empty;
-                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                if ( !Guid.TryParse( GetAttributeValue( AttributeKey.AddressType ), out addressTypeGuid ) )
                 {
                     addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 }
@@ -1758,7 +2171,7 @@ TransactionAccountDetails: [
                 person = personService.Get( personId );
             }
 
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( create && !givingAsBusiness )
             {
                 if ( person == null )
@@ -1775,8 +2188,8 @@ TransactionAccountDetails: [
 
                     if ( person == null )
                     {
-                        DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                        DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                        DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                        DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
 
                         // Create Person
                         person = new Person();
@@ -1844,7 +2257,7 @@ TransactionAccountDetails: [
                     GroupService.AddNewGroupAddress(
                         rockContext,
                         familyGroup,
-                        GetAttributeValue( "AddressType" ),
+                        GetAttributeValue( AttributeKey.AddressType ),
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
                         true );
                 }
@@ -1875,8 +2288,8 @@ TransactionAccountDetails: [
 
             if ( person == null )
             {
-                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
 
                 // Create Person
                 person = new Person();
@@ -1925,7 +2338,7 @@ TransactionAccountDetails: [
 
         private Person GetPersonOrBusiness( Person person )
         {
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( person != null && givingAsBusiness )
             {
                 var rockContext = new RockContext();
@@ -1956,8 +2369,8 @@ TransactionAccountDetails: [
 
                 if ( business == null )
                 {
-                    DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                    DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                    DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                    DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
 
                     // Create Person
                     business = new Person();
@@ -2085,7 +2498,7 @@ TransactionAccountDetails: [
 
             var errorMessages = new List<string>();
 
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
             // Validate that an amount was entered
             if ( SelectedAccounts.Sum( a => a.Amount ) <= 0 )
@@ -2093,7 +2506,7 @@ TransactionAccountDetails: [
                 errorMessages.Add( "Make sure you've entered an amount for at least one account" );
             }
 
-            var amountLimit = this.PageParameter( "AmountLimit" ).AsDecimalOrNull();
+            var amountLimit = this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull();
             if ( amountLimit.HasValue && SelectedAccounts.Sum( a => a.Amount ) > amountLimit.Value )
             {
                 errorMessages.Add( string.Format( "The maximum amount it limited to {0}", amountLimit.FormatAsCurrency() ) );
@@ -2149,7 +2562,7 @@ TransactionAccountDetails: [
                 errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
             }
 
-            bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
+            bool displayEmail = GetAttributeValue( AttributeKey.DisplayEmail ).AsBoolean();
             if ( displayEmail && string.IsNullOrWhiteSpace( txtEmail.Text ) )
             {
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
@@ -2314,7 +2727,7 @@ TransactionAccountDetails: [
 
             PaymentInfo paymentInfo = GetPaymentInfo();
 
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( !givingAsBusiness )
             {
                 if ( txtCurrentName.Visible )
@@ -2393,7 +2806,7 @@ TransactionAccountDetails: [
             paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( "TransactionType" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
@@ -2463,7 +2876,7 @@ TransactionAccountDetails: [
         private PaymentSchedule GetSchedule()
         {
             // Figure out if this is a one-time transaction or a future scheduled transaction
-            if ( GetAttributeValue( "AllowScheduled" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.AllowScheduled ).AsBoolean() )
             {
                 // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
                 int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
@@ -2516,7 +2929,7 @@ TransactionAccountDetails: [
                     return false;
                 }
 
-                bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+                bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
                 // only create/update the person if they are giving as a person. If they are giving as a Business, the person shouldn't be created this way
                 Person person = GetPerson( !givingAsBusiness );
@@ -2626,7 +3039,7 @@ TransactionAccountDetails: [
             }
 
             // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
-            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             Person person = GetPerson( !givingAsBusiness );
 
             // Add contact person if giving as a business and current person is unknow
@@ -2666,13 +3079,13 @@ TransactionAccountDetails: [
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
-            if ( GetAttributeValue( "EnableCommentEntry" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
             {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentComment" ) ) ? string.Format( "{0}: {1}", GetAttributeValue( "PaymentComment" ), txtCommentEntry.Text ) : txtCommentEntry.Text;
+                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentComment ) ) ? string.Format( "{0}: {1}", GetAttributeValue( AttributeKey.PaymentComment ), txtCommentEntry.Text ) : txtCommentEntry.Text;
             }
             else
             {
-                paymentInfo.Comment1 = GetAttributeValue( "PaymentComment" );
+                paymentInfo.Comment1 = GetAttributeValue( AttributeKey.PaymentComment );
             }
 
             var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
@@ -2768,9 +3181,9 @@ TransactionAccountDetails: [
                 mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
             }
 
-            string paymentComment = GetAttributeValue( "PaymentComment" ).ResolveMergeFields( mergeFields );
+            string paymentComment = GetAttributeValue( AttributeKey.PaymentComment ).ResolveMergeFields( mergeFields );
 
-            if ( GetAttributeValue( "EnableCommentEntry" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
             {
                 paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment ) ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text ) : txtCommentEntry.Text;
             }
@@ -2797,7 +3210,7 @@ TransactionAccountDetails: [
             scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
             Guid sourceGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
             {
                 var source = DefinedValueCache.Get( sourceGuid );
                 if ( source != null )
@@ -2879,11 +3292,6 @@ TransactionAccountDetails: [
                     }
                     catch { }
                     rockContext.SaveChanges();
-                    //content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
-                }
-                else
-                {
-                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
         }
@@ -2895,7 +3303,7 @@ TransactionAccountDetails: [
             transaction.TransactionDateTime = RockDateTime.Now;
             transaction.FinancialGatewayId = financialGateway.Id;
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( "TransactionType" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             transaction.TransactionTypeValueId = txnType.Id;
 
             transaction.Summary = paymentInfo.Comment1;
@@ -2907,7 +3315,7 @@ TransactionAccountDetails: [
             transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
             Guid sourceGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
             {
                 var source = DefinedValueCache.Get( sourceGuid );
                 if ( source != null )
@@ -2936,7 +3344,7 @@ TransactionAccountDetails: [
 
             // Get the batch
             var batch = batchService.Get(
-                GetAttributeValue( "BatchNamePrefix" ),
+                GetAttributeValue( AttributeKey.BatchNamePrefix ),
                 paymentInfo.CurrencyTypeValue,
                 paymentInfo.CreditCardTypeValue,
                 transaction.TransactionDateTime.Value,
@@ -2955,13 +3363,13 @@ TransactionAccountDetails: [
 
             transaction.LoadAttributes( rockContext );
 
-            var allowedTransactionAttributes = GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
+            var allowedTransactionAttributes = GetAttributeValue( AttributeKey.AllowedTransactionAttributesFromURL ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
 
             foreach ( KeyValuePair<string, AttributeValueCache> attr in transaction.AttributeValues )
             {
-                if ( PageParameters().ContainsKey( "Attribute_" + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
+                if ( PageParameters().ContainsKey( PageParameterKey.AttributePrefix + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
                 {
-                    attr.Value.Value = Server.UrlDecode( PageParameter( "Attribute_" + attr.Key ) );
+                    attr.Value.Value = Server.UrlDecode( PageParameter( PageParameterKey.AttributePrefix + attr.Key ) );
                 }
             }
 
@@ -3064,7 +3472,7 @@ TransactionAccountDetails: [
 
         private void SendReceipt( int transactionId )
         {
-            Guid? receiptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
             if ( receiptEmail.HasValue )
             {
                 // Queue a transaction to send receipts
@@ -3100,7 +3508,7 @@ TransactionAccountDetails: [
             pnlPayment.Visible = rblSavedAccount.Visible || divNewPayment.Visible;
 
             // only show the History back button if the previous URL was able to be determined and they have the EnableInitialBackbutton enabled;
-            lHistoryBackButton.Visible = GetAttributeValue( "EnableInitialBackbutton" ).AsBoolean() && lHistoryBackButton.HRef != "#" && page == 1;
+            lHistoryBackButton.Visible = GetAttributeValue( AttributeKey.EnableInitialBackbutton ).AsBoolean() && lHistoryBackButton.HRef != "#" && page == 1;
             btnPaymentInfoNext.Visible = page == 1;
             btnStep2PaymentPrev.Visible = page == 2 && !usingSavedAccount;
             aStep2Submit.Visible = page == 2 && !usingSavedAccount;
@@ -3283,7 +3691,7 @@ TransactionAccountDetails: [
 
             if ( accountItem != null && txtAccountAmount != null )
             {
-                string accountHeaderTemplate = this.GetAttributeValue( "AccountHeaderTemplate" );
+                string accountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
                 var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                 var account = new FinancialAccountService( new RockContext() ).Get( accountItem.Id );
                 mergeFields.Add( "Account", account );

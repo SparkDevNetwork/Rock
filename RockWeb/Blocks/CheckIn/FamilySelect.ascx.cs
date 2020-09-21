@@ -35,23 +35,23 @@ namespace RockWeb.Blocks.CheckIn
 
     [TextField( "Title",
         description: "Title to display.",
-        required: false, 
-        defaultValue: "Families", 
-        category: "Text", 
+        required: false,
+        defaultValue: "Families",
+        category: "Text",
         order: 5,
         key: "Title" )]
     [TextField( "Caption",
         description: "Caption to display.",
         required: false,
         defaultValue: "Select Your Family",
-        category: "Text", 
+        category: "Text",
         order: 6,
         key: "Caption" )]
-    [TextField( "No Option Message", 
+    [TextField( "No Option Message",
         description: "Text to display when there is not anyone in the family that can check-in",
         required: false,
-        defaultValue: "Sorry, no one in your family is eligible to check-in at this location.", 
-        category: "Text", 
+        defaultValue: "Sorry, no one in your family is eligible to check-in at this location.",
+        category: "Text",
         order: 7,
         key: "NoOptionMessage" )]
     public partial class FamilySelect : CheckInBlock
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.CheckIn
                     )
                     &&
                     (
-                        ! CurrentCheckInState.AllowCheckout ||
+                        !CurrentCheckInState.AllowCheckout ||
                         (
                             CurrentCheckInState.AllowCheckout &&
                             CurrentCheckInState.CheckIn.Families.All( f => f.CheckOutPeople.Count == 0 )
@@ -334,13 +334,26 @@ namespace RockWeb.Blocks.CheckIn
                 }
             };
 
-            if ( ProcessSelection( null, doNotProceedCondition, this.ConditionMessage ))
+            // use null as the processSelectionAlert since we will be doing the alert in Func<bool> doNotProceedCondition
+            // but we'll have to handle the exception ourselves if we don't specific a modal to show when an exception occurs
+            Rock.Web.UI.Controls.ModalAlert processSelectionAlert = null;
+
+            try
             {
-                return true;
+                if ( ProcessSelection( processSelectionAlert, doNotProceedCondition, this.ConditionMessage ) )
+                {
+                    return true;
+                }
+                else
+                {
+                    ClearSelection();
+                    return false;
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                ClearSelection();
+                // since we passed in null for the processSelectionAlert, we'll handle exceptions ourselves
+                maWarning.Show( ex.Message, Rock.Web.UI.Controls.ModalAlertType.Alert );
                 return false;
             }
         }

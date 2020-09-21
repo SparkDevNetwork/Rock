@@ -43,12 +43,23 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueCache"/> class.
         /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        public AttributeValueCache( int attributeId, int? entityId, string value )
+        {
+            AttributeId = attributeId;
+            EntityId = entityId;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueCache"/> class.
+        /// </summary>
         /// <param name="model">The model.</param>
         public AttributeValueCache( AttributeValue model )
+            : this( model.AttributeId, model.EntityId, model.Value )
         {
-            AttributeId = model.AttributeId;
-            Value = model.Value;
-            EntityId = model.EntityId;
         }
 
         #endregion
@@ -119,7 +130,7 @@ namespace Rock.Web.Cache
         /// The value formatted.
         /// </value>
         [LavaInclude]
-        [Newtonsoft.Json.JsonProperty]
+        [DataMember]
         public virtual string ValueFormatted
         {
             get

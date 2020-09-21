@@ -202,7 +202,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
         <ul class="list-unstyled note-list note-list-nested js-childnotes" style="{{ childNotesStyle }}">
         {%- for note in note.ViewableChildNotes -%}
-            {%- include '~~/Assets/Lava/NoteViewItem.lava' -%}
+            {%- include '~/Themes/NewSpring/assets/Lava/NoteViewItem.lava' -%}
             {%- assign noteReplyDepth = noteReplyDepth | Minus:1 -%}
         {%- endfor -%}
         </ul>

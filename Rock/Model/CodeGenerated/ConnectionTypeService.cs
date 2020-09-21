@@ -94,6 +94,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionType target, ConnectionType source )
         {
             target.Id = source.Id;
+            target.ConnectionRequestDetailPageId = source.ConnectionRequestDetailPageId;
+            target.ConnectionRequestDetailPageRouteId = source.ConnectionRequestDetailPageRouteId;
             target.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
             target.Description = source.Description;
             target.EnableFullActivityList = source.EnableFullActivityList;

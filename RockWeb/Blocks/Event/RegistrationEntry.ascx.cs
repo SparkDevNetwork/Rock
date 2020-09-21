@@ -774,10 +774,17 @@ namespace RockWeb.Blocks.Event
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
-                                        // Redirect for Digital Signature Cookie Initialization
+                                        // Redirect to the digital signature provider page to initialize a cookie.
+                                        // The returnUrl specifies the current Rock page as the address to return to once the cookie has been created.
                                         var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "Redirected=True";
-                                        string redirectUrl = string.Format( "{0}?Redirect_Uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
+
+                                        /*
+                                         *[2020-08-26] DL
+                                         * The SignNow provider requires that the "redirect_uri" parameter be specified in lowercase.
+                                         * If this causes a problem with any other providers, we may need to add a placeholder token for the redirect parameter value to the CookieInitializationUrl instead.
+                                         */
+                                        string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
                                     }
                                     else
@@ -3092,9 +3099,7 @@ namespace RockWeb.Blocks.Event
                     // Save the signed document
                     try
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue &&
-                            !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) &&
-                            registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
                         {
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
@@ -3106,10 +3111,26 @@ namespace RockWeb.Blocks.Event
                             document.Status = SignatureDocumentStatus.Signed;
                             document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
                             document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
-                            documentService.Add( document );
-                            rockContext.SaveChanges();
 
-                            registrantInfo.SignatureDocumentId = document.Id;
+                            if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                            {
+                                // This document has already been saved, probably on a previous save where a credit card processing error occurred.
+                                // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
+                                document.Id = registrantInfo.SignatureDocumentId.Value;
+                                documentService.Add( document );
+                                rockContext.SaveChanges();
+                            }
+                            else
+                            {
+                                documentService.Add( document );
+
+                                // Save the changes to get the document ID
+                                rockContext.SaveChanges();
+
+                                // Set the registrant info and then save again
+                                registrantInfo.SignatureDocumentId = document.Id;
+                                rockContext.SaveChanges();
+                            }
 
                             var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
@@ -3164,6 +3185,12 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
+            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            {
+                person.PrimaryCampusId = campusId;
+                rockContext.SaveChanges();
+            }
+
             int? familyId = null;
 
             if ( person.Id > 0 )
@@ -3219,42 +3246,53 @@ namespace RockWeb.Blocks.Event
             }
 
             // If we have family ID and a meaninful location then update that info
-            if ( familyId.HasValue && location != null && location.IsMinimumViableAddress() )
+            if ( familyId.HasValue )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
-                var existingLocation = new LocationService( rockContext ).Get(
-                    location.Street1,
-                    location.Street2,
-                    location.City,
-                    location.State,
-                    location.PostalCode,
-                    location.Country,
-                    familyGroup,
-                    true,
-                    false );
 
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null && familyGroup != null )
+                if ( !familyGroup.CampusId.HasValue && campusId.HasValue )
                 {
-                    if ( existingLocation != null )
+                    familyGroup.CampusId = campusId;
+                    rockContext.SaveChanges();
+                }
+
+                if ( location != null && location.IsMinimumViableAddress() )
+                {
+
+                    var existingLocation = new LocationService( rockContext ).Get(
+                        location.Street1,
+                        location.Street2,
+                        location.City,
+                        location.State,
+                        location.PostalCode,
+                        location.Country,
+                        familyGroup,
+                        true,
+                        false );
+
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null && familyGroup != null )
                     {
-                        // A location exists but is not associated with this family group
-                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
-                    }
-                    else
-                    {
-                        // Create a new location and save it to the family group
-                        GroupService.AddNewGroupAddress(
-                            rockContext,
-                            familyGroup,
-                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                            location.Street1,
-                            location.Street2,
-                            location.City,
-                            location.State,
-                            location.PostalCode,
-                            location.Country,
-                            true );
+                        if ( existingLocation != null )
+                        {
+                            // A location exists but is not associated with this family group
+                            GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                        }
+                        else
+                        {
+                            // Create a new location and save it to the family group
+                            GroupService.AddNewGroupAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1,
+                                location.Street2,
+                                location.City,
+                                location.State,
+                                location.PostalCode,
+                                location.Country,
+                                true );
+                        }
                     }
                 }
             }

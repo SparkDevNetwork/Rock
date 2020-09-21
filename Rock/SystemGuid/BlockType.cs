@@ -204,5 +204,35 @@ namespace Rock.SystemGuid
         /// The phone number lookup block type.
         /// </summary>
         public const string PHONE_NUMBER_LOOKUP = "51BB37DA-6F3E-40EC-B80E-D381E13E01B2";
+
+        /// <summary>
+        /// The oidc authorize
+        /// </summary>
+        public const string OIDC_AUTHORIZE = "D9E2BE51-6AC2-43D6-BE63-9E5EC571BD95";
+        /// <summary>
+        /// The oidc logout
+        /// </summary>
+        public const string OIDC_LOGOUT = "32F2171C-4CD2-48A0-AAD0-AE681CB0D2DD";
+        /// <summary>
+        /// The oidc scope list
+        /// </summary>
+        public const string OIDC_SCOPE_LIST = "0E407FC8-B5B9-488E-81E4-8EA5F7CFCAB3";
+        /// <summary>
+        /// The oidc scope detail
+        /// </summary>
+        public const string OIDC_SCOPE_DETAIL = "AA4368BD-00FA-4AB9-9591-CFD64BE6C9EA";
+        /// <summary>
+        /// The oidc claims
+        /// </summary>
+        public const string OIDC_CLAIMS = "142BE80B-5FB2-459D-AE5C-E371C79538F6";
+        /// <summary>
+        /// The oidc client list
+        /// </summary>
+        public const string OIDC_CLIENT_LIST = "616D1A98-067D-43B8-B7F5-41FB12FB894E";
+        /// <summary>
+        /// The oidc client detail
+        /// </summary>
+        public const string OIDC_CLIENT_DETAIL = "312EAD0E-4068-4211-8410-2EB45B7D8BAB";
+
     }
 }

@@ -60,12 +60,10 @@ namespace Rock.Model
             if ( options.RegistrantPersonDataViewFilterId.HasValue )
             {
                 var dataFilter = new DataViewFilterService( rockContext ).Get( options.RegistrantPersonDataViewFilterId.Value );
-                List<string> errorMessages = new List<string>();
-
                 var personService = new PersonService( rockContext );
                 var paramExpression = personService.ParameterExpression;
 
-                var personWhereExpression = dataFilter?.GetExpression( typeof( Person ), personService, paramExpression, errorMessages );
+                var personWhereExpression = dataFilter?.GetExpression( typeof( Person ), personService, paramExpression );
                 if ( personWhereExpression != null )
                 {
                     var personIdQry = personService.Queryable().Where( paramExpression, personWhereExpression, null ).Select( x => x.Id );

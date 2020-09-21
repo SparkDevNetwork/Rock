@@ -1,0 +1,27 @@
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare' %}
+{% assign groupTypeImage = group.GroupType | Attribute:'ImageSquare' %}
+{% assign groupImageUrl = group | Attribute:'GroupPhoto','Url' | WithFallback:'',groupTypeImage | WithFallback:'',fallbackImage %}
+
+{%- comment -%}
+  Redirect to 404 if person doesn't have access
+{%- endcomment -%}
+{% assign currentPersonCanEditGroup = group.Id | HasRightsTo:'Edit','Rock.Model.Group' %}
+{% if currentPersonCanEditGroup == false %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
+
+{%- comment -%}
+  GENERAL GROUP INFO
+{%- endcomment -%}
+<div class="row floating floating-left push-top push-double-bottom">
+  <div class="col-md-3 col-sm-4 col-xs-4 floating-item">
+    <div class="ratio ratio-square background-cover background-center circular shadowed mx-auto" style="background-image:url('{{ groupImageUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
+  </div><div class="col-md-9 col-sm-8 col-xs-8 floating-item">
+    <h2 class="h1 xs-h2 strongest push-half-bottom">{{ group.Name }}</h2>
+    <p class="h5 sans-serif flush">
+      <span class="label label-default">{{ group.Campus.Name }}</span>
+      <span class="label label-default">{{ group.GroupType.Name }}</span>
+    </p>
+  </div>
+</div>

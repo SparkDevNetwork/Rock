@@ -31,10 +31,23 @@ namespace Rock.Model
     [Table( "WorkflowLog" )]
     [DataContract]
     [NotAudited]
-    public partial class WorkflowLog : Model<WorkflowLog>
+    public partial class WorkflowLog
     {
 
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
+        /// dependent, and is not guaranteed to be unique. This id should only be used to identify an object internally to a single implementation
+        /// of Rock since this value has a very high probability of not being consistent in an external implementation of Rock.
+        /// </summary>
+        /// <value>
+        /// Primary and system dependent <see cref="System.Int32" /> based identity/key of an entity object in Rock.
+        /// </value>
+        [Key]
+        [DataMember]
+        [IncludeForReporting]
+        public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets the WorkflowId of the <see cref="Rock.Model.Workflow"/> instance that is being logged.

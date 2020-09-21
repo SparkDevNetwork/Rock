@@ -4,11 +4,22 @@
 	font-weight: 500;
 	text-decoration: none;
 	vertical-align: bottom;
-	border: 0px;
+	border-color: transparent;
+	transition: all .2s ease-in-out;
+
+	&:active,
+	&.active {
+		.box-shadow(none);
+	}
+
+	&:hover {
+		border-color: transparent;
+	}
 }
 
-.btn-primary, .btn-secondary, .btn-tertiary {
-	border: 0px;
+.btn i {
+	position: relative;
+	top: 1px;
 }
 
 .btn-link:hover, .btn-link:active, .btn-link:focus {
@@ -37,7 +48,8 @@
 	}
 }
 
-.btn-default { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
+.btn-disabled { .button-variant(@gray-light, @gray-lighter, @gray-lighter); }
+.btn-default:hover { background-color: darken(@white,5%); border-color: darken(@white,5%); }
 .btn-primary:active, .btn-primary:focus { background-color: @brand-primary; }
 .btn-secondary { .button-variant(@white, @brand-secondary, @brand-secondary); }
 .btn-tertiary { .button-variant(@white, @brand-tertiary, @brand-tertiary); }

@@ -128,6 +128,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COMMUNICATION_QUEUE = "2FC7D3E3-D85B-4265-8983-970345215DEA";
 
+        /// <summary>
+        /// Gets the template guid for the communication approval email
+        /// </summary>
+        public const string COMMUNICATION_APPROVAL_EMAIL = "11D325F4-DAF3-4579-A9D8-6347CCC02341";
+
         #endregion
 
         #region Finance

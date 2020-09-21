@@ -47,11 +47,13 @@ namespace Rock.Utility
 
             Socket socket = null;
             string currentIp = string.Empty;
+            bool hasPrinterCutter = PrinterHasCutter( labels );
+            int labelCount = 0;
 
-            foreach ( var label in labels
-                                .OrderBy( l => l.PersonId )
-                                .ThenBy( l => l.Order ) )
+            foreach ( var label in labels.OrderBy( l => l.PersonId ).ThenBy( l => l.Order ) )
             {
+                labelCount++;
+
                 var labelCache = KioskLabel.Get( label.FileGuid );
                 if ( labelCache != null )
                 {
@@ -68,7 +70,19 @@ namespace Rock.Utility
                             socket = ZebraPrint.OpenSocket( label.PrinterAddress );
                         }
 
-                        string printContent = ZebraPrint.MergeLabelFields( labelCache.FileContent, label.MergeFields );
+                        string printContent = ZebraPrint.MergeLabelFields( labelCache.FileContent, label.MergeFields ).TrimEnd();
+
+                        // is a cutter attached, and is this the last label or a "Rock Cut" command?
+                        if ( hasPrinterCutter && ( labelCount == labels.Count() || printContent.Contains( "ROCK_CUT" ) ) )
+                        {
+                            // override any tear mode command (^MMT) by injecting the cut mode (^MMC) command
+                            printContent = printContent.ReplaceIfEndsWith( "^XZ", "^MMC^XZ" );
+                        }
+                        else
+                        {
+                            // inject suppress back-feed (^XB)
+                            printContent = printContent.ReplaceIfEndsWith( "^XZ", "^XB^XZ" );
+                        }
 
                         if ( socket.Connected )
                         {
@@ -343,6 +357,25 @@ namespace Rock.Utility
                 ns.Write( toSend, 0, toSend.Length );
             }
         }
+
+        /// <summary>
+        /// Printers the has cutter.
+        /// </summary>
+        /// <param name="labels">The labels.</param>
+        /// <returns></returns>
+        private static bool PrinterHasCutter( List<CheckInLabel> labels )
+        {
+            bool hasCutter = false;
+            var deviceId = labels.Select( a => a.PrinterDeviceId ).FirstOrDefault();
+            if ( deviceId != null )
+            {
+                KioskDevice kioskDevice = KioskDevice.Get( deviceId.GetValueOrDefault(), new List<int>() );
+                hasCutter = kioskDevice.Device.GetAttributeValue( Rock.SystemKey.DeviceAttributeKey.DEVICE_HAS_CUTTER  ).AsBoolean();
+            }
+
+            return hasCutter;
+        }
+
         #endregion
 
         #region Reprint Label Helper Methods & Classes

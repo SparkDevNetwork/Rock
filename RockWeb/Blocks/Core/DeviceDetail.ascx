@@ -59,6 +59,7 @@
                             <Rock:DefinedValuePicker ID="dvpDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true" Label="Device Type"
                                 Help="What type of device is this?" AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged" />
                             <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
+                            <Rock:NotificationBox ID="nbGeoFence" runat="server" NotificationBoxType="Danger" />
                             <Rock:GeoPicker ID="geopFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
                         </div>
                         <div class="col-md-6">

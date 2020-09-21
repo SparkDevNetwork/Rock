@@ -70,6 +70,30 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
+        /// Gets or sets the AchievementAttempts.
+        /// </summary>
+        /// <value>
+        /// The AchievementAttempts.
+        /// </value>
+        public DbSet<AchievementAttempt> AchievementAttempts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AchievementTypes.
+        /// </summary>
+        /// <value>
+        /// The AchievementTypes.
+        /// </value>
+        public DbSet<AchievementType> AchievementTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<AchievementTypePrerequisite> AchievementTypePrerequisites { get; set; }
+
+        /// <summary>
         /// Gets or sets the analytics dim attendance locations.
         /// </summary>
         /// <value>
@@ -342,12 +366,36 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the Auth Clients.
+        /// </summary>
+        /// <value>
+        /// the Auth Clients.
+        /// </value>
+        public DbSet<AuthClient> AuthClients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Claim.
+        /// </summary>
+        /// <value>
+        /// The Auth Claim.
+        /// </value>
+        public DbSet<AuthClaim> AuthClaims { get; set; }
+                
+        /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
         /// the Auths.
         /// </value>
         public DbSet<Auth> Auths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Scope.
+        /// </summary>
+        /// <value>
+        /// The Auth Scope.
+        /// </value>
+        public DbSet<AuthScope> AuthScopes { get; set; }
 
         /// <summary>
         /// Gets or sets the background checks.
@@ -1790,36 +1838,12 @@ namespace Rock.Data
         public DbSet<Streak> Streaks { get; set; }
 
         /// <summary>
-        /// Gets or sets the StreakAchievementAttempts.
-        /// </summary>
-        /// <value>
-        /// The StreakAchievementAttempts.
-        /// </value>
-        public DbSet<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
-
-        /// <summary>
         /// Gets or sets the StreakTypes.
         /// </summary>
         /// <value>
         /// The StreakTypes.
         /// </value>
         public DbSet<StreakType> StreakTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the StreakTypeAchievementTypes.
-        /// </summary>
-        /// <value>
-        /// The StreakTypeAchievementTypes.
-        /// </value>
-        public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the streak type achievement type prerequisites.
-        /// </summary>
-        /// <value>
-        /// The streak type achievement type prerequisites.
-        /// </value>
-        public DbSet<StreakTypeAchievementTypePrerequisite> StreakTypeAchievementTypePrerequisites { get; set; }
 
         /// <summary>
         /// Gets or sets the StreakTypeExclusions.
@@ -1976,7 +2000,7 @@ namespace Rock.Data
 
         /// <summary>
         /// This method is called when the context has been initialized, but
-        /// before the model has been locked down and used to initialize the context. 
+        /// before the model has been locked down and used to initialize the context.
         /// </summary>
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
@@ -2037,7 +2061,7 @@ namespace Rock.Data
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class ContextHelper
     {

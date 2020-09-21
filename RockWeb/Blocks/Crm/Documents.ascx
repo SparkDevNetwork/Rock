@@ -33,7 +33,9 @@
 
                         <Rock:RockTemplateField ShowHeader="false"  ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px" ItemStyle-CssClass="grid-select-field">
                             <ItemTemplate>
-                                <i title="<%# Eval("Description") %>" class="fa fa-sticky-note"></i>
+                                <button class="btn btn-square btn-link text-color" data-toggle="tooltip" title="<%# Eval("Description") %>">
+                                    <i class="fa fa-sticky-note"></i>
+                                </button>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
 

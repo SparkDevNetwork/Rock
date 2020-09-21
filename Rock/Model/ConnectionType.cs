@@ -140,6 +140,24 @@ namespace Rock.Model
         [Required]
         public bool EnableRequestSecurity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection request detail page identifier.
+        /// </summary>
+        /// <value>
+        /// The connection request detail page identifier.
+        /// </value>
+        [DataMember]
+        public int? ConnectionRequestDetailPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection request detail page route identifier.
+        /// </summary>
+        /// <value>
+        /// The connection request detail page route identifier.
+        /// </value>
+        [DataMember]
+        public int? ConnectionRequestDetailPageRouteId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -152,6 +170,24 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection request detail page.
+        /// </summary>
+        /// <value>
+        /// The connection request detail page.
+        /// </value>
+        [LavaInclude]
+        public virtual Page ConnectionRequestDetailPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection request detail page route.
+        /// </summary>
+        /// <value>
+        /// The connection request detail page route.
+        /// </value>
+        [DataMember]
+        public virtual PageRoute ConnectionRequestDetailPageRoute { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionStatus">ConnectionStatuses</see> who are associated with the ConnectionType.
@@ -277,6 +313,8 @@ namespace Rock.Model
         public ConnectionTypeConfiguration()
         {
             this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionRequestDetailPage ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionRequestDetailPageRoute ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 

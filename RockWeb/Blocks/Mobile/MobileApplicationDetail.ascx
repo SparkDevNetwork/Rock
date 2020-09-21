@@ -23,7 +23,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
-
+        <Rock:ModalAlert ID="mdWarning" runat="server" />
         <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
@@ -252,7 +252,6 @@
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppEditLoginPage" runat="server" Label="Login Page" />
                         </div>
-
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppEditProfilePage" runat="server" Label="Profile Page" />
                         </div>
@@ -262,13 +261,20 @@
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:PagePicker ID="ppCommunicationViewPage" runat="server" Label="Communication View Page" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataViewItemPicker ID="dvpCampusFilter" runat="server" Label="Campus Filter" Help="Select a data view of campuses to use for the campus lists within the application. Leave blank if your application does not need to filter content by campus"></Rock:DataViewItemPicker>
+                        </div>
 
                         <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpEditPersonAttributeCategories" runat="server" Label="Person Attribute Categories" Help="All attributes in selected categories will be sent to the client and made available remotely."  AllowMultiSelect="true" />
                         </div>
                     </div>
-
-                    <Rock:DataViewItemPicker ID="dvpCampusFilter" runat="server" Label="Campus Filter" Help="Select a data view of campuses to use for the campus lists within the application. Leave blank if your application does not need to filter content by campus"></Rock:DataViewItemPicker>
 
                     <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 

@@ -1804,26 +1804,52 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person sorted by the Person's GroupOrder (GroupMember.GroupOrder)
+        /// Does not included deceased members.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
-        /// </returns>
+        /// <returns></returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
-            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-            return GetGroupMembers( groupTypeFamilyId, personId, includeSelf );
+            return GetFamilyMembers( personId, includeSelf, false );
         }
 
         /// <summary>
-        /// Gets the group members 
+        /// Returns a collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person sorted by the Person's GroupOrder (GroupMember.GroupOrder)
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
+        /// </returns>
+        public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf, bool includeDeceased )
+        {
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            return GetGroupMembers( groupTypeFamilyId, personId, includeSelf, includeDeceased );
+        }
+
+        /// <summary>
+        /// Gets the group members. Does not include deceased members.
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns></returns>
         public IQueryable<GroupMember> GetGroupMembers( int groupTypeId, int personId, bool includeSelf = false )
+        {
+            return GetGroupMembers( groupTypeId, personId, includeSelf, false );
+        }
+
+        /// <summary>
+        /// Gets the group members
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetGroupMembers( int groupTypeId, int personId, bool includeSelf, bool includeDeceased )
         {
             var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
 
@@ -1843,9 +1869,22 @@ namespace Rock.Model
                 .SelectMany( x => x.SortedMembers )
                 .OrderBy( a => a.PersonGroupOrder ?? int.MaxValue )
                 .Select( a => a.GroupMember )
-                .Where( m => includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) );
+                .Where( m => includeDeceased || !m.Person.IsDeceased )
+                .Where( m => includeSelf || m.PersonId != personId );
 
             return groupMembers.Include( a => a.Person ).Include( a => a.GroupRole );
+        }
+
+        /// <summary>
+        /// Gets the family members.
+        /// </summary>
+        /// <param name="family">The family.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
+        {
+            return GetFamilyMembers( family, personId, includeSelf, false );
         }
 
         /// <summary>
@@ -1854,15 +1893,16 @@ namespace Rock.Model
         /// <param name="family">The family.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
         /// </returns>
-        public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
+        public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf, bool includeDeceased )
         {
             return new GroupMemberService( ( RockContext ) this.Context ).Queryable( "GroupRole, Person", true )
-                .Where( m =>
-                    m.GroupId == family.Id &&
-                    ( includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) ) )
+                .Where( m => m.GroupId == family.Id )
+                .Where( m => includeDeceased || !m.Person.IsDeceased )
+                .Where( m => includeSelf || m.PersonId != personId )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
                 .ThenByDescending( m => m.Person.Gender )

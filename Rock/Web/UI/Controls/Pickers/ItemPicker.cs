@@ -192,6 +192,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator.ValidationGroup;
             }
+
             set
             {
                 RequiredFieldValidator.ValidationGroup = value;
@@ -291,7 +292,8 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( _hfItemId.Value ) )
+
+                if ( IsItemIdEquivalentToEmpty( _hfItemId.Value ) )
                 {
                     _hfItemId.Value = Constants.None.IdValue;
                 }
@@ -308,19 +310,39 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                if ( UseCategorySelection )
+                if ( IsItemIdEquivalentToEmpty( value ) )
                 {
-                    _hfItemId.Value = CategoryPrefix + value;
+                    _hfItemId.Value = Constants.None.IdValue;
                 }
                 else
                 {
-                    _hfItemId.Value = value;
+                    if ( UseCategorySelection )
+                    {
+                        _hfItemId.Value = CategoryPrefix + value;
+                    }
+                    else
+                    {
+                        _hfItemId.Value = value;
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Gets the item ids.
+        /// Returns a flag indicating if the provided value represents a reference to an empty item selection.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool IsItemIdEquivalentToEmpty( string value )
+        {
+            return ( string.IsNullOrWhiteSpace( value )
+                     || value == Constants.None.IdValue
+                     || ( this.UseCategorySelection && value == CategoryPrefix + Constants.None.IdValue ) );
+        }
+
+        /// <summary>
+        /// Gets the item ids (including "0").
+        /// NOTE: Make sure to exclude "0" when using this to get a list of actual selected items
         /// </summary>
         /// <value>
         /// The item ids.
@@ -351,14 +373,23 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
+                string newValue;
+
                 if ( UseCategorySelection )
                 {
-                    _hfItemId.Value = string.Join( ",", value.Select( a => CategoryPrefix + a ) );
+                    newValue = string.Join( ",", value.Select( a => CategoryPrefix + a ) );
                 }
                 else
                 {
-                    _hfItemId.Value = string.Join( ",", value );
+                    newValue = string.Join( ",", value );
                 }
+
+                if ( IsItemIdEquivalentToEmpty( newValue ) )
+                {
+                    newValue = Constants.None.IdValue;
+                }
+
+                _hfItemId.Value = newValue;
             }
         }
 
@@ -408,7 +439,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected values.
+        /// Gets or sets the selected values (including "0").
+        /// NOTE: Make sure to exclude "0", or use <see cref="SelectedIds" />, when using this to get a list of actual selected items.
         /// </summary>
         /// <value>
         /// The selected values.
@@ -633,7 +665,7 @@ $@"Rock.controls.itemPicker.initialize({{
             _hfItemId = new HiddenFieldWithClass();
             _hfItemId.ID = this.ID + "_hfItemId";
             _hfItemId.CssClass = "js-item-id-value";
-            _hfItemId.Value = "0";
+            _hfItemId.Value = Constants.None.IdValue;
 
             _hfInitialItemParentIds = new HiddenFieldWithClass();
             _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";
@@ -683,10 +715,10 @@ $@"Rock.controls.itemPicker.initialize({{
             Controls.Add( _hfItemRestUrlExtraParams );
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
-            
+
             RockControlHelper.CreateChildControls( this, Controls );
 
-            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.InitialValue = Constants.None.IdValue;
             RequiredFieldValidator.ControlToValidate = _hfItemId.ID;
             RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
         }
@@ -778,7 +810,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
                 // render any additional picker actions that a child class if ItemPicker implements
                 RenderCustomPickerActions( writer );
-                
+
                 writer.WriteLine();
                 writer.RenderEndTag();
 
@@ -868,7 +900,16 @@ $@"Rock.controls.itemPicker.initialize({{
         }
 
         /// <summary>
-        /// Selecteds the values as int.
+        /// Gets the selected ids (not including 0)
+        /// </summary>
+        /// <value>
+        /// The selected ids.
+        /// </value>
+        public int[] SelectedIds => SelectedValuesAsInt().Where( a => a > 0 ).ToArray();
+
+        /// <summary>
+        /// Gets Selected numeric values as int (including 0).
+        /// Note: In most cases, you should use <see cref="SelectedIds"/> instead.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<int> SelectedValuesAsInt()
@@ -909,7 +950,6 @@ $@"Rock.controls.itemPicker.initialize({{
                 SetValueOnSelect();
             }
 
-            
             _selectItem?.Invoke( sender, e );
             _valueChanged?.Invoke( sender, e );
         }

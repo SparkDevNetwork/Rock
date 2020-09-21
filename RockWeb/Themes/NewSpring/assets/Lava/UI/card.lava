@@ -19,7 +19,7 @@
 <div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
 
     {% if imageurl != null and imageurl != '' %}
-        {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
+        {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
@@ -43,7 +43,7 @@
 
         {% if title != null and title != empty %}
         <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">
-            {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}">{% endif %}
+            {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% endif %}
                 {{ title }}
             {% if cardlinkurl != empty %}</a>{% endif %}
         </h2>
@@ -77,7 +77,7 @@
 
         {% if cardlinkurl and cardlinkurl != empty %}
             <p>
-                {[ button linkurl:'{{ cardlinkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
+                {[ button linkurl:'{{ cardlinkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' linktarget:'{{ target }}' ]}
             </p>
         {% endif %}
 
