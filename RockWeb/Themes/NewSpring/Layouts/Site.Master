@@ -54,7 +54,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
 
         <!-- Libraries -->
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll@15/dist/smooth-scroll.polyfills.min.js"></script>
         <script src='<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
