@@ -18,19 +18,10 @@
 </p>
 {% endif %}
 
-{% if NoteList and NoteList != empty %}
 
   <ul class="list-unstyled js-notelist flush">
       {% for note in NoteList limit:limit %}
-      {% assign noteReplyDepth = 0 %}
-      {% include '~/Themes/NewSpring/assets/Lava/LAYOUT/groups-notes-item.lava' %}
+        {% assign noteReplyDepth = 0 %}
+        {% include '~/Themes/NewSpring/assets/Lava/LAYOUT/groups-notes-item.lava' %}
       {% endfor %}
   </ul>
-
-{% else %}
-
-  {[ cardBlock ]}
-    <p class="flush">{{ person.NickName }} currently has no notes.</p>
-  {[ endcardBlock ]}
-
-{% endif %}

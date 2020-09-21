@@ -13,19 +13,8 @@
 
 {% if groupId and groupId != empty %}
 
-  {% assign group = groupId | GroupById %}
-  {% assign currentDay = 'Now' | Date:'dddd' | AsString %}
-  {% assign groupScheduleDayOfWeek = group.Schedule.WeeklyDayOfWeek | AsString %}
-  {% assign groupScheduleTimeOfDay = group.Schedule.WeeklyTimeOfDay %}
-
-  {% if currentDay == groupScheduleDayOfWeek %}
-    {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | ToMidnight %}
-  {% else %}
-    {% assign startDate = 'Now' | NextDayOfTheWeek:groupScheduleDayOfWeek | DateAdd:-7,'d' | ToMidnight %}
-  {% endif %}
-
   {% sql return:'occurrences' %}
-    SELECT
+    SELECT TOP 12
         ao.Id,
         ao.OccurrenceDate,
         CASE
@@ -46,33 +35,20 @@
         ao.Notes
     FROM AttendanceOccurrence ao
     WHERE ao.GroupId = {{ groupId }}
-    AND ao.OccurrenceDate >= DATEADD(week, -11, GETDATE())
     ORDER BY ao.OccurrenceDateKey DESC
   {% endsql %}
 
-  {%- comment -%}
-    Creating the dates object from actual attendance occurrances + dates that match the group schedule that do not have occurrences yet
-  {%- endcomment -%}
-  {% capture datesString %}[
-    {% comment %}Group Attendance Occurrances{% endcomment %}
-    {% for occurrence in occurrences %}{ "Date": {{ occurrence.OccurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }} },{% endfor %}
-    {% comment %}Dates that match the group's schedule day-of-week{% endcomment %}
-    {% if startDate and startDate != empty %}{% for i in (0..10) %}{ "Date": {% assign dateOffset = 7 | Times:i | Times:-1 %}{% assign occurrenceDate = startDate | DateAdd:dateOffset,'d' %}{{ occurrenceDate | Date:'yyyy-MM-ddT00:00:00' | ToJSON }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}
-  ]{% endcapture %}
-
-  {% comment %}Order dates descending and remove any duplicates{% endcomment %}
-  {% assign datesObject = datesString | FromJSON | OrderBy:'Date desc' | Select:'Date' | Uniq %}
+  {% assign occurrencesCount = occurrences | Size %}
 
   {% capture addButton %}<p class="sm-push-half-bottom xs-push-half-bottom"><a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add Attendance</a></p>{% endcapture %}
 
-  {% if datesObject and datesObject != empty %}
+  {% if occurrencesCount and occurrencesCount >= 1 %}
 
     {{ addButton }}
 
-    {% for occurrenceDate in datesObject %}
+    {% for occurrence in occurrences %}
 
-        {% assign occurrenceDateFormatted = occurrenceDate | Date:'yyyy-MM-ddTHH:mm:ss' | EscapeDataString %}
-        {% assign occurrence = occurrences | Where:'OccurrenceDate',occurrenceDate | First %}
+        {% assign occurrenceDateFormatted = occurrence.OccurrenceDate | Date:'yyyy-MM-ddTHH:mm:ss' | EscapeDataString %}
         {% assign attendancePercentage = occurrence.Attended | DividedBy:occurrence.Total,2 | Times:100 %}
         {% assign attendancePercentageFormatted = attendancePercentage | Format:'###.##' | Append:'%' %}
 
@@ -88,11 +64,11 @@
 
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">{{ occurrenceDate | Date:'MMMM d, yyyy' }}</h3>
+            <h3 class="panel-title">{{ occurrence.OccurrenceDate | Date:'MMMM d, yyyy' }}</h3>
           </div>
           <div class="panel-body xs-soft-half">
             <div class="row">
-              <div class="{% if occurrence.Notes and occurrence.Notes != empty %}col-md-6{% else %}col-md-12{% endif %} col-sm-12 col-xs-12">
+              <div class="col-md-12 col-sm-12 col-xs-12">
 
                 {% if occurrence and occurrence != empty %}
                   {% if occurrence.DidNotOccur == 'true' %}
@@ -114,7 +90,7 @@
 
                 {% endif %}
 
-                </div>{% if occurrence.Notes and occurrence.Notes != empty %}<div class="col-md-6 col-sm-12 col-xs-12">
+                </div>{% if occurrence.Notes and occurrence.Notes != empty %}<div class="col-md-12 col-sm-12 col-xs-12">
                   <p class="sans-serif stronger letter-spacing-condensed flush">Notes</p>
                   <p>{{ occurrence.Notes }}</p>
               </div>{% endif %}
@@ -128,7 +104,7 @@
             {% endif %}
 
             <p class="flush">
-              <a href="{{ linkUrl }}" class="btn btn-{% if occurrence == null %}primary{% else %}default{% endif %} btn btn-sm">{% if occurrence != null %}<i class="fas fa-pencil push-quarter-right"></i> {% endif %}{% if occurrence == null %}Take{% else %}Edit{% endif %} Attendance</a>
+              <a href="{{ linkUrl }}" class="btn btn-default btn btn-sm shadowed">{% if occurrence != null %}<i class="fas fa-pencil push-quarter-right"></i> {% endif %}{% if occurrence == null %}Take{% else %}Edit{% endif %} Attendance</a>
 
               {%- comment -%}Remove Attendance Occurrence{%- endcomment -%}
               {% if occurrence and occurrence != empty %}

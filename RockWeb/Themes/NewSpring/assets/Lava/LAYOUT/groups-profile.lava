@@ -192,6 +192,14 @@
       {% assign baptismStatus = person | Attribute:'HasBeenBaptized' %}
       {% assign baptismDate = person | Attribute:'BaptismDate' %}
       {% assign firstServeDate = person | Attribute:'FirstServeDateAll' %}
+      {%- comment -%}
+        Let's count leading a group as serving, even if there's no value for the first serve date attribute
+      {%- endcomment -%}
+      {% if groupsLeadCount >= 1 %}
+        {% assign servingStatus = true %}
+      {% else %}
+        {% assign servingStatus = null %}
+      {% endif %}
       {% assign connectDate = person | Attribute:'ConnectDate' %}
       {% assign connectWeek1 = person | Attribute:'God' %}
       {% assign connectWeek2 = person | Attribute:'Freedom' %}
@@ -225,8 +233,13 @@
       {% endcapture %}
 
       {% capture servingText %}
-        {% if firstServeDate and firstServeDate != empty %}
-          <i class="fas fa-fw fa-sm fa-hand-holding-heart push-quarter-right text-warning"></i> {{ person.NickName }} started serving on {[ formatDate date:'{{ firstServeDate }}' ]}.
+        {% if firstServeDate and firstServeDate != empty or servingStatus == true %}
+          <i class="fas fa-fw fa-sm fa-hand-holding-heart push-quarter-right text-warning"></i>
+          {% if firstServeDate and firstServeDate != empty %}
+            {{ person.NickName }} started serving on {[ formatDate date:'{{ firstServeDate }}' ]}.
+          {% else %}
+            {{ person.NickName }} is currently serving.
+          {% endif %}
         {% else %}
           <i class="fal fa-fw fa-sm fa-hand-holding-heart push-quarter-right text-gray-light"></i> {{ person.NickName }} has not yet started <a href="/serving">serving</a>.
         {% endif %}
@@ -268,9 +281,10 @@
   {% comment %}
     Group Member Groups They Lead
   {% endcomment %}
+  {% if groups and groups != empty %}
   <h2 class="h4 xs-h5 text-uppercase strongest push-top">Groups {{ person.NickName }} Leads</h2>
   <div class="row row-condensed">
-  {% if groups and groups != empty %}
+
     {% for row in groups %}<div class="col-md-12 col-sm-6 col-xs-12">
       {% assign group = row.GroupId | GroupById %}
       {% assign groupName = group.Name | Replace:"'","’" %}
@@ -283,12 +297,8 @@
       {[ endcardAction ]}
 
     </div>{% endfor %}
-  {% else %}
-    <div class="col-md-12 col-sm-6 col-xs-12">
-      <p class="xs-push-half-bottom"><a href="#" class="btn btn-block btn-primary shadowed"><i class="fal fa-check-circle push-quarter-right"></i> Identify as a Future Leader</a></p>
-    </div>
-  {% endif %}
   </div>
+  {% endif %}
 
   {% comment %}
     Group Member Coaches They Lead

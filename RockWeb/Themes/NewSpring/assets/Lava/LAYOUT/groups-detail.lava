@@ -233,24 +233,41 @@ ORDER BY (
     <input type="text" class="form-control js-copy-source hidden" value="{{ groupMobilesWithMessaging }}" title="Click to Copy to Clipboard">
 
     <script>
-      // Copies input value to clipboard on button click
-      var copyLink = document.querySelector('.js-copy');
-      copyLink.addEventListener('click',function(e){
-        e.preventDefault();
-        copyLink = e.target;
-        var copyTarget = $('.js-copy-source')[0];
-        var copyLinkInnerHTML = copyLink.innerHTML;
-        copyTarget.setSelectionRange(0, copyTarget.value.length);
-        navigator.clipboard.writeText(copyTarget.value);
-        copyLink.innerHTML = '<i class="fal fa-check push-quarter-right"></i> Copied!';
-        copyLink.classList.toggle('btn-primary');
-        copyLink.classList.toggle('btn-gray-dark');
-        setTimeout(function(){
-          copyLink.innerHTML = copyLinkInnerHTML;
-          copyLink.classList.toggle('btn-primary');
-          copyLink.classList.toggle('btn-gray-dark');
-        }, 1500);
+      function copyPhoneNumbersForSMS() {
+        // Copies input value to clipboard on button click
+        var copyLink = document.querySelector('.js-copy');
+
+        if(copyLink) {
+          copyLink.addEventListener('click',function(e){
+            e.preventDefault();
+            copyLink = e.target;
+            var copyTarget = $('.js-copy-source')[0];
+            var copyLinkInnerHTML = copyLink.innerHTML;
+            copyTarget.setSelectionRange(0, copyTarget.value.length);
+            navigator.clipboard.writeText(copyTarget.value);
+            copyLink.innerHTML = '<i class="fal fa-check push-quarter-right"></i> Copied!';
+            copyLink.classList.toggle('btn-primary');
+            copyLink.classList.toggle('btn-gray-dark');
+            setTimeout(function(){
+              copyLink.innerHTML = copyLinkInnerHTML;
+              copyLink.classList.toggle('btn-primary');
+              copyLink.classList.toggle('btn-gray-dark');
+            }, 1500);
+          });
+        }
+      }
+
+      $(document).ready(function(){
+        copyPhoneNumbersForSMS();
       });
+
+      // Handles re-binding event handlers after a postback (editing group, add/edit members, etc)
+      var prm = Sys.WebForms.PageRequestManager.getInstance();
+      if(prm){
+        prm.add_endRequest(function() {
+          copyPhoneNumbersForSMS();
+        });
+      }
     </script>
 
     {%- comment -%}
@@ -373,8 +390,9 @@ ORDER BY (
           }
         ]{% endcapture %}
         {% assign cardactions = actionsString | FromJSON %}
-
-        {[ cardAction cardtype:'{{ cardtype }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' imageurl:'{{ person.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
+        {% assign firstName = person.NickName | WithFallback:'', null | Replace:"'","’" %}
+        {% assign lastName = person.LastName | WithFallback:'', null | Replace:"'","’" %}
+        {[ cardAction cardtype:'{{ cardtype }}' title:'{{ firstName }}<br>{{ lastName }}' imageurl:'{{ person.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
           {% if note and note != empty %}
             <p class="sans-serif letter-spacing-condensed strong text-{{ texttype }} flush-bottom"><small>{{ note }}</small></p>
           {% endif %}
