@@ -3,9 +3,7 @@
     Sys.Application.add_load(function () {
 
         // Initialize NoteEditor and NoteContainer events
-        $('.js-notecontainer .js-addnote, .js-editnote, .js-replynote').on('click', function (e) {
-            e.preventDefault();
-
+        $('.js-notecontainer .js-addnote,.js-editnote,.js-replynote').on('click', function (e) {
             var addNote = $(this).hasClass('js-addnote');
             var editNote = $(this).hasClass('js-editnote');
             var replyNote = $(this).hasClass('js-replynote');
@@ -158,12 +156,10 @@
         });
 
         $('.js-expandreply').on('click', function (e) {
-            e.preventDefault();
             var $noteContainer = $(this).closest('.js-notecontainer');
 
             var $currentNote = $(this).closest('.js-note');
             var $childNotesContainer = $currentNote.find('.js-childnotes').first();
-            
             $childNotesContainer.slideToggle(function (x) {
 
                 // get a list of noteIds that have their child items visible, so that we can maintain that expansion after a postback
