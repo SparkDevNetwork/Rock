@@ -131,7 +131,7 @@ namespace com.bemaservices.RoomManagement.Migrations
 
             // Add Security
             var adminGroupId = SqlScalar( "Select Top 1 Id From [Group] Where Guid = 'FBE0324F-F29A-4ACF-8EC3-5386C5562D70'" );
-            if ( adminGroupId != null && adminGroupId.ToString().IsNullOrWhiteSpace() )
+            if ( adminGroupId == null || adminGroupId.ToString().IsNullOrWhiteSpace() )
             {
                 RockMigrationHelper.AddSecurityRoleGroup( "RSR - Room Management Administration", "Group of individuals who can administration the custom Room Management module.", "FBE0324F-F29A-4ACF-8EC3-5386C5562D70" );
             }
