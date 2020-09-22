@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
     /// Block for viewing resource availability
     /// </summary>
     [DisplayName( "Availability List" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Block for viewing the availability of resources." )]
 
     [LinkedPage( "Detail Page" )]

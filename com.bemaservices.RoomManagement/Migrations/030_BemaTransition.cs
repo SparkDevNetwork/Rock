@@ -16,6 +16,7 @@
 //
 using System;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using Rock;
 using Rock.Data;
@@ -64,7 +65,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Outer Apply DefinedValue dv where dv.DefinedTypeId = (Select Top 1 Id From DefinedType Where Guid = '3285DCEF-FAA4-43B9-9338-983F4A384ABA')" );
             }
 
-            Sql( @"
+            var sqlQuery = @"
                 Update AttributeValue
                 Set Value = Replace(Value, '_centralaz_RoomManagement', '_bemaservices_RoomManagement')
                 Where Value like '%_centralaz_RoomManagement%'
@@ -80,13 +81,19 @@ namespace com.bemaservices.RoomManagement.Migrations
                 Update [dbo].[_com_bemaservices_RoomManagement_ReservationType]
                 Set DefaultCleanupTime = DefaultSetupTime
                 Where DefaultCleanupTime is null
-            " );
+            ";
 
+            using ( SqlCommand sqlCommand = new SqlCommand( sqlQuery, SqlConnection, SqlTransaction ) )
+            {
+                sqlCommand.CommandType = System.Data.CommandType.Text;
+                sqlCommand.CommandTimeout = 18000;
+                sqlCommand.ExecuteNonQuery();
+            }
         }
 
         private void UpdateTablesV56()
         {
-            Sql( @"IF (EXISTS (SELECT * 
+            var sqlQuery = @"IF (EXISTS (SELECT * 
                  FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_NAME like '_com_centralaz_RoomManagement%'))
 BEGIN
@@ -310,31 +317,6 @@ BEGIN
 	From [dbo].[_com_centralaz_RoomManagement_ReservationMinistry]
 	SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationMinistry] OFF; 
 
-	SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType] ON;  
-	Insert
-	Into [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType](Id,[ReservationTypeId]
-           ,[LocationTypeValueId]
-           ,[CreatedDateTime]
-           ,[ModifiedDateTime]
-           ,[CreatedByPersonAliasId]
-           ,[ModifiedByPersonAliasId]
-           ,[Guid]
-           ,[ForeignKey]
-           ,[ForeignGuid]
-           ,[ForeignId])
-	Select Id,[ReservationTypeId]
-           ,[LocationTypeValueId]
-           ,[CreatedDateTime]
-           ,[ModifiedDateTime]
-           ,[CreatedByPersonAliasId]
-           ,[ModifiedByPersonAliasId]
-           ,[Guid]
-           ,[ForeignKey]
-           ,[ForeignGuid]
-           ,[ForeignId]
-	From [dbo].[_com_centralaz_RoomManagement_ReservationLocationType]
-	SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType] OFF; 
-
 	SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_Reservation] ON;  
 	Insert
 	Into [dbo].[_com_bemaservices_RoomManagement_Reservation](Id,[Name]
@@ -494,12 +476,19 @@ BEGIN
 END
 
 
-" );
+";
+
+            using ( SqlCommand sqlCommand = new SqlCommand( sqlQuery, SqlConnection, SqlTransaction ) )
+            {
+                sqlCommand.CommandType = System.Data.CommandType.Text;
+                sqlCommand.CommandTimeout = 18000;
+                sqlCommand.ExecuteNonQuery();
+            }
         }
 
         private void UpdateTablesV55()
         {
-            Sql( @"IF (EXISTS (SELECT * 
+            var sqlQuery = @"IF (EXISTS (SELECT * 
                  FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_NAME like '_com_centralaz_RoomManagement%'))
 BEGIN
@@ -880,12 +869,19 @@ BEGIN
 	SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationWorkflow] OFF; 
 	
 END
-" );
+";
+
+            using ( SqlCommand sqlCommand = new SqlCommand( sqlQuery, SqlConnection, SqlTransaction ) )
+            {
+                sqlCommand.CommandType = System.Data.CommandType.Text;
+                sqlCommand.CommandTimeout = 18000;
+                sqlCommand.ExecuteNonQuery();
+            }
         }
 
         private void UpdateTablesV41()
         {
-            Sql( @"IF (EXISTS (SELECT * 
+            var sqlQuery = @"IF (EXISTS (SELECT * 
                  FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_NAME like '_com_centralaz_RoomManagement%'))
             BEGIN
@@ -1256,7 +1252,14 @@ END
 	            SET IDENTITY_INSERT [dbo].[_com_bemaservices_RoomManagement_ReservationWorkflow] OFF; 
 	
             END
-            " );
+            ";
+
+            using ( SqlCommand sqlCommand = new SqlCommand( sqlQuery, SqlConnection, SqlTransaction ) )
+            {
+                sqlCommand.CommandType = System.Data.CommandType.Text;
+                sqlCommand.CommandTimeout = 18000;
+                sqlCommand.ExecuteNonQuery();
+            }
         }
 
         /// <summary>

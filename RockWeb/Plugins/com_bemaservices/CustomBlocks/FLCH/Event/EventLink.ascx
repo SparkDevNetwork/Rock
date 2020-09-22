@@ -92,7 +92,7 @@
                                     <asp:HiddenField ID="hfReservationId" runat="server" />
                                     
                                     <div class="col-md-4">
-                                        <Rock:RockDropDownList ID="ddlReservationType" Label="Reservation Type" runat="server"  />
+                                        <Rock:RockDropDownList ID="ddlReservationType" Label="Reservation Type" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlReservationType_SelectedIndexChanged" />
                                      </div>
 
                                     <div class="col-md-4">
@@ -107,6 +107,8 @@
                                     </div>
 
                                 </div>
+
+                                <asp:PlaceHolder ID="phReservationAttributes" runat="server"></asp:PlaceHolder>
 
                             </div>
                         </asp:Panel>
@@ -198,7 +200,7 @@
                                     </div>
                                     -->
                                     <div class="col-md-4">
-                                        <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
+                                        <Rock:DynamicPlaceholder ID="phEventAttributes" runat="server" />
                                     </div>
                                 </div>
                             </div>

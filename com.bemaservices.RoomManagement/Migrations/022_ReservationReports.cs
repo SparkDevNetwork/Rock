@@ -40,6 +40,11 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             //throw new NotImplementedException();
+              Sql( @"
+                    Delete
+                    From FieldType
+                    Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType'
+                " );
             UpdateFieldTypeByGuid( "Report Template", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType", "6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8" );
 
             RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.DEFINED_TYPE, "Room Management", "", "", "731C5F16-62EA-4DE0-A1FC-6EE2263BF816" );

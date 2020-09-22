@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
     /// User control for managing note types
     /// </summary>
     [DisplayName( "Location Layout List" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "A list of layouts tied to a location" )]
     [IntegerField( "Layout Image Height", "", true, 150 )]
     public partial class LocationLayoutList : RockBlock, ISecondaryBlock

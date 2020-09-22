@@ -76,6 +76,11 @@ namespace com.bemaservices.RoomManagement.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_Question] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_Question_ModifiedByPersonAliasId]
 
 " );
+            Sql( @"
+                    Delete
+                    From EntityType
+                    Where Name = 'com.bemaservices.RoomManagement.Model.Question'
+                " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Question", "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35", true, true );
 
             // Fix bug where setup photos are added as temporary binary files

@@ -79,13 +79,21 @@ namespace com.bemaservices.RoomManagement.Migrations
 
 
             #region FieldTypes
-
+              Sql( @"
+                    Delete
+                    From FieldType
+                    Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType'
+                " );
             UpdateFieldTypeByGuid( "Reservation Approval State", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType", "F4ACC5B8-98BB-4611-B6B7-065BBC47503B" );
 
             #endregion
 
             #region EntityTypes
-
+              Sql( @"
+                    Delete
+                    From EntityType
+                    Where Name = 'com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState'
+                " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState", "3894452A-E763-41AC-8260-10373646D8A0", false, true );
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "ACA008E2-2406-457E-8E4C-6922E03757A4" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Active
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "33E6DF69-BDFA-407A-9744-C175B60643AE", "Approval State Attribute", "ApprovalStateAttribute", "The attribute that contains the reservation approval state.", 1, @"", "2E185FB5-FC8E-41BE-B7FE-702F74B47539" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Approval State Attribute

@@ -45,7 +45,7 @@ using System.Web;
 namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 {
     [DisplayName( "Reservation Lava" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Renders a list of reservations in lava." )]
 
     [CustomRadioListField( "Location Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 1, category: "Filter Settings" )]
@@ -627,6 +627,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
         {
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
+            var locationService = new LocationService( rockContext );
             var qry = reservationService.Queryable();
 
             // Do additional filtering based on the ShowBy selection (My Reservations, My Approvals)
@@ -663,6 +664,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
                 default:
                     break;
             }
+
             // Filter by Resources
             var resourceIdList = rpResource.SelectedValuesAsInt().ToList();
             if ( resourceIdList.Where( r => r != 0 ).Any() )
@@ -672,6 +674,10 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 
             // Filter by Locations
             var locationIdList = lipLocation.SelectedValuesAsInt().ToList();
+            foreach ( var rootLocationId in lipLocation.SelectedValuesAsInt().ToList() )
+            {
+                locationIdList.AddRange( locationService.GetAllDescendentIds( rootLocationId ) );
+            }
             if ( locationIdList.Where( r => r != 0 ).Any() )
             {
                 qry = qry.Where( r => r.ReservationLocations.Any( rr => locationIdList.Contains( rr.LocationId ) ) );

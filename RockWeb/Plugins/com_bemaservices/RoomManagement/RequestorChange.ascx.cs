@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_bemadev.RoomReservation
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Requestor Change" )]
-    [Category( "com_bemadev > Room Reservation" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Template block for developers to use to start a new detail block." )]
     public partial class RequestorChange : Rock.Web.UI.RockBlock
     {

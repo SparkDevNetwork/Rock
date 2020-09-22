@@ -40,7 +40,7 @@ using com.bemaservices.RoomManagement.Model;
 namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 {
     [DisplayName( "Reservation Type Detail" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Displays the details of the given Reservation Type for editing." )]
     public partial class ReservationTypeDetail : RockBlock, IDetailBlock
     {
