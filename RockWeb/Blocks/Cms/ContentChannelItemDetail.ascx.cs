@@ -413,6 +413,13 @@ namespace RockWeb.Blocks.Cms
                         contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
                     }
 
+                    var slugInput = Request.Form["slugInput"];
+                    if ( !string.IsNullOrEmpty( slugInput ) )
+                    {
+                        var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                        contentChannelItemSlugService.SaveSlug( contentItem.Id, slugInput, null );
+                    }
+
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
 
