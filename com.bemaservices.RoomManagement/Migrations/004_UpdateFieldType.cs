@@ -30,7 +30,18 @@ namespace com.bemaservices.RoomManagement.Migrations
         /// </summary>
         public override void Up()
         {
+            Sql( @"
+                    Delete
+                    From FieldType
+                    Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReservationFieldType'
+                " );
             UpdateFieldTypeByGuid( "Reservation", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationFieldType", "66739D2C-1F39-44C4-BDBB-9AB181DA4ED7" );
+
+            Sql( @"
+                    Delete
+                    From FieldType
+                    Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReservationFieldType'
+                " );
             UpdateFieldTypeByGuid( "ReservationStatus", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationStatusFieldType", "D3D17BE3-33BF-4CDF-89E1-F70C57317B4E" );
         }
 
