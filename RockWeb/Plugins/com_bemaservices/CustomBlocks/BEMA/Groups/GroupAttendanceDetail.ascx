@@ -93,6 +93,19 @@
                         </div>
                     </div>
 
+                    <!-- BEMA.FE1.Start -->
+
+                    <div class="row js-roster">
+                        <div class="col-md-6">
+                            <asp:Panel ID="pnlAnonymousAttendanceCount" runat="server" Visible="false" >
+                                <h4><asp:Literal ID="lAnonymousAttendanceCount" runat="server">Anonymous Attendance</asp:Literal></h4>
+                                <Rock:NumberBox ID="nbAnonymousAttendanceCount" runat="server" NumberType="Integer" Label="Count"/>
+                            </asp:Panel>
+                        </div>
+                    </div>
+
+                    <!-- BEMA.FE1.End -->
+
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="dtNotes" runat="server" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.AttendanceOccurrence, Rock" PropertyName="Notes"></Rock:DataTextBox>
