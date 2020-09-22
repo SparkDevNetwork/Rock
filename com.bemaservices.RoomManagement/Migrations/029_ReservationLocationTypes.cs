@@ -76,6 +76,11 @@ ON DELETE CASCADE
 
 ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType] CHECK CONSTRAINT [FK__com_bemaservices_RoomManagement_ReservationLocationType_LocationTypeValueId]
 " );
+             Sql( @"
+                    Delete
+                    From EntityType
+                    Where Name = 'com.bemaservices.RoomManagement.Model.ReservationLocationType'
+                " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationLocationType", "Reservation Location Type", "com.bemaservices.RoomManagement.Model.ReservationLocationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "834F278F-49E6-4BEA-B724-E7723F9EE4C9" );
 
             Sql( @"
