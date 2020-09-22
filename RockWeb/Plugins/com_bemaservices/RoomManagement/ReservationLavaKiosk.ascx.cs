@@ -41,7 +41,7 @@ using iTextSharp.text.pdf;
 namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 {
     [DisplayName( "Reservation Lava Kiosk" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Renders the approved reservations in Lava for the given locationId." )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of upcoming events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_bemaservices/RoomManagement/Assets/Lava/ReservationKiosk.lava' %}", "", 1 )]

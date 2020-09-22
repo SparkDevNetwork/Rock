@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
     /// User control for managing note types
     /// </summary>
     [DisplayName( "Question List" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "A list of questions tied to a resource or location" )]
     public partial class QuestionList : RockBlock, ISecondaryBlock
     {

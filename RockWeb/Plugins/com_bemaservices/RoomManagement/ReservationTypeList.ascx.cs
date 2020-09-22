@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.com_bemaservices.RoomManagement
     /// Block to display the reservation types.
     /// </summary>
     [DisplayName( "Reservation Type List" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Block to display the reservation types." )]
     [LinkedPage( "Detail Page", "Page used to view details of a reservation type." )]
     public partial class ReservationTypeList : Rock.Web.UI.RockBlock

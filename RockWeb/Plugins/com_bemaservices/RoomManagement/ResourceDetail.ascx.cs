@@ -37,7 +37,7 @@ using com.bemaservices.RoomManagement.Model;
 namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 {
     [DisplayName( "Resource Detail" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Displays the details of the resource." )]
 
     public partial class ResourceDetail : RockBlock, IDetailBlock

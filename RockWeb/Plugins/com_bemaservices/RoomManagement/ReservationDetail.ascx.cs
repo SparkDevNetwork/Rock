@@ -45,7 +45,7 @@ using Rock.Lava;
 namespace RockWeb.Plugins.com_bemaservices.RoomManagement
 {
     [DisplayName( "Reservation Detail" )]
-    [Category( "com_bemaservices > Room Management" )]
+    [Category( "BEMA Services > Room Management" )]
     [Description( "Block for viewing a reservation detail" )]
 
     [EventCalendarField(
