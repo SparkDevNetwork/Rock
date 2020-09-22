@@ -31,7 +31,7 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "543D4FCD-310B-4048-BFCB-BAE582CBB890", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Approval State", "ApprovalState", "", 0, @"", "9E1FD102-AA41-4F7A-A52D-601DB1852A44" ); // Room Reservation Approval Notification:Approval State
-            RockMigrationHelper.AddAttributeQualifier( "9E1FD102-AA41-4F7A-A52D-601DB1852A44", "ispassword", @"False", "DE1514A5-D910-4BEB-BA30-30D4D44F135B" ); // Room Reservation Approval Notification:Approval State:ispassword
+            RockMigrationHelper.UpdateAttributeQualifier( "9E1FD102-AA41-4F7A-A52D-601DB1852A44", "ispassword", @"False", "DE1514A5-D910-4BEB-BA30-30D4D44F135B" ); // Room Reservation Approval Notification:Approval State:ispassword
 
 
             RockMigrationHelper.UpdateWorkflowActionType( "CC968504-37E2-430C-B131-57B9556E0442", "Activate Approved Activity", 1, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "653CE164-554A-4B22-A830-3E760DA2023E", 32, "", "E0991B14-DE3A-4103-8B73-77CBFDB4826E" ); // Room Reservation Approval Notification:Notify Approval group that the Reservation is Pending Review:Activate Approved Activity
