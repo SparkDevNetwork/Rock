@@ -628,6 +628,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Standardize quotes in a string. It replaces curly single quotes into the standard single quote character (ASCII 39).
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string StandardizeQuotes( this string str )
+        {
+            if ( str == null )
+            {
+                return null;
+            }
+
+            return str.Replace( "’", "'" );
+        }
+
+        /// <summary>
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
