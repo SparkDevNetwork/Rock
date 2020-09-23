@@ -323,7 +323,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlContentChannelItem = new RockDropDownList();
             _ddlContentChannelItem.EnhanceForLongLists = true;
-            _ddlContentChannelItem.Label = "Content Channel Item";
+            
             _ddlContentChannelItem.ID = this.ID + "_ddlContentChannelItem";
             Controls.Add( _ddlContentChannelItem );
 
@@ -361,7 +361,16 @@ namespace Rock.Web.UI.Controls
         {
             if ( !ContentChannelId.HasValue )
             {
+                // If prompting for _ddlContentChannel, both _ddlContentChannel and _ddlContentChannelItem will be shown,
+                // so we'll need to label both of them
+                _ddlContentChannelItem.Label = "Content Channel Item";
                 _ddlContentChannel.RenderControl( writer );
+            }
+            else
+            {
+                // Since the ContentChannelId setting is set for this control, only the Content Channel Item
+                // will be prompted for, so don't show the label for _ddlContentChannelItem
+                _ddlContentChannelItem.Label = string.Empty;
             }
 
             _ddlContentChannelItem.RenderControl( writer );
