@@ -193,6 +193,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsAnalytic { get; private set; }
 
         /// <summary>
