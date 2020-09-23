@@ -386,7 +386,7 @@
 
                 $buttonNext.on('click', function (e) {
                     var successLocation = $buttonNext.prop('href');
-                    verifyUnallocated(e, successLocation);
+                    navigateNext(e, successLocation);
                 });
 
                 updateRemainingAccountAllocation();
@@ -400,7 +400,7 @@
                     }
                     var link = $(this);
 
-                    $('.address-extended').slideToggle(function() {
+                    $('.address-extended').slideToggle(function () {
                         if ($(this).is(':visible')) {
                             link.text('Show Less').prop('title', 'Hide additional addresses');
                         } else {
@@ -428,7 +428,7 @@
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13) {
                     var successLocation = $('#<%=btnNext.ClientID%>').prop('href');
-                    if (verifyUnallocated(null, successLocation)) {
+                    if (navigateNext(null, successLocation)) {
                         return true;
                     }
                     return false;
@@ -461,28 +461,45 @@
                 updateRemainingAccountAllocation();
             }
 
-            // handle btnNext so that it warns if the total amount was changed from the original (if there was an amount to start with)
-            function verifyUnallocated(e, successLocation) {
+            /**
+             *  returns true if the amount was changed from the original(if there was an amount to start with)
+             */ 
+            function hasUnallocated() {
                 $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
                 if ($unallocatedAmountEl.is(':visible')) {
                     if (Number($unallocatedAmountEl.find('input').val()) != 0) {
-                        if (e) {
-                            e.preventDefault();
-                        }
-
-                        var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
-                        var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
-                        var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
-                        var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
-                        Rock.dialogs.confirm(warningMsg, function (result) {
-                            if (result && successLocation) {
-                                window.location = successLocation;
-                            }
-                        });
+                        return true;
                     }
                 }
+
+                return false;
+            }
+
+            /**
+             * handle btnNext (or KeyPress on amount)
+             * if the amount was changed from the original(if there was an amount to start with) it will ask for confirmation before navigating.
+             * @param successLocation the Postback javascript if navigation is allowed
+            */
+            function navigateNext(e, successLocation) {
+                if (hasUnallocated()) {
+                    if (e) {
+                        e.preventDefault();
+                    }
+
+                    var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
+                    var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
+                    var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
+                    var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
+                    Rock.dialogs.confirm(warningMsg, function (result) {
+                        if (result && successLocation) {
+                            // do the Postback (which will save the changes)
+                            window.location = successLocation;
+                        }
+                    });
+                }
                 else {
-                    return true;
+                    // do the Postback (which will save the changes)
+                    window.location = successLocation;
                 }
             }
         </script>
