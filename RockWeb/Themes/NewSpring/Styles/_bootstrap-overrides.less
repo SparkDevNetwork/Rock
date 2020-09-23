@@ -5,14 +5,25 @@
 }
 
 // Buttons
+.button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  padding: @padding-vertical + 1 @padding-horizontal @padding-vertical;
+  font-size: @font-size;
+  line-height: @line-height;
+  border-radius: @border-radius;
+}
+
+.btn {
+  .button-size(@button-base-vertical; @button-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+}
+
 .btn-sm {
-  .button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
-  padding-top: @padding-small-vertical + 1;
-  padding-bottom: @padding-small-vertical - 1;
+  .button-size(@button-small-vertical; @button-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+  padding-top: @button-small-vertical + 1;
+  padding-bottom: @button-small-vertical - 1;
 }
 
 .btn-xs {
-  .button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+  .button-size(@button-xs-vertical; @button-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
 }
 
 .button-variant(@color; @background; @border) {
@@ -54,4 +65,25 @@
     }
   }
 
+  &.shadowed {
+    .list-group-item {
+      border-left: 0;
+      border-right: 0;
+    }
+    .list-group-item:first-child {
+      border-top: 0;
+    }
+    .list-group-item:last-child {
+      border-bottom: 0;
+    }
+  }
+  
+}
+
+// Alerts
+
+.alert {
+  p, ul {
+    margin-bottom: @base-spacing-unit;
+  }
 }

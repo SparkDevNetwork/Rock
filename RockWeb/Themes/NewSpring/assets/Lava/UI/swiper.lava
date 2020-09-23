@@ -23,8 +23,8 @@
 
         <!-- Add Arrows -->
         <div class="hidden-sm hidden-xs">
-            <div class="swiper-next"><i class="fas fa-fw fa-2x fa-angle-right"></i></div>
-            <div class="swiper-prev"><i class="fas fa-fw fa-2x fa-angle-left"></i></div>
+            <div class="swiper-next"><i class="fal fa-fw fa-2x fa-angle-right"></i></div>
+            <div class="swiper-prev"><i class="fal fa-fw fa-2x fa-angle-left"></i></div>
         </div>
 
         <!-- If we need pagination -->
@@ -37,7 +37,7 @@
   var swiper = new Swiper('#{{ swiperid }}', {
       slidesPerView: 3.3,
       spaceBetween: 15,
-      speed: 200,
+      speed: 100,
       centeredSlides: true,
       roundLengths: true,
       grabCursor: true,
@@ -59,14 +59,14 @@
           slidesPerView: 2.3,
         },
         768: {
-          speed: 300,
+          speed: 100,
           slidesPerView: 2.3,
           pagination: {
             dynamicBullets: true,
           },
         },
         667: {
-          speed: 300,
+          speed: 100,
           slidesPerView: 1.15,
           pagination: {
             dynamicBullets: true,
