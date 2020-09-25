@@ -678,28 +678,31 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            string result = GetFullStreetAddress();
-
-            if ( string.IsNullOrEmpty( result ) )
+            if ( this.Name.IsNotNullOrWhiteSpace() )
             {
-                result = this.Name;
+                return this.Name;
             }
 
-            if ( string.IsNullOrWhiteSpace( result ) )
-            {
-                if ( this.GeoPoint != null )
-                {
-                    return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
-                }
+            string fullAddress = GetFullStreetAddress();
 
-                if ( this.GeoFence != null )
-                {
-                    int pointCount = this.GeoFence.PointCount ?? 0;
-                    return string.Format( "An area with {0} points", ( pointCount > 0 ? pointCount - 1 : 0 ) );
-                }
+            if ( fullAddress.IsNotNullOrWhiteSpace() )
+            {
+                return fullAddress;
             }
 
-            return result;
+            if ( this.GeoPoint != null )
+            {
+                return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
+            }
+
+            if ( this.GeoFence != null )
+            {
+                int pointCount = this.GeoFence.PointCount ?? 0;
+                return string.Format( "An area with {0} points", ( pointCount > 0 ? pointCount - 1 : 0 ) );
+            }
+
+            // this would only happen if Location didn't have a Name, Address, GeoPoint or GoeFence
+            return this.Name;
         }
 
         /// <summary>
