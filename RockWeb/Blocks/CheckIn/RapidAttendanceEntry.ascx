@@ -67,7 +67,7 @@
         <asp:Panel ID="pnlStart" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -94,7 +94,7 @@
         <asp:Panel ID="pnlMainPanel" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
                         <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />

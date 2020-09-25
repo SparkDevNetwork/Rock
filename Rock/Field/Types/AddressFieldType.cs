@@ -128,12 +128,15 @@ namespace Rock.Field.Types
                     var location = new LocationService( new RockContext() ).Get( guid );
                     if ( location != null )
                     {
+                        /* 22-Sep-2020 - SK
+                          Always Set Country first as it loads all the related state in the dropdown before it's being set.
+                        */
+                        addressControl.Country = location.Country;
                         addressControl.Street1 = location.Street1;
                         addressControl.Street2 = location.Street2;
                         addressControl.City = location.City;
                         addressControl.State = location.State;
                         addressControl.PostalCode = location.PostalCode;
-                        addressControl.Country = location.Country;
                         addressControl.County = location.County;
                     }
                     else
