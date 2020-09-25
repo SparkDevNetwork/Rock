@@ -31,9 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="com.centralaz.RoomManagement">
-      <HintPath>bin\com.centralaz.RoomManagement.dll</HintPath>
-    </Reference>
     <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -86,6 +83,10 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\com.bemaservices.RoomManagement\com.bemaservices.RoomManagement.csproj">
+      <Project>{e3c37e39-0dae-4826-b38f-eb6a4d23842f}</Project>
+      <Name>com.bemaservices.RoomManagement</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>

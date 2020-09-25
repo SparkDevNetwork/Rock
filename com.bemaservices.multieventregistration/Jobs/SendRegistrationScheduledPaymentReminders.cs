@@ -113,7 +113,7 @@ namespace com.bemaservices.MultiEventRegistration.Jobs
                                 {
                                     var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
 
-                                    var scheduledTransaction = financialScheduledTransactionService.Queryable().AsNoTracking().Where( fst => fst.ScheduledTransactionDetails.Any( std => std.EntityTypeId == entityTypeId && std.EntityId == registration.Id ) ).FirstOrDefault();
+                                    var scheduledTransaction = financialScheduledTransactionService.Queryable().AsNoTracking().Where( fst => fst.IsActive == true && fst.ScheduledTransactionDetails.Any( std => std.EntityTypeId == entityTypeId && std.EntityId == registration.Id ) ).FirstOrDefault();
                                     if ( scheduledTransaction != null )
                                     {
                                         Dictionary<string, object> mergeObjects = new Dictionary<string, object>();

@@ -1,0 +1,56 @@
+<style>
+  .custom-header-item {
+    text-align: center;
+    font-size: 60px;
+  }
+</style>
+{% assign queryParms = 'Global' | Page:'QueryString' %}
+{% for item in queryParms %}
+  {% assign kvItem = item | PropertyToKeyValue %}
+  {% if kvItem.Key == 'Campus' %}
+    {% assign Campus = kvItem.Value %}
+  {% endif %}
+{% endfor %}
+
+<div class="row">
+  <div class="col-md-6">
+    {% for row in table1.rows %}
+      {% if row.Campus == 'Total' %}
+        <h4>Total Requests: {{ row.Requests }}</h4>
+      {% elseif Campus == null %}
+        <b>{{row.Campus}}</b>: {{row.Requests}}</br>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="col-md-6">
+    {% for row in table2.rows %}
+      {% if row.Campus == 'Total' %}
+        <h4>Currently Open: {{ row.Requests }}</h4>
+      {% elseif Campus == null %}
+        <b>{{row.Campus}}</b>: {{row.Requests}}</br>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+</br>
+<div class='row'>
+  <div class="col-md-6">
+    {% for row in table3.rows %}
+      {% if row.Campus == 'Total' %}
+        <h4>Now Serving: {{ row.Requests }}</h4>
+      {% elseif Campus == null %}
+        <b>{{row.Campus}}</b>: {{row.Requests}}</br>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="col-md-6">
+    {% for row in table4.rows %}
+      {% if row.Campus == 'Total' %}
+        <h4>Average Days until Completion: {{ row.Average }}</h4>
+      {% elseif Campus == null %}
+        <b>{{row.Campus}}</b>: {{row.Average}}</br>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+</br>

@@ -1,0 +1,70 @@
+<script>
+	function getEvents(startDate, endDate, finished) {			
+			var events = [];
+			var event = null;
+			var colorIndex = null;
+			{% for reservationDate in ReservationSummaries %}
+				{% for reservationSummary in reservationDate %}
+					event = null;
+					colorIndex = null;
+					
+					colorIndex = (({{reservationSummary.ApprovalStateInt}} - 1) % 32) + 1;
+					event = {
+						id: {{ reservationSummary.Id }},
+						relatedId: {{ reservationSummary.Id }},
+						start: "{{reservationSummary.ReservationStartDateTime}}",
+						name: "{{ reservationSummary.ReservationName }}",
+						url: "{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}",
+						state: "{{reservationSummary.ApprovalState}}",
+						class: 'project-type-' + {{reservationSummary.ReservationType.Id}} + ' event-color-' + colorIndex
+					};
+					events.push(event);
+				{% endfor %}
+			{% endfor %}
+
+			finished(events);
+		}
+
+	function getEventName(_calendar, event, _options) {
+		var eventName = event.name;
+
+		return $('<span class="name"></span>')
+			.addClass('pm-event-' + event.state.toLowerCase())
+			.text(eventName);
+	}	
+
+	function LoadCalendar(){
+		var options = {
+			events: getEvents,
+			eventNameTemplate: getEventName,
+			monthLayout: {% if TimeFrame == "Month" or TimeFrame == "Year" %}EventCalendar.Constants.MonthLayout.Compact{% else %}EventCalendar.Constants.MonthLayout.None{% endif %},
+			weekLayout: {% if TimeFrame == "Week" %}EventCalendar.Constants.WeekLayout.Compact{% else %}EventCalendar.Constants.WeekLayout.None{% endif %},
+			dayLayout: {% if TimeFrame == "Day" %}EventCalendar.Constants.DayLayout.TimeView{% else %}EventCalendar.Constants.DayLayout.None{% endif %},
+            layout: {% if TimeFrame == "Month" or TimeFrame == "Year" %}EventCalendar.Constants.Layout.Month{% elseif TimeFrame == "Week" %}EventCalendar.Constants.Layout.Week{% else %}EventCalendar.Constants.Layout.Day{% endif %}
+		};
+        var x = "{{TimeFrame}}";
+		var calendar = new EventCalendar($('#pnlCalendar'), options);
+        calendar.setDate("{{FilterStartDate}}")
+		calendar.update();
+        {% assign startMonth = FilterStartDate | Date:'M' %}
+        {% assign endMonth = FilterEndDate | Date:'M' %}
+        {% if TimeFrame == "Week" or startMonth == endMonth %} $(".calendar-toolbar").hide(); {% endif %}
+	}
+	$(document).ready(function () {
+		LoadCalendar();
+	});
+
+	var prm = Sys.WebForms.PageRequestManager.getInstance();
+	prm.add_endRequest( function() {
+		LoadCalendar();
+        location.reload(true);
+	});
+
+    $(function(){
+        Sys.Application.add_load(function () {
+            LoadCalendar();
+            location.reload(true);
+        });
+    });
+</script>
+<asp:Panel id="pnlCalendar"></asp:Panel>

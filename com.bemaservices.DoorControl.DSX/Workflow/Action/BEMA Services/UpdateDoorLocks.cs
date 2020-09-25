@@ -50,11 +50,11 @@ namespace com.bemaservices.DoorControl.DSX.Workflow.Action.BEMA_Services
         IsRequired = true
     )]
     [WorkflowAttribute( "Date To Process", "The Date we are going to push to DSX", true )]
-    [AttributeField( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION, "Override Group Attribute", "This is the Reservation Attribute that stores the DSX Override Information.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_DOOR_OVERRIDES_ATTRIBUTE, "Attributes" )]
+    [AttributeField( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESERVATION, "Override Group Attribute", "This is the Reservation Attribute that stores the DSX Override Information.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_DOOR_OVERRIDES_ATTRIBUTE, "Attributes" )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", "Override Location Attribute", "This is the Location Attribute that stores the DSX Override Group Identifier", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.LOCATION_OVERRIDE_GROUP, "Attributes" )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", "Shared Location Attribute", "This is the Location Attribute that stores a list of shared rooms.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.LOCATION_SHARED_DOOR_ATTRIBUTE, "Attributes" )]
     [AttributeField( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B", "Room Name Location Attribute", "This is the Location Attribute that stores the Room Name", true, false, "", "Attributes" )]
-    [AttributeField( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION, "Process Door Lock", "This is the Reservation Attribute that determines if the normal door lock process should happen.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_PROCESS_DOOR_LOCK_ATTRIBUTE )]
+    [AttributeField( com.bemaservices.RoomManagement.SystemGuid.EntityType.RESERVATION, "Process Door Lock", "This is the Reservation Attribute that determines if the normal door lock process should happen.", true, false, com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_PROCESS_DOOR_LOCK_ATTRIBUTE )]
 
     public class UpdateDoorLocks : ActionComponent
     {
