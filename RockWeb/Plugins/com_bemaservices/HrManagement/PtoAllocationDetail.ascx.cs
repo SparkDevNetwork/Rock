@@ -133,7 +133,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDeleteConfirm_Click( object sender, EventArgs e )
-        {                
+        {
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
 
             using ( var rockContext = new RockContext() )
@@ -353,6 +353,17 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     ptoAllocation.PtoAllocationStatus = PtoAllocationStatus.Pending;
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
+
+                    var personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                    if ( personId.HasValue )
+                    {
+                        var personService = new PersonService( rockContext );
+                        var person = personService.Get( personId.Value );
+                        if ( person != null )
+                        {
+                            ptoAllocation.PersonAlias = person.PrimaryAlias;
+                        }
+                    }
                 }
 
                 bool adminAllowed = UserCanEdit;
