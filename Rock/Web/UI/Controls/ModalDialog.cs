@@ -238,6 +238,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether clicking the backdrop closes the modal.
+        /// </summary>
+        public bool ClickBackdropToClose
+        {
+            get => ViewState["ClickBackdropToClose"].ToStringSafe().AsBoolean();
+            set => ViewState["ClickBackdropToClose"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [cancel link visible].
         /// </summary>
         /// <value>
@@ -520,7 +529,7 @@ namespace Rock.Web.UI.Controls
             string showParentModalOnCloseScript = null;
             if ( parentModal != null )
             {
-                showParentModalOnCloseScript = $@"Rock.controls.modal.showModalDialog($('#{parentModal._dialogPanel.ClientID}'), '{modalManager}');";
+                showParentModalOnCloseScript = $@"Rock.controls.modal.showModalDialog($('#{parentModal._dialogPanel.ClientID}'), '{modalManager}', {parentModal.ClickBackdropToClose.ToJavaScriptValue()}, $('#{parentModal._hfModalVisible.ClientID}') );";
             }
 
             // if the Modal's manger is an UpdatePanel, provide the appropriate jQuery selector to the closeModalDialog function
@@ -528,7 +537,7 @@ namespace Rock.Web.UI.Controls
 
             string script = $@"
 if ($('#{_hfModalVisible.ClientID}').val() == '1') {{
-    Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}');
+    Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}', {ClickBackdropToClose.ToJavaScriptValue()}, $('#{_hfModalVisible.ClientID}') );
 }}
 else {{
     Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'){closeDialogManagerArg});

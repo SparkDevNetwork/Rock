@@ -34,7 +34,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using System.Text;
 
 namespace RockWeb.Blocks.Connection
 {
@@ -338,6 +337,50 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the ItemCommand event of the rConnectorSelect control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rConnectorSelect_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            var connectionRequestId = GetConnectionRequestId();
+            var newConnectorPersonAliasId = e.CommandArgument.ToStringSafe().AsIntegerOrNull();
+
+            if ( !newConnectorPersonAliasId.HasValue || !connectionRequestId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var service = new ConnectionRequestService( rockContext );
+            var request = service.Get( connectionRequestId.Value );
+
+            if ( request == null )
+            {
+                return;
+            }
+
+            if ( newConnectorPersonAliasId.Value == 0 )
+            {
+                request.ConnectorPersonAliasId = null;
+            }
+            else
+            {
+                request.ConnectorPersonAliasId = newConnectorPersonAliasId.Value;
+            }
+
+            rockContext.SaveChanges();
+
+            if ( request.ConnectorPersonAliasId.HasValue )
+            {
+                AddAssignedActivity( request );
+                BindConnectionRequestActivitiesGrid( request, rockContext );
+            }
+
+            BindConnectorSelect( request );
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -500,22 +543,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( newConnectorPersonAliasId.HasValue && !newConnectorPersonAliasId.Equals( oldConnectorPersonAliasId ) )
                     {
-                        var guid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
-                        var assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable().AsNoTracking()
-                            .Where( t => t.Guid == guid )
-                            .Select( t => t.Id )
-                            .FirstOrDefault();
-                        if ( assignedActivityId > 0 )
-                        {
-                            var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
-                            var connectionRequestActivity = new ConnectionRequestActivity();
-                            connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
-                            connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                            connectionRequestActivity.ConnectionActivityTypeId = assignedActivityId;
-                            connectionRequestActivity.ConnectorPersonAliasId = newConnectorPersonAliasId;
-                            connectionRequestActivityService.Add( connectionRequestActivity );
-                            rockContext.SaveChanges();
-                        }
+                        AddAssignedActivity( connectionRequest );
                     }
 
                     var qryParams = new Dictionary<string, string>();
@@ -1369,6 +1397,159 @@ namespace RockWeb.Blocks.Connection
         #region Internal Methods
 
         /// <summary>
+        /// Adds the assigned activity.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request.</param>
+        private void AddAssignedActivity( ConnectionRequest connectionRequest )
+        {
+            if ( connectionRequest == null || !connectionRequest.ConnectorPersonAliasId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+
+            if ( _assignedActivityId == 0 )
+            {
+                var guid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
+                _assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( t => t.Guid == guid )
+                    .Select( t => t.Id )
+                    .FirstOrDefault();
+            }
+
+            if ( _assignedActivityId > 0 )
+            {
+                var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                var connectionRequestActivity = new ConnectionRequestActivity
+                {
+                    ConnectionRequestId = connectionRequest.Id,
+                    ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId,
+                    ConnectionActivityTypeId = _assignedActivityId,
+                    ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId
+                };
+
+                connectionRequestActivityService.Add( connectionRequestActivity );
+                rockContext.SaveChanges();
+            }
+        }
+        private int _assignedActivityId = 0;
+
+        /// <summary>
+        /// Gets the connection request identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetConnectionRequestId()
+        {
+            return
+                hfConnectionRequestId.Value.ToStringSafe().AsIntegerOrNull() ??
+                PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Gets a list of connectors
+        /// </summary>
+        /// <param name="includeCurrentPerson">if set to <c>true</c> [include current person].</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        private List<ConnectorViewModel> GetConnectors( bool includeCurrentPerson, int? campusId )
+        {
+            var connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+            var rockContext = new RockContext();
+            var service = new ConnectionOpportunityConnectorGroupService( rockContext );
+
+            var connectors = service.Queryable()
+                .AsNoTracking()
+                .Where( a => a.ConnectionOpportunityId == connectionOpportunityId )
+                .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
+                .SelectMany( g => g.ConnectorGroup.Members )
+                .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                .Select( m => m.Person )
+                .Distinct()
+                .Where( p => p.Aliases.Any() )
+                .Select( p => new ConnectorViewModel
+                {
+                    LastName = p.LastName,
+                    NickName = p.NickName,
+                    PersonAliasId = p.Aliases.FirstOrDefault().Id
+                } )
+                .ToList();
+
+            if ( includeCurrentPerson && CurrentPersonAliasId.HasValue && !connectors.Any( c => c.PersonAliasId == CurrentPersonAliasId ) )
+            {
+                connectors.Add( new ConnectorViewModel
+                {
+                    LastName = CurrentPerson.LastName,
+                    NickName = CurrentPerson.NickName,
+                    PersonAliasId = CurrentPersonAliasId.Value
+                } );
+            }
+
+            return connectors.OrderBy( c => c.LastName ).ThenBy( c => c.NickName ).ThenBy( c => c.PersonAliasId ).ToList();
+        }
+
+        /// <summary>
+        /// Binds the connector select.
+        /// </summary>
+        private void BindConnectorSelect( ConnectionRequest connectionRequest )
+        {
+            if ( connectionRequest == null )
+            {
+                return;
+            }
+
+            var connector = connectionRequest.ConnectorPersonAlias != null ?
+                connectionRequest.ConnectorPersonAlias.Person :
+                null;
+
+            if ( connector != null )
+            {
+                lConnectorFullName.Text = connector.FullName;
+                lConnectorProfilePhoto.Text = string.Format(
+                    @"<div class=""board-card-photo mb-1"" style=""background-image: url( '{0}' );"" title=""{1} Profile Photo""></div>",
+                    connector.PhotoUrl,
+                    connector.FullName );
+            }
+            else
+            {
+                lConnectorFullName.Text = "Unassigned";
+                lConnectorProfilePhoto.Text = string.Format(
+                    @"<div class=""board-card-photo mb-1"" style=""background-image: url( '{0}' );"" title=""{1} Profile Photo""></div>",
+                    "/Assets/Images/person-no-photo-unknown.svg",
+                    "Unassigned" );
+            }
+
+            var connectorViewModels = GetConnectors( true, connectionRequest.CampusId )
+                .Where( vm => vm.PersonAliasId != connectionRequest.ConnectorPersonAliasId )
+                .ToList();
+
+            connectorViewModels.Insert( 0, new ConnectorViewModel
+            {
+                NickName = "Unassigned",
+                PersonAliasId = 0
+            } );
+
+            rConnectorSelect.DataSource = connectorViewModels;
+            rConnectorSelect.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the photo.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        private void BindPhoto( Person person )
+        {
+            if ( person == null )
+            {
+                return;
+            }
+
+            divPhoto.Attributes["title"] = string.Format( "{0} Profile Photo", person.FullName );
+            divPhoto.Style["background-image"] = string.Format( "url( '{0}' );", person.PhotoUrl );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="connectionRequestId">The connection request identifier.</param>
@@ -1634,23 +1815,7 @@ namespace RockWeb.Blocks.Connection
                 lbProfilePage.Visible = false;
             }
 
-            if ( person != null )
-            {
-                string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200, className: "img-thumbnail" );
-                if ( person.PhotoId.HasValue )
-                {
-                    lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
-                }
-                else
-                {
-                    lPortrait.Text = imgTag;
-                }
-            }
-            else
-            {
-                lPortrait.Text = string.Empty;
-                ;
-            }
+            BindPhoto( person );
 
             lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml() : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
@@ -1691,16 +1856,7 @@ namespace RockWeb.Blocks.Connection
                 lPlacementGroup.Text = "No group assigned";
             }
 
-            if ( connectionRequest != null &&
-                connectionRequest.ConnectorPersonAlias != null &&
-                connectionRequest.ConnectorPersonAlias.Person != null )
-            {
-                lConnector.Text = connectionRequest.ConnectorPersonAlias.Person.FullName;
-            }
-            else
-            {
-                lConnector.Text = "No connector assigned";
-            }
+            BindConnectorSelect( connectionRequest );
 
             if ( connectionRequest != null )
             {
@@ -2143,7 +2299,6 @@ namespace RockWeb.Blocks.Connection
         private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues )
         {
             phGroupMemberAttributes.Controls.Clear();
-            phGroupMemberAttributesView.Controls.Clear();
 
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
@@ -2175,7 +2330,6 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, setValues, BlockValidationGroup, 2 );
-                        Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
                     }
                 }
             }
@@ -2656,5 +2810,49 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
+        #region View Models
+
+        /// <summary>
+        /// Connector View Model
+        /// </summary>
+        private class ConnectorViewModel
+        {
+            /// <summary>
+            /// Gets or sets the person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int PersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the nick name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Person Fullname
+            /// </summary>
+            public string Fullname
+            {
+                get
+                {
+                    return string.Format( "{0} {1}", NickName, LastName );
+                }
+            }
+        }
+
+        #endregion View Models
     }
 }

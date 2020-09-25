@@ -45,7 +45,7 @@
  *      modal, which fixes the issue.
  *      Also, there was a bug in hiding the backdrop where if the owner no longer existed
  *      in the DOM, then the backdrop was not removed.
- */ 
+ */
 
 (function ($) {
     'use strict';
@@ -97,8 +97,40 @@
             });
         }
 
+        // Closes the non-iframe modal dialog control
+        var _closeModalControl = function ($modalDialog, $manager) {
+            if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
+                $modalDialog.modal('hide');
+            }
+
+            // remove the modal-open class from this modal's manager
+            if ($manager && $manager.length) {
+                $manager.each(function () {
+                    $(this).removeClass('modal-open');
+                });
+            }
+
+            // if all modals are closed, remove the modal-open class from the body
+            if ($('.modal:visible').length === 0) {
+                $('body').removeClass('modal-open').css('padding-right', '');
+            }
+
+            // Ensure any modalBackdrops are removed if its owner is no longer visible. Note that some
+            // backdrops do not have an owner
+            $('.modal-backdrop').each(function () {
+                var $modalBackdrop = $(this);
+                var ownerId = $modalBackdrop.data('modalId');
+                var $owner = $('#' + ownerId);
+                var isOwnerInDom = $owner.length > 0;
+
+                if (ownerId && (!isOwnerInDom || !$owner.is(':visible'))) {
+                    $modalBackdrop.remove();
+                }
+            });
+        };
+
         // shows a non-IFrame modal dialog control
-        var _showModalControl = function ($modalDialog, managerId) {
+        var _showModalControl = function ($modalDialog, managerId, clickBackdropToClose, $hfModalVisible) {
             $('body').addClass('modal-open').css('padding-right', Rock.controls.util.getScrollbarWidth());
             $modalDialog.modal({
                 show: true,
@@ -113,6 +145,19 @@
             if ($('.modal-backdrop').filter(':visible').length === 0) {
                 // ensure that there is a modal-backdrop and include its owner as an attribute so that we can remove it when this modal is closed
                 $('<div class="modal-backdrop" data-modal-id="' + $modalDialog.prop('id') + '" />').appendTo('body');
+            }
+
+            if (clickBackdropToClose) {
+                $(".modal-scrollable").click(function (event) {
+                    if (event.target === event.currentTarget) {
+                        $(".modal-scrollable").off("click");
+                        _closeModalControl($modalDialog, $(managerId));
+
+                        if ($hfModalVisible && $hfModalVisible.length) {
+                            $hfModalVisible.val(0);
+                        }
+                    }
+                });
             }
         }
 
@@ -164,42 +209,15 @@
             },
             // closes a ModalDialog control (non-IFrame Modal)
             closeModalDialog: function ($modalDialog, $manager) {
-                if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
-                    $modalDialog.modal('hide');
-                }
-
-                // remove the modal-open class from this modal's manager
-                if ($manager && $manager.length) {
-                    $manager.each(function () {
-                        $(this).removeClass('modal-open');
-                    });
-                }
-
-                // if all modals are closed, remove the modal-open class from the body
-                if ($('.modal:visible').length === 0) {
-                    $('body').removeClass('modal-open').css('padding-right', '');
-                }
-
-                // Ensure any modalBackdrops are removed if its owner is no longer visible. Note that some
-                // backdrops do not have an owner
-                $('.modal-backdrop').each(function () {
-                    var $modalBackdrop = $(this);
-                    var ownerId = $modalBackdrop.data('modalId');
-                    var $owner = $('#' + ownerId);
-                    var isOwnerInDom = $owner.length > 0;
-
-                    if (ownerId && (!isOwnerInDom || !$owner.is(':visible'))) {
-                        $modalBackdrop.remove();
-                    }
-                });
+                _closeModalControl($modalDialog, $manager);
             },
             // shows the #modal-popup modal (IFrame Modal)
             show: function (sender, popupUrl, detailsId, postbackUrl) {
                 _showModalPopup(sender, popupUrl);
             },
             // shows a ModalDialog control (non-IFrame Modal)
-            showModalDialog: function ($modalDialog, managerId) {
-                _showModalControl($modalDialog, managerId);
+            showModalDialog: function ($modalDialog, managerId, clickBackdropToClose, $hfModalVisible) {
+                _showModalControl($modalDialog, managerId, clickBackdropToClose, $hfModalVisible);
             },
 
             // gets the IFrame element of the global the Modal Popup (for the IFrame Modal)

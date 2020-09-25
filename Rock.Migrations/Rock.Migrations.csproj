@@ -141,6 +141,10 @@
     <Compile Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.Designer.cs">
       <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202009221801451_ConnectionBoard.cs" />
+    <Compile Include="Migrations\202009221801451_ConnectionBoard.Designer.cs">
+      <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1446,6 +1450,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.resx">
       <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009221801451_ConnectionBoard.resx">
+      <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
