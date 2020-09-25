@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Crm
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
     #endregion Block Attributes
-    public partial class Documents : RockBlock
+    public partial class Documents : RockBlock, ISecondaryBlock
     {
         private static class AttributeKeys
         {
@@ -76,6 +76,19 @@ namespace RockWeb.Blocks.Crm
 
         protected string icon;
         protected string title;
+
+        #region ISecondaryBlock Implementation
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
+
+        #endregion ISecondaryBlock Implementation
 
         #region Control Overrides
 
@@ -155,7 +168,6 @@ namespace RockWeb.Blocks.Crm
             var blockContextEntityTypes = ContextTypesRequired;
             bool hasError = false;
 
-            upPanel.Visible = true;
             nbMessage.Text = string.Empty;
             nbMessage.Visible = false;
 
@@ -186,7 +198,7 @@ namespace RockWeb.Blocks.Crm
             // If there isn't an entity at this point a new item is being created and there isn't an ID for it yet. So don't show the block.
             if ( this.ContextEntity() == null )
             {
-                upPanel.Visible = false;
+                pnlContent.Visible = false;
                 return false;
             }
 
