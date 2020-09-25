@@ -68,7 +68,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
     [AttributeField( Rock.SystemGuid.EntityType.PERSON
         , "Person Ministry Area Attribute"
         , "The Person Attribute that contains the Person's Ministry Area."
-        , true
+        , false
         , false
         , ""
         , ""
