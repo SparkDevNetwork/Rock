@@ -55,7 +55,7 @@ namespace com.bemaservices.RoomManagement.Migrations
 
             // Approval Workflow now references Admin Contact instead of Requestor
             RockMigrationHelper.UpdateWorkflowTypeAttribute("543D4FCD-310B-4048-BFCB-BAE582CBB890","E4EAB7B2-0B76-429B-AFE4-AD86D7428C70","Admin Contact","AdminContact","",4,@"","F63057EA-27E2-4528-8E93-BAA75BE2122C", false); // Room Reservation Approval Notification:Admin Contact
-            RockMigrationHelper.AddAttributeQualifier("F63057EA-27E2-4528-8E93-BAA75BE2122C","EnableSelfSelection",@"False","79996F88-7368-418C-9FA7-136DAD32A157"); // Room Reservation Approval Notification:Admin Contact:EnableSelfSelection
+            RockMigrationHelper.UpdateAttributeQualifier("F63057EA-27E2-4528-8E93-BAA75BE2122C","EnableSelfSelection",@"False","79996F88-7368-418C-9FA7-136DAD32A157"); // Room Reservation Approval Notification:Admin Contact:EnableSelfSelection
 
             RockMigrationHelper.UpdateWorkflowActivityType("543D4FCD-310B-4048-BFCB-BAE582CBB890",true,"Notify Admin Contact that the Reservation Requires Changes","",false,1,"2C1387D7-3E8F-4702-A9B9-4C2E52684EEE"); // Room Reservation Approval Notification:Notify Admin Contact that the Reservation Requires Changes
             RockMigrationHelper.UpdateWorkflowActivityType("543D4FCD-310B-4048-BFCB-BAE582CBB890",true,"Notify Admin Contact that the Reservation has been Approved","",false,2,"21F615D2-3A9C-421B-8EBF-013C43DE9E4F"); // Room Reservation Approval Notification:Notify Admin Contact that the Reservation has been Approved

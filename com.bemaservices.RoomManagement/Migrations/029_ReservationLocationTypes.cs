@@ -80,6 +80,7 @@ ALTER TABLE [dbo].[_com_bemaservices_RoomManagement_ReservationLocationType] CHE
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationLocationType'
+                    And Guid != '834F278F-49E6-4BEA-B724-E7723F9EE4C9'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationLocationType", "Reservation Location Type", "com.bemaservices.RoomManagement.Model.ReservationLocationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "834F278F-49E6-4BEA-B724-E7723F9EE4C9" );
 
@@ -179,20 +180,20 @@ Outer Apply DefinedValue dv where dv.DefinedTypeId = (Select Top 1 Id From Defin
             RockMigrationHelper.UpdateWorkflowTypeAttribute("13D0361C-0552-43CA-8F27-D47DB120608D","FE95430C-322D-4B67-9C77-DFD1D4408725","Previous Modified Date Time","PreviousModifiedDateTime","",5,@"","4570202A-D5C6-49D0-960D-9F3EAC1BBD57", false); // Room Reservation Approval Update:Previous Modified Date Time
             RockMigrationHelper.UpdateWorkflowTypeAttribute("13D0361C-0552-43CA-8F27-D47DB120608D","9C204CD0-1233-41C5-818A-C5DA439445AA","Reservation Changes","ReservationChanges","",6,@"","B943F376-3CF6-42F8-8B99-2207AC7BBE2A", false); // Room Reservation Approval Update:Reservation Changes
             RockMigrationHelper.UpdateWorkflowTypeAttribute("13D0361C-0552-43CA-8F27-D47DB120608D","9C204CD0-1233-41C5-818A-C5DA439445AA","Is Approval State Change Needed","IsApprovalStateChangeNeeded","",7,@"","52A9B3E2-0DA0-4972-9172-F5C62ECC8076", false); // Room Reservation Approval Update:Is Approval State Change Needed
-            RockMigrationHelper.AddAttributeQualifier("2D709B9B-C75C-4B47-8649-3D05A593BD21","ispassword",@"False","1E77B359-2741-4916-8F84-03E981CA968D"); // Room Reservation Approval Update:Approval State:ispassword
-            RockMigrationHelper.AddAttributeQualifier("6764C3C7-0E95-45C7-BF91-247A7F3E3AA2","EnableSelfSelection",@"False","94AED7D2-C950-4E56-92D8-33CC6A71D103"); // Room Reservation Approval Update:Requester:EnableSelfSelection
-            RockMigrationHelper.AddAttributeQualifier("6160000B-A3FF-4563-BCD6-1B3E12B30601","EnableSelfSelection",@"False","6FE040E2-4BBE-47AE-835B-0FE4B1A6E67C"); // Room Reservation Approval Update:Admin Contact:EnableSelfSelection
-            RockMigrationHelper.AddAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","datePickerControlType",@"Date Picker","71DC4B14-B9E6-4ABF-85B3-30874D1883F1"); // Room Reservation Approval Update:Previous Modified Date Time:datePickerControlType
-            RockMigrationHelper.AddAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","displayCurrentOption",@"False","73B2EF69-2931-4EC4-A5F8-44E4D4B61F85"); // Room Reservation Approval Update:Previous Modified Date Time:displayCurrentOption
-            RockMigrationHelper.AddAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","displayDiff",@"False","2D228BA7-5805-474C-BE93-926593B521A6"); // Room Reservation Approval Update:Previous Modified Date Time:displayDiff
-            RockMigrationHelper.AddAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","format",@"","65D89F86-8698-4CA0-92DD-E51E12EAB81A"); // Room Reservation Approval Update:Previous Modified Date Time:format
-            RockMigrationHelper.AddAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","futureYearCount",@"","2BDA0D2D-4424-4233-A874-85BFA4CE42D3"); // Room Reservation Approval Update:Previous Modified Date Time:futureYearCount
-            RockMigrationHelper.AddAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","ispassword",@"False","10CA1A4B-C79A-4EB9-84ED-561341458D15"); // Room Reservation Approval Update:Reservation Changes:ispassword
-            RockMigrationHelper.AddAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","maxcharacters",@"","9A3A0074-1B16-43F3-B7E2-935D61042043"); // Room Reservation Approval Update:Reservation Changes:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","showcountdown",@"False","941B6C23-40B2-4BE0-9E57-7630977F376C"); // Room Reservation Approval Update:Reservation Changes:showcountdown
-            RockMigrationHelper.AddAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","ispassword",@"False","C55770B9-0D67-4A17-8171-471FD7F773CE"); // Room Reservation Approval Update:Is Approval State Change Needed:ispassword
-            RockMigrationHelper.AddAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","maxcharacters",@"","102028C3-05D9-43BB-9610-0DE8BF41EDB5"); // Room Reservation Approval Update:Is Approval State Change Needed:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","showcountdown",@"False","D930520B-3667-4B4A-9604-46F545C9605F"); // Room Reservation Approval Update:Is Approval State Change Needed:showcountdown
+            RockMigrationHelper.UpdateAttributeQualifier("2D709B9B-C75C-4B47-8649-3D05A593BD21","ispassword",@"False","1E77B359-2741-4916-8F84-03E981CA968D"); // Room Reservation Approval Update:Approval State:ispassword
+            RockMigrationHelper.UpdateAttributeQualifier("6764C3C7-0E95-45C7-BF91-247A7F3E3AA2","EnableSelfSelection",@"False","94AED7D2-C950-4E56-92D8-33CC6A71D103"); // Room Reservation Approval Update:Requester:EnableSelfSelection
+            RockMigrationHelper.UpdateAttributeQualifier("6160000B-A3FF-4563-BCD6-1B3E12B30601","EnableSelfSelection",@"False","6FE040E2-4BBE-47AE-835B-0FE4B1A6E67C"); // Room Reservation Approval Update:Admin Contact:EnableSelfSelection
+            RockMigrationHelper.UpdateAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","datePickerControlType",@"Date Picker","71DC4B14-B9E6-4ABF-85B3-30874D1883F1"); // Room Reservation Approval Update:Previous Modified Date Time:datePickerControlType
+            RockMigrationHelper.UpdateAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","displayCurrentOption",@"False","73B2EF69-2931-4EC4-A5F8-44E4D4B61F85"); // Room Reservation Approval Update:Previous Modified Date Time:displayCurrentOption
+            RockMigrationHelper.UpdateAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","displayDiff",@"False","2D228BA7-5805-474C-BE93-926593B521A6"); // Room Reservation Approval Update:Previous Modified Date Time:displayDiff
+            RockMigrationHelper.UpdateAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","format",@"","65D89F86-8698-4CA0-92DD-E51E12EAB81A"); // Room Reservation Approval Update:Previous Modified Date Time:format
+            RockMigrationHelper.UpdateAttributeQualifier("4570202A-D5C6-49D0-960D-9F3EAC1BBD57","futureYearCount",@"","2BDA0D2D-4424-4233-A874-85BFA4CE42D3"); // Room Reservation Approval Update:Previous Modified Date Time:futureYearCount
+            RockMigrationHelper.UpdateAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","ispassword",@"False","10CA1A4B-C79A-4EB9-84ED-561341458D15"); // Room Reservation Approval Update:Reservation Changes:ispassword
+            RockMigrationHelper.UpdateAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","maxcharacters",@"","9A3A0074-1B16-43F3-B7E2-935D61042043"); // Room Reservation Approval Update:Reservation Changes:maxcharacters
+            RockMigrationHelper.UpdateAttributeQualifier("B943F376-3CF6-42F8-8B99-2207AC7BBE2A","showcountdown",@"False","941B6C23-40B2-4BE0-9E57-7630977F376C"); // Room Reservation Approval Update:Reservation Changes:showcountdown
+            RockMigrationHelper.UpdateAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","ispassword",@"False","C55770B9-0D67-4A17-8171-471FD7F773CE"); // Room Reservation Approval Update:Is Approval State Change Needed:ispassword
+            RockMigrationHelper.UpdateAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","maxcharacters",@"","102028C3-05D9-43BB-9610-0DE8BF41EDB5"); // Room Reservation Approval Update:Is Approval State Change Needed:maxcharacters
+            RockMigrationHelper.UpdateAttributeQualifier("52A9B3E2-0DA0-4972-9172-F5C62ECC8076","showcountdown",@"False","D930520B-3667-4B4A-9604-46F545C9605F"); // Room Reservation Approval Update:Is Approval State Change Needed:showcountdown
             RockMigrationHelper.UpdateWorkflowActivityType("13D0361C-0552-43CA-8F27-D47DB120608D",true,"Set Attributes","",true,0,"9D366F65-51B6-47C7-BACB-E0F7DC8B1072"); // Room Reservation Approval Update:Set Attributes
             RockMigrationHelper.UpdateWorkflowActivityType("13D0361C-0552-43CA-8F27-D47DB120608D",true,"Notify Approval group that the Reservation is Pending Review","",false,1,"4CBF518F-AB76-4C67-9B70-597CCDABEEBA"); // Room Reservation Approval Update:Notify Approval group that the Reservation is Pending Review
             RockMigrationHelper.UpdateWorkflowActivityTypeAttribute("9D366F65-51B6-47C7-BACB-E0F7DC8B1072","9C204CD0-1233-41C5-818A-C5DA439445AA","Delay Activated","8167ed7e-35f9-4ab4-85d3-e929cf965f44","",0,@"","9897855E-07F4-433B-8284-75E709CB909B"); // Room Reservation Approval Update:Set Attributes:Delay Activated
@@ -266,7 +267,7 @@ Where Guid = '{{finalApprovalGroupGuid}}'
 {% assign approvalState = Workflow | Attribute:'ApprovalState' %}
 {% assign changes = Workflow | Attribute:'ReservationChanges' %}
 
-{% if finalApprovalGroup.Id == null || groupMemberCount > 0 || approvalState != 'Approved' || changes == '' %}
+{% if finalApprovalGroup.Id == null or groupMemberCount > 0 or approvalState != 'Approved' or changes == empty or changes == null %}
     False
 {% else %}
     True

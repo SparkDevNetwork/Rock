@@ -83,6 +83,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From FieldType
                     Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType'
+                    And Guid != 'F4ACC5B8-98BB-4611-B6B7-065BBC47503B'
                 " );
             UpdateFieldTypeByGuid( "Reservation Approval State", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationApprovalStateFieldType", "F4ACC5B8-98BB-4611-B6B7-065BBC47503B" );
 
@@ -93,6 +94,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState'
+                    And Guid != '3894452A-E763-41AC-8260-10373646D8A0'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState", "3894452A-E763-41AC-8260-10373646D8A0", false, true );
             RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "3894452A-E763-41AC-8260-10373646D8A0", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "ACA008E2-2406-457E-8E4C-6922E03757A4" ); // com.bemaservices.RoomManagement.Workflow.Actions.Reservations.SetReservationApprovalState:Active
