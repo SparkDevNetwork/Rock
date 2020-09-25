@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataViewDetail.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DataViewDetail" %>
-<asp:UpdatePanel ID="upDataView" runat="server">
+<asp:UpdatePanel ID="upDataViewDetail" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
@@ -119,23 +119,6 @@
                         </fieldset>
                     </div>
 
-                </div>
-
-                <div class="panel panel-block">
-                    <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
-                        <div class="panel-labels">
-                            <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
-                        </div>
-                    </div>
-                    <asp:Panel ID="pnlResultsGrid" runat="server">
-                        <div class="panel-body">
-                            <Rock:NotificationBox ID="nbGridError" runat="server" NotificationBoxType="Warning" />
-                            <div class="grid grid-panel">
-                                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
-                            </div>
-                        </div>
-                    </asp:Panel>
                 </div>
             </div>
 
