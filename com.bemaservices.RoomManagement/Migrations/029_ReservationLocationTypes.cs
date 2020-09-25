@@ -267,7 +267,7 @@ Where Guid = '{{finalApprovalGroupGuid}}'
 {% assign approvalState = Workflow | Attribute:'ApprovalState' %}
 {% assign changes = Workflow | Attribute:'ReservationChanges' %}
 
-{% if finalApprovalGroup.Id == null || groupMemberCount > 0 || approvalState != 'Approved' || changes == '' %}
+{% if finalApprovalGroup.Id == null or groupMemberCount > 0 or approvalState != 'Approved' or changes == empty or changes == null %}
     False
 {% else %}
     True
