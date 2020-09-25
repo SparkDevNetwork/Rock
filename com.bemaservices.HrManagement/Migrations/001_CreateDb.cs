@@ -10,6 +10,7 @@ using com.bemaservices.HrManagement.SystemGuid;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
 using System.Security.AccessControl;
+using Rock;
 
 namespace com.bemaservices.HrManagement.Migrations
 {
@@ -270,7 +271,7 @@ namespace com.bemaservices.HrManagement.Migrations
 
             // add ServiceJob: Process PTO Allocations
             // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
-            Sql(@"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations' AND [Guid] = '48AB813A-0038-4F4F-B3F7-9CDB975B19A1' )
+            Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations' AND [Guid] = '48AB813A-0038-4F4F-B3F7-9CDB975B19A1' )
             BEGIN
                INSERT INTO [ServiceJob] (
                   [IsSystem]
@@ -292,6 +293,7 @@ namespace com.bemaservices.HrManagement.Migrations
                   ,'48AB813A-0038-4F4F-B3F7-9CDB975B19A1'
                   );
             END" );
+
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "Person Hired Date Attribute", "The Person Attribute that contains the Person's Hired Date.  This will be used to determine if the person is currently staff or not.", 0, @"", "2533F72C-57EB-4022-BD9E-8492B4516DF7", "HireDate" );
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "Person Fired Date Attribute", "The Person Attribute that contains the Person's Fired Date.  This will be used to determine if the person is currently staff or not.", 0, @"", "6C8A6197-42C1-40A4-A752-8900EB2FCF46", "FireDate" );
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "New Allocations Status", "What should newly created allocations have as a status", 2, @"2", "6D67B840-6EC4-451A-8743-6D48CF2BAC39", "NewAllocationsStatus" );
@@ -301,15 +303,22 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "Year Offset", "Whether you need a custom offset in for your staff's Years Worked calculations", 7, @"0", "203CF1E3-F20B-4FC7-8D5E-ECFCA4C3CB47", "YearOffset" );
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "Person Hours Per Week Worked Attribute", "The Person Attribute that contains the Number of Hours a person works in a week.  This will be used to calculate how many hours of PTO some gets allocated.  If someone only works 20hrs a week they'll only be allocated 50% of what their bracket calls for.  If left blank, everyone will recieve full allocations", 8, @"", "D4F2C07A-17C0-47A3-B5E8-B5D1173C36FE", "HoursWorked" );
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Class", "com.bemaservices.HrManagement.Jobs.ProcessPtoAllocations", "Hours Per Week", "This is used in conjuntion with the Hours a person works.  This is the number of hours someone should work to recieve the full PTO Allocation", 9, @"40", "6AB8FD2A-C03F-4A4F-BDD9-3844A2A04188", "HoursPerWeek" );
-            RockMigrationHelper.AddAttributeValue( "2533F72C-57EB-4022-BD9E-8492B4516DF7", 59, SystemGuid.Attribute.HIRE_DATE_PERSON_ATTRIBUTE, "2533F72C-57EB-4022-BD9E-8492B4516DF7" ); // Process PTO Allocations: Person Hired Date Attribute
-            RockMigrationHelper.AddAttributeValue( "6C8A6197-42C1-40A4-A752-8900EB2FCF46", 59, SystemGuid.Attribute.FIRE_DATE_PERSON_ATTRIBUTE, "6C8A6197-42C1-40A4-A752-8900EB2FCF46" ); // Process PTO Allocations: Person Fired Date Attribute
-            RockMigrationHelper.AddAttributeValue( "6D67B840-6EC4-451A-8743-6D48CF2BAC39", 59, @"2", "6D67B840-6EC4-451A-8743-6D48CF2BAC39" ); // Process PTO Allocations: New Allocations Status
-            RockMigrationHelper.AddAttributeValue( "C97F8E2A-FF03-443C-AF6E-427EFD81884D", 59, @"30", "C97F8E2A-FF03-443C-AF6E-427EFD81884D" ); // Process PTO Allocations: Days Back
-            RockMigrationHelper.AddAttributeValue( "57F6E158-2AF4-459C-A663-748CBF024BD2", 59, @"True", "57F6E158-2AF4-459C-A663-748CBF024BD2" ); // Process PTO Allocations: Update Allocation Status
-            RockMigrationHelper.AddAttributeValue( "203CF1E3-F20B-4FC7-8D5E-ECFCA4C3CB47", 59, @"0", "203CF1E3-F20B-4FC7-8D5E-ECFCA4C3CB47" ); // Process PTO Allocations: Year Offset
-            RockMigrationHelper.AddAttributeValue( "6AB8FD2A-C03F-4A4F-BDD9-3844A2A04188", 59, @"40", "6AB8FD2A-C03F-4A4F-BDD9-3844A2A04188" ); // Process PTO Allocations: Hours Per Week
 
-
+            var jobId = SqlScalar( "Select Top 1 Id from ServiceJob Where Guid = '48AB813A-0038-4F4F-B3F7-9CDB975B19A1'" );
+            if ( jobId != null )
+            {
+                var jobIdInt = jobId.ToString().AsIntegerOrNull();
+                if ( jobIdInt.HasValue )
+                {
+                    RockMigrationHelper.AddAttributeValue( "2533F72C-57EB-4022-BD9E-8492B4516DF7", jobIdInt.Value, SystemGuid.Attribute.HIRE_DATE_PERSON_ATTRIBUTE.ToLower(), "2533F72C-57EB-4022-BD9E-8492B4516DF7" ); // Process PTO Allocations: Person Hired Date Attribute
+                    RockMigrationHelper.AddAttributeValue( "6C8A6197-42C1-40A4-A752-8900EB2FCF46", jobIdInt.Value, SystemGuid.Attribute.FIRE_DATE_PERSON_ATTRIBUTE.ToLower(), "6C8A6197-42C1-40A4-A752-8900EB2FCF46" ); ; // Process PTO Allocations: Person Fired Date Attribute
+                    RockMigrationHelper.AddAttributeValue( "6D67B840-6EC4-451A-8743-6D48CF2BAC39", jobIdInt.Value, @"2", "6D67B840-6EC4-451A-8743-6D48CF2BAC39" ); // Process PTO Allocations: New Allocations Status
+                    RockMigrationHelper.AddAttributeValue( "C97F8E2A-FF03-443C-AF6E-427EFD81884D", jobIdInt.Value, @"30", "C97F8E2A-FF03-443C-AF6E-427EFD81884D" ); // Process PTO Allocations: Days Back
+                    RockMigrationHelper.AddAttributeValue( "57F6E158-2AF4-459C-A663-748CBF024BD2", jobIdInt.Value, @"True", "57F6E158-2AF4-459C-A663-748CBF024BD2" ); // Process PTO Allocations: Update Allocation Status
+                    RockMigrationHelper.AddAttributeValue( "203CF1E3-F20B-4FC7-8D5E-ECFCA4C3CB47", jobIdInt.Value, @"0", "203CF1E3-F20B-4FC7-8D5E-ECFCA4C3CB47" ); // Process PTO Allocations: Year Offset
+                    RockMigrationHelper.AddAttributeValue( "6AB8FD2A-C03F-4A4F-BDD9-3844A2A04188", jobIdInt.Value, @"40", "6AB8FD2A-C03F-4A4F-BDD9-3844A2A04188" ); // Process PTO Allocations: Hours Per Week
+                }
+            }
         }
 
         /// <summary>

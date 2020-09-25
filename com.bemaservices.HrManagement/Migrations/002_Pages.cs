@@ -275,7 +275,7 @@ namespace com.bemaservices.HrManagement.Migrations
 
             RockMigrationHelper.AddSecurityAuthForBlock( "B4BA7334-890C-4569-B33B-555713E42E58", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "6D12252B-8621-47CF-9AF0-44376425F45E" );
             RockMigrationHelper.AddSecurityAuthForBlock( "61B8867D-07E4-4486-9858-B09C9ED90C1B", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "D8EE0902-1E92-42EB-8CF4-7F75E179F549" );
-            RockMigrationHelper.AddSecurityAuthForBlock( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "B4E9D6A9-8AD9-460F-9E96-9DB87FC7010E" );
+            RockMigrationHelper.AddSecurityAuthForBlock( "060395F3-DA4C-481B-B53F-4B915C74697F", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "B4E9D6A9-8AD9-460F-9E96-9DB87FC7010E" );
 
             // Page: Allocation Detail
             RockMigrationHelper.AddPage( "34A9F1E4-8249-4F39-B861-F28210E8C70A", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Allocation Detail", "", "278DE672-B691-4017-BD0A-893C50652EDF", "" ); // Site:Rock RMS
