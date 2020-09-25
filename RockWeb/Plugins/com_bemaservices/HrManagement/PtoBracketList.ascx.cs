@@ -35,9 +35,9 @@ using com.bemaservices.HrManagement.Model;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Bracket List" )]
+    [DisplayName( "PTO Bracket List" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Lists all the brackets for a given PTO tier." )]
+    [Description( "Lists all the brackets for a given PTO Tier." )]
     [LinkedPage( "Detail Page" )]
     public partial class PtoBracketList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {

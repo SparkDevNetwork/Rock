@@ -12,7 +12,7 @@
                         <Rock:ModalAlert ID="maWarningDialog" runat="server" />
                         <Rock:GridFilter ID="gfEmployeeFilter" runat="server">
                             <Rock:RockDropDownList ID="ddlFiscalYearEnd" runat="server" Label="Fiscal Year End" />
-                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="Pto Type" DataValueField="Id" DataTextField="Name" />
+                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" DataValueField="Id" DataTextField="Name" />
                             <Rock:RockTextBox ID="tbMinistryArea" runat="server" Label="Ministry Area" />
                             <Rock:PersonPicker ID="ppSupervisor" runat="server" Label="Supervisor" />
                             <Rock:RockCheckBox ID="cbShowUnallocatedPtoTypes" runat="server" Label="Show Unallocated PTO Types" />

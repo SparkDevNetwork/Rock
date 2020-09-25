@@ -37,10 +37,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
     /// <summary>
     /// Block to display the connection types.
     /// </summary>
-    [DisplayName( "Pto Tier List" )]
+    [DisplayName( "PTO Tier List" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Block to display the Pto Tiers." )]
-    [LinkedPage( "Detail Page", "Page used to view details of a Pto Tier." )]
+    [Description( "Block to display the PTO Tiers." )]
+    [LinkedPage( "Detail Page", "Page used to view details of a PTO Tier." )]
     public partial class PtoTierList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

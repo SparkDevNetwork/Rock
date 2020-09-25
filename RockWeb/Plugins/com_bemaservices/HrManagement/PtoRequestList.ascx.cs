@@ -35,10 +35,10 @@ using com.bemaservices.HrManagement.Model;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Request List" )]
+    [DisplayName( "PTO Request List" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Lists all the pto requests." )]
-    [WorkflowTypeField( "PTO Request Workflow", "The Workflow used to add, modify, and delete pto requests.", false, true, "EBF1D986-8BBD-4888-8A7E-43AF5914751C" )]
+    [Description( "Lists all the PTO Requests." )]
+    [WorkflowTypeField( "PTO Request Workflow", "The Workflow used to add, modify, and delete PTO Requests.", false, true, "EBF1D986-8BBD-4888-8A7E-43AF5914751C" )]
 
     [ContextAware]
     public partial class PtoRequestList : RockBlock, ICustomGridColumns

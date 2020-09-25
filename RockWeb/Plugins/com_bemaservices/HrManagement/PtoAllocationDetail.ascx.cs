@@ -42,9 +42,9 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Allocation Detail" )]
+    [DisplayName( "PTO Allocation Detail" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Displays the details of the given Pto Allocation for editing." )]
+    [Description( "Displays the details of the given PTO Allocation for editing." )]
     public partial class PtoAllocationDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -96,7 +96,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New Pto Allocation", pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( "New PTO Allocation", pageReference ) );
                 }
             }
             else

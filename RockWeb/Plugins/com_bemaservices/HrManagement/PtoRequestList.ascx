@@ -13,7 +13,7 @@
                         <Rock:GridFilter ID="gfPtoRequestFilter" runat="server">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                             <Rock:DateRangePicker ID="drpRequestDate" runat="server" Label="Date Range" />
-                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="Pto Type" DataValueField="Id" DataTextField="Name" />
+                            <Rock:RockDropDownList ID="ddlPtoType" runat="server" Label="PTO Type" DataValueField="Id" DataTextField="Name" />
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </Rock:GridFilter>
 

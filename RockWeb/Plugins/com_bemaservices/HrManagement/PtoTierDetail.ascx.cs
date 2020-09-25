@@ -40,9 +40,9 @@ using com.bemaservices.HrManagement.Model;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Tier Detail" )]
+    [DisplayName( "PTO Tier Detail" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Displays the details of the given Pto Tier for editing." )]
+    [Description( "Displays the details of the given PTO Tier for editing." )]
     public partial class PtoTierDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -106,7 +106,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New Pto Tier", pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( "New PTO Tier", pageReference ) );
                 }
             }
             else
@@ -135,11 +135,11 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 var newPtoTier = ptoTierService.Get( newPtoTierId );
                 if ( newPtoTier != null )
                 {
-                    mdCopy.Show( "Pto Tier copied to '" + newPtoTier.Name + "'", ModalAlertType.Information );
+                    mdCopy.Show( "PTO Tier copied to '" + newPtoTier.Name + "'", ModalAlertType.Information );
                 }
                 else
                 {
-                    mdCopy.Show( "CPto Tier failed to copy.", ModalAlertType.Warning );
+                    mdCopy.Show( "PTO Tier failed to copy.", ModalAlertType.Warning );
                 }
             }
         }
@@ -627,7 +627,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             }
             if ( ptoTier.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( PtoTier.FriendlyTypeName ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = "Add PTO Tier";
             }
             else
             {

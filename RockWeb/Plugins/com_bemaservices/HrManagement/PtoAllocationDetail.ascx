@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upPtoAllocation" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Allocation will permently delete the allocation and all related pto requests. Are you sure you want to delete the Pto Allocation?" />
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a PTO Allocation will permently delete the Allocation and all related PTO Requests. Are you sure you want to delete the PTO Allocation?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
         </asp:Panel>
@@ -37,7 +37,7 @@
                         <div class="col-md-6">
                             <dl class="margin-b-md">
                                 <Rock:TermDescription ID="tdPerson" runat="server" Term="Person" />
-                                <Rock:TermDescription ID="tdPtoType" runat="server" Term="Pto Type" />
+                                <Rock:TermDescription ID="tdPtoType" runat="server" Term="PTO Type" />
                                 <Rock:TermDescription ID="tdDateRange" runat="server" Term="Date" />
                             </dl>
                         </div>

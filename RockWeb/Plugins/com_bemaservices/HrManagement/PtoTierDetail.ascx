@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upPtoTier" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Pto Tier will delete all the Pto Brackets associated with the Pto Tier. Are you sure you want to delete the Pto Tier?" />
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a PTO Tier will delete all the PTO Brackets associated with the PTO Tier. Are you sure you want to delete the PTO Tier?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
         </asp:Panel>
@@ -38,7 +38,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy PtoTier" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy PTO Tier" />
                             <%--<Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" /> --%>
                         </span>
                     </div>
@@ -65,7 +65,7 @@
                         </div>
                     </div>
                     
-                    <%--<Rock:PanelWidget ID="wpAttributes" runat="server" Title="Pto Tier Attributes">
+                    <%--<Rock:PanelWidget ID="wpAttributes" runat="server" Title="PTO Tier Attributes">
                         <div class="grid">
                             <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute" ShowConfirmDeleteDialog="false" >
                                 <Columns>

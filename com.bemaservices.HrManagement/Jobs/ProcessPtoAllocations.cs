@@ -49,8 +49,8 @@ namespace com.bemaservices.HrManagement.Jobs
     //    , Order = 3
     //    , DefaultValue = "1"
     //    , IsRequired = true )]
-    [CustomCheckboxListField( "Pto Types"
-        , "The Pto Types to Create Allocations For"
+    [CustomCheckboxListField( "PTO Types"
+        , "The PTO Types to Create Allocations For"
         , "Select [Guid] as [Value], [Name] as [Text] From _com_bemaservices_HrManagement_PtoType t Where t.IsActive = 1"
         , true
         , ""

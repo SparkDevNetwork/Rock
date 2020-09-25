@@ -41,9 +41,9 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Bracket Detail" )]
+    [DisplayName( "PTO Bracket Detail" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Displays the details of the given Pto Bracket for editing." )]
+    [Description( "Displays the details of the given PTO Bracket for editing." )]
     public partial class PtoBracketDetail : RockBlock, IDetailBlock
     {
         #region Fields
@@ -523,7 +523,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             if ( ptoBracket.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( PtoBracket.FriendlyTypeName ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = "Add PTO Bracket";
                 hlStatus.Visible = false;
             }
             else

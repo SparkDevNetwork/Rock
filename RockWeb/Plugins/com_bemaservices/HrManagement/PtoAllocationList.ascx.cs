@@ -35,9 +35,9 @@ using com.bemaservices.HrManagement.Model;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
-    [DisplayName( "Pto Allocation List" )]
+    [DisplayName( "PTO Allocation List" )]
     [Category( "BEMA Services > HR Management" )]
-    [Description( "Lists all the pto allocations." )]
+    [Description( "Lists all the PTO Allocations." )]
     [LinkedPage( "Detail Page", order: 0 )]
 
     [ContextAware]
@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 $('table.js-grid-allocation-list a.grid-delete-button').click(function( e ){
                     var $btn = $(this);
                     e.preventDefault();
-                    Rock.dialogs.confirm('Are you sure you want to delete this allocation and all pto requests tied to it?', function (result) {
+                    Rock.dialogs.confirm('Are you sure you want to delete this allocation and all PTO Requests tied to it?', function (result) {
                         if(result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }

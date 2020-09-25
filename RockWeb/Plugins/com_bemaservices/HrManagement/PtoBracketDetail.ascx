@@ -29,10 +29,10 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <Rock:NotificationBox ID="nbInvalidPtoTypes" runat="server" NotificationBoxType="Danger" Visible="false"
-                        Text="At least one Pto Type needs to be configured."/>
+                        Text="At least one PTO Type needs to be configured."/>
 
                     <Rock:NotificationBox ID="nbIncorrectTier" runat="server" NotificationBoxType="Danger" Visible="false"
-                        Text="The bracket selected does not belong to the selected pto tier." />
+                        Text="The bracket selected does not belong to the selected PTO Tier." />
 
                     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
