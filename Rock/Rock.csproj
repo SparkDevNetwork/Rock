@@ -602,6 +602,7 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
