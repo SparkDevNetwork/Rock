@@ -273,6 +273,10 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddSecurityAuthForBlock( "B9F7C989-3797-4905-9729-48A2B60AC083", 1, "View", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "4B8229F1-B6D9-4089-8D51-FEACF84D9C55" );
             RockMigrationHelper.AddSecurityAuthForBlock( "B9F7C989-3797-4905-9729-48A2B60AC083", 2, "View", false, null, Rock.Model.SpecialRole.AllUsers, "D84CB64F-517F-4CF6-80BD-CF522E149A6A" );
 
+            RockMigrationHelper.AddSecurityAuthForBlock( "B4BA7334-890C-4569-B33B-555713E42E58", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "6D12252B-8621-47CF-9AF0-44376425F45E" );
+            RockMigrationHelper.AddSecurityAuthForBlock( "61B8867D-07E4-4486-9858-B09C9ED90C1B", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "D8EE0902-1E92-42EB-8CF4-7F75E179F549" );
+            RockMigrationHelper.AddSecurityAuthForBlock( "7DBC964F-C656-4015-8E5B-E99C3A65AE26", 0, "Edit", true, "6F8AABA3-5BC8-468B-90DD-F0686F38E373", 0, "B4E9D6A9-8AD9-460F-9E96-9DB87FC7010E" );
+
             // Page: Allocation Detail
             RockMigrationHelper.AddPage( "34A9F1E4-8249-4F39-B861-F28210E8C70A", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Allocation Detail", "", "278DE672-B691-4017-BD0A-893C50652EDF", "" ); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Pto Allocation Detail", "Displays the details of the given Pto Allocation for editing.", "~/Plugins/com_bemaservices/HrManagement/PtoAllocationDetail.ascx", "BEMA Services > HR Management", "D59A0A08-0A20-406E-95CE-03882446F70C" );
