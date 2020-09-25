@@ -1,6 +1,6 @@
 <br><br>
 <div>
-	<img src='{{ImageUrl}}' height='55' width='100' style='float:right;'></img>
+	<img src='{{ImageUrl}}' height='40' width='150' style='float:right;'></img>
 	</div>
 <br>
   {% assign reservationCount = ReservationSummaries | Size %}
