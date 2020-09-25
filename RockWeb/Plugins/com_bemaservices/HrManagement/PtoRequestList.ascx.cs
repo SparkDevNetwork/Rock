@@ -130,20 +130,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                     canView = true;
                 }
 
-                /* old logic 
-                if ( canView == false )
-                {
-                    var adminGuid = "628C51A8-4613-43ED-A18D-4A6FB999273E".AsGuid();
-                    var hrGuid = "6F8AABA3-5BC8-468B-90DD-F0686F38E373".AsGuid();
-                    var inReviewGroup = CurrentPerson.Members.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Group.IsActive == true &&
-                             ( gm.Group.Guid == adminGuid || gm.Group.Guid == hrGuid ) ).Any();
-                    if ( inReviewGroup )
-                    {
-                        canView = true;
-                    }
-                }
-                */
-
                 if ( canView == false )
                 {
                     _person.LoadAttributes();
