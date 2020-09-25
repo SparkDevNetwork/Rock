@@ -48,19 +48,19 @@ DECLARE @maxBusinesses INT = 99999
 	,@geoPoint Geography
 
 BEGIN
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#businessLastNames') IS NOT NULL
+        DROP TABLE #businessLastNames
 
     IF OBJECT_ID('tempdb..#businessTypeName') IS NOT NULL
         DROP TABLE #businessTypeName
 
-    CREATE TABLE #lastNames (
+    CREATE TABLE #businessLastNames (
         number INT NOT NULL IDENTITY(1, 1)
         ,surname NVARCHAR(23) NOT NULL
-        ,CONSTRAINT pk_fakenames PRIMARY KEY CLUSTERED (number)
+        ,CONSTRAINT pk_fakebusinessnames PRIMARY KEY CLUSTERED (number)
         );
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Edington')
         ,(N'Mcdonough')
         ,(N'Dorantes')
@@ -1062,7 +1062,7 @@ BEGIN
         ,(N'Ashmore')
         ,(N'Boettcher')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Skillern')
         ,(N'Weyandt')
         ,(N'Fallis')
@@ -2064,7 +2064,7 @@ BEGIN
         ,(N'Netherton')
         ,(N'Chatham')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Phillips')
         ,(N'Livesay')
         ,(N'Ayala')
@@ -3066,7 +3066,7 @@ BEGIN
         ,(N'Comeau')
         ,(N'Mcnerney')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Truesdale')
         ,(N'Courtney')
         ,(N'Vandenberg')
@@ -3752,7 +3752,7 @@ CREATE TABLE #businessTypeName (
     WHILE @personCounter < @maxBusinesses
     BEGIN
         -- get a random lastname
-        SELECT @lastName = (select top 1 surname from #lastNames order by NEWID());
+        SELECT @lastName = (select top 1 surname from #businessLastNames order by NEWID());
 
         select @businessTypeName = (select top 1 TypeName from #businessTypeName order by NEWID());
 
@@ -3931,8 +3931,8 @@ CREATE TABLE #businessTypeName (
 
 	COMMIT TRANSACTION
 
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#businessLastNames') IS NOT NULL
+        DROP TABLE #businessLastNames
 
     IF OBJECT_ID('tempdb..#businessTypeName') IS NOT NULL
         DROP TABLE #businessTypeName
