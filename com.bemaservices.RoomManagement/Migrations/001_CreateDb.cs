@@ -383,6 +383,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.Reservation'
+                    And Guid != '839768A3-10D6-446C-A65B-B8F9EFD7808F'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Reservation", "839768A3-10D6-446C-A65B-B8F9EFD7808F", true, true );
 
@@ -390,6 +391,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationLocation'
+                    And Guid != '07084E96-2907-4741-80DF-016AB5981D12'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationLocation", "07084E96-2907-4741-80DF-016AB5981D12", true, true );
 
@@ -397,6 +399,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationMinistry'
+                    And Guid != '5DFCA44E-7090-455C-8C7B-D02CF6331A0F'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationMinistry", "5DFCA44E-7090-455C-8C7B-D02CF6331A0F", true, true );
 
@@ -404,6 +407,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationResource'
+                    And Guid != 'A9A1F735-0298-4137-BCC1-A9117B6543C9'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationResource", "A9A1F735-0298-4137-BCC1-A9117B6543C9", true, true );
 
@@ -411,6 +415,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationStatus'
+                    And Guid != '5241B2B1-AEF2-4EB9-9737-55604069D93B'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationStatus", "5241B2B1-AEF2-4EB9-9737-55604069D93B", true, true );
 
@@ -418,6 +423,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationWorkflow'
+                    And Guid != '3660E6A9-B3DA-4CCB-8FC8-B182BC1A2587'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationWorkflow", "3660E6A9-B3DA-4CCB-8FC8-B182BC1A2587", true, true );
 
@@ -425,6 +431,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationWorkflowTrigger'
+                    And Guid != 'CD0C935B-C3EF-465B-964E-A3AB686D8F51'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationWorkflowTrigger", "CD0C935B-C3EF-465B-964E-A3AB686D8F51", true, true );
 
@@ -432,6 +439,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.Resource'
+                    And Guid != '35584736-8FE2-48DA-9121-3AFD07A2DA8D'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Resource", "35584736-8FE2-48DA-9121-3AFD07A2DA8D", true, true );
 
@@ -439,6 +447,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From FieldType
                     Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReservationStatusesFieldType'
+                    And Guid != '335E190C-88FE-4BE2-BE36-3F8B85AF39F2'
                 " );
             UpdateFieldTypeByGuid( "ReservationStatuses", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReservationStatusesFieldType", "335E190C-88FE-4BE2-BE36-3F8B85AF39F2" );
         }

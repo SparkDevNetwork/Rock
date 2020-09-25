@@ -80,6 +80,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.Question'
+                    And Guid != 'F42FB8A5-D646-4FA8-AABE-D47B53A9CE35'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.Question", "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35", true, true );
 

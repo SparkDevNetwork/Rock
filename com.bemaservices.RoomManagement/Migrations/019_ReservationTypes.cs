@@ -98,6 +98,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.Model.ReservationType'
+                    And Guid != 'AC498297-D28C-47C0-B53B-4BF54D895DEB'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.Model.ReservationType", "Reservation Type", "com.bemaservices.RoomManagement.Model.ReservationType, com.bemaservices.RoomManagement, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null", true, true, "AC498297-D28C-47C0-B53B-4BF54D895DEB" );
 
@@ -190,18 +191,21 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate'
+                    And Guid != '9b74314a-37e0-40f2-906c-2862c93f8888'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate", "Default Template", "com.bemaservices.RoomManagement.ReportTemplates.DefaultReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "9b74314a-37e0-40f2-906c-2862c93f8888" );
             Sql( @"
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate'
+                    And Guid != '7ef82cca-7874-4b8d-adb7-896f05095354'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate", "Lava Template", "com.bemaservices.RoomManagement.ReportTemplates.LavaReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "7ef82cca-7874-4b8d-adb7-896f05095354" );
             Sql( @"
                     Delete
                     From EntityType
                     Where Name = 'com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate'
+                    And Guid != '97a7ffda-1b75-473f-a680-c9a7602b5c60'
                 " );
             UpdateEntityTypeByGuid( "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate", "Advanced Template", "com.bemaservices.RoomManagement.ReportTemplates.AdvancedReportTemplate, com.bemaservices.RoomManagement, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null", false, true, "97a7ffda-1b75-473f-a680-c9a7602b5c60" );
 

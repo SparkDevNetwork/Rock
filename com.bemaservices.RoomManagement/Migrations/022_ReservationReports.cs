@@ -44,6 +44,7 @@ namespace com.bemaservices.RoomManagement.Migrations
                     Delete
                     From FieldType
                     Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType'
+                    And Guid != '6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8'
                 " );
             UpdateFieldTypeByGuid( "Report Template", "", "com.bemaservices.RoomManagement", "com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType", "6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8" );
 
@@ -53,22 +54,22 @@ namespace com.bemaservices.RoomManagement.Migrations
             RockMigrationHelper.AddDefinedTypeAttribute( "13B169EA-A090-45FF-8B11-A9E02776E35E", "6B88A513-4B4C-403B-ADFA-82C3A2B1C3B8", "Report Template", "ReportTemplate", "", 0, "", "1C2F3975-B1E2-4F8A-B2A2-FEF8D1A37E6C" );
             RockMigrationHelper.AddDefinedTypeAttribute( "13B169EA-A090-45FF-8B11-A9E02776E35E", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Report Font", "ReportFont", "", 1, "", "98F113C0-8497-48BC-9DA3-C51D163206CB" );
             RockMigrationHelper.AddDefinedTypeAttribute( "13B169EA-A090-45FF-8B11-A9E02776E35E", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Report Logo", "ReportLogo", "URL to the logo (PNG) to display in the printed report.", 2, "", "E907AB6D-642C-4079-AD08-0641B4C84B16" );
-            RockMigrationHelper.AddAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorHeight", "", "4178EED6-EA71-41AF-ABD5-29D58E4626DD" );
-            RockMigrationHelper.AddAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorMode", "3", "C1723802-3281-47CA-B8C6-B64573782A23" );
-            RockMigrationHelper.AddAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorTheme", "0", "9B2F9E78-24F1-49CE-A1DF-AECC61678CDB" );
-            RockMigrationHelper.AddAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "ispassword", "False", "FB3955AE-16D1-4051-8A18-E53028F70958" );
-            RockMigrationHelper.AddAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "maxcharacters", "", "FFF9CA66-0867-4843-B82E-051A58A26F0D" );
-            RockMigrationHelper.AddAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "showcountdown", "False", "E59E009B-372D-4143-A655-4F1BA4F54D1C" );
-            RockMigrationHelper.AddAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "ispassword", "False", "E103657B-F3A5-41D2-A940-D9D44A6FD70A" );
-            RockMigrationHelper.AddAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "maxcharacters", "", "C7A4FF45-C785-4D54-B345-9A3B01D38141" );
-            RockMigrationHelper.AddAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "showcountdown", "False", "21FA831C-483A-478B-AFAC-88926843C0D5" );
+            RockMigrationHelper.UpdateAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorHeight", "", "4178EED6-EA71-41AF-ABD5-29D58E4626DD" );
+            RockMigrationHelper.UpdateAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorMode", "3", "C1723802-3281-47CA-B8C6-B64573782A23" );
+            RockMigrationHelper.UpdateAttributeQualifier( "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", "editorTheme", "0", "9B2F9E78-24F1-49CE-A1DF-AECC61678CDB" );
+            RockMigrationHelper.UpdateAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "ispassword", "False", "FB3955AE-16D1-4051-8A18-E53028F70958" );
+            RockMigrationHelper.UpdateAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "maxcharacters", "", "FFF9CA66-0867-4843-B82E-051A58A26F0D" );
+            RockMigrationHelper.UpdateAttributeQualifier( "98F113C0-8497-48BC-9DA3-C51D163206CB", "showcountdown", "False", "E59E009B-372D-4143-A655-4F1BA4F54D1C" );
+            RockMigrationHelper.UpdateAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "ispassword", "False", "E103657B-F3A5-41D2-A940-D9D44A6FD70A" );
+            RockMigrationHelper.UpdateAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "maxcharacters", "", "C7A4FF45-C785-4D54-B345-9A3B01D38141" );
+            RockMigrationHelper.UpdateAttributeQualifier( "E907AB6D-642C-4079-AD08-0641B4C84B16", "showcountdown", "False", "21FA831C-483A-478B-AFAC-88926843C0D5" );
 
             RockMigrationHelper.AddDefinedType( "Room Management", "Reservation Views", "Views used by the Room Management System", "32EC3B34-01CF-4513-BC2E-58ECFA91D010", @"" );
             RockMigrationHelper.AddDefinedTypeAttribute( "32EC3B34-01CF-4513-BC2E-58ECFA91D010", "27718256-C1EB-4B1F-9B4B-AC53249F78DF", "Lava", "Lava", "", 1, "", "466DC361-B813-445A-8883-FED7E5D4229B" );
             RockMigrationHelper.AddDefinedTypeAttribute( "32EC3B34-01CF-4513-BC2E-58ECFA91D010", "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D", "Lava Commands", "LavaCommands", "", 0, "", "EE70E271-EAE1-446B-AFA8-EE2D299B8D7F" );
-            RockMigrationHelper.AddAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorHeight", "", "094118F6-AA86-4306-9973-874FD8470D23" );
-            RockMigrationHelper.AddAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorMode", "0", "D3D5FFBC-966B-42BA-A8AF-EF20E0DAB93E" );
-            RockMigrationHelper.AddAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorTheme", "0", "8A881BC5-C13D-45D6-8552-71EC1DF1178D" );
+            RockMigrationHelper.UpdateAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorHeight", "", "094118F6-AA86-4306-9973-874FD8470D23" );
+            RockMigrationHelper.UpdateAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorMode", "0", "D3D5FFBC-966B-42BA-A8AF-EF20E0DAB93E" );
+            RockMigrationHelper.UpdateAttributeQualifier( "466DC361-B813-445A-8883-FED7E5D4229B", "editorTheme", "0", "8A881BC5-C13D-45D6-8552-71EC1DF1178D" );
 
             var blockIdSql = SqlScalar( @"
                 Select Id
