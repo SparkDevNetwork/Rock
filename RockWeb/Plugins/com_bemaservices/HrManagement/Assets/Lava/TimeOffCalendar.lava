@@ -1,0 +1,237 @@
+{% assign today = 'Now' | Date:'MM/dd/yyyy' %}
+{% assign currentPageId = 'Global' | Page:'Id' %}
+{% assign roomDetailAttributeName = 'Room Setup Details'%}
+{% assign count = rows | Size %}
+{% if count > 0 %}
+
+{% assign ppDate = 'Global' | PageParameter:'SelectedDate' | SanitizeSQL | Default: today %}
+{% assign TimeFrame = 'Global' | PageParameter:'TimeFrame' | SanitizeSQL | Default:'Month' %}
+
+{% assign targetMonth = ppDate | Date:'MM' %}
+{% assign targetYearMonth = ppDate | Date:'yyyyMM' %}
+
+{% if TimeFrame == 'Week' %}
+    {% assign startDate = ppDate | SundayDate | DateAdd: -7, 'd' | Date:'MM/dd/yyyy '%}
+    {% assign endDate = ppDate | SundayDate | DateAdd:-1 | Date:'MM/dd/yyyy' %}
+    {% capture startdate %}{{ rows[0].RequestDate | Date:'yyy-MM-dd' }}{% endcapture %}
+{% elseif TimeFrame == 'Day' %}
+    {% assign startDate = ppDate | Date:'MM/dd/yyyy '%}
+    {% assign endDate = ppDate | Date:'MM/dd/yyyy' %}
+    {% capture startdate %}{{ rows[0].RequestDate | Date:'yyy-MM-dd' }}{% endcapture %}
+{% elseif TimeFrame == 'Month' %}
+    {% assign startDate = ppDate | Date:'MM/1/yyyy' %}
+    {% assign endDate = startDate | DateAdd:1,'M' | DateAdd:-1,'d' | Date:'MM/dd/yyyy' %}
+    {% capture startdate %}{{ rows[0].RequestDate | Date:'yyyy'}}-{{ targetMonth }}-01{% endcapture %}
+{% endif %}
+
+{% assign tmpDate = startDate | SundayDate | Date:'yyyy-MM-dd' %}
+{% assign startdate = startDate | Date:'yyyy-MM-dd' %}
+{% if tmpDate != startdate %}
+    {% assign tmpDate = tmpDate | DateAdd:-7 %}
+{% endif %}
+
+{% assign currClass = '' %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="row">
+            <span class="col-md-6" style="font-size: 20px; padding-top: 5px;">
+                {{ startDate }} - {{ endDate }}
+            </span>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+	    <div class="btn-group pull-right" style="margin-bottom: 25px;  margin-left: 25px;">
+            <button onclick="handleTimeFrameChange('Month');" class="btn btn-default {% if TimeFrame == 'Month' %}active{% endif %}">Month</button>
+            <button onclick="handleTimeFrameChange('Week');" class="btn btn-default {% if TimeFrame == 'Week' %}active{% endif %}">Week</button>
+            <button onclick="handleTimeFrameChange('Day');" class="btn btn-default {% if TimeFrame == 'Day' %}active{% endif %}">Day</button>
+        </div>
+
+        <div class="btn-group pull-right" style="margin-bottom: 25px;">
+            <button onclick="handleDateChange('{{ TimeFrame }}', -1)" class="btn btn-default"><i class="fa fa-chevron-left"> </i></button>
+            <button onclick="handleDateChange('{{ TimeFrame }}', 1)" class="btn btn-default"><i class="fa fa-chevron-right"> </i></button>
+            <div class="input-group input-width-md js-date-picker date">
+			    <input type="text" name="js-date" value="{{ ppDate | Date:'MM/dd/yyyy' }}" id="js-date" class="form-control">
+		        <span class="input-group-addon">
+		            <i class="fa fa-calendar"></i>
+	            </span>
+		    </div>
+	    </div>
+    </div>
+</div>
+
+<table class="table table-bordered">
+    {% if TimeFrame == 'Month' %}
+        <thead>
+            <th colspan="7" style="text-align:center">
+                <h2>{{ startDate | Date: 'MMMM yyyy' | Upcase }}</h2>
+            </th>
+        </thead>
+    {% endif %}
+
+    <thead>
+        <th style="width:14.28%; text-align:center;">SUNDAY</th>
+        <th style="width:14.28%; text-align:center;">MONDAY</th>
+        <th style="width:14.28%; text-align:center;">TUESDAY</th>
+        <th style="width:14.28%; text-align:center;">WEDNESDAY</th>
+        <th style="width:14.28%; text-align:center;">THURSDAY</th>
+        <th style="width:14.28%; text-align:center;">FRIDAY</th>
+        <th style="width:14.28%; text-align:center;">SATURDAY</th>
+    </thead>
+    <tbody>
+        <tbody>
+        {% for w in (0..5) %}
+            {% if TimeFrame == 'Week' and w > 0 %}{% break %}{% endif %}
+            {% if TimeFrame == 'Day' and w > 0 %}{% break %}{% endif %}
+            {% assign checkMonth = tmpDate | Date:'yyyyMM' %}
+            {% if checkMonth <= targetYearMonth %}
+                <tr>
+                    {% for i in (0..6) %}
+                        <td>
+                            {% assign cDate = tmpDate | Date:'MMdd' %}
+                            {% if cDate == today %}
+                                <span class="badge badge-pill badge-success">
+                            {% endif %}
+                            {{ tmpDate | Date:'d' }}
+                            {% if cDate == today %}
+                                </span>
+                            {% endif %}
+                            <br />
+                            {% assign compareDate1 = tmpDate | Date:'yyyy-MM-dd' %}
+                            {% assign compareDate2 = ppDate | Date:'yyyy-MM-dd' %}
+                            {% if TimeFrame == 'Day' and compareDate1 != compareDate2%}
+                            {% else %}
+                                {% for row in rows %}
+                                    {% assign eDate = row.RequestDate | Date:'MMdd' %}
+                                    {% if eDate == cDate %}
+                                        {% capture tooltipText -%}
+                                            <b>Ministry Area:</b><br />
+                                            {{- row.MinistryArea }}<br />{{- -}}
+
+                                            <b>Supervisor:</b><br />
+                                            {{- row.Supervisor }}<br />{{- -}}
+
+                                            <b>Out of Office Contact:</b><br />
+                                            {{- row.ContactWhileImOut }}<br />{{- -}}
+                                        {%- endcapture %}
+                                        {{- -}}<b><a href="/Person/{{row.PersonId}}/HR" data-toggle="tooltip" data-html="true" data-placement="auto top" title="{{ tooltipText }}">{{ row.PersonName }}</a></b><br />
+                                    {% elseif edate > cdate %}
+                                        {% break %}
+                                    {% endif %}
+
+                                {% endfor %}
+                            {% endif %}
+                            {% assign tmpDate = tmpDate | DateAdd:1,'d' %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    // Hiding Header
+    //$('[id*="_pnlList"] > .row .col-md-12').remove();
+
+    var pageId = {{ currentPageId }};
+
+    Date.prototype.addDays = function(days) {
+        var date = new Date(this.valueOf());
+        date.setDate(date.getDate() + days);
+        return date;
+    }
+
+    function generatePageParamObject()
+    {
+        var pairs = location.search.slice(1).split('&');
+
+        var result = {};
+        pairs.forEach(function(pair) {
+            pair = pair.split('=');
+            if( pair[0])
+            {
+                result[pair[0]] = decodeURIComponent(pair[1] || '');
+            }
+        });
+
+        return result;
+    }
+
+    function generateQueryString( pageParamObject )
+    {
+        var prefix = "/page/" + pageId + "?";
+        var queryParams = "";
+        for (var key in pageParamObject) {
+            if (queryParams != "") {
+                queryParams += "&";
+            }
+            queryParams += key + "=" + encodeURIComponent(pageParamObject[key]);
+        }
+
+        return prefix + queryParams;
+    }
+
+    function handleTimeFrameChange( timeframe )
+    {
+        var queryParams = generatePageParamObject();
+
+        if( timeframe == 'Month')
+        {
+            queryParams['TimeFrame'] = 'Month';
+        }
+        else if ( timeframe == 'Week')
+        {
+            queryParams['TimeFrame'] = 'Week';
+        }
+        else if ( timeframe == 'Day')
+        {
+            queryParams['TimeFrame'] = 'Day';
+        }
+
+        var newURL = generateQueryString(queryParams);
+        window.location = newURL;
+    }
+
+    function handleDateChange( timeframe, direction)
+    {
+        var offset = 0;
+        switch( timeframe){
+            case 'Month':
+                offset = direction * 30;
+                break;
+            case 'Week':
+                offset = direction * 7;
+                break;
+            case 'Day':
+                offset = direction;
+                break;
+            default:
+                return;
+        }
+        var queryParams = generatePageParamObject();
+        var date = new Date( '{{ ppDate }}');
+        var newDate = date.addDays( offset );
+        var newDateString = "".concat(newDate.getMonth() + 1, "/", newDate.getDate(), "/", newDate.getFullYear() );
+        queryParams['SelectedDate'] = newDateString;
+
+        var newURL = generateQueryString(queryParams);
+        window.location = newURL;
+    }
+
+    function dateSearch( )
+    {
+        var queryParams = generatePageParamObject();
+        var date = new Date( '{{ ppDate }}');
+        var newDate = date
+        var newDateString = "".concat(newDate.getMonth() + 1, "/", newDate.getDate(), "/", newDate.getFullYear() );
+        queryParams['SelectedDate'] = newDateString;
+        queryParams['TimeFrame'] = 'Day';
+
+        var newURL = generateQueryString(queryParams);
+        window.location = newURL;
+    }
+
+    {% assign ppDateSize = ppDate | Size %}
+    {% if ppDateSize > 12%}dateSearch();{% endif %}
+</script>
+{% endif %}
