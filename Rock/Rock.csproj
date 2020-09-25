@@ -577,6 +577,7 @@
     <Compile Include="Model\CodeGenerated\AuthScopeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
+    <Compile Include="Model\ConnectionRequestService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
@@ -651,6 +652,7 @@
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
+    <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />

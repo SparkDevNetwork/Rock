@@ -30,8 +30,8 @@ namespace Rock.Badge.Component
     [Description( "Shows the number of times a family attended in a duration of weeks." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
-    
-    [IntegerField("Duration", "The number of weeks to use for the duration (default 16.)", false, 16)]
+
+    [IntegerField( "Duration", "The number of weeks to use for the duration (default 16.)", false, 16 )]
     public class FamilyWeeksAttendedInDuration : BadgeComponent
     {
         /// <summary>
@@ -56,38 +56,42 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            int duration = GetAttributeValue(badge, "Duration").AsIntegerOrNull() ?? 16;
-            
-            writer.Write(string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration));
+            int duration = GetAttributeValue( badge, "Duration" ).AsIntegerOrNull() ?? 16;
 
-            writer.Write("</div>");
+            writer.Write( string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration ) );
 
-            writer.Write(string.Format( @"
-                <script>
-                    Sys.Application.add_load(function () {{
-                                                
-                        $.ajax({{
-                                type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/Badges/WeeksAttendedInDuration/{1}/{0}' ,
-                                statusCode: {{
-                                    200: function (data, status, xhr) {{
-                                            var badgeHtml = '<div class=\'weeks-metric\'>';
-                                            
-                                            badgeHtml += '<span class=\'weeks-attended\'>' + data + '</span><span class=\'week-duration\'>/{0}</span>';                
-                                            badgeHtml += '</div>';
-                                            
-                                            $('.badge-weeksattendanceduration.badge-id-{2}').html(badgeHtml);
-
-                                        }}
-                                }},
-                        }});
-                    }});
-                </script>
-                
-            ", duration, Person.Id.ToString(), badge.Id));
-
+            writer.Write( "</div>" );
         }
 
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
+            {
+                return null;
+            }
 
+            var duration = GetAttributeValue( badge, "Duration" ).AsIntegerOrNull() ?? 16;
+
+            return string.Format( @"
+                $.ajax({{
+                    type: 'GET',
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/WeeksAttendedInDuration/{1}/{0}' ,
+                    statusCode: {{
+                        200: function (data, status, xhr) {{
+                            var badgeHtml = '<div class=\'weeks-metric\'>';
+                                            
+                            badgeHtml += '<span class=\'weeks-attended\'>' + data + '</span><span class=\'week-duration\'>/{0}</span>';                
+                            badgeHtml += '</div>';
+                                            
+                            $('.badge-weeksattendanceduration.badge-id-{2}').html(badgeHtml);
+                        }}
+                    }},
+                }});", duration, Person.Id.ToString(), badge.Id );
+        }
     }
 }
