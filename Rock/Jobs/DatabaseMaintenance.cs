@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -63,6 +64,8 @@ namespace Rock.Jobs
         {
         }
 
+        private List<DatabaseMaintenanceTaskResult> _databaseMaintenanceTaskResults = new List<DatabaseMaintenanceTaskResult>();
+
         /// <summary>
         /// Job that will run quick SQL queries on a schedule.
         /// 
@@ -70,9 +73,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public virtual void Execute( IJobExecutionContext jobContext )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
 
             // get job parms
             bool runIntegrityCheck = dataMap.GetBoolean( "RunIntegrityCheck" );
@@ -80,7 +83,6 @@ namespace Rock.Jobs
             bool runStatisticsUpdate = dataMap.GetBoolean( "RunStatisticsUpdate" );
 
             int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
-            StringBuilder resultsMessage = new StringBuilder();
             bool integrityCheckPassed = false;
             bool integrityCheckIgnored = false;
 
@@ -101,13 +103,12 @@ namespace Rock.Jobs
                 try
                 {
                     string alertEmail = dataMap.GetString( "AlertEmail" );
-                    integrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail, resultsMessage );
-
+                    jobContext.UpdateLastStatusMessage( $"Integrity Check..." );
+                    integrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail );
                 }
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex, HttpContext.Current );
-                    ExceptionLogService.LogException( resultsMessage.ToString() );
                     throw;
                 }
             }
@@ -123,12 +124,12 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        RebuildFragmentedIndexes( dataMap, commandTimeout, resultsMessage );
+                        jobContext.UpdateLastStatusMessage( $"Rebuild Indexes..." );
+                        RebuildFragmentedIndexes( jobContext, commandTimeout );
                     }
                     catch ( Exception ex )
                     {
                         ExceptionLogService.LogException( ex, HttpContext.Current );
-                        ExceptionLogService.LogException( resultsMessage.ToString() );
                         throw;
                     }
                 }
@@ -138,33 +139,86 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        UpdateStatistics( commandTimeout, resultsMessage );
+                        jobContext.UpdateLastStatusMessage( $"Update Statistics..." );
+                        UpdateStatistics( commandTimeout );
                     }
                     catch ( Exception ex )
                     {
                         ExceptionLogService.LogException( ex, HttpContext.Current );
-                        ExceptionLogService.LogException( resultsMessage.ToString() );
                         throw;
                     }
                 }
             }
 
-            context.Result = resultsMessage.ToString().TrimStart( ',' );
+            StringBuilder jobSummaryBuilder = new StringBuilder();
+            jobSummaryBuilder.AppendLine( "Summary:" );
+            jobSummaryBuilder.AppendLine( string.Empty );
+            foreach ( var databaseMaintenanceTaskResult in _databaseMaintenanceTaskResults )
+            {
+                jobSummaryBuilder.AppendLine( GetFormattedResult( databaseMaintenanceTaskResult ) );
+            }
+
+            if ( _databaseMaintenanceTaskResults.Any( a => a.HasException ) )
+            {
+                jobSummaryBuilder.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some jobs have errors. See exception log for details." );
+            }
+
+            jobContext.Result = jobSummaryBuilder.ToString();
+
+            var databaseMaintenanceExceptions = _databaseMaintenanceTaskResults.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
+
+            if ( databaseMaintenanceExceptions.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more exceptions occurred in Database Maintenance.", databaseMaintenanceExceptions );
+                throw new RockJobWarningException( "Database Maintenance completed with warnings", exceptionList );
+            }
         }
 
-        private bool IntegrityCheck( int commandTimeout, string alertEmail, StringBuilder resultsMessage )
+        /// <summary>
+        /// Get a job tasl result as a formatted string
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        private string GetFormattedResult( DatabaseMaintenanceTaskResult result )
+        {
+            if ( result.HasException )
+            {
+                return $"<i class='fa fa-circle text-danger'></i> { result.Title}";
+            }
+            else
+            {
+                var icon = "<i class='fa fa-circle text-success'></i>";
+                return $"{icon} {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
+            }
+        }
+
+        /// <summary>
+        /// Checks the integrity of the database
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        /// <param name="alertEmail">The alert email.</param>
+        /// <returns></returns>
+        private bool IntegrityCheck( int commandTimeout, string alertEmail)
         {
             string databaseName = new RockContext().Database.Connection.Database;
             string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
             bool checkPassed = true;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            int errors = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
+
+            // DBCC CHECKDB will return a count of how many issues there were
+            int integrityErrorCount = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
             stopwatch.Stop();
 
-            resultsMessage.Append( $"Integrity Check took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+            var databaseMaintenanceTaskResult = new DatabaseMaintenanceTaskResult
+            {
+                Title = "Integrity Check",
+                Elapsed = stopwatch.Elapsed
+            };
 
-            if ( errors > 0 )
+            _databaseMaintenanceTaskResults.Add( databaseMaintenanceTaskResult );
+
+            if ( integrityErrorCount > 0 )
             {
                 // oh no...
                 checkPassed = false;
@@ -172,9 +226,9 @@ namespace Rock.Jobs
 
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null );
                 mergeFields.Add( "ErrorMessage", errorMessage );
-                mergeFields.Add( "Errors", errors );
+                mergeFields.Add( "Errors", integrityErrorCount );
 
-                resultsMessage.Append( errorMessage );
+                databaseMaintenanceTaskResult.Exception = new Exception( errorMessage );
 
                 if ( alertEmail.IsNotNullOrWhiteSpace() )
                 {
@@ -195,10 +249,16 @@ namespace Rock.Jobs
             return checkPassed;
         }
 
-        private void RebuildFragmentedIndexes( JobDataMap dataMap, int commandTimeout, StringBuilder resultsMessage )
+        /// <summary>
+        /// Rebuilds the fragmented indexes.
+        /// </summary>
+        /// <param name="jobContext">The job context.</param>
+        /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
+        private void RebuildFragmentedIndexes( IJobExecutionContext jobContext, int commandTimeoutSeconds )
         {
+            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
             int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
-            int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
+            int minimumFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
             bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
 
@@ -214,18 +274,94 @@ namespace Rock.Jobs
 
             Dictionary<string, object> parms = new Dictionary<string, object>();
             parms.Add( "@PageCountLimit", minimumIndexPageCount );
-            parms.Add( "@MinFragmentation", minimunFragmentationPercentage );
+            parms.Add( "@MinFragmentation", minimumFragmentationPercentage );
             parms.Add( "@MinFragmentationRebuild", rebuildThresholdPercentage );
             parms.Add( "@UseONLINEIndexRebuild", useONLINEIndexRebuild );
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            DbService.ExecuteCommand( "spDbaRebuildIndexes", System.Data.CommandType.StoredProcedure, parms, commandTimeout );
-            stopwatch.Stop();
+            var qry = @"
+SELECT 
+				dbschemas.[name] as [Schema], 
+				dbtables.[name] as [Table], 
+				dbindexes.[name] as [Index],
+				dbindexes.[type_desc] as [IndexType],
+				CONVERT(INT, indexstats.avg_fragmentation_in_percent) as [FragmentationPercent] ,
+				indexstats.page_count as [PageCount]
+			FROM 
+				sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
+				INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
+				INNER JOIN sys.schemas dbschemas on dbtables.[schema_id] = dbschemas.[schema_id]
+				INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
+				AND indexstats.index_id = dbindexes.index_id
+			WHERE 
+				indexstats.database_id = DB_ID() 
+				AND indexstats.page_count > @PageCountLimit
+				AND indexstats.avg_fragmentation_in_percent > @MinFragmentation
+";
 
-            resultsMessage.Append( $", Index Rebuild took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+            var dataTable = DbService.GetDataTable( qry, System.Data.CommandType.Text, parms, commandTimeoutSeconds );
+
+            var rebuildFillFactorOption = "FILLFACTOR = 80";
+
+            var indexInfoList = dataTable.Rows.OfType<DataRow>().Select( row => new
+            {
+                SchemaName = row["Schema"].ToString(),
+                TableName = row["Table"].ToString(),
+                IndexName = row["Index"].ToString(),
+                IndexType = row["IndexType"].ToString(),
+                FragmentationPercent = row["FragmentationPercent"].ToString().AsIntegerOrNull()
+            } );
+
+            // let C# do the sorting.
+            var sortedIndexInfoList = indexInfoList.OrderBy( a => a.TableName ).ThenBy( a => a.IndexName );
+
+            foreach ( var indexInfo in sortedIndexInfoList )
+            {
+                jobContext.UpdateLastStatusMessage( $"Rebuilding Index [{indexInfo.TableName}].[{indexInfo.IndexName}]" );
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
+                DatabaseMaintenanceTaskResult databaseMaintenanceTaskResult = new DatabaseMaintenanceTaskResult
+                {
+                    Title = $"Rebuild [{indexInfo.TableName}].[{indexInfo.IndexName}]"
+                };
+
+                _databaseMaintenanceTaskResults.Add( databaseMaintenanceTaskResult );
+
+                var rebuildSQL = $"ALTER INDEX [{indexInfo.IndexName}] ON [{indexInfo.SchemaName}].[{indexInfo.TableName}]";
+                if ( indexInfo.FragmentationPercent > minimumFragmentationPercentage )
+                {
+                    var commandOption = rebuildFillFactorOption;
+                    if ( useONLINEIndexRebuild && ( indexInfo.IndexType != "SPATIAL" && indexInfo.IndexType != "XML" ) )
+                    {
+                        commandOption = commandOption + $", ONLINE = ON";
+                    }
+
+                    rebuildSQL += $" REBUILD WITH ({commandOption})";
+                }
+                else
+                {
+                    rebuildSQL += $" REORGANIZE";
+                }
+
+                try
+                {
+                    DbService.ExecuteCommand( rebuildSQL, System.Data.CommandType.Text, null, commandTimeoutSeconds );
+
+                    stopwatch.Stop();
+                    databaseMaintenanceTaskResult.Elapsed = stopwatch.Elapsed;
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error rebuilding index [{indexInfo.TableName}].[{indexInfo.IndexName}]", ex ) );
+                    databaseMaintenanceTaskResult.Exception = ex;
+                }
+            }
         }
 
-        private void UpdateStatistics( int commandTimeout, StringBuilder resultsMessage )
+        /// <summary>
+        /// Updates the statistics.
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        private void UpdateStatistics( int commandTimeout )
         {
             // derived from http://www.sqlservercentral.com/scripts/Indexing/31823/
             // NOTE: Can't use sp_MSForEachtable because it isn't supported on AZURE (and it is undocumented)
@@ -267,7 +403,37 @@ namespace Rock.Jobs
             DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );
             stopwatch.Stop();
 
-            resultsMessage.Append( $", Statistics Update took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+            _databaseMaintenanceTaskResults.Add( new DatabaseMaintenanceTaskResult
+            {
+                Title = "Statistics Update",
+                Elapsed = stopwatch.Elapsed
+            } );
+        }
+
+        /// <summary>
+        /// The result data from a DatabaseMaintenance task
+        /// </summary>
+        private class DatabaseMaintenanceTaskResult
+        {
+            /// <summary>
+            /// Gets or sets the title.
+            /// </summary>
+            /// <value>
+            /// The title.
+            /// </value>
+            public string Title { get; set; }
+
+            /// <summary>
+            /// Gets or sets the amount of time taken
+            /// </summary>
+            /// <value>
+            /// The time.
+            /// </value>
+            public TimeSpan Elapsed { get; set; }
+
+            public bool HasException => Exception != null;
+
+            public Exception Exception { get; set; }
         }
     }
 }
