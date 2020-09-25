@@ -22,12 +22,17 @@
     <Ignore>deserialize</Ignore>
     <Ignore>deserialized</Ignore>
     <Ignore>geocode</Ignore>
+    <Ignore>Guid</Ignore>
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
     <Ignore>Queryable</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
-    <Ignore>Guid</Ignore>
+    <Ignore>postback</Ignore>
+    <Ignore>javascript</Ignore>
+    <Ignore>guids</Ignore>
+    <Ignore>readonly</Ignore>
+    <Ignore>href</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
