@@ -149,6 +149,10 @@
     <Compile Include="Migrations\202009251835424_DataViewResultsBlock.Designer.cs">
       <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.cs" />
+    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.Designer.cs">
+      <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1460,6 +1464,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009251835424_DataViewResultsBlock.resx">
       <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.resx">
+      <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
