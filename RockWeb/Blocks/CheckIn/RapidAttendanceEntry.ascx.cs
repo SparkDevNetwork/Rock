@@ -749,7 +749,7 @@ namespace RockWeb.Blocks.CheckIn
                 rockContext.SaveChanges();
             }
 
-            if ( rcwNotes.Visible )
+            if ( rcwNotes.Visible && tbNote.Text.IsNotNullOrWhiteSpace() )
             {
                 NoteService noteService = new NoteService( rockContext );
 
