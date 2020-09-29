@@ -406,7 +406,7 @@ namespace Rock.Model
         /// The push image file.
         /// </value>
         [DataMember]
-        public BinaryFile PushImageBinaryFile { get; set; }
+        public virtual BinaryFile PushImageBinaryFile { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
