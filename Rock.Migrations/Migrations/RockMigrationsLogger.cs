@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Diagnostics;
 using System.IO;
+using Rock.Data;
 
 namespace Rock.Migrations
 {
@@ -52,10 +54,12 @@ namespace Rock.Migrations
         /// </value>
         public bool LogWarning { get; set; } = false;
 
+        public bool LogStatsToMigrationsTable { get; set; } = true;
+
         private string lastMigrationName = null;
         private Stopwatch stopwatch = null;
         private StreamWriter logFile = null;
-        
+
         private const string MIGRATIONS_LOG_FILENAME = "MigrationLog";
 
         /// <summary>
@@ -92,6 +96,29 @@ namespace Rock.Migrations
             {
                 stopwatch.Stop();
                 WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
+
+                var rockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber();
+
+                if ( LogStatsToMigrationsTable && EnsureMigrationHistoryColumns() )
+                {
+                    var sql = $@"
+update [__MigrationHistory] set 
+	[ExecutionDurationMilliseconds] = @executionDurationMilliseconds,
+    [InstallDateTime] = @installDateTime,
+    [RockVersion] = @rockVersion
+WHERE [MigrationId] = @migrationId
+";
+
+                    var migrationId = lastMigrationName.TrimEnd( '.' );
+                    var parameters = new Dictionary<string, object>();
+                    parameters.Add( "@executionDurationMilliseconds", stopwatch.Elapsed.TotalMilliseconds );
+                    parameters.Add( "@installDateTime", RockDateTime.Now );
+                    parameters.Add( "@rockVersion", rockVersion );
+                    parameters.Add( "@migrationId", migrationId );
+
+                    DbService.ExecuteCommand( sql, System.Data.CommandType.Text, parameters );
+
+                }
             }
         }
 
@@ -108,7 +135,6 @@ namespace Rock.Migrations
 
             try
             {
-
                 if ( logFile == null )
                 {
                     string directory = AppDomain.CurrentDomain.BaseDirectory;
@@ -120,7 +146,7 @@ namespace Rock.Migrations
                     }
 
                     string filePath = Path.Combine( directory, MIGRATIONS_LOG_FILENAME + ".csv" );
-                    logFile = new StreamWriter( filePath, true  );
+                    logFile = new StreamWriter( filePath, true );
                 }
 
                 logFile.WriteLine( message );
@@ -154,6 +180,52 @@ namespace Rock.Migrations
             {
                 WriteToLog( "VERBOSE: " + message );
             }
+        }
+
+        /// <summary>
+        /// Ensures the additional migration history columns exist, or creates them if needed
+        /// </summary>
+        private bool EnsureMigrationHistoryColumns()
+        {
+            // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
+            bool migrationHistoryTableExists = DbService.ExecuteScaler(
+                @"SELECT convert(bit, 1) [Exists] 
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_SCHEMA = 'dbo'
+                    AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
+
+            if ( !migrationHistoryTableExists )
+            {
+                return false;
+            }
+
+            var commandText = @"
+
+IF not EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'ExecutionDurationMilliseconds'
+          AND Object_ID = Object_ID(N'dbo.__MigrationHistory'))
+BEGIN
+    alter table [__MigrationHistory] add [ExecutionDurationMilliseconds] [float] NULL
+END
+
+IF not EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'InstallDateTime'
+          AND Object_ID = Object_ID(N'dbo.__MigrationHistory'))
+BEGIN
+    alter table [__MigrationHistory] add [InstallDateTime] [datetime] NULL
+END
+            
+IF not EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'RockVersion'
+          AND Object_ID = Object_ID(N'dbo.__MigrationHistory'))
+BEGIN
+    alter table [__MigrationHistory] add [RockVersion] [nvarchar](50) NULL
+END
+
+";
+            DbService.ExecuteCommand( commandText );
+
+            return true;
         }
     }
 }
