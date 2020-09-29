@@ -387,6 +387,7 @@ namespace Rock.Model
         /// <value>
         /// The image file
         /// </value>
+        [DataMember]
         public virtual BinaryFile ImageFile {get; set;}
 
         /// <summary>
@@ -397,7 +398,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile LogoBinaryFile { get; set; }
-
 
         /// <summary>
         /// Gets or sets the push image file.
