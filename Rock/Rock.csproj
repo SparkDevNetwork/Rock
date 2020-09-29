@@ -527,6 +527,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\136_MigrationRollupsFor11_3_0.cs" />
     <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
     <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
@@ -2875,6 +2876,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge - Copy.sql">
+      <DependentUpon>136_MigrationRollupsFor11_3_0.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge.sql">
       <DependentUpon>135_MigrationRollupsFor11_2_0.cs</DependentUpon>
