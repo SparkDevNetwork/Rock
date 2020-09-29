@@ -216,6 +216,9 @@ namespace Rock.Client
         public Category Category { get; set; }
 
         /// <summary />
+        public BinaryFile ImageFile { get; set; }
+
+        /// <summary />
         public bool IsPersonal { get; set; }
 
         /// <summary />
@@ -223,6 +226,9 @@ namespace Rock.Client
 
         /// <summary />
         public BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary />
+        public BinaryFile PushImageBinaryFile { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }
