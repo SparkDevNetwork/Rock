@@ -4463,7 +4463,9 @@ namespace RockWeb.Blocks.Connection
             var maxDate = sdrpLastActivityDateRangeFilter.SelectedDateRange.End;
             var requesterPersonAliasId = ppRequesterFilter.PersonAliasId;
             var statuses = cblStatusFilter.SelectedValuesAsInt;
-            var states = cblStateFilter.SelectedValues;
+            var states = cblStateFilter.SelectedValues
+                .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
+                .ToList();
             var activityTypeIds = cblLastActivityFilter.SelectedValuesAsInt;
 
             return connectionRequestService.GetConnectionRequestViewModelQuery(
