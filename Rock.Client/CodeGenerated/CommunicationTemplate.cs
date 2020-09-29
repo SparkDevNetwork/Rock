@@ -99,6 +99,9 @@ namespace Rock.Client
         public string PushData { get; set; }
 
         /// <summary />
+        public BinaryFile PushImageBinaryFile { get; set; }
+
+        /// <summary />
         public int? PushImageBinaryFileId { get; set; }
 
         /// <summary />
@@ -183,6 +186,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PushData = source.PushData;
+            this.PushImageBinaryFile = source.PushImageBinaryFile;
             this.PushImageBinaryFileId = source.PushImageBinaryFileId;
             this.PushMessage = source.PushMessage;
             this.PushOpenAction = source.PushOpenAction;
