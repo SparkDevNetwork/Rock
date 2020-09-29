@@ -2877,9 +2877,6 @@
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
     </Content>
-    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge - Copy.sql">
-      <DependentUpon>136_MigrationRollupsFor11_3_0.cs</DependentUpon>
-    </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge.sql">
       <DependentUpon>135_MigrationRollupsFor11_2_0.cs</DependentUpon>
     </Content>
