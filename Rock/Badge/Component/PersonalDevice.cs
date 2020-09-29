@@ -53,63 +53,70 @@ namespace Rock.Badge.Component
         /// <param name="writer">The writer.</param>
         public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            if ( Person != null )
+            if ( Person == null )
             {
-                //  create url for link to details
-                string detailPageUrl = new PageReference( GetAttributeValue( badge, "PersonalDevicesDetail" ), new Dictionary<string, string> { { "PersonGuid", Person.Guid.ToString() } } ).BuildUrl();
-
-                string noneCss = GetAttributeValue( badge, "HideIfNone" ).AsBoolean() ? "none" : "";
-
-                writer.Write( $"<div class='badge badge-personaldevice badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
-
-                writer.Write( "</div>" );
-
-                writer.Write( $@"
-                <script>
-                    Sys.Application.add_load(function () {{
-                                                
-                        $.ajax({{
-                                type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{Person.Id}' ,
-                                statusCode: {{
-                                    200: function (data, status, xhr) {{
-                                        var badgeHtml = '';
-                                        var devicesNumber = data;
-                                        var cssClass = '';
-                                        var linkUrl = '{detailPageUrl}';
-                                        var badgeContent = '';
-                                        var labelContent = '';
-                                        var badgeClass = 'badge-disabled';
-
-                                        if (devicesNumber > 0){{
-                                            badgeClass=''
-                                        }}
-
-                                        if ( devicesNumber !=1 ) {{
-                                            labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';                                 
-                                        }} else {{
-                                            labelContent = 'There is 1 device linked to this individual.';
-                                        }}
-        
-                                        if (linkUrl != '') {{
-                                            badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content \'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div></a>';
-                                        }} else {{
-                                            badgeContent = '<div class=\'badge-content \'><i class=\''+ badgeClass +' fa  fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div>';
-                                        }}
-                                        $('.badge-personaldevice.badge-id-{badge.Id}').html(badgeContent);
-                                        $('.badge-personaldevice.badge-id-{badge.Id}').attr('data-original-title', labelContent);
-
-                                        if (devicesNumber < 1) {{
-                                            $('.badge-personaldevice.badge-id-{badge.Id}').css('display', '{noneCss}');
-                                        }}
-                                        
-                                    }}
-                                }},
-                            }});
-                        }});
-                    </script>
-                " );
+                return;
             }
+
+            writer.Write( $"<div class='badge badge-personaldevice badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( "</div>" );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
+            {
+                return null;
+            }
+
+            //  create url for link to details
+            string detailPageUrl = new PageReference( GetAttributeValue( badge, "PersonalDevicesDetail" ), new Dictionary<string, string> { { "PersonGuid", Person.Guid.ToString() } } ).BuildUrl();
+
+            string noneCss = GetAttributeValue( badge, "HideIfNone" ).AsBoolean() ? "none" : "";
+
+            return $@"
+                $.ajax({{
+                    type: 'GET',
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{Person.Id}' ,
+                    statusCode: {{
+                        200: function (data, status, xhr) {{
+                            var badgeHtml = '';
+                            var devicesNumber = data;
+                            var cssClass = '';
+                            var linkUrl = '{detailPageUrl}';
+                            var badgeContent = '';
+                            var labelContent = '';
+                            var badgeClass = 'badge-disabled';
+
+                            if (devicesNumber > 0){{
+                                badgeClass=''
+                            }}
+
+                            if ( devicesNumber !=1 ) {{
+                                labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';                                 
+                            }} else {{
+                                labelContent = 'There is 1 device linked to this individual.';
+                            }}
+        
+                            if (linkUrl != '') {{
+                                badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content \'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div></a>';
+                            }} else {{
+                                badgeContent = '<div class=\'badge-content \'><i class=\''+ badgeClass +' fa  fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div>';
+                            }}
+                            $('.badge-personaldevice.badge-id-{badge.Id}').html(badgeContent);
+                            $('.badge-personaldevice.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+
+                            if (devicesNumber < 1) {{
+                                $('.badge-personaldevice.badge-id-{badge.Id}').css('display', '{noneCss}');
+                            }}
+                        }}
+                    }},
+                }});";
         }
     }
 }

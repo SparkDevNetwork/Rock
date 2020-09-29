@@ -30,9 +30,9 @@ namespace Rock.Badge.Component
     [Description( "Badge showing the number of days since the person last visited a specified site." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Last Visit on Site" )]
-    
-    [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
-    [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]
+
+    [SiteField( "Site", "Site to filter for.", true, "3", "", 1 )]
+    [LinkedPage( "Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2 )]
     public class LastVisitOnSite : BadgeComponent
     {
         /// <summary>
@@ -57,85 +57,94 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
-            if ( siteId.HasValue )
+            writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( "</div>" );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
             {
-                var site = SiteCache.Get( siteId.Value );
-                if ( site != null )
-                {
-                    string siteName = site.Name;
-
-                    //  create url for link to details
-                    string detailPageUrl = string.Empty;
-
-                    if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
-                    {
-                        int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
-
-                        // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
-                        detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
-                    }
-
-                    writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
-
-                    writer.Write( "</div>" );
-
-                    writer.Write( $@"
-                <script>
-                    Sys.Application.add_load(function () {{
-                                                
-                        $.ajax({{
-                                type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
-                                statusCode: {{
-                                    200: function (data, status, xhr) {{
-                                        var badgeHtml = '';
-                                        var daysSinceVisit = data;
-                                        var cssClass = '';
-                                        var linkUrl = '{detailPageUrl}';
-                                        var badgeContent = '';
-                                        var labelContent = '';
-                                        var siteName = '{siteName}';
-
-                                        if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
-        
-                                            labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';                                    
-        
-                                            if (daysSinceVisit == 0) {{
-                                                daysSinceVisit = 'Today';
-                                                cssClass = 'today';
-                                                labelContent = 'Visited the ' + siteName + ' site today.';
-                                            }} else if (daysSinceVisit < 7) {{
-                                                cssClass = 'very-recent';
-                                            }} else if (daysSinceVisit < 21 ) {{
-                                                cssClass = 'recent';
-                                            }} else if (daysSinceVisit < 90 ) {{
-                                                cssClass = 'moderate';
-                                            }} else if (daysSinceVisit < 365 ) {{
-                                                cssClass = 'not-recent';
-                                            }} else {{
-                                                cssClass = 'old';
-                                            }}                                   
-                                            
-                                            if (linkUrl != '') {{
-                                                badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div></a>';
-                                            }} else {{
-                                                badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
-                                            }}
-
-                                            $('.badge-lastvisitonsite.badge-id-{badge.Id}').html(badgeContent);
-                                            $('.badge-lastvisitonsite.badge-id-{badge.Id}').attr('data-original-title', labelContent);
-                                        }}
-                                        
-                                    }}
-                                }},
-                        }});
-                    }});
-                </script>
-            ");
-                }
+                return null;
             }
+
+            var siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
+
+            if ( !siteId.HasValue )
+            {
+                return null;
+            }
+
+            var site = SiteCache.Get( siteId.Value );
+
+            if ( site == null )
+            {
+                return null;
+            }
+
+            var siteName = site.Name;
+
+            if ( string.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
+            {
+                return null;
+            }
+
+            var pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
+
+            // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
+
+            return $@"
+                $.ajax({{
+                    type: 'GET',
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
+                    statusCode: {{
+                        200: function (data, status, xhr) {{
+                            var badgeHtml = '';
+                            var daysSinceVisit = data;
+                            var cssClass = '';
+                            var linkUrl = '{detailPageUrl}';
+                            var badgeContent = '';
+                            var labelContent = '';
+                            var siteName = '{siteName}';
+
+                            if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
+        
+                                labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';                                    
+        
+                                if (daysSinceVisit == 0) {{
+                                    daysSinceVisit = 'Today';
+                                    cssClass = 'today';
+                                    labelContent = 'Visited the ' + siteName + ' site today.';
+                                }} else if (daysSinceVisit < 7) {{
+                                    cssClass = 'very-recent';
+                                }} else if (daysSinceVisit < 21 ) {{
+                                    cssClass = 'recent';
+                                }} else if (daysSinceVisit < 90 ) {{
+                                    cssClass = 'moderate';
+                                }} else if (daysSinceVisit < 365 ) {{
+                                    cssClass = 'not-recent';
+                                }} else {{
+                                    cssClass = 'old';
+                                }}                                   
+                                            
+                                if (linkUrl != '') {{
+                                    badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div></a>';
+                                }} else {{
+                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
+                                }}
+
+                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').html(badgeContent);
+                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+                            }}
+                        }}
+                    }},
+                }});";
         }
     }
-
 }

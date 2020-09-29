@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Utility
                             totalCacheSize += length;
                         }
                     }
-                    catch (Exception ex) { };
+                    catch ( Exception ) { };
                 }
             }
 

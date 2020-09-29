@@ -433,11 +433,9 @@ namespace RockWeb.Blocks.CheckIn
             rblRole.Visible = true;
             rblRole.Required = true;
 
-            string clearAttendanceScript = string.Format( "$('#{0}').val('false');", hfAttendanceDirty.ClientID );
-            lbSaveAttendance.OnClientClick = clearAttendanceScript;
 
-            string clearPersonScript = string.Format( "$('#{0}').val('false');", hfPersonDirty.ClientID );
-            bbtnSaveContactItems.OnClientClick = clearPersonScript;
+            string clearPersonScript = string.Format( "$('#{0}').val('false'); $('#{1}').val('false');", hfPersonDirty.ClientID, hfAttendanceDirty.ClientID );
+            bbtnSave.OnClientClick = clearPersonScript;
 
             IsAttendanceEnabled = GetAttributeValue( AttributeKey.EnableAttendance ).AsBoolean();
 
@@ -634,11 +632,11 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSaveAttendance control.
+        /// Handles the Click event of the bbtnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveAttendance_Click( object sender, EventArgs e )
+        protected void bbtnSave_Click( object sender, EventArgs e )
         {
             if ( _attendanceSettingState == null )
             {
@@ -646,9 +644,10 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             hfAttendanceDirty.Value = "false";
+            hfPersonDirty.Value = "false";
+
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
-
             var group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
             var groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
             var personService = new PersonService( rockContext );
@@ -656,15 +655,15 @@ namespace RockWeb.Blocks.CheckIn
             for ( int i = 0; i < rcbAttendance.Items.Count; i++ )
             {
                 var personId = rcbAttendance.Items[i].Value.AsInteger();
-                var person = personService.Get( personId );
+                var attendancePerson = personService.Get( personId );
 
                 if ( rcbAttendance.Items[i].Selected )
                 {
-                    var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
+                    var attendance = attendanceService.AddOrUpdate( attendancePerson.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
                 }
                 else
                 {
-                    var attendance = attendanceService.Get( _attendanceSettingState.AttendanceDate, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.Id, person.Id );
+                    var attendance = attendanceService.Get( _attendanceSettingState.AttendanceDate, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.Id, attendancePerson.Id );
                     if ( attendance != null )
                     {
                         attendanceService.Delete( attendance );
@@ -674,26 +673,8 @@ namespace RockWeb.Blocks.CheckIn
 
             rockContext.SaveChanges();
 
-            //
-            // Flush the attendance cache.
-            //
-            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
 
-            ShowMainPanel( SelectedPersonId );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the bbtnSaveContactItems control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void bbtnSaveContactItems_Click( object sender, EventArgs e )
-        {
-            hfPersonDirty.Value = "false";
-
-            var rockContext = new RockContext();
-            var person = new PersonService( rockContext ).Get( hfPersonGuid.Value.AsGuid() );
-
+            var person = personService.Get( hfPersonGuid.Value.AsGuid() );
             if ( GetAttributeValue( AttributeKey.EnablePrayerRequestEntry ).AsBoolean() && tbPrayerRequest.Text.IsNotNullOrWhiteSpace() )
             {
                 PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( AttributeKey.DefaultAllowComments ).AsBoolean() };
@@ -729,13 +710,9 @@ namespace RockWeb.Blocks.CheckIn
                 prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
 
                 int? campusId = null;
-                if ( _attendanceSettingState != null )
+                if ( group != null && group.CampusId.HasValue )
                 {
-                    var group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
-                    if ( group != null && group.CampusId.HasValue )
-                    {
-                        campusId = group.CampusId;
-                    }
+                    campusId = group.CampusId;
                 }
                 if ( !campusId.HasValue )
                 {
@@ -772,7 +749,7 @@ namespace RockWeb.Blocks.CheckIn
                 rockContext.SaveChanges();
             }
 
-            if ( rcwNotes.Visible )
+            if ( rcwNotes.Visible && tbNote.Text.IsNotNullOrWhiteSpace() )
             {
                 NoteService noteService = new NoteService( rockContext );
 
@@ -795,22 +772,13 @@ namespace RockWeb.Blocks.CheckIn
             if ( rcbWorkFlowTypes.Visible && rcbWorkFlowTypes.SelectedValues.Any() )
             {
                 var workflowService = new WorkflowService( rockContext );
-                Group group = null;
-                Schedule schedule = null;
+                var schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
                 Location location = null;
-
-                if ( _attendanceSettingState != null )
+                if ( groupLocation != null )
                 {
-                    group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
-                    schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
-
-                    var groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
-
-                    if ( groupLocation != null )
-                    {
-                        location = groupLocation.Location;
-                    }
+                    location = groupLocation.Location;
                 }
+
                 var personWorkflows = rcbWorkFlowTypes.SelectedValues.AsGuidList();
                 foreach ( var workflowType in personWorkflows )
                 {
@@ -824,6 +792,13 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+
+            //
+            // Flush the attendance cache.
+            //
+            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
+
+            ShowMainPanel( SelectedPersonId );
         }
 
 
@@ -1358,17 +1333,25 @@ namespace RockWeb.Blocks.CheckIn
         #region Private Methods
 
         /// <summary>
+        /// Get the Unique Rapid Attendance Entry Cookie Key
+        /// </summary>
+        private string GetUniqueRapidAttendanceEntryCookieKey()
+        {
+            return string.Format( "{0}-{1}", ROCK_RAPIDATTENDANCEENTRY, this.BlockId );
+        }
+
+        /// <summary>
         /// Creates the rapid attendance cookie.
         /// </summary>
         private void CreateRapidAttendanceCookie( AttendanceSetting attendanceSetting )
         {
-            HttpCookie httpcookie = new HttpCookie( ROCK_RAPIDATTENDANCEENTRY );
-            httpcookie.Expires = RockDateTime.Now.AddMinutes( 480 );
-            httpcookie.Values.Add( GROUP_ID, attendanceSetting.GroupId.ToString() );
-            httpcookie.Values.Add( LOCATION_ID, attendanceSetting.GroupLocationId.ToString() );
-            httpcookie.Values.Add( SCHEDULE_ID, attendanceSetting.ScheduleId.ToString() );
-            httpcookie.Values.Add( ATTENDANCE_DATE, attendanceSetting.AttendanceDate.ToString() );
-            Response.Cookies.Add( httpcookie );
+            HttpCookie httpCookie = new HttpCookie( GetUniqueRapidAttendanceEntryCookieKey() );
+            httpCookie.Expires = RockDateTime.Now.AddMinutes( 480 );
+            httpCookie.Values.Add( GROUP_ID, attendanceSetting.GroupId.ToString() );
+            httpCookie.Values.Add( LOCATION_ID, attendanceSetting.GroupLocationId.ToString() );
+            httpCookie.Values.Add( SCHEDULE_ID, attendanceSetting.ScheduleId.ToString() );
+            httpCookie.Values.Add( ATTENDANCE_DATE, attendanceSetting.AttendanceDate.ToString() );
+            Response.Cookies.Add( httpCookie );
         }
 
         /// <summary>
@@ -1376,7 +1359,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private AttendanceSetting GetRapidAttendanceCookie()
         {
-            HttpCookie rapidAttendanceEntryCookie = Request.Cookies[ROCK_RAPIDATTENDANCEENTRY];
+            HttpCookie rapidAttendanceEntryCookie = Request.Cookies[GetUniqueRapidAttendanceEntryCookieKey()];
             if ( rapidAttendanceEntryCookie != null )
             {
                 AttendanceSetting attendanceSetting = new AttendanceSetting();
@@ -1552,6 +1535,29 @@ namespace RockWeb.Blocks.CheckIn
             if ( schedule == null || !schedule.IsActive )
             {
                 return false;
+            }
+
+            var attendanceGroupGuid = GetAttributeValue( AttributeKey.AttendanceGroup ).AsGuid();
+            if ( attendanceGroupGuid != default( Guid ) )
+            {
+                var groupId = new GroupService( rockContext ).GetId( attendanceGroupGuid );
+                if ( !groupId.HasValue || groupId.Value != _attendanceSettingState.GroupId )
+                {
+                    return false;
+                }
+            }
+            else if ( GetAttributeValue( AttributeKey.ParentGroup ).AsGuid() != default( Guid ) )
+            {
+                var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuid();
+
+                var group = new GroupService( rockContext )
+                                .Queryable()
+                                .Where( a => a.ParentGroup.Guid == parentGroupGuid && a.IsActive && a.Id == _attendanceSettingState.GroupId )
+                                .FirstOrDefault();
+                if ( group == null )
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -2003,8 +2009,6 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
-
-            bbtnSaveContactItems.Visible = pnlPrayerRequest.Visible || rcbWorkFlowTypes.Visible || rcwNotes.Visible;
         }
 
         /// <summary>
