@@ -42,7 +42,19 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
-            var followingEntityType = EntityTypeCache.Get( followEntity.GetType() );
+            SetFollowing( followEntity.TypeId, followEntity.Id, followControl, follower );
+        }
+
+        /// <summary>
+        /// Configures a control to display and toggle following for the specified entity
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="followControl">The follow control.</param>
+        /// <param name="follower">The follower.</param>
+        /// <param name="callbackScript">The callback script.</param>
+        public static void SetFollowing( int entityTypeId, int entityId, WebControl followControl, Person follower, string callbackScript = "" )
+        {
             if ( follower != null && follower.PrimaryAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -52,10 +64,10 @@ namespace Rock.Web.UI.Controls
 
                     var followingQry = followingService.Queryable()
                         .Where( f =>
-                            f.EntityTypeId == followingEntityType.Id &&
+                            f.EntityTypeId == entityTypeId &&
                             f.PersonAlias.PersonId == follower.Id );
 
-                    followingQry = followingQry.Where( f => f.EntityId == followEntity.Id );
+                    followingQry = followingQry.Where( f => f.EntityId == entityId );
 
                     if ( followingQry.Any() )
                     {
@@ -67,18 +79,17 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                int entityId = followEntity.Id;
-
                 // only show the following control if the entity has been saved to the database
                 followControl.Visible = entityId > 0;
 
                 string script = string.Format(
-                    @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, {3}, {4});",
+                    @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, {3}, {4}, {5});",
                         followControl.ClientID,
-                        followingEntityType.Id,
+                        entityTypeId,
                         entityId,
                         follower.Id,
-                        follower.PrimaryAliasId );
+                        follower.PrimaryAliasId,
+                        callbackScript.IsNullOrWhiteSpace() ? "null" : callbackScript );
 
                 ScriptManager.RegisterStartupScript( followControl, followControl.GetType(), followControl.ClientID + "_following", script, true );
             }

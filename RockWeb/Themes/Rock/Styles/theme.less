@@ -568,7 +568,13 @@ textarea,
 
 .panel-follow-status {
   width: 50px;
-  padding-top: 14px;
+  padding: 0;
+
+  &::before {
+    display: grid;
+    place-items: center;
+    height: 100%;
+  }
 }
 
 .panel .panel-heading.panel-follow {
@@ -1557,6 +1563,11 @@ body.navbar-side-open {
     transform: translate3d(0, 0, 0);
   }
 
+}
+
+// Move the debug timing table to the right so it's not hidden by the admin theme's left nav
+.debug-timings {
+    margin-left: 115px;
 }
 
 /* #endregion */

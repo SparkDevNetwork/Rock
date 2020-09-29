@@ -21,7 +21,6 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Badge.Component
 {
@@ -100,10 +99,33 @@ namespace Rock.Badge.Component
             }
 
             var isCondensed = IsCondensed( badge );
-            var domElementKey = Guid.NewGuid().ToString( "N" );
+            var domElementKey = GenerateBadgeKey( badge );
             var html = GetHtmlTemplate( isCondensed, domElementKey );
-            var script = GetScript( stepProgramGuid.Value, Person.Id, domElementKey, isCondensed );
-            writer.Write( $"{html}{script}" );
+            writer.Write( html );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
+            {
+                return null;
+            }
+
+            var stepProgramGuid = GetStepProgramGuid( badge );
+
+            if ( !stepProgramGuid.HasValue )
+            {
+                return null;
+            }
+
+            var domElementKey = GenerateBadgeKey( badge );
+            var isCondensed = IsCondensed( badge );
+            return GetScript( stepProgramGuid.Value, Person.Id, domElementKey, isCondensed );
         }
 
         /// <summary>
@@ -167,91 +189,83 @@ $@"<div class=""badge"" data-placeholder-key=""{domElementKey}""></div>";
             if ( isCondensed )
             {
                 return
-$@"<script>
-    Sys.Application.add_load(function () {{
-        $.ajax({{
-            type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/StepPrograms/BadgeData/{stepProgramGuid}/{personId}',
-            statusCode: {{
-                200: function (data) {{
-                    var htmlRow1 = [];
-                    var htmlRow2 = [];
-                    var tooltip = [];
+$@"$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/StepPrograms/BadgeData/{stepProgramGuid}/{personId}',
+    statusCode: {{
+        200: function (data) {{
+            var htmlRow1 = [];
+            var htmlRow2 = [];
+            var tooltip = [];
 
-                    if (data) {{
-                        for(var i = 0; i < data.length; i++) {{
-                            var html = i % 2 == 0 ? htmlRow1 : htmlRow2;
+            if (data) {{
+                for(var i = 0; i < data.length; i++) {{
+                    var html = i % 2 == 0 ? htmlRow1 : htmlRow2;
 
-                            var stepTypeData = data[i];
-                            var isComplete = stepTypeData.CompletionCount > 0;
-                            var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
-                            var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
+                    var stepTypeData = data[i];
+                    var isComplete = stepTypeData.CompletionCount > 0;
+                    var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
+                    var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                            html.push('<div class=""badge"">');
-                            html.push('    <span class=""fa-stack"">');
-                            html.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
-                            html.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
-                            html.push('    </span>');
-                            html.push('</div>\n');
+                    html.push('<div class=""badge"">');
+                    html.push('    <span class=""fa-stack"">');
+                    html.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
+                    html.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
+                    html.push('    </span>');
+                    html.push('</div>\n');
 
-                            tooltip.push('<p class=""margin-b-sm"">');
-                            tooltip.push('    <span class=""fa-stack"">');
-                            tooltip.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
-                            tooltip.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
-                            tooltip.push('    </span>');
-                            tooltip.push('    <strong>' + stepTypeData.StepTypeName + ':</strong> ' + (stepTypeData.Statuses[0] || 'Incomplete'));
-                            tooltip.push('</p>\n');
-                        }}
-                    }}
-
-                    var rows = $('[data-placeholder-key=""{domElementKey}""]');
-                    rows.first().html(htmlRow1.join(''));
-                    rows.last().html(htmlRow2.join(''));
-                    $('[data-tooltip-key=""{domElementKey}""]').attr('data-original-title', tooltip.join('')).tooltip({{ sanitize: false }});
+                    tooltip.push('<p class=""margin-b-sm"">');
+                    tooltip.push('    <span class=""fa-stack"">');
+                    tooltip.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
+                    tooltip.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
+                    tooltip.push('    </span>');
+                    tooltip.push('    <strong>' + stepTypeData.StepTypeName + ':</strong> ' + (stepTypeData.Statuses[0] || 'Incomplete'));
+                    tooltip.push('</p>\n');
                 }}
-            }},
-        }});
-    }});
-</script>";
+            }}
+
+            var rows = $('[data-placeholder-key=""{domElementKey}""]');
+            rows.first().html(htmlRow1.join(''));
+            rows.last().html(htmlRow2.join(''));
+            $('[data-tooltip-key=""{domElementKey}""]').attr('data-original-title', tooltip.join('')).tooltip({{ sanitize: false }});
+        }}
+    }},
+}});";
             }
             else
             {
                 return
-$@"<script>
-    Sys.Application.add_load(function () {{
-        $.ajax({{
-            type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/StepPrograms/BadgeData/{stepProgramGuid}/{personId}',
-            statusCode: {{
-                200: function (data) {{
-                    var html = [];
-                    var tooltip = [];
+$@"$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/StepPrograms/BadgeData/{stepProgramGuid}/{personId}',
+    statusCode: {{
+        200: function (data) {{
+            var html = [];
+            var tooltip = [];
 
-                    if (data) {{
-                        for(var i = 0; i < data.length; i++) {{
-                            var stepTypeData = data[i];
-                            var isComplete = stepTypeData.CompletionCount > 0;
-                            var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
-                            var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
+            if (data) {{
+                for(var i = 0; i < data.length; i++) {{
+                    var stepTypeData = data[i];
+                    var isComplete = stepTypeData.CompletionCount > 0;
+                    var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
+                    var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                            html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
-                            html.push('    <i class=""badge-icon ' + iconClass + '""></i>');
+                    html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
+                    html.push('    <i class=""badge-icon ' + iconClass + '""></i>');
 
-                            if (stepTypeData.CompletionCount > 1 && stepTypeData.ShowCountOnBadge) {{
-                                html.push('    <span class=""badge-count"">' + stepTypeData.CompletionCount + '</span>');
-                            }}
-
-                            html.push('</div>\n');
-                        }}
+                    if (stepTypeData.CompletionCount > 1 && stepTypeData.ShowCountOnBadge) {{
+                        html.push('    <span class=""badge-count"">' + stepTypeData.CompletionCount + '</span>');
                     }}
 
-                    $('[data-placeholder-key=""{domElementKey}""]').replaceWith(html.join(''));
-                    $('[data-tooltip-key=""{domElementKey}""]').tooltip();
+                    html.push('</div>\n');
                 }}
-            }},
-        }});
-    }});
-</script>";
+            }}
+
+            $('[data-placeholder-key=""{domElementKey}""]').replaceWith(html.join(''));
+            $('[data-tooltip-key=""{domElementKey}""]').tooltip();
+        }}
+    }},
+}});";
             }
         }
     }

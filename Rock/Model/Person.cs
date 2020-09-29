@@ -2007,11 +2007,17 @@ namespace Rock.Model
 
             if ( PhotoId.HasValue )
             {
-                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                var binaryFile = binaryFileService.Get( PhotoId.Value );
-                if ( binaryFile != null && binaryFile.IsTemporary )
+                var originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
+                var isPhotoIdModified = entry.State == EntityState.Modified &&
+                                        ( ( originalPhotoId.HasValue && originalPhotoId.Value != PhotoId.Value ) || !originalPhotoId.HasValue );
+                if ( entry.State == EntityState.Added || isPhotoIdModified )
                 {
-                    binaryFile.IsTemporary = false;
+                    BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                    var binaryFile = binaryFileService.Get( PhotoId.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
                 }
             }
 
@@ -2022,6 +2028,13 @@ namespace Rock.Model
                 {
                     this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
                 }
+            }
+
+            if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
+            {
+                this.FirstName = this.FirstName.StandardizeQuotes();
+                this.LastName = this.LastName.StandardizeQuotes();
+                this.NickName = this.NickName.StandardizeQuotes();
             }
 
             if ( this.AnniversaryDate.HasValue )

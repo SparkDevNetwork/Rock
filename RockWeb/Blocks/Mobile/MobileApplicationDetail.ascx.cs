@@ -522,34 +522,7 @@ namespace RockWeb.Blocks.Mobile
         private string GenerateApiKey()
         {
             // Generate a unique random 12 digit api key
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var key = string.Empty;
-            var isGoodKey = false;
-
-            while ( isGoodKey == false )
-            {
-                StringBuilder sb = new StringBuilder();
-                Random rnd = new Random();
-                char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
-                int poolSize = codeCharacters.Length;
-
-                for ( int i = 0; i < 24; i++ )
-                {
-                    sb.Append( codeCharacters[rnd.Next( poolSize )] );
-                }
-
-                key = sb.ToString();
-
-                var userLogins = userLoginService.Queryable().Where( a => a.ApiKey == key );
-                if ( userLogins.Count() == 0 )
-                {
-                    // no other user login has this key.
-                    isGoodKey = true;
-                }
-            }
-
-            return key;
+            return Rock.Utility.KeyHelper.GenerateKey( ( RockContext rockContext, string key ) => new UserLoginService( rockContext ).Queryable().Any( a => a.ApiKey == key ) );
         }
 
         /// <summary>

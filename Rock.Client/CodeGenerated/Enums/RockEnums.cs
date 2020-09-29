@@ -203,6 +203,37 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ConnectionRequestViewModelSortProperty
+    {
+        Requestor = 0x0,
+        RequestorDesc = 0x1,
+        Connector = 0x2,
+        ConnectorDesc = 0x3,
+        DateAdded = 0x4,
+        DateAddedDesc = 0x5,
+        LastActivity = 0x6,
+        LastActivityDesc = 0x7,
+        Order = 0x8,
+        Campus = 0x9,
+        CampusDesc = 0xa,
+        Group = 0xb,
+        GroupDesc = 0xc,
+        Status = 0xd,
+        StatusDesc = 0xe,
+        State = 0xf,
+        StateDesc = 0x10,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConnectionTypeViewMode
+    {
+        List = 0x0,
+        Board = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ContentChannelDateType
     {
         SingleDate = 0x1,

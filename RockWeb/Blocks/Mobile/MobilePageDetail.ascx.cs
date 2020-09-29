@@ -93,7 +93,10 @@ namespace RockWeb.Blocks.Mobile
                 int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
                 var pageCache = PageCache.Get( pageId );
 
-                BuildDynamicContextControls( pageCache );
+                if ( pageCache != null )
+                {
+                    BuildDynamicContextControls( pageCache );
+                }
             }
         }
 

@@ -1,0 +1,228 @@
+/*
+    This is loaded at runtime by the GroupScheduler block
+*/
+
+@import (reference) "../../../Styles/FontAwesome/_rock-upgrade-map-variables.less";
+@import (reference) "../../../Styles/FontAwesome/_rock-fa-mixins.less";
+@import (reference) "../../../Styles/FontAwesome/fontawesome.less";
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+@board-column-width: 312px;
+@board-cards-gutter: 16px;
+
+.main-content #page-content {
+  min-height: 0;
+}
+
+.panel-collapsable {
+  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+
+  .panel-drawer {
+    border-bottom: 1px solid @panel-border;
+  }
+}
+
+.overflow-scroll {
+  height: ~"calc(100vh - 290px)";
+  min-height: 200px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.board-column {
+  position: relative;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 @board-column-width;
+  flex-direction: column;
+  width: @board-column-width;
+  max-width: @board-column-width;
+  height: 100%;
+  padding: 5px 0 0;
+  border-radius: 6px;
+}
+
+.board-heading-pill {
+  height: 4px;
+  border-radius: 2px;
+}
+
+
+.board-cards {
+  flex-grow: 1;
+  padding: 1px @board-cards-gutter 64px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+
+.board-card-base {
+  display: block;
+  width: (@board-column-width - (@board-cards-gutter * 2));
+  margin-bottom: 12px;
+  background: @panel-bg;
+  border: 1px solid @panel-border;
+  border-radius: 4px;
+}
+
+.board-card {
+  &:extend(.board-card-base);
+  cursor: pointer;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+  transition: box-shadow 100ms, transform 100ms, background-color 100ms, border-color 100ms;
+
+  &:hover {
+    box-shadow: 0 3px 5px 0 rgba(0, 0, 0, .1);
+  }
+
+  &.gu-mirror {
+    cursor: move;
+    cursor: grabbing;
+    opacity: 1;
+    transform: matrix(1.1, -.02, .02, 1.1, 0, 0);
+  }
+
+  &.gu-transit {
+    filter: grayscale(1);
+    box-shadow: none;
+  }
+}
+
+.board-column-sentry {
+  background: @panel-heading-bg;
+}
+
+.board-card-content {
+  padding: 15px;
+  touch-action: none;
+}
+
+.board-card-photo {
+  position: relative;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: @line-height-computed;
+  height: @line-height-computed;
+  vertical-align: top;
+  background: ~"center/cover #cbd4db";
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
+}
+
+.board-card-assigned {
+  font-size: floor(@font-size-base * .75);
+}
+
+.board-card-pills {
+  display: flex;
+  flex-flow: row wrap;
+  align-content: space-between;
+  margin: -5px -5px 10px;
+}
+
+.board-card-pill {
+  width: 42px;
+  height: 6px;
+  margin: 5px 5px 0;
+  background-color: #7a6ff0;
+  border-radius: 500px;
+}
+
+.grid-table .board-card-pills {
+  margin: 0;
+}
+
+.grid-table .board-card-pill {
+  width: @line-height-computed;
+  height: @line-height-computed;
+  margin-top: 0;
+}
+
+.board-card-meta {
+  font-size: 11px;
+}
+
+.dropdown-menu-mega {
+  position: absolute;
+  top: 85px !important;
+  bottom: 0;
+  z-index: (@zindex-dropdown - 10);
+  width: 300px;
+  max-height: none;
+  overflow-y: scroll;
+
+  .dropdown-header {
+    padding: 8px 0;
+    margin: 24px 16px 4px;
+    font-size: @font-size-base;
+    font-weight: @font-weight-bold;
+    color: @text-color;
+    border-bottom: 1px solid @gray-lighter;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.styled-scroll ::-webkit-scrollbar,
+.styled-scroll ::-webkit-scrollbar-thumb {
+  width: 8px;
+  height: 8px;
+}
+
+.request-modal-photo {
+  width: 100%;
+  max-width: 200px;
+  background: ~"center/cover #cbd4db";
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
+
+  &::after {
+    display: block;
+    padding-bottom: 100%;
+    content: "";
+  }
+}
+
+.drag-scroll-zone {
+  position: absolute;
+  min-width: 30px;
+  min-height: 30px;
+  opacity: 0;
+
+  &.drag-scroll-zone-left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  &.drag-scroll-zone-right {
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  &.drag-scroll-zone-top {
+    top: 52px; /* Column heading */
+    right: 0;
+    left: 0;
+  }
+
+  &.drag-scroll-zone-bottom {
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+.can-connect-false {
+  display: none;
+}

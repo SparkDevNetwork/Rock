@@ -1010,7 +1010,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 foreach ( var template in new RegistrationTemplateService( rockContext )
-                    .Queryable().AsNoTracking().OrderBy( t => t.Name ) )
+                    .Queryable().AsNoTracking().Where( t => t.IsActive == true ).OrderBy( t => t.Name ) )
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
