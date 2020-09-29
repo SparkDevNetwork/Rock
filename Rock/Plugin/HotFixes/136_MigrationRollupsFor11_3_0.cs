@@ -29,8 +29,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixNotesBlockAttributeTypo();
-            RemoveContentChannelItemListMobileBlock();
+            //FixNotesBlockAttributeTypo();
+            //RemoveContentChannelItemListMobileBlock();
         }
 
         /// <summary>
