@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step workflow trigger in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "StepWorkflowTrigger" )]
     [DataContract]
     public partial class StepWorkflowTrigger : Model<StepWorkflowTrigger>, IHasActiveFlag

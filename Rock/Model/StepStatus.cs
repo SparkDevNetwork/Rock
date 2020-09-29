@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step status in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "StepStatus" )]
     [DataContract]
     public partial class StepStatus : Model<StepStatus>, IOrdered, IHasActiveFlag

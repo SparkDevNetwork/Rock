@@ -375,12 +375,10 @@ namespace RockWeb.Blocks.Event
                         balanceCssClass = "label-success";
                     }
 
-                    lBalance.Text = string.Format(
-    @"<span class='label {0}'>{1}</span>
-    <input type='hidden' class='js-has-payments' value='{2}' />",
-    balanceCssClass,
-    balanceDue.FormatAsCurrency(),
-    hasPayments.ToTrueFalse() );
+                    lBalance.Text = string.Format(@"<span class='label {0}'>{1}</span><input type='hidden' class='js-has-payments' value='{2}' />",
+                        balanceCssClass,
+                        balanceDue.FormatAsCurrency(),
+                        hasPayments.ToTrueFalse() );
                 }
             }
         }

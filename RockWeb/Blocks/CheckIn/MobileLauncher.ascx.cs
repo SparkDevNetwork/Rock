@@ -852,7 +852,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             DeviceService deviceService = new DeviceService( rockContext );
-            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId && d.IsActive == true )
                 .OrderBy( a => a.Name )
                 .Select( a => new
                 {

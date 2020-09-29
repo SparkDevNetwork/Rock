@@ -405,10 +405,14 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 {
                     if ( field.FieldVisibilityRules.RuleList.Any() )
                     {
+                        linkButton.RemoveCssClass( "btn-default" );
+                        linkButton.AddCssClass( "btn-warning" );
                         linkButton.AddCssClass( "criteria-exists" );
                     }
                     else
                     {
+                        linkButton.AddCssClass( "btn-default" );
+                        linkButton.RemoveCssClass( "btn-warning" );
                         linkButton.RemoveCssClass( "criteria-exists" );
                     }
 
