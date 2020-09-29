@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ConnectionRequestDetailPageId = source.ConnectionRequestDetailPageId;
             target.ConnectionRequestDetailPageRouteId = source.ConnectionRequestDetailPageRouteId;
             target.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
+            target.DefaultView = source.DefaultView;
             target.Description = source.Description;
             target.EnableFullActivityList = source.EnableFullActivityList;
             target.EnableFutureFollowup = source.EnableFutureFollowup;
@@ -106,7 +107,10 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            target.RequestBadgeLava = source.RequestBadgeLava;
+            target.RequestHeaderLava = source.RequestHeaderLava;
             target.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
