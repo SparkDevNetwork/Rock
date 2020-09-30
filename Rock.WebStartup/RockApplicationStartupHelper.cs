@@ -375,8 +375,8 @@ namespace Rock.WebStartup
 
                 var lastMigration = pendingMigrations.Last();
 
-                // create a logger, but don't enable any of the logs
-                var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+                // create a logger, and enable the migration output to go to a file
+                var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = true, LogWarning = false };
 
                 var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
 
