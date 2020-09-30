@@ -95,6 +95,9 @@
                                     <Rock:RockLiteralField ID="lExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+
+                                    <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                    <Rock:DeleteField OnClick="DeleteOrArchiveGroupMember_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

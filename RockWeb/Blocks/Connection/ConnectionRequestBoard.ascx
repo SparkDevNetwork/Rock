@@ -337,6 +337,8 @@
                             <Rock:RockLiteralField ID="lState" HeaderText="State" />
                             <Rock:RockLiteralField ID="lStatus" HeaderText="Status" />
                             <Rock:SecurityField />
+                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                            <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </ContentTemplate>
