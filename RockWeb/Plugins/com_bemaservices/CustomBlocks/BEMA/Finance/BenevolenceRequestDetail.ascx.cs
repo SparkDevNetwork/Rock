@@ -35,6 +35,7 @@ using Rock.Web.UI.Controls;
  * Additional Features:
  * - FE1) Added Ability to launch a workflow when a benevolence request is saved
  * - FE2) Added Ability to set how many files can be attached to the request
+ * - FE3) Added option to trigger workflow whenever the assigned caseworker changes
  * - UI1) Added Ability to customize the label on Case Worker controls
  * - UI2) Added Ability to customize the  label on Government Id controls
  * - UI3) Added Ability to show all statuses as labels
@@ -74,6 +75,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         Category = "BEMA Additional Features" )]
     // UMC Value = "8"
     /* BEMA.FE2.End */
+
+    /* BEMA.FE3.Start */
+    [BooleanField(
+        "Notify Case workers when reassigned",
+        Key = BemaAttributeKey.NotifyNewCaseworkers,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features")]
+    /* BEMA.FE3.End
 
     /* BEMA.UI1.Start */
     [TextField(
@@ -141,6 +150,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             public const string AssignedLabelType = "AssignedLabelType";
             public const string InitiatedLabelType = "InitiatedLabelType";
             public const string MaximumAttachmentNumber = "MaximumAttachmentNumber";
+            public const string NotifyNewCaseworkers = "NotifyNewCaseworkers";
         }
 
         #endregion
@@ -479,6 +489,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 benevolenceRequest.RequestedByPersonAliasId = ppPerson.PersonAliasId;
 
+                /* BEMA.FE3.Start */
+                var caseWorkerChangeValue = benevolenceRequest.CaseWorkerPersonAlias;
+                var notifyCaseWorkerChangeValue = GetAttributeValue(BemaAttributeKey.NotifyNewCaseworkers).AsBoolean();
+                /* BEMA.FE3.End */
+
+
                 if ( _caseWorkerGroupGuid.HasValue )
                 {
                     benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
@@ -609,7 +625,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                         statusChange = "";
                     }
 
-                    if ( statusChange != "" )
+                    /* BEMA.FE3.Start */
+                    if (statusChange != "" || (notifyCaseWorkerChangeValue && caseWorkerChangeValue.Id != benevolenceRequest.CaseWorkerPersonAliasId))
+                    /* BEMA.FE3.End */
+
+                    //if ( statusChange != "" )
                     {
                         Guid? workflowTypeGuid = GetAttributeValue( BemaAttributeKey.Workflow ).AsGuidOrNull();
                         if ( workflowTypeGuid.HasValue )
@@ -623,6 +643,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                                 if ( benevolenceRequest.CaseWorkerPersonAlias != null )
                                     workflow.SetAttributeValue( "CaseManager", benevolenceRequest.CaseWorkerPersonAlias.Guid );
+
+
+                                /* BEMA.FE3.Start */
+                                if (notifyCaseWorkerChangeValue && caseWorkerChangeValue != null)
+                                    workflow.SetAttributeValue("PreviousCaseWorker", caseWorkerChangeValue.Guid);
+                                 /* BEMA.FE3.End */
 
                                 workflow.SetAttributeValue( "RequestId", benevolenceRequestId );
                                 workflow.SetAttributeValue( "StatusChange", statusChange );
