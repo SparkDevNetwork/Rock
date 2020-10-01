@@ -16,7 +16,7 @@
 
 {% assign linkurl = linkurl | Trim %}
 
-<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom sm-soft-half-bottom xs-soft-half-bottom position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
 <div class="row {% if imagealignment == 'Right' %}row-reverse{% endif %} floating floating-left">
     <div class="floating-item col-xs-12 col-sm-12 col-md-6 sm-hard xs-hard">
