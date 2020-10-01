@@ -106,6 +106,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
         public List<EventCalendarItem> ItemsState { get; set; }
 
+        private List<int> DocumentsState { get; set; }
+
         private int? GridFieldsDeleteIndex { get; set; }
 
         /// <summary>
@@ -142,6 +144,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             ItemsState = itemsStateJson.IsNotNullOrWhiteSpace()
                 ? JsonConvert.DeserializeObject<List<EventCalendarItem>>( itemsStateJson )
                 : new List<EventCalendarItem>();
+
+            DocumentsState = ViewState["DocumentsState"] as List<int>;
+            if ( DocumentsState == null )
+            {
+                DocumentsState = new List<int>();
+            }
         }
 
         /// <summary>
@@ -160,6 +168,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
             //ViewState["AudiencesState"] = AudiencesState;
             ViewState["ItemsState"] = JsonConvert.SerializeObject( ItemsState, Formatting.None, jsonSetting );
+            ViewState["DocumentsState"] = DocumentsState;
 
             return base.SaveViewState();
         }
@@ -182,6 +191,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             BuildControls();
+
+            dlDocuments.ItemDataBound += DlDocuments_ItemDataBound;
+
         }
 
         /// <summary>
@@ -320,6 +332,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
         /// </summary>
         private void ShowDetails()
         {
+            cpCampuses.Campuses = CampusCache.All();
+            DocumentsState = new List<int>();
+            BindDocuments( true );
 
         }
 
@@ -379,14 +394,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             }
 
             ddlReservationType.Items.Clear();
-                foreach ( var reservationType in new ReservationTypeService(  _rockContext ).Queryable().AsNoTracking().OrderBy( m => m.Name ).ToList() )
+            foreach ( var reservationType in new ReservationTypeService( _rockContext ).Queryable().AsNoTracking().OrderBy( m => m.Name ).ToList() )
+            {
+                if ( reservationType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    if ( reservationType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlReservationType.Items.Add( new ListItem( reservationType.Name, reservationType.Id.ToString().ToUpper() ) );
-                    }
+                    ddlReservationType.Items.Add( new ListItem( reservationType.Name, reservationType.Id.ToString().ToUpper() ) );
                 }
-            
+            }
+
             ddlReservationType_SelectedIndexChanged( null, null );
 
         }
@@ -1284,7 +1299,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     return;
                 }
 
-                reservation = reservationService.UpdateApproval( reservation,ReservationApprovalState.Unapproved );
+                reservation = reservationService.UpdateApproval( reservation, ReservationApprovalState.Unapproved );
                 reservation = reservationService.SetFirstLastOccurrenceDateTimes( reservation );
 
                 if ( reservation.Id.Equals( 0 ) )
@@ -1416,7 +1431,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             if ( tEventRoom.Checked )
             {
 
-                if( _reservation == null )
+                if ( _reservation == null )
                 {
                     _reservation = new Reservation();
                     _reservation.ReservationType = ReservationType;
@@ -1517,7 +1532,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     contentItem.LoadAttributes( rockContext );
                     contentItem.SetAttributeValue( "Description", tbEventDescription.Text );
 
-                     if ( _primaryContact != null )
+                    if ( _primaryContact != null )
                     {
                         contentItem.SetAttributeValue( "PrimaryContact", _primaryContact.PrimaryAlias.Guid );
 
@@ -1558,7 +1573,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     {
                         contentItem.SetAttributeValue( "CalendarLinkUrl", String.Format( "/event/{0}", _eventItemOccurrence.Id ) );
                     }
-                    
+
                     // If this is a new item and the channel is manually sorted then we need to set the order to the next number
                     if ( contentItem.Id == 0 && new ContentChannelService( rockContext ).IsManuallySorted( contentItem.ContentChannelId ) )
                     {
@@ -1731,7 +1746,99 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             return new List<string>();
         }
 
-        #endregion       
+        protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
+        {
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
+
+            if ( fileUpDoc.BinaryFileId.HasValue )
+            {
+                DocumentsState.Add( fileUpDoc.BinaryFileId.Value );
+                BindDocuments( true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the FileRemoved event of the fileUpDoc control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
+        {
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
+            if ( e.BinaryFileId.HasValue )
+            {
+                DocumentsState.Remove( e.BinaryFileId.Value );
+                BindDocuments( true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the DlDocuments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
+        private void DlDocuments_ItemDataBound( object sender, DataListItemEventArgs e )
+        {
+            Guid binaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
+            var fileupDoc = e.Item.FindControl( "fileupDoc" ) as Rock.Web.UI.Controls.FileUploader;
+            if ( fileupDoc != null )
+            {
+                fileupDoc.BinaryFileTypeGuid = binaryFileTypeGuid;
+            }
+        }
+
+        /// <summary>
+        /// Binds the documents.
+        /// </summary>
+        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
+        private void BindDocuments( bool canEdit )
+        {
+            var ds = DocumentsState.ToList();
+
+            if ( ds.Count() < 10 )
+            {
+                ds.Add( 0 );
+            }
+
+            dlDocuments.DataSource = ds;
+            dlDocuments.DataBind();
+        }
+
+        #endregion
+
+        protected void tVoxMusic_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( tVoxMusic.Checked )
+            {
+                pnlVoxMusic.Visible = true;
+            }
+            else
+            {
+                pnlVoxMusic.Visible = false;
+            }
+        }
+        protected void tVoxKids_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( tVoxKids.Checked )
+            {
+                pnlVoxKids.Visible = true;
+            }
+            else
+            {
+                pnlVoxKids.Visible = false;
+            }
+        }
+        protected void tProduction_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( tProduction.Checked )
+            {
+                pnlProduction.Visible = true;
+            }
+            else
+            {
+                pnlProduction.Visible = false;
+            }
+        }
 
         private class ReservationLocationSummary : ReservationLocation
         {

@@ -89,10 +89,10 @@
 
                                     <asp:HiddenField ID="hfAddReservationLocationGuid" runat="server" />
                                     <asp:HiddenField ID="hfReservationId" runat="server" />
-                                    
+
                                     <div class="col-md-4">
                                         <Rock:RockDropDownList ID="ddlReservationType" Label="Reservation Type" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlReservationType_SelectedIndexChanged" />
-                                     </div>
+                                    </div>
 
                                     <div class="col-md-4">
                                         <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Required="true">
@@ -129,23 +129,44 @@
                                     <div class="col-md-12">
                                         <Rock:NotificationBox ID="nbEventReg" runat="server" Visible="false" NotificationBoxType="Info" />
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Registration Template" Required="true" />
+                                            </div>
 
-                                    <div class="col-md-3">
-                                        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Registration Template" Required="true" />
+                                            <div class="col-md-6">
+                                                <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="true" EntityTypeId="234" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <Rock:DateTimePicker ID="dpEventRegStartDate" runat="server" Label="Registration Start Date" Required="true" />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <Rock:DateTimePicker ID="dpEventRegEndDate" runat="server" Label="Registration End Date" Required="true" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <Rock:CurrencyBox ID="nbInstanceCost" runat="server" Label="Instance Cost" />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <Rock:DateTimePicker ID="nbMaximumRegistrants" runat="server" Label="Maximum Registrants" />
+                                            </div>
+                                        </div>
+                                        <Rock:HtmlEditor ID="htmlAdditionalNoteDetails" runat="server" Label="Additional Options" Help="This will be emailed to an Event Admin, and they will update the template to include these options." />
+
                                     </div>
+                                    <div class="col-md-6">
+                                        <Rock:HtmlEditor ID="htmlRegistrationInstructions" runat="server" Label="Registration Instructions" />
 
-                                    <div class="col-md-3">
-                                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="true" EntityTypeId="234" />
+                                        <Rock:HtmlEditor ID="htmlAdditionalConfirmationDetails" runat="server" Label="Additional Confirmation Details" />
+                                        <Rock:HtmlEditor ID="htmlAdditionalReminderDetails" runat="server" Label="Additional Reminder Details" />
+
                                     </div>
-
-                                    <div class="col-md-3">
-                                        <Rock:DateTimePicker ID="dpEventRegStartDate" runat="server" Label="Registration Start Date" Required="true" />
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <Rock:DateTimePicker ID="dpEventRegEndDate" runat="server" Label="Registration End Date" Required="true" />
-                                    </div>
-
                                 </div>
                             </div>
                         </asp:Panel>
@@ -180,8 +201,14 @@
                                         <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" AutoPostBack="true" Help="Calendars that this item should be added to (at least one is required)."
                                             RepeatDirection="Horizontal" Required="true" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" />
                                     </div>
+                                    <div class="col-md-4">
+                                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Visible="true" ForceVisible="true" />
+                                    </div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="tbLocationDescription" runat="server" Label="Location Description for Off-Campus Events" />
+                                    </div>
                                     <!--
                                     <div class="col-md-4">
                                         <Rock:RockControlWrapper ID="rcwAudiences" runat="server" Label="Audiences">
@@ -227,9 +254,67 @@
                                                 <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
                                                 <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                                             </div>
+
                                         </div>
+                                        <h4>Promotion Dates</h4>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbMassEmailDate" runat="server" Label="Mass Email Date" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbWelcomePackCards" runat="server" Label="Welcome Pack Cards" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbRotatingAnnouncementSlide" runat="server" Label="Rotating Announcement Slide" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbStageAnnouncement" runat="server" Label="Stage Announcement Date" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbSocialMediaDate" runat="server" Label="Social Media Date" />
+                                            </div>
+                                        </div>
+                                        <h4>Creative</h4>
+                                        <Rock:RockCheckBoxList ID="cblDigitalMedia" runat="server" Label="Digital Media Needs" RepeatDirection="Horizontal">
+                                            <asp:ListItem Value="Email Image" />
+                                            <asp:ListItem Value="Pro Presenter Image" />
+                                            <asp:ListItem Value="Insta Story Image" />
+                                        </Rock:RockCheckBoxList>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbMaterialType" runat="server" Label="Type of Material" Help="Examples: Postcard, Poster, 9x11 Handout, Welcome Card Size, Banners, T-Shirts, Water Bottles, Flags, Etc." />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:NumberBox ID="nbQuantity" runat="server" Label="Quantity" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:RockTextBox ID="tbCreativeExpenseLines" runat="server" Label="Expense Lines for Print Materials" />
+                                            </div>
+                                        </div>
+                                        <Rock:RockControlWrapper ID="rcwDocuments" runat="server" Label="Related Documents">
+                                            <asp:DataList ID="dlDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4">
+                                                <ItemTemplate>
+                                                    <div class="margin-r-sm margin-b-sm">
+                                                        <Rock:FileUploader ID="fileUpDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fileUpDoc_FileUploaded" OnFileRemoved="fileUpDoc_FileRemoved" />
+                                                    </div>
+                                                </ItemTemplate>
+                                            </asp:DataList>
+                                        </Rock:RockControlWrapper>
+
                                     </div>
                                     <div class="col-md-5">
+                                        <h4>Social Media Campaigns</h4>
+                                        <Rock:CurrencyBox ID="nbBudget" runat="server" Label="Budget" />
+                                        <Rock:RockTextBox ID="tbExpenseLines" runat="server" Label="Expense Lines for Campaign" />
+                                        <div class="form-row">
+                                            <div class="col-sm-6">
+                                                <Rock:DateTimePicker ID="dtCampaignStart" runat="server" Label="Campaign Start Date" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <Rock:DateTimePicker ID="dtCampaignEnd" runat="server" Label="Campaign End Date" />
+                                            </div>
+                                        </div>
+                                        <Rock:RockTextBox ID="tbSpecificAudience" runat="server" TextMode="MultiLine" Rows="3" Label="Specific Audience" />
                                         <!--
                                         <Rock:RockDropDownList ID="ddlEventOrRegistration" runat="server" Visible="false" Label="Should the promotion link to the calendar or the registration?">
                                             <asp:ListItem Value="Calendar" />
@@ -245,6 +330,73 @@
 
 
                     </asp:Panel>
+
+                    <div class="panel panel-block">
+                        <div class="panel-heading">
+                            <h6 style="margin-top: 0px;">Vox Kids</h6>
+                            <div class="pull-right">
+                                <Rock:Toggle ID="tVoxKids" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxKids_CheckedChanged" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlVoxKids" runat="server" Visible="true">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:NotificationBox ID="nbVoxKids" runat="server" Visible="false" NotificationBoxType="Info" />
+                                        <Rock:RockTextBox ID="tbChildcareDuringEvent" runat="server" Label="Childcare During Event" />
+                                        <Rock:RockTextBox ID="tbVoxClassrooms" runat="server" Label="VoxKids classrooms or programming during event" />
+                                        <Rock:RockTextBox ID="tbNeededResources" runat="server" Label="Needed Resources for Kids" />
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
+
+                    <div class="panel panel-block">
+                        <div class="panel-heading">
+                            <h6 style="margin-top: 0px;">Vox Music</h6>
+                            <div class="pull-right">
+                                <Rock:Toggle ID="tVoxMusic" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxMusic_CheckedChanged" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlVoxMusic" runat="server" Visible="true">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:NotificationBox ID="nbVoxMusic" runat="server" Visible="false" NotificationBoxType="Info" />
+                                        <Rock:RockTextBox ID="tbWorshipLength" runat="server" Label="Length of Worship Time" />
+                                        <Rock:RockTextBox ID="tbWorshipType" runat="server" Label="VType of worship setting" Help="Acoustic, Modern, Traditional" />
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
+
+                    <div class="panel panel-block">
+                        <div class="panel-heading">
+                            <h6 style="margin-top: 0px;">Production Needs</h6>
+                            <div class="pull-right">
+                                <Rock:Toggle ID="tProduction" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tProduction_CheckedChanged" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlProduction" runat="server" Visible="true">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:NotificationBox ID="nbProduction" runat="server" Visible="false" NotificationBoxType="Info" />
+                                        <Rock:RockTextBox ID="tbTechPositions" runat="server" Label="Tech Positions Needed" />
+                                        <Rock:RockTextBox ID="tbVideoNeeds" runat="server" Label="Video Needs" />
+                                        <Rock:RockTextBox ID="tbSoundGear" runat="server" Label="Sound Gear" />
+                                        <Rock:RockTextBox ID="tbLightingGear" runat="server" Label="Lighting Gear" />
+                                        <Rock:RockTextBox ID="tbProPresenter" runat="server" Label="Pro Presenter Needs" />
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click">Save</asp:LinkButton>
