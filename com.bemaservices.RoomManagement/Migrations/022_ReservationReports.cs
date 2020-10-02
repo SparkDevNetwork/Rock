@@ -40,7 +40,7 @@ namespace com.bemaservices.RoomManagement.Migrations
         public override void Up()
         {
             //throw new NotImplementedException();
-              Sql( @"
+            Sql( @"
                     Delete
                     From FieldType
                     Where Class = 'com.bemaservices.RoomManagement.Field.Types.ReportTemplateFieldType'
@@ -87,10 +87,18 @@ namespace com.bemaservices.RoomManagement.Migrations
             var defaultLogo = GetAttributeValueFromBlock( blockId, "C05E0362-6C49-4D59-8DB7-7DCADAF19FDD".AsGuid() );
             var selectedReportTemplateGuid = GetAttributeValueFromBlock( blockId, "8E2EE6F2-54FC-4C3A-9C9A-54CEA34544F7".AsGuid() );
             var defaultLava = GetAttributeValueFromBlock( blockId, "69131013-4E48-468E-B2C2-CF19CEA26590".AsGuid() );
-
-            var organizationName = GlobalAttributesCache.Get().GetValue( "OrganizationName" );
+            
             var lavaTemplate = GetAttributeValueFromBlock( blockId, "52C3F839-A092-441F-B3F9-10617BE391EC".AsGuid() );
-            var lavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
+
+            var organizationName = SqlScalar( String.Format( @"Select case when av.Value is not null then av.Value else a.DefaultValue end as Value
+                                    From Attribute a
+                                    Left Join AttributeValue av on av.AttributeId = a.Id
+                                    Where a.[Guid] = '{0}'", "410BF494-0714-4E60-AFBD-AD65899A12BE" ) ).ToStringSafe();
+
+            var lavaCommands = SqlScalar( String.Format( @"Select case when av.Value is not null then av.Value else a.DefaultValue end as Value
+                                    From Attribute a
+                                    Left Join AttributeValue av on av.AttributeId = a.Id
+                                    Where a.[Guid] = '{0}'", Rock.SystemGuid.Attribute.GLOBAL_ENABLED_LAVA_COMMANDS ) ).ToStringSafe();
 
             var selectedDefinedValueGuid = "";
             AttributeCache.RemoveEntityAttributes();
