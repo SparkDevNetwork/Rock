@@ -649,11 +649,11 @@ namespace com.bemaservices.HrManagement.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "E6B880BD-3903-41D5-8734-91DBDB91EE09", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
 {% capture reviewText %}Review Request{% endcapture %}
 {% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
-
+{% assign selection = Activity | Attribute:'Selection'%}
 {{ 'Global' | Attribute:'EmailHeader' }}
-{% if selection = 'Submit Changes' %}
+{% if selection == 'Submit Changes' %}
     An updated {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
-{% elseif selection = 'Submit Request' %}
+{% elseif selection == 'Submit Request' %}
     A new {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
 {% else %}
     A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ Workflow | Attribute:'Person' }}. <br /> <br />
@@ -700,12 +700,12 @@ Thank you!<br/>
             RockMigrationHelper.AddActionTypeAttributeValue( "C889FAA5-3FC6-4920-BC4D-8C70E17061F4", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
 {% capture reviewText %}Review Request{% endcapture %}
 {% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
-
+{% assign selection = Activity | Attribute:'Selection' %}
 {{ 'Global' | Attribute:'EmailHeader' }}
 
-{% if selection = 'Submit Changes' %}
+{% if selection == 'Submit Changes' %}
     An updated {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
-{% elseif selection = 'Submit Request' %}
+{% elseif selection == 'Submit Request' %}
     A new {{ Workflow | Attribute:'Type' }} Time Off Request has been submitted by {{ Workflow | Attribute:'Person' }}. <br /> <br />
 {% else %}
     A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ Workflow | Attribute:'Person' }}. <br /> <br />
