@@ -63,7 +63,7 @@
                             {% if ptoAllocation.PtoAllocationStatus != 0 %}
 							    {% assign usedHours = 0.0 %}
 							    {% for ptoRequest in ptoAllocation.PtoRequests %}
-								    {% if ptoRequest.PtoRequestApprovalState != 2 %}
+								    {% if ptoRequest.PtoRequestApprovalState != 2 and ptoRequest.PtoRequestApprovalState != 3 %}{% comment %}Check to make sure it is note pending or canceled.{% endcomment %}
 									    {% assign usedHours = usedHours | Plus:ptoRequest.Hours %}
 								    {% endif %}
 							    {% endfor %}
