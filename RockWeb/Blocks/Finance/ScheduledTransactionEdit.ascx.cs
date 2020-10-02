@@ -1393,7 +1393,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( referencePaymentInfo.ReferenceNumber.IsNullOrWhiteSpace() )
             {
-                referencePaymentInfo.ReferenceNumber = scheduledTransaction.TransactionCode;
+                string errorMessage; ;
+                referencePaymentInfo.ReferenceNumber = Gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
             }
 
             return referencePaymentInfo;
