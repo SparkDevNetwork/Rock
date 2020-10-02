@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using com.bemaservices.RoomManagement.ReportTemplates;
+using iTextSharp.text;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -87,7 +89,7 @@ namespace com.bemaservices.RoomManagement.Migrations
             var defaultLogo = GetAttributeValueFromBlock( blockId, "C05E0362-6C49-4D59-8DB7-7DCADAF19FDD".AsGuid() );
             var selectedReportTemplateGuid = GetAttributeValueFromBlock( blockId, "8E2EE6F2-54FC-4C3A-9C9A-54CEA34544F7".AsGuid() );
             var defaultLava = GetAttributeValueFromBlock( blockId, "69131013-4E48-468E-B2C2-CF19CEA26590".AsGuid() );
-            
+
             var lavaTemplate = GetAttributeValueFromBlock( blockId, "52C3F839-A092-441F-B3F9-10617BE391EC".AsGuid() );
 
             var organizationName = SqlScalar( String.Format( @"Select case when av.Value is not null then av.Value else a.DefaultValue end as Value
@@ -101,59 +103,51 @@ namespace com.bemaservices.RoomManagement.Migrations
                                     Where a.[Guid] = '{0}'", Rock.SystemGuid.Attribute.GLOBAL_ENABLED_LAVA_COMMANDS ) ).ToStringSafe();
 
             var selectedDefinedValueGuid = "";
-            AttributeCache.RemoveEntityAttributes();
-            var allReportTemplates = ReportTemplateContainer.Instance.Components.Values
-                .Where( v => v.Value.IsActive == true )
-                .Select( v => v.Value.EntityType );
 
-            var reportTemplateList = allReportTemplates
-                .ToList();
 
-            if ( reportTemplateList.Any() )
+            var reportTemplateGuidStringList = new List<String>();
+            reportTemplateGuidStringList.Add( "9b74314a-37e0-40f2-906c-2862c93f8888" );
+            reportTemplateGuidStringList.Add( "97a7ffda-1b75-473f-a680-c9a7602b5c60" );
+            reportTemplateGuidStringList.Add( "7ef82cca-7874-4b8d-adb7-896f05095354" );
+
+            foreach ( var reportTemplateGuidString in reportTemplateGuidStringList )
             {
-                foreach ( EntityTypeCache reportTemplate in reportTemplateList )
+                var definedValueGuidString = Guid.NewGuid().ToString();
+                var valueName = "";
+                var description = "";
+                var lavaCode = "";
+
+                switch ( reportTemplateGuidString )
                 {
-                    var definedValueGuidString = Guid.NewGuid().ToString();
-                    var reportTemplateGuidString = reportTemplate.Guid.ToString();
-                    var valueName = "";
-                    var description = "";
-                    var lavaCode = "";
+                    case "9b74314a-37e0-40f2-906c-2862c93f8888": // Event Based
+                        valueName = "Event-Based Report";
+                        description = "This is default report that can be printed out.";
+                        definedValueGuidString = "5D53E2F0-BA82-4154-B996-085C979FACB0";
+                        break;
+                    case "97a7ffda-1b75-473f-a680-c9a7602b5c60": // Location Based
+                        valueName = "Location-Based Report";
+                        description = "Meant primarily for facilities teams, this report has a line item for each reservation location containing information about requested layouts.";
+                        definedValueGuidString = "46C855B0-E50E-49E7-8B99-74561AFB3DD2";
+                        break;
+                    case "7ef82cca-7874-4b8d-adb7-896f05095354": // Lava
+                        valueName = "Lava Report";
+                        description = "This is a generic Lava Report.";
+                        lavaCode = defaultLava;
+                        definedValueGuidString = "71CEBC9E-D9BA-432D-B1C9-9B3D5CB8E7ED";
+                        break;
 
-                    switch ( reportTemplateGuidString )
-                    {
-                        case "9b74314a-37e0-40f2-906c-2862c93f8888": // Event Based
-                            valueName = "Event-Based Report";
-                            description = "This is default report that can be printed out.";
-                            definedValueGuidString = "5D53E2F0-BA82-4154-B996-085C979FACB0";
-                            break;
-                        case "97a7ffda-1b75-473f-a680-c9a7602b5c60": // Location Based
-                            valueName = "Location-Based Report";
-                            description = "Meant primarily for facilities teams, this report has a line item for each reservation location containing information about requested layouts.";
-                            definedValueGuidString = "46C855B0-E50E-49E7-8B99-74561AFB3DD2";
-                            break;
-                        case "7ef82cca-7874-4b8d-adb7-896f05095354": // Lava
-                            valueName = "Lava Report";
-                            description = "This is a generic Lava Report.";
-                            lavaCode = defaultLava;
-                            definedValueGuidString = "71CEBC9E-D9BA-432D-B1C9-9B3D5CB8E7ED";
-                            break;
-                        default:
-                            valueName = reportTemplate.FriendlyName;
-                            break;
-
-                    }
-
-                    if ( selectedReportTemplateGuid == reportTemplateGuidString )
-                    {
-                        selectedDefinedValueGuid = definedValueGuidString;
-                    }
-
-                    RockMigrationHelper.UpdateDefinedValue( "13B169EA-A090-45FF-8B11-A9E02776E35E", valueName, description, definedValueGuidString, true );
-                    RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "1C2F3975-B1E2-4F8A-B2A2-FEF8D1A37E6C", reportTemplateGuidString );
-                    RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", lavaCode );
-                    RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "98F113C0-8497-48BC-9DA3-C51D163206CB", defaultFont );
-                    RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "E907AB6D-642C-4079-AD08-0641B4C84B16", defaultLogo );
                 }
+
+                if ( selectedReportTemplateGuid == reportTemplateGuidString )
+                {
+                    selectedDefinedValueGuid = definedValueGuidString;
+                }
+
+                RockMigrationHelper.UpdateDefinedValue( "13B169EA-A090-45FF-8B11-A9E02776E35E", valueName, description, definedValueGuidString, true );
+                RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "1C2F3975-B1E2-4F8A-B2A2-FEF8D1A37E6C", reportTemplateGuidString );
+                RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "2F0BEBBA-B890-46B1-8C36-A3F7CE9A36B9", lavaCode );
+                RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "98F113C0-8497-48BC-9DA3-C51D163206CB", defaultFont );
+                RockMigrationHelper.AddDefinedValueAttributeValue( definedValueGuidString, "E907AB6D-642C-4079-AD08-0641B4C84B16", defaultLogo );
             }
 
             var visibleViewGuid = "67EA36B0-D861-4399-998E-3B69F7700DC0";
