@@ -412,7 +412,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                        a.Person.BirthMonth,
                        a.Person.BirthDay,
                        a.Person.Gender,
-                       a.Person.NickName,
+                       a.Person.FirstName,
                        a.Person.RecordStatusValueId,
                        a.Person
                    })
@@ -427,7 +427,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     var familyMemberQry = familyMembers
                         .Where(m =>
                            m.GroupId == familyId &&
-                           m.NickName != null);
+                           m.FirstName != null);
 
                     if (preventInactive && dvInactive != null)
                     {
@@ -450,7 +450,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                             .ThenBy(m => m.BirthMonth)
                             .ThenBy(m => m.BirthDay)
                             .ThenBy(m => m.Gender)
-                            .Select(m => m.NickName)
+                            .Select(m => m.FirstName)
                             .ToList();
 
                         var family = new CheckInFamily();
@@ -1942,7 +1942,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     familyPersonState.ChildRelationshipToAdult = childRelationshipToAdult;
                     familyPersonState.InPrimaryFamily = inPrimaryFamily;
                     familyPersonState.Email = person.Email;
-                    familyPersonState.FirstName = person.NickName;
+                    familyPersonState.FirstName = person.FirstName;
                     familyPersonState.Gender = person.Gender;
                     familyPersonState.GradeOffset = person.GradeOffset;
                     familyPersonState.IsMarried = person.MaritalStatusValueId == _maritalStatusMarriedId;
@@ -2299,10 +2299,10 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                         person = personService.Get(familyPersonState.PersonId.Value);
                     }
 
-                    // NOTE, Gender, MaritalStatusValueId, NickName, LastName are required fields so, always updated them to match the UI (even if a matched person was found)
+                    // NOTE, Gender, MaritalStatusValueId, FirstName, LastName are required fields so, always updated them to match the UI (even if a matched person was found)
                     person.Gender = familyPersonState.Gender;
                     person.MaritalStatusValueId = familyPersonState.IsMarried ? maritalStatusMarried.Id : maritalStatusSingle.Id;
-                    person.NickName = familyPersonState.FirstName;
+                    person.FirstName = familyPersonState.FirstName;
                     person.LastName = familyPersonState.LastName;
 
                     // if the familyPersonState was converted to a Matched Person, don't overwrite existing values with blank values
