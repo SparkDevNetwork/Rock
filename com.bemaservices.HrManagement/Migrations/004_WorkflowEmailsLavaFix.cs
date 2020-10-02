@@ -55,7 +55,7 @@ namespace com.bemaservices.HrManagement.Migrations
     <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
     <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
     
-    <strong>Total Year to Date</strong>
+    <strong>Total Year to Date</strong><br />
     <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
     <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
             
@@ -104,7 +104,7 @@ Thank you!<br/>
     <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
     <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
     
-    <strong>Total Year to Date</strong>
+    <strong>Total Year to Date</strong><br />
     <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
     <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
             
@@ -129,6 +129,92 @@ Thank you!<br/>
 {{ 'Global' | Attribute:'EmailFooter' }}
 " ); // PTO Request:Add / Modify Request:Send Email to HR if no supervisor exists:Body
 
+ RockMigrationHelper.AddActionTypeAttributeValue( "B35D6DAB-82EE-4646-A96A-797124CDEA1A", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+{% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
+
+{{ 'Global' | Attribute:'EmailHeader' }}
+
+    Your {{ Workflow | Attribute:'Type' }} Time Off Request has been {{Workflow | Attribute:'ApprovalState'}} by {{ Workflow | Attribute:'Approver' }}. <br /> <br />
+
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong><br />
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
+            
+
+Thank you!<br/>
+<br/>
+<table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+ <tr>
+   <td>
+
+		<div><!--[if mso]>
+		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ reviewLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+			<w:anchorlock/>
+			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{reviewText}}</center>
+		  </v:roundrect>
+		<![endif]--><a href=""{{ reviewLink }}""
+		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{reviewText}}</a></div>
+
+	</td>
+ </tr>
+</table>
+{{ 'Global' | Attribute:'EmailFooter' }}
+" ); // PTO Request:Review Request:Send Email to Person:Body
+
+            RockMigrationHelper.AddActionTypeAttributeValue( "8A500384-1F40-443E-9387-04AB9BB8BDE9", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{% capture reviewLink %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}Person/{{ Workflow | Attribute:'Person','Id' }}/HR{% endcapture %}
+{% capture reviewText %}Review Request{% endcapture %}
+{% capture endDate %}{{ Workflow | Attribute:'EndDate'}}{% endcapture %}
+
+    A {{ Workflow | Attribute:'Type' }} Time Off Request has been CANCELLED by {{ CurrentPerson.FullName }}. <br /> <br />
+
+
+ <strong>Date Cancelled:</strong> {{ 'Now' | Date: 'dddd MMM dd, yyyy' }}<br />
+ <strong>Reason for Cancellation:</strong> {{ Workflow | Attribute:'CancelReason' }}<br />
+    {% if endDate != empty %}
+        <strong>Date(s):</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} - {{ Workflow | Attribute:'EndDate' | Date:'dddd, MMM d, yyyy'}} <br /> <br />
+    {% else %}
+        <strong>Date:</strong> {{ Workflow | Attribute:'StartDate' | Date:'dddd, MMM d, yyyy' }} <br /> <br />
+    {% endif %}
+        
+    
+    <strong>Request Hours:</strong> {{ Workflow | Attribute:'RequestedHours' }}<br />
+    <strong>Reason:</strong> {{ Workflow | Attribute:'Reason' }}<br /><br />
+    
+    <strong>Total Year to Date</strong><br />
+    <strong>Total Requested Hours YTD:</strong> {{ Workflow | Attribute:'RequestedHoursYTD' }}<br />
+    <strong>Remaining Hours:</strong> {{ Workflow | Attribute:'RemainingHours' }}<br />
+            
+
+Thank you!<br/>
+<br/>
+<table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+ <tr>
+   <td>
+
+		<div><!--[if mso]>
+		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ reviewLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+			<w:anchorlock/>
+			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{reviewText}}</center>
+		  </v:roundrect>
+		<![endif]--><a href=""{{ reviewLink }}""
+		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{reviewText}}</a></div>
+
+	</td>
+ </tr>
+</table>
+{{ 'Global' | Attribute:'EmailFooter' }}
+" ); // PTO Request:Cancel Request:Send Email to Supervisor:Body
             #endregion
 
 
