@@ -414,23 +414,27 @@ namespace com.bemaservices.MinistrySafe
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
         public static bool UpdatePackages( List<string> errorMessages )
         {
-            List<PackageResponse> getPackagesResponse;
-            if ( !MinistrySafeApiUtility.GetPackages( out getPackagesResponse, errorMessages ) )
+            List<PackageResponse> customPackageResponseList;
+
+            if ( !MinistrySafeApiUtility.GetPackages( out customPackageResponseList, errorMessages ) )
             {
                 return false;
             }
 
-            if ( getPackagesResponse == null )
+            if ( customPackageResponseList == null )
             {
-                getPackagesResponse = new List<PackageResponse>();
+                customPackageResponseList = new List<PackageResponse>();
             }
+
+            var defaultPackageResponseList = new List<PackageResponse>();
+            var packageResponseList = new List<PackageResponse>();
 
             for ( var level = 1; level <= 7; level++ )
             {
                 var packageResponse = new PackageResponse();
                 packageResponse.Name = String.Format( "Search Level {0}", level.ToWords().ToUpper() );
                 packageResponse.Level = level;
-                getPackagesResponse.Add( packageResponse );
+                defaultPackageResponseList.Add( packageResponse );
             }
 
             Dictionary<string, DefinedValue> packages;
@@ -444,14 +448,28 @@ namespace com.bemaservices.MinistrySafe
                     .Where( v => v.ForeignId == 4 )
                     .ToList()
                     .Select( v => { v.LoadAttributes( rockContext ); return v; } ) // v => v.Value.Substring( CheckrConstants.TYPENAME_PREFIX.Length ) )
-                    .ToDictionary( v => v.GetAttributeValue( "MinistrySafePackageName" ).ToString(), v => v );
+                    .GroupBy( v => v.GetAttributeValue( "MinistrySafePackageName" ).ToString() )
+                    .ToDictionary( v => v.Key, v => v.First() );
 
                 var userTypes = definedValueService
                      .GetByDefinedTypeGuid( "559E79C6-2EAB-4A0D-A16F-59D9B63F002F".AsGuid() )
                      .ToList();
-                foreach ( var packageResponse in getPackagesResponse )
-                {
 
+                foreach ( var packageResponse in customPackageResponseList )
+                {
+                    string packageName = packageResponse.Name;
+                    if ( !packages.ContainsKey( packageName ) )
+                    {
+
+                        AddPackage( rockContext, definedType, definedValueService, packageResponse, null );
+
+                    }
+
+                    packageResponseList.Add( packageResponse );
+                }
+
+                foreach ( var packageResponse in defaultPackageResponseList )
+                {
                     string packageName = packageResponse.Name;
                     if ( !packages.ContainsKey( packageName ) )
                     {
@@ -460,9 +478,11 @@ namespace com.bemaservices.MinistrySafe
                             AddPackage( rockContext, definedType, definedValueService, packageResponse, userType );
                         }
                     }
+
+                    packageResponseList.Add( packageResponse );
                 }
 
-                var packageRestResponseNames = getPackagesResponse.Select( pr => pr.Name );
+                var packageRestResponseNames = packageResponseList.Select( pr => pr.Name );
                 foreach ( var package in packages )
                 {
                     package.Value.IsActive = packageRestResponseNames.Contains( package.Key );
@@ -475,7 +495,7 @@ namespace com.bemaservices.MinistrySafe
             return true;
         }
 
-        private static void AddPackage( RockContext rockContext, DefinedTypeCache definedType, DefinedValueService definedValueService, PackageResponse packageResponse, DefinedValue userType )
+        private static void AddPackage( RockContext rockContext, DefinedTypeCache definedType, DefinedValueService definedValueService, PackageResponse packageResponse, DefinedValue userType = null )
         {
             DefinedValue definedValue = null;
 
@@ -484,7 +504,7 @@ namespace com.bemaservices.MinistrySafe
                 IsActive = true,
                 DefinedTypeId = definedType.Id,
                 ForeignId = 4,
-                Value = string.Format( "{0}{1} {2}", MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX, userType.Description, packageResponse.Name.Replace( '_', ' ' ) )
+                Value = string.Format( "{0}{1} {2}", MinistrySafeConstants.MINISTRYSAFE_TYPENAME_PREFIX, userType != null ? userType.Description : "", packageResponse.Name.Replace( '_', ' ' ) )
             };
 
             definedValueService.Add( definedValue );
@@ -497,7 +517,11 @@ namespace com.bemaservices.MinistrySafe
             definedValue.SetAttributeValue( "MinistrySafePackageLevel", packageResponse.Level );
             definedValue.SetAttributeValue( "MinistrySafePackageCode", packageResponse.Code );
             definedValue.SetAttributeValue( "MinistrySafePackagePrice", packageResponse.Price );
-            definedValue.SetAttributeValue( "MinistrySafeUserType", userType.Guid.ToString() );
+
+            if ( userType != null )
+            {
+                definedValue.SetAttributeValue( "MinistrySafeUserType", userType.Guid.ToString() );
+            }
             definedValue.SaveAttributeValues( rockContext );
         }
 
