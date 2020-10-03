@@ -157,6 +157,10 @@
     <Compile Include="Migrations\202009291713442_Rollup_0929.Designer.cs">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs" />
+    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.Designer.cs">
+      <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1474,6 +1478,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009291713442_Rollup_0929.resx">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.resx">
+      <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
