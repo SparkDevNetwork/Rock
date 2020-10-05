@@ -92,6 +92,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Single Select Key Attribute", "The Attribute Containing the key of the field the slots are divided by", Key = BemaAttributeKey.SingleSelectKeyAttribute )]
     [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Filter Key Attribute", "The Attribute Containing the key of the field the slots are filtered by", Key = BemaAttributeKey.FilterKeyAttribute )]
     /* BEMA.FE1.End */
+
+    /* BEMA.UI1.Start */
+    [TextField( "Custom Error Message")]
+    /* BEMA.UI1.End */
     public partial class RegistrationEntryWithSlots : RockBlock
     {
         private static class AttributeKey
@@ -708,6 +712,18 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         else
                         {
                             ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm.ToLower() ) );
+                            /* BEMA.UI1.Start */
+                            string customErrorMessage = GetAttributeValue( "CustomErrorMessage" );
+                            if ( !String.IsNullOrEmpty(customErrorMessage) )
+                            {
+                                try {
+                                    ShowWarning( "Sorry", string.Format( customErrorMessage, RegistrationTerm.ToLower() ));
+                                }
+                                catch {
+                                    ShowWarning( "Sorry",  customErrorMessage);
+                                }
+                            }
+                            /* BEMA.UI1.End */
                         }
                     }
                 }
