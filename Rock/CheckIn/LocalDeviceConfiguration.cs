@@ -131,24 +131,6 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the LocalDeviceConfig to the <seealso cref="CheckInCookieKey.LocalDeviceConfig"/> cookie
-        /// </summary>
-        /// <param name="page">The page.</param>
-        public void SaveToCookie( System.Web.UI.Page page )
-        {
-            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
-
-            var localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
-            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            localDeviceConfigCookie.Value = this.ToJson( Newtonsoft.Json.Formatting.None );
-            localDeviceConfigCookie.Path += sameSiteCookieValue;
-
-            page.Request.Cookies.Remove(CheckInCookieKey.LocalDeviceConfig);
-            page.Response.Cookies.Add( localDeviceConfigCookie );
-        }
-
-        /// <summary>
         /// Gets from cookie.
         /// </summary>
         /// <param name="page">The page.</param>

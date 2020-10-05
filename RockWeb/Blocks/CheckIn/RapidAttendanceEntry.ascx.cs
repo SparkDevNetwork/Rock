@@ -1351,7 +1351,7 @@ namespace RockWeb.Blocks.CheckIn
             httpCookie.Values.Add( LOCATION_ID, attendanceSetting.GroupLocationId.ToString() );
             httpCookie.Values.Add( SCHEDULE_ID, attendanceSetting.ScheduleId.ToString() );
             httpCookie.Values.Add( ATTENDANCE_DATE, attendanceSetting.AttendanceDate.ToString() );
-            Response.Cookies.Add( httpCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( httpCookie );
         }
 
         /// <summary>
