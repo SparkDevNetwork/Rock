@@ -34,7 +34,7 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to run quick SQL queries on a schedule
+    /// Sends payment reminders to registration contacts with an active balance
     /// </summary>
     [DisplayName( "Event Payment Reminders" )]
     [Description( "This job sends payment reminders to registration contacts with an active balance. For the reminder to be sent the registration template must have a 'Payment Reminder Time Span' configured. Also emails will not be sent to registrations where the instance close date is past the job's 'Cut-off Date' setting." )]
@@ -78,6 +78,8 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
+                var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
@@ -117,6 +119,7 @@ namespace Rock.Jobs
                             emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
                             emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName;
                             emailMessage.Message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
+                            emailMessage.AppRoot = publicAppRoot;
                             var emailErrors = new List<string>();
                             emailMessage.Send(out errors);
 
