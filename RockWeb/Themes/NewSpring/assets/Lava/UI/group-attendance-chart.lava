@@ -1,0 +1,66 @@
+{% if groupid and groupid != empty %}
+
+  {% sql return:'occurrences' %}
+    SELECT TOP 12
+        ao.Id,
+        ao.OccurrenceDate,
+        CASE
+          WHEN ao.DidNotOccur = 1 THEN 'true'
+          ELSE 'false'
+        END 'DidNotOccur',
+        (
+          SELECT COUNT(*)
+          FROM Attendance a
+          WHERE a.OccurrenceId = ao.Id
+          AND a.DidAttend = 1
+        ) 'Attended',
+        (
+            SELECT COUNT(*)
+            FROM Attendance a
+            WHERE a.OccurrenceId = ao.Id
+        ) 'Total'
+    FROM AttendanceOccurrence ao
+    WHERE ao.GroupId = {{ groupid }}
+    ORDER BY ao.OccurrenceDateKey DESC
+  {% endsql %}
+
+  {% assign occurrencesWithAttendance = occurrences | Where:'DidNotOccur','false' | Size %}
+  {% if occurrencesWithAttendance and occurrencesWithAttendance != empty %}
+    {% assign totalMembers = 0 %}
+    {% assign totalAttendees = 0 %}
+    {% for occurrence in occurrences %}
+      {% assign totalMembers = totalMembers | Plus:occurrence.Total %}
+      {% assign totalAttendees = totalAttendees | Plus:occurrence.Attended %}
+    {% endfor %}
+    {% assign attendanceAvg = totalAttendees | DividedBy:totalMembers,2 | Times:100 | Format:'###' %}
+  {% endif %}
+
+  {% if occurrencesWithAttendance >= 1 %}
+    {% if showaverage == 'true' %}
+      <p>Your group's average attendance for the past {{ occurrencesWithAttendance }} meetings is <b>{{ attendanceAvg | Append:'%' }}</b>.</p>
+    {% endif %}
+
+    <div class="chart row flush-sides">
+      {% for occurrence in occurrences reversed %}<div class="col-xs-1 chart-col position-relative">
+
+        {% assign attendancePercentage = null %}
+        {% if occurrence.DidNotOccur == 'false' %}
+          {% assign attendancePercentage = occurrence.Attended | DividedBy:occurrence.Total | Times:100 | Format:'###' | AsInteger %}
+        {% endif %}
+        {% capture attendanceClass %}{% if attendancePercentage > groupAttendanceSuccessThreshold %}primary{% elseif attendancePercentage > groupAttendanceWarningThreshold %}warning{% else %}danger{% endif %}{% endcapture %}
+
+        <div class="bar {% if occurrence.DidNotOccur == 'true' %}bg-gray-light{% else %}bg-gray-lighter{% endif %}" title="{% if occurrence.DidNotOccur == 'true' %}Did Not Occur{% else %}{{ occurrence.Attended | DividedBy:occurrence.Total | Format:'###%' }}{% endif %}">
+          {% if occurrence.DidNotOccur == 'false' %}
+            <div class="bar-fill bg-{{ attendanceClass }}" style="height: {{ attendancePercentage }}%;"></div>
+          {% endif %}
+
+          <div class="bar-label sans-serif stronger letter-spacing-condensed text-right"><small>{{ occurrence.OccurrenceDate | Date:'M/d' }}</small></div>
+        </div>
+      </div>{% endfor %}
+    </div>
+
+  {% else %}
+    <p class="flush">There is no recorded attendance data for your group.</p>
+  {% endif %}
+
+{% endif %}

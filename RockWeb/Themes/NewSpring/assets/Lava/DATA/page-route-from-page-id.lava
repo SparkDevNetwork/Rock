@@ -1,0 +1,1 @@
+{% pageroute where:'PageId == {{ id }}' limit:1 iterator:'routes' %}{% for route in routes %}{{ route.Route }}{% endfor %}{% endpageroute %}

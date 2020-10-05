@@ -1,0 +1,52 @@
+{% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
+{% assign navItemCount = 0 %}
+
+<ul class="nav-primary sans-serif strong text-decoration-none hard flush {% if hideNav == 'true' %}hidden{% endif %}">
+	<li>
+		<a href="/" class="nav-logo">
+			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="{{ organizationname }}" class="nav-icon  nav-logo-regular">
+			<span>{{ organizationname }}</span>
+		</a>
+	</li><span class="pull-right xs-pull-none">{% if menu == 'true' %}<li>
+	    {% assign navItemCount = navItemCount | Plus:1 %}
+		<a href="#" data-toggle="modal" data-target="#navigation-modal" title="Menu"><i class="fal fa-fw fa-lg fa-bars"></i></a>
+	</li>{% endif %}{% if locations == 'true' %}<li>
+	    {% assign navItemCount = navItemCount | Plus:1 %}
+		<a href="/locations" title="Locations"><i class="fal fa-fw fa-lg fa-map-marker-alt"></i></a>
+	</li>{% endif %}{% if search == 'true' %}<li>
+	    {% assign navItemCount = navItemCount | Plus:1 %}
+		<a href="/search" title="Search"><i class="fal fa-fw fa-lg fa-search"></i></a>
+	</li>{% endif %}{% if account == 'true' %}<li>
+	    {% assign navItemCount = navItemCount | Plus:1 %}
+		{% assign personPhoto = CurrentPerson.PhotoUrl %}
+		{% if CurrentPerson != null %}
+			<a href="/account" title="My Profile">
+				{% if personPhoto != null %}
+					<div class="position-relative display-inline-block nav-icon circular background-cover" style="top: 12px; width: 35px; height: 35px; background-image:url('{{ personPhoto }}'); border: 2px solid rgba(255,255,255,1);"></div>
+				{% else %}
+					<i class="fal fa-fw fa-lg fa-user-circle"></i>
+				{% endif %}
+			</a>
+		{% else %}
+			<a href="/sign-in" title="Sign In">
+				<i class="fal fa-fw fa-lg fa-user-circle"></i>
+			</a>
+		{% endif %}
+	</li>{% endif %}</span>
+</ul>
+{% assign navItemCountDesk = navItemCount | Plus:1 %}
+{% assign navItemCountMobile = navItemCount %}
+{% assign navItemWidthDesk = 100 | DividedBy:navItemCountDesk,3 %}
+{% assign navItemWidthMobile = 100 | DividedBy:navItemCountMobile,3 %}
+
+<style>
+.nav-primary li {
+    width: {{ navItemWidthDesk }}%;
+}
+
+@media (min-width: 669px) {
+    .nav-primary li {
+        width: {{ navItemWidthMobile }}%;
+    }
+}
+</style>
