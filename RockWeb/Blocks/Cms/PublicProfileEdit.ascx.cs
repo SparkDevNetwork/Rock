@@ -231,8 +231,13 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
-        {        
+        {
             base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += PublicProfileEdit_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upContent );
+
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
@@ -247,7 +252,7 @@ namespace RockWeb.Blocks.Cms
             lbRequestChanges.Text = GetAttributeValue( AttributeKey.RequestChangesText );
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
 
-            if (!string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ))
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ) )
             {
                 _RequiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
@@ -261,6 +266,16 @@ namespace RockWeb.Blocks.Cms
     });
 ";
             ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the PublicProfileEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void PublicProfileEdit_BlockUpdated( object sender, EventArgs e )
+        {
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -490,7 +505,7 @@ namespace RockWeb.Blocks.Cms
             var rptGroupMemberPhones = e.Item.FindControl( "rptGroupMemberPhones" ) as Repeater;
             var rptGroupMemberAttributes = e.Item.FindControl( "rptGroupMemberAttributes" ) as Repeater;
             var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
-            
+
             if ( lbEditGroupMember != null )
             {
                 lbEditGroupMember.Visible = _canEdit;
@@ -592,18 +607,22 @@ namespace RockWeb.Blocks.Cms
             var group = new GroupService( rockContext ).Get( groupId );
 
             // invalid situation; return and report nothing.
-            if ( group == null || ! IsCurrentPersonInGroup( group ) )
+            if ( group == null || !IsCurrentPersonInGroup( group ) )
             {
                 return;
             }
 
             // Validate before continuing; either the personGuid or the CurrentPerson must be in the group.
-            if ( ! IsValidPersonForGroup( personGuid, CurrentPerson, group ) )
+            if ( !IsValidPersonForGroup( personGuid, CurrentPerson, group ) )
             {
                 return;
             }
 
-            rockContext.WrapTransaction( () =>
+            bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
+            bool showCommunicationPreference = GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
+            var communicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+            var wrapTransactionResult = rockContext.WrapTransactionIf( () =>
             {
                 var personService = new PersonService( rockContext );
 
@@ -734,9 +753,9 @@ namespace RockWeb.Blocks.Cms
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
                     // update campus
-                   // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                   // Even if the block is set to show the picker it will not be visible if there is only one campus so use the Visible prop instead of the attribute value here.
-                    if ( cpCampus.Visible ) 
+                    // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                    // Even if the block is set to show the picker it will not be visible if there is only one campus so use the Visible prop instead of the attribute value here.
+                    if ( cpCampus.Visible )
                     {
                         var primaryFamily = person.GetFamily( rockContext );
                         if ( primaryFamily.CampusId != cpCampus.SelectedCampusId )
@@ -745,7 +764,6 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
                     if ( showPhoneNumbers )
                     {
                         var phoneNumberTypeIds = new List<int>();
@@ -817,7 +835,36 @@ namespace RockWeb.Blocks.Cms
 
                     person.Email = tbEmail.Text.Trim();
                     person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-                    person.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+                    /* 2020-10-06 MDP
+                     To help prevent a person from setting their communication preference to SMS, even if they don't have an SMS number,
+                      we'll require an SMS number in these situations. The goal is to only enforce if they are able to do something about it.
+                      1) The block is configured to show both 'Communication Preference' and 'Phone Numbers'.
+                      2) Communication Preference is set to SMS
+                      
+                     Edge cases
+                       - Both #1 and #2 are true, but no Phone Types are selected in block settings. In this case, still enforce.
+                         Think of this as a block configuration issue (they shouldn't have configured it that way)
+
+                       - Person has an SMS phone number, but the block settings don't show it. We'll see if any of the Person's phone numbers
+                         have SMS, including ones that are not shown. So, they can set communication preference to SMS without getting a warning.
+
+                    NOTE: We might have already done a save changes at this point, but we are in a DB Transaction, so it'll get rolled back if
+                        we return false, with a warning message.
+                     */
+
+                    if ( showCommunicationPreference && showPhoneNumbers && communicationPreference == CommunicationType.SMS )
+                    {
+                        if ( !person.PhoneNumbers.Any( a => a.IsMessagingEnabled ) )
+                        {
+                            nbCommunicationPreferenceWarning.Text = "A phone number with SMS enabled is required when Communication Preference is set to SMS.";
+                            nbCommunicationPreferenceWarning.NotificationBoxType = NotificationBoxType.Warning;
+                            nbCommunicationPreferenceWarning.Visible = true;
+                            return false;
+                        }
+                    }
+
+                    person.CommunicationPreference = communicationPreference;
 
                     person.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phPersonAttributes, person );
@@ -867,8 +914,8 @@ namespace RockWeb.Blocks.Cms
                             {
                                 var familyGroup = new GroupService( rockContext )
                                     .Queryable()
-                                    .Where( f => 
-                                        f.GroupType.Guid == familyGroupTypeGuid.Value && 
+                                    .Where( f =>
+                                        f.GroupType.Guid == familyGroupTypeGuid.Value &&
                                         f.Members.Any( m => m.PersonId == person.Id ) )
                                     .FirstOrDefault();
                                 if ( familyGroup != null )
@@ -931,7 +978,7 @@ namespace RockWeb.Blocks.Cms
 
                                                 familyAddress.Location = new LocationService( rockContext ).Get(
                                                     loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true );
-                                                        
+
                                                 // since there can only be one mapped location, set the other locations to not mapped
                                                 if ( familyAddress.IsMappedLocation )
                                                 {
@@ -957,9 +1004,14 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
                 }
+
+                return true;
             } );
 
-            NavigateToCurrentPage();
+            if ( wrapTransactionResult )
+            {
+                NavigateToCurrentPage();
+            }
         }
 
         /// <summary>
@@ -1002,7 +1054,7 @@ namespace RockWeb.Blocks.Cms
         void rContactInfo_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-            if (pnbPhone != null)
+            if ( pnbPhone != null )
             {
                 pnbPhone.ValidationGroup = BlockValidationGroup;
                 var phoneNumber = e.Item.DataItem as PhoneNumber;
@@ -1012,7 +1064,7 @@ namespace RockWeb.Blocks.Cms
                     if ( pnbPhone.Required )
                     {
                         pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
-                        HtmlGenericControl phoneNumberContainer = (HtmlGenericControl)e.Item.FindControl( "divPhoneNumberContainer" );
+                        HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) e.Item.FindControl( "divPhoneNumberContainer" );
                         phoneNumberContainer.AddCssClass( "required" );
                     }
                 }
@@ -1195,7 +1247,7 @@ namespace RockWeb.Blocks.Cms
             RockContext rockContext = new RockContext();
 
             // invalid situation; return and report nothing.
-            if ( ! ddlGroup.SelectedValueAsId().HasValue )
+            if ( !ddlGroup.SelectedValueAsId().HasValue )
             {
                 return;
             }
@@ -1303,6 +1355,7 @@ namespace RockWeb.Blocks.Cms
                         tbEmail.Text = person.Email;
                         rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
+                        nbCommunicationPreferenceWarning.Visible = false;
                         rblCommunicationPreference.Visible = this.GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
                         rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
@@ -1385,7 +1438,7 @@ namespace RockWeb.Blocks.Cms
                         }
 
                         BindPhoneNumbers( person );
-                        
+
                     }
                 }
             }
@@ -1396,7 +1449,8 @@ namespace RockWeb.Blocks.Cms
 
         private void BindPhoneNumbers( Person person = null )
         {
-            if ( person == null ) person = new Person();
+            if ( person == null )
+                person = new Person();
 
             bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
             pnlPhoneNumbers.Visible = showPhoneNumbers;
@@ -1408,9 +1462,9 @@ namespace RockWeb.Blocks.Cms
                 var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
                 var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
 
-                if (phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any())
+                if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
                 {
-                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid) ) )
+                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
                     {
                         var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                         if ( phoneNumber == null )
