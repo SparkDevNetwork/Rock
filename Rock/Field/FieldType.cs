@@ -259,7 +259,7 @@ namespace Rock.Field
         /// </returns>
         public virtual bool HasChangeHandler( Control editControl )
         {
-            return editControl is TextBox || editControl is ListControl;
+            return editControl is TextBox || editControl is ListControl || editControl is IRockChangeHandlerControl;
         }
 
         /// <summary>
