@@ -1100,5 +1100,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string LOGGING_DOMAIN_OTHER = "83CFDA4F-5867-4D4B-853F-D9B535EC5131";
         #endregion
+
+        #region "Checkin Attendance Types"
+        /// <summary>
+        /// The check in attendance type physical
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPE_PHYSICAL = "290CE89F-7DA0-41ED-82C1-1249A4A42BA4";
+        /// <summary>
+        /// The check in attendance type virtual
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPE_VIRTUAL = "DF1C89D0-7D8A-48C2-B251-DFF3376C2931";
+        #endregion
     }
 }

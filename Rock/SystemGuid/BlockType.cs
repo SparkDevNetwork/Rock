@@ -234,5 +234,19 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string OIDC_CLIENT_DETAIL = "312EAD0E-4068-4211-8410-2EB45B7D8BAB";
 
+        /// <summary>
+        /// The group attendance detail
+        /// </summary>
+        public const string GROUP_ATTENDANCE_DETAIL = "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B";
+        /// <summary>
+        /// The group attendance list
+        /// </summary>
+        public const string GROUP_ATTENDANCE_LIST = "5C547728-38C2-420A-8602-3CDAAC369247";
+        /// <summary>
+        /// The attendance self entry
+        /// </summary>
+        public const string ATTENDANCE_SELF_ENTRY = "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3";
+
+
     }
 }

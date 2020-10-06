@@ -405,5 +405,10 @@ namespace Rock.SystemGuid
         /// Logging Domain.
         /// </summary>
         public const string LOGGING_DOMAINS = "60487370-DE7E-4962-B58F-1865303F0414";
+
+        /// <summary>
+        /// The check in attendance types
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPES = "C0508751-3BDD-40A7-BE37-8AA4FC56E00E";
     }
 }
