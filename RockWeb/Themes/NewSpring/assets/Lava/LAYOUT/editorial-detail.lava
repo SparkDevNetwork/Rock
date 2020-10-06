@@ -152,7 +152,7 @@
                 <div class="well soft-ends text-center push-bottom">
                     <h3>{{ subscribeHeading }}</h3>
                     <p>{{ subscribeText }}</p>
-                    <a href="{{ subscribeLink }}" class="btn btn-default shadowed text-gray-dark text-decoration-none" target="_blank"><i class="fas fa-fw fa-bell"></i> {{ subscribeLinkText }}</a>
+                    <a href="{{ subscribeLinkUrl }}" class="btn btn-default shadowed text-gray-dark text-decoration-none" target="_blank"><i class="fas fa-fw fa-bell"></i> {{ subscribeLinkText }}</a>
                 </div>
             {% endif %}
 
