@@ -850,6 +850,7 @@ The logged-in person's information will be used to complete the registrar inform
                     if ( FormFieldsState.ContainsKey( form.Guid ) )
                     {
                         newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
+                        var mapKeys = new Dictionary<Guid, Guid>();
                         foreach ( var formField in FormFieldsState[form.Guid] )
                         {
                             var newFormField = formField.Clone( false );
@@ -857,6 +858,7 @@ The logged-in person's information will be used to complete the registrar inform
                             newFormField.Id = 0;
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
+                            mapKeys.Add( formField.Guid, newFormField.Guid );
 
                             if ( formField.FieldSource != RegistrationFieldSource.PersonField )
                             {
@@ -881,6 +883,18 @@ The logged-in person's information will be used to complete the registrar inform
                                     newQualifier.IsSystem = false;
                                     newAttribute.AttributeQualifiers.Add( qualifier );
                                 }
+                            }
+                        }
+
+                        var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
+                                                        .Where( a => a.FieldVisibilityRules.RuleList.Any() &&
+                                                                        a.FieldVisibilityRules.RuleList
+                                                                        .Any( b => b.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) );
+                        foreach ( var newFormField in newFormFieldsWithRules )
+                        {
+                            foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
+                            {
+                                rule.ComparedToRegistrationTemplateFormFieldGuid = mapKeys[rule.ComparedToRegistrationTemplateFormFieldGuid.Value];
                             }
                         }
                     }
