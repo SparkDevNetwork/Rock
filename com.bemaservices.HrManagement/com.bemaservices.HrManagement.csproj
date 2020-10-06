@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
- <PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{67771521-06DC-450D-88CC-71D09A16F8A1}</ProjectGuid>
@@ -82,6 +82,7 @@
     <Compile Include="Migrations\003_Workflows.cs" />
     <Compile Include="Migrations\002_Pages.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Migrations\004_WorkflowEmailsLavaFix.cs" />
     <Compile Include="Model\PtoAllocationService.cs" />
     <Compile Include="Model\PtoAllocation.cs" />
     <Compile Include="Model\PtoRequestService.cs" />
