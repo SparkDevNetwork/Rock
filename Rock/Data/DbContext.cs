@@ -74,10 +74,27 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
-        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// Wraps the action in a BeginTransaction and CommitTransaction.
+        /// Note that this will *always* commit the transaction (unless an exception occurs).
+        /// If need to rollback the transaction within your action (for example, to show a validation warning),
+        /// use <see cref="WrapTransactionIf(Func{bool})" /> instead.
         /// </summary>
         /// <param name="action">The action.</param>
         public void WrapTransaction( Action action )
+        {
+            WrapTransactionIf( () =>
+            {
+                action.Invoke();
+                return true;
+            } );
+        }
+
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction.
+        /// If the action returns false, the transaction will be rolled back.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public bool WrapTransactionIf( Func<bool> action )
         {
             if ( !_transactionInProgress )
             {
@@ -86,8 +103,15 @@ namespace Rock.Data
                 {
                     try
                     {
-                        action.Invoke();
-                        dbContextTransaction.Commit();
+                        if ( action.Invoke() )
+                        {
+                            dbContextTransaction.Commit();
+                        }
+                        else
+                        {
+                            dbContextTransaction.Rollback();
+                            return false;
+                        }
                     }
                     catch
                     {
@@ -99,10 +123,12 @@ namespace Rock.Data
                         _transactionInProgress = false;
                     }
                 }
+
+                return true;
             }
             else
             {
-                action.Invoke();
+                return action.Invoke();
             }
         }
 
