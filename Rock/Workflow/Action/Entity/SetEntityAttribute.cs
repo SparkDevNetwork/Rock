@@ -29,7 +29,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an entity attribute.
     /// </summary>
-    [ActionCategory( "Utility" )]
+    [ActionCategory( "Entity" )]
     [Description( "Sets an entity attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Entity Attribute Set" )]

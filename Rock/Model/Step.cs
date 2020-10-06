@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "Step" )]
     [DataContract]
     public partial class Step : Model<Step>, IOrdered

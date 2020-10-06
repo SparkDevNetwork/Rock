@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step workflow in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "StepWorkflow" )]
     [DataContract]
     public partial class StepWorkflow : Model<StepWorkflow>

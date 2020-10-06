@@ -137,9 +137,12 @@ namespace RockWeb.Blocks.Connection
             campaignConnectionItems = campaignConnectionItems.Where( a => CampaignConnectionHelper.GetConnectorCampusIds( a, CurrentPerson ).Any() ).ToList();
 
             ddlCampaignConnectionItemsMultiple.Items.Clear();
+
+            var campaignConnectionItemsPendingCount = new Dictionary<CampaignItem, int>();
             foreach ( var campaignConnectionItem in campaignConnectionItems )
             {
                 int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
+                campaignConnectionItemsPendingCount.AddOrIgnore( campaignConnectionItem, pendingCount );
                 var listItem = new ListItem();
                 listItem.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
                 listItem.Value = campaignConnectionItem.Guid.ToString();
@@ -162,7 +165,7 @@ namespace RockWeb.Blocks.Connection
             {
                 var campaignConnectionItem = campaignConnectionItems[0];
                 lCampaignConnectionItemSingle.Visible = true;
-                int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
+                int pendingCount = campaignConnectionItemsPendingCount.GetValueOrNull( campaignConnectionItem ) ?? 0;
                 lCampaignConnectionItemSingle.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
 
                 ddlCampaignConnectionItemsMultiple.Visible = false;
@@ -175,7 +178,8 @@ namespace RockWeb.Blocks.Connection
 
             if ( campaignConnectionItems.Count > 0 )
             {
-                SetDefaultNumberOfRequests( campaignConnectionItems.First().Guid );
+                var firstCampaignConnectionItem = campaignConnectionItems.First();
+                SetDefaultNumberOfRequests( firstCampaignConnectionItem.Guid, campaignConnectionItemsPendingCount.GetValueOrNull( firstCampaignConnectionItem ) ?? 0 );
             }
 
             mdAddCampaignRequests.Show();
@@ -185,7 +189,7 @@ namespace RockWeb.Blocks.Connection
         /// Sets the default number of requests.
         /// </summary>
         /// <param name="selectedCampaignConnectionItemGuid">The selected campaign connection item unique identifier.</param>
-        private void SetDefaultNumberOfRequests( Guid? selectedCampaignConnectionItemGuid )
+        private void SetDefaultNumberOfRequests( Guid? selectedCampaignConnectionItemGuid, int pendingCount )
         {
             if ( !selectedCampaignConnectionItemGuid.HasValue )
             {
@@ -222,7 +226,6 @@ namespace RockWeb.Blocks.Connection
             }
 
             var entitySetItemService = new EntitySetItemService( rockContext );
-            int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( selectedCampaignConnectionItem, CurrentPerson );
 
             if ( pendingCount == 0 )
             {
@@ -298,7 +301,9 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            SetDefaultNumberOfRequests( selectedCampaignConnectionItemGuid.Value );
+            var campaignConnectionItem = CampaignConnectionHelper.GetCampaignConfiguration( selectedCampaignConnectionItemGuid.Value );
+            int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
+            SetDefaultNumberOfRequests( selectedCampaignConnectionItemGuid.Value, pendingCount );
         }
     }
 }

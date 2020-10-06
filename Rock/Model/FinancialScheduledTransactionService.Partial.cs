@@ -208,8 +208,27 @@ namespace Rock.Model
         /// <param name="failedPaymentEmail">The failed payment email.</param>
         /// <param name="failedPaymentWorkflowType">Type of the failed payment workflow.</param>
         /// <returns></returns>
+        /// <remarks>Backwards compatible method for <see cref="ProcessPayments(FinancialGateway, string, List{Payment}, string, Guid?, Guid?, Guid?, bool)"/>.</remarks>
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat,
             Guid? receiptEmail, Guid? failedPaymentEmail, Guid? failedPaymentWorkflowType )
+        {
+            return ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType, true );
+        }
+
+        /// <summary>
+        /// Processes the payments and returns a summary in HTML format
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="batchNamePrefix">The batch name prefix.</param>
+        /// <param name="payments">The payments.</param>
+        /// <param name="batchUrlFormat">The batch URL format.</param>
+        /// <param name="receiptEmail">The receipt email.</param>
+        /// <param name="failedPaymentEmail">The failed payment email.</param>
+        /// <param name="failedPaymentWorkflowType">Type of the failed payment workflow.</param>
+        /// <param name="verboseLogging">If <c>true</c> then additional details will be logged.</param>
+        /// <returns></returns>
+        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat,
+            Guid? receiptEmail, Guid? failedPaymentEmail, Guid? failedPaymentWorkflowType, bool verboseLogging )
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
@@ -607,18 +626,32 @@ namespace Rock.Model
                 var scheduledPaymentList = paymentsWithoutTransaction.Where( a => a.GatewayScheduleId.IsNotNullOrWhiteSpace() ).Select( a => a.GatewayScheduleId ).ToList();
                 if ( scheduledPaymentList.Any() )
                 {
-                    sb.Append( $@"<li>The following {scheduledPaymentList.Count.ToString( "N0" )} gateway payments could not be matched to an existing scheduled payment profile:
+                    if ( verboseLogging )
+                    {
+                        sb.Append( $@"<li>The following {scheduledPaymentList.Count.ToString( "N0" )} gateway payments could not be matched to an existing scheduled payment profile:
 <pre>{scheduledPaymentList.AsDelimited( "\n" )}</pre>
 </li>" );
+                    }
+                    else
+                    {
+                        sb.Append( $"<li>{scheduledPaymentList.Count.ToString( "N0" )} gateway payments could not be matched to an existing scheduled payment profile.</li>" );
+                    }
                 }
 
                 var previousTransactionList = paymentsWithoutTransaction.Where( a => a.GatewayScheduleId.IsNullOrWhiteSpace() ).Select( a => a.TransactionCode ).ToList();
 
                 if ( previousTransactionList.Any() )
                 {
-                    sb.Append( $@"<li>The following {previousTransactionList.Count.ToString( "N0" )} gateway payments could not be matched to a previous transaction:
+                    if ( verboseLogging )
+                    {
+                        sb.Append( $@"<li>The following {previousTransactionList.Count.ToString( "N0" )} gateway payments could not be matched to a previous transaction:
 <pre>{previousTransactionList.AsDelimited( "\n" )}</pre>
 </li>" );
+                    }
+                    else
+                    {
+                        sb.Append( $"<li>{previousTransactionList.Count.ToString( "N0" )} gateway payments could not be matched to a previous transaction.</li>" );
+                    }
                 }
             }
 

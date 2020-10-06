@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak Achievement Attempts in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "StreakAchievementAttempt" )]
     [DataContract]
     public partial class StreakAchievementAttempt : Model<StreakAchievementAttempt>

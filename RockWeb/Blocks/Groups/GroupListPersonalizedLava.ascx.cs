@@ -43,11 +43,11 @@ namespace RockWeb.Blocks.Groups
         IsRequired = false,
         Order = 0 )]
 
-    [GroupField("Parent Group",
+    [GroupField( "Parent Group",
         Key = AttributeKey.ParentGroup,
         Description = "If a group is chosen, only the groups under this group will be displayed.",
         IsRequired = false,
-        Order = 1)]
+        Order = 1 )]
 
     [IntegerField( "Cache Duration",
         Key = AttributeKey.CacheDuration,
@@ -198,7 +198,14 @@ namespace RockWeb.Blocks.Groups
             var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
             if ( parentGroupGuid != null )
             {
-                var availableGroupIds = ( List<int> ) GetCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString() );
+                var cacheLength = GetAttributeValue( AttributeKey.CacheDuration ).AsInteger();
+
+                List<int> availableGroupIds = null;
+
+                if ( cacheLength > 0 )
+                {
+                    availableGroupIds = ( List<int> ) GetCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString() );
+                }
 
                 if ( availableGroupIds == null )
                 {
@@ -211,9 +218,12 @@ namespace RockWeb.Blocks.Groups
                     {
                         availableGroupIds = new List<int>();
                     }
-                    var cacheLength = GetAttributeValue( AttributeKey.CacheDuration ).AsInteger();
-                    string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength, cacheTags );
+
+                    if ( cacheLength > 0 )
+                    {
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
+                        AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength, cacheTags );
+                    }
                 }
                 qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
             }

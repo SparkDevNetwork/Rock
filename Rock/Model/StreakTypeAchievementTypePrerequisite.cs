@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak Type Achievement Type Prerequisite in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "StreakTypeAchievementTypePrerequisite" )]
     [DataContract]
     public partial class StreakTypeAchievementTypePrerequisite : Model<StreakTypeAchievementTypePrerequisite>, ICacheable

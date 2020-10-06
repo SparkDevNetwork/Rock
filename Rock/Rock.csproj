@@ -527,6 +527,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
     <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
@@ -2683,6 +2684,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Entity\EntityDocumentAdd.cs" />
     <Compile Include="Workflow\Action\Finance\GetSavedAccount.cs" />
     <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
@@ -2722,8 +2724,8 @@
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
@@ -2873,6 +2875,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge.sql">
+      <DependentUpon>135_MigrationRollupsFor11_2_0.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
