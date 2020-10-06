@@ -46,6 +46,7 @@ using Helper = Rock.Attribute.Helper;
  *
  * Additional Features:
  * - FE1) Added Ability to waitlist someone if a single select option they have does not have available slots left
+ * - UI1) Added Ability to modify the error message presented when there's no match on the registration instance
  */
 namespace RockWeb.Plugins.com_bemaservices.Event
 {
@@ -79,7 +80,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Description = "Force the email to be updated on the person's record.",
         DefaultBooleanValue = false,
         Order = 9,
-        Key =AttributeKey.ForceEmailUpdate )]
+        Key = AttributeKey.ForceEmailUpdate )]
 
     [BooleanField( "Show Field Descriptions",
         Description = "Show the field description as help text",
@@ -88,13 +89,13 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Key = AttributeKey.ShowFieldDescriptions )]
 
     /* BEMA.FE1.Start */
-    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Slots Attribute", "The Attribute dictating the slots", Key = BemaAttributeKey.SlotsAttribute )]
-    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Single Select Key Attribute", "The Attribute Containing the key of the field the slots are divided by", Key = BemaAttributeKey.SingleSelectKeyAttribute )]
-    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Filter Key Attribute", "The Attribute Containing the key of the field the slots are filtered by", Key = BemaAttributeKey.FilterKeyAttribute )]
+    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Slots Attribute", "The Attribute dictating the slots", false, false, "", "BEMA Additional Features", 11, BemaAttributeKey.SlotsAttribute )]
+    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Single Select Key Attribute", "The Attribute Containing the key of the field the slots are divided by", false, false, "", "BEMA Additional Features", 12, BemaAttributeKey.SingleSelectKeyAttribute )]
+    [AttributeField( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066", "Filter Key Attribute", "The Attribute Containing the key of the field the slots are filtered by", false, false, "", "BEMA Additional Features", 13, BemaAttributeKey.FilterKeyAttribute )]
     /* BEMA.FE1.End */
 
     /* BEMA.UI1.Start */
-    [TextField( "Custom Error Message")]
+    [TextField( "Custom Error Message", "The custom error message displayed when no matching registration instances are found.", false, "", "BEMA Additional Features", 14, BemaAttributeKey.CustomErrorMessage )]
     /* BEMA.UI1.End */
     public partial class RegistrationEntryWithSlots : RockBlock
     {
@@ -107,14 +108,15 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         }
 
         /* BEMA.Start */
-		
+
         private static class BemaAttributeKey
         {
             public const string SlotsAttribute = "SlotsAttribute";
             public const string SingleSelectKeyAttribute = "SingleSelectKeyAttribute";
             public const string FilterKeyAttribute = "FilterKeyAttribute";
+            public const string CustomErrorMessage = "CustomErrorMessage";
         }
-		
+
         /* BEMA.End */
 
         #region Fields
@@ -712,15 +714,18 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         else
                         {
                             ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm.ToLower() ) );
+
                             /* BEMA.UI1.Start */
-                            string customErrorMessage = GetAttributeValue( "CustomErrorMessage" );
-                            if ( !String.IsNullOrEmpty(customErrorMessage) )
+                            string customErrorMessage = GetAttributeValue( BemaAttributeKey.CustomErrorMessage );
+                            if ( !String.IsNullOrEmpty( customErrorMessage ) )
                             {
-                                try {
-                                    ShowWarning( "Sorry", string.Format( customErrorMessage, RegistrationTerm.ToLower() ));
+                                try
+                                {
+                                    ShowWarning( "Sorry", string.Format( customErrorMessage, RegistrationTerm.ToLower() ) );
                                 }
-                                catch {
-                                    ShowWarning( "Sorry",  customErrorMessage);
+                                catch
+                                {
+                                    ShowWarning( "Sorry", customErrorMessage );
                                 }
                             }
                             /* BEMA.UI1.End */
@@ -3138,7 +3143,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     familyGroup,
                     true,
                     false );
-                
+
                 var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null && familyGroup != null )
                 {
@@ -3498,7 +3503,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     {
                         rockContext.SaveChanges();
                     }
-              
+
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -3732,7 +3737,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-                
+
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -5444,12 +5449,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                 // default Payment is more than min and less than balance due, so we can use it
                                 RegistrationState.PaymentAmount = defaultPayment;
                             }
-                            else if (defaultPayment <= minimumPayment)
+                            else if ( defaultPayment <= minimumPayment )
                             {
                                 // default Payment is less than min, so use min instead
                                 RegistrationState.PaymentAmount = minimumPayment;
                             }
-                            else if (defaultPayment >= balanceDue)
+                            else if ( defaultPayment >= balanceDue )
                             {
                                 // default Payment is more than balance due, so use balance due
                                 RegistrationState.PaymentAmount = balanceDue;
