@@ -143,12 +143,18 @@
             <div class="push-bottom">
                 <div class="row row-condensed">
                     <div class="col-md-12 col-sm-12 col-xs-12">
-                        <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share="">Share <i class="fas fa-fw fa-share flush"></i></a>
-                    </div><div class="col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom hidden">
-                        <a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like=""><i class="far fa-fw fa-heart flush"></i> 8</a>
+                        <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share=""><i class="fas fa-fw fa-share"></i> Share</a>
                     </div>
                 </div>
             </div>
+
+            {% if subscribeLinkUrl and subscribeLinkUrl != empty %}
+                <div class="well soft-ends text-center push-bottom">
+                    <h3>{{ subscribeHeading }}</h3>
+                    <p>{{ subscribeText }}</p>
+                    <a href="{{ subscribeLink }}" class="btn btn-default shadowed text-gray-dark text-decoration-none" target="_blank"><i class="fas fa-fw fa-bell"></i> {{ subscribeLinkText }}</a>
+                </div>
+            {% endif %}
 
             {%- comment -%}
                 Entry navigation
