@@ -17,7 +17,7 @@
                         <Rock:GridFilter ID="gfNoteTypes" runat="server" OnDisplayFilterValue="gfNoteTypes_DisplayFilterValue">
                             <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="false" EnhanceForLongLists="true" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gNoteTypes" runat="server" RowItemText="Note Type" OnRowSelected="gNoteTypes_Edit" >
+                        <Rock:Grid ID="gNoteTypes" runat="server" RowItemText="Note Type" OnRowSelected="gNoteTypes_Edit" OnRowDataBound="gNoteTypes_RowDataBound" >
                             <Columns>
                                 <Rock:ReorderField />
                                 <asp:BoundField DataField="EntityTypeFriendlyName" HeaderText="Entity Type" />

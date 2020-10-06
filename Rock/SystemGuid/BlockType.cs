@@ -233,6 +233,10 @@ namespace Rock.SystemGuid
         /// The oidc client detail
         /// </summary>
         public const string OIDC_CLIENT_DETAIL = "312EAD0E-4068-4211-8410-2EB45B7D8BAB";
+        /// <summary>
+        /// The notes
+        /// </summary>
+        public const string NOTES = "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3";
 
         /// <summary>
         /// The group attendance detail
