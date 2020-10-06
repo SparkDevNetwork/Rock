@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Connection
 
     [CodeEditorField(
         "Opportunity Summary Template",
-        Description = "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.",
+        Description = "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary and ConnectionOpportunity.",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = OpportunitySummaryTemplateDefaultValue,

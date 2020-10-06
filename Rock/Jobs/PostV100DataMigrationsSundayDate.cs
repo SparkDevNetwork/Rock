@@ -29,8 +29,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "SundayDate Data Migrations for v10.0" )]
-    [Description( "This job will take care of any data migrations to SundayDate on AttendanceOccurrence and FinancialTransaction that need to occur after updating to v10.0. After all the operations are done, this job will delete itself." )]
+    [DisplayName( "Rock Update Helper v10.0 - SundayDate Data Migrations." )]
+    [Description( "This job will take care of any data migrations to SundayDate on AttendanceOccurrence and FinancialTransaction that need to occur. After all the operations are done, this job will delete itself." )]
 
     [IntegerField(
         "Command Timeout",

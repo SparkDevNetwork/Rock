@@ -254,6 +254,11 @@ namespace Rock.Transactions
                 interaction.ChannelCustom1 = info.InteractionChannelCustom1?.Trim();
                 interaction.ChannelCustom2 = info.InteractionChannelCustom2?.Trim();
                 interaction.ChannelCustomIndexed1 = info.InteractionChannelCustomIndexed1?.Trim();
+                interaction.Source = info.InteractionSource?.Trim();
+                interaction.Medium = info.InteractionMedium?.Trim();
+                interaction.Campaign = info.InteractionCampaign?.Trim();
+                interaction.Content = info.InteractionContent?.Trim();
+                interaction.Term = info.InteractionTerm?.Trim();
 
                 interaction.SetInteractionData( info.InteractionData?.Trim() );
                 interactionsToInsert.Add( interaction );
@@ -485,6 +490,46 @@ namespace Rock.Transactions
         /// </value>
         public double? InteractionTimeToServe { get; set; }
 
+        /// <summary>
+        /// Gets or sets the interaction source.
+        /// </summary>
+        /// <value>
+        /// The interaction source.
+        /// </value>
+        public string InteractionSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction medium.
+        /// </summary>
+        /// <value>
+        /// The interaction medium.
+        /// </value>
+        public string InteractionMedium { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction campaign.
+        /// </summary>
+        /// <value>
+        /// The interaction campaign.
+        /// </value>
+        public string InteractionCampaign { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction content.
+        /// </summary>
+        /// <value>
+        /// The interaction content.
+        /// </value>
+        public string InteractionContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction term.
+        /// </summary>
+        /// <value>
+        /// The interaction term.
+        /// </value>
+        public string InteractionTerm { get; set; }
+
         #endregion
 
         #region Helper Properties
@@ -596,6 +641,11 @@ namespace Rock.Transactions
             this.InteractionChannelCustom1 = EnforceLengthLimitation( this.InteractionChannelCustom1, 500 );
             this.InteractionChannelCustom2 = EnforceLengthLimitation( this.InteractionChannelCustom2, 2000 );
             this.InteractionChannelCustomIndexed1 = EnforceLengthLimitation( this.InteractionChannelCustomIndexed1, 500 );
+            this.InteractionSource = EnforceLengthLimitation( this.InteractionSource, 25 );
+            this.InteractionMedium = EnforceLengthLimitation( this.InteractionMedium, 25 );
+            this.InteractionCampaign = EnforceLengthLimitation( this.InteractionCampaign, 50 );
+            this.InteractionContent = EnforceLengthLimitation( this.InteractionContent, 50 );
+            this.InteractionTerm = EnforceLengthLimitation( this.InteractionTerm, 50 );
 
             // Get existing (or create new) interaction channel and interaction component for this interaction.
             this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );

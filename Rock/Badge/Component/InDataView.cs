@@ -59,7 +59,7 @@ namespace Rock.Badge.Component
                 if ( dataView != null )
                 {
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
                     {
                         DatabaseTimeoutSeconds = 30
                     };

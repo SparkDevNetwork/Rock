@@ -568,9 +568,13 @@ namespace Rock.Data
 
                 items.RemoveAt( oldIndex );
                 if ( newIndex >= items.Count )
+                {
                     items.Add( movedItem );
+                }
                 else
+                {
                     items.Insert( newIndex, movedItem );
+                }
 
                 int order = 0;
                 foreach ( T item in items )

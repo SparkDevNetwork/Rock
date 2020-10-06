@@ -1542,54 +1542,26 @@ namespace Rock.Web.UI
                     Page.Form.Controls.Add( new Label
                     {
                         ID = "lblShowDebugTimings",
-                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
+                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped debug-timings' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
                     } );
                 }
             }
         }
 
-
         /// <summary>
-        /// The verify block type instance properties lock object
-        /// </summary>
-        private static readonly object _verifyBlockTypeInstancePropertiesLockObj = new object();
-
-        /// <summary>
-        /// Verifies the block type instance properties.
+        /// Verifies the block type instance properties to make sure they are compiled and have the attributes updated.
         /// </summary>
         private void VerifyBlockTypeInstanceProperties()
         {
-            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id ).ToList();
-            foreach ( int blockTypeId in blockTypesIdToVerify )
+            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id );
+
+            if ( !blockTypesIdToVerify.Any() )
             {
-                Page.Trace.Warn( "\tCreating block attributes" );
-
-                try
-                {
-                    if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                    {
-                        // make sure that only one thread is trying to compile block properties so that we don't get collisions and unneeded compiler overhead
-                        lock ( _verifyBlockTypeInstancePropertiesLockObj )
-                        {
-                            if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                            {
-                                using ( var rockContext = new RockContext() )
-                                {
-                                    var blockTypeCache = BlockTypeCache.Get( blockTypeId );
-                                    Type blockCompiledType = blockTypeCache.GetCompiledType();
-
-                                    bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
-                                    BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // ignore if the block couldn't be compiled, it'll get logged and shown when the page tries to load the block into the page
-                }
+                return;
             }
+
+            Page.Trace.Warn( "\tCreating block attributes" );
+            BlockTypeService.VerifyBlockTypeInstanceProperties( blockTypesIdToVerify.ToArray() );
         }
 
         /// <summary>
@@ -1815,7 +1787,7 @@ namespace Rock.Web.UI
                     this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
-                string showTimingsUrl = this.Request.Url.ToString();
+                string showTimingsUrl = this.Request.UrlProxySafe().ToString();
                 if ( !showTimingsUrl.Contains( "ShowDebugTimings" ) )
                 {
                     if ( showTimingsUrl.Contains( "?" ) )
@@ -2159,7 +2131,7 @@ Sys.Application.add_load(function () {
                 return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
             }
 
-            return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
+            return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();
         }
 
         /// <summary>

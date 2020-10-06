@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step type in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "StepType" )]
     [DataContract]
     public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable

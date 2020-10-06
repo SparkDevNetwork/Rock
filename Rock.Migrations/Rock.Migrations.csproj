@@ -121,6 +121,42 @@
     <Compile Include="Migrations\202009011709326_Rollup_0901.Designer.cs">
       <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.cs" />
+    <Compile Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.Designer.cs">
+      <DependentUpon>202009081251514_AddEnableArchiveSummaryAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009081439056_AchievementAttemptPrecision.cs" />
+    <Compile Include="Migrations\202009081439056_AchievementAttemptPrecision.Designer.cs">
+      <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs" />
+    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.Designer.cs">
+      <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009151704402_Rollup_0915.cs" />
+    <Compile Include="Migrations\202009151704402_Rollup_0915.Designer.cs">
+      <DependentUpon>202009151704402_Rollup_0915.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs" />
+    <Compile Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.Designer.cs">
+      <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009221801451_ConnectionBoard.cs" />
+    <Compile Include="Migrations\202009221801451_ConnectionBoard.Designer.cs">
+      <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009251835424_DataViewResultsBlock.cs" />
+    <Compile Include="Migrations\202009251835424_DataViewResultsBlock.Designer.cs">
+      <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.cs" />
+    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.Designer.cs">
+      <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009291713442_Rollup_0929.cs" />
+    <Compile Include="Migrations\202009291713442_Rollup_0929.Designer.cs">
+      <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1411,6 +1447,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009011709326_Rollup_0901.resx">
       <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.resx">
+      <DependentUpon>202009081251514_AddEnableArchiveSummaryAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009081439056_AchievementAttemptPrecision.resx">
+      <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.resx">
+      <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009151704402_Rollup_0915.resx">
+      <DependentUpon>202009151704402_Rollup_0915.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.resx">
+      <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009221801451_ConnectionBoard.resx">
+      <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009251835424_DataViewResultsBlock.resx">
+      <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.resx">
+      <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009291713442_Rollup_0929.resx">
+      <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

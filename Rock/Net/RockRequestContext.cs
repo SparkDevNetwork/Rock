@@ -252,6 +252,40 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Adds the context entities for page.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        internal virtual void AddContextEntitiesForPage( PageCache pageCache )
+        {
+            foreach ( var pageContext in pageCache.PageContexts )
+            {
+                var entityType = EntityTypeCache.Get( pageContext.Key )?.GetEntityType();
+                if ( entityType == null )
+                {
+                    continue;
+                }
+
+                int? contextId = GetPageParameter( pageContext.Value ).AsIntegerOrNull();
+                if ( contextId.HasValue )
+                {
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        return Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+                    } ) );
+                }
+
+                Guid? contextGuid = GetPageParameter( pageContext.Value ).AsGuidOrNull();
+                if ( contextGuid.HasValue )
+                {
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        return Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+                    } ) );
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the page parameter value given it's name.
         /// </summary>
         /// <param name="name">The name of the page parameter to retrieve.</param>

@@ -903,7 +903,7 @@ namespace Rock.Model
 
                 if ( dataView != null )
                 {
-                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
                     {
                         DbContext = rockContext
                     };

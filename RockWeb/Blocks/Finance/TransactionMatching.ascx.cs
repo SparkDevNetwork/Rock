@@ -1236,13 +1236,29 @@ namespace RockWeb.Blocks.Finance
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
+
+            /* 07/24/2014 (added engineer note on 2020-09-23) MDP 
+             * 
+             * Note: The logic for this isn't what you might expect!
+             * 
+             * A FinancialTransaction should only have amounts if it is matched to a person, so
+             
+             - If individual is not selected, don't save any amounts, even if they entered amounts on the UI. So we will ignore them since an individual wasn't selected.
+             - If they 'Unmatched' (the transaction had previously been matched to an individual, but now it isn't) clear out any amounts (even if amounts were specified in the UI)
+
+             - If an individual is selected, then amount is required
+               - If amount and individual are both specified, the transaction will updated (and will be considered a Matched transaction)
+               - If an individual is selected, but amount isn't, a warning will be shown tell them the amount is required
+             */
+
+
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
             if ( financialTransaction != null &&
                 financialTransaction.AuthorizedPersonAliasId.HasValue &&
                 !authorizedPersonId.HasValue )
             {
                 financialTransaction.AuthorizedPersonAliasId = null;
-                foreach ( var detail in financialTransaction.TransactionDetails )
+                foreach ( var detail in financialTransaction.TransactionDetails.ToList() )
                 {
                     History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                     financialTransactionDetailService.Delete( detail );

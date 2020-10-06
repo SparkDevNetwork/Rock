@@ -112,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             public const string EventSummary = "EventSummary";
 
             /// <summary>
-            /// The show filter
+            /// Whether the filter should be shown or not.
             /// </summary>
             public const string ShowFilter = "ShowFilter";
         }
@@ -223,7 +223,8 @@ namespace Rock.Blocks.Types.Mobile.Events
                 } ),
                 SummaryContent = EventSummary,
                 DetailPage,
-                ShowFilter
+                ShowFilter,
+                IncludeCampusFilter = true /* Tell shell we support campus filtering */
             };
         }
 
@@ -266,6 +267,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 { "StartDateTime", "DateTime" },
                 { "EndDateTime", "EndDateTime" },
                 { "Campus", "Campus" },
+                { "CampusGuid", "CampusGuid" },
                 { "Audiences", "Audiences" }
             };
 
@@ -329,6 +331,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                         EndDateTime = a.Duration > 0 ? ( DateTime? ) a.Date.AddMinutes( a.Duration ) : null,
                         Date = a.Date.ToShortDateString(),
                         Time = a.Date.ToShortTimeString(),
+                        CampusGuid = a.EventItemOccurrence.Campus?.Guid,
                         Campus = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         Location = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         LocationDescription = a.EventItemOccurrence.Location,

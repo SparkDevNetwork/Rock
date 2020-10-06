@@ -72,16 +72,24 @@ namespace Rock.Utility
 
                         string printContent = ZebraPrint.MergeLabelFields( labelCache.FileContent, label.MergeFields ).TrimEnd();
 
-                        // is a cutter attached, and is this the last label or a "Rock Cut" command?
-                        if ( hasPrinterCutter && ( labelCount == labels.Count() || printContent.Contains( "ROCK_CUT" ) ) )
+                        // If the "enable label cutting" feature is enabled, then we are going to
+                        // control which mode the printer is in. In this case, we will remove any
+                        // tear-mode (^MMT) commands from the content and add the cut-mode (^MMC).
+                        if ( hasPrinterCutter )
                         {
-                            // override any tear mode command (^MMT) by injecting the cut mode (^MMC) command
+                            printContent = printContent.Replace( "^MMT", string.Empty );
+
+                            // Here we are forcing the printer into cut mode (because
+                            // we don't know if it has been put into cut-mode already) even
+                            // though we might be suppressing the cut below. This is correct.
                             printContent = printContent.ReplaceIfEndsWith( "^XZ", "^MMC^XZ" );
-                        }
-                        else
-                        {
-                            // inject suppress back-feed (^XB)
-                            printContent = printContent.ReplaceIfEndsWith( "^XZ", "^XB^XZ" );
+
+                            // If it's not the last label or a "ROCK_CUT" label, then inject
+                            // a suppress back-feed (^XB) command which will also suppress the cut.
+                            if ( !( labelCount == labels.Count() || printContent.Contains( "ROCK_CUT" ) ) )
+                            {
+                                printContent = printContent.ReplaceIfEndsWith( "^XZ", "^XB^XZ" );
+                            }
                         }
 
                         if ( socket.Connected )

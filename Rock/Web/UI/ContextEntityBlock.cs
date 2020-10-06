@@ -30,7 +30,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The current entity being viewed
         /// </summary>
-        public IEntity Entity { get; set; }        
+        public IEntity Entity { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.

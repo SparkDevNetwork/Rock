@@ -396,7 +396,10 @@ namespace RockWeb.Blocks.CheckIn
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
                 bbtnPhoneLookup.Visible = true;
-                bbtnLogin.Visible = true;
+                if ( GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace() )
+                {
+                    bbtnLogin.Visible = true;
+                }
                 return;
             }
 
@@ -852,7 +855,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             DeviceService deviceService = new DeviceService( rockContext );
-            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId && d.IsActive == true )
                 .OrderBy( a => a.Name )
                 .Select( a => new
                 {

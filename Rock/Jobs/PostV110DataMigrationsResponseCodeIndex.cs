@@ -30,7 +30,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Does Post-V11 Migration for Communication Recipient ResponseCode Index" )]
+    [DisplayName( "Rock Update Helper v11.0 - Migration for Communication Recipient ResponseCode Index" )]
     [Description( "This job will update Communication Recipient ResponseCode to have an index on ReponseCode and CreatedDateTime." )]
 
     [IntegerField(
