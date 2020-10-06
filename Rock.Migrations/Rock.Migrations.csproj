@@ -165,6 +165,10 @@
     <Compile Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.Designer.cs">
       <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.cs" />
+    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.Designer.cs">
+      <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1488,6 +1492,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.resx">
       <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.resx">
+      <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
