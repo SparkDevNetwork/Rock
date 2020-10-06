@@ -114,7 +114,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 else
                                 {
                                     //Qry dataview
-                                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
                                     {
                                         DatabaseTimeoutSeconds = 30
                                     };

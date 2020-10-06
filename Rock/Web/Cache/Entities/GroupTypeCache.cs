@@ -610,6 +610,10 @@ namespace Rock.Web.Cache
         /// </value>
         public List<GroupTypeCache> ChildGroupTypes
         {
+            /* 2020-09-02 MDP
+             * ChildGroupTypes are used in two different ways, see engineering notes for ChildGroupTypes in Rock.Model.GroupType 
+             */
+
             get
             {
                 var childGroupTypes = new List<GroupTypeCache>();

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Field.Types;
 
 namespace Rock.Model
 {
@@ -31,7 +32,6 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
-        /// Note: if <paramref name="street1"/> is blank, null will be returned.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -50,7 +50,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
-        /// Note: if <paramref name="street1"/> is blank, null will be returned.
         /// Note: The location search IS NOT constrained by the provided group. Providing the group will cause this method to search that groups locations first, giving a faster result.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
@@ -67,19 +66,34 @@ namespace Rock.Model
         /// </returns>
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
-            //// Make sure it's not an empty address
-            //// This will not be checked anymore to enable a location to save with whatever info is available. Sometimes the only info given or legible on the card is the city and state.
-            //// If there are any downstream effects of this change do not fix them by uncommenting this code without speaking to the architect first.
-            //if ( string.IsNullOrWhiteSpace( street1 ) )
-            //{
-            //    return null;
-            //}
+            return Get( street1, street2, city, state, null, postalCode, country, group, verifyLocation, createNewLocation );
+        }
 
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: The location search IS NOT constrained by the provided group. Providing the group will cause this method to search that groups locations first, giving a faster result.
+        /// </summary>
+        /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="string" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="string" /> representing the State/Province to search by.</param>
+        /// <param name="locality">A <see cref="string" /> representing the Locality/County to search by</param>
+        /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
+        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first. This is NOT a search constraint.</param>
+        /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
+        /// <param name="createNewLocation">if set to <c>true</c> a new location will be created if it does not exists.</param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
+        /// </returns>
+        public Location Get( string street1, string street2, string city, string state, string locality, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
+        {
             // Remove leading and trailing whitespace.
             street1 = street1.ToStringSafe().Trim();
             street2 = street2.ToStringSafe().Trim();
             city = city.ToStringSafe().Trim();
             state = state.ToStringSafe().Trim();
+            locality = locality.ToStringSafe().Trim();
             postalCode = postalCode.ToStringSafe().Trim();
             country = country.ToStringSafe().Trim();
 
@@ -88,6 +102,7 @@ namespace Rock.Model
                  && string.IsNullOrWhiteSpace( street2 )
                  && string.IsNullOrWhiteSpace( city )
                  && string.IsNullOrWhiteSpace( state )
+                 && string.IsNullOrWhiteSpace( locality )
                  && string.IsNullOrWhiteSpace( postalCode )
                  && string.IsNullOrWhiteSpace( country ) )
             {
@@ -95,7 +110,7 @@ namespace Rock.Model
             }
 
             // Try to find a location that matches the values, this is not a case sensitive match
-            var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
+            var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, County = locality, PostalCode = postalCode, Country = country }, group );
             if ( foundLocation != null )
             {
                 // Check for casing 
@@ -107,6 +122,7 @@ namespace Rock.Model
                     location.Street2 = street2;
                     location.City = city;
                     location.State = state;
+                    location.County = locality;
                     location.PostalCode = postalCode;
                     location.Country = country;
                     context.SaveChanges();
@@ -122,6 +138,7 @@ namespace Rock.Model
                 Street2 = street2.FixCase(),
                 City = city.FixCase(),
                 State = state,
+                County = locality,
                 PostalCode = postalCode,
                 Country = country
             };
@@ -139,6 +156,16 @@ namespace Rock.Model
 
             if ( createNewLocation )
             {
+                // Verify that the new location has all of the required fields.
+                string validationError;
+
+                var isValid = ValidateAddressRequirements( newLocation, out validationError );
+
+                if ( !isValid )
+                {
+                    throw new Exception( validationError );
+                }
+
                 // Create a new context/service so that save does not affect calling method's context
                 var rockContext = new RockContext();
                 var locationService = new LocationService( rockContext );
@@ -273,6 +300,88 @@ namespace Rock.Model
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
+        public bool ValidateAddressRequirements( Location location, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( location == null
+                 || location.IsNamedLocation )
+            {
+                return true;
+            }
+
+            // Get the Defined Value that specifies the address requirements for this country.
+            var countryValue = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                .GetDefinedValueFromValue( location.Country );
+
+            if ( countryValue != null )
+            {
+                // Verify requirements for individual fields.
+                var invalidFields = new List<string>();
+
+                var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var localityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var stateRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var postalCodeRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+
+                if ( addressLine1Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street1 ) )
+                {
+                    invalidFields.Add( "Address Line 1" );
+                }
+
+                if ( addressLine2Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street2 ) )
+                {
+                    invalidFields.Add( "Address Line 2" );
+                }
+
+                if ( cityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.City ) )
+                {
+                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityLabel ).IfEmpty( "City" ) );
+                }
+
+                if ( localityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.County ) )
+                {
+                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityLabel ).IfEmpty( "Locality" ) );
+                }
+
+                if ( stateRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.State ) )
+                {
+                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel ).IfEmpty( "State" ) );
+                }
+
+                if ( postalCodeRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.PostalCode ) )
+                {
+                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).IfEmpty( "Postal Code" ) );
+                }
+
+                if ( invalidFields.Any() )
+                {
+                    errorMessage = $"Incomplete Address. The following fields are required: { invalidFields.AsDelimited( ", " ) }.";
+                    return false;
+                }
+            }
+
+            // Verify at least one address field contains a value.
+            if ( string.IsNullOrWhiteSpace( location.Street1 )
+                 && string.IsNullOrWhiteSpace( location.Street2 )
+                 && string.IsNullOrWhiteSpace( location.City )
+                 && string.IsNullOrWhiteSpace( location.State )
+                 && string.IsNullOrWhiteSpace( location.PostalCode ) )
+            {
+                errorMessage = "Invalid Address. At least one field is required.";
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

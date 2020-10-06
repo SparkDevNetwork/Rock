@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a step type in Rock.
     /// </summary>
-    [RockDomain( "Steps" )]
+    [RockDomain( "Engagement" )]
     [Table( "StepTypePrerequisite" )]
     [DataContract]
     public partial class StepTypePrerequisite : Model<StepTypePrerequisite>, IOrdered

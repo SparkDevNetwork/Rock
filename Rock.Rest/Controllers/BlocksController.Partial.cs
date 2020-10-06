@@ -108,16 +108,62 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Executes an action handler on a specific block.
         /// </summary>
-        /// <param name="page">The page unique identifier.</param>
-        /// <param name="block">The block unique identifier.</param>
+        /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
+        [Route( "api/blocks/action/{blockGuid}/{actionName}" )]
+        public IHttpActionResult BlockAction( Guid blockGuid, string actionName )
+        {
+            return ProcessAction( "GET", blockGuid, actionName, null );
+        }
+
+        /// <summary>
+        /// Executes an action handler on a specific block.
+        /// </summary>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        /// <param name="actionName">Name of the action.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [HttpPost]
+        [Route( "api/blocks/action/{blockGuid}/{actionName}" )]
+        public IHttpActionResult BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
+        {
+            //
+            // We have to manually parse the JSON data, otherwise any strings
+            // that look like dates get converted to Date objects. This causes
+            // problems because then when we later stuff that Date object into
+            // an actual string, the format has been changed. This happens, for
+            // example, with Attribute Values.
+            //
+            using ( var stringReader = new StringReader( parameters ) )
+            {
+                using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
+                {
+                    var parameterToken = JToken.ReadFrom( jsonReader );
+
+                    return ProcessAction( Request.Method.ToString(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes an action handler on a specific block.
+        /// </summary>
+        /// <param name="page">The page unique identifier.</param>
+        /// <param name="block">The block unique identifier.</param>
+        /// <param name="actionName">Name of the action.</param>
+        /// <returns></returns>
+        /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
+        [Authenticate]
+        [HttpGet]
         [Route( "api/blocks/action/{page}/{block}/{actionName}")]
+        [RockObsolete( "1.12" )]
         public IHttpActionResult BlockAction( string page, string block, string actionName )
         {
-            return ProcessAction( "GET", page, block, actionName, null );
+            return ProcessAction( "GET", block.AsGuidOrNull(), actionName, null );
         }
 
         /// <summary>
@@ -128,8 +174,10 @@ namespace Rock.Rest.Controllers
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
+        /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
         [Authenticate]
         [Route( "api/blocks/action/{pageIdentifier}/{blockIdentifier}/{actionName}" )]
+        [RockObsolete( "1.12" )]
         public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [NakedBody] string parameters )
         {
             //
@@ -145,7 +193,7 @@ namespace Rock.Rest.Controllers
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return ProcessAction( Request.Method.ToString(), pageIdentifier, blockIdentifier, actionName, parameterToken );
+                    return ProcessAction( Request.Method.ToString(), blockIdentifier.AsGuidOrNull(), actionName, parameterToken );
                 }
             }
         }
@@ -158,45 +206,26 @@ namespace Rock.Rest.Controllers
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        [RockObsolete("1.11")]
+        [RockObsolete( "1.11" )]
         [Authenticate]
         public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
         {
-            return ProcessAction( Request.Method.ToString(), pageIdentifier, blockIdentifier, actionName, parameters );
+            return ProcessAction( Request.Method.ToString(), blockIdentifier.AsGuidOrNull(), actionName, parameters );
         }
 
         /// <summary>
         /// Processes the action.
         /// </summary>
         /// <param name="verb">The HTTP Method Verb that was used for the request.</param>
-        /// <param name="pageIdentifier">The page identifier (either Guid or int).</param>
-        /// <param name="blockIdentifier">The block identifier (either Guid or int).</param>
+        /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        private IHttpActionResult ProcessAction( string verb, string pageIdentifier, string blockIdentifier, string actionName, JToken parameters )
+        private IHttpActionResult ProcessAction( string verb, Guid? blockGuid, string actionName, JToken parameters )
         {
             try
             {
-                PageCache pageCache = null;
                 BlockCache blockCache = null;
-
-                var pageGuid = pageIdentifier.AsGuidOrNull();
-                var pageId = pageIdentifier.AsIntegerOrNull();
-                var blockGuid = blockIdentifier.AsGuidOrNull();
-                var blockId = blockIdentifier.AsIntegerOrNull();
-
-                //
-                // Find the page.
-                //
-                if ( pageGuid.HasValue )
-                {
-                    pageCache = PageCache.Get( pageGuid.Value );
-                }
-                else if ( pageId.HasValue )
-                {
-                    pageCache = PageCache.Get( pageId.Value );
-                }
 
                 //
                 // Find the block.
@@ -205,12 +234,8 @@ namespace Rock.Rest.Controllers
                 {
                     blockCache = BlockCache.Get( blockGuid.Value );
                 }
-                else if ( blockId.HasValue )
-                {
-                    blockCache = BlockCache.Get( blockId.Value );
-                }
 
-                if ( pageCache == null || blockCache == null )
+                if ( blockCache == null )
                 {
                     return NotFound();
                 }
@@ -224,7 +249,7 @@ namespace Rock.Rest.Controllers
                 //
                 // Ensure the user has access to both the page and block.
                 //
-                if ( !pageCache.IsAuthorized( Security.Authorization.VIEW, person ) || !blockCache.IsAuthorized( Security.Authorization.VIEW, person ) )
+                if ( !blockCache.Page.IsAuthorized( Security.Authorization.VIEW, person ) || !blockCache.IsAuthorized( Security.Authorization.VIEW, person ) )
                 {
                     return StatusCode( HttpStatusCode.Unauthorized );
                 }
@@ -240,12 +265,15 @@ namespace Rock.Rest.Controllers
                     return NotFound();
                 }
 
+                var requestContext = new Net.RockRequestContext( Request );
+                requestContext.AddContextEntitiesForPage( blockCache.Page );
+
                 //
                 // Set the basic block parameters.
                 //
                 rockBlock.BlockCache = blockCache;
-                rockBlock.PageCache = pageCache;
-                rockBlock.RequestContext = new Net.RockRequestContext( Request );
+                rockBlock.PageCache = blockCache.Page;
+                rockBlock.RequestContext = requestContext;
 
                 var actionParameters = new Dictionary<string, JToken>();
 

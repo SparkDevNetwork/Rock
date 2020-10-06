@@ -130,7 +130,7 @@ namespace Rock.BulkExport
             var dataView = new DataViewService( rockContext ).GetNoTracking( dataViewId );
             if ( dataView != null )
             {
-                DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     DbContext = rockContext
                 };

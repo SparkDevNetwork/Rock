@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,16 +28,17 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile;
-using Rock.Common.Mobile.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
@@ -520,34 +522,7 @@ namespace RockWeb.Blocks.Mobile
         private string GenerateApiKey()
         {
             // Generate a unique random 12 digit api key
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var key = string.Empty;
-            var isGoodKey = false;
-
-            while ( isGoodKey == false )
-            {
-                StringBuilder sb = new StringBuilder();
-                Random rnd = new Random();
-                char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
-                int poolSize = codeCharacters.Length;
-
-                for ( int i = 0; i < 24; i++ )
-                {
-                    sb.Append( codeCharacters[rnd.Next( poolSize )] );
-                }
-
-                key = sb.ToString();
-
-                var userLogins = userLoginService.Queryable().Where( a => a.ApiKey == key );
-                if ( userLogins.Count() == 0 )
-                {
-                    // no other user login has this key.
-                    isGoodKey = true;
-                }
-            }
-
-            return key;
+            return Rock.Utility.KeyHelper.GenerateKey( ( RockContext rockContext, string key ) => new UserLoginService( rockContext ).Queryable().Any( a => a.ApiKey == key ) );
         }
 
         /// <summary>
@@ -1001,12 +976,14 @@ namespace RockWeb.Blocks.Mobile
         protected void lbDeploy_Click( object sender, EventArgs e )
         {
             var applicationId = PageParameter( "SiteId" ).AsInteger();
+            var deploymentDateTime = RockDateTime.Now;
+            var versionId = ( int ) ( deploymentDateTime.ToJavascriptMilliseconds() / 1000 );
 
             //
             // Generate the packages and then encode to JSON.
             //
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
+            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone, versionId );
+            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet, versionId );
             var phoneJson = phonePackage.ToJson();
             var tabletJson = tabletPackage.ToJson();
 
@@ -1016,31 +993,68 @@ namespace RockWeb.Blocks.Mobile
                 var site = new SiteService( rockContext ).Get( applicationId );
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
 
+                // Enable this once the shell updates have been installed.
+                var enableCompression = false;
+                var mimeType = enableCompression ? "application/gzip" : "application/json";
+                var filenameExtension = enableCompression ? "json.gz" : "json";
+
                 //
                 // Prepare the phone configuration file.
                 //
+                Stream phoneJsonStream;
+                if ( enableCompression )
+                {
+                    phoneJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( phoneJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( phoneJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    phoneJsonStream.Position = 0;
+                }
+                else
+                {
+                    phoneJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) );
+                }
+
                 var phoneFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = phoneJson.Length,
-                    FileName = "phone.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                    FileName = "phone." + filenameExtension,
+                    ContentStream = phoneJsonStream
                 };
                 binaryFileService.Add( phoneFile );
 
                 //
                 // Prepare the tablet configuration file.
                 //
+                Stream tabletJsonStream;
+                if ( enableCompression )
+                {
+                    tabletJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( tabletJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( tabletJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    tabletJsonStream.Position = 0;
+                }
+                else
+                {
+                    tabletJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) );
+                }
+
                 var tabletFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = tabletJson.Length,
-                    FileName = "tablet.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                    FileName = "tablet." + filenameExtension,
+                    ContentStream = tabletJsonStream
                 };
                 binaryFileService.Add( tabletFile );
 
@@ -1069,7 +1083,8 @@ namespace RockWeb.Blocks.Mobile
                 // Update the last deployment date.
                 //
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
-                additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                additionalSettings.LastDeploymentDate = deploymentDateTime;
+                additionalSettings.LastDeploymentVersionId = versionId;
                 additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
                 additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
                 site.AdditionalSettings = additionalSettings.ToJson();

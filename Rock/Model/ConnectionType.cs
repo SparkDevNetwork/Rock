@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -33,9 +34,8 @@ namespace Rock.Model
     [RockDomain( "Connection" )]
     [Table( "ConnectionType" )]
     [DataContract]
-    public partial class ConnectionType : Model<ConnectionType>
+    public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -156,7 +156,44 @@ namespace Rock.Model
         /// The connection request detail page route identifier.
         /// </value>
         [DataMember]
+
         public int? ConnectionRequestDetailPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default view mode (list or board).
+        /// </summary>
+        /// <value>
+        /// The default view.
+        /// </value>
+        [DataMember]
+        public ConnectionTypeViewMode DefaultView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request header lava.
+        /// </summary>
+        /// <value>
+        /// The request header lava.
+        /// </value>
+        [DataMember]
+        public string RequestHeaderLava { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request badge lava.
+        /// </summary>
+        /// <value>
+        /// The request badge lava.
+        /// </value>
+        [DataMember]
+        public string RequestBadgeLava { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion
 
@@ -251,6 +288,29 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return ConnectionTypeCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ConnectionTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
+
         #region overrides
 
         /// <summary>
@@ -273,7 +333,7 @@ namespace Rock.Model
                 if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
                 {
                     int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) &&  this.Id == groupTypeIdValue )
+                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && this.Id == groupTypeIdValue )
                     {
                         foreach ( int attributeId in entityAttributes.AttributeIds )
                         {
@@ -316,6 +376,26 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionRequestDetailPage ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPageRoute ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageRouteId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion Entity Configuration
+
+    #region Enumerations
+
+    /// <summary>
+    /// Represents the view mode of a <see cref="ConnectionType"/>.
+    /// </summary>
+    public enum ConnectionTypeViewMode
+    {
+        /// <summary>
+        /// The <see cref="ConnectionType"/> is viewed as list.
+        /// </summary>
+        List = 0,
+
+        /// <summary>
+        /// The <see cref="ConnectionType"/> is viewed as a board.
+        /// </summary>
+        Board = 1
     }
 
     #endregion

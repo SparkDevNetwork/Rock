@@ -108,6 +108,7 @@ namespace Rock.Model
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
             target.PushData = source.PushData;
+            target.PushImageBinaryFile = source.PushImageBinaryFile;
             target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;
             target.PushOpenAction = source.PushOpenAction;

@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an Achievement Attempts in Rock.
     /// </summary>
-    [RockDomain( "Achievements" )]
+    [RockDomain( "Engagement" )]
     [Table( "AchievementAttempt" )]
     [DataContract]
     public partial class AchievementAttempt : Model<AchievementAttempt>
@@ -63,6 +63,7 @@ namespace Rock.Model
         /// The progress.
         /// </value>
         [DataMember]
+        [DecimalPrecision(18, 9)]
         public decimal Progress { get; set; }
 
         /// <summary>
@@ -126,7 +127,7 @@ namespace Rock.Model
             /// </summary>
             public AchievementAttemptConfiguration()
             {
-                HasRequired( saa => saa.AchievementType ).WithMany( s => s.Attempts ).HasForeignKey( saa => saa.AchievementTypeId ).WillCascadeOnDelete( true );
+                HasRequired( aa => aa.AchievementType ).WithMany( s => s.Attempts ).HasForeignKey( aa => aa.AchievementTypeId ).WillCascadeOnDelete( true );
             }
         }
 

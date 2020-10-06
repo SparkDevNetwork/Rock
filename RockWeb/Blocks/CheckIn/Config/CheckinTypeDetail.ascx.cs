@@ -669,7 +669,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 string scheduleList = string.Empty;
                 using ( var rockContext = new RockContext() )
                 {
-                    var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id );
+                    var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id );
                     scheduleList = new GroupLocationService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>

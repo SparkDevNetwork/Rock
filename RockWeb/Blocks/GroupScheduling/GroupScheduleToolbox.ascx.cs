@@ -566,7 +566,7 @@ $('#{0}').tooltip();
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Get();
                 btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format(
                     "{0}GetPersonGroupScheduleFeed.ashx?paguid={1}",
-                    globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash(),
+                    globalAttributes.GetValue( "PublicApplicationRoot" ),
                     primaryAlias.Guid );
             }
 

@@ -84,6 +84,20 @@
                                               Label="Body CSS Class"
                                               Help="The CSS class to add to the page." />
                         </div>
+
+                        <div class="col-md-6">
+                            <asp:PlaceHolder ID="phContextPanel" runat="server">
+                                <fieldset>
+                                    <h4>Context Parameters</h4>
+                                    <p>
+                                        There are one or more blocks on this page that can load content based on a 'context' parameter.  
+                                        Please enter the route parameter name or query string parameter name that will contain the id for 
+                                        each of the objects below.
+                                    </p>
+                                    <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
+                                </fieldset>
+                            </asp:PlaceHolder>
+                        </div>
                     </div>
 
                     <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />

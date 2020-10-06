@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak Type Exclusion in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "StreakTypeExclusion" )]
     [DataContract]
     public partial class StreakTypeExclusion : Model<StreakTypeExclusion>, ICacheable

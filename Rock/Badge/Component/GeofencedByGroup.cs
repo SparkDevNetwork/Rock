@@ -57,50 +57,56 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            Guid? groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
             string badgeColor = GetAttributeValue( badge, "BadgeColor" );
 
-            if ( groupTypeGuid.HasValue &&  !String.IsNullOrEmpty( badgeColor ) )
+            if ( !badgeColor.IsNullOrWhiteSpace() )
             {
-                writer.Write( String.Format( 
-                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
+                writer.Write( string.Format(
+                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>",
                     badge.Id, badgeColor.EscapeQuotes() ) );
+            }
+        }
 
-                writer.Write( String.Format( @"
-<script>
-Sys.Application.add_load(function () {{
-                                                
-    $.ajax({{
-            type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
-            statusCode: {{
-                200: function (data, status, xhr) {{
-                    var $badge = $('.badge-geofencing-group.badge-id-{2}');
-                    var badgeHtml = '';
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            var groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuidOrNull();
 
-                    $.each(data, function() {{
-                        if ( badgeHtml != '' ) {{ 
-                            badgeHtml += ' | ';
-                        }}
-                        badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';
-                    }});
-
-                    if (badgeHtml != '') {{
-                        $badge.show('fast');
-                    }} else {{
-                        $badge.hide();
-                    }}
-                    $badge.html(badgeHtml);
-                    $badge.find('span').tooltip();
-                }}
-            }},
-    }});
-}});
-</script>
-                
-", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id ) );
+            if ( Person == null || !groupTypeGuid.HasValue )
+            {
+                return null;
             }
 
+            return string.Format( @"
+$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
+    statusCode: {{
+        200: function (data, status, xhr) {{
+            var $badge = $('.badge-geofencing-group.badge-id-{2}');
+            var badgeHtml = '';
+
+            $.each(data, function() {{
+                if ( badgeHtml != '' ) {{ 
+                    badgeHtml += ' | ';
+                }}
+                badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';
+            }});
+
+            if (badgeHtml != '') {{
+                $badge.show('fast');
+            }} else {{
+                $badge.hide();
+            }}
+            $badge.html(badgeHtml);
+            $badge.find('span').tooltip();
+        }}
+    }},
+}});", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id );
         }
     }
 }

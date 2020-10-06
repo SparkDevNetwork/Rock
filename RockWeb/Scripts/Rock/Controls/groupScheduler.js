@@ -578,7 +578,7 @@
 
                 if (schedulerResource.ResourcePreferenceList && schedulerResource.ResourcePreferenceList.length > 0) {
                     var $resourcePreferences = $resourceDiv.find('.js-resource-preferences');
-                    $resourcePreferences.append("<span class='resource-preference-header'>Preference</span>")
+                    $resourcePreferences.append("<span class='resource-header'>Preference</span>")
                     for (var i = 0; i < schedulerResource.ResourcePreferenceList.length; i++) {
                         var resourcePreference = schedulerResource.ResourcePreferenceList[i];
                         var preferenceHtml = '<div class="resource-preference">'
@@ -599,7 +599,7 @@
 
                 if (schedulerResource.ResourceScheduledList && schedulerResource.ResourceScheduledList.length > 0) {
                     var $resourceScheduled = $resourceDiv.find('.js-resource-scheduled');
-                    $resourceScheduled.append("<span class='resource-scheduled-header'>Assignments</span>")
+                    $resourceScheduled.append("<span class='resource-header'>Assignments</span>")
                     for (var i = 0; i < schedulerResource.ResourceScheduledList.length; i++) {
                         var resourceScheduled = schedulerResource.ResourceScheduledList[i];
                         var scheduledHtml = '<div class="resource-scheduled">'

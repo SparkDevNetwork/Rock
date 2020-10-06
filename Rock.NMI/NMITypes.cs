@@ -805,6 +805,7 @@ namespace Rock.NMI
         /// The subscription list.
         /// </value>
         [JsonProperty( "subscription" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<Subscription> ) )]
         public Subscription[] SubscriptionList { get; set; }
     }
 
@@ -1242,6 +1243,7 @@ namespace Rock.NMI
         /// The transaction list.
         /// </value>
         [JsonProperty( "transaction" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<Transaction> ) )]
         public Transaction[] TransactionList { get; set; }
 
         /// <summary>
@@ -2148,6 +2150,28 @@ namespace Rock.NMI
     }
 
     #region ThreeStepClasses
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [JsonConverter( typeof( StringEnumConverter ) )]
+    public enum NMIThreeStepPaymentType
+    {
+        /// <summary>
+        /// credit card (default)
+        /// </summary>
+        creditcard,
+
+        /// <summary>
+        /// check (ACH)
+        /// </summary>
+        check,
+
+        /// <summary>
+        /// cash (unused by Rock)
+        /// </summary>
+        cash
+    }
 
     internal class ThreeStepResponse : BaseResponse
     {

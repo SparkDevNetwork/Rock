@@ -1041,7 +1041,7 @@ namespace Rock.Model
                 .ToDictionary( k => k.PersonId, v => v.Location );
 
             var globalAttributes = GlobalAttributesCache.Get();
-            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
 
             peopleExport.Persons = personList.Select( p => new PersonExport( p, personIdHomeLocationsLookup, publicAppRoot ) ).ToList();
 
