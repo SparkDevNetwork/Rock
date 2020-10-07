@@ -89,5 +89,19 @@ namespace Rock.Utility.Settings
                 return _serviceInstance.Database;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is clustered.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsClustered
+        {
+            get
+            {
+                return _serviceInstance.IsClustered;
+            }
+        }
     }
 }

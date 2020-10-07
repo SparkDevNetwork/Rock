@@ -56,7 +56,7 @@
                 <div class="row">
                 
                     <div class="col-md-6">
-                        <h4>Cache Tags</h4>
+                        <h4 style="float:left;">Cache Tags </h4> <div class="pull-right"> <Rock:HelpBlock ID="hbCacheTag" runat="server" Text="These Cache Tags values are written to the 'Cache Tags' Defined Type.  You can delete the values there, but you should make sure they are not being used in any HTML content or Lava templates." /></div>
                         <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found" DisplayType="Light" OnRowSelected="gCacheTagList_RowSelected">
                             <Columns>
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
