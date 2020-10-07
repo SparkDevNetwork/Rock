@@ -146,6 +146,7 @@
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Model\ConnectionRequestServiceTests.cs" />
+    <Compile Include="Model\CommunicationServiceTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />

@@ -107,6 +107,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX = "AD7CAEAC-6C84-4B55-9E5A-FEE085C270E4";
 
         /// <summary>
+        /// The data migrations 120 add communication get queued index
+        /// </summary>
+        public const string DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX = "BF3AADCC-B2A5-4EB9-A365-08C3F052A551";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
