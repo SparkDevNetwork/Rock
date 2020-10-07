@@ -87,5 +87,19 @@ namespace Rock.Utility.Settings
         /// Returns the database properties of the Rock application.
         /// </summary>
         public RockInstanceDatabaseConfiguration Database { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is clustered.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsClustered
+        {
+            get
+            {
+                return Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+            }
+        }
     }
 }

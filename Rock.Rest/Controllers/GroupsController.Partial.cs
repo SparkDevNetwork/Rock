@@ -222,15 +222,19 @@ namespace Rock.Rest.Controllers
                 // if there a IconCssClass is assigned, use that as the Icon.
                 treeViewItem.IconCssClass = groupType?.IconCssClass;
 
-                if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
-                {
-                    int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active ).Count();
-                    treeViewItem.CountInfo = groupMemberCount;
-                }
-                else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
-                {
-                    treeViewItem.CountInfo = groupService.Queryable().Where( a => a.ParentGroupId.HasValue && a.ParentGroupId == group.Id ).Count();
-                }
+                        if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
+                        {
+                            int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                            treeViewItem.CountInfo = groupMemberCount;
+                        }
+                        else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
+                        {
+                            treeViewItem.CountInfo = groupService.Queryable()
+                                                    .Where( a => a.ParentGroupId.HasValue &&
+                                                                a.ParentGroupId == group.Id &&
+                                                                ( a.IsActive || includeInactiveGroups ) )
+                                                    .Count();
+                        }
 
                 groupNameList.Add( treeViewItem );
             }

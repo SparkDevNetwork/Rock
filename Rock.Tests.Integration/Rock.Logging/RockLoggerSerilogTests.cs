@@ -79,6 +79,22 @@ namespace Rock.Tests.Integration.Logging
         }
 
         [TestMethod]
+        public void LoggerDeleteShouldRemoveFiles()
+        {
+            var logger = GetTestLogger();
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            logger.Close();
+
+            Assert.That.AreEqual( logger.LogConfiguration.NumberOfLogFiles, logger.LogFiles.Count );
+
+            logger.Delete();
+
+            Assert.That.AreEqual( 0, logger.LogFiles.Count );
+        }
+
+        [TestMethod]
         public void LoggerShouldKeepOnlyMaxFileCount()
         {
             var logger = GetTestLogger();
