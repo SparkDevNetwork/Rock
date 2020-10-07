@@ -211,6 +211,20 @@ namespace Rock.Model
         /// <returns></returns>
         public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, bool showReadMessages, int maxCount )
         {
+            return GetCommunicationResponseRecipients( relatedSmsFromDefinedValueId, startDateTime, showReadMessages, maxCount, null );
+        }
+
+        /// <summary>
+        /// Gets the communications and response recipients.
+        /// </summary>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
+        /// <param name="maxCount">The maximum count.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, bool showReadMessages, int maxCount, int? personId )
+        {
             var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
 
             IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
@@ -221,7 +235,9 @@ namespace Rock.Model
                 communicationResponseQuery = communicationResponseQuery.Where( r => r.IsRead == false );
             }
 
-            var personAliasQuery = new PersonAliasService( this.Context as RockContext ).Queryable();
+            var personAliasQuery = personId == null
+                ? new PersonAliasService( this.Context as RockContext ).Queryable()
+                : new PersonAliasService( this.Context as RockContext ).Queryable().Where( p => p.PersonId == personId );
 
             // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
             var communicationResponseJoinQuery = from cr in communicationResponseQuery
@@ -239,6 +255,11 @@ namespace Rock.Model
                     && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
                     && r.CreatedDateTime >= startDateTime
                     && r.Status == CommunicationRecipientStatus.Delivered );
+
+            if (personId != null )
+            {
+                communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
+            }
 
             IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientQuery
                 .GroupBy( r => r.PersonAlias.PersonId )

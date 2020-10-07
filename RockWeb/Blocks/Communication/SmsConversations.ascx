@@ -16,7 +16,7 @@
                     <asp:HiddenField ID="hfSmsNumber" runat="server" />
                     <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
 
-                    <a href="#" class="btn btn-xs btn-default pull-left margin-l-sm" onclick="$('.js-sms-configuration').toggle()">
+                    <a href="#" class="btn btn-xs btn-default btn-square pull-left margin-l-sm" onclick="$('.js-sms-configuration').slideToggle()">
                         <i class="fa fa-cog"></i>
                     </a>
                 </div>
@@ -38,8 +38,12 @@
 
             <div class="sms-conversations-container">
                 <div class="conversation-list">
-                    <div class="header">
+                    <div class="well">
                         <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="fa fa-filter"></i></asp:LinkButton>
+                        <div id="divPersonFilter" runat="server" class="js-person-filter" style="display: none; padding-top: 10px;">
+                            <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" />
+                        </div>
                     </div>
                     <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
                         <ContentTemplate>
