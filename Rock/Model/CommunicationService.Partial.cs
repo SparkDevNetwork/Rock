@@ -223,7 +223,8 @@ namespace Rock.Model
 
             var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
                 .Queryable()
-                .Where( a => a.Status == CommunicationRecipientStatus.Pending );
+                .Where( a => a.Status == CommunicationRecipientStatus.Pending )
+                .Select( cr => new { Id = cr.CommunicationId } );
 
             if ( includePendingApproval )
             {
@@ -253,9 +254,13 @@ namespace Rock.Model
             }
 
             // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
-            queuedQry = queuedQry.Where( c => c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) );
-
-            return queuedQry;
+            var listGroupQuery = Queryable().Where( c => c.ListGroupId.HasValue ).Select(c => new { c.Id });
+            var communicationListQry = qryPendingRecipients.Union( listGroupQuery );
+                        
+            var returnQry = Queryable()
+                .Where( c => queuedQry.Any(c2 => c2.Id == c.Id) )
+                .Where( c => communicationListQry.Any( c2 => c2.Id == c.Id ) );
+            return returnQry;
         }
     }
 

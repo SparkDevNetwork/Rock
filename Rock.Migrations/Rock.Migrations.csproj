@@ -173,6 +173,10 @@
     <Compile Include="Migrations\202010061901509_AddWorkflowChangeLogNote.Designer.cs">
       <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.cs" />
+    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.Designer.cs">
+      <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1502,6 +1506,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202010061901509_AddWorkflowChangeLogNote.resx">
       <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.resx">
+      <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
