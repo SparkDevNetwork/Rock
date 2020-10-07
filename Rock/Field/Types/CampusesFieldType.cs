@@ -63,7 +63,7 @@ namespace Rock.Field.Types
             cb.Help = "When set, inactive campuses will be included in the list.";
 
             var tbRepeatColumns = new NumberBox();
-            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Label = "Number of Columns";
             tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
             tbRepeatColumns.MinimumValue = "0";
             tbRepeatColumns.AutoPostBack = true;
