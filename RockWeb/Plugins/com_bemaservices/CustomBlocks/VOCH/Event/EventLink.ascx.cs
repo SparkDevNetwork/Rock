@@ -48,17 +48,33 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
     [Category( "BEMA Services > VOCH > Event" )]
     [Description( "A one off form for serving entry into a workflow" )]
 
-    [LinkedPage( "Result Page", "A page to redirect user to after they have created an Event", true, "", "", 1 )]
-    [WorkflowTypeField( "Workflow", "The workflow to save the data into.", true, false, "", "", 2 )]
-    [CategoryField( "Category Selection", "A top category to use for selecting the defaults.", false, "Rock.Model.RegistrationTemplate", "", "", false, "", "", 3 )]
+    [LinkedPage( "Result Page", "A page to redirect user to after they have created an Event", true, "", "", 1, BemaAttributeKey.ResultPage )]
+    [WorkflowTypeField( "Event Link Workflow", "The workflow to save the data into.", true, false, "", "", 2, BemaAttributeKey.EventLinkWorkflow )]
+    [WorkflowTypeField( "Event Registration Workflow", "The workflow to save the data into.", true, false, "", "", 3, BemaAttributeKey.EventRegistrationWorkflow )]
+    [CategoryField( "Category Selection", "A top category to use for selecting the defaults.", false, "Rock.Model.RegistrationTemplate", "", "", false, "", "", 4, BemaAttributeKey.CategorySelection )]
 
-    [TextField( "Room Reservation Instruction Text", "Inctructions for the Room Reservation tab", false, "", "", 5 )]
-    [TextField( "Event Registration Instruction Text", "Inctructions for the Event Registration tab", false, "", "", 6 )]
-    [TextField( "Calendar Instruction Text", "Inctructions for the Calendar tab", false, "", "", 6 )]
-    [ContentChannelField( "Content Channel", "The Channel to save Content Items to" )]
+    [TextField( "Room Reservation Instruction Text", "Instructions for the Room Reservation tab", false, "", "", 5, BemaAttributeKey.RoomReservationInstructionText )]
+    [TextField( "Event Registration Instruction Text", "Instructions for the Event Registration tab", false, "", "", 6, BemaAttributeKey.EventRegistrationInstructionText )]
+    [TextField( "Calendar Instruction Text", "Instructions for the Calendar tab", false, "", "", 6, BemaAttributeKey.CalendarInstructionText )]
+    [ContentChannelField( "Content Channel", "The Channel to save Content Items to", true, "", "", 7, BemaAttributeKey.ContentChannel )]
 
     public partial class EventLink : RockBlock
     {
+        #region BEMA Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string ResultPage = "ResultPage";
+            public const string EventLinkWorkflow = "EventLinkWorkflow";
+            public const string EventRegistrationWorkflow = "EventRegistrationWorkflow";
+            public const string CategorySelection = "CategorySelection";
+            public const string RoomReservationInstructionText = "RoomReservationInstructionText";
+            public const string EventRegistrationInstructionText = "EventRegistrationInstructionText";
+            public const string CalendarInstructionText = "CalendarInstructionText";
+            public const string ContentChannel = "ContentChannel";
+        }
+
+        #endregion
+
         #region Fields
         private const string REQUIRE_EMAIL_KEY = "IsRequireEmail";
         private const string REQUIRE_MOBILE_KEY = "IsRequiredMobile";
@@ -259,7 +275,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
                 var workflowService = new WorkflowService( rockContext );
 
-                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "Workflow" ) );
+                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( BemaAttributeKey.EventLinkWorkflow ) );
                 if ( workflowType != null )
                 {
                     var workflow = Workflow.Activate( workflowType, tbEventName.Text );
@@ -323,7 +339,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                 //lResult.Text = template.ResolveMergeFields( mergeFields );
 
                 // Will only redirect if a value is specifed
-                NavigateToLinkedPage( "ResultPage", "EventLinkId", _workflow.Id );
+                NavigateToLinkedPage( BemaAttributeKey.ResultPage, "EventLinkId", _workflow.Id );
             }
         }
 
@@ -346,10 +362,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
             _rockContext = _rockContext ?? new RockContext();
 
-            if ( GetAttributeValue( "CategorySelection" ) != null )
+            if ( GetAttributeValue( BemaAttributeKey.CategorySelection ) != null )
             {
                 var registrationTemplates = new List<RegistrationTemplate>();
-                var category = new CategoryService( _rockContext ).Get( GetAttributeValue( "CategorySelection" ).AsGuid() );
+                var category = new CategoryService( _rockContext ).Get( GetAttributeValue( BemaAttributeKey.CategorySelection ).AsGuid() );
                 if ( category != null )
                 {
                     registrationTemplates = new RegistrationTemplateService( new RockContext() ).Queryable().AsNoTracking().Where( a => a.CategoryId == category.Id ).ToList();
@@ -363,22 +379,22 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
                 ppPrimaryContract.SetValue( CurrentPerson );
 
-                if ( GetAttributeValue( "RoomReservationInstructionText" ) != null )
+                if ( GetAttributeValue( BemaAttributeKey.RoomReservationInstructionText ) != null )
                 {
                     nbEventRoom.Visible = true;
-                    nbEventRoom.Text = GetAttributeValue( "RoomReservationInstructionText" );
+                    nbEventRoom.Text = GetAttributeValue( BemaAttributeKey.RoomReservationInstructionText );
                 }
 
-                if ( GetAttributeValue( "EventRegistrationInstructionText" ) != null )
+                if ( GetAttributeValue( BemaAttributeKey.EventRegistrationInstructionText ) != null )
                 {
                     nbEventReg.Visible = true;
-                    nbEventReg.Text = GetAttributeValue( "EventRegistrationInstructionText" );
+                    nbEventReg.Text = GetAttributeValue( BemaAttributeKey.EventRegistrationInstructionText );
                 }
 
-                if ( GetAttributeValue( "CalendarInstructionText" ) != null )
+                if ( GetAttributeValue( BemaAttributeKey.CalendarInstructionText ) != null )
                 {
                     nbCalendar.Visible = true;
-                    nbCalendar.Text = GetAttributeValue( "CalendarInstructionText" );
+                    nbCalendar.Text = GetAttributeValue( BemaAttributeKey.CalendarInstructionText );
                 }
             }
 
@@ -1681,7 +1697,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
             if ( contentItem == null )
             {
-                var contentChannel = new ContentChannelService( rockContext ).Get( GetAttributeValue( "ContentChannel" ).AsGuid() );
+                var contentChannel = new ContentChannelService( rockContext ).Get( GetAttributeValue( BemaAttributeKey.ContentChannel ).AsGuid() );
                 if ( contentChannel != null )
                 {
                     contentItem = new ContentChannelItem
