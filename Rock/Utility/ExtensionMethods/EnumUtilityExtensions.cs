@@ -55,7 +55,7 @@ namespace Rock
         /// <param name="enumerable">The enumerable.</param>
         /// <param name="value">The value.</param>
         /// <returns>true if the enumerable is null, empty, or if the value is found in the list.</returns>
-        public static bool SafeContains<T>( this IEnumerable<T> enumerable, T value )
+        public static bool ContainsOrEmpty<T>( this IEnumerable<T> enumerable, T value )
         {
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
         }
