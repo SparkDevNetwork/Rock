@@ -99,6 +99,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
         EventItemOccurrence _eventItemOccurrence = null;
         ContentChannelItem _contentChannelItem = null;
         Workflow _workflow = null;
+        Workflow _eventRegistrationWorkflow = null;
         bool _autoFill = true;
         bool _isValidSettings = true;
 
@@ -283,7 +284,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     workflowService.Process( workflow, out workflowErrors );
 
 
-                    _primaryContact = new PersonService( rockContext ).Get( ppPrimaryContract.PersonId ?? 0 );
+                    _primaryContact = new PersonService( rockContext ).Get( ppPrimaryContact.PersonId ?? 0 );
                     _currentPerson = CurrentPerson;
                     workflow.SetAttributeValue( "Owner", _primaryContact.PrimaryAlias.Guid );
                     workflow.SetAttributeValue( "EndDate", dpEventEndDate.SelectedDate );
@@ -309,6 +310,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     {
                         SaveRegistration();
                         workflow.SetAttributeValue( "RegistrationTemplate", _registrationTemplate.Guid );
+                        workflow.SetAttributeValue( "RegistrationWorkflow", _eventRegistrationWorkflow.Guid );
                     }
 
                     if ( tEventCalendar.Checked == true )
@@ -377,7 +379,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
                 ddlTemplate.DataBind();
 
-                ppPrimaryContract.SetValue( CurrentPerson );
+                ppPrimaryContact.SetValue( CurrentPerson );
 
                 if ( GetAttributeValue( BemaAttributeKey.RoomReservationInstructionText ) != null )
                 {
@@ -1056,9 +1058,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
             RegistrationInstance instance = null;
 
-            using ( var newrockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
-                var newService = new RegistrationInstanceService( newrockContext );
+                var newService = new RegistrationInstanceService( rockContext );
 
                 if ( instance == null )
                 {
@@ -1069,8 +1071,12 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     instance.ForeignId = _workflow.Id;
                     instance.StartDateTime = dpEventRegStartDate.SelectedDateTime;
                     instance.EndDateTime = dpEventRegEndDate.SelectedDateTime;
+                    instance.Cost = nbInstanceCost.Text.AsDecimalOrNull();
+                    instance.MaxAttendees = nbMaximumRegistrants.Text.AsInteger();
                     instance.Details = tbEventDescription.Text;
-
+                    instance.RegistrationInstructions = htmlRegistrationInstructions.Text;
+                    instance.AdditionalConfirmationDetails = htmlAdditionalConfirmationDetails.Text;
+                    instance.AdditionalReminderDetails = htmlAdditionalReminderDetails.Text;
 
                     if ( _primaryContact != null )
                     {
@@ -1092,12 +1098,55 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     newService.Add( instance );
                 }
 
-                newrockContext.SaveChanges();
+                rockContext.SaveChanges();
 
                 _registrationInstance = instance;
+
+                _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext );
+                if(_eventRegistrationWorkflow != null )
+                {
+                    _eventRegistrationWorkflow.SetAttributeValue( "RegistrationInstance", _registrationInstance.Guid );
+                    _eventRegistrationWorkflow.SetAttributeValue( "AdditionalOptions", htmlAdditionalNoteDetails.Text );
+                }
+                _eventRegistrationWorkflow.SaveAttributeValues( rockContext );
             }
+        }
 
+        private Workflow ProcessEventLinkWorkflow( RockContext rockContext)
+        {
+            Workflow workflow = null;
+            var workflowService = new WorkflowService( rockContext );
 
+            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( BemaAttributeKey.EventRegistrationWorkflow ) );
+            if ( workflowType != null )
+            {
+                workflow = Workflow.Activate( workflowType, tbEventName.Text );
+                List<string> workflowErrors;
+                workflowService.Process( workflow, out workflowErrors );
+
+                workflow.Name = tbInternalEventName.Text;
+                workflow.SetAttributeValue( "EventName", tbEventName.Text );
+                workflow.SetAttributeValue( "InternalEventName", tbInternalEventName.Text );
+                workflow.SetAttributeValue( "EventDescription", tbEventDescription.Text );
+                workflow.SetAttributeValue( "PrimaryContact", _primaryContact.PrimaryAlias.Guid );
+                workflow.SetAttributeValue( "EventEndDate", dpEventEndDate.SelectedDate );
+
+                var campus = new CampusService( rockContext ).Get( cpCampus.SelectedValueAsId() ?? 0 );
+                if ( campus != null )
+                {
+                    workflow.SetAttributeValue( "Campus", campus.Guid );
+                }
+
+                if ( iuImage.BinaryFileId != null )
+                {
+                    var binaryFile = new BinaryFileService( rockContext ).Get( iuImage.BinaryFileId.Value );
+                    if ( binaryFile != null )
+                    {
+                        workflow.SetAttributeValue( "EventImage", binaryFile.Guid );
+                    }
+                }
+            }
+            return workflow;
         }
 
         /// <summary>
@@ -1231,7 +1280,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
                 reservation = new Reservation { Id = 0 };
                 reservation.ApprovalState = ReservationApprovalState.Unapproved;
-                reservation.RequesterAliasId = ppPrimaryContract.PersonAliasId;
+                reservation.RequesterAliasId = ppPrimaryContact.PersonAliasId;
                 changes.Add( new History.HistoryChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Reservation" ) );
 
                 ReservationType = new ReservationType();

@@ -54,7 +54,7 @@
 
                         <div class="col-md-4">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" />
-                            <Rock:PersonPicker ID="ppPrimaryContract" runat="server" Label="Primary Contact" Required="true" EnableSelfSelection="true" />
+                            <Rock:PersonPicker ID="ppPrimaryContact" runat="server" Label="Primary Contact" Required="true" EnableSelfSelection="true" />
                         </div>
 
                         <div class="col-md-3">
@@ -154,7 +154,7 @@
                                             </div>
 
                                             <div class="col-md-6">
-                                                <Rock:DateTimePicker ID="nbMaximumRegistrants" runat="server" Label="Maximum Registrants" />
+                                                <Rock:NumberBox ID="nbMaximumRegistrants" runat="server" Label="Maximum Registrants" />
                                             </div>
                                         </div>
                                         <Rock:HtmlEditor ID="htmlAdditionalNoteDetails" runat="server" Label="Additional Options" Help="This will be emailed to an Event Admin, and they will update the template to include these options." />
@@ -335,11 +335,11 @@
                         <div class="panel-heading">
                             <h6 style="margin-top: 0px;">Vox Kids</h6>
                             <div class="pull-right">
-                                <Rock:Toggle ID="tVoxKids" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxKids_CheckedChanged" />
+                                <Rock:Toggle ID="tVoxKids" runat="server" OnText="Yes" OffText="No" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxKids_CheckedChanged" />
                             </div>
                         </div>
 
-                        <asp:Panel ID="pnlVoxKids" runat="server" Visible="true">
+                        <asp:Panel ID="pnlVoxKids" runat="server" Visible="false">
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-12">
@@ -357,11 +357,11 @@
                         <div class="panel-heading">
                             <h6 style="margin-top: 0px;">Vox Music</h6>
                             <div class="pull-right">
-                                <Rock:Toggle ID="tVoxMusic" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxMusic_CheckedChanged" />
+                                <Rock:Toggle ID="tVoxMusic" runat="server" OnText="Yes" OffText="No" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tVoxMusic_CheckedChanged" />
                             </div>
                         </div>
 
-                        <asp:Panel ID="pnlVoxMusic" runat="server" Visible="true">
+                        <asp:Panel ID="pnlVoxMusic" runat="server" Visible="false">
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-12">
@@ -378,11 +378,11 @@
                         <div class="panel-heading">
                             <h6 style="margin-top: 0px;">Production Needs</h6>
                             <div class="pull-right">
-                                <Rock:Toggle ID="tProduction" runat="server" OnText="Yes" OffText="No" Checked="true" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tProduction_CheckedChanged" />
+                                <Rock:Toggle ID="tProduction" runat="server" OnText="Yes" OffText="No" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tProduction_CheckedChanged" />
                             </div>
                         </div>
 
-                        <asp:Panel ID="pnlProduction" runat="server" Visible="true">
+                        <asp:Panel ID="pnlProduction" runat="server" Visible="false">
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-12">
