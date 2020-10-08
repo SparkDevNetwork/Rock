@@ -254,76 +254,14 @@
                                                 <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
                                                 <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                                             </div>
-
                                         </div>
-                                        <h4>Promotion Dates</h4>
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbMassEmailDate" runat="server" Label="Mass Email Date" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbWelcomePackCards" runat="server" Label="Welcome Pack Cards" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbRotatingAnnouncementSlide" runat="server" Label="Rotating Announcement Slide" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbStageAnnouncement" runat="server" Label="Stage Announcement Date" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbSocialMediaDate" runat="server" Label="Social Media Date" />
-                                            </div>
-                                        </div>
-                                        <h4>Creative</h4>
-                                        <Rock:RockCheckBoxList ID="cblDigitalMedia" runat="server" Label="Digital Media Needs" RepeatDirection="Horizontal">
-                                            <asp:ListItem Value="Email Image" />
-                                            <asp:ListItem Value="Pro Presenter Image" />
-                                            <asp:ListItem Value="Insta Story Image" />
-                                        </Rock:RockCheckBoxList>
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbMaterialType" runat="server" Label="Type of Material" Help="Examples: Postcard, Poster, 9x11 Handout, Welcome Card Size, Banners, T-Shirts, Water Bottles, Flags, Etc." />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:NumberBox ID="nbQuantity" runat="server" Label="Quantity" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <Rock:RockTextBox ID="tbCreativeExpenseLines" runat="server" Label="Expense Lines for Print Materials" />
-                                            </div>
-                                        </div>
-                                        <Rock:RockControlWrapper ID="rcwDocuments" runat="server" Label="Related Documents">
-                                            <asp:DataList ID="dlDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4">
-                                                <ItemTemplate>
-                                                    <div class="margin-r-sm margin-b-sm">
-                                                        <Rock:FileUploader ID="fileUpDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fileUpDoc_FileUploaded" OnFileRemoved="fileUpDoc_FileRemoved" />
-                                                    </div>
-                                                </ItemTemplate>
-                                            </asp:DataList>
-                                        </Rock:RockControlWrapper>
-
                                     </div>
                                     <div class="col-md-5">
-                                        <h4>Social Media Campaigns</h4>
-                                        <Rock:CurrencyBox ID="nbBudget" runat="server" Label="Budget" />
-                                        <Rock:RockTextBox ID="tbExpenseLines" runat="server" Label="Expense Lines for Campaign" />
-                                        <div class="form-row">
-                                            <div class="col-sm-6">
-                                                <Rock:DateTimePicker ID="dtCampaignStart" runat="server" Label="Campaign Start Date" />
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <Rock:DateTimePicker ID="dtCampaignEnd" runat="server" Label="Campaign End Date" />
-                                            </div>
-                                        </div>
-                                        <Rock:RockTextBox ID="tbSpecificAudience" runat="server" TextMode="MultiLine" Rows="3" Label="Specific Audience" />
-                                        <!--
-                                        <Rock:RockDropDownList ID="ddlEventOrRegistration" runat="server" Visible="false" Label="Should the promotion link to the calendar or the registration?">
-                                            <asp:ListItem Value="Calendar" />
-                                            <asp:ListItem Value="Registration" />
-                                        </Rock:RockDropDownList>
-                                        <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
-                                        -->
+                                      
                                     </div>
                                 </div>
+
+                                <Rock:DynamicPlaceholder ID="phPromotionAttributes" runat="server" />
                             </div>
 
                         </asp:Panel>

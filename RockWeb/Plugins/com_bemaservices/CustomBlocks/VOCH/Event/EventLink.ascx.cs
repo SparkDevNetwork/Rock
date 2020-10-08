@@ -123,8 +123,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
         public List<EventCalendarItem> ItemsState { get; set; }
 
-        private List<int> DocumentsState { get; set; }
-
         private int? GridFieldsDeleteIndex { get; set; }
 
         /// <summary>
@@ -161,12 +159,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             ItemsState = itemsStateJson.IsNotNullOrWhiteSpace()
                 ? JsonConvert.DeserializeObject<List<EventCalendarItem>>( itemsStateJson )
                 : new List<EventCalendarItem>();
-
-            DocumentsState = ViewState["DocumentsState"] as List<int>;
-            if ( DocumentsState == null )
-            {
-                DocumentsState = new List<int>();
-            }
         }
 
         /// <summary>
@@ -185,7 +177,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
             //ViewState["AudiencesState"] = AudiencesState;
             ViewState["ItemsState"] = JsonConvert.SerializeObject( ItemsState, Formatting.None, jsonSetting );
-            ViewState["DocumentsState"] = DocumentsState;
 
             return base.SaveViewState();
         }
@@ -208,9 +199,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             BuildControls();
-
-            dlDocuments.ItemDataBound += DlDocuments_ItemDataBound;
-
         }
 
         /// <summary>
@@ -240,8 +228,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                 else
                 {
                     pnlContentItem.Visible = ( tEventCalendar.Checked || tEventReg.Checked );
-                    ddlEventOrRegistration.Visible = ( tEventCalendar.Checked && tEventReg.Checked );
                     ShowItemAttributes();
+                    ShowPromotionAttributes();
                     ShowDialog();
                 }
             }
@@ -289,7 +277,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     workflow.SetAttributeValue( "Owner", _primaryContact.PrimaryAlias.Guid );
                     workflow.SetAttributeValue( "EndDate", dpEventEndDate.SelectedDate );
                     workflow.Name = tbInternalEventName.Text;
-
 
                     _workflow = workflow;
 
@@ -350,10 +337,36 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
         /// </summary>
         private void ShowDetails()
         {
+            cpCampus.ForceVisible = true;
             cpCampuses.Campuses = CampusCache.All();
-            DocumentsState = new List<int>();
-            BindDocuments( true );
+            cpCampuses.DataBind();
 
+            ShowPromotionAttributes();
+        }
+
+        private void ShowPromotionAttributes()
+        {
+            phPromotionAttributes.Controls.Clear();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelService = new ContentChannelService( rockContext );
+                var contentChannel = contentChannelService.Get( GetAttributeValue( BemaAttributeKey.ContentChannel ).AsGuid() );
+                if ( contentChannel != null )
+                {
+
+                    var contentItem = new ContentChannelItem();
+                    contentItem.ContentChannel = contentChannel;
+                    contentItem.ContentChannelId = contentChannel.Id;
+                    contentItem.LoadAttributes();
+
+                    if ( contentItem.Attributes.Count > 0 )
+                    {
+                        //phPromotionAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        Rock.Attribute.Helper.AddEditControls( contentItem, phPromotionAttributes, true, BlockValidationGroup, 2 );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -692,70 +705,82 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             } );
             _eventItem = eventItem;
 
-            EventItemOccurrence eventItemOccurrence = null;
-
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
             var eventItemOccurrenceGroupMapService = new EventItemOccurrenceGroupMapService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var scheduleService = new ScheduleService( rockContext );
+            var campusService = new CampusService( rockContext );
 
-
-            eventItemOccurrence = new EventItemOccurrence { EventItemId = _eventItem.Id };
-
-            string iCalendarContent = sbEventSchedule2.iCalendarContent;
-            var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-            if ( calEvent != null && calEvent.DTStart != null )
+            List<Campus> campusList = new List<Campus>();
+            foreach ( var campusId in cpCampuses.SelectedCampusIds )
             {
-                if ( eventItemOccurrence.Schedule == null )
-                {
-                    eventItemOccurrence.Schedule = new Schedule();
-                }
-
-                eventItemOccurrence.Schedule.iCalendarContent = iCalendarContent;
+                campusList.Add( campusService.Get( campusId ) );
             }
 
-            if ( _primaryContact != null )
+            if ( !campusList.Any() )
             {
-                eventItemOccurrence.ContactPersonAliasId = _primaryContact.PrimaryAliasId;
-
-                var phoneNumber = _primaryContact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
-                string email = _primaryContact.Email;
-
-                if ( email != "" )
-                {
-                    eventItemOccurrence.ContactEmail = email;
-                }
-
-                if ( phoneNumber != null )
-                {
-                    eventItemOccurrence.ContactPhone = phoneNumber.NumberFormatted;
-                }
+                campusList.Add( campusService.Get( cpCampus.SelectedValueAsId() ?? 0 ) );
             }
 
-
-            var campus = new CampusService( rockContext ).Get( cpCampus.SelectedValueAsId() ?? 0 );
-            eventItemOccurrence.Campus = campus;
-
-
-            if ( _registrationInstance != null )
+            foreach ( var campus in campusList )
             {
-                var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
-                // eventItemOccurrenceGroupMap.RegistrationInstanceId = _registrationInstance.Id;
-                eventItemOccurrenceGroupMap.RegistrationInstanceId = _registrationInstance.Id;
-                eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
-                eventItemOccurrenceGroupMap.CreatedDateTime = RockDateTime.Now;
-                eventItemOccurrenceGroupMap.PublicName = tbEventName.Text;
+                EventItemOccurrence eventItemOccurrence = new EventItemOccurrence { EventItemId = _eventItem.Id };
+                eventItemOccurrence.Campus = campus;
+                eventItemOccurrence.Location = tbLocationDescription.Text;
 
-                _registrationInstance.Linkages.Add( eventItemOccurrenceGroupMap );
-                eventItemOccurrence.Linkages.Add( eventItemOccurrenceGroupMap );
+                string iCalendarContent = sbEventSchedule2.iCalendarContent;
+                var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
+                if ( calEvent != null && calEvent.DTStart != null )
+                {
+                    if ( eventItemOccurrence.Schedule == null )
+                    {
+                        eventItemOccurrence.Schedule = new Schedule();
+                    }
 
+                    eventItemOccurrence.Schedule.iCalendarContent = iCalendarContent;
+                }
+
+                if ( _primaryContact != null )
+                {
+                    eventItemOccurrence.ContactPersonAliasId = _primaryContact.PrimaryAliasId;
+
+                    var phoneNumber = _primaryContact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    string email = _primaryContact.Email;
+
+                    if ( email != "" )
+                    {
+                        eventItemOccurrence.ContactEmail = email;
+                    }
+
+                    if ( phoneNumber != null )
+                    {
+                        eventItemOccurrence.ContactPhone = phoneNumber.NumberFormatted;
+                    }
+                }
+
+                if ( _registrationInstance != null )
+                {
+                    var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
+                    // eventItemOccurrenceGroupMap.RegistrationInstanceId = _registrationInstance.Id;
+                    eventItemOccurrenceGroupMap.RegistrationInstanceId = _registrationInstance.Id;
+                    eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
+                    eventItemOccurrenceGroupMap.CreatedDateTime = RockDateTime.Now;
+                    eventItemOccurrenceGroupMap.PublicName = tbEventName.Text;
+
+                    _registrationInstance.Linkages.Add( eventItemOccurrenceGroupMap );
+                    eventItemOccurrence.Linkages.Add( eventItemOccurrenceGroupMap );
+
+                }
+
+                eventItemOccurrenceService.Add( eventItemOccurrence );
+
+                rockContext.SaveChanges();
+
+                if ( _eventItemOccurrence == null )
+                {
+                    _eventItemOccurrence = eventItemOccurrence;
+                }
             }
-
-            eventItemOccurrenceService.Add( eventItemOccurrence );
-
-            rockContext.SaveChanges();
-            _eventItemOccurrence = eventItemOccurrence;
-
         }
 
         /// <summary>
@@ -1103,7 +1128,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                 _registrationInstance = instance;
 
                 _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext );
-                if(_eventRegistrationWorkflow != null )
+                if ( _eventRegistrationWorkflow != null )
                 {
                     _eventRegistrationWorkflow.SetAttributeValue( "RegistrationInstance", _registrationInstance.Guid );
                     _eventRegistrationWorkflow.SetAttributeValue( "AdditionalOptions", htmlAdditionalNoteDetails.Text );
@@ -1112,7 +1137,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             }
         }
 
-        private Workflow ProcessEventLinkWorkflow( RockContext rockContext)
+        private Workflow ProcessEventLinkWorkflow( RockContext rockContext )
         {
             Workflow workflow = null;
             var workflowService = new WorkflowService( rockContext );
@@ -1680,6 +1705,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                         return;
                     }
 
+
                     rockContext.WrapTransaction( () =>
                     {
                         if ( !string.IsNullOrEmpty( hfSlug.Value ) )
@@ -1689,6 +1715,8 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                         }
 
                         rockContext.SaveChanges();
+                        Rock.Attribute.Helper.GetEditValues( phPromotionAttributes, contentItem );
+
                         contentItem.SaveAttributeValues( rockContext );
 
                         if ( _eventItemOccurrence != null )
@@ -1809,64 +1837,6 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             }
 
             return new List<string>();
-        }
-
-        protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
-        {
-            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
-
-            if ( fileUpDoc.BinaryFileId.HasValue )
-            {
-                DocumentsState.Add( fileUpDoc.BinaryFileId.Value );
-                BindDocuments( true );
-            }
-        }
-
-        /// <summary>
-        /// Handles the FileRemoved event of the fileUpDoc control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
-        {
-            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
-            if ( e.BinaryFileId.HasValue )
-            {
-                DocumentsState.Remove( e.BinaryFileId.Value );
-                BindDocuments( true );
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the DlDocuments control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
-        private void DlDocuments_ItemDataBound( object sender, DataListItemEventArgs e )
-        {
-            Guid binaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
-            var fileupDoc = e.Item.FindControl( "fileupDoc" ) as Rock.Web.UI.Controls.FileUploader;
-            if ( fileupDoc != null )
-            {
-                fileupDoc.BinaryFileTypeGuid = binaryFileTypeGuid;
-            }
-        }
-
-        /// <summary>
-        /// Binds the documents.
-        /// </summary>
-        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
-        private void BindDocuments( bool canEdit )
-        {
-            var ds = DocumentsState.ToList();
-
-            if ( ds.Count() < 10 )
-            {
-                ds.Add( 0 );
-            }
-
-            dlDocuments.DataSource = ds;
-            dlDocuments.DataBind();
         }
 
         #endregion
