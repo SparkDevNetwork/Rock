@@ -240,9 +240,10 @@ namespace Rock.Model
                 : new PersonAliasService( this.Context as RockContext ).Queryable().Where( p => p.PersonId == personId );
 
             // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
-            var communicationResponseJoinQuery = from cr in communicationResponseQuery
-                                                 join pa in personAliasQuery on cr.FromPersonAliasId equals pa.Id
-                                                 select new { cr, pa };
+            var communicationResponseJoinQuery =
+                from cr in communicationResponseQuery
+                join pa in personAliasQuery on cr.FromPersonAliasId equals pa.Id
+                select new { cr, pa };
 
             IQueryable<CommunicationResponse> mostRecentCommunicationResponseQuery = communicationResponseJoinQuery
                 .GroupBy( r => r.pa.PersonId )
@@ -256,7 +257,7 @@ namespace Rock.Model
                     && r.CreatedDateTime >= startDateTime
                     && r.Status == CommunicationRecipientStatus.Delivered );
 
-            if (personId != null )
+            if ( personId != null )
             {
                 communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
             }
@@ -375,9 +376,9 @@ namespace Rock.Model
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext )
                 .Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId )
-                .Where( r =>  r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId )
-                .Where( r =>  r.PersonAliasId == personAliasId )
-                .Where( r =>  r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
+                .Where( r => r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId )
+                .Where( r => r.PersonAliasId == personAliasId )
+                .Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
 
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
             {
