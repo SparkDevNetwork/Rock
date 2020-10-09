@@ -70,7 +70,9 @@
 							    <tr>
 								    <td>
 										{% if canEditAllocations == true %}
-										<a href='/page/1123?ptoAllocationId={{ptoAllocation.Id}}'>{{ptoAllocation.PtoType.Name}}</a>
+                                        {% page where:'Guid == "278DE672-B691-4017-BD0A-893C50652EDF"' securityenabled:'false' %}
+										    <a href='/page/{{page.Id}}?ptoAllocationId={{ptoAllocation.Id}}'>{{ptoAllocation.PtoType.Name}}</a>
+                                        {% endpage %}
 										{% else %}
 										{{ptoAllocation.PtoType.Name}}
 										{% endif %}
