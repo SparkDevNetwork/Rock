@@ -25,6 +25,8 @@ namespace Rock.Attribute
     public class CampusFieldAttribute : FieldAttribute
     {
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+        private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
+        private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
@@ -61,6 +63,43 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
 
+        /// <summary>
+        /// Gets or sets the campus types filter.
+        /// </summary>
+        /// <value>
+        /// The campus types filter.
+        /// </value>
+        public string CampusTypesFilter
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( FILTER_CAMPUS_TYPES_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( FILTER_CAMPUS_TYPES_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the campus status filter.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public string CampusStatusFilter
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( FILTER_CAMPUS_STATUS_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( FILTER_CAMPUS_STATUS_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
 
     }
 }
