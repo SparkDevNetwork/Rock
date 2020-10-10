@@ -358,21 +358,8 @@ namespace Rock.Web.UI.Controls
             // Start FieldSet
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-            // Name Description Row
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbValueName.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbValueDescription.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
 
             // Attributes
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "attributes" );
