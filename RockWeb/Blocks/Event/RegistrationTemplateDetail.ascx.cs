@@ -894,7 +894,7 @@ The logged-in person's information will be used to complete the registrar inform
                         {
                             foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
                             {
-                                rule.ComparedToRegistrationTemplateFormFieldGuid = mapKeys[rule.ComparedToRegistrationTemplateFormFieldGuid.Value];
+                                rule.ComparedToRegistrationTemplateFormFieldGuid = mapKeys.GetValueOrNull(rule.ComparedToRegistrationTemplateFormFieldGuid.Value);
                             }
                         }
                     }
@@ -1654,6 +1654,22 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( FormFieldsState.ContainsKey( e.FormGuid ) )
             {
+                /*
+                  SK - 11 Oct 2020
+                  On Field Delete, we need to also remove all the exisiting reference of current field in filter rule list
+                */
+                var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
+                    .Where( a => a.FieldVisibilityRules.RuleList.Any()
+                     && a.FieldVisibilityRules.RuleList.Any( b =>
+                         b.ComparedToRegistrationTemplateFormFieldGuid.HasValue
+                         && b.ComparedToRegistrationTemplateFormFieldGuid == e.FormFieldGuid ) );
+
+                foreach ( var newFormField in newFormFieldsWithRules )
+                {
+                    newFormField.FieldVisibilityRules.RuleList
+                        .RemoveAll( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue
+                        && a.ComparedToRegistrationTemplateFormFieldGuid.Value == e.FormFieldGuid );
+                }
                 FormFieldsState[e.FormGuid].RemoveEntity( e.FormFieldGuid );
             }
 
