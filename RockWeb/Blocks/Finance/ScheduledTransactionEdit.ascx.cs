@@ -815,7 +815,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 IsCard = true
                             } ).ToList();
 
-                        savedAccountViewModels.AddRange(cards);
+                        savedAccountViewModels.AddRange( cards );
                         rblSavedCC.DataSource = cards;
                         rblSavedCC.DataBind();
 
@@ -1246,8 +1246,8 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                // no change
-                paymentInfo = new ReferencePaymentInfo();
+                // no change, so use the reference info from the existing transaction
+                paymentInfo = GetReferenceInfoFromTransaction( scheduledTransaction );
             }
 
             if ( paymentInfo != null )
@@ -1329,6 +1329,61 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the reference information from the specified scheduled transaction
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <returns></returns>
+        private ReferencePaymentInfo GetReferenceInfoFromTransaction( FinancialScheduledTransaction scheduledTransaction )
+        {
+            ReferencePaymentInfo referencePaymentInfo;
+            if ( scheduledTransaction.FinancialPaymentDetail != null )
+            {
+                if ( scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount != null )
+                {
+                    // If we have FinancialPersonSavedAccount for this, get the reference info from that 
+                    referencePaymentInfo = scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount.GetReferencePayment();
+                }
+                else
+                {
+                    // just in case the transaction doesn't have a FinancialPersonSavedAccount, get as much as we can from scheduledTransaction.FinancialPaymentDetail
+                    referencePaymentInfo = new ReferencePaymentInfo();
+
+                    // if we know the original CurrencyType, set it
+                    if ( scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                    {
+                        referencePaymentInfo.InitialCurrencyTypeValue = DefinedValueCache.Get( scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                    }
+
+                    if ( scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+                    {
+                        referencePaymentInfo.InitialCreditCardTypeValue = DefinedValueCache.Get( scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                    }
+
+                    referencePaymentInfo.GatewayPersonIdentifier = scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier;
+                }
+            }
+            else
+            {
+                // For extra safety, if don't have a scheduledTransaction.FinancialPaymentDetail for this transaction, assume it is a credit card/visa
+                referencePaymentInfo = new ReferencePaymentInfo();
+            }
+
+            if ( referencePaymentInfo.InitialCurrencyTypeValue == null )
+            {
+                // if we weren't able to figure out InitialCurrencyTypeValue yet, assume it is credit card
+                referencePaymentInfo.InitialCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            }
+
+            if ( referencePaymentInfo.InitialCreditCardTypeValue == null )
+            {
+                // if we weren't able to figure out InitialCreditCardTypeValue yet, assume it is Visa
+                referencePaymentInfo.InitialCreditCardTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() );
+            }
+
+            return referencePaymentInfo;
         }
 
         #endregion

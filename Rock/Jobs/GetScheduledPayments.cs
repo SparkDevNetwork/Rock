@@ -81,6 +81,14 @@ namespace Rock.Jobs
         IsRequired = false,
         Order = 6 )]
 
+    [BooleanField(
+        "Verbose Logging",
+        Key = AttributeKey.VerboseLogging,
+        Description = "If enabled then the job results will include more detailed information that can help troubleshoot problems.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
     #endregion Job Attributes
     public class GetScheduledPayments : IJob
     {
@@ -120,6 +128,11 @@ namespace Rock.Jobs
             /// The target gateway
             /// </summary>
             public const string TargetGateway = "TargetGateway";
+
+            /// <summary>
+            /// The verbose logging key
+            /// </summary>
+            public const string VerboseLogging = "VerboseLogging";
         }
 
         #endregion Attribute Keys
@@ -154,6 +167,7 @@ namespace Rock.Jobs
             Guid? failedPaymentEmail = dataMap.GetString( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
             Guid? failedPaymentWorkflowType = dataMap.GetString( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
             int daysBack = dataMap.GetString( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+            bool verboseLogging = dataMap.GetString( AttributeKey.VerboseLogging ).AsBoolean( true );
 
             DateTime today = RockDateTime.Today;
             TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
@@ -196,7 +210,7 @@ namespace Rock.Jobs
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            var gatewayProcessPaymentsSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            var gatewayProcessPaymentsSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType, verboseLogging );
                             processedPaymentsSummary.Add( financialGateway, gatewayProcessPaymentsSummary );
                             scheduledPaymentsProcessed += payments.Count();
                         }

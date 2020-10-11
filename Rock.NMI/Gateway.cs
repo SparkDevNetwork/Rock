@@ -486,6 +486,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "type", "refund" );
             queryParameters.Add( "transactionid", origTransaction.TransactionCode );
+
+            // see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables
+            // and search for 'payment***' or 'The type of payment'
+            var currencyTypeIdACH = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            if ( origTransaction?.FinancialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdACH )
+            {
+                // if the original transaction was ACH, we need to specify the 'payment' parameter
+                // otherwise, it defaults to 'creditcard'
+                queryParameters.Add( "payment", NMIThreeStepPaymentType.check.ConvertToString( false ) );
+            }
+
             queryParameters.Add( "amount", amount.ToString( "0.00" ) );
 
             var refundResponse = PostToGatewayDirectPostAPI<RefundResponse>( financialGateway, queryParameters );

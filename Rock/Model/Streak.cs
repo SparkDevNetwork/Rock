@@ -32,7 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "Streak" )]
     [DataContract]
     public partial class Streak : Model<Streak>

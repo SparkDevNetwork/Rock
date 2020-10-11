@@ -514,7 +514,10 @@ namespace RockWeb.Blocks.Cms
 
                 // if the block an ID so that viewstate (in the dynamicplaceholder) can be tracked by id
                 blockControl.ID = string.Format( "config_block_control_{0}", block.Id );
-                phBlockHolder.Controls.Add( blockControl );
+                if ( phBlockHolder.FindControl( blockControl.ID ) == null )
+                {
+                    phBlockHolder.Controls.Add( blockControl );
+                }
             }
         }
 

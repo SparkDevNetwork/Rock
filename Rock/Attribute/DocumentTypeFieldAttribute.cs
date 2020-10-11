@@ -25,6 +25,8 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DocumentTypeFieldAttribute : FieldAttribute
     {
+        private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DocumentTypeFieldAttribute"/> class.
         /// </summary>
@@ -40,6 +42,25 @@ namespace Rock.Attribute
         public DocumentTypeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
             : base( name, description, required, defaultValue, category, order, key, typeof(Rock.Field.Types.DocumentTypeFieldType).FullName, fieldTypeAssembly )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
     }
 }

@@ -17,21 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
@@ -70,33 +67,45 @@ namespace RockWeb.Blocks.Security
         Order = 3,
         Key = AttributeKey.Title )]
 
-    [TextField(
+    [CodeEditorField(
         "Initial Instructions",
-        Description = "The instructions to show on the initial screen.",
+        Description = "The instructions to show on the initial screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
         DefaultValue = "Please enter your mobile phone number below. We’ll use this number for verification.",
         IsRequired = false,
         Order = 4,
         Key = AttributeKey.InitialInstructions )]
 
-    [TextField(
+    [CodeEditorField(
         "Verification Instructions",
-        Description = "The instructions to show on the Verification screen.",
+        Description = "The instructions to show on the Verification screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
         DefaultValue = "Please enter the six digit confirmation code below.",
         IsRequired = false,
         Order = 5,
         Key = AttributeKey.VerificationInstructions )]
 
-    [TextField(
+    [CodeEditorField(
         "Individual Selection Instructions",
-        Description = "The instructions to show on the Individual Selection screen.",
+        Description = "The instructions to show on the Individual Selection screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
         DefaultValue = "The phone number provided matches several individuals in our records. Please select yourself from the list.",
         IsRequired = false,
         Order = 6,
         Key = AttributeKey.IndividualSelectionInstructions )]
 
-    [TextField(
+    [CodeEditorField(
         "Phone Number Not Found Message",
-        Description = "The instructions to show when the phone number is not found in Rock after the phone number has been verified.",
+        Description = "The instructions to show when the phone number is not found in Rock after the phone number has been verified.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
         DefaultValue = "We did not find the phone number you provided in our records.",
         IsRequired = false,
         Order = 7,
@@ -492,11 +501,12 @@ namespace RockWeb.Blocks.Security
 
         private void ApplyBlockSettings()
         {
+            var mergeFields = LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
             litTitle.Text = GetAttributeValue( AttributeKey.Title );
-            litInitialInstructions.Text = GetAttributeValue( AttributeKey.InitialInstructions );
-            litIndividualSelectionInstructions.Text = GetAttributeValue( AttributeKey.IndividualSelectionInstructions );
-            litNotFoundInstructions.Text = GetAttributeValue( AttributeKey.PhoneNumberNotFoundMessage );
-            litVerificationInstructions.Text = GetAttributeValue( AttributeKey.VerificationInstructions );
+            litInitialInstructions.Text = GetAttributeValue( AttributeKey.InitialInstructions ).ResolveMergeFields( mergeFields );
+            litIndividualSelectionInstructions.Text = GetAttributeValue( AttributeKey.IndividualSelectionInstructions ).ResolveMergeFields( mergeFields );
+            litNotFoundInstructions.Text = GetAttributeValue( AttributeKey.PhoneNumberNotFoundMessage ).ResolveMergeFields( mergeFields );
+            litVerificationInstructions.Text = GetAttributeValue( AttributeKey.VerificationInstructions ).ResolveMergeFields( mergeFields );
         }
         #endregion
     }
