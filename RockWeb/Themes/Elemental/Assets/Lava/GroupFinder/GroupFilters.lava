@@ -112,7 +112,9 @@ function ToggleParameter(param, id) {
 {%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
 <div class="tag-list form-group">
   {%- for item in FilterOne.DefinedValues -%}
+  {% if item.IsActive %}
   <a href="?FilterOneValue={{ item.Id }}" onclick="ToggleParameter('FilterOneValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {% endif %}
   {%- endfor -%}
 </div>
 
