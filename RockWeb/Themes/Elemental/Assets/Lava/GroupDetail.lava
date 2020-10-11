@@ -189,8 +189,32 @@
 						{% endif %}
 						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
+							{% comment %}
+								2020-10-09 - Gerry Miller Added to display and attendance indicator.
+							{% endcomment %}
+							{% assign thisGroupType = Group | Property:'GroupTypeId' | AsString %}
+							{% assign lastAttended = member.Person | LastAttendedGroupOfType:thisGroupType %}
+							{% assign daysSinceAttendance = lastAttended.StartDateTime | DaysSince %}
+							{% if daysSinceAttendance <= 30 %}{% assign color = '#33A532' %}{% else %}{% assign color = '#F7B500' %}{% endif %}
+							{% if lastAttended.Group.Id == Group.Id %}
+    						{% capture attendanceCheck %}
+    								<i style='color:{{color}};' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="Last attended this group on {{ lastAttended.StartDateTime | Date:'MM/dd/yyyy' }}"></i>
+    						{% endcapture %}
+							{% elseif lastAttended.Group.Id == Group.Id AND daysSinceAttendance <= 30%}
+    						{% capture attendanceCheck %}
+    							<i style='color:#008cd0;' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="Last attended another group on {{ lastAttended.StartDateTime | Date:'mm/dd/yyyy' }}" ></i>
+    						{% endcapture %}
+							{% else %}
+								{% capture attendanceCheck %}
+    							<i style='color:#cc0605;' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="No {{ Group.GroupType.Name }} attendance in the past 30 days." ></i>
+    						{% endcapture %}
+							{% endif %}
+							{% comment %}
+								End 2020-10-09 - Gerry Miller Added to display and attendance indicator.
+							{% endcomment %}
+
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name }})</small>
+							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
