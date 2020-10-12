@@ -377,24 +377,23 @@ namespace Rock.Model
                 {
                     return isAuthorized;
                 }
-                else
+
+                // now check if they are auth'd to EDIT or MANAGE_MEMBERS on this GroupMember's Group
+                var group = this.Group ?? new GroupService( new RockContext() ).Get( this.GroupId );
+
+                if ( group != null )
                 {
-                    // now check if they are auth'd to EDIT or MANAGE_MEMBERS on this GroupMember's Group
-                    var group = this.Group ?? new GroupService( new RockContext() ).Get( this.GroupId );
-
-                    if ( group != null )
+                    // if they have EDIT on the group, they can edit GroupMember records
+                    var canEditMembers = group.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                    if ( !canEditMembers )
                     {
-                        // if they have EDIT on the group, they can edit GroupMember records
-                        var canEditMembers = group.IsAuthorized( Rock.Security.Authorization.EDIT, person );
-                        if ( !canEditMembers )
-                        {
-                            // if they don't have EDIT on the group, but do have MANAGE_MEMBERS, then they can 'edit' group members
-                            canEditMembers = group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, person );
-                        }
-
-                        return canEditMembers;
+                        // if they don't have EDIT on the group, but do have MANAGE_MEMBERS, then they can 'edit' group members
+                        canEditMembers = group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, person );
                     }
+
+                    return canEditMembers;
                 }
+
             }
 
             return base.IsAuthorized( action, person );
