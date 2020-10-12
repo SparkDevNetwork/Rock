@@ -68,7 +68,7 @@ namespace Rock.Utility
                         a.ConnectionOpportunityId == connectionOpportunity.Id && (
                         a.ConnectionState == ConnectionState.Active
                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                        || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                        || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
                 .Select( a => a.PersonAlias.PersonId )
                 .ToList();
 
