@@ -348,15 +348,38 @@ namespace Rock.Model
              GroupMember's Group record has a special MANAGE_MEMBERS action that grants access to managing members.
              This is effectively the same as EDIT. So, if checking security on EDIT, also check Group's
              MANAGE_MEMBERS (in case they have MANAGE_MEMBERS but not EDIT)
+
+             Possible 'action' parameters on GroupMember are
+             1) VIEW
+             2) EDIT
+             3) ADMINISTRATE
+
+             NOTE: MANAGE_MEMBERS is NOT a possible action on GroupMember. However, this can be confusing
+             because MANAGE_MEMBERS is a possible action on Group (which would grant EDIT on its group members)
+
+             This is how this has implemented
+             - If they can EDIT a Group, then can Manage Group Members (regardless if the ManageMembers settings(
+             - If they can't EDIT a Group, but can Manage Members, then can EDIT (which includes Add and Delete) group members.
+                - Note that this is fairly complex, see Group.IsAuthorized for how this should work
+
+             For areas of Rock that check for the ability to EDIT (which includes Add and Delete) group members,
+             this has been implemented as allowing EDIT on GroupMember, regardless of the ManageMembers setting.
+               - See https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberDetail.ascx.cs#L303
+                  and https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberList.ascx.cs#L213
+            
              */
 
             if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
             {
                 // first, see if they auth'd using normal AUTH rules
                 var isAuthorized = base.IsAuthorized( action, person );
-                if ( !isAuthorized )
+                if ( isAuthorized )
                 {
-                    // now check if they are auth'd to EDIT or MANAGE_MEMBERS on the Group
+                    return isAuthorized;
+                }
+                else
+                {
+                    // now check if they are auth'd to EDIT or MANAGE_MEMBERS on this GroupMember's Group
                     var group = this.Group ?? new GroupService( new RockContext() ).Get( this.GroupId );
 
                     if ( group != null )
