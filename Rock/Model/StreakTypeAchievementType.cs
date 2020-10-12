@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Streak Type Achievement Type in Rock.
     /// </summary>
-    [RockDomain( "Streaks" )]
+    [RockDomain( "Engagement" )]
     [Table( "StreakTypeAchievementType" )]
     [DataContract]
     public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag, ICacheable

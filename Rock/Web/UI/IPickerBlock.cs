@@ -46,7 +46,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The picker settings.
         /// </value>
-        Dictionary<string, string> PickerSettings { get; }
+        Dictionary<string, string> PickerSettings { get; set; }
 
         /// <summary>
         /// Occurs when [select item].

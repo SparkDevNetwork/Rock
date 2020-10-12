@@ -245,22 +245,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
-        /// </summary>
-        /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -308,15 +292,17 @@ $(document).ready(function() {
             }
 
             var adding = dataView.Id.Equals( 0 );
-            if ( adding )
-            {
-                service.Add( dataView );
-                // We need to save the new data view so we can bind the data view filters.
-                rockContext.SaveChanges();
-            }
-            
+
             rockContext.WrapTransaction( () =>
             {
+                if ( adding )
+                {
+                    service.Add( dataView );
+
+                    // We need to save the new data view so we can bind the data view filters.
+                    rockContext.SaveChanges();
+                }
+
                 if ( origDataViewFilterId.HasValue )
                 {
                     // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
@@ -1036,6 +1022,16 @@ $(document).ready(function() {
         /// <returns></returns>
         private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
+            // Making an unsaved copy of the DataView so the runs do not get counted.
+            var dv = new DataView
+            {
+                Name = dataView.Name,
+                TransformEntityTypeId = dataView.TransformEntityTypeId,
+                EntityTypeId = dataView.EntityTypeId,
+                DataViewFilter = dataView.DataViewFilter,
+                IncludeDeceased = dataView.IncludeDeceased
+            };
+
             grid.DataSource = null;
 
             // Only respect the ShowResults option if fetchRowCount is null
@@ -1046,9 +1042,9 @@ $(document).ready(function() {
 
             var errorMessages = new List<string>();
 
-            if ( dataView.EntityTypeId.HasValue )
+            if ( dv.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( dv.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -1058,9 +1054,8 @@ $(document).ready(function() {
                         try
                         {
                             grid.CreatePreviewColumns( entityType );
-                            var dbContext = dataView.GetDbContext();
-                            Stopwatch stopwatch = Stopwatch.StartNew();
-                            var qry = dataView.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
+                            var dbContext = dv.GetDbContext();
+                            var qry = dv.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                             if ( fetchRowCount.HasValue )
                             {
@@ -1069,9 +1064,6 @@ $(document).ready(function() {
 
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
-                            stopwatch.Stop();
-                            DataViewService.AddRunDataViewTransaction( dataView.Id,
-                                                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                         }
                         catch ( Exception ex )
                         {
@@ -1118,14 +1110,14 @@ $(document).ready(function() {
                 errorBox.Visible = false;
             }
 
-            if ( dataView.EntityTypeId.HasValue )
+            if ( dv.EntityTypeId.HasValue )
             {
-                grid.RowItemText = EntityTypeCache.Get( dataView.EntityTypeId.Value ).FriendlyName;
+                grid.RowItemText = EntityTypeCache.Get( dv.EntityTypeId.Value ).FriendlyName;
             }
 
             if ( grid.DataSource != null )
             {
-                grid.ExportFilename = dataView.Name;
+                grid.ExportFilename = dv.Name;
                 return true;
             }
 
@@ -1159,6 +1151,7 @@ $(document).ready(function() {
             dv.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dv.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dv.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            dv.IncludeDeceased = cbIncludeDeceased.Checked;
             ShowPreview( dv );
         }
 

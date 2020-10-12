@@ -237,6 +237,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The entity fields override.
         /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
         public Rock.Data.IEntity Entity { get; set; }
 
         /// <summary>
@@ -500,7 +502,11 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
             if ( component != null )
             {
-                return component.GetRelatedDataViewId( filterControls );
+                var relatedDataViewId = component.GetRelatedDataViewId( filterControls );
+                if ( relatedDataViewId.HasValue && relatedDataViewId > 0 )
+                {
+                    return relatedDataViewId;
+                }
             }
 
             return null;
@@ -520,11 +526,6 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                if ( component is Reporting.DataFilter.PropertyFilter )
-                {
-                    ( component as Reporting.DataFilter.PropertyFilter ).Entity = this.Entity;
-                }
-
                 component.Options = FilterOptions;
                 filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }

@@ -1202,29 +1202,26 @@ namespace RockWeb.Blocks.Administration
         {
             if ( hfPageId.Value.Equals( "0" ) )
             {
+                // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
                 int? parentPageId = PageParameter( "ParentPageId" ).AsIntegerOrNull();
-                if ( parentPageId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["Page"] = parentPageId.ToString();
+                var qryParams = new Dictionary<string, string>();
+                qryParams["Page"] = parentPageId.ToString();
 
-                    string expandedIds = this.Request.Params["ExpandedIds"];
-                    if ( expandedIds != null )
+                string expandedIds = this.Request.Params["ExpandedIds"];
+                if ( expandedIds.IsNotNullOrWhiteSpace() )
+                {
+                    // remove the current pageId param to avoid extra treeview flash
+                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+
+                    if ( parentPageId.HasValue )
                     {
-                        // remove the current pageId param to avoid extra treeview flash
-                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
                         expandedIdList.Remove( parentPageId.Value );
-                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                     }
 
-                    NavigateToPage( RockPage.Guid, qryParams );
+                    qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                 }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {

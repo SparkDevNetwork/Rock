@@ -150,6 +150,27 @@ namespace RockWeb.Blocks.Event
 
             // Add the main content panel as an update trigger for block configuration changes.
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            string deleteScript = @"
+                $('table.js-grid-registration a.grid-delete-button').click(function( e ){
+                    e.preventDefault();
+                    var $hfHasPayments = $(this).closest('tr').find('input.js-has-payments').first();
+                    Rock.dialogs.confirm('Are you sure you want to delete this registration? All of the registrants will also be deleted!', function (result) {
+                        if (result) {
+                            if ( $hfHasPayments.val() == 'True' ) {
+                                Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                                    if (result) {
+                                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                                    }
+                                });
+                            } else {
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            }
+                        }
+                    });
+                });
+            ";
+            ScriptManager.RegisterStartupScript( gRegistrations, gRegistrations.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -354,12 +375,10 @@ namespace RockWeb.Blocks.Event
                         balanceCssClass = "label-success";
                     }
 
-                    lBalance.Text = string.Format(
-    @"<span class='label {0}'>{1}</span>
-    <input type='hidden' class='js-has-payments' value='{2}' />",
-    balanceCssClass,
-    balanceDue.FormatAsCurrency(),
-    hasPayments.ToTrueFalse() );
+                    lBalance.Text = string.Format(@"<span class='label {0}'>{1}</span><input type='hidden' class='js-has-payments' value='{2}' />",
+                        balanceCssClass,
+                        balanceDue.FormatAsCurrency(),
+                        hasPayments.ToTrueFalse() );
                 }
             }
         }

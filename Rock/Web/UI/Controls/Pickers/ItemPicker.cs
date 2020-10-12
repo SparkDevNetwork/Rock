@@ -291,7 +291,8 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( _hfItemId.Value ) )
+
+                if ( IsItemIdEquivalentToEmpty( _hfItemId.Value ) )
                 {
                     _hfItemId.Value = Constants.None.IdValue;
                 }
@@ -308,15 +309,34 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                if ( UseCategorySelection )
+                if ( IsItemIdEquivalentToEmpty( value ) )
                 {
-                    _hfItemId.Value = CategoryPrefix + value;
+                    _hfItemId.Value = Constants.None.IdValue;
                 }
                 else
                 {
-                    _hfItemId.Value = value;
+                    if ( UseCategorySelection )
+                    {
+                        _hfItemId.Value = CategoryPrefix + value;
+                    }
+                    else
+                    {
+                        _hfItemId.Value = value;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns a flag indicating if the provided value represents a reference to an empty item selection.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool IsItemIdEquivalentToEmpty( string value )
+        {
+            return ( string.IsNullOrWhiteSpace( value )
+                     || value == Constants.None.IdValue
+                     || ( this.UseCategorySelection && value == CategoryPrefix + Constants.None.IdValue ) );
         }
 
         /// <summary>
@@ -351,14 +371,23 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
+                string newValue;
+
                 if ( UseCategorySelection )
                 {
-                    _hfItemId.Value = string.Join( ",", value.Select( a => CategoryPrefix + a ) );
+                    newValue = string.Join( ",", value.Select( a => CategoryPrefix + a ) );
                 }
                 else
                 {
-                    _hfItemId.Value = string.Join( ",", value );
+                    newValue = string.Join( ",", value );
                 }
+
+                if ( IsItemIdEquivalentToEmpty( newValue ) )
+                {
+                    newValue = Constants.None.IdValue;
+                }
+
+                _hfItemId.Value = newValue;
             }
         }
 
@@ -633,7 +662,7 @@ $@"Rock.controls.itemPicker.initialize({{
             _hfItemId = new HiddenFieldWithClass();
             _hfItemId.ID = this.ID + "_hfItemId";
             _hfItemId.CssClass = "js-item-id-value";
-            _hfItemId.Value = "0";
+            _hfItemId.Value = Constants.None.IdValue;
 
             _hfInitialItemParentIds = new HiddenFieldWithClass();
             _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";
@@ -686,7 +715,7 @@ $@"Rock.controls.itemPicker.initialize({{
             
             RockControlHelper.CreateChildControls( this, Controls );
 
-            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.InitialValue = Constants.None.IdValue;
             RequiredFieldValidator.ControlToValidate = _hfItemId.ID;
             RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
         }

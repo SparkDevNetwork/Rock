@@ -498,6 +498,7 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
@@ -526,6 +527,14 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
+    <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
+    <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
+    <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />
+    <Compile Include="Plugin\HotFixes\130_ServerCheckinPrinterCutter.cs" />
+    <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
+    <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
@@ -2675,6 +2684,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Entity\EntityDocumentAdd.cs" />
     <Compile Include="Workflow\Action\Finance\GetSavedAccount.cs" />
     <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
@@ -2714,8 +2724,8 @@
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
-    <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
+    <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
@@ -2865,6 +2875,12 @@
     </Content>
     <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
       <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge - Copy_spCrm_PersonMerge.sql">
+      <DependentUpon>135_MigrationRollupsFor11_2_0.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />

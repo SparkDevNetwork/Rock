@@ -233,7 +233,21 @@ namespace Rock.Mobile
         /// <param name="applicationId">The application identifier.</param>
         /// <param name="deviceType">The type of device to build for.</param>
         /// <returns>An update package for the specified application and device type.</returns>
+        /// <remarks>This is a backwards compatible method that can be removed at any time, this method shouldn't be used by any plugins.</remarks>
+        [RockObsolete( "1.12" )]
         public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType )
+        {
+            return BuildMobilePackage( applicationId, deviceType, ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ) );
+        }
+
+        /// <summary>
+        /// Builds the mobile package that can be archived for deployment.
+        /// </summary>
+        /// <param name="applicationId">The application identifier.</param>
+        /// <param name="deviceType">The type of device to build for.</param>
+        /// <param name="versionId">The version identifier to use on this package.</param>
+        /// <returns>An update package for the specified application and device type.</returns>
+        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType, int versionId )
         {
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
@@ -302,7 +316,7 @@ namespace Rock.Mobile
             var package = new UpdatePackage
             {
                 ApplicationType = additionalSettings.ShellType ?? ShellType.Blank,
-                ApplicationVersionId = ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ),
+                ApplicationVersionId = versionId,
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
