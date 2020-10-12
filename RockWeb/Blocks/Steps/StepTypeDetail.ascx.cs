@@ -460,6 +460,7 @@ namespace RockWeb.Blocks.Steps
             stepType.ShowCountOnBadge = cbShowBadgeCount.Checked;
             stepType.HasEndDate = cbHasDuration.Checked;
             stepType.AllowMultiple = cbAllowMultiple.Checked;
+            stepType.IsDateRequired = cbRequireDate.Checked;
 
             // Update Prerequisites
             var uiPrerequisiteStepTypeIds = cblPrerequsities.SelectedValuesAsInt;
@@ -498,7 +499,7 @@ namespace RockWeb.Blocks.Steps
             // This is necessary because other Step Types may have been modified after this record edit was started.
             if ( _stepTypeId > 0 )
             {
-                var eligibleStepTypeIdList = stepTypeService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).Select(x => x.Id).ToList();
+                var eligibleStepTypeIdList = stepTypeService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).Select( x => x.Id ).ToList();
 
                 foreach ( var prerequisite in stepType.StepTypePrerequisites )
                 {
@@ -1350,7 +1351,7 @@ namespace RockWeb.Blocks.Steps
 
             // Set availability of Bulk Entry action.
             var showBulkEntry = GetAttributeValue( AttributeKey.BulkEntryPage ).IsNotNullOrWhiteSpace()
-                && this.UserCanEdit 
+                && this.UserCanEdit
                 && stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             btnBulkEntry.Visible = showBulkEntry;
@@ -1364,8 +1365,11 @@ namespace RockWeb.Blocks.Steps
         {
             if ( stepType == null )
             {
-                stepType = new StepType();
-                stepType.IconCssClass = "fa fa-compress";
+                stepType = new StepType
+                {
+                    IconCssClass = "fa fa-compress",
+                    IsDateRequired = true
+                };
             }
             if ( stepType.Id == 0 )
             {
@@ -1394,6 +1398,7 @@ namespace RockWeb.Blocks.Steps
             cbAllowMultiple.Checked = stepType.AllowMultiple;
             cbHasDuration.Checked = stepType.HasEndDate;
             cbShowBadgeCount.Checked = stepType.ShowCountOnBadge;
+            cbRequireDate.Checked = stepType.IsDateRequired;
 
             // Pre-requisites
             if ( stepType.StepTypePrerequisites != null )
@@ -1515,7 +1520,11 @@ namespace RockWeb.Blocks.Steps
 
                 if ( stepType == null )
                 {
-                    stepType = new StepType { Id = 0 };
+                    stepType = new StepType
+                    {
+                        Id = 0,
+                        IsDateRequired = true
+                    };
                 }
 
                 RockPage.SaveSharedItem( key, stepType );
