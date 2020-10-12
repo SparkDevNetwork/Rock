@@ -53,8 +53,7 @@ namespace Rock.NMI
         Key = AttributeKey.SecurityKey,
         Description = "The API key",
         IsRequired = true,
-        Order = 0
-        )]
+        Order = 0 )]
 
     [TextField(
         "Admin Username",
@@ -362,9 +361,10 @@ namespace Rock.NMI
 
             try
             {
-                if ( resultQueryString.IsNullOrWhiteSpace() )
+                if ( resultQueryString.IsNullOrWhiteSpace() || resultQueryString.Length <= 10 )
                 {
                     errorMessage = "invalid resultQueryString";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"Unable to process Step 3 Charge in NMI gateway.  Invalid Query String." ) );
                     return null;
                 }
 
@@ -376,6 +376,7 @@ namespace Rock.NMI
                 if ( threeStepChangeStep3Response == null )
                 {
                     errorMessage = "Invalid Response from NMI";
+                    ExceptionLogService.LogException( new NMIGatewayException( $"An invalid response was received from the NMI gateway at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The token-id was: {resultQueryString.Substring( 10 )}" ) );
                     return null;
                 }
 
@@ -439,11 +440,19 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
+
+                string logMessage = webException.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"A WebException occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", webException ) );
+
                 return null;
             }
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
+
+                string logMessage = ex.ToString();
+                ExceptionLogService.LogException( new NMIGatewayException( $"An internal error occurred while attempting to process an NMI transaction at step 3.  This could potentially result in a customer charge that is not recorded in Rock.  The error was: {logMessage}", ex ) );
+
                 return null;
             }
         }
@@ -477,6 +486,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "type", "refund" );
             queryParameters.Add( "transactionid", origTransaction.TransactionCode );
+
+            // see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables
+            // and search for 'payment***' or 'The type of payment'
+            var currencyTypeIdACH = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            if ( origTransaction?.FinancialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdACH )
+            {
+                // if the original transaction was ACH, we need to specify the 'payment' parameter
+                // otherwise, it defaults to 'creditcard'
+                queryParameters.Add( "payment", NMIThreeStepPaymentType.check.ConvertToString( false ) );
+            }
+
             queryParameters.Add( "amount", amount.ToString( "0.00" ) );
 
             var refundResponse = PostToGatewayDirectPostAPI<RefundResponse>( financialGateway, queryParameters );

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
@@ -134,9 +135,20 @@ namespace Rock.Model
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         public void LaunchWorkflows( int entitySetId, int workflowTypeId )
         {
+            LaunchWorkflows( entitySetId, workflowTypeId, null );
+        }
+
+        /// <summary>
+        /// Launch a workflow for each item in the set using a Rock transaction.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        public void LaunchWorkflows( int entitySetId, int workflowTypeId, Dictionary<string, string> attributeValues )
+        {
             var query = GetEntityQuery( entitySetId ).AsNoTracking();
             var entities = query.ToList();
-            var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e ) ).ToList();
+            var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
 
             new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
         }

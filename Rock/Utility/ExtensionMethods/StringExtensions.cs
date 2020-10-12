@@ -757,6 +757,25 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces string found at the very end of the content.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="replacement">The replacement.</param>
+        /// <returns></returns>
+        public static string ReplaceIfEndsWith( this string content, string suffix, string replacement )
+        {
+            if ( content.EndsWith( suffix ) )
+            {
+                return content.Substring( 0, content.Length - suffix.Length ) + replacement;
+            }
+            else
+            {
+                return content;
+            }
+        }
+
+        /// <summary>
         /// The true strings for AsBoolean and AsBooleanOrNull.
         /// </summary>
         private static string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };

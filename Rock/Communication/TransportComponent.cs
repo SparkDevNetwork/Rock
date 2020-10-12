@@ -81,7 +81,7 @@ namespace Rock.Communication
                     valid = false;
                 }
 
-                else if ( recipient.Communication.ListGroupId.HasValue  )
+                else if ( recipient.Communication.ListGroupId.HasValue )
                 {
                     // if this communication is being sent to a list, make sure the recipient is still an active member of the list
                     GroupMemberStatus? groupMemberStatus = null;
@@ -89,7 +89,7 @@ namespace Rock.Communication
                     {
                         groupMemberStatus = new GroupMemberService( rockContext ).Queryable()
                             .Where( a => a.PersonId == person.Id && a.GroupId == recipient.Communication.ListGroupId )
-                            .Select(a => a.GroupMemberStatus ).FirstOrDefault();
+                            .Select( a => a.GroupMemberStatus ).FirstOrDefault();
                     }
 
                     if ( groupMemberStatus != null )
@@ -125,6 +125,11 @@ namespace Rock.Communication
         /// <returns></returns>
         public virtual string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
         {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return content;
+            }
+
             string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
             value = value.ReplaceWordChars();
 
@@ -169,5 +174,5 @@ namespace Rock.Communication
             return value;
         }
     }
-   
+
 }

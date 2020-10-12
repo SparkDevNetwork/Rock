@@ -332,7 +332,9 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             string errorMessage;
-            if ( entry.State != EntityState.Deleted && this.IsArchived == false )
+            if ( entry.State != EntityState.Deleted
+                 && this.IsArchived == false
+                 && this.GroupMemberStatus != GroupMemberStatus.Inactive )
             {
                 if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
                 {
@@ -760,7 +762,7 @@ namespace Rock.Model
                     if ( this.IsStatusOrRoleModified( rockContext ) )
                     {
                         // verify that active count has not exceeded the max
-                        if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                        if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
                         {
                             roleMembershipAboveMax = true;
                         }
@@ -800,7 +802,7 @@ namespace Rock.Model
             // check group capacity
             if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
-                var currentActiveGroupMemberCount = group.ActiveMembers().Count(gm => gm.Id != Id);
+                var currentActiveGroupMemberCount = group.ActiveMembers().Count( gm => gm.Id != Id );
                 var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
 
                 // check if this would be adding an active group member (new active group member or changing existing group member status to active)
@@ -848,14 +850,18 @@ namespace Rock.Model
                 }
 
                 // existing groupmember record, but person or role was changed
-                var hasChanged = this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId;
+                var hasChanged = this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus
+                    || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId
+                    || this.IsArchived != databaseGroupMemberRecord.IsArchived;
 
                 if ( !hasChanged )
                 {
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true
+                            || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
+                            || rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true;
                     }
                 }
 

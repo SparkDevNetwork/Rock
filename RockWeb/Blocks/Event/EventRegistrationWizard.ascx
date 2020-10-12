@@ -161,14 +161,14 @@
                         <fieldset>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" AppendDataBoundItems="true"
+                                    <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" AppendDataBoundItems="true" EnhanceForLongLists="true"
                                         PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true">
                                         <asp:ListItem Text="" Value="" />
                                     </Rock:DataDropDownList>
                                     <asp:Literal ID="lTemplateDescription" runat="server" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                                    <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" EnhanceForLongLists="true" />
                                 </div>
                             </div>
                             <div class="row">
@@ -217,26 +217,24 @@
                                 </div>
                             </div>
 
-                            <asp:Panel ID="pnlCosts" runat="server">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" Help="The cost per registrant." />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
-                                            Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
-                                    </div>
+                            <asp:Panel ID="pnlCosts" runat="server" CssClass="row">
+                                <div class="col-md-6">
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" Help="The cost per registrant." />
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
-                                            Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
-                                    </div>
+                                <div class="col-md-6">
+                                    <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
+                                        Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                 </div>
                             </asp:Panel>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
+                                </div>
+                                <asp:Panel ID="pnlDefaultPayment" runat="server" CssClass="col-md-6">
+                                    <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
+                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
+                                </asp:Panel>
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-6">

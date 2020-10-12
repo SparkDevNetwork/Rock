@@ -27,7 +27,7 @@
 
             <div class="panel-body">
 
-                <asp:HiddenField runat="server" ID="hfIsCardView" Value="true" ClientIDMode="Static" />
+                <asp:HiddenField runat="server" ID="hfIsCardView" ClientIDMode="Static" />
 
                 <asp:Panel runat="server" id="pnlGridView">
                     <div class="row add-step-buttons">

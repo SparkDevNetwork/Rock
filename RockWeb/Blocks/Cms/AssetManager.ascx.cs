@@ -93,6 +93,11 @@ namespace RockWeb.Blocks.Cms
             {
                 return new Dictionary<string, string>();
             }
+
+            set
+            {
+                // Intentionally left blank
+            }
         }
 
         /// <summary>

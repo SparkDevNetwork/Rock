@@ -1683,7 +1683,8 @@ namespace Rock.Model
                             OccurrenceId = occurrenceId,
                             PersonAliasId = personAliasId,
                             StartDateTime = startDateTime,
-                            RSVP = Rock.Model.RSVP.Unknown
+                            RSVP = Rock.Model.RSVP.Unknown,
+                            DidAttend = false
                         } );
                 }
             }

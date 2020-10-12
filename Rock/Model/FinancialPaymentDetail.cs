@@ -376,13 +376,29 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
         {
+            /* 2020-08-27 MDP
+             This method should only update values haven't been set yet. So
+                1) Make sure paymentInfo has the data (isn't null or whitespace)
+                2) Don't overwrite data in this (FinancialPaymentDetail) that already has the data set.
+             */
+
             if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
 
-            GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
-            FinancialPersonSavedAccountId = ( paymentInfo as ReferencePaymentInfo )?.FinancialPersonSavedAccountId;
+            if ( paymentInfo is ReferencePaymentInfo referencePaymentInfo )
+            {
+                if ( GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                {
+                    GatewayPersonIdentifier = referencePaymentInfo.GatewayPersonIdentifier;
+                }
+
+                if ( !FinancialPersonSavedAccountId.HasValue )
+                {
+                    FinancialPersonSavedAccountId = referencePaymentInfo.FinancialPersonSavedAccountId;
+                }
+            }
 
             if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
             {

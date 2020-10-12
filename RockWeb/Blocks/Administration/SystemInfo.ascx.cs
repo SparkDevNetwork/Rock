@@ -155,8 +155,8 @@ namespace RockWeb.Blocks.Administration
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types
-            EntityTypeService.RegisterEntityTypes( webAppPath );
-            FieldTypeService.RegisterFieldTypes( webAppPath );
+            EntityTypeService.RegisterEntityTypes();
+            FieldTypeService.RegisterFieldTypes();
             BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 
@@ -382,14 +382,21 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _catalog = RockInstanceConfig.Database.DatabaseName;
+                RockInstanceDatabaseConfiguration databaseConfig = RockInstanceConfig.Database;
+                _catalog = databaseConfig.DatabaseName;
 
-                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, RockInstanceConfig.Database.ServerName ) );
-                databaseResults.Append( string.Format( "<br />Database Version: {0}", RockInstanceConfig.Database.Version ) );
-                databaseResults.AppendFormat( "<br />Database Size: {0} MB", RockInstanceConfig.Database.DatabaseSize );
-                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", RockInstanceConfig.Database.LogSize );
-                databaseResults.AppendFormat( "<br />Recovery Model: {0}", RockInstanceConfig.Database.RecoverMode );
-                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", RockInstanceConfig.Database.SnapshotIsolationAllowed.ToYesNo(), RockInstanceConfig.Database.ReadCommittedSnapshotEnabled.ToYesNo() );
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, databaseConfig.ServerName ) );
+                databaseResults.Append( string.Format( "<br />Database Version: {0}", databaseConfig.Version ) );
+                databaseResults.Append( string.Format( "<br />Database Friendly Version: {0}", databaseConfig.VersionFriendlyName ) );
+                databaseResults.AppendFormat( "<br />Database Size: {0} MB", databaseConfig.DatabaseSize );
+                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", databaseConfig.LogSize );
+                databaseResults.AppendFormat( "<br />Recovery Model: {0}", databaseConfig.RecoverMode );
+                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", databaseConfig.SnapshotIsolationAllowed.ToYesNo(), databaseConfig.ReadCommittedSnapshotEnabled.ToYesNo() );
+
+                if ( databaseConfig.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+                {
+                    databaseResults.AppendFormat( "<br />Azure Service Tier Objective: {0}", databaseConfig.ServiceObjective );
+                }
             }
             catch ( Exception ex )
             {

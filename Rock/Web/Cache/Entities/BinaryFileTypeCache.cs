@@ -164,6 +164,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The cache control header.
         /// </value>
+        [DataMember]
         public RockCacheability CacheControlHeader { get; private set; }
         #endregion
 

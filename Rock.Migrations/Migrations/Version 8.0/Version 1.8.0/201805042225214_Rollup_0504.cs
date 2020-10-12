@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,7 +150,7 @@ WHERE [Key] = 'GradeTransitionDate'
         {
             #region SQL Statements
 
-            const string AddAttributeToCategory = @"INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId])
+            const string addAttributeToCategory = @"INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId])
 SELECT a.[Id], c.[Id]
 FROM [Attribute] AS a, [Category] AS c
 WHERE a.[Guid] = '{0}' AND c.[Guid] = '{1}'
@@ -239,10 +239,10 @@ WHERE a.[Guid] = '{0}' AND c.[Guid] = '{1}'
                 "editorTheme", "Rock", "8FFD837E-5CEB-4A39-90E6-3201296EED94" );
 
             // Update category setting for attributes.
-            Sql( string.Format( AddAttributeToCategory, "EEBF3C2A-1D33-4C0F-A8F5-D62B0B71552F", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
-            Sql( string.Format( AddAttributeToCategory, "E0FA4EEE-5210-4CB4-838A-7D390576BEE7", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
-            Sql( string.Format( AddAttributeToCategory, "98BF6D7E-F511-4913-947F-66E39D1378BB", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
-            Sql( string.Format( AddAttributeToCategory, "2949635A-F117-4C45-9FB9-7F1101DAF6CD", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
+            Sql( string.Format( addAttributeToCategory, "EEBF3C2A-1D33-4C0F-A8F5-D62B0B71552F", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
+            Sql( string.Format( addAttributeToCategory, "E0FA4EEE-5210-4CB4-838A-7D390576BEE7", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
+            Sql( string.Format( addAttributeToCategory, "98BF6D7E-F511-4913-947F-66E39D1378BB", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
+            Sql( string.Format( addAttributeToCategory, "2949635A-F117-4C45-9FB9-7F1101DAF6CD", "171E45E4-74EC-4962-9AEA-56D899217AFB" ) );
 
             #endregion
 

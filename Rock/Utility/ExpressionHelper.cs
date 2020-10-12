@@ -293,6 +293,29 @@ namespace Rock.Utility
                         object entityTypeQualifierValueAsType = Convert.ChangeType( attributeCache.EntityTypeQualifierValue, entityQualiferColumnExpression.Type );
                         Expression entityQualiferColumnEqualExpression = Expression.Equal( entityQualiferColumnExpression, Expression.Constant( entityTypeQualifierValueAsType, entityQualiferColumnExpression.Type ) );
 
+                        // If the qualifier Column is GroupTypeId, we'll have to do an OR clause of all the GroupTypes that inherit from this
+                        // This would effectively add something like 'WHERE ([GroupTypeId] = 10) OR ([GroupTypeId] = 12) OR ([GroupTypeId] = 17)' to the WHERE clause
+                        if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && attributeCache.EntityTypeQualifierValue.AsIntegerOrNull().HasValue )
+                        {
+                            var qualifierGroupTypeId = attributeCache.EntityTypeQualifierValue.AsInteger();
+
+                            List<int> inheritedGroupTypeIds = null;
+                            using (var rockContext = new RockContext() )
+                            {
+                                var groupType = new GroupTypeService( rockContext ).Get( qualifierGroupTypeId );
+                                inheritedGroupTypeIds = groupType.GetAllDependentGroupTypeIds( rockContext );
+                            }
+
+                            if ( inheritedGroupTypeIds != null )
+                            {
+                                foreach ( var inheritedGroupTypeId in inheritedGroupTypeIds )
+                                {
+                                    Expression inheritedEntityQualiferColumnEqualExpression = Expression.Equal( entityQualiferColumnExpression, Expression.Constant( inheritedGroupTypeId ) );
+                                    entityQualiferColumnEqualExpression = Expression.Or( entityQualiferColumnEqualExpression, inheritedEntityQualiferColumnEqualExpression );
+                                }
+                            }
+                        }
+
                         expression = Expression.And( entityQualiferColumnEqualExpression, expression );
                     }
                 }

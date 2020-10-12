@@ -9,8 +9,8 @@
 
     <h4>{{ eventName }}
       <small>
-      {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
-        {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+      {% if eventOccurrenceSummary.Date != eventOccurrenceSummary.EndDate %}
+        {{ eventOccurrenceSummary.Date | Date: 'MMM d' }} - {{ eventOccurrenceSummary.EndDate | Date: 'MMM d' }}
       {% else %}
         {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
       {% endif %}

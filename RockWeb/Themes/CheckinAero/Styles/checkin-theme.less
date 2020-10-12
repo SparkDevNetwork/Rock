@@ -60,7 +60,7 @@ html {
 
 
 .checkin-scroll-panel {
-  bottom: 0;
+  bottom: 0 !important;
 }
 
 // Checkin Body Label and Edit Family Link Adjustment
@@ -147,6 +147,13 @@ html {
     background-size: contain;
   }
 }
+
+// Only Replace with PNG when using the default image
+.ie-fix (@welcome-image);
+.ie-fix( @welcome-image ) when (@welcome-image = "../Assets/KidsIllustration.svg") {
+  .is-ie .welcome .js-active::before { background-image: url(../Assets/KidsIllustration.png); }
+}
+
 .welcome-cover-mixin(@welcome-background-cover-mode);
 
 @import "_css-overrides.less";
