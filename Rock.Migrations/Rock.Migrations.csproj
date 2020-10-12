@@ -181,6 +181,10 @@
     <Compile Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.Designer.cs">
       <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.cs" />
+    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.Designer.cs">
+      <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1516,6 +1520,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.resx">
       <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010122113208_AddIsDateRequiredToStepType.resx">
+      <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

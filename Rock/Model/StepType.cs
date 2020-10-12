@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -173,6 +174,15 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string MergeTemplateDescriptor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this step requires a date.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is date required; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsDateRequired { get; set; }
 
         #endregion Entity Properties
 
