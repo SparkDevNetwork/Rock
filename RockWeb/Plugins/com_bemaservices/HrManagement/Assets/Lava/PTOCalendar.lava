@@ -3,6 +3,20 @@
 {{'https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css'| AddLinkTagToHead:'rel','stylesheet' }}
 
 
+{% comment %} Gets the workflow pointed to in the block settings. Incase the user creates a modified copy{% endcomment %}
+{% sql %}
+Select Top 1 w.Id from AttributeValue av
+Inner Join Attribute a
+on a.Id = av.AttributeId
+Inner Join WorkflowType w
+    on w.Guid = Try_Cast(av.Value as uniqueidentifier)
+Where a.Guid = '0A159929-0871-4115-AB10-C4943EAA5A7C'
+{% endsql %}
+{% assign workflowId = results | First | Property:'Id' %}
+{% comment %}End of Section getting the workflow id. {% endcomment%}
+
+
+{% comment %}Build the Javascript Object of PTO Request Event Items{% endcomment %}
 {% assign loadpastdate = 'Now' | Date | DateAdd:-12,'M' %}
 {% capture events %}
 [
@@ -36,7 +50,7 @@
 {% endptorequest %}
 ]
 {% endcapture %}
-
+{% comment %}End of Building the PTO Request Event Array{% endcomment %}
 
 
 
@@ -193,20 +207,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-{% sql %}
-Select Top 1 w.Id from AttributeValue av
-Inner Join Attribute a
-on a.Id = av.AttributeId
-Inner Join WorkflowType w
-    on w.Guid = Try_Cast(av.Value as uniqueidentifier)
-Where a.Guid = '0A159929-0871-4115-AB10-C4943EAA5A7C'
-{% endsql %}
-
-{% assign workflowId = results | First | Property:'Id' %}
 
 <script>
-var events = {{events | ReplaceLast:',','' | FromJSON | ToJSON  }}; -- Uses the object created above and saves it to the javascript variable to be used in the View App.
+//Saves the events object built above to a javascript variable used in the data object in the vue app.  The FromJSON ToJSON removes any extra line breaks which is not completely necessary but was helpful in development.
+var events = {{events | ReplaceLast:',','' | FromJSON | ToJSON  }};
+//Gets the brand color css variable on the Rock Internal site and sets it as the calendar's primary color.
 let primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-color')
+//Uses the color function below to lighten the color for hover state.
 let secondaryColor = LightenColor(primaryColor,10);
 
 
@@ -218,6 +225,7 @@ new Vue({
     options: {
       customProperties: true
     },
+  // Sets the them colors to the variable above.
     themes: {
       light: {
         primary: primaryColor, // #E53935
@@ -226,6 +234,7 @@ new Vue({
     },
   },
 }),
+//There are extra unused properties here from the copy from Vuetify
     data: () => ({
         focus: '',
         type: 'month',
@@ -239,26 +248,30 @@ new Vue({
         selectedEvent: {},
         selectedElement: null,
         selectedOpen: false,
+        // These are the filters used in the computed property and bound to the select filters.  I prefilled the Pending and Approved values in the selectedStates to load the calendar with those by default.
         selectedPersons:[],
         selectedPtoTypes:[],
         selectedStates:[0,1],
         events: events,
         start:'',
-        dragEvent:null,
-        dragTime:null,
+        //Not currently used so it can be removed.
         currentPerson: '{{CurrentPerson | Property:'PrimaryAlias' | Property:'Guid' }}',
+        //Used by the PTO Request Status filter to show the possible states.
         possibleStates: [
         {stateId:0, stateValue:"Pending"},
         {stateId:1, stateValue:"Approved"},
         {stateId:2, stateValue:"Denied"},
         {stateId:3, stateValue:"Cancelled"}
         ],
+        // The list of calendar types that are available to choose from.  Removing items from this list will remove them from the list on the calendar
         calendartypes:[
             {text:'Month',value:'month'},
             {text:'Week',value:'week'},
             {text:'Day',value:'day'},
             ],
+        //The default weekday option(shows Monday through Friday) this is overwritten by the what is in local storage.
         weekday: [1, 2, 3, 4, 5],
+        //This list of weekday options to show in the select on the calendar.  Removing/Adding items will change that dropdown.  Make sure the default value above is in the list.
         weekdays: [
             {
             text: 'Sun - Sat',
@@ -276,11 +289,6 @@ new Vue({
             text: 'Fri, Sat, Sun',
             value: [5, 6, 0]
             }],
-        dragEvent: null,
-        dragStart: null,
-        createEvent: null,
-        createStart: null,
-        extendOriginal: null,
     }),
     created() {
 
@@ -299,12 +307,15 @@ new Vue({
     },
 
     computed: {
+        //Used to change the calendar view for the number of days selected
         selectedOption() {
 
             let value = this.weekday.toString();
             let found = this.weekdays.find(e => e.value.toString() === value);
             return found.text
         },
+
+        //Filters the vents based on the person filter, pto type filter, and request status filter and returns the filtered list.
         filteredEvents(){
             var filteredArray = this.events;
             var personfilter = this.selectedPersons;
@@ -326,6 +337,7 @@ new Vue({
             return filteredArray;
 
         },
+        //Used by the pto type filter select to show options that are included in the calendar instead of all options.
         showPtoTypes() {
             let result = [];
             const map = new Map();
@@ -341,6 +353,7 @@ new Vue({
              result = result.filter(ptoType => ptoType.ptoTypeId != null)
             return result
         },
+        //Used by the person filter to show people with PTO Requests
         showPersons() {
 
             let result = [];
@@ -359,16 +372,18 @@ new Vue({
         }
     },
     methods: {
-
+        //Sets the calendar type and saves it to local storage to persist value when the refreshes.
         updateType(type) {
           this.type = type
           parent.$('body').trigger('resizeIframe');
           localStorage.setItem("calendarTypePreference",JSON.stringify(type))
         },
+        //Sets the calendar weekday option and saves it to local storage to persist value when the refreshes.
         saveWeekday(e) {
             this.weekday = e
             localStorage.setItem("calendarWeekPreference",JSON.stringify(e))
         },
+        //Used by the event card to direct people to the view request workflow.  This uses the variable in the sql above to go to the correct workflow.
         editRockEvent(event) {
 
             window.top.location.href = '{{'Global' | Attribute:'InternalApplicationRoot'}}WorkflowEntry/{{workflowId}}?PTORequest=' + event.guid
