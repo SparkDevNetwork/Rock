@@ -208,6 +208,16 @@ namespace Rock.Model
             get => OccurrenceDate.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the attendance type value identifier.
+        /// </summary>
+        /// <value>
+        /// The attendance type value identifier.
+        /// </value>
+        [DataMember]
+        public int? AttendanceTypeValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties

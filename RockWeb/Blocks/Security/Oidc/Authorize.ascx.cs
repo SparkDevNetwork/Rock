@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Security.Oidc
             //    responseCookie.Secure = true;
 
             //Add the CSRF cookie to the response
-            Response.Cookies.Set( responseCookie );
+            RockPage.AddOrUpdateCookie( responseCookie );
 
             return _antiXsrfTokenValue;
         }

@@ -157,6 +157,38 @@
     <Compile Include="Migrations\202009291713442_Rollup_0929.Designer.cs">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs" />
+    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.Designer.cs">
+      <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs" />
+    <Compile Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.Designer.cs">
+      <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.cs" />
+    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.Designer.cs">
+      <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010061901509_AddWorkflowChangeLogNote.cs" />
+    <Compile Include="Migrations\202010061901509_AddWorkflowChangeLogNote.Designer.cs">
+      <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.cs" />
+    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.Designer.cs">
+      <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.cs" />
+    <Compile Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.Designer.cs">
+      <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.cs" />
+    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.Designer.cs">
+      <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010131811466_Rollup_1013.cs" />
+    <Compile Include="Migrations\202010131811466_Rollup_1013.Designer.cs">
+      <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1474,6 +1506,30 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202009291713442_Rollup_0929.resx">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.resx">
+      <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.resx">
+      <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.resx">
+      <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010061901509_AddWorkflowChangeLogNote.resx">
+      <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.resx">
+      <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.resx">
+      <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010122113208_AddIsDateRequiredToStepType.resx">
+      <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010131811466_Rollup_1013.resx">
+      <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

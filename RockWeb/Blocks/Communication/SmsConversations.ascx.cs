@@ -142,6 +142,11 @@ namespace RockWeb.Blocks.Communication
 
             nbAddPerson.Visible = false;
 
+            if ( ppPersonFilter.PersonId != null )
+            {
+                divPersonFilter.Style.Remove( "display" );
+            }
+
             if ( !IsPostBack )
             {
                 if ( LoadPhoneNumbers() )
@@ -232,10 +237,15 @@ namespace RockWeb.Blocks.Communication
             return true;
         }
 
+        private void LoadResponseListing()
+        {
+            LoadResponseListing( null );
+        }
+
         /// <summary>
         /// Loads the response listing.
         /// </summary>
-        private void LoadResponseListing()
+        private void LoadResponseListing( int? personId )
         {
             // NOTE: The FromPersonAliasId is the person who sent a text from a mobile device to Rock.
             // This person is also referred to as the Recipient because they are responding to a
@@ -265,7 +275,7 @@ namespace RockWeb.Blocks.Communication
 
                 var maxConversations = this.GetAttributeValue( AttributeKey.MaxConversations ).AsIntegerOrNull() ?? 1000;
 
-                var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, showRead, maxConversations );
+                var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, showRead, maxConversations, personId );
 
                 // don't display conversations if we're rebinding the recipient list
                 rptConversation.Visible = false;
@@ -488,6 +498,25 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Handles the SelectPerson event of the ppPersonFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppPersonFilter_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppPersonFilter.PersonId != null )
+            {
+                lbPersonFilter.AddCssClass( "bg-warning" );
+            }
+            else
+            {
+                lbPersonFilter.RemoveCssClass( "bg-warning" );
+            }
+            
+            LoadResponseListing( ppPersonFilter.PersonId );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -538,6 +567,11 @@ namespace RockWeb.Blocks.Communication
             LoadResponseListing();
         }
 
+        /// <summary>
+        /// Handles the SelectPerson event of the ppRecipient control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppRecipient_SelectPerson( object sender, EventArgs e )
         {
             nbNoSms.Visible = false;

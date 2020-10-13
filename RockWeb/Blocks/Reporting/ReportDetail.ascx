@@ -101,7 +101,7 @@
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
-                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                                 </div>
                             </div>
@@ -111,12 +111,12 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">
                             <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
-                                
+
                             <div class="panel-labels">
                                 <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
                             </div>
                         </div>
-                      
+
                         <asp:Panel ID="pnlResultsGrid" runat="server">
                             <div class="panel-body">
                                 <div class="grid grid-panel">
@@ -179,7 +179,7 @@
 
                         // set displayed text of title
                         $(this).find('.js-header-title').text(title);
-                        
+
                         // update displayed sorting field names to match updated title
                         var $kvSortFields = $('#<%=kvSortFields.ClientID %>');
                         var $vMergeFields = $('#<%=vMergeFields.ClientID %>');

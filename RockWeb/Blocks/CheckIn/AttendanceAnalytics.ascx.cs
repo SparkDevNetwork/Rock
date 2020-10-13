@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [GroupTypesField(
         name: "Group Types",
-        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.",
+        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance area's areas will be available.",
         required: false,
         defaultGroupTypeGuids: "",
         category: "",
@@ -418,22 +418,22 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !groupTypeGuids.Any() )
                 {
                     // show the CheckinType control if there isn't a block setting for specific group types
-                    ddlAttendanceType.Visible = true;
+                    ddlAttendanceArea.Visible = true;
                     var groupTypeService = new GroupTypeService( _rockContext );
                     Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-                    ddlAttendanceType.GroupTypes = groupTypeService.Queryable()
+                    ddlAttendanceArea.GroupTypes = groupTypeService.Queryable()
                             .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
                             .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
                 }
                 else
                 {
                     // hide the CheckinType control if there is a block setting for group types
-                    ddlAttendanceType.Visible = false;
+                    ddlAttendanceArea.Visible = false;
                 }
             }
             else
             {
-                ddlAttendanceType.Visible = false;
+                ddlAttendanceArea.Visible = false;
             }
         }
 
@@ -561,10 +561,10 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
-                    if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
+                    if ( ddlAttendanceArea.SelectedGroupTypeId.HasValue )
                     {
                         var groupTypeIds = groupTypeService
-                            .GetCheckinAreaDescendantsOrdered( ddlAttendanceType.SelectedGroupTypeId.Value )
+                            .GetCheckinAreaDescendantsOrdered( ddlAttendanceArea.SelectedGroupTypeId.Value )
                             .Select(a => a.Id)
                             .ToList();
 
@@ -741,7 +741,7 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceType.SelectedGroupTypeId.ToString(), false );
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceArea.SelectedGroupTypeId.ToString(), false );
 
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
@@ -836,7 +836,7 @@ function(item) {
 
             if ( !_isGroupSpecific )
             {
-                ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
+                ddlAttendanceArea.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
                 cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
                 BuildGroupTypesUI( false );
             }

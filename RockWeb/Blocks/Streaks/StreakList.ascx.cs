@@ -119,9 +119,6 @@ namespace RockWeb.Blocks.Streaks
         private bool _canView = false;
 
         // Cache these fields since they could get called many times in GridRowDataBound
-        private DeleteField _deleteField = null;
-        private int? _deleteFieldColumnIndex = null;
-
         private RockLiteralField _fullNameField = null;
         private RockLiteralField _nameWithHtmlField = null;
         private RockLiteralField _lBiStateGraph = null;
@@ -141,7 +138,6 @@ namespace RockWeb.Blocks.Streaks
             InitializeScripts();
             InitializeFilter();
             InitializeGrid();
-            IntializeRowButtons();
             InitializeSettingsNotification( upMain );
         }
 
@@ -250,21 +246,6 @@ namespace RockWeb.Blocks.Streaks
             if ( person.IsDeceased )
             {
                 e.Row.AddCssClass( "is-deceased" );
-            }
-
-            if ( _deleteField != null && _deleteField.Visible )
-            {
-                LinkButton deleteButton = null;
-
-                if ( !_deleteFieldColumnIndex.HasValue )
-                {
-                    _deleteFieldColumnIndex = gEnrollments.GetColumnIndex( gEnrollments.Columns.OfType<DeleteField>().First() );
-                }
-
-                if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
-                {
-                    deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-                }
             }
         }
 
@@ -484,7 +465,7 @@ namespace RockWeb.Blocks.Streaks
         private void InitializeGrid()
         {
             gEnrollments.DataKeyNames = new string[] { "Id" };
-            gEnrollments.PersonIdField = "Person Id";
+            gEnrollments.PersonIdField = "PersonId";
             gEnrollments.Actions.AddClick += gEnrollments_AddClick;
             gEnrollments.GridRebind += gEnrollments_GridRebind;
             gEnrollments.RowItemText = "Streak";
@@ -514,7 +495,6 @@ namespace RockWeb.Blocks.Streaks
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
             BindFilter();
-            IntializeRowButtons();
             BindEnrollmentGrid();
         }
 
@@ -526,77 +506,6 @@ namespace RockWeb.Blocks.Streaks
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
             drpEnrollmentDate.DelimitedValues = rFilter.GetUserPreference( FilterKey.EnrollmentDate );
-        }
-
-        /// <summary>
-        /// Initialize the row buttons
-        /// </summary>
-        private void IntializeRowButtons()
-        {
-            RemoveRowButtons();
-            AddRowButtons();
-        }
-
-        /// <summary>
-        /// Remove the row buttons
-        /// </summary>
-        private void RemoveRowButtons()
-        {
-            // Remove added button columns
-            DataControlField buttonColumn = gEnrollments.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gEnrollments.Columns.Remove( buttonColumn );
-            }
-
-            buttonColumn = gEnrollments.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gEnrollments.Columns.Remove( buttonColumn );
-            }
-
-            buttonColumn = gEnrollments.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gEnrollments.Columns.Remove( buttonColumn );
-            }
-        }
-
-        /// <summary>
-        /// Add the row buttons
-        /// </summary>
-        private void AddRowButtons()
-        {
-            // Add Link to Profile Page Column
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
-            {
-                var column = CreatePersonProfileLinkColumn( "PersonId" );
-
-                gEnrollments.Columns.Add( column );
-            }
-
-            // Add delete column
-            _deleteField = new DeleteField();
-            _deleteField.Click += DeleteEnrollment_Click;
-
-            gEnrollments.Columns.Add( _deleteField );
-        }
-
-        /// <summary>
-        /// Adds the column with a link to profile page.
-        /// </summary>
-        private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
-        {
-            HyperLinkField hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
-            hlPersonProfileLink.DataTextField = fieldName;
-
-            return hlPersonProfileLink;
         }
 
         /// <summary>

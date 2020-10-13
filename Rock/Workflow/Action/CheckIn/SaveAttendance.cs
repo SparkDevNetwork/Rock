@@ -212,6 +212,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     attendance.EndDateTime = null;
                                     attendance.DidAttend = true;
                                     attendance.Note = group.Notes;
+                                    attendance.IsFirstTime = person.FirstTime;
 
                                     KioskLocationAttendance.AddAttendance( attendance );
                                     isCheckedIntoLocation = true;

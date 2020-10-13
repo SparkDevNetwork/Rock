@@ -220,13 +220,15 @@ namespace Rock.Jobs
                         {
                             var person = connectionRequestService
                                 .Queryable()
-                                .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id &&
-                                    a.PersonAlias.PersonId == personAlias.PersonId &&
-                                    a.ConnectionState == ConnectionState.Connected &&
-                                    a.ConnectorPersonAliasId.HasValue &&
-                                    personIds.Contains( a.ConnectorPersonAlias.PersonId ) )
-                                    .Select( a => a.ConnectorPersonAlias.Person )
-                                    .FirstOrDefault();
+                                .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id
+                                    && a.PersonAlias.PersonId == personAlias.PersonId
+                                    && a.ConnectionState == ConnectionState.Connected
+                                    && a.ConnectorPersonAliasId.HasValue
+                                    && personIds.Contains( a.ConnectorPersonAlias.PersonId )
+                                    && a.ModifiedDateTime.HasValue)
+                                .OrderByDescending( a => a.ModifiedDateTime )
+                                .Select( a => a.ConnectorPersonAlias.Person )
+                                .FirstOrDefault();
 
                             if ( person != null )
                             {

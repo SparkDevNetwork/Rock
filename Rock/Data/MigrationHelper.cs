@@ -4357,9 +4357,20 @@ END
         /// <param name="userSelectable">if set to <c>true</c> [user selectable].</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable,  string guid, bool IsSystem = true )
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="AllowWatching">if set to <c>true</c> [allow watching].</param>
+        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable,  string guid, bool IsSystem = true, string iconCssClass = null, bool AllowWatching = false)
         {
             EnsureEntityTypeExists( entityTypeName );
+
+            if( iconCssClass == null )
+            {
+                iconCssClass = "NULL";
+            }
+            else
+            {
+                iconCssClass = $"'{iconCssClass}'";
+            }
 
             Migration.Sql( $@"
 
@@ -4370,9 +4381,9 @@ END
                 IF @Id IS NULL
                 BEGIN
                     INSERT INTO [NoteType] (
-                        [Name],[EntityTypeId],[UserSelectable],[Guid],[IsSystem])
+                        [Name],[EntityTypeId],[UserSelectable],[Guid],[IsSystem], [IconCssClass], [AllowsWatching])
                     VALUES(
-                        '{name}',@EntityTypeId,{userSelectable.Bit()},'{guid}',{IsSystem.Bit()})
+                        '{name}',@EntityTypeId,{userSelectable.Bit()},'{guid}',{IsSystem.Bit()}, {iconCssClass}, {AllowWatching.Bit()})
                 END
                 ELSE
                 BEGIN
@@ -4381,7 +4392,9 @@ END
                         [EntityTypeId] = @EntityTypeId,
                         [UserSelectable] = {userSelectable.Bit()},
                         [Guid] = '{guid}',
-                        [IsSystem] = {IsSystem.Bit()}
+                        [IsSystem] = {IsSystem.Bit()},
+                        [IconCssClass] = {iconCssClass},
+                        [AllowsWatching] = {AllowWatching.Bit()}
                     WHERE Id = @Id;
                 END" );
                     

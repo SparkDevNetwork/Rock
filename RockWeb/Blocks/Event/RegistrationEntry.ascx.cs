@@ -2367,8 +2367,8 @@ namespace RockWeb.Blocks.Event
 
                 AddRegistrantsToGroup( rockContext, registration );
 
-                string appRoot = ResolveRockUrl( "~/" );
-                string themeRoot = ResolveRockUrl( "~~/" );
+                string appRoot = ResolveRockUrlIncludeRoot( "~/" );
+                string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
                 // Send/Resend a confirmation
                 var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
