@@ -131,6 +131,18 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Saves the LocalDeviceConfig to the cookie.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        [Obsolete( "Use Rock.Web.UI.RockPage.AddOrUpdateCookie instead." )]
+        [RockObsolete( "1.12" )]
+        public void SaveToCookie( System.Web.UI.Page page )
+        {
+            var localDeviceConfigValue = this.ToJson( Newtonsoft.Json.Formatting.None );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
+        }
+
+        /// <summary>
         /// Gets from cookie.
         /// </summary>
         /// <param name="page">The page.</param>
