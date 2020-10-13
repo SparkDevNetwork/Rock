@@ -64,11 +64,13 @@
         }
 
         $('.js-component-text-htmlEditor').summernote('code', $innerWrapper.html());
+        $('.js-component-text-htmlEditor').summernote('commit');
+
         var textEl = $innerWrapper[0];
 
         $('#component-text-backgroundcolor').colorpicker('setValue', Rock.controls.emailEditor.$currentTextComponent.css('backgroundColor'));
-        
-        $('#component-text-border-color').colorpicker('setValue', $innerWrapper[0].style['border-color']);
+
+        $('#component-text-border-color').colorpicker('setValue', String($innerWrapper[0].style['border-color'] || 'rgba(0,0,0,0)'));
         $('#component-text-border-width').val(parseFloat($innerWrapper[0].style['border-width']) || '');
 
         $('#component-text-padding-top').val(parseFloat(textEl.style['padding-top']) || '');
@@ -92,7 +94,7 @@
       setBorderWidth: function ()
       {
         var $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
-        
+
         var borderWidth = Rock.controls.util.getValueAsPixels($('#component-text-border-width').val());
         if (borderWidth) {
           $innerWrapper.css('border-style', 'solid');
