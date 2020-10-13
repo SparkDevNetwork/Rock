@@ -1,8 +1,8 @@
 {% comment %}
     Redirect if item is expired
 {% endcomment %}
-{% assign pageId = 'Global' | Page:'Id' | AsInteger %}
-{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+{% assign itemId = Item.Id | AsInteger %}
+{% assign CurrentPersonCanEdit = itemId | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
 {% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
 {% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
