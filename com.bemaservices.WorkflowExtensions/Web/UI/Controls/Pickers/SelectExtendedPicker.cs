@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
@@ -371,11 +372,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            string parentFieldType = ParentFieldType ?? "ddl";
-
-            _parentEditControl.ID = this.ID + "_parentEditControl";
-            _parentEditControl.AutoPostBack = true;
-            _parentEditControl.SelectedIndexChanged += _parentEditControl_SelectedIndexChanged;
+            string parentFieldType = ParentFieldType ?? "ddl";       
             if ( parentFieldType == "rb" )
             {
                 _parentEditControl = new RockRadioButtonList();
@@ -408,12 +405,13 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
                 ( ( RockDropDownList ) _parentEditControl ).DisplayEnhancedAsAbsolute = true;
                 _parentEditControl.Items.Add( new ListItem() );
             }
+
+            _parentEditControl.ID = this.ID + "_parentEditControl";
+            _parentEditControl.AutoPostBack = true;
+            _parentEditControl.SelectedIndexChanged += _parentEditControl_SelectedIndexChanged;
             Controls.Add( _parentEditControl );
 
             string childFieldType = ChildFieldType ?? "ddl";
-
-            _childEditControl.ID = this.ID + "_childEditControl";
-
             if ( childFieldType == "rb" )
             {
                 _childEditControl = new RockRadioButtonList();
@@ -447,6 +445,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
                 _childEditControl.Items.Add( new ListItem() );
             }
 
+            _childEditControl.ID = this.ID + "_childEditControl";
             Controls.Add( _childEditControl );
 
             LoadParentValues();
@@ -481,6 +480,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             _childEditControl.Visible = SelectedParentValue.IsNotNullOrWhiteSpace();
+            _parentEditControl.Style.Add( "margin-bottom", "15px" );
             _parentEditControl.RenderControl( writer );
             _childEditControl.RenderControl( writer );
         }
@@ -540,7 +540,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             {
                 _childEditControl.Items.Add( Rock.Constants.None.ListItem );
 
-                foreach ( var keyVal in GetFilteredChildValues( selectedParentValue ) )
+                foreach ( var keyVal in GetFilteredChildValues( ChildValues, selectedParentValue ) )
                 {
 
                     var item = new ListItem( keyVal.Value, keyVal.Key );
@@ -550,14 +550,14 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             }
         }
 
-        public Dictionary<string, string> GetFilteredChildValues( string parentValue = null )
+        public Dictionary<string, string> GetFilteredChildValues( string childValues, string parentValue = null )
         {
             var items = new Dictionary<string, string>();
             var options = new Rock.Lava.CommonMergeFieldsOptions();
             options.GetLegacyGlobalMergeFields = false;
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
-            string listSource = ChildValues.ResolveMergeFields( mergeFields );
+            string listSource = childValues.ResolveMergeFields( mergeFields );
 
             if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
             {
