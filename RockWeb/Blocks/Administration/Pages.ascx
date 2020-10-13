@@ -3,7 +3,7 @@
 <ContentTemplate>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
-    
+
     <asp:PlaceHolder ID="phContent" runat="server">
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
@@ -24,7 +24,7 @@
                     <Rock:RockBoundField DataField="Id" HeaderText="Id" />
                     <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="InternalName" HeaderText="Name" Target="_parent" />
                     <Rock:RockBoundField DataField="Layout.Name" HeaderText="Layout"  />
-                    <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="rGrid_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                    <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="rGrid_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                     <Rock:DeleteField OnClick="rGrid_Delete" />
                 </Columns>
             </Rock:Grid>
