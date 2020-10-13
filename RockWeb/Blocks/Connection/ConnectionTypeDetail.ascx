@@ -121,8 +121,9 @@
 
                     <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
                         <div class="grid">
-                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false" >
+                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false" OnGridReorder="gStatuses_GridReorder" >
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsDefault" HeaderText="Is Default" />
@@ -200,13 +201,14 @@
                 <Rock:DataTextBox ID="tbConnectionStatusDescription" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Description" Label="Description" runat="server" ValidationGroup="ConnectionStatus" TextMode="MultiLine" Rows="3" />
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:ColorPicker ID="cpStatus" runat="server" Label="Highlight Color" Help="The highlight color for this status." />
+                    </div>
+                    <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsCritical" runat="server" Label="Is Critical" ValidationGroup="ConnectionStatus" Help="Requires immediate action." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="ConnectionStatus" />
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbAutoInactivateState" runat="server" Label="Auto-Inactivate State" ValidationGroup="ConnectionStatus" Help="Selecting this status will change the state to Inactive." />
                     </div>

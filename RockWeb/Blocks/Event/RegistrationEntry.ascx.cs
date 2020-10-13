@@ -4948,6 +4948,10 @@ namespace RockWeb.Blocks.Event
                     registrant.FamilyGuid = Guid.NewGuid();
                 }
 
+                // Apply the FieldVisibilityRules to all the fields before we do ParseAttributeField.
+                // This will make sure that we know whether to get the updated values.
+                FieldVisibilityWrapper.ApplyFieldVisibilityRules( phRegistrantControls );
+
                 var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
                 foreach ( var field in form.Fields
                     .Where( f =>

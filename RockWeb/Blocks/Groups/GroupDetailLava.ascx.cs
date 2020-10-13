@@ -1141,6 +1141,12 @@ namespace RockWeb.Blocks.Groups
                                     }
                                 }
                             }
+
+                            // Add an empty selection to the list.
+                            if ( ddlMember.Items.Count > 0 )
+                            {
+                                ddlMember.Items.Insert( 0, new ListItem( string.Empty ) );
+                            }
                         }
 
                         if ( displayOtherTab )

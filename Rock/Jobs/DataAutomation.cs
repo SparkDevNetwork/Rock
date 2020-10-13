@@ -1219,7 +1219,7 @@ Update Family Status: {updateFamilyStatus}
                         continue;
                     }
 
-                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1306,7 +1306,7 @@ Update Family Status: {updateFamilyStatus}
                         continue;
                     }
 
-                    DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1606,7 +1606,7 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
                 DbContext = rockContext
             };

@@ -99,10 +99,12 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
             target.IsActive = source.IsActive;
             target.IsCritical = source.IsCritical;
             target.IsDefault = source.IsDefault;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

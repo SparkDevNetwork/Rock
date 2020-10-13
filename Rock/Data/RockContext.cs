@@ -2071,6 +2071,7 @@ namespace Rock.Data
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
+            modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
         }

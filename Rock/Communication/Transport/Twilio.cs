@@ -214,7 +214,7 @@ namespace Rock.Communication.Transport
                 {
                     var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = GlobalAttributesCache.Get();
-                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string fromPhone = communication.SMSFromDefinedValue?.Value;
@@ -349,7 +349,7 @@ namespace Rock.Communication.Transport
             List<Uri> attachmentMediaUrls = new List<Uri>();
             if ( binaryFilesInfo.Any() )
             {
-                string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                 attachmentMediaUrls = binaryFilesInfo.Select( b =>
                 {
                     if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )

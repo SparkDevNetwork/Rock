@@ -233,11 +233,11 @@ namespace RockWeb.Blocks.Streaks
         /// <returns></returns>
         private string GetProgressBarHtml( decimal progress )
         {
-            var progressInt = Convert.ToInt32( decimal.Round( progress * 100 ) );
-            var progressBarWidth = progressInt < 0 ? 0 : ( progressInt > 100 ? 100 : progressInt );
-            var insideProgress = progressInt >= 50 ? progressInt : ( int? ) null;
-            var outsideProgress = progressInt < 50 ? progressInt : ( int? ) null;
-            var progressBarClass = progressInt >= 100 ? "progress-bar-success" : string.Empty;
+            var progressLong = Convert.ToInt64( decimal.Round( progress * 100 ) );
+            var progressBarWidth = progressLong < 0 ? 0 : ( progressLong > 100 ? 100 : progressLong );
+            var insideProgress = progressLong >= 50 ? progressLong : ( long? ) null;
+            var outsideProgress = progressLong < 50 ? progressLong : ( long? ) null;
+            var progressBarClass = progressLong >= 100 ? "progress-bar-success" : string.Empty;
 
             return string.Format(
 @"<div class=""progress"" style=""margin-bottom: 0;"">

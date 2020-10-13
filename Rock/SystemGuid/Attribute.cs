@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         public const string GLOBAL_GOOGLE_RECAPTCHA_SECRET_KEY = "D36E5760-05FF-479F-AD1D-C048AE2E99E9";
 
         /// <summary>
+        /// The Google reCaptcha secret key
+        /// </summary>
+        public const string GLOBAL_PUBLIC_APPLICATION_ROOT = "49AD7AD6-9BAC-4743-B1E8-B917F6271924";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
@@ -736,6 +741,10 @@ namespace Rock.SystemGuid
         /// The oidc client list scope page
         /// </summary>
         public const string OIDC_CLIENT_LIST_SCOPE_PAGE = "EF07798E-48D4-4261-97B2-501A8AD54E15";
-        
+
+        /// <summary>
+        /// The Content Channel View Enable Archive Summary Attribute
+        /// </summary>
+        public const string ENABLE_ARCHIVE_SUMMARY = "753217FB-D519-44CC-83FC-C451E37E553F";
     }
 }

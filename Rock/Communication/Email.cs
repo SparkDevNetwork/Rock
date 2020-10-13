@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mail;
 using System.Web;
 
 using Humanizer;
@@ -50,24 +49,51 @@ namespace Rock.Communication
 
             string bounceMessage = message.IsNotNullOrWhiteSpace() ? $" ({message})" : "";
 
-            // get people who have those emails
-            PersonService personService = new PersonService( new RockContext() );
-            var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
-
-            foreach ( int personId in peopleWithEmail )
+            using ( var rockContext = new RockContext() )
             {
-                RockContext rockContext = new RockContext();
-                personService = new PersonService( rockContext );
-                Person person = personService.Get( personId );
+                // get people who have those emails
+                var personService = new PersonService( rockContext );
+                var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
 
-                if ( person.IsEmailActive == true )
+                foreach ( int personId in peopleWithEmail )
                 {
-                    person.IsEmailActive = false;
-                }
+                    personService = new PersonService( rockContext );
+                    var person = personService.Get( personId );
 
-                person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
-                rockContext.SaveChanges();
+                    if ( person.IsEmailActive == true )
+                    {
+                        person.IsEmailActive = false;
+                    }
+
+                    person.EmailNote = GetEmailNote( bounceType, message, bouncedDateTime );
+                    rockContext.SaveChanges();
+                }
             }
+        }
+
+        private static string GetEmailNote( BounceType bounceType, string message, DateTime bouncedDateTime )
+        {
+            var messages = new Dictionary<string, string>
+            {
+                {"550", "The user's mailbox was unavailable or could not be found." },
+                {"551", "The intended mailbox does not exist on this recipient server." },
+                {"552", "This message is larger than the current system limit or the recipient's mailbox is full." },
+                {"553", "The message was refused because the mailbox name is either malformed or does not exist." },
+                {"554", "Email refused." },
+            };
+
+            var emailNote = message;
+            foreach ( string key in messages.Keys )
+            {
+                if ( message.StartsWith( key ) )
+                {
+                    emailNote = messages[key];
+                    break;
+                }
+            }
+
+            emailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}. {emailNote}";
+            return emailNote.SubstringSafe( 0, 250 );
         }
 
         /// <summary>
@@ -79,7 +105,7 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
-        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true  )
+        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
         {
             try
             {

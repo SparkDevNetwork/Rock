@@ -29,8 +29,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Runs data updates to AttributeValue.ValueAsNumeric that need to occur after updating to v10.0" )]
-    [Description( "This job will take care of any data migration tp AttributeValue.ValueAsNumeric that need to occur after updating to v10.0. After all the operations are done, this job will delete itself." )]
+    [DisplayName( "Rock Update Helper v10.0 - Runs data updates to AttributeValue.ValueAsNumeric that need to occur." )]
+    [Description( "This job will take care of any data migration to AttributeValue.ValueAsNumeric that need to occur after updating to v10.0. After all the operations are done, this job will delete itself." )]
 
     [IntegerField(
         "Command Timeout",

@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Connection" )]
     [Table( "ConnectionRequest" )]
     [DataContract]
-    public partial class ConnectionRequest : Model<ConnectionRequest>
+    public partial class ConnectionRequest : Model<ConnectionRequest>, IOrdered
     {
 
         #region Entity Properties
@@ -167,6 +167,16 @@ namespace Rock.Model
                         CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties

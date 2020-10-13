@@ -27,7 +27,7 @@ namespace Rock.Model
     /// </summary>
     /// <seealso cref="Model{AuthClaim}" />
     /// <seealso cref="Rock.Data.IHasActiveFlag" />
-    [RockDomain( "Auth" )]
+    [RockDomain( "Core" )]
     [Table( "AuthClaim" )]
     [DataContract]
     public class AuthClaim : Model<AuthClaim>, IHasActiveFlag

@@ -74,7 +74,7 @@ namespace Rock.Jobs
             Exception dataViewException = null;
             try
             {
-                DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     DatabaseTimeoutSeconds = dataMap.GetString( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
                 };

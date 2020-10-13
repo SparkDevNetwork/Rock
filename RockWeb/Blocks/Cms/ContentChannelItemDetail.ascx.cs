@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -411,6 +411,13 @@ namespace RockWeb.Blocks.Cms
                     {
                         var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
                         contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
+                    }
+
+                    var slugInput = Request.Form["slugInput"];
+                    if ( !string.IsNullOrEmpty( slugInput ) )
+                    {
+                        var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                        contentChannelItemSlugService.SaveSlug( contentItem.Id, slugInput, null );
                     }
 
                     rockContext.SaveChanges();

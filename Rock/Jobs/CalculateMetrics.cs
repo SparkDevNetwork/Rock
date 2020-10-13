@@ -119,7 +119,7 @@ namespace Rock.Jobs
                                         else
                                         {
                                             Stopwatch stopwatch = Stopwatch.StartNew();
-                                            DataViewGetQueryArgs dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                                            var dataViewGetQueryArgs = new DataViewGetQueryArgs();
                                             var qry = metric.DataView.GetQuery( dataViewGetQueryArgs );
                                             var resultValue = new ResultValue();
                                             resultValue.Value = Convert.ToDecimal( qry.Count() );
