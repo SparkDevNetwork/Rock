@@ -141,13 +141,52 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         {
             get
             {
+                bool required = false;
                 EnsureChildControls();
-                return _childEditControl.Required;
+
+                string childFieldType = ChildFieldType ?? "ddl";
+
+                if ( childFieldType == "rb" )
+                {
+                    required = ( ( RockRadioButtonList ) _childEditControl ).Required;
+                }
+                else if ( childFieldType == "cb" )
+                {
+                    required = ( ( RockCheckBoxList ) _childEditControl ).Required;
+                }
+                else if ( childFieldType == "ddl_multi_enhanced" )
+                {
+                    required = ( ( RockListBox ) _childEditControl ).Required;
+                }
+                else
+                {
+                    required = ( ( RockDropDownList ) _childEditControl ).Required;
+                }
+
+                return required;
             }
             set
             {
                 EnsureChildControls();
-                _parentEditControl.Required = value;
+
+                string childFieldType = ChildFieldType ?? "ddl";
+
+                if ( childFieldType == "rb" )
+                {
+                    ( ( RockRadioButtonList ) _childEditControl ).Required = value;
+                }
+                else if ( childFieldType == "cb" )
+                {
+                    ( ( RockCheckBoxList ) _childEditControl ).Required = value;
+                }
+                else if ( childFieldType == "ddl_multi_enhanced" )
+                {
+                    ( ( RockListBox ) _childEditControl ).Required = value;
+                }
+                else
+                {
+                    ( ( RockDropDownList ) _childEditControl ).Required = value;
+                }
             }
         }
 
@@ -305,24 +344,10 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             get { return ViewState["ChildFieldType"] as string; }
             set { ViewState["ChildFieldType"] = value; }
         }
-
-        /// <summary>
-        /// Gets or sets the group control label.
-        /// </summary>
-        /// <value>
-        /// The group control label.
-        /// </value>
-        public string GroupControlLabel
+        public string ChildRepeatColumns
         {
-            get
-            {
-                return ( ViewState["GroupControlLabel"] as string ) ?? "Group";
-            }
-
-            set
-            {
-                ViewState["GroupControlLabel"] = value;
-            }
+            get { return ViewState["ChildRepeatColumns"] as string; }
+            set { ViewState["ChildRepeatColumns"] = value; }
         }
 
         #endregion
@@ -354,11 +379,11 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             if ( parentFieldType == "rb" )
             {
                 _parentEditControl = new RockRadioButtonList();
-                ( ( RadioButtonList ) _parentEditControl ).RepeatDirection = RepeatDirection.Horizontal;
+                ( ( RockRadioButtonList ) _parentEditControl ).RepeatDirection = RepeatDirection.Horizontal;
 
                 if ( ParentRepeatColumns.IsNotNullOrWhiteSpace() )
                 {
-                    ( ( RadioButtonList ) _parentEditControl ).RepeatColumns = ParentRepeatColumns.AsInteger();
+                    ( ( RockRadioButtonList ) _parentEditControl ).RepeatColumns = ParentRepeatColumns.AsInteger();
                 }
             }
             else if ( parentFieldType == "cb" )
@@ -392,38 +417,39 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             if ( childFieldType == "rb" )
             {
                 _childEditControl = new RockRadioButtonList();
-                ( ( RadioButtonList ) _childEditControl ).RepeatDirection = RepeatDirection.Horizontal;
+                ( ( RockRadioButtonList ) _childEditControl ).RepeatDirection = RepeatDirection.Horizontal;
 
-                if ( configurationValues.ContainsKey( CHILD_REPEAT_COLUMNS ) )
+                if ( ChildRepeatColumns.IsNotNullOrWhiteSpace() )
                 {
-                    ( ( RadioButtonList ) _childEditControl ).RepeatColumns = configurationValues[CHILD_REPEAT_COLUMNS].Value.AsInteger();
+                    ( ( RockRadioButtonList ) _childEditControl ).RepeatColumns = ChildRepeatColumns.AsInteger();
                 }
             }
             else if ( childFieldType == "cb" )
             {
-                _childEditControl = new RockCheckBoxList { ID = string.Format( "{0}_child", id ) };
+                _childEditControl = new RockCheckBoxList();
                 ( ( RockCheckBoxList ) _childEditControl ).RepeatDirection = RepeatDirection.Horizontal;
 
-                if ( configurationValues.ContainsKey( CHILD_REPEAT_COLUMNS ) )
+                if ( ChildRepeatColumns.IsNotNullOrWhiteSpace() )
                 {
-                    ( ( RockCheckBoxList ) _childEditControl ).RepeatColumns = configurationValues[CHILD_REPEAT_COLUMNS].Value.AsInteger();
+                    ( ( RockCheckBoxList ) _childEditControl ).RepeatColumns = ChildRepeatColumns.AsInteger();
                 }
             }
             else if ( childFieldType == "ddl_multi_enhanced" )
             {
-                _childEditControl = new RockListBox { ID = string.Format( "{0}_child", id ) };
+                _childEditControl = new RockListBox();
                 ( ( RockListBox ) _childEditControl ).DisplayDropAsAbsolute = true;
             }
             else
             {
-                _childEditControl = new RockDropDownList { ID = string.Format( "{0}_child", id ) };
+                _childEditControl = new RockDropDownList();
                 ( ( RockDropDownList ) _childEditControl ).EnhanceForLongLists = childFieldType == "ddl_single_enhanced";
                 ( ( RockDropDownList ) _childEditControl ).DisplayEnhancedAsAbsolute = true;
                 _childEditControl.Items.Add( new ListItem() );
             }
+
             Controls.Add( _childEditControl );
 
-            LoadGroupTypes();
+            LoadParentValues();
         }
 
         /// <summary>
@@ -433,8 +459,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _parentEditControl_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int groupTypeId = _parentEditControl.SelectedValue.AsInteger();
-            LoadGroups( groupTypeId );
+            LoadChildValues( _parentEditControl.SelectedValue );
         }
 
         /// <summary>
@@ -455,51 +480,71 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            _childEditControl.Visible = GroupTypeId.HasValue;
+            _childEditControl.Visible = SelectedParentValue.IsNotNullOrWhiteSpace();
             _parentEditControl.RenderControl( writer );
-            _childEditControl.Label = this.GroupControlLabel;
             _childEditControl.RenderControl( writer );
         }
 
         /// <summary>
-        /// Loads the group types.
+        /// Loads the parent values
         /// </summary>
-        private void LoadGroupTypes()
+        private void LoadParentValues()
         {
             _parentEditControl.Items.Clear();
             _parentEditControl.Items.Add( Rock.Constants.None.ListItem );
 
-            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
+            var items = new Dictionary<string, string>();
+            var options = new Rock.Lava.CommonMergeFieldsOptions();
+            options.GetLegacyGlobalMergeFields = false;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
-            // get all group types that have the ShowInGroupList flag set
-            var groupTypes = groupTypeService.Queryable().Where( a => a.ShowInGroupList ).OrderBy( a => a.Name ).ToList();
+            string listSource = ParentValues.ResolveMergeFields( mergeFields );
 
-            foreach ( var g in groupTypes )
+            if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
             {
-                _parentEditControl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
+                var tableValues = new List<string>();
+                DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
+                if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
+                {
+                    foreach ( DataRow row in dataTable.Rows )
+                    {
+                        items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
+                    }
+                }
+            }
+
+            else
+            {
+                foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( keyValueArray.Length > 0 )
+                    {
+                        items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
+                    }
+                }
+            }
+
+            foreach ( var item in items )
+            {
+                _parentEditControl.Items.Add( new ListItem( item.Value, item.Key ) );
             }
         }
 
-        /// <summary>
-        /// Loads the groups.
-        /// </summary>
-        /// <param name="groupTypeId">The group type identifier.</param>
         private void LoadChildValues( string selectedParentValue )
         {
-            int? currentGroupId = this.GroupId;
+            string currentChildValue = this.SelectedChildValue;
             _childEditControl.SelectedValue = null;
             _childEditControl.Items.Clear();
-            if ( groupTypeId.HasValue )
+            if ( selectedParentValue.IsNotNullOrWhiteSpace() )
             {
                 _childEditControl.Items.Add( Rock.Constants.None.ListItem );
 
-                var groupService = new Rock.Model.GroupService( new RockContext() );
-                var groups = groupService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
-
-                foreach ( var r in groups )
+                foreach ( var keyVal in GetFilteredChildValues( selectedParentValue ) )
                 {
-                    var item = new ListItem( r.Name, r.Id.ToString().ToUpper() );
-                    item.Selected = r.Id == currentGroupId;
+
+                    var item = new ListItem( keyVal.Value, keyVal.Key );
+                    item.Selected = keyVal.Key == currentChildValue;
                     _childEditControl.Items.Add( item );
                 }
             }
@@ -508,14 +553,11 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         public Dictionary<string, string> GetFilteredChildValues( string parentValue = null )
         {
             var items = new Dictionary<string, string>();
-
-            string listSource = ChildValues;
-
             var options = new Rock.Lava.CommonMergeFieldsOptions();
             options.GetLegacyGlobalMergeFields = false;
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
-            listSource = listSource.ResolveMergeFields( mergeFields );
+            string listSource = ChildValues.ResolveMergeFields( mergeFields );
 
             if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
             {
@@ -586,7 +628,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
                     {
                         if ( childValue.IsNullOrWhiteSpace() || keyValueArray[0].Trim() == childValue )
                         {
-                            parentValue = keyValueArray[1].Trim()
+                            parentValue = keyValueArray[1].Trim();
                         }
                     }
                 }
