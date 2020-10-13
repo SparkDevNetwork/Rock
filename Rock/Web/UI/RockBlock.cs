@@ -423,7 +423,18 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            return RockCache.Get( ItemCacheKey( key ) );
+            return GetCacheItem( ItemCacheKey( key ), false );
+        }
+
+        /// <summary>
+        /// Gets the cache item.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="allowCacheByPass">if set to <c>true</c> [allow cache by pass].</param>
+        /// <returns></returns>
+        protected virtual object GetCacheItem( string key, bool allowCacheByPass )
+        {
+            return RockCache.Get( ItemCacheKey( key ), allowCacheByPass );
         }
 
         /// <summary>
