@@ -26,6 +26,11 @@ namespace Rock.Web.Cache
     /// </summary>
     public class RockCache
     {
+        /// <summary>
+        /// The cache control cookie
+        /// </summary>
+        public const string CACHE_CONTROL_COOKIE = ".rock-web-cache-enabled";
+
         private static readonly object Obj = new object();
         private static List<IRockCacheManager> _allManagers;
         private const string CACHE_TAG_REGION_NAME = "cachetags";
@@ -190,6 +195,27 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets an item from cache using the specified key. If allowCacheBypass is true the CACHE_CONTROL_COOKIE will be
+        /// inspected to see if cached value should be ignored.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="allowCacheBypass">if set to <c>true</c> the cache can be ignored based on the cache control cookie.</param>
+        /// <returns></returns>
+        public static object Get( string key, bool allowCacheBypass )
+        {
+            var args = new RockCacheGetOrAddExistingArgs
+            {
+                Key = key,
+                Region = null,
+                ItemFactory = null,
+                Expiration = TimeSpan.MaxValue,
+                AllowCacheBypass = allowCacheBypass
+            };
+
+            return GetOrAddExisting( args );
+        }
+
+        /// <summary>
         /// Gets an item from cache using the specified key and region.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -233,33 +259,62 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static object GetOrAddExisting( string key, string region, Func<object> itemFactory, TimeSpan expiration )
         {
-            var value = region.IsNotNullOrWhiteSpace() ?
-                RockCacheManager<object>.Instance.Cache.Get( key, region ) :
-                RockCacheManager<object>.Instance.Cache.Get( key );
+            var args = new RockCacheGetOrAddExistingArgs
+            {
+                Key = key,
+                Region = region,
+                ItemFactory = itemFactory,
+                Expiration = expiration,
+                AllowCacheBypass = false
+            };
+            
+            return GetOrAddExisting(args);
+        }
+
+        /// <summary>
+        /// Gets or adds an item from cache using the specified args. If allowCacheBypass is true the CACHE_CONTROL_COOKIE will be
+        /// inspected to see if cached value should be ignored.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        public static object GetOrAddExisting( RockCacheGetOrAddExistingArgs args )
+        {
+            if ( args.AllowCacheBypass && System.Web.HttpContext.Current != null )
+            {
+                var isCachedEnabled = System.Web.HttpContext.Current.Request.Cookies.Get( CACHE_CONTROL_COOKIE );
+                if ( isCachedEnabled != null && !isCachedEnabled.Value.AsBoolean() )
+                {
+                    return null;
+                }
+            }
+
+            var value = args.Region.IsNotNullOrWhiteSpace() ?
+                RockCacheManager<object>.Instance.Cache.Get( args.Key, args.Region ) :
+                RockCacheManager<object>.Instance.Cache.Get( args.Key );
 
             if ( value != null )
             {
                 return value;
             }
 
-            if ( itemFactory == null )
+            if ( args.ItemFactory == null )
             {
                 return null;
             }
 
-            value = itemFactory();
+            value = args.ItemFactory();
             if ( value == null )
             {
                 return null;
             }
 
-            if ( region.IsNotNullOrWhiteSpace() )
+            if ( args.Region.IsNotNullOrWhiteSpace() )
             {
-                RockCacheManager<object>.Instance.AddOrUpdate( key, region, value, expiration );
+                RockCacheManager<object>.Instance.AddOrUpdate( args.Key, args.Region, value, args.Expiration );
             }
             else
             {
-                RockCacheManager<object>.Instance.AddOrUpdate( key, value, expiration );
+                RockCacheManager<object>.Instance.AddOrUpdate( args.Key, value, args.Expiration );
             }
 
             return value;
@@ -736,6 +791,52 @@ namespace Rock.Web.Cache
             /// The key.
             /// </value>
             public string Key { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Class for passing parameters to GetOrAddExisting methods.
+        /// </summary>
+        public class RockCacheGetOrAddExistingArgs
+        {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the region.
+            /// </summary>
+            /// <value>
+            /// The region.
+            /// </value>
+            public string Region { get; set; }
+
+            /// <summary>
+            /// Gets or sets the item factory.
+            /// </summary>
+            /// <value>
+            /// The item factory.
+            /// </value>
+            public Func<object> ItemFactory { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expiration.
+            /// </summary>
+            /// <value>
+            /// The expiration.
+            /// </value>
+            public TimeSpan Expiration { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can bypass.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can bypass; otherwise, <c>false</c>.
+            /// </value>
+            public bool AllowCacheBypass { get; set; }
         }
         #endregion
     }
