@@ -135,6 +135,7 @@
     <Compile Include="Communications\Transport\SMTPTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
@@ -144,6 +145,8 @@
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
+    <Compile Include="Model\ConnectionRequestServiceTests.cs" />
+    <Compile Include="Model\CommunicationServiceTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />

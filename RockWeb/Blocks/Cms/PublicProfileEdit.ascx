@@ -3,153 +3,26 @@
 <asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>
 
-        <script>
-            $(function () {
-                $(".photo a").fluidbox();
-            });
-        </script>
-
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;My Account</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-user"></i>
+                    My Account
+                </h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
+
+                <asp:HiddenField ID="hfGroupId" runat="server" />
+
+                <%-- View Panel --%>
                 <asp:Panel ID="pnlView" CssClass="panel-view" runat="server">
-                    <div class="row">
-
-                        <div class="col-sm-3">
-                            <div class="photo">
-                                <asp:Literal ID="lImage" runat="server" />
-                            </div>
-                        </div>
-
-                        <div class="col-sm-9">
-                            <h1 class="title name">
-                                <asp:Literal ID="lName" runat="server" /><div class="pull-right">
-                                    <Rock:RockDropDownList ID="ddlGroup" runat="server" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" Visible="false" />
-                                </div>
-                            </h1>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="person-demographics list-unstyled">
-                                        <li>
-                                            <asp:Literal ID="lAge" runat="server" /></li>
-                                        <li>
-                                            <asp:Literal ID="lGender" runat="server" /></li>
-                                        <li>
-                                            <asp:Literal ID="lMaritalStatus" runat="server" /></li>
-                                        <li>
-                                            <asp:Literal ID="lGrade" runat="server" /></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <asp:PlaceHolder ID="phPhoneDisplay" runat="server">
-                                    <ul class="phone-list list-unstyled">
-                                        <asp:Repeater ID="rptPhones" runat="server">
-                                            <ItemTemplate>
-                                                <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Value") %></small></li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                    </asp:PlaceHolder>
-                                    <asp:Literal ID="lEmail" runat="server" />
-                                </div>
-                            </div>
-                            <asp:Literal ID="lAddress" runat="server" />
-                            <br />
-                            <div class="row">
-                                <asp:Repeater ID="rptPersonAttributes" runat="server">
-                                    <ItemTemplate>
-                                        <div class="col-md-6">
-                                            <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <asp:Literal ID="lFamilyHeader" runat="server" Text="<h4>Family Information</h4>" Visible="false" />
-                                </div>
-                                <asp:Repeater ID="rptGroupAttributes" runat="server">
-                                    <ItemTemplate>
-                                        <div class="col-md-6">
-                                            <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
-                            <br />
-                            <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click" CausesValidation="false"> Update</asp:LinkButton>
-                        </div>
-                    </div>
-                    <hr />
-
-                    <h3>
-                        <asp:Literal ID="lGroupName" runat="server" />
-                    </h3>
-                    <asp:Repeater ID="rptGroupMembers" runat="server" OnItemDataBound="rptGroupMembers_ItemDataBound" OnItemCommand="rptGroupMembers_ItemCommand">
-                        <ItemTemplate>
-                            <div class="row">
-                                <div class="col-md-1">
-                                    <div class="photo">
-                                        <asp:Literal ID="lGroupMemberImage" runat="server" />
-                                    </div>
-                                </div>
-                                <div class="col-md-11">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <b>
-                                                <asp:Literal ID="lGroupMemberName" runat="server" /></b>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <ul class="person-demographics list-unstyled">
-                                                <li>
-                                                    <asp:Literal ID="lAge" runat="server" /></li>
-                                                <li>
-                                                    <asp:Literal ID="lGender" runat="server" /></li>
-                                                <li>
-                                                    <asp:Literal ID="lMaritalStatus" runat="server" /></li>
-                                                <li>
-                                                    <asp:Literal ID="lGrade" runat="server" /></li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <ul class="phone-list list-unstyled">
-                                                <asp:Repeater ID="rptGroupMemberPhones" runat="server">
-                                                    <ItemTemplate>
-                                                        <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Value") %></small></li>
-                                                    </ItemTemplate>
-                                                </asp:Repeater>
-                                            </ul>
-                                            <asp:Literal ID="lGroupMemberEmail" runat="server" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <asp:Repeater ID="rptGroupMemberAttributes" runat="server">
-                                            <ItemTemplate>
-                                                <div class="col-md-6">
-                                                    <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
-                                                </div>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </div>
-                                    <div class="row pull-right">
-                                        <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-primary btn-xs" CommandArgument='<%# Eval("Person.Guid") %>' CommandName="Update"> Update</asp:LinkButton>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                        </ItemTemplate>
-                    </asp:Repeater>
-                    <asp:LinkButton ID="lbAddGroupMember" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbAddGroupMember_Click"> Add New Family Member</asp:LinkButton>
-
-                    <asp:LinkButton ID="lbRequestChanges" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbRequestChanges_Click"> Request Additional Changes</asp:LinkButton>
+                    <asp:Literal ID="lViewPersonContent" runat="server" />
                 </asp:Panel>
 
-                <asp:HiddenField ID="hfPersonGuid" runat="server" />
+                <asp:HiddenField ID="hfEditPersonGuid" runat="server" />
 
+                <%-- Edit Panel --%>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <div class="row">
@@ -189,28 +62,20 @@
                     <hr />
 
                     <asp:Panel ID="pnlPersonAttributes" runat="server">
-                        <div class="panel-heading clearfix">
-                            <h4 class="panel-title pull-left">Additional Information</h4>
-                        </div>
-                        <div class="panel-body">
-                            <Rock:DynamicPlaceHolder ID="phPersonAttributes" runat="server" />
-                        </div>
+                            <h3>Additional Information</h3>
+                            <Rock:DynamicPlaceholder ID="phPersonAttributes" runat="server" />
                         <hr />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlFamilyAttributes" runat="server">
-                        <div class="panel-heading clearfix">
-                            <h4 class="panel-title pull-left">Family Information</h4>
-                        </div>
-                        <div class="panel-body">
-                            <Rock:DynamicPlaceHolder ID="phFamilyAttributes" runat="server" />
-                        </div>
+                            <h3>Family Information</h3>
+                            <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
                         <hr />
                     </asp:Panel>
 
                     <h3>Contact Info</h3>
                     <div class="row">
-                        <div class="col-md-10 col-md-offset-2">
+                        <div class="col-md-12">
                             <div class="form-group">
                                 <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="Email Address" />
                             </div>
@@ -222,56 +87,53 @@
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
                                 </Rock:RockRadioButtonList>
 
-                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
+                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference">
                                     <asp:ListItem Text="Email" Value="1" />
                                     <asp:ListItem Text="SMS" Value="2" />
                                 </Rock:RockRadioButtonList>
+
+                                <Rock:NotificationBox ID="nbCommunicationPreferenceWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                             </div>
                         </div>
                     </div>
 
                     <asp:Panel ID="pnlPhoneNumbers" runat="server">
-                    <h3>Phone Numbers</h3>
-                    <div class="form-horizontal">
-                        <asp:Repeater ID="rContactInfo" runat="server">
-                            <ItemTemplate>
-                                <div id="divPhoneNumberContainer" runat="server" class="form-group">
-                                    <div class="control-label col-md-2"><%# Eval("NumberTypeValue.Value")  %></div>
-                                    <div class="controls col-md-10">
-                                        <div class="row">
-                                            <div class="col-md-7">
-                                                <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
-                                            </div>
-                                            <div class="col-md-5">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
-                                                    </div>
+                        <h3>Phone Numbers</h3>
+                        <div class="form-horizontal">
+                            <asp:Repeater ID="rContactInfo" runat="server">
+                                <ItemTemplate>
+                                    <div id="divPhoneNumberContainer" runat="server" class="form-group">
+                                        <div class="control-label col-md-2 mb-2 mb-md-0 text-left text-md-right"><%# Eval("NumberTypeValue.Value") %></div>
+                                        <div class="controls col-md-10">
+                                            <div class="row">
+                                                <div class="col-sm-7">
+                                                    <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
+                                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
+                                                </div>
+                                                <div class="col-sm-5 text-right text-sm-left">
+                                                    <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' DisplayInline="true" CssClass="js-sms-number" />
+                                                    <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' DisplayInline="true" />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
+                                </ItemTemplate>
+                            </asp:Repeater>
 
-                    </div>
+                        </div>
                     </asp:Panel>
 
                     <asp:Panel ID="pnlAddress" runat="server">
                         <fieldset>
-                            <h3><asp:Literal ID="lAddressTitle" runat="server" /></h3>
-
+                            <h3>
+                                <asp:Literal ID="lAddressTitle" runat="server" />
+                            </h3>
 
                             <div class="clearfix">
-                                <div class="pull-left margin-b-md">
+                                <div class="pull-left mb-3">
                                     <asp:Literal ID="lPreviousAddress" runat="server" />
                                 </div>
-                                <div class="pull-right">
+                                <div class="pull-right mb-3">
                                     <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
                                 </div>
                             </div>
@@ -285,7 +147,7 @@
 
                             <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
 
-                            <div class="margin-b-md">
+                            <div class="mb-3">
                                 <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" />
                                 <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" />
                             </div>

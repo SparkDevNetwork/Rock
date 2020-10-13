@@ -337,6 +337,8 @@
                             <Rock:RockLiteralField ID="lState" HeaderText="State" />
                             <Rock:RockLiteralField ID="lStatus" HeaderText="Status" />
                             <Rock:SecurityField />
+                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                            <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </ContentTemplate>
@@ -701,7 +703,7 @@
 </script>
 
 <script id="js-template-card" type="text/template">
-    <div class="board-card js-board-card" data-request-id="{{Id}}">
+    <div class="board-card js-board-card" data-request-id="{{Id}}" data-opportunity-id="{{ConnectionOpportunityId}}">
         <div class="board-card-content js-board-card-content">
             <div class="d-flex justify-content-between">
                 {{StatusIconsHtml}}

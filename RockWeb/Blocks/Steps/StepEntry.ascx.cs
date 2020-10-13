@@ -582,6 +582,7 @@ namespace RockWeb.Blocks.Steps
 
             rdpEndDate.Visible = stepType.HasEndDate;
             rdpStartDate.Label = stepType.HasEndDate ? "Start Date" : "Date";
+            rdpStartDate.Required = stepType.IsDateRequired;
 
             var step = GetStep();
             if ( step != null )

@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -146,10 +162,18 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, false );
             var attributeFilteredDocumentType = GetAttributeValue( action, AttributeKey.DocumentType ).Split( ',' ).Select( int.Parse ).FirstOrDefault();
-            var documentype = documentypesForContextEntityType.FirstOrDefault( d => attributeFilteredDocumentType == d.Id );
-            if ( documentype == null )
+            var documentType = DocumentTypeCache.Get( attributeFilteredDocumentType );
+            if ( documentType == null )
+            {
+                var message = $"Document Type could not be found for selected value ('{attributeFilteredDocumentType}')!";
+                errorMessages.Add( message );
+                action.AddLogEntry( message, true );
+                return false;
+            }
+
+            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, true );
+            if ( !documentypesForContextEntityType.Any( d => attributeFilteredDocumentType == d.Id ) )
             {
                 var message = "The Document Type does not match the selected entity type.";
                 errorMessages.Add( message );
@@ -178,7 +202,7 @@ namespace Rock.Workflow.Action
             document.Name = documentName;
             document.Description = GetAttributeValue( action, AttributeKey.DocumentDescription ).ResolveMergeFields( mergeFields );
             document.EntityId = entityObject.Id;
-            document.DocumentTypeId = documentype.Id;
+            document.DocumentTypeId = documentType.Id;
             document.SetBinaryFile( binaryFile.Id, rockContext );
 
             var documentService = new DocumentService( rockContext );

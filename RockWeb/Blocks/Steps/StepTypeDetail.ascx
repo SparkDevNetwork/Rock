@@ -148,6 +148,14 @@
                                 RepeatDirection="Vertical"
                                 DataValueField="Id"
                                 DataTextField="Name" />
+                            <Rock:RockCheckBox ID="cbRequireDate"
+                                runat="server"
+                                SourceTypeName="Rock.Model.StepType, Rock"
+                                PropertyName="IsDateRequired"
+                                Label="Is Date Required"
+                                Help="Determines if the date for the step is required."
+                                Checked="false"
+                                Text="Yes" />
                         </div>
                     </div>
 

@@ -55,10 +55,11 @@ namespace Rock.Model
         /// <summary>
         /// Doeses the status change cause workflows.
         /// </summary>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
         /// <param name="fromStatusId">From status identifier.</param>
         /// <param name="toStatusId">To status identifier.</param>
         /// <returns></returns>
-        public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int fromStatusId, int toStatusId )
+        public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int connectionOpportunityId, int fromStatusId, int toStatusId )
         {
             var rockContext = Context as RockContext;
             var connectionStatusService = new ConnectionStatusService( rockContext );
@@ -79,14 +80,8 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( cw => cw.TriggerType == ConnectionWorkflowTriggerType.StatusChanged )
                 .Where( cw =>
-                    (
-                        cw.ConnectionType.ConnectionStatuses.Any( cs => cs.Id == fromStatusId ) &&
-                        cw.ConnectionType.ConnectionStatuses.Any( cs => cs.Id == toStatusId )
-                    ) ||
-                    (
-                        cw.ConnectionOpportunity.ConnectionType.ConnectionStatuses.Any( cs => cs.Id == fromStatusId ) &&
-                        cw.ConnectionOpportunity.ConnectionType.ConnectionStatuses.Any( cs => cs.Id == toStatusId )
-                    ) );
+                    cw.ConnectionType.ConnectionOpportunities.Any( co => co.Id == connectionOpportunityId ) ||
+                    cw.ConnectionOpportunityId == connectionOpportunityId );
 
             var startsWith = string.Format( "|{0}|", fromStatusId );
             workflowQuery = workflowQuery.Where( cw =>
@@ -422,7 +417,7 @@ namespace Rock.Model
             // Filter state
             if ( args.ConnectionStates?.Any() == true )
             {
-                connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState.ToString() ) );
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
             }
 
             // Filter last activity
@@ -625,7 +620,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the connection states.
         /// </summary>
-        public List<string> ConnectionStates { get; set; }
+        public List<ConnectionState> ConnectionStates { get; set; }
 
         /// <summary>
         /// Gets or sets the last activity type ids.
