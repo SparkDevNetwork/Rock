@@ -449,8 +449,9 @@ namespace Rock.Web
                 // merge route parm values
                 foreach ( KeyValuePair<string, string> parm in routeParms )
                 {
-                    // merge field
-                    routeUrl = routeUrl.Replace( parm.Value, HttpUtility.UrlEncode( parms[parm.Key] ) );
+                    // merge field. This has to be UrlPathEncode to ensure a space is replaced with a
+                    // %20 instead of + since this is to the left of the query string delimeter.
+                    routeUrl = routeUrl.Replace( parm.Value, HttpUtility.UrlPathEncode( parms[parm.Key] ) );
 
                     // remove parm from dictionary
                     parms.Remove( parm.Key );
