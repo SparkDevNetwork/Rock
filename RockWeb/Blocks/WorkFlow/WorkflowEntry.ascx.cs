@@ -695,41 +695,47 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             phActions.Controls.Clear();
-            foreach ( var action in form.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+
+            var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
+
+            foreach ( var button in buttons )
             {
-                var details = action.Split( new char[] { '^' } );
-                if ( details.Length > 0 )
+                // Get the button html
+                string buttonHtml = string.Empty;
+
+                var definedValue = DefinedValueCache.Get( button.ButtonTypeGuid.AsGuid() );
+                if ( definedValue != null )
                 {
-                    // Get the button html
-                    string buttonHtml = string.Empty;
-                    if ( details.Length > 1 )
-                    {
-                        var definedValue = DefinedValueCache.Get( details[1].AsGuid() );
-                        if ( definedValue != null )
-                        {
-                            buttonHtml = definedValue.GetAttributeValue( "ButtonHTML" );
-                        }
-                    }
-
-                    if ( string.IsNullOrWhiteSpace( buttonHtml ) )
-                    {
-                        buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
-                    }
-
-                    var buttonMergeFields = new Dictionary<string, object>();
-                    buttonMergeFields.Add( "ButtonText", details[0].EncodeHtml() );
-                    buttonMergeFields.Add( "ButtonClick",
-                            string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
-                            BlockValidationGroup ) );
-                    buttonMergeFields.Add( "ButtonLink", Page.ClientScript.GetPostBackClientHyperlink( this, details[0] ) );
-
-                    buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
-
-                    phActions.Controls.Add( new LiteralControl( buttonHtml ) );
-                    phActions.Controls.Add( new LiteralControl( " " ) );
+                    buttonHtml = definedValue.GetAttributeValue( "ButtonHTML" );
                 }
-            }
 
+                if ( string.IsNullOrWhiteSpace( buttonHtml ) )
+                {
+                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                }
+
+                var buttonMergeFields = new Dictionary<string, object>();
+                buttonMergeFields.Add( "ButtonText", button.ActionName.EncodeHtml() );
+
+                string clickScript;
+
+                if ( button.CausesValidation )
+                {
+                    clickScript = string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}", BlockValidationGroup );
+                }
+                else
+                {
+                    clickScript = "$(this).button('loading'); return true;";
+                }
+
+                buttonMergeFields.Add( "ButtonClick", clickScript );
+                buttonMergeFields.Add( "ButtonLink", Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName ) );
+
+                buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
+
+                phActions.Controls.Add( new LiteralControl( buttonHtml ) );
+                phActions.Controls.Add( new LiteralControl( " " ) );
+            }
         }
 
         private void ShowNotes( bool visible )
@@ -801,21 +807,28 @@ namespace RockWeb.Blocks.WorkFlow
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted successfully.";
 
-                foreach ( var action in _actionType.WorkflowForm.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    var actionDetails = action.Split( new char[] { '^' } );
-                    if ( actionDetails.Length > 0 && actionDetails[0] == formAction )
-                    {
-                        if ( actionDetails.Length > 2 )
-                        {
-                            activityTypeGuid = actionDetails[2].AsGuid();
-                        }
+                // If the selected action requires valid form data, trigger page validation and discontinue processing if there are any errors.
+                var buttons = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
 
-                        if ( actionDetails.Length > 3 && !string.IsNullOrWhiteSpace( actionDetails[3] ) )
+                var button = buttons.FirstOrDefault( x => x.ActionName == formAction );
+
+                if ( button != null )
+                {
+                    if ( button.CausesValidation )
+                    {
+                        Page.Validate();
+
+                        if ( !Page.IsValid )
                         {
-                            responseText = actionDetails[3].ResolveMergeFields( mergeFields );
+                            return;
                         }
-                        break;
+                    }
+
+                    activityTypeGuid = button.ActivateActivityTypeGuid.AsGuid();
+
+                    if ( !string.IsNullOrWhiteSpace( button.ResponseText ) )
+                    {
+                        responseText = button.ResponseText.ResolveMergeFields( mergeFields );
                     }
                 }
 
