@@ -373,14 +373,10 @@ namespace Rock.Web.UI.Controls
             // Buttons
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _btnSave.RenderControl( writer );
             _btnCancel.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
             writer.RenderEndTag(); // row
