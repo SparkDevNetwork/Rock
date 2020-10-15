@@ -276,13 +276,11 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                filteredDocumentTypes = filteredDocumentTypes.Where( d => !editAccessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
+                filteredDocumentTypes = filteredDocumentTypes
+                    .Where( d => !editAccessDeniedForDocumentTypeList.Contains( d.Id ) );
             }
 
-            if ( isNew )
-            {
-                filteredDocumentTypes = filteredDocumentTypes.Where( a => ( !isNew || a.UserSelectable ) ).ToList();
-            }
+            filteredDocumentTypes = filteredDocumentTypes.Where( a => !isNew || a.UserSelectable );
 
             ddlAddEditDocumentType.Items.Clear();
             ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -299,7 +297,7 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Get filtered document Types
         /// </summary>
-        private List<DocumentTypeCache> GetFilteredDocumentTypes()
+        private IEnumerable<DocumentTypeCache> GetFilteredDocumentTypes()
         {
             var contextEntity = this.ContextEntity();
             if ( contextEntity == null )
@@ -349,7 +347,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // Create the list of document types that are valid for this entity, satisfy EntityTypeQualifiers, and that the current user has rights to view
-            return documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
+            return documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) );
         }
 
         #endregion Private Methods
