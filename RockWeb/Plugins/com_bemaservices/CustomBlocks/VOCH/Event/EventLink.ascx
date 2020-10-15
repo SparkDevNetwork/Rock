@@ -257,7 +257,6 @@
                                         </div>
                                     </div>
                                     <div class="col-md-5">
-                                      
                                     </div>
                                 </div>
 
@@ -282,9 +281,8 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <Rock:NotificationBox ID="nbVoxKids" runat="server" Visible="false" NotificationBoxType="Info" />
-                                        <Rock:RockTextBox ID="tbChildcareDuringEvent" runat="server" Label="Childcare During Event" />
-                                        <Rock:RockTextBox ID="tbVoxClassrooms" runat="server" Label="VoxKids classrooms or programming during event" />
-                                        <Rock:RockTextBox ID="tbNeededResources" runat="server" Label="Needed Resources for Kids" />
+                                        <Rock:DynamicPlaceholder ID="phVoxKids" runat="server" />
+
                                     </div>
                                 </div>
                             </div>
@@ -304,8 +302,8 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <Rock:NotificationBox ID="nbVoxMusic" runat="server" Visible="false" NotificationBoxType="Info" />
-                                        <Rock:RockTextBox ID="tbWorshipLength" runat="server" Label="Length of Worship Time" />
-                                        <Rock:RockTextBox ID="tbWorshipType" runat="server" Label="VType of worship setting" Help="Acoustic, Modern, Traditional" />
+                                        <Rock:DynamicPlaceholder ID="phVoxMusic" runat="server" />
+
                                     </div>
                                 </div>
                             </div>
@@ -325,11 +323,7 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <Rock:NotificationBox ID="nbProduction" runat="server" Visible="false" NotificationBoxType="Info" />
-                                        <Rock:RockTextBox ID="tbTechPositions" runat="server" Label="Tech Positions Needed" />
-                                        <Rock:RockTextBox ID="tbVideoNeeds" runat="server" Label="Video Needs" />
-                                        <Rock:RockTextBox ID="tbSoundGear" runat="server" Label="Sound Gear" />
-                                        <Rock:RockTextBox ID="tbLightingGear" runat="server" Label="Lighting Gear" />
-                                        <Rock:RockTextBox ID="tbProPresenter" runat="server" Label="Pro Presenter Needs" />
+                                        <Rock:DynamicPlaceholder ID="phVoxProduction" runat="server" />
                                     </div>
                                 </div>
                             </div>

@@ -51,12 +51,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
     [LinkedPage( "Result Page", "A page to redirect user to after they have created an Event", true, "", "", 1, BemaAttributeKey.ResultPage )]
     [WorkflowTypeField( "Event Link Workflow", "The workflow to save the data into.", true, false, "", "", 2, BemaAttributeKey.EventLinkWorkflow )]
     [WorkflowTypeField( "Event Registration Workflow", "The workflow to save the data into.", true, false, "", "", 3, BemaAttributeKey.EventRegistrationWorkflow )]
-    [CategoryField( "Category Selection", "A top category to use for selecting the defaults.", false, "Rock.Model.RegistrationTemplate", "", "", false, "", "", 4, BemaAttributeKey.CategorySelection )]
+    [WorkflowTypeField( "Vox Kids Workflow", "The workflow to save the data into.", true, false, "", "", 4, BemaAttributeKey.VoxKidsWorkflow )]
+    [WorkflowTypeField( "Vox Music Workflow", "The workflow to save the data into.", true, false, "", "", 5, BemaAttributeKey.VoxMusicWorkflow )]
+    [WorkflowTypeField( "Vox Production Workflow", "The workflow to save the data into.", true, false, "", "", 6, BemaAttributeKey.VoxProductionWorkflow )]
+    [CategoryField( "Category Selection", "A top category to use for selecting the defaults.", false, "Rock.Model.RegistrationTemplate", "", "", false, "", "", 7, BemaAttributeKey.CategorySelection )]
 
-    [TextField( "Room Reservation Instruction Text", "Instructions for the Room Reservation tab", false, "", "", 5, BemaAttributeKey.RoomReservationInstructionText )]
-    [TextField( "Event Registration Instruction Text", "Instructions for the Event Registration tab", false, "", "", 6, BemaAttributeKey.EventRegistrationInstructionText )]
-    [TextField( "Calendar Instruction Text", "Instructions for the Calendar tab", false, "", "", 6, BemaAttributeKey.CalendarInstructionText )]
-    [ContentChannelField( "Content Channel", "The Channel to save Content Items to", true, "", "", 7, BemaAttributeKey.ContentChannel )]
+    [TextField( "Room Reservation Instruction Text", "Instructions for the Room Reservation tab", false, "", "", 8, BemaAttributeKey.RoomReservationInstructionText )]
+    [TextField( "Event Registration Instruction Text", "Instructions for the Event Registration tab", false, "", "", 9, BemaAttributeKey.EventRegistrationInstructionText )]
+    [TextField( "Calendar Instruction Text", "Instructions for the Calendar tab", false, "", "", 10, BemaAttributeKey.CalendarInstructionText )]
+    [ContentChannelField( "Content Channel", "The Channel to save Content Items to", true, "", "", 11, BemaAttributeKey.ContentChannel )]
 
     public partial class EventLink : RockBlock
     {
@@ -66,6 +69,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             public const string ResultPage = "ResultPage";
             public const string EventLinkWorkflow = "EventLinkWorkflow";
             public const string EventRegistrationWorkflow = "EventRegistrationWorkflow";
+            public const string VoxKidsWorkflow = "VoxKidsWorkflow";
+            public const string VoxMusicWorkflow = "VoxMusicWorkflow";
+            public const string VoxProductionWorkflow = "VoxProductionWorkflow";
             public const string CategorySelection = "CategorySelection";
             public const string RoomReservationInstructionText = "RoomReservationInstructionText";
             public const string EventRegistrationInstructionText = "EventRegistrationInstructionText";
@@ -100,6 +106,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
         ContentChannelItem _contentChannelItem = null;
         Workflow _workflow = null;
         Workflow _eventRegistrationWorkflow = null;
+        Workflow _voxMusicWorkflow = null;
+        Workflow _voxKidsWorkflow = null;
+        Workflow _voxProductionWorkflow = null;
         bool _autoFill = true;
         bool _isValidSettings = true;
 
@@ -230,6 +239,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     pnlContentItem.Visible = ( tEventCalendar.Checked || tEventReg.Checked );
                     ShowItemAttributes();
                     ShowPromotionAttributes();
+                    ShowVoxAttributes();
                     ShowDialog();
                 }
             }
@@ -312,6 +322,24 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                         workflow.SetAttributeValue( "ContentChannelItem", _contentChannelItem.Guid );
                     }
 
+                    if ( tVoxKids.Checked == true )
+                    {
+                        SaveVoxKidsWorkflow();
+                        workflow.SetAttributeValue( "VoxKidsWorkflow", _voxKidsWorkflow.Guid );
+                    }
+
+                    if ( tVoxMusic.Checked == true )
+                    {
+                        SaveVoxMusicWorkflow();
+                        workflow.SetAttributeValue( "VoxMusicWorkflow", _voxMusicWorkflow.Guid );
+                    }
+
+                    if ( tProduction.Checked == true )
+                    {
+                        SaveVoxProductionWorkflow();
+                        workflow.SetAttributeValue( "VoxProductionWorkflow", _voxProductionWorkflow.Guid );
+                    }
+
                     workflow.SaveAttributeValues( rockContext );
                 }
 
@@ -364,6 +392,46 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
                     {
                         //phPromotionAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
                         Rock.Attribute.Helper.AddEditControls( contentItem, phPromotionAttributes, true, BlockValidationGroup, 2 );
+                    }
+                }
+            }
+        }
+
+        private void ShowVoxAttributes()
+        {
+            var voxKidsWorkflowTypeGuid = GetAttributeValue( BemaAttributeKey.VoxKidsWorkflow );
+            LoadWorkflowAttributes( voxKidsWorkflowTypeGuid, phVoxKids );
+
+            var voxMusicWorkflowTypeGuid = GetAttributeValue( BemaAttributeKey.VoxMusicWorkflow );
+            LoadWorkflowAttributes( voxMusicWorkflowTypeGuid, phVoxMusic );
+
+            var voxProductionWorkflowTypeGuid = GetAttributeValue( BemaAttributeKey.VoxProductionWorkflow );
+            LoadWorkflowAttributes( voxProductionWorkflowTypeGuid, phVoxProduction );
+
+
+        }
+
+        private void LoadWorkflowAttributes( string voxWorkflowTypeGuid, DynamicPlaceholder phVoxWorkflow )
+        {
+            phVoxWorkflow.Controls.Clear();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+
+                var workflowType = workflowTypeService.Get( voxWorkflowTypeGuid.AsGuid() );
+                if ( workflowType != null )
+                {
+
+                    var workflow = new Workflow();
+                    workflow.WorkflowType = workflowType;
+                    workflow.WorkflowTypeId = workflowType.Id;
+                    workflow.LoadAttributes();
+
+                    if ( workflow.Attributes.Count > 0 )
+                    {
+                        var excludedAttributeKey = workflow.Attributes.Where( a => a.Value.IsGridColumn != true ).Select( a => a.Key ).ToList();
+                        Rock.Attribute.Helper.AddEditControls( workflow, phVoxWorkflow, true, BlockValidationGroup, excludedAttributeKey );
                     }
                 }
             }
@@ -1127,7 +1195,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
 
                 _registrationInstance = instance;
 
-                _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext );
+                _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.EventRegistrationWorkflow );
                 if ( _eventRegistrationWorkflow != null )
                 {
                     _eventRegistrationWorkflow.SetAttributeValue( "RegistrationInstance", _registrationInstance.Guid );
@@ -1137,12 +1205,51 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             }
         }
 
-        private Workflow ProcessEventLinkWorkflow( RockContext rockContext )
+        public void SaveVoxKidsWorkflow()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                _voxKidsWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.VoxKidsWorkflow );
+                if ( _voxKidsWorkflow != null )
+                {
+                    Rock.Attribute.Helper.GetEditValues( phVoxKids, _voxKidsWorkflow );
+                }
+                _voxKidsWorkflow.SaveAttributeValues( rockContext );
+            }
+        }
+
+        public void SaveVoxMusicWorkflow()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                _voxMusicWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.VoxMusicWorkflow );
+                if ( _voxMusicWorkflow != null )
+                {
+                    Rock.Attribute.Helper.GetEditValues( phVoxMusic, _voxMusicWorkflow );
+                }
+                _voxMusicWorkflow.SaveAttributeValues( rockContext );
+            }
+        }
+
+        public void SaveVoxProductionWorkflow()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                _voxProductionWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.VoxProductionWorkflow );
+                if ( _voxProductionWorkflow != null )
+                {
+                    Rock.Attribute.Helper.GetEditValues( phVoxProduction, _voxProductionWorkflow );
+                }
+                _voxProductionWorkflow.SaveAttributeValues( rockContext );
+            }
+        }
+
+        private Workflow ProcessEventLinkWorkflow( RockContext rockContext, string workflowKey )
         {
             Workflow workflow = null;
             var workflowService = new WorkflowService( rockContext );
 
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( BemaAttributeKey.EventRegistrationWorkflow ) );
+            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( workflowKey ) );
             if ( workflowType != null )
             {
                 workflow = Workflow.Activate( workflowType, tbEventName.Text );
