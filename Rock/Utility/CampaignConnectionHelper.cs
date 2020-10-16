@@ -654,12 +654,12 @@ namespace Rock.Utility
         internal static bool PersonAlreadyHasConnectionRequest( int connectionOpportunityId, RockContext rockContext, DateTime lastConnectionDateTime, int personId )
         {
             return new ConnectionRequestService( rockContext )
-                                .Queryable()
-                                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
-                                    && ( a.ConnectionState == ConnectionState.Active
-                                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                                         || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
-                                .Any();
+                .Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
+                    && ( a.ConnectionState == ConnectionState.Active
+                            || a.ConnectionState == ConnectionState.FutureFollowUp
+                            || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                .Any();
         }
 
         /// <summary>
