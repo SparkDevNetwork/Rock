@@ -12,42 +12,30 @@
   }
 
   body {
-    font-size: 10px;
+    font-size: 12px;
+    color: #000;
+    background-color: #fff;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #content-wrapper,
+  .page-wrapper {
+    padding: 0;
+    margin: 0;
   }
 
   // default sidebar navs on most pages
-  .nav-sub {
-    display: none;
-  }
-
-  // admin bar on bottom right
-  #cms-admin-footer {
+  .nav-sub,
+  .navbar-static-side,
+  #cms-admin-footer,
+  .breadcrumb,
+  .main-footer {
     display: none;
   }
 
   // don't show URLs after links
   a[href]::after {
     content: "" !important;
-  }
-
-  // center the page better after removing the left nav
-  #page-wrapper {
-    position: absolute;
-    left: -70px;
-  }
-
-  #content-wrapper {
-    margin-left: 70px !important;
-  }
-
-  // remove the breadcrumbs
-  .breadcrumb {
-    display: none;
-  }
-
-  // Remove the footer
-  footer {
-    display: none;
   }
 
   // style panels
