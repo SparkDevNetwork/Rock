@@ -251,7 +251,23 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            return locationList.SelectedValue;
+            var locationId = locationList.SelectedValue.AsIntegerOrNull();
+            if ( locationId == null )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+                var location = locationService.Get( locationId.Value );
+
+                if ( location != null )
+                {
+                    return location.Guid.ToString();
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -269,7 +285,22 @@ namespace Rock.Field.Types
                 return;
             }
 
-            locationList.SelectedValue = value;
+            var locationGuid = value.AsGuid();
+            if ( locationGuid.IsEmpty() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+                var location = locationService.Get( locationGuid );
+
+                if ( location != null )
+                {
+                    locationList.SelectedValue = location.Id.ToString();
+                }
+            }
         }
         #endregion
 
@@ -284,8 +315,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var locationId = value.AsIntegerOrNull();
-            if ( locationId == null )
+            var locationGuid = value.AsGuid();
+            if ( locationGuid.IsEmpty() )
             {
                 return string.Empty;
             }
@@ -293,7 +324,7 @@ namespace Rock.Field.Types
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
-                var location = locationService.Get( locationId.Value );
+                var location = locationService.Get( locationGuid );
 
                 if ( configurationValues.GetConfigurationValueAsString( ConfigurationKey.ShowCityState ).AsBoolean() )
                 {
