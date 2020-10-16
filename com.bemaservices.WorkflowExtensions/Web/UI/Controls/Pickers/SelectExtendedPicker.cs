@@ -538,7 +538,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             _childEditControl.Items.Clear();
             if ( selectedParentValue.IsNotNullOrWhiteSpace() )
             {
-                _childEditControl.Items.Add( Rock.Constants.None.ListItem );
+               // _childEditControl.Items.Add( Rock.Constants.None.ListItem );
 
                 foreach ( var keyVal in GetFilteredChildValues( ChildValues, selectedParentValue ) )
                 {
