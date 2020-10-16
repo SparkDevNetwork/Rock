@@ -276,11 +276,13 @@ namespace RockWeb.Blocks.CheckIn
         private const string ATTENDANCE_DATE = "attendance_date";
         private const string ATTENDANCE_SETTING = "AttendanceSetting";
         private const string SEARCH_RESULTS_JSON = "SearchResultsJSON";
+        private const string PERSON_INPUTS_JSON = "PersonInputsJSON";
         private const string SELECTED_GROUP_ID = "SelectedGroupId";
         private const string SELECTED_PERSON_ID = "SelectedPersonId";
 
         private AttendanceSetting _attendanceSettingState;
         private List<SearchResult> _searchResultsState;
+        private List<PersonInput> _personInputsState;
         private int? _selectedGroupId;
 
         #endregion Fields
@@ -414,6 +416,7 @@ namespace RockWeb.Blocks.CheckIn
             SelectedPersonId = ViewState[SELECTED_PERSON_ID] as int?;
             _attendanceSettingState = ViewState[ATTENDANCE_SETTING] as AttendanceSetting;
             _searchResultsState = ( this.ViewState[SEARCH_RESULTS_JSON] as string ).FromJsonOrNull<List<SearchResult>>() ?? new List<SearchResult>();
+            _personInputsState = ( this.ViewState[PERSON_INPUTS_JSON] as string ).FromJsonOrNull<List<PersonInput>>() ?? new List<PersonInput>();
         }
 
         /// <summary>
@@ -453,6 +456,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !IsPostBack )
             {
+                _personInputsState = new List<PersonInput>();
                 ShowDetails();
             }
         }
@@ -469,6 +473,7 @@ namespace RockWeb.Blocks.CheckIn
             ViewState[SEARCH_RESULTS_JSON] = _searchResultsState.ToJson();
             ViewState[SELECTED_PERSON_ID] = SelectedPersonId;
             ViewState[SELECTED_GROUP_ID] = _selectedGroupId;
+            ViewState[PERSON_INPUTS_JSON] = _personInputsState.ToJson();
             return base.SaveViewState();
         }
 
@@ -646,6 +651,7 @@ namespace RockWeb.Blocks.CheckIn
             hfAttendanceDirty.Value = "false";
             hfPersonDirty.Value = "false";
 
+            ProcessCurrentPersonInput();
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
             var group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
@@ -673,122 +679,124 @@ namespace RockWeb.Blocks.CheckIn
 
             rockContext.SaveChanges();
 
-
-            var person = personService.Get( hfPersonGuid.Value.AsGuid() );
-            if ( GetAttributeValue( AttributeKey.EnablePrayerRequestEntry ).AsBoolean() && tbPrayerRequest.Text.IsNotNullOrWhiteSpace() )
+            foreach ( var personInput in _personInputsState )
             {
-                PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( AttributeKey.DefaultAllowComments ).AsBoolean() };
-
-                prayerRequest.EnteredDateTime = RockDateTime.Now;
-
-                prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
-                prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
-                var expireDays = Convert.ToDouble( GetAttributeValue( AttributeKey.ExpiresAfter ) );
-                prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
-
-                Category category = null;
-                int? categoryId = cpPrayerCategory.SelectedValueAsInt();
-                Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
-                if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
+                var person = personService.Get( personInput.Guid );
+                if ( personInput.PersonPrayerRequest != null && personInput.PersonPrayerRequest.Text.IsNotNullOrWhiteSpace() )
                 {
-                    category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
-                    categoryId = category.Id;
-                }
-                else if ( categoryId.HasValue )
-                {
-                    category = new CategoryService( rockContext ).Get( categoryId.Value );
-                }
+                    PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( AttributeKey.DefaultAllowComments ).AsBoolean() };
 
-                if ( categoryId.HasValue )
-                {
-                    prayerRequest.CategoryId = categoryId;
-                    prayerRequest.Category = category;
-                }
-                prayerRequest.FirstName = person.FirstName;
-                prayerRequest.LastName = person.LastName;
-                prayerRequest.Email = person.Email;
-                prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                    prayerRequest.EnteredDateTime = RockDateTime.Now;
 
-                int? campusId = null;
-                if ( group != null && group.CampusId.HasValue )
-                {
-                    campusId = group.CampusId;
-                }
-                if ( !campusId.HasValue )
-                {
-                    var campus = person.GetCampus();
-                    if ( campus != null )
+                    prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
+                    prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+                    var expireDays = Convert.ToDouble( GetAttributeValue( AttributeKey.ExpiresAfter ) );
+                    prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
+
+                    Category category = null;
+                    int? categoryId = personInput.PersonPrayerRequest.CategoryId;
+                    Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
+                    if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
                     {
-                        campusId = campus.Id;
+                        category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
+                        categoryId = category.Id;
                     }
-                }
-
-                prayerRequest.CampusId = campusId;
-                prayerRequest.Text = tbPrayerRequest.Text;
-
-                if ( GetAttributeValue( AttributeKey.ShowUrgentFlag ).AsBoolean() )
-                {
-                    prayerRequest.IsUrgent = cbIsUrgent.Checked;
-                }
-                else
-                {
-                    prayerRequest.IsUrgent = false;
-                }
-
-                if ( GetAttributeValue( AttributeKey.ShowPublicFlag ).AsBoolean() )
-                {
-                    prayerRequest.IsPublic = cbIsPublic.Checked;
-                }
-                else
-                {
-                    prayerRequest.IsPublic = GetAttributeValue( AttributeKey.DisplayToPublic ).AsBoolean();
-                }
-
-                PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
-                prayerRequestService.Add( prayerRequest );
-                rockContext.SaveChanges();
-            }
-
-            if ( rcwNotes.Visible && tbNote.Text.IsNotNullOrWhiteSpace() )
-            {
-                NoteService noteService = new NoteService( rockContext );
-
-                Note note = new Note();
-                note.EntityId = person.Id;
-                note.IsAlert = false;
-                note.IsPrivateNote = false;
-                note.Text = tbNote.Text;
-
-                var noteTypeId = ddlNoteType.SelectedValueAsId();
-                if ( noteTypeId.HasValue )
-                {
-                    note.NoteTypeId = noteTypeId.Value;
-                }
-
-                noteService.Add( note );
-                rockContext.SaveChanges();
-            }
-
-            if ( rcbWorkFlowTypes.Visible && rcbWorkFlowTypes.SelectedValues.Any() )
-            {
-                var workflowService = new WorkflowService( rockContext );
-                var schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
-                Location location = null;
-                if ( groupLocation != null )
-                {
-                    location = groupLocation.Location;
-                }
-
-                var personWorkflows = rcbWorkFlowTypes.SelectedValues.AsGuidList();
-                foreach ( var workflowType in personWorkflows )
-                {
-                    if ( group != null && schedule != null && location != null )
+                    else if ( categoryId.HasValue )
                     {
-                        LaunchWorkflows( workflowService, workflowType, person.FullName, person, group.Guid, schedule.Guid, location.Guid );
+                        category = new CategoryService( rockContext ).Get( categoryId.Value );
+                    }
+
+                    if ( categoryId.HasValue )
+                    {
+                        prayerRequest.CategoryId = categoryId;
+                        prayerRequest.Category = category;
+                    }
+                    prayerRequest.FirstName = person.FirstName;
+                    prayerRequest.LastName = person.LastName;
+                    prayerRequest.Email = person.Email;
+                    prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+
+                    int? campusId = null;
+                    if ( group != null && group.CampusId.HasValue )
+                    {
+                        campusId = group.CampusId;
+                    }
+                    if ( !campusId.HasValue )
+                    {
+                        var campus = person.GetCampus();
+                        if ( campus != null )
+                        {
+                            campusId = campus.Id;
+                        }
+                    }
+
+                    prayerRequest.CampusId = campusId;
+                    prayerRequest.Text = personInput.PersonPrayerRequest.Text;
+
+                    if ( GetAttributeValue( AttributeKey.ShowUrgentFlag ).AsBoolean() )
+                    {
+                        prayerRequest.IsUrgent = personInput.PersonPrayerRequest.IsUrgent;
                     }
                     else
                     {
-                        LaunchWorkflows( workflowService, workflowType, person.FullName, person );
+                        prayerRequest.IsUrgent = false;
+                    }
+
+                    if ( GetAttributeValue( AttributeKey.ShowPublicFlag ).AsBoolean() )
+                    {
+                        prayerRequest.IsPublic = personInput.PersonPrayerRequest.IsPublic;
+                    }
+                    else
+                    {
+                        prayerRequest.IsPublic = GetAttributeValue( AttributeKey.DisplayToPublic ).AsBoolean();
+                    }
+
+                    PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+                    prayerRequestService.Add( prayerRequest );
+                    rockContext.SaveChanges();
+                }
+
+                if ( personInput.PersonNote != null && personInput.PersonNote.Note.IsNotNullOrWhiteSpace() )
+                {
+                    NoteService noteService = new NoteService( rockContext );
+
+                    Note note = new Note();
+                    note.EntityId = person.Id;
+                    note.IsAlert = false;
+                    note.IsPrivateNote = false;
+                    note.Text = personInput.PersonNote.Note;
+
+                    var noteTypeId = personInput.PersonNote.NoteTypeId;
+                    if ( noteTypeId.HasValue )
+                    {
+                        note.NoteTypeId = noteTypeId.Value;
+                    }
+
+                    noteService.Add( note );
+                    rockContext.SaveChanges();
+                }
+
+                if ( personInput.Workflows != null && personInput.Workflows.Any() )
+                {
+                    var workflowService = new WorkflowService( rockContext );
+                    var schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
+                    Location location = null;
+                    if ( groupLocation != null )
+                    {
+                        location = groupLocation.Location;
+                    }
+
+                    var personWorkflows = personInput.Workflows.AsGuidList();
+                    foreach ( var workflowType in personWorkflows )
+                    {
+                        if ( group != null && schedule != null && location != null )
+                        {
+                            LaunchWorkflows( workflowService, workflowType, person.FullName, person, group.Guid, schedule.Guid, location.Guid );
+                        }
+                        else
+                        {
+                            LaunchWorkflows( workflowService, workflowType, person.FullName, person );
+                        }
                     }
                 }
             }
@@ -874,6 +882,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( e.CommandName == "Display" )
             {
+                ProcessCurrentPersonInput();
+
                 var personGuid = e.CommandArgument.ToString().AsGuidOrNull();
                 var searchResult = _searchResultsState.FirstOrDefault( a => a.Id == SelectedPersonId.Value );
                 if ( personGuid.HasValue && searchResult != null )
@@ -885,6 +895,53 @@ namespace RockWeb.Blocks.CheckIn
                         ShowMainEntryPersonDetail( searchResult );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Process the input for the current person selected.
+        /// </summary>
+        private void ProcessCurrentPersonInput()
+        {
+            var currentPersonGuid = hfPersonGuid.Value.AsGuidOrNull();
+            _personInputsState = _personInputsState ?? new List<PersonInput>();
+            if ( currentPersonGuid.HasValue )
+            {
+                var personInputState = _personInputsState.FirstOrDefault( a => a.Guid == currentPersonGuid.Value );
+
+                if ( personInputState == null )
+                {
+                    personInputState = new PersonInput();
+                    personInputState.Guid = currentPersonGuid.Value;
+                    _personInputsState.Add( personInputState );
+                }
+
+                if ( GetAttributeValue( AttributeKey.EnablePrayerRequestEntry ).AsBoolean() && tbPrayerRequest.Text.IsNotNullOrWhiteSpace() )
+                {
+                    personInputState.PersonPrayerRequest = new PersonPrayerRequest();
+                    personInputState.PersonPrayerRequest.CategoryId = cpPrayerCategory.SelectedValueAsInt();
+                    personInputState.PersonPrayerRequest.Text = tbPrayerRequest.Text;
+                    personInputState.PersonPrayerRequest.IsUrgent = cbIsUrgent.Checked;
+                    personInputState.PersonPrayerRequest.IsPublic = cbIsPublic.Checked;
+                }
+                else
+                {
+                    personInputState.PersonPrayerRequest = null;
+                }
+
+                if ( rcwNotes.Visible && tbNote.Text.IsNotNullOrWhiteSpace() )
+                {
+
+                    personInputState.PersonNote = new PersonNote();
+                    personInputState.PersonNote.Note = tbNote.Text;
+                    personInputState.PersonNote.NoteTypeId = ddlNoteType.SelectedValueAsId();
+                }
+                else
+                {
+                    personInputState.PersonNote = null;
+                }
+
+                personInputState.Workflows = rcbWorkFlowTypes.SelectedValues;
             }
         }
 
@@ -1863,6 +1920,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindMainPanel()
         {
+            _personInputsState = new List<PersonInput>();
             hfAttendanceDirty.Value = "false";
             rptResults.DataSource = _searchResultsState;
             rptResults.DataBind();
@@ -1875,6 +1933,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindMainEntryPanel()
         {
+            hfPersonDirty.Value = "false";
             pnlEditMember.Visible = false;
             pnlEditFamily.Visible = false;
             pnlMainEntry.Visible = SelectedPersonId.HasValue;
@@ -1972,7 +2031,6 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ShowMainEntryPersonDetail( SearchResult searchResult )
         {
-            hfPersonDirty.Value = "false";
             rptPersons.DataSource = searchResult.FamilyMembers;
             rptPersons.DataBind();
 
@@ -1981,6 +2039,7 @@ namespace RockWeb.Blocks.CheckIn
             var personMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             personMergeFields.Add( "Person", person );
             lPersonDetail.Text = GetAttributeValue( AttributeKey.IndividualHeaderLavaTemplate ).ResolveMergeFields( personMergeFields );
+            var personInput = _personInputsState.FirstOrDefault( a => a.Guid == person.Guid );
 
             var workflowTypeGuids = GetAttributeValue( AttributeKey.WorkflowTypes ).SplitDelimitedValues().AsGuidList();
             rcbWorkFlowTypes.Visible = workflowTypeGuids.Any();
@@ -1992,6 +2051,11 @@ namespace RockWeb.Blocks.CheckIn
                 foreach ( var workflowType in workFlowTypes )
                 {
                     rcbWorkFlowTypes.Items.Add( new ListItem( workflowType.Name, workflowType.Guid.ToString() ) );
+                }
+
+                if ( personInput != null )
+                {
+                    rcbWorkFlowTypes.SetValues( personInput.Workflows );
                 }
             }
 
@@ -2017,6 +2081,12 @@ namespace RockWeb.Blocks.CheckIn
                 var noteTypeId = ddlNoteType.SelectedValueAsId();
                 tbNote.Enabled = noteTypeId.HasValue;
                 tbNote.Text = string.Empty;
+
+                if ( personInput != null && personInput.PersonNote != null )
+                {
+                    ddlNoteType.SetValue( personInput.PersonNote.NoteTypeId );
+                    tbNote.Text = personInput.PersonNote.Note;
+                }
             }
 
             pnlPrayerRequest.Visible = GetAttributeValue( AttributeKey.EnablePrayerRequestEntry ).AsBoolean();
@@ -2046,6 +2116,14 @@ namespace RockWeb.Blocks.CheckIn
                         var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid ).Id;
                         cpPrayerCategory.SetValue( defaultCategoryId );
                     }
+                }
+
+                if ( personInput != null && personInput.PersonPrayerRequest != null )
+                {
+                    cbIsPublic.Checked = personInput.PersonPrayerRequest.IsPublic ?? false;
+                    cbIsUrgent.Checked = personInput.PersonPrayerRequest.IsUrgent ?? false;
+                    cpPrayerCategory.SetValue( personInput.PersonPrayerRequest.CategoryId );
+                    tbPrayerRequest.Text = personInput.PersonPrayerRequest.Text;
                 }
             }
         }
@@ -2419,6 +2497,99 @@ namespace RockWeb.Blocks.CheckIn
             /// The family name.
             /// </value>
             public string FamilyName { get; set; }
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class PersonInput
+        {
+            /// <summary>
+            /// Gets or sets the person guid identifier.
+            /// </summary>
+            /// <value>
+            /// The person guid identifier.
+            /// </value>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the workflows.
+            /// </summary>
+            /// <value>
+            /// The workflows.
+            /// </value>
+            public List<string> Workflows { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person note.
+            /// </summary>
+            /// <value>
+            /// The person note.
+            /// </value>
+            public PersonNote PersonNote { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person prayer request.
+            /// </summary>
+            /// <value>
+            /// The person prayer request.
+            /// </value>
+            public PersonPrayerRequest PersonPrayerRequest { get; set; }
+        }
+
+        public class PersonPrayerRequest
+        {
+            /// <summary>
+            /// Gets or sets a flag indicating if this is an urgent prayer request.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.Boolean"/> value that is <c>true</c> if this prayer request is urgent; otherwise <c>false</c>.
+            /// </value>
+            public bool? IsUrgent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the flag indicating whether or not the request is public.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.Boolean"/> value that is <c>true</c> if the prayer request is public; otherwise <c>false</c>.
+            /// </value>
+            public bool? IsPublic { get; set; }
+
+            /// <summary>
+            /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that the PrayerRequest belongs to.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that the PrayerRequest belongs to.
+            /// </value>
+            public int? CategoryId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the text/content of the request.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.String"/> representing the text/content of the request.
+            /// </value>
+            public string Text { get; set; }
+        }
+
+        public class PersonNote
+        {
+            /// <summary>
+            /// Gets or sets the Id of the <see cref="Rock.Model.NoteType"/>.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.NoteType"/>
+            /// </value>
+            public int? NoteTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note.
+            /// </summary>
+            /// <value>
+            /// The note.
+            /// </value>
+            public string Note { get; set; }
         }
 
         # endregion Supporting Classes

@@ -29,12 +29,6 @@
                         return false;
                     }
                 });
-
-                $('.js-person-event').click(function () {
-                    if (isContactItemDirty()) {
-                        return false;
-                    }
-                });
             });
 
             function isDirty() {
@@ -54,16 +48,6 @@
                     $('#<%=btnGo.ClientID%>')[0].click();
                     return false;
                 }
-            }
-
-            function isContactItemDirty() {
-                if ($('#<%= hfPersonDirty.ClientID %>').val() == 'true') {
-                    if (confirm('You have not saved your changes. Are you sure you want to continue?')) {
-                        return false;
-                    }
-                    return true;
-                }
-                return false;
             }
 
         </script>
