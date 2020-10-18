@@ -47,6 +47,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the name of the machine.
+        /// </summary>
+        /// <value>
+        /// The name of the machine.
+        /// </value>
+        public static string MachineName
+        {
+            get
+            {
+                return _serviceInstance.MachineName;
+            }
+        }
+
+        /// <summary>
         /// Returns the install path of the Rock application on the host.
         /// </summary>
         public static string PhysicalDirectory
