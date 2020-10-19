@@ -347,7 +347,8 @@ namespace Rock.Model
         {
             if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
             {
-                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                var uri = new Uri( url );
+                var urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
                 this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
                 this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
                 this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
