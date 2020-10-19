@@ -887,8 +887,7 @@ The logged-in person's information will be used to complete the registrar inform
                         }
 
                         var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
-                                                        .Where( a => a.FieldVisibilityRules.RuleList.Any() &&
-                                                                        a.FieldVisibilityRules.RuleList
+                                                        .Where( a => a.FieldVisibilityRules.RuleList
                                                                         .Any( b => b.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) );
                         foreach ( var newFormField in newFormFieldsWithRules )
                         {

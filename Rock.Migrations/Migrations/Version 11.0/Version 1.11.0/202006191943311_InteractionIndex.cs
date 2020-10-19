@@ -27,12 +27,12 @@ namespace Rock.Migrations
         public override void Up()
         {
             // This index will be covered by the new index created by the next statement
-            RockMigrationHelper.DropIndexIfExists( "Interaction", "IX_InteractionComponentId" );
+            //RockMigrationHelper.DropIndexIfExists( "Interaction", "IX_InteractionComponentId" );
 
             // This index is primarily for the median page load times, but also includes operation which is often used
-            RockMigrationHelper.CreateIndexIfNotExists( "Interaction",
-                new[] { "InteractionComponentId", "InteractionDateTime" },
-                new[] { "InteractionTimeToServe", "Operation" } );
+            //RockMigrationHelper.CreateIndexIfNotExists( "Interaction",
+            //    new[] { "InteractionComponentId", "InteractionDateTime" },
+            //    new[] { "InteractionTimeToServe", "Operation" } );
         }
 
         /// <summary>
