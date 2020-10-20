@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Security
                 .Where( p => p.Users.Any()))
             {
                 var users = new List<UserLogin>();
+                List<string> supportsChangePassword = new List<string>();
                 foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.EntityType != null )
@@ -108,6 +109,10 @@ namespace RockWeb.Blocks.Security
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                         if ( component != null && !component.RequiresRemoteAuthentication )
                         {
+                            if ( component.SupportsChangePassword )
+                            {
+                                //supportsChangePassword.Add( user.UserName );
+                            }
                             users.Add( user );
                             hasAccountWithPasswordResetAbility = true;
                         }
@@ -117,8 +122,9 @@ namespace RockWeb.Blocks.Security
                 }
 
                 var resultsDictionary = new Dictionary<string, object>();
-                resultsDictionary.Add( "Person", person);
+                resultsDictionary.Add( "Person", person );
                 resultsDictionary.Add( "Users", users );
+                resultsDictionary.Add( "SupportsChangePassword", supportsChangePassword );
                 results.Add( resultsDictionary );
             }
 
