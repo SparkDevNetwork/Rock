@@ -574,7 +574,13 @@ $( function() {
         var resultMessageCtl = $( ""[id$='_TaskActivityNotificationBox']"" );
         resultMessageCtl.html( taskInfo.StatusMessage );
         if ( taskInfo.HasErrors ) {
-            resultMessageCtl.css( 'NotificationBoxType', 'danger' );
+            resultMessageCtl.attr( 'class', 'alert alert-danger' );
+        }
+        else if ( taskInfo.HasWarnings ) {
+            resultMessageCtl.attr( 'class', 'alert alert-warning' );
+        }
+        else {
+            resultMessageCtl.attr( 'class', 'alert alert-success' );
         }
 
         <!--  Set final state of task-related elements -->
