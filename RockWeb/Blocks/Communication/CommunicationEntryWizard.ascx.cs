@@ -259,7 +259,9 @@ namespace RockWeb.Blocks.Communication
             var taskCompletedCallbackScript = @"
 function onTaskCompleted( resultData )
 {
-    $( ""[id$='_hlViewCommunication']"" ).attr( 'href', resultData.ViewCommunicationUrl );
+    if ( resultData != null ) {
+        $( ""[id$='_hlViewCommunication']"" ).attr( 'href', resultData.ViewCommunicationUrl );
+    }
 }
 ";
             RockPage.ClientScript.RegisterStartupScript( this.GetType(), "TaskCompletedCallbackScript", taskCompletedCallbackScript, true );
@@ -2428,7 +2430,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             var progressReporter = new SignalRTaskActivityReporter();
 
             // Define a background task for the bulk send process, because it may take considerable time.
-            var task = new Task( () =>
+            var taskSend = new Task( () =>
             {
                 // Wait for the browser to finish loading the page.
                 Task.Delay( 1000 ).Wait();
@@ -2503,6 +2505,17 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 progressReporter.StopTask( message, false, false, result );
             } );
 
+            // Add a continuation task to handle any exceptions during the send process.
+            taskSend.ContinueWith( t =>
+            {
+                if ( t.Exception != null )
+                {
+                    ExceptionLogService.LogException( new Exception( "Send Communication failed.", t.Exception.Flatten().InnerException ) );
+                }
+
+                progressReporter.StopTask( "Communication send failed. Check the Exception Log for further details.", true, false, null );
+            }, TaskContinuationOptions.OnlyOnFaulted );
+
             // Show the processing panel.
             pnlConfirmation.Visible = false;
             pnlResult.Visible = true;
@@ -2523,7 +2536,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             // Start the background processing task and complete this request.
             // The task will continue to run until complete, delivering client status notifications via the SignalR hub.
-            task.Start();
+            taskSend.Start();
         }
 
         private string _viewCommunicationIdPlaceholder = Guid.NewGuid().ToString();
@@ -2773,7 +2786,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             // Update the Communication by applying the new settings.
             var operationsService = new CommunicationOperationsService();
 
-            var communication = operationsService.CreateOrUpdateCommunication( rockContext, settings );
+            var communication = operationsService.CreateOrUpdateCommunication( settings, rockContext );
 
             return communication;
         }
@@ -2782,7 +2795,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// Create or update the recipients of a Communication by applying the current selections and settings.
         /// </summary>
         private void UpdateCommunicationRecipients( Rock.Model.Communication communication, RockContext rockContext, SignalRTaskActivityReporter activityReporter = null )
-        { 
+        {
             if ( communication == null )
             {
                 return;
@@ -2801,7 +2814,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             var operationsService = new CommunicationOperationsService();
 
-            operationsService.UpdateCommunicationRecipients( rockContext, communication.Id, recipientPersonIdList, activityReporter );
+            operationsService.UpdateCommunicationRecipients( rockContext, communication, recipientPersonIdList, activityReporter );
         }
 
         /// <summary>
@@ -2817,7 +2830,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             }
             else
             {
-                recipientPersonId = this.IndividualRecipientPersonIds.FirstOrDefault();                
+                recipientPersonId = this.IndividualRecipientPersonIds.FirstOrDefault();
             }
 
             // Get the recipient with a specific query rather than using the Recipients navigation collection,
@@ -2835,13 +2848,29 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         public class CommunicationOperationsService
         {
             /// <summary>
-            /// Creates or updates the properties and recipients of a Communication.
+            /// Creates or updates the properties of an existing Communication.
+            /// </summary>
+            /// <param name="settings"></param>
+            /// <returns></returns>
+            public Rock.Model.Communication CreateOrUpdateCommunication( CommunicationProperties settings )
+            {
+                var rockContext = new RockContext();
+
+                var communication = this.CreateOrUpdateCommunication( settings, rockContext );
+
+                rockContext.SaveChanges();
+
+                return communication;
+            }
+
+            /// <summary>
+            /// Creates or updates the properties of an existing Communication in the provided data context.
+            /// Changes to the data context are not persisted.
             /// </summary>
             /// <param name="rockContext"></param>
             /// <param name="settings"></param>
-            /// <param name="progressReporter"></param>
             /// <returns></returns>
-            public Rock.Model.Communication CreateOrUpdateCommunication( RockContext rockContext, CommunicationProperties settings )
+            public Rock.Model.Communication CreateOrUpdateCommunication( CommunicationProperties settings, RockContext rockContext )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var communicationAttachmentService = new CommunicationAttachmentService( rockContext );
@@ -2940,30 +2969,51 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             }
 
             /// <summary>
-            /// Updates the recipients of an existing Communication.
+            /// Update the recipients of an existing Communication.
             /// </summary>
             /// <param name="rockContext"></param>
-            /// <param name="settings"></param>
+            /// <param name="communicationId"></param>
+            /// <param name="recipientPersonIdList"></param>
             /// <param name="progressReporter"></param>
             /// <returns></returns>
             public Rock.Model.Communication UpdateCommunicationRecipients( RockContext rockContext, int communicationId, IEnumerable<int> recipientPersonIdList, IProgress<TaskProgressMessage> progressReporter = null )
             {
+                var communicationService = new CommunicationService( rockContext );
+
+                var communication = communicationService.Get( communicationId );
+
+                return UpdateCommunicationRecipients( rockContext, communication, recipientPersonIdList, progressReporter );
+            }
+
+            /// <summary>
+            /// Update the recipients of a Communication instance.
+            /// </summary>
+            /// <param name="rockContext"></param>
+            /// <param name="communication"></param>
+            /// <param name="recipientPersonIdList"></param>
+            /// <param name="progressReporter"></param>
+            /// <returns></returns>
+            public Rock.Model.Communication UpdateCommunicationRecipients( RockContext rockContext, Rock.Model.Communication communication, IEnumerable<int> recipientPersonIdList, IProgress<TaskProgressMessage> progressReporter = null )
+            {
+                if ( communication == null )
+                {
+                    throw new ArgumentException( "UpdateCommunicationRecipients failed. A Communication instance is required." );
+                }
+
                 ReportProgress( progressReporter, 0, activityMessage: "Creating Recipients List..." );
 
-                var communicationService = new CommunicationService( rockContext );
                 var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
-                Rock.Model.Communication communication = null;
-                IQueryable<CommunicationRecipient> qryRecipients = null;
+                HashSet<int> communicationPersonIdHash;
 
-                communication = communicationService.Get( communicationId );
-
-                if ( communication != null )
+                // Get the initial list of Recipients.
+                if ( communication.Id != 0 )
                 {
-                    // Remove any deleted recipients
+                    // This is an existing Communication, so load the recipients list.
                     var personIdHash = new HashSet<int>( recipientPersonIdList );
-                    qryRecipients = communication.GetRecipientsQry( rockContext );
+                    var qryRecipients = communication.GetRecipientsQry( rockContext );
 
+                    // Remove recipients that do not exist in the current selection.
                     foreach ( var item in qryRecipients.Select( a => new
                     {
                         Id = a.Id,
@@ -2977,17 +3027,22 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                             communication.Recipients.Remove( recipient );
                         }
                     }
-                }
 
-                if ( qryRecipients == null )
+                    if ( qryRecipients == null )
+                    {
+                        qryRecipients = communication.GetRecipientsQry( rockContext );
+                    }
+
+                    communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
+                }
+                else
                 {
-                    qryRecipients = communication.GetRecipientsQry( rockContext );
+                    // This is a new communication with no pre-existing recipient list.
+                    communicationPersonIdHash = new HashSet<int>();
                 }
 
-                // Add any new recipients
+                // Add new recipients
                 ReportProgress( progressReporter, 5, activityMessage: "Creating Recipients List..." );
-
-                var communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
 
                 var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, rockContext );
 
@@ -3088,7 +3143,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 }
 
                 progressReporter.Report( TaskProgressMessage.New( completionPercentage, elapsedMilliseconds, message ) );
-                
+
                 _lastCompletionPercentage = (int)completionPercentage;
                 _lastActivityMessage = message;
             }
@@ -3127,7 +3182,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             public class CommunicationProperties
             {
                 public int? CommunicationId;
-                //public List<int> RecipientPersonIds;
                 public int? SenderPersonAliasId;
                 public string EnabledLavaCommands;
                 public string CommunicationName;
