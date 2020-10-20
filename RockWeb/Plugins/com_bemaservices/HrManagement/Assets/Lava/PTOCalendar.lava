@@ -26,6 +26,7 @@ Where a.Guid = '0A159929-0871-4115-AB10-C4943EAA5A7C'
    {% assign allocation = request.PtoAllocation%}
         {% assign person = allocation.PersonAlias.Person%}
         {% assign approver = request.ApproverPersonAlias.Person %}
+        {% capture requestColor %}{% if allocation.PtoType.Color != empty %}{{allocation.PtoType.Color}}{% else %}grey{% endif %}{% endcapture %}
     {
         person:"{{person.NickName}} {{person.LastName}}",
         personId:{{person.Id}},
@@ -40,7 +41,7 @@ Where a.Guid = '0A159929-0871-4115-AB10-C4943EAA5A7C'
         id:{{request.Id}},
         name:"{{person.NickName}} {{person.LastName}} - {{request.Hours}} {{'Hour' | PluralizeForQuantity:request.Hours }} ({{request.PtoRequestApprovalState }})",
         guid:'{{request.Guid}}',
-        color:"{{allocation.PtoType.Color}}",
+        color:"{{requestColor}}",
         ptoType:"{{allocation.PtoType.Name}}",
         ptoTypeId:{{allocation.PtoTypeId}},
         start:'{{request.RequestDate | Date:'yyyy-MM-dd'}}',

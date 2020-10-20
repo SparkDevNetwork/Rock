@@ -82,6 +82,7 @@
     <Compile Include="Migrations\003_Workflows.cs" />
     <Compile Include="Migrations\002_Pages.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Migrations\005_PtoCalendar.cs" />
     <Compile Include="Migrations\004_WorkflowEmailsLavaFix.cs" />
     <Compile Include="Model\PtoAllocationService.cs" />
     <Compile Include="Model\PtoAllocation.cs" />

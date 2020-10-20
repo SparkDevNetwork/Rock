@@ -153,7 +153,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         }
         private bool GetViewRights()
         {
-            var canView = false;
+            var canView = this.UserCanEdit;
 
             if ( _person != null )
             {
