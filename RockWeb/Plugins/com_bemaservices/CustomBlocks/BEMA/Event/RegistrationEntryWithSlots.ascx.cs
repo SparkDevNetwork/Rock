@@ -46,6 +46,7 @@ using Helper = Rock.Attribute.Helper;
  *
  * Additional Features:
  * - FE1) Added Ability to waitlist someone if a single select option they have does not have available slots left
+ * - FE2) Added for when calculating the available slots, include those that are on the waitlist for the slot in the total.
  * - UI1) Added Ability to modify the error message presented when there's no match on the registration instance
  */
 namespace RockWeb.Plugins.com_bemaservices.Event
@@ -5980,9 +5981,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         private Dictionary<int, string> GetRegistrantValues( RegistrationTemplateFormField singleSelectField, RegistrationTemplateFormField field = null )
         {
             var rockContext = new RockContext();
+            /* BEMA.FE2.Start */
             var existingRegistrants = new RegistrationRegistrantService( rockContext ).Queryable()
-                       .Where( rr => rr.Registration.RegistrationInstanceId == RegistrationInstanceState.Id &&
-                            rr.OnWaitList == false );
+                       .Where( rr => rr.Registration.RegistrationInstanceId == RegistrationInstanceState.Id );
+            /* BEMA.FE2.End */
 
             var existingSlotValues = new AttributeValueService( rockContext ).Queryable().Where( av => av.AttributeId == singleSelectField.AttributeId );
 
