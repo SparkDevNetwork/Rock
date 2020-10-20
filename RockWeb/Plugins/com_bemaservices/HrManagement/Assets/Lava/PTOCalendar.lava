@@ -1,0 +1,446 @@
+{{'https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900'| AddLinkTagToHead:'rel','stylesheet' }}
+{{'https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css'| AddLinkTagToHead:'rel','stylesheet' }}
+{{'https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css'| AddLinkTagToHead:'rel','stylesheet' }}
+
+
+{% comment %} Gets the workflow pointed to in the block settings. Incase the user creates a modified copy{% endcomment %}
+{% sql %}
+Select Top 1 w.Id from AttributeValue av
+Inner Join Attribute a
+on a.Id = av.AttributeId
+Inner Join WorkflowType w
+    on w.Guid = Try_Cast(av.Value as uniqueidentifier)
+Where a.Guid = '0A159929-0871-4115-AB10-C4943EAA5A7C'
+{% endsql %}
+{% assign workflowId = results | First | Property:'Id' %}
+{% comment %}End of Section getting the workflow id. {% endcomment%}
+
+
+{% comment %}Build the Javascript Object of PTO Request Event Items{% endcomment %}
+{% assign loadpastdate = 'Now' | Date | DateAdd:-12,'M' %}
+{% capture events %}
+[
+
+{% ptorequest where:'CreatedDateTime >= "{{ loadpastdate}}"' %}
+    {% for request in ptorequestItems %}
+   {% assign allocation = request.PtoAllocation%}
+        {% assign person = allocation.PersonAlias.Person%}
+        {% assign approver = request.ApproverPersonAlias.Person %}
+        {% capture requestColor %}{% if allocation.PtoType.Color != empty %}{{allocation.PtoType.Color}}{% else %}grey{% endif %}{% endcapture %}
+    {
+        person:"{{person.NickName}} {{person.LastName}}",
+        personId:{{person.Id}},
+        personGuid:"{{allocation.PersonAlias.Guid}}",
+        requestDate:"{{request.RequestDate}}",
+        requestDuration:{{request.Hours}},
+        requestDurationDescription:"{{'Hour' | PluralizeForQuantity:request.Hours }}",
+        requestState:{{request.PtoRequestApprovalState | ToJSON }},
+        requestStateDescription:"{{request.PtoRequestApprovalState }}",
+        approver:'{{approver.NickName}} {{approver.LastName}}',
+        approverId:{{approver.Id}},
+        id:{{request.Id}},
+        name:"{{person.NickName}} {{person.LastName}} - {{request.Hours}} {{'Hour' | PluralizeForQuantity:request.Hours }} ({{request.PtoRequestApprovalState }})",
+        guid:'{{request.Guid}}',
+        color:"{{requestColor}}",
+        ptoType:"{{allocation.PtoType.Name}}",
+        ptoTypeId:{{allocation.PtoTypeId}},
+        start:'{{request.RequestDate | Date:'yyyy-MM-dd'}}',
+        timed: 0
+    },
+    {% endfor %}
+{% endptorequest %}
+]
+{% endcapture %}
+{% comment %}End of Building the PTO Request Event Array{% endcomment %}
+
+
+
+<div id="app">
+    <v-app id="inspire" >
+        <v-row class="fill-height">
+            <v-col>
+                <v-sheet height="64">
+                    <v-toolbar flat :bottom="true">
+                        <v-btn outlined class="mr-4" color="grey darken-2" @click="setToday"> Today </v-btn>
+                        <v-btn fab text small color="grey darken-2" @click="prev">
+                            <v-icon small>mdi-chevron-left</v-icon>
+                        </v-btn>
+                        <v-btn fab text small color="grey darken-2" @click="next">
+                            <v-icon small>mdi-chevron-right</v-icon>
+                        </v-btn>
+                        <v-toolbar-title v-if="$refs.calendar"> {$ $refs.calendar.title $} </v-toolbar-title>
+                        <v-toolbar-title v-else> {$ calendar $} </v-toolbar-title>
+                        <v-spacer></v-spacer>
+
+
+                        <v-menu bottom right> <template v-slot:activator="{ on, attrs }">
+                                <v-btn outlined color="grey darken-2" v-bind="attrs" v-on="on" class="mr-4"> <span>{$
+                                        typeToLabel[type] $}</span>
+                                    <v-icon right>mdi-menu-down</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item v-for="(type, i) of calendartypes" @click="updateType(type.value)" :key="i">
+                                    <v-list-item-title>{$ type.text$}</v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                        <v-menu bottom right> <template v-slot:activator="{ on, attrs }">
+                                <v-btn outlined color="grey darken-2" v-bind="attrs" v-on="on"> <span>{$ selectedOption
+                                        $}</span>
+                                    <v-icon right>mdi-menu-down</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item v-for="(daylist, i) in weekdays" :key="i"
+                                    @click="saveWeekday(daylist.value)">
+                                    <v-list-item-title>{$ daylist.text$}</v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </v-toolbar>
+                </v-sheet>
+                <v-sheet height="64">
+                    <v-toolbar flat :bottom="true">
+                         <v-select
+                              style="width:25%"
+                              class="personList"
+                              cols="4"
+                              :menu-props="{ top: false, offsetY: true }"
+                              v-model="selectedPersons"
+                              :items="showPersons"
+                              item-text="person"
+                              item-value="personId"
+                              :deletable-chips="true"
+                              label="Filter Employees"
+                              multiple
+                              chips
+                            >
+                            </v-select>
+                         <v-spacer></v-spacer>
+                         <v-toolbar flat :bottom="true">
+                         <v-select
+                              style="width:25%"
+                              class="personList"
+                              cols="4"
+                              :menu-props="{ top: false, offsetY: true }"
+                              v-model="selectedPtoTypes"
+                              :items="showPtoTypes"
+                              item-text="ptoType"
+                              item-value="ptoTypeId"
+                              :deletable-chips="true"
+                              label="Filter PTO Types"
+                              multiple
+                              chips
+                            >
+                            </v-select>
+                        <v-spacer></v-spacer>
+                        <v-toolbar flat :bottom="true">
+                         <v-select
+                              style="width:25%"
+                              class="personList"
+                              cols="4"
+                              :menu-props="{ top: false, offsetY: true }"
+                              v-model="selectedStates"
+                              :items="possibleStates"
+                              item-text="stateValue"
+                              item-value="stateId"
+                              :deletable-chips="true"
+                              label="Filter Request Status"
+                              multiple
+                              chips
+                            >
+                            </v-select>
+                    </v-toolbar>
+                </v-sheet>
+                <v-sheet height="600">
+                    <v-calendar
+                        ref="calendar"
+                        v-model="focus"
+                        :events="filteredEvents"
+                        :event-color="getEventColor"
+                        :weekdays="weekday"
+                        :type="type"
+                        :show-month-on-first="true"
+                        :short-weekdays="false"
+                        first-time="08:00"
+                        interval-count="10"
+                        color="secondary"
+
+                        now="{{'Now' | Date:'yyyy-MM-dd HH:mm:ss'}}"
+                        @click:event="showEvent"
+                        @click:more="viewDay"
+                        @click:date="viewDay"
+                        @change="updateRange">
+                        </v-calendar>
+                    <v-menu v-model="selectedOpen" class="mr-4" :close-on-content-click="false"
+                        :activator="selectedElement" offset-y>
+                        <v-card color="grey lighten-4" min-width="350px" flat>
+                            <v-toolbar :color="selectedEvent.color" dark>
+                                <v-toolbar-title>{$ selectedEvent.person $}</v-toolbar-title>
+
+
+
+                                <v-spacer></v-spacer>
+                                <v-toolbar-title>({$ selectedEvent.requestStateDescription $})</v-toolbar-title>
+
+                                <v-btn icon>
+                                    <v-icon @click="selectedOpen = false">mdi-close</v-icon>
+                                </v-btn>
+                            </v-toolbar>
+                            <v-card-text>
+                                <p><strong>Status: </strong><span v-html="selectedEvent.requestStateDescription"></span></p>
+                                <p><strong>Approver: </strong><span v-html="selectedEvent.approver"></span></p>
+                                <p><strong>Time: </strong><span v-html="selectedEvent.requestDuration"></span> <span v-html="selectedEvent.requestDurationDescription"></span></p>
+
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-btn text :color="selectedEvent.color" @click.native="editRockEvent(selectedEvent)"> View Request </v-btn>
+                                <v-btn text :color="selectedEvent.color" @click="selectedOpen = false"> Close Window </v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-menu>
+                </v-sheet>
+            </v-col>
+        </v-row>
+    </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
+<script>
+//Saves the events object built above to a javascript variable used in the data object in the vue app.  The FromJSON ToJSON removes any extra line breaks which is not completely necessary but was helpful in development.
+var events = {{events | ReplaceLast:',','' | FromJSON | ToJSON  }};
+//Gets the brand color css variable on the Rock Internal site and sets it as the calendar's primary color.
+let primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-color')
+//Uses the color function below to lighten the color for hover state.
+let secondaryColor = LightenColor(primaryColor,10);
+
+
+new Vue({
+    el: '#app',
+    delimiters: ['{$', '$}'],
+    vuetify: new Vuetify({
+  theme: {
+    options: {
+      customProperties: true
+    },
+  // Sets the them colors to the variable above.
+    themes: {
+      light: {
+        primary: primaryColor, // #E53935
+        secondary:secondaryColor, // #FFCDD2
+      },
+    },
+  },
+}),
+//There are extra unused properties here from the copy from Vuetify
+    data: () => ({
+        focus: '',
+        type: 'month',
+        typeToLabel: {
+            month: 'Month',
+            week: 'Week',
+            day: 'Day',
+        },
+        startMenu: false,
+        calendar: '{{'Now' | Date:'MMMM yyyy' }}',
+        selectedEvent: {},
+        selectedElement: null,
+        selectedOpen: false,
+        // These are the filters used in the computed property and bound to the select filters.  I prefilled the Pending and Approved values in the selectedStates to load the calendar with those by default.
+        selectedPersons:[],
+        selectedPtoTypes:[],
+        selectedStates:[0,1],
+        events: events,
+        start:'',
+        //Not currently used so it can be removed.
+        currentPerson: '{{CurrentPerson | Property:'PrimaryAlias' | Property:'Guid' }}',
+        //Used by the PTO Request Status filter to show the possible states.
+        possibleStates: [
+        {stateId:0, stateValue:"Pending"},
+        {stateId:1, stateValue:"Approved"},
+        {stateId:2, stateValue:"Denied"},
+        {stateId:3, stateValue:"Cancelled"}
+        ],
+        // The list of calendar types that are available to choose from.  Removing items from this list will remove them from the list on the calendar
+        calendartypes:[
+            {text:'Month',value:'month'},
+            {text:'Week',value:'week'},
+            {text:'Day',value:'day'},
+            ],
+        //The default weekday option(shows Monday through Friday) this is overwritten by the what is in local storage.
+        weekday: [1, 2, 3, 4, 5],
+        //This list of weekday options to show in the select on the calendar.  Removing/Adding items will change that dropdown.  Make sure the default value above is in the list.
+        weekdays: [
+            {
+            text: 'Sun - Sat',
+            value: [0, 1, 2, 3, 4, 5, 6]
+            },
+            {
+            text: 'Mon - Sun',
+            value: [1, 2, 3, 4, 5, 6, 0]
+            },
+            {
+            text: 'Mon - Fri',
+            value: [1, 2, 3, 4, 5]
+            },
+            {
+            text: 'Fri, Sat, Sun',
+            value: [5, 6, 0]
+            }],
+    }),
+    created() {
+
+      let weekday = localStorage.getItem('calendarWeekPreference');
+      let type = localStorage.getItem('calendarTypePreference');
+
+      if(weekday){
+          this.weekday = JSON.parse(weekday)
+      }
+      if(type){
+          this.type = JSON.parse(type)
+      }
+    },
+    mounted() {
+        this.$refs.calendar.checkChange()
+    },
+
+    computed: {
+        //Used to change the calendar view for the number of days selected
+        selectedOption() {
+
+            let value = this.weekday.toString();
+            let found = this.weekdays.find(e => e.value.toString() === value);
+            return found.text
+        },
+
+        //Filters the vents based on the person filter, pto type filter, and request status filter and returns the filtered list.
+        filteredEvents(){
+            var filteredArray = this.events;
+            var personfilter = this.selectedPersons;
+            var ptoTypeFilter = this.selectedPtoTypes;
+            var stateFilter = this.selectedStates;
+
+            if(personfilter.length > 0 ){
+                filteredArray = filteredArray.filter(event => personfilter.includes(event.personId) == true)
+            }
+
+            if(ptoTypeFilter.length > 0 ){
+                filteredArray = filteredArray.filter(event => ptoTypeFilter.includes(event.ptoTypeId) == true)
+            }
+
+            if(stateFilter.length > 0 ){
+                filteredArray = filteredArray.filter(event => stateFilter.includes(event.requestState) == true)
+            }
+
+            return filteredArray;
+
+        },
+        //Used by the pto type filter select to show options that are included in the calendar instead of all options.
+        showPtoTypes() {
+            let result = [];
+            const map = new Map();
+            for(const item of this.events) {
+                if (!map.has(item.ptoTypeId)){
+                    map.set(item.ptoTypeId, true);
+                    result.push({
+                        ptoType: item.ptoType,
+                        ptoTypeId: item.ptoTypeId
+                    });// set any value to Map
+                }
+            }
+             result = result.filter(ptoType => ptoType.ptoTypeId != null)
+            return result
+        },
+        //Used by the person filter to show people with PTO Requests
+        showPersons() {
+
+            let result = [];
+            const map = new Map();
+            for (const item of this.events) {
+                if(!map.has(item.personId)){
+                    map.set(item.personId, true);    // set any value to Map
+                    result.push({
+                        person: item.person,
+                        personId: item.personId
+                    });
+                }
+            }
+            result = result.filter(person => person.personId != null)
+            return result
+        }
+    },
+    methods: {
+        //Sets the calendar type and saves it to local storage to persist value when the refreshes.
+        updateType(type) {
+          this.type = type
+          parent.$('body').trigger('resizeIframe');
+          localStorage.setItem("calendarTypePreference",JSON.stringify(type))
+        },
+        //Sets the calendar weekday option and saves it to local storage to persist value when the refreshes.
+        saveWeekday(e) {
+            this.weekday = e
+            localStorage.setItem("calendarWeekPreference",JSON.stringify(e))
+        },
+        //Used by the event card to direct people to the view request workflow.  This uses the variable in the sql above to go to the correct workflow.
+        editRockEvent(event) {
+
+            window.top.location.href = '{{'Global' | Attribute:'InternalApplicationRoot'}}WorkflowEntry/{{workflowId}}?PTORequest=' + event.guid
+        },
+
+        viewDay({date}) {
+            this.focus = date;
+            this.type = 'day';
+        },
+        getEventColor(event) {
+            return event.color
+        },
+        setToday() {
+            this.focus = ''
+        },
+        prev() {
+            this.$refs.calendar.prev()
+        },
+        next() {
+            this.$refs.calendar.next()
+        },
+        showEvent({
+            nativeEvent,
+            event
+        }) {
+            const open = () => {
+                this.selectedEvent = event;
+                this.selectedElement = nativeEvent.target;
+                setTimeout(() => this.selectedOpen = true, 10);
+            }
+            if (this.selectedOpen) {
+                this.selectedOpen = false
+                setTimeout(open, 10);
+            } else {
+                open()
+            }
+            nativeEvent.stopPropagation()
+        },
+        updateRange({
+            start,
+            end
+        }) {},
+        rnd(a, b) {
+            return Math.floor((b - a + 1) * Math.random()) + a
+        },
+    },
+})
+
+function LightenColor(color, percent) {
+        var num = parseInt(color.replace("#",""),16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        B = (num >> 8 & 0x00FF) + amt,
+        G = (num & 0x0000FF) + amt;
+
+        return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
+};
+
+</script>
