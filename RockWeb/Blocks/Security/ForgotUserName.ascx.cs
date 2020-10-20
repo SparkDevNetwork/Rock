@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Security
 
 
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [SystemCommunicationField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
+    [SystemCommunicationField( "Forgot Username Email Template", "The email template to use when sending the forgot username (and password) email.  The following merge fields are available for use in the template: Person, Users, and SupportsChangePassword (an array of the usernames that support password changes.)", false, Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Security
                         {
                             if ( component.SupportsChangePassword )
                             {
-                                //supportsChangePassword.Add( user.UserName );
+                                supportsChangePassword.Add( user.UserName );
                             }
                             users.Add( user );
                             hasAccountWithPasswordResetAbility = true;
