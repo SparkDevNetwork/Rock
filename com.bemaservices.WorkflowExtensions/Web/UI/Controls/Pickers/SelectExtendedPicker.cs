@@ -278,8 +278,28 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         {
             get
             {
+                List<string> selectedValues = new List<string>();
                 EnsureChildControls();
-                return _parentEditControl.SelectedValue;
+
+                string parentFieldType = ParentFieldType ?? "ddl";
+
+                if ( parentFieldType == "rb" )
+                {
+                    selectedValues.Add( ( ( RockRadioButtonList ) _parentEditControl ).SelectedValue );
+                }
+                else if ( parentFieldType == "cb" )
+                {
+                    selectedValues = ( ( RockCheckBoxList ) _parentEditControl ).SelectedValues;
+                }
+                else if ( parentFieldType == "ddl_multi_enhanced" )
+                {
+                    selectedValues = ( ( RockListBox ) _parentEditControl ).SelectedValues;
+                }
+                else
+                {
+                    selectedValues.Add( ( ( RockDropDownList ) _parentEditControl ).SelectedValue );
+                }
+                return selectedValues.AsDelimited( "," );
             }
 
             set
@@ -310,19 +330,39 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
         {
             get
             {
+                List<string> selectedValues = new List<string>();
                 EnsureChildControls();
-                return _childEditControl.SelectedValue;
+
+                string childFieldType = ChildFieldType ?? "ddl";
+
+                if ( childFieldType == "rb" )
+                {
+                    selectedValues.Add( ( ( RockRadioButtonList ) _childEditControl ).SelectedValue );
+                }
+                else if ( childFieldType == "cb" )
+                {
+                    selectedValues = ( ( RockCheckBoxList ) _childEditControl ).SelectedValues;
+                }
+                else if ( childFieldType == "ddl_multi_enhanced" )
+                {
+                    selectedValues = ( ( RockListBox ) _childEditControl ).SelectedValues;
+                }
+                else
+                {
+                    selectedValues.Add( ( ( RockDropDownList ) _childEditControl ).SelectedValue );
+                }
+                return selectedValues.AsDelimited( "," );
             }
 
             set
             {
                 EnsureChildControls();
-                string childValue = value;
-                if ( _childEditControl.SelectedValue != childValue )
+                var childValues = value.SplitDelimitedValues();
+                if ( SelectedChildValue != value )
                 {
                     if ( SelectedParentValue.IsNullOrWhiteSpace() )
                     {
-                        var parentValue = GetParentValueFromChild( childValue );
+                        var parentValue = GetParentValueFromChild( childValues.FirstOrDefault() );
                         if ( _parentEditControl.SelectedValue != parentValue )
                         {
                             _parentEditControl.SelectedValue = parentValue;
@@ -330,7 +370,24 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
                         }
                     }
 
-                    _childEditControl.SelectedValue = childValue;
+                    string childFieldType = ChildFieldType ?? "ddl";
+
+                    if ( childFieldType == "rb" )
+                    {
+                        ( ( RockRadioButtonList ) _childEditControl ).SelectedValue = value;
+                    }
+                    else if ( childFieldType == "cb" )
+                    {
+                        ( ( RockCheckBoxList ) _childEditControl ).SetValues(childValues);
+                    }
+                    else if ( childFieldType == "ddl_multi_enhanced" )
+                    {
+                        ( ( RockListBox ) _childEditControl ).SetValues( childValues );
+                    }
+                    else
+                    {
+                        ( ( RockDropDownList ) _childEditControl ).SelectedValue = value;
+                    }
                 }
             }
         }
@@ -372,7 +429,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            string parentFieldType = ParentFieldType ?? "ddl";       
+            string parentFieldType = ParentFieldType ?? "ddl";
             if ( parentFieldType == "rb" )
             {
                 _parentEditControl = new RockRadioButtonList();
@@ -538,7 +595,7 @@ namespace com.bemaservices.WorkflowExtensions.Web.UI.Controls
             _childEditControl.Items.Clear();
             if ( selectedParentValue.IsNotNullOrWhiteSpace() )
             {
-               // _childEditControl.Items.Add( Rock.Constants.None.ListItem );
+                // _childEditControl.Items.Add( Rock.Constants.None.ListItem );
 
                 foreach ( var keyVal in GetFilteredChildValues( ChildValues, selectedParentValue ) )
                 {
