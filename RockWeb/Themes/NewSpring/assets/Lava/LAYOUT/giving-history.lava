@@ -119,10 +119,10 @@
         <h3 class="flush">Total <span class="pull-right">{{ sumTotal | FormatAsCurrency }}</span></h3>
         <p class="italic text-gray-light">{{ startDate | Date:'MMM d, yyyy' }} - {{ endDate | Date:'MMM d, yyyy' }}</p>
 
-        {% if businessId and businessId == empty %}
+        {% if businessId == null %}
             <p class="push-half-bottom">
-                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">{{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
-                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">{{ 'Now' | Date:'yyyy' }} Contributions</a>
+                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}" class="btn btn-primary shadowed xs-btn-block push-half-bottom">{{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
+                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary shadowed xs-btn-block push-half-bottom">{{ 'Now' | Date:'yyyy' }} Contributions</a>
             </p>
         {% endif %}
 
