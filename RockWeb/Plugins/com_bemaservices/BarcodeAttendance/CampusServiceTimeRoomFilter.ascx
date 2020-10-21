@@ -54,7 +54,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <Rock:CampusPicker runat="server" ID="r_CampusPicker" AutoPostBack="true" OnSelectedIndexChanged="r_CampusPicker_SelectedIndexChanged" EnableViewState="true" />
+                                    <Rock:RockDropDownList ID="bddlCampus" runat="server" Label="Campus" Required="false" AutoPostBack="true" OnSelectedIndexChanged="r_CampusPicker_SelectedIndexChanged" EnableViewState="true" DataTextField="Name" DataValueField="Id"/>
                                 </div>
                                 <div class="col-lg-6">
                                     <Rock:RockListBox runat="server" ID="rddl_ParentGroup" AutoPostBack="true" Label="Parent Groups"
