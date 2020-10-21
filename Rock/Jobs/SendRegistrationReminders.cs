@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -57,6 +58,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
+            var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
             int remindersSent = 0;
             var errors = new List<string>();
@@ -100,6 +102,7 @@ namespace Rock.Jobs
                             emailMessage.FromEmail = template.ReminderFromEmail;
                             emailMessage.FromName = template.ReminderFromName;
                             emailMessage.Subject = template.ReminderSubject;
+                            emailMessage.AppRoot = publicAppRoot;
                             emailMessage.Message = template.ReminderEmailTemplate;
 
                             var emailErrors = new List<string>();

@@ -70,6 +70,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttendanceOccurrence>( Context ).Queryable().Any( a => a.AttendanceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, AttendanceOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );

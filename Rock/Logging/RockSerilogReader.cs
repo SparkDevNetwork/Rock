@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock.Model;
+using Rock.Utility.ExtensionMethods;
 using Serilog.Events;
 using Serilog.Formatting.Compact.Reader;
 
@@ -31,10 +34,8 @@ namespace Rock.Logging
     /// <seealso cref="Rock.Logging.IRockLogReader" />
     internal class RockSerilogReader : IRockLogReader
     {
-        private readonly IRockLogger rockLogger;
-        private readonly string rockLogDirectory;
-        private readonly string searchPattern;
-        private readonly JsonSerializer jsonSerializer;
+        private readonly IRockLogger _rockLogger;
+        private readonly JsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Gets the record count.
@@ -46,17 +47,7 @@ namespace Rock.Logging
         {
             get
             {
-                /*
-	                04/05/2020 - MSB 
-	                The number of log records could be large and span multiple files we don't want to
-                    incur the cost of counting the number of records in the log file because that would
-                    mean reading every line in all files. So we are setting this value to a high value, but
-                    we can't use int.MaxValue because that appears to cause some sort of issue in
-                    the GridView.PageCount property and it would always return 1.
-
-                    The purpose of this field is to return the number of log records that exists, and is used be the LogViewer to set the pagination.
-                */
-                return 2000000000;
+                return GetRockLogRecordCount();
             }
         }
 
@@ -66,15 +57,9 @@ namespace Rock.Logging
         /// <param name="logger">The logger.</param>
         public RockSerilogReader( IRockLogger logger )
         {
-            rockLogger = logger;
+            _rockLogger = logger;
 
-            rockLogDirectory = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( rockLogger.LogConfiguration.LogPath ) );
-
-            searchPattern = System.IO.Path.GetFileNameWithoutExtension( rockLogger.LogConfiguration.LogPath );
-            searchPattern += "*";
-            searchPattern += System.IO.Path.GetExtension( rockLogger.LogConfiguration.LogPath );
-
-            jsonSerializer = JsonSerializer.Create( new JsonSerializerSettings
+            _jsonSerializer = JsonSerializer.Create( new JsonSerializerSettings
             {
                 DateParseHandling = DateParseHandling.None,
                 Culture = CultureInfo.InvariantCulture
@@ -89,7 +74,7 @@ namespace Rock.Logging
         /// <returns></returns>
         public List<RockLogEvent> GetEvents( int startIndex, int count )
         {
-            rockLogger.Close();
+            _rockLogger.Close();
 
             var logs = GetLogLines( startIndex, count );
 
@@ -104,7 +89,12 @@ namespace Rock.Logging
 
             for ( var i = reversedStartIndex; i > reversedEndIndex && i >= 0; i-- )
             {
-                results.Add( GetLogEventFromLogLine( logs.ElementAt( i ) ) );
+                var logEvent = GetLogEventFromLogLine( logs.ElementAt( i ) );
+                if ( logEvent != null )
+                {
+                    results.Add( logEvent );
+                }
+
             }
 
             return results;
@@ -112,12 +102,7 @@ namespace Rock.Logging
 
         private string[] GetLogLines( int startIndex, int count )
         {
-            if ( !System.IO.Directory.Exists( rockLogDirectory ) )
-            {
-                return new string[] { };
-            }
-
-            var rockLogFiles = System.IO.Directory.GetFiles( rockLogDirectory, searchPattern ).OrderByDescending( s => s ).ToList();
+            var rockLogFiles = _rockLogger.LogFiles;
             if ( rockLogFiles.Count == 0 )
             {
                 return new string[] { };
@@ -138,6 +123,31 @@ namespace Rock.Logging
             }
 
             return logs;
+        }
+
+        private int GetRockLogRecordCount()
+        {
+            var rockLogFiles = _rockLogger.LogFiles;
+            if ( rockLogFiles.Count == 0 )
+            {
+                return 0;
+            }
+
+            long lines = 0;
+            foreach ( var filePath in rockLogFiles )
+            {
+                _rockLogger.Close();
+                using ( var file = System.IO.File.OpenRead( filePath ) )
+                {
+                    lines += file.CountLines();
+                }
+            }
+
+            if ( lines >= int.MaxValue )
+            {
+                return int.MaxValue;
+            }
+            return Convert.ToInt32( lines );
         }
 
         private RockLogLevel GetRockLogLevelFromSerilogLevel( LogEventLevel logLevel )
@@ -161,22 +171,32 @@ namespace Rock.Logging
 
         private RockLogEvent GetLogEventFromLogLine( string logLine )
         {
-            var evt = LogEventReader.ReadFromString( logLine, jsonSerializer );
-
-            var domain = evt.Properties["domain"].ToString();
-            evt.RemovePropertyIfPresent( "domain" );
-
-            var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
-            domain = domain.Replace( "\"", "" );
-
-            return new RockLogEvent
+            try
             {
-                DateTime = evt.Timestamp.DateTime.ToLocalTime(),
-                Exception = evt.Exception,
-                Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
-                Domain = domain,
-                Message = message
-            };
+                var evt = LogEventReader.ReadFromString( logLine, _jsonSerializer );
+
+                var domain = evt.Properties["domain"].ToString();
+                evt.RemovePropertyIfPresent( "domain" );
+
+                var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
+                domain = domain.Replace( "\"", "" );
+
+                return new RockLogEvent
+                {
+                    DateTime = evt.Timestamp.DateTime.ToLocalTime(),
+                    Exception = evt.Exception,
+                    Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
+                    Domain = domain,
+                    Message = message
+                };
+            }
+            catch ( Exception ex )
+            {
+                // In rare instances it is possible that the event didn't get completely flushed to the log
+                // and when that happens it won't be able to be correctly parsed so we need to handle that gracefully.
+                ExceptionLogService.LogException( ex );
+                return null;
+            }
         }
     }
 }

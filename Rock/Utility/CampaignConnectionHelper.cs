@@ -66,7 +66,7 @@ namespace Rock.Utility
                         a.ConnectionOpportunityId == connectionOpportunity.Id && (
                         a.ConnectionState == ConnectionState.Active
                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                        || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                        || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
                 .Select( a => a.PersonAlias.PersonId )
                 .ToList();
 
@@ -268,7 +268,10 @@ namespace Rock.Utility
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
-                var familyMembersQuery = personQuery.SelectMany( a => a.PrimaryFamily.Members ).Distinct();
+                var familyMembersQuery = personQuery
+                    .Where( a => a.PrimaryFamily != null )
+                    .SelectMany( a => a.PrimaryFamily.Members )
+                    .Distinct();
 
                 //// Get all family group Id and all it's family member in dictionary.
                 //// We will all the family members to both figure out if might be opted out
@@ -276,13 +279,14 @@ namespace Rock.Utility
                 var familyWithMembers = familyMembersQuery.AsNoTracking()
                     .Select( a => new
                     {
+                        a.GroupId,
                         a.PersonId,
                         PersonIsDeceased = a.Person.IsDeceased,
                         GroupRoleOrder = a.GroupRole.Order,
                         PersonGender = a.Person.Gender
                     } )
                     .ToList()
-                    .GroupBy( a => a.PersonId )
+                    .GroupBy( a => a.GroupId )
                     .ToDictionary( k => k.Key, v => v );
 
                 if ( campaignConfiguration.OptOutGroupGuid.HasValue )

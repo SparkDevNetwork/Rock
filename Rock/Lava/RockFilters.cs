@@ -4669,6 +4669,22 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the response header.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="headerName">Name of the header.</param>
+        public static void AddResponseHeader( string input, string headerName )
+        {
+            // Check if header already exists, if so remove current value.
+            if ( HttpContext.Current.Response.Headers.AllKeys.Contains( headerName ) )
+            {
+                HttpContext.Current.Response.Headers.Remove( headerName );
+            }
+
+            HttpContext.Current.Response.AddHeader( headerName, input );
+        }
+
+        /// <summary>
         /// Returns the specified page parm.
         /// </summary>
         /// <param name="input">The input.</param>

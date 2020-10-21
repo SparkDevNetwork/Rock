@@ -550,6 +550,8 @@
     <Compile Include="Jobs\JobMigration.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
+    <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
+    <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
@@ -597,9 +599,11 @@
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
+    <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
-	<Compile Include="Utility\RockSerializableList.cs" />
+    <Compile Include="Utility\TaskActivityMessageHub.cs" />
+    <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Model\IdentityVerification.cs" />
@@ -662,6 +666,7 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />

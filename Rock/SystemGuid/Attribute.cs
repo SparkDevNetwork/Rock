@@ -746,5 +746,30 @@ namespace Rock.SystemGuid
         /// The Content Channel View Enable Archive Summary Attribute
         /// </summary>
         public const string ENABLE_ARCHIVE_SUMMARY = "753217FB-D519-44CC-83FC-C451E37E553F";
+
+        #region Group Attendance Detail
+        /// <summary>
+        /// The attendance type label
+        /// </summary>
+        public const string ATTENDANCE_TYPE_LABEL = "6916359C-C168-4DBA-A893-365526C9F4C4";
+        /// <summary>
+        /// The configured attendance types
+        /// </summary>
+        public const string CONFIGURED_ATTENDANCE_TYPES = "2CD11610-775B-44D4-BC0C-063563AC07E5";
+        #endregion
+
+        #region Group Attendance List
+        /// <summary>
+        /// The display attendance type
+        /// </summary>
+        public const string DISPLAY_ATTENDANCE_TYPE = "41D650B3-78B8-4F02-AD58-B914914A72AE";
+        #endregion
+
+        #region Attendance Self Entry
+        /// <summary>
+        /// The configured attendance type
+        /// </summary>
+        public const string CONFIGURED_ATTENDANCE_TYPE = "D449AC5B-AC7A-457C-AD0F-D1DB1F73FC19";
+        #endregion
     }
 }
