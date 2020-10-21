@@ -37,7 +37,7 @@ using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 namespace Rock.MyWell
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
     [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
@@ -953,7 +953,7 @@ namespace Rock.MyWell
         #region Exceptions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.Exception" />
         public class ReferencePaymentInfoRequired : Exception
@@ -967,7 +967,7 @@ namespace Rock.MyWell
             }
         }
 
-        #endregion 
+        #endregion
 
         #region GatewayComponent implementation
 
@@ -985,7 +985,7 @@ namespace Rock.MyWell
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
+                // values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
