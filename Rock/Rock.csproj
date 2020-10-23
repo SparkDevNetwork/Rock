@@ -525,6 +525,7 @@
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
+    <Compile Include="Model\DocumentService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\136_MigrationRollupsFor11_3_0.cs" />
