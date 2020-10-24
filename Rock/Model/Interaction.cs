@@ -347,13 +347,20 @@ namespace Rock.Model
         {
             if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
             {
-                var uri = new Uri( url );
-                var urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
-                this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
-                this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
-                this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
-                this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
-                this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+                try
+                {
+                    var uri = new Uri( url );
+                    var urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
+                    this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                    this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                    this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                    this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                    this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error parsing '{url}' to the uri.", ex ), null );
+                }
             }
         }
 
