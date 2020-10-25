@@ -10,6 +10,7 @@
 {% assign studentMinistryHSMURL = urlPattern %}
 {% assign studentMinistryEventsURL = urlPattern %}
 {% assign nextStepsURL = urlPattern %}
+{% assign volunteerURL = urlPattern %}
 {% assign nextStepsUnattendedURL = urlPattern %}
 {% assign campusEventsURL = urlPattern %}
 {% assign aGreatDateAdultURL = urlPattern %}
@@ -56,6 +57,7 @@
 {% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 {% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'kioskId', attendedCheckInKioskId %}
 {% assign motsURL = motsURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign volunteerURL = volunteerURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
 {% grouptype where:'Name == "kidMinistry Check-in"'%}
@@ -91,6 +93,10 @@
     {% assign motsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
+{% grouptype where:'Name == "Volunteer Check-in"'%}
+    {% assign volunteerCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
@@ -105,6 +111,7 @@
 {% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 {% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 {% assign motsURL = motsURL | Replace: 'checkInConfigId', motsCheckinConfigId %}
+{% assign volunteerURL = volunteerURL | Replace: 'checkInConfigId', volunteerCheckinConfigId %}
 
 {% sql %}
 DECLARE @kidMinistryCheckInConfigId int = {{kidMinCheckinConfigId}}
@@ -115,6 +122,7 @@ DECLARE @nextStepsCheckInConfigId int = {{nextStepsCheckinConfigId}}
 DECLARE @campusEventsCheckInConfigId int = {{campusEventsCheckinConfigId}}
 DECLARE @campusEventsAreaId int = {{campusEventsAreaId}}
 DECLARE @motsCheckInConfigId int = {{motsCheckinConfigId}}
+DECLARE @volunteerCheckinConfigId int = {{volunteerCheckinConfigId}}
 
 
 SELECT GroupTypeId, ChildGroupTypeId, Name
@@ -129,6 +137,7 @@ WHERE [GroupTypeId] in (
     ,@campusEventsCheckInConfigId
     ,@campusEventsAreaId
     ,@motsCheckInConfigId
+    ,@volunteerCheckinConfigId
 )
 {% endsql %}
 
@@ -146,6 +155,8 @@ Build up string of check-in areas
     {% if item.GroupTypeId == kidMinCheckinConfigId %}
         {% assign kviAreas =  kviAreas | Append: item.ChildGroupTypeId | Append: "," %}
     {% elseif item.Name == "Collide" %}
+        {% assign firstTimeFamilyAreas =  firstTimeFamilyAreas | Append: item.ChildGroupTypeId | Append: "," %}
+    {% elseif item.Name == "Collide Volunteers" %}
         {% assign firstTimeFamilyAreas =  firstTimeFamilyAreas | Append: item.ChildGroupTypeId %}
     {% endif %}
 {% endfor %}
@@ -248,6 +259,15 @@ Build up string of check-in areas
 {% endfor %}
 {% assign motsAreas = motsAreas | Split:',' | Join:',' %}
 
+<!-- Volunteer Areas -->
+{% assign volunteerAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == volunteerCheckinConfigId %}
+        {% assign volunteerAreas = volunteerAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign volunteerAreas = volunteerAreas | Split:',' | Join:',' %}
+
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInAreas', firstTimeFamilyAreas %}
@@ -262,6 +282,7 @@ Build up string of check-in areas
 {% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'checkInAreas', aGreatDateAdultAreas %}
 {% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'checkInAreas', aGreatDateFamilyAreas %}
 {% assign motsURL = motsURL | Replace: 'checkInAreas', motsAreas %}
+{% assign volunteerURL = volunteerURL | Replace: 'checkInAreas', volunteerAreas %}
 
 <!-- Themes -->
 {% assign kidVentureIslandTheme = "?Theme=CheckinKidVentureIsland"%}
@@ -285,6 +306,7 @@ Build up string of check-in areas
 {% assign aGreatDateAdultURL = aGreatDateAdultURL | Append: genericLCBCTheme %}
 {% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Append: kviTheme %}
 {% assign motsURL = motsURL | Append: genericLCBCTheme %}
+{% assign volunteerURL = volunteerURL | Append: genericLCBCTheme %}
 
 
 
@@ -387,6 +409,20 @@ Build up string of check-in areas
 </div>
 
 <div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-heading">Volunteer Check-in</div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <a href="{{ volunteerURL }}">
+                <i class="fa fa-clock-o"></i>
+                <h3>Volunteer Check-In</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel panel-default list-as-blocks clearfix">
     <div class="panel-heading">Campus Events</div>
     <div class="panel-body">
         <ul>
@@ -454,7 +490,8 @@ Build up string of check-in areas
             StudMin Events Check-In Config: {{ studentMinEventsCheckinConfigId }}<br>
             Next Steps Check-In Config: {{ nextStepsCheckinConfigId }}<br>
             Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br>
-            MOTS Check-In Config: {{ motsCheckinConfigId }}<br><br>
+            MOTS Check-In Config: {{ motsCheckinConfigId }}<br>
+            Volunteer Check-In Config: {{volunteerCheckinConfigId}}<br><br>
 
             KviAreas: {{ kviAreas }}<br>
             kidMinistryEventAreas: {{ kidMinistryEventsAreas }}<br>
@@ -466,7 +503,8 @@ Build up string of check-in areas
             Campus Events Areas: {{ campusEventsAreas }}<br>
             A Great Date Adult Areas: {{ aGreatDateAdultAreas }}<br>
             A Great Date Family Areas: {{ aGreatDateFamilyAreas }}<br>
-            MOTS Areas: {{ motsAreas }}<br><br>
+            MOTS Areas: {{ motsAreas }}<br>
+            Volunteer Areas: {{ volunteerAreas}}<br><br>
 
             KVI Attended Check-In:          {{ kviAttendedCheckInURL }}<br>
             KVI Unattended Check-In:        {{ kviUnattendedCheckInURL }}<br>
@@ -484,6 +522,7 @@ Build up string of check-in areas
             A Great Date Adult Check-In:    {{ aGreatDateAdultURL }}<br>
             A Great Date Family Check-In:   {{ aGreatDateFamilyURL }}<br>
             MOTS Check-In:                  {{ motsURL }}<br>
+            Volunteer Check-In:             {{ volunteerURL}}<br>
         </div>
       </div>
   </div>
