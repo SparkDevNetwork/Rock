@@ -219,7 +219,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "d-flex" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlLocations.RenderControl( writer );
@@ -351,7 +351,7 @@ namespace Rock.Web.UI.Controls
             _pnlAddAddress = new Panel
             {
                 ID = $"{this.ClientID}{nameof( _pnlAddAddress )}",
-                CssClass = "mt-3",
+                CssClass = "mt-3 well",
                 Visible = false,
             };
             Controls.Add( _pnlAddAddress );
@@ -390,7 +390,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = $"{this.ClientID}{nameof( _btnCancel )}",
                 Text = "Cancel",
-                CssClass = "btn btn-xs btn-default",
+                CssClass = "btn btn-xs btn-link",
                 CausesValidation = false,
             };
             _btnCancel.Click += btnCancel_Click;
