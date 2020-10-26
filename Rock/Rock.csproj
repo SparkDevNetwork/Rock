@@ -562,9 +562,13 @@
     <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
+    <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
+    <Compile Include="Lava\Blocks\EventOccurrences.cs" />
     <Compile Include="Lava\Blocks\InteractionWrite.cs" />
     <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
     <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\Blocks\CalendarEvents.cs" />
+    <Compile Include="Lava\LavaElementAttributes.cs" />
     <Compile Include="Lava\LavaFileSystem.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />

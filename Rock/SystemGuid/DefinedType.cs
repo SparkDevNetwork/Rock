@@ -85,6 +85,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
+        /// Guid for Content Channel Audience Type
+        /// </summary>
+        public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
