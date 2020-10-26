@@ -245,7 +245,7 @@
                                         <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-text-backgroundcolor">Background Color</label>
+									                <label class="control-label" for="component-text-backgroundcolor">Background Color</label>
 									                <div id="component-text-backgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -267,7 +267,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-border-width">Border Width</label>
+									                <label class="control-label" for="component-text-border-width">Border Width</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-border-width" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -275,7 +275,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-border-color">Border Color</label>
+									                <label class="control-label" for="component-text-border-color">Border Color</label>
 									                <div id="component-text-border-color" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -287,13 +287,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-padding-top">Padding Top</label>
+									                <label class="control-label" for="component-text-padding-top">Padding Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-text-padding-left">Padding Left</label>
+									                <label class="control-label" for="component-text-padding-left">Padding Left</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-left" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -301,13 +301,13 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-padding-bottom">Padding Bottom</label>
+									                <label class="control-label" for="component-text-padding-bottom">Padding Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-text-padding-right">Padding Right</label>
+									                <label class="control-label" for="component-text-padding-right">Padding Right</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-right" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -326,7 +326,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-image-imgcsswidth">Width</label>
+									                <label class="control-label" for="component-image-imgcsswidth">Width</label>
 									                <select id="component-image-imgcsswidth" class="form-control">
 										                <option value="0">Image Width</option>
 										                <option value="1">Full Width</option>
@@ -334,7 +334,7 @@
 								                </div>
 
                                                 <div class="form-group">
-									                <label for="component-image-imagealign">Align</label>
+									                <label class="control-label" for="component-image-imagealign">Align</label>
 									                <select id="component-image-imagealign" class="form-control">
 										                <option value="left">Left</option>
 										                <option value="center">Center</option>
@@ -343,7 +343,7 @@
 								                </div>
 
                                                 <div class="form-group">
-									                <label for="component-image-resizemode">Resize Mode</label>
+									                <label class="control-label" for="component-image-resizemode">Resize Mode</label>
 									                <select id="component-image-resizemode" class="form-control">
 										                <option value="crop">Crop</option>
 										                <option value="pad">Pad</option>
@@ -356,19 +356,19 @@
                                         <div class="row">
 							                <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-imagewidth">Image Width</label>
+                                                    <label class="control-label" for="component-image-imagewidth">Image Width</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-top">Margin Top</label>
+									                <label class="control-label" for="component-image-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-left">Margin Left</label>
+									                <label class="control-label" for="component-image-margin-left">Margin Left</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -376,19 +376,19 @@
 							                </div>
 							                <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-imageheight">Image Height</label>
+                                                    <label class="control-label" for="component-image-imageheight">Image Height</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-bottom">Margin Bottom</label>
+									                <label class="control-label" for="component-image-margin-bottom">Margin Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-right">Margin Right</label>
+									                <label class="control-label" for="component-image-margin-right">Margin Right</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -399,7 +399,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-link">Link</label>
+                                                    <label class="control-label" for="component-image-link">Link</label>
                                                     <input type="url" id="component-image-link" class="form-control" />
                                                 </div>
                                             </div>
@@ -414,7 +414,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-1">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-1">Background Color</label>
 									                    <div id="component-section-backgroundcolor-1" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -427,13 +427,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-1">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-1">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-1">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-1">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -441,13 +441,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-1">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-1">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-1">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-1">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -463,7 +463,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-2">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-2">Background Color</label>
 									                    <div id="component-section-backgroundcolor-2" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -476,13 +476,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-2">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-2">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-2">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-2">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -490,13 +490,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-2">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-2">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-2">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-2">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -512,7 +512,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-3">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-3">Background Color</label>
 									                    <div id="component-section-backgroundcolor-3" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -525,13 +525,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-3">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-3">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-3">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-3">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -539,13 +539,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-3">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-3">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-3">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-3">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -561,13 +561,13 @@
                                         <div class="row">
 							                <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-divider-height">Height</label>
+									                <label class="control-label" for="component-divider-height">Height</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-height" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-divider-margin-top">Margin Top</label>
+									                <label class="control-label" for="component-divider-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -576,14 +576,14 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-divider-color">Color</label>
+									                <label class="control-label" for="component-divider-color">Color</label>
 									                <div id="component-divider-color" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
 									                </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-divider-margin-bottom">Margin Bottom</label>
+									                <label class="control-label" for="component-divider-margin-bottom">Margin Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -602,13 +602,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-top">Margin Top</label>
+                                                    <label class="control-label" for="component-code-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-top" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-left">Margin Left</label>
+                                                    <label class="control-label" for="component-code-margin-left">Margin Left</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
                                                     </div>
@@ -616,13 +616,13 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-bottom">Margin Bottom</label>
+                                                    <label class="control-label" for="component-code-margin-bottom">Margin Bottom</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-right">Margin Right</label>
+                                                    <label class="control-label" for="component-code-margin-right">Margin Right</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-right" type="number"><span class="input-group-addon">px</span>
                                                     </div>
@@ -636,12 +636,12 @@
 						                <h4 class="propertypanel-title">Button</h4>
 						                <hr />
 						                <div class="form-group">
-							                <label for="component-button-buttontext">Button Text</label>
+							                <label class="control-label" for="component-button-buttontext">Button Text</label>
 							                <input class="form-control" id="component-button-buttontext" placeholder="Press Me">
 						                </div>
 
 						                <div class="form-group">
-							                <label for="component-button-buttonurl">Url</label>
+							                <label class="control-label" for="component-button-buttonurl">Url</label>
 							                <div class="input-group">
 								                <span class="input-group-addon"><i class="fa fa-link"></i></span>
 								                <input class="form-control" id="component-button-buttonurl" placeholder="http://yourlink.com">
@@ -651,7 +651,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonbackgroundcolor">Background Color</label>
+									                <label class="control-label" for="component-button-buttonbackgroundcolor">Background Color</label>
 									                <div id="component-button-buttonbackgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -660,7 +660,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontcolor">Font Color</label>
+									                <label class="control-label" for="component-button-buttonfontcolor">Font Color</label>
 									                <div id="component-button-buttonfontcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -672,7 +672,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonwidth">Width</label>
+									                <label class="control-label" for="component-button-buttonwidth">Width</label>
 									                <select id="component-button-buttonwidth" class="form-control">
 										                <option value="0">Fit To Text</option>
 										                <option value="1">Full Width</option>
@@ -680,13 +680,13 @@
 									                </select>
 								                </div>
 								                <div class="form-group js-buttonfixedwidth">
-									                <label for="component-button-buttonfixedwidth">Fixed Width</label>
+									                <label class="control-label" for="component-button-buttonfixedwidth">Fixed Width</label>
 									                <input class="form-control" id="component-button-buttonfixedwidth">
 								                </div>
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonalign">Align</label>
+									                <label class="control-label" for="component-button-buttonalign">Align</label>
 									                <select id="component-button-buttonalign" class="form-control">
 										                <option value="left">Left</option>
 										                <option value="center">Center</option>
@@ -697,7 +697,7 @@
 						                </div>
 
 						                <div class="form-group">
-							                <label for="component-button-buttonfont">Font</label>
+							                <label class="control-label" for="component-button-buttonfont">Font</label>
 							                <select id="component-button-buttonfont" class="form-control">
 								                <option value=""></option>
 								                <option value="Arial, Helvetica, sans-serif">Arial</option>
@@ -718,7 +718,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontweight">Font Weight</label>
+									                <label class="control-label" for="component-button-buttonfontweight">Font Weight</label>
 									                <select id="component-button-buttonfontweight" class="form-control">
 										                <option value="normal">Normal</option>
 										                <option value="bold">Bold</option>
@@ -729,7 +729,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontsize">Font Size</label>
+									                <label class="control-label" for="component-button-buttonfontsize">Font Size</label>
 									                <input class="form-control" id="component-button-buttonfontsize">
 								                </div>
 							                </div>
@@ -738,7 +738,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonpadding">Button Padding</label>
+									                <label class="control-label" for="component-button-buttonpadding">Button Padding</label>
 									                <input class="form-control" id="component-button-buttonpadding">
 								                </div>
 							                </div>
@@ -783,14 +783,14 @@
 
 
                                         <div class="form-group js-rsvp-advanced-settings">
-                                            <label for="component-rsvp-accepttext">Accept Button Label</label>
+                                            <label class="control-label" for="component-rsvp-accepttext">Accept Button Label</label>
                                             <input class="form-control" id="component-rsvp-accepttext" placeholder="Accept">
                                         </div>
 
                                         <div class="row js-rsvp-advanced-settings">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-rsvp-acceptbackgroundcolor">Accept Button Color</label>
+                                                    <label class="control-label" for="component-rsvp-acceptbackgroundcolor">Accept Button Color</label>
                                                     <div id="component-rsvp-acceptbackgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -799,7 +799,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-rsvp-acceptfontcolor">Accept Button Text Color</label>
+									                <label class="control-label" for="component-rsvp-acceptfontcolor">Accept Button Text Color</label>
 									                <div id="component-rsvp-acceptfontcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -811,7 +811,7 @@
                                         <div class="row js-rsvp-advanced-settings">
 							                <div class="col-md-9">
 								                <div class="form-group">
-                                                    <label for="component-rsvp-declinetext">Decline Button Label</label>
+                                                    <label class="control-label" for="component-rsvp-declinetext">Decline Button Label</label>
                                                     <input class="form-control" id="component-rsvp-declinetext" placeholder="Decline">
 								                </div>
 							                </div>
@@ -825,7 +825,7 @@
                                         <div class="row js-rsvp-advanced-settings">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-rsvp-declinebackgroundcolor">Decline Button Color</label>
+                                                    <label class="control-label" for="component-rsvp-declinebackgroundcolor">Decline Button Color</label>
                                                     <div id="component-rsvp-declinebackgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -834,7 +834,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-rsvp-declinefontcolor">Decline Button Text Color</label>
+									                <label class="control-label" for="component-rsvp-declinefontcolor">Decline Button Text Color</label>
 									                <div id="component-rsvp-declinefontcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -844,7 +844,7 @@
 						                </div>
 
 						                <div class="form-group js-rsvp-advanced-settings">
-							                <label for="component-rsvp-buttonfont">Font Face</label>
+							                <label class="control-label" for="component-rsvp-buttonfont">Font Face</label>
 							                <select id="component-rsvp-buttonfont" class="form-control">
 								                <option value=""></option>
 								                <option value="Arial, Helvetica, sans-serif">Arial</option>
@@ -865,7 +865,7 @@
                                         <div class="row js-rsvp-advanced-settings">
 							                <div class="col-md-6">
 								                    <div class="form-group">
-									                <label for="component-rsvp-buttonfontweight">Font Weight</label>
+									                <label class="control-label" for="component-rsvp-buttonfontweight">Font Weight</label>
 									                <select id="component-rsvp-buttonfontweight" class="form-control">
 										                <option value="normal">Normal</option>
 										                <option value="bold">Bold</option>
@@ -876,7 +876,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-rsvp-buttonfontsize">Font Size</label>
+									                <label class="control-label" for="component-rsvp-buttonfontsize">Font Size</label>
 									                <input class="form-control" id="component-rsvp-buttonfontsize">
 								                </div>
 							                </div>
@@ -885,13 +885,13 @@
 						                <div class="row js-rsvp-advanced-settings">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-rsvp-buttonpadding">Button Padding</label>
+									                <label class="control-label" for="component-rsvp-buttonpadding">Button Padding</label>
 									                <input class="form-control" id="component-rsvp-buttonpadding">
 								                </div>
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-rsvp-buttonalign">Align</label>
+									                <label class="control-label" for="component-rsvp-buttonalign">Align</label>
 									                <select id="component-rsvp-buttonalign" class="form-control">
 										                <option value="left">Left</option>
 										                <option value="center">Center</option>
@@ -1168,7 +1168,7 @@
                         <div class="panel-body">
                             <div>
                                 <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
-                                <span id="_TaskActivityMessage">Working...</span>                                        
+                                <span id="_TaskActivityMessage">Working...</span>
                             </div>
                             <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">
                                 <div class="progress" style="position: relative">
