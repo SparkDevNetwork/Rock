@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using Rock.Data;
@@ -27,7 +28,7 @@ namespace Rock.Field.Types
     /// Class that represents the LocationList field type.
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
-    public class LocationListFieldType : FieldType
+    public class LocationListFieldType : FieldType, IEntityFieldType
     {
         #region Configuration
         /// <summary>
@@ -186,10 +187,7 @@ namespace Rock.Field.Types
                     Location location = null;
                     if ( locationId != null )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            location = new LocationService( rockContext ).Get( locationId.Value );
-                        }
+                        location = GetLocationById( locationId.Value );
                     }
 
                     ( ( LocationPicker ) controls[1] ).Location = location;
@@ -257,17 +255,13 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var location = GetLocationById( locationId.Value );
+            if ( location == null )
             {
-                var locationService = new LocationService( rockContext );
-                var location = locationService.Get( locationId.Value );
-
-                if ( location != null )
-                {
-                    return location.Guid.ToString();
-                }
+                return null;
             }
-            return null;
+
+            return location.Guid.ToString();
         }
 
         /// <summary>
@@ -286,20 +280,11 @@ namespace Rock.Field.Types
             }
 
             var locationGuid = value.AsGuid();
-            if ( locationGuid.IsEmpty() )
-            {
-                return;
-            }
+            var location = GetLocationByGuid( locationGuid );
 
-            using ( var rockContext = new RockContext() )
+            if ( location != null )
             {
-                var locationService = new LocationService( rockContext );
-                var location = locationService.Get( locationGuid );
-
-                if ( location != null )
-                {
-                    locationList.SelectedValue = location.Id.ToString();
-                }
+                locationList.SelectedValue = location.Id.ToString();
             }
         }
         #endregion
@@ -316,29 +301,130 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             var locationGuid = value.AsGuid();
-            if ( locationGuid.IsEmpty() )
+            var location = GetLocationByGuid( locationGuid );
+            if ( location == null )
             {
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            if ( configurationValues.GetConfigurationValueAsString( ConfigurationKey.ShowCityState ).AsBoolean() )
             {
-                var locationService = new LocationService( rockContext );
-                var location = locationService.Get( locationGuid );
-
-                if ( configurationValues.GetConfigurationValueAsString( ConfigurationKey.ShowCityState ).AsBoolean() )
-                {
-                    value = $"{location.Name} ({location.City}, {location.State})";
-                }
-                else
-                {
-                    value = location.Name;
-                }
+                value = $"{location.Name} ({location.City}, {location.State})";
+            }
+            else
+            {
+                value = location.Name;
             }
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
-
         #endregion
+
+        #region IEntityFieldType implementation
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var guid = GetEditValue( control, configurationValues ).AsGuid();
+            var location = GetLocationByGuid( guid );
+
+            if ( location == null )
+            {
+                return null;
+            }
+
+            return location.Id;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var locationEditValue = string.Empty;
+            if ( id != null )
+            {
+                var location = GetLocationById( id.Value );
+                if ( location != null )
+                {
+                    locationEditValue = location.Guid.ToString();
+                }
+            }
+
+            SetEditValue( control, configurationValues, locationEditValue );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEntity GetEntity( string value )
+        {
+            var guid = value.AsGuid();
+            return GetLocationByGuid( guid );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var guid = value.AsGuid();
+            return GetLocationByGuid( guid, rockContext );
+        }
+        #endregion
+
+        private Location GetLocationByGuid( Guid guid )
+        {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return GetLocationByGuid( guid, rockContext );
+            }
+        }
+
+        private Location GetLocationByGuid( Guid guid, RockContext rockContext )
+        {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
+            var locationService = new LocationService( rockContext );
+            return locationService.Get( guid );
+        }
+
+        private Location GetLocationById( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return GetLocationById( id, rockContext );
+            }
+        }
+
+        private Location GetLocationById( int id, RockContext rockContext )
+        {
+            var locationService = new LocationService( rockContext );
+            return locationService.Get( id );
+        }
     }
 }
