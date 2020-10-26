@@ -2684,8 +2684,20 @@ namespace RockWeb.Blocks.Event
                     string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
                     string email = registrantInfo.GetEmail( RegistrationTemplate );
-                    var birthday = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToString().AsDateTime();
-                    var mobilePhone = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToString();
+
+                    var birthdayFieldValue = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate );
+                    DateTime? birthday = null;
+                    if ( birthdayFieldValue != null )
+                    {
+                        birthday = birthdayFieldValue.ToString().AsDateTime();
+                    }
+
+                    var mobilePhoneFieldValue = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone );
+                    string mobilePhone = string.Empty;
+                    if( mobilePhoneFieldValue != null )
+                    {
+                        mobilePhone = mobilePhoneFieldValue.ToString();
+                    }
 
                     if ( registrantInfo.Id > 0 )
                     {
