@@ -206,11 +206,12 @@ iframe.email-body {
 
   .conversation-list {
     position: relative;
+    display: flex;
+    flex-direction: column;
     flex-grow: 0;
     min-width: 100%;
-    height: ~"calc(100vh - 200px)";
-    min-height: 300px;
     border-right: 1px solid rgba(0,0,0, .2);
+
     @media (min-width: 599px) {
       min-width: 320px;
     }
@@ -220,14 +221,13 @@ iframe.email-body {
     }
 
     .header {
-      height: 49px;
       padding: 7px 16px;
+      font-weight: @font-weight-normal;
       background-color: @panel-heading-bg;
     }
 
     .overflow-scroll {
       width: 100%;
-      height: ~"calc(100% - 50px)";
       overflow: hidden;
       overflow-y: scroll;
     }

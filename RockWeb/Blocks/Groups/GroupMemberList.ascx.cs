@@ -978,19 +978,7 @@ namespace RockWeb.Blocks.Groups
         private void RemoveAttributeAndButtonColumns()
         {
             // Remove added button columns
-            DataControlField buttonColumn = gGroupMembers.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gGroupMembers.Columns.Remove( buttonColumn );
-            }
-
-            buttonColumn = gGroupMembers.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gGroupMembers.Columns.Remove( buttonColumn );
-            }
-
-            buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            DataControlField buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
             if ( buttonColumn != null )
             {
                 gGroupMembers.Columns.Remove( buttonColumn );
@@ -1014,11 +1002,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // Add Link to Profile Page Column
-            gGroupMembers.AddPersonProfileLinkColumn( "PersonProfilePage" );
-
-            // Add delete column
-            _deleteField = gGroupMembers.AddDeleteFieldColumn( DeleteOrArchiveGroupMember_Click );
+            // Hold a reference to the delete column
+            _deleteField = gGroupMembers.Columns.OfType<DeleteField>().First();
         }
 
         /// <summary>

@@ -42,21 +42,20 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-tachometer"></i>Cache Manager</h1>
                 <span id="spRedisStatus" runat="server"></span>
+
+                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right margin-b-md" OnClick="btnClearCache_Click" CausesValidation="false">
+                    <i class="fa fa-repeat"></i> Clear Cache
+                </asp:LinkButton>
             </div>
             <div class="panel-body">
-                
-                <div class="clearfix">
-                    <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right margin-b-md" OnClick="btnClearCache_Click" CausesValidation="false">
-                    <i class="fa fa-repeat"></i> Clear Cache
-                    </asp:LinkButton>
-                </div>
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" Dismissable="true" />
 
                 <div class="row">
-                
+
                     <div class="col-md-6">
-                        <h4>Cache Tags</h4>
+                        <h4 class="mt-0 pull-left">Cache Tags </h4>
+                        <div class="pull-right"><Rock:HelpBlock ID="hbCacheTag" runat="server" Text="These Cache Tags values are written to the 'Cache Tags' Defined Type.  You can delete the values there, but you should make sure they are not being used in any HTML content or Lava templates." /></div>
                         <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found" DisplayType="Light" OnRowSelected="gCacheTagList_RowSelected">
                             <Columns>
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
@@ -66,7 +65,7 @@
                             </Columns>
                         </Rock:Grid>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="row d-flex">
                             <div class="col-md-6">
@@ -121,7 +120,7 @@
                                         <Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)" Label="Database Number"></Rock:RockTextBox>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="actions">

@@ -38,7 +38,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
+using static Rock.Security.Authorization;
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -919,7 +919,9 @@ namespace Rock.Web.UI
                     // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
-                    Response.Cookies[sidCookieName].Expires = DateTime.Now.AddDays( -1 );
+                    var cookie = Response.Cookies[sidCookieName];
+                    cookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -2299,7 +2301,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2332,7 +2334,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = null;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2390,7 +2392,9 @@ Sys.Application.add_load(function () {
                 HttpCookie httpCookie = Request.Cookies["rock_wifi"];
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
-                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                    var wiFiCookie = Response.Cookies["rock_wifi"];
+                    wiFiCookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( wiFiCookie );
                 }
             }
         }
@@ -2403,6 +2407,67 @@ Sys.Application.add_load(function () {
         public string GetContextCookieName( bool pageSpecific )
         {
             return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        public static void AddOrUpdateCookie( string name, string value, DateTime? expirationDate )
+        {
+            var cookie = new HttpCookie( name )
+            {
+                Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                Value = value
+            };
+
+            AddOrUpdateCookie( cookie );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// This method creates a new cookie using a deep clone of the provided cookie to ensure a cookie written to the response
+        /// does not contain properties that are not compatible with .Net 4.5.2 (e.g. SameSite).
+        /// Removes the cookie from the Request and Response using the cookie name, then adds the cloned clean cookie to the Response.
+        /// </summary>
+        /// <param name="cookie">The cookie.</param>
+        public static void AddOrUpdateCookie( HttpCookie cookie )
+        {
+            // If the samesite setting is not in the Path then add it
+            if ( cookie.Path.IsNullOrWhiteSpace() || !cookie.Path.Contains( "SameSite" ) )
+            {
+                SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+
+                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+                cookie.Path += sameSiteCookieValue;
+            }
+
+            // Clone the cookie to prevent the SameSite property from making an appearence in our response.
+            var responseCookie = new HttpCookie( cookie.Name )
+            {
+                Domain = cookie.Domain,
+                Expires = cookie.Expires,
+                HttpOnly = cookie.HttpOnly,
+                Path = cookie.Path,
+                Secure = cookie.Secure,
+                Value = cookie.Value
+            };
+
+            HttpContext.Current.Request.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Add( responseCookie );
+        }
+
+        /// <summary>
+        /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public HttpCookie GetCookie( string name )
+        {
+            return Request.Cookies[name] ?? Response.Cookies[name] ?? null;
         }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Defined Value selector with Add button
-            writer.AddAttribute( "class", $"{this.ClientID}-js-defined-value-selector controls controls-row form-control-group" );
+            writer.AddAttribute( "class", $"{this.ClientID}-js-defined-value-selector controls controls-row form-control-group d-flex" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlDefinedValues.RenderControl( writer );
@@ -208,7 +208,6 @@ namespace Rock.Web.UI.Controls
             _ddlDefinedValues = new RockDropDownList();
             _ddlDefinedValues.ID = this.ID + "_ddlDefinedValues";
             _ddlDefinedValues.EnhanceForLongLists = this.EnhanceForLongLists;
-            _ddlDefinedValues.Style.Add( "width", "85%" );
             _ddlDefinedValues.SelectedIndexChanged += ddlDefinedValues_SelectedIndexChanged;
             _ddlDefinedValues.AutoPostBack = true;
             Controls.Add( _ddlDefinedValues );
@@ -216,7 +215,7 @@ namespace Rock.Web.UI.Controls
             LinkButtonAddDefinedValue = new LinkButton();
             LinkButtonAddDefinedValue.ID = this.ID + "_lbAddDefinedValue";
             LinkButtonAddDefinedValue.CssClass = "btn btn-default btn-square js-button-add-defined-value";
-            LinkButtonAddDefinedValue.OnClientClick = $"javascript:$('.{this.ClientID}-js-defined-value-selector').fadeToggle(400, 'swing', function() {{ $('#{DefinedValueEditorControl.ClientID}').fadeToggle(); }});  return false;";
+            LinkButtonAddDefinedValue.OnClientClick = $"javascript:$('.{this.ClientID}-js-defined-value-selector').fadeOut(400, function() {{ $('.{this.ClientID}-js-defined-value-selector').attr('style', 'display: none !important');$('#{DefinedValueEditorControl.ClientID}').fadeIn(); }});  return false;";
             LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
             Controls.Add( LinkButtonAddDefinedValue );
 

@@ -1238,6 +1238,10 @@ namespace RockWeb.Blocks.Connection
             {
                 RefreshRequestCard();
             }
+            else
+            {
+                BindRequestsGrid();
+            }
         }
 
         /// <summary>
@@ -1752,6 +1756,10 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
+                // Remove labels from the modal header
+                mdRequest.SubTitle = string.Empty;
+
+                // Clear controls and set defaults
                 var defaultStatus = allStatuses.FirstOrDefault( s => s.IsDefault );
 
                 if ( defaultStatus != null )
@@ -1938,11 +1946,8 @@ namespace RockWeb.Blocks.Connection
             gRequests.RowItemText = "Connection Request";
             gRequests.DataKeyNames = new string[] { "Id" };
 
-            // Add Link to Profile Page Column
-            gRequests.AddPersonProfileLinkColumn( AttributeKey.PersonProfilePage );
-
             // Add delete column
-            var deleteField = gRequests.AddDeleteFieldColumn( gRequests_Delete );
+            var deleteField = gRequests.Columns.OfType<DeleteField>().First();
 
             var canEdit = CanEdit();
             gRequests.IsDeleteEnabled = canEdit;
@@ -2342,6 +2347,10 @@ namespace RockWeb.Blocks.Connection
             {
                 RefreshRequestCard();
             }
+            else
+            {
+                BindRequestsGrid();
+            }
         }
 
         /// <summary>
@@ -2359,7 +2368,15 @@ namespace RockWeb.Blocks.Connection
             connectionRequestActivityService.DeleteRange( query );
             rockContext.SaveChanges();
 
-            RefreshRequestCard();
+            if ( IsCardViewMode )
+            {
+                RefreshRequestCard();
+            }
+            else
+            {
+                BindRequestsGrid();
+            }
+
             ShowRequestModal();
         }
 
@@ -2618,9 +2635,13 @@ namespace RockWeb.Blocks.Connection
                             LoadSettings();
                             BindUI();
                         }
-                        else
+                        else if ( IsCardViewMode )
                         {
                             RefreshRequestCard();
+                        }
+                        else
+                        {
+                            BindRequestsGrid();
                         }
 
                         RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
@@ -2632,6 +2653,10 @@ namespace RockWeb.Blocks.Connection
             if ( IsCardViewMode )
             {
                 RefreshRequestCard();
+            }
+            else
+            {
+                BindRequestsGrid();
             }
         }
 
@@ -2803,7 +2828,15 @@ namespace RockWeb.Blocks.Connection
         {
             MarkRequestConnected();
             ShowRequestModal();
-            RefreshRequestCard();
+
+            if ( IsCardViewMode )
+            {
+                RefreshRequestCard();
+            }
+            else
+            {
+                BindRequestsGrid();
+            }
         }
 
         /// <summary>
@@ -2854,6 +2887,10 @@ namespace RockWeb.Blocks.Connection
             {
                 RefreshRequestCard();
             }
+            else
+            {
+                BindRequestsGrid();
+            } 
         }
 
         #endregion Request Detail Modal
@@ -4463,7 +4500,9 @@ namespace RockWeb.Blocks.Connection
             var maxDate = sdrpLastActivityDateRangeFilter.SelectedDateRange.End;
             var requesterPersonAliasId = ppRequesterFilter.PersonAliasId;
             var statuses = cblStatusFilter.SelectedValuesAsInt;
-            var states = cblStateFilter.SelectedValues;
+            var states = cblStateFilter.SelectedValues
+                .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
+                .ToList();
             var activityTypeIds = cblLastActivityFilter.SelectedValuesAsInt;
 
             return connectionRequestService.GetConnectionRequestViewModelQuery(

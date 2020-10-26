@@ -402,7 +402,7 @@ namespace RockWeb.Blocks.Security
                 HttpCookie httpcookie = new HttpCookie( "rock_wifi" );
                 httpcookie.Expires = DateTime.MaxValue;
                 httpcookie.Values.Add( "ROCK_PERSONALDEVICE_ADDRESS", macAddress );
-                Response.Cookies.Add( httpcookie );
+                Rock.Web.UI.RockPage.AddOrUpdateCookie( httpcookie );
             }
         }
 

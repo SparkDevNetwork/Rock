@@ -1158,11 +1158,45 @@
                     </div>
                 </asp:Panel>
 
-                <%-- Result --%>
-                <asp:Panel ID="pnlResult" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
-                    <br />
-                    <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
+                <%-- Panel: Result --%>
+                <asp:Panel ID="pnlResult" runat="server" Visible="false">
+                    <%-- Task Activity --%>
+                    <asp:Panel ID="pnlTaskActivity" runat="server" CssClass="panel js-global-task-progress">
+                        <div class="panel-heading">
+                            <p>Your communication is being created. This may take some time for a large number of recipients...</p>
+                        </div>
+                        <div class="panel-body">
+                            <div>
+                                <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
+                                <span id="_TaskActivityMessage">Working...</span>                                        
+                            </div>
+                            <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">
+                                <div class="progress" style="position: relative">
+                                    <div id="_TaskActivityBarFill" class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                        <span style="position: absolute; display: block; color: black; width: 100%; text-align: center">
+                                            <span id="_TaskActivityPercentage">0.0% complete</span>
+                                            <span id="_TaskActivityTime" class="mr-1"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="_TaskActivityLog" style="display: none">
+                                <h3>Activity Log</h3>
+                                <div class="alert alert-info scrollableContainer" id="messageContainer" runat="server" />
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Task Result --%>
+                    <asp:Panel ID="pnlTaskResult" runat="server" CssClass="panel js-global-task-result">
+                        <div class="panel-body">
+                            <Rock:NotificationBox ID="TaskActivityNotificationBox" runat="server" NotificationBoxType="Success" Text="Task complete." />
+                            <br />
+                            <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
+                        </div>
+                    </asp:Panel>
+
                 </asp:Panel>
 
             </div>
@@ -1667,6 +1701,5 @@
 
         <!-- Code Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/codeComponentHelper.js", true)%>' ></script>
-
     </ContentTemplate>
 </asp:UpdatePanel>

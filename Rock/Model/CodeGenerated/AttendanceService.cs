@@ -99,6 +99,7 @@ namespace Rock.Model
             target.EndDateTime = source.EndDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsFirstTime = source.IsFirstTime;
             target.Note = source.Note;
             target.OccurrenceId = source.OccurrenceId;
             target.PersonAliasId = source.PersonAliasId;

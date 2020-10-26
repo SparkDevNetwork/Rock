@@ -51,6 +51,8 @@
                                     <Rock:RockBoundField DataField="LongestStreakCount" HeaderText="Longest Streak" SortExpression="LongestStreakCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="EngagementCount" HeaderText="Engagements" SortExpression="EngagementCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:DateTimeField HeaderText="Enrollment Date" DataField="EnrollmentDate" SortExpression="EnrollmentDate" DataFormatString="{0:d}" />
+                                    <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                    <Rock:DeleteField OnClick="DeleteEnrollment_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
