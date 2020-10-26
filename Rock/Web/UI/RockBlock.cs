@@ -358,7 +358,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
-        /// <param name="seconds">A <see cref="System.Int32"/> representing the the amount of time in seconds that the object is cached. This is an absolute expiration</param>
+        /// <param name="seconds">A <see cref="System.Int32"/> representing the amount of time in seconds that the object is cached. This is an absolute expiration</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
         {
             var now = RockDateTime.Now;

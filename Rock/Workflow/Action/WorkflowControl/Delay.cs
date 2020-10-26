@@ -120,7 +120,7 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'Delay Activated' attribute 
             string AttrKey = action.ActionTypeCache.Guid.ToString();
 
-            // Check to see if the action's activity does not yet have the the 'Delay Activated' attribute.
+            // Check to see if the action's activity does not yet have the 'Delay Activated' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
             // attribute will not exist and need to be created
             if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )

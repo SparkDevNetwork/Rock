@@ -46,7 +46,7 @@ namespace Rock.Security
 
         /// <summary>
         /// Authenticates the user based on user name and password. If the attempt is a failure,
-        /// the the userlogin model is updated and possibly locked according to the global attributes
+        /// the userlogin model is updated and possibly locked according to the global attributes
         /// PasswordAttemptWindow and MaxInvalidPasswordAttempts
         /// </summary>
         /// <param name="user">The user.</param>
