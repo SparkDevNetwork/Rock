@@ -3335,14 +3335,15 @@ END" );
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         public void DeleteAttributesByEntityType( string entityTypeGuid )
         {
-            Migration.Sql( string.Format( @"
-                SELECT a.*
-                FROM Attribute a
-                WHERE a.EntityTypeId IN (
-	                SELECT w.Id
-	                FROM EntityType w
-	                WHERE w.Guid = '{0}'
-                )", entityTypeGuid ) );
+            Migration.Sql( $@"
+                DECLARE @EntityTypeGuid AS varchar(50) = '{entityTypeGuid}'
+                DECLARE @EntityTypeId AS int = (SELECT [Id] FROM [dbo].[EntityType] WHERE [Guid] = @EntityTypeGuid)
+
+                IF (@EntityTypeId IS NOT NULL)
+                BEGIN
+	                DELETE FROM [dbo].[Attribute] WHERE [EntityTypeId] = @EntityTypeId
+                END" );
+
         }
 
         /// <summary>
