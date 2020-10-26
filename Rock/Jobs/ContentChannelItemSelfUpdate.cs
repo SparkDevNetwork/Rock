@@ -110,24 +110,20 @@ namespace Rock.Jobs
                         contentChannelItem.LoadAttributes();
                         var lavaTemplate = contentChannelItem.GetAttributeValue( attributeLink.Key );
                         var lavaOutput = contentChannelItem.GetAttributeValue( attributeLink.Value.ToString() );
+                        var mergedContent = lavaTemplate.ResolveMergeFields( itemMergeFields );
 
-                        if ( lavaTemplate.IsNullOrWhiteSpace() )
+                        if ( lavaOutput.Equals( mergedContent ) )
                         {
                             continue;
                         }
 
-                        var mergedContent = lavaTemplate.ResolveMergeFields( itemMergeFields );
+                        contentChannelItem.SetAttributeValue( attributeLink.Value.ToString(), mergedContent );
+                        updatedAttributes++;
 
-                        if ( !lavaOutput.Equals( mergedContent ) )
+                        if ( contentChannelItem.Id != itemId )
                         {
-                            contentChannelItem.SetAttributeValue( attributeLink.Value.ToString(), mergedContent );
-                            updatedAttributes++;
-
-                            if ( contentChannelItem.Id != itemId )
-                            {
-                                itemId = contentChannelItem.Id;
-                                updatedItems++;
-                            }
+                            itemId = contentChannelItem.Id;
+                            updatedItems++;
                         }
                     }
                     catch ( Exception ex )
@@ -141,7 +137,7 @@ namespace Rock.Jobs
                 }
             }
 
-            jobResultStringBuilder.AppendLine( $"Updated {updatedAttributes} ContentChannelItem attributes in {updatedItems} of {totalItems} ContentChannelItems" );
+            jobResultStringBuilder.AppendLine( $"Updated {updatedAttributes} ContentChannelItem {"attribute".PluralizeIf( updatedAttributes != 1 )} in {updatedItems} of {totalItems} ContentChannelItems" );
             context.Result = jobResultStringBuilder.ToString();
 
             rockContext.SaveChanges();
