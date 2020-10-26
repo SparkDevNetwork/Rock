@@ -130,7 +130,7 @@ namespace Rock.Web
                     }
                 }
 
-                // If the the page ID and site has not yet been matched
+                // If the page ID and site has not yet been matched
                 if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
                     // if not found use the default site

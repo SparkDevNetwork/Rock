@@ -825,7 +825,7 @@ namespace Rock.Model
                     a.Period.StartTime != null )
                 .Select( a => a.Period.StartTime.Value ) )
             {
-                // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                // ensure the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
                 result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
             }
 

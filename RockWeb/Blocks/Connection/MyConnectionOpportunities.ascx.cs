@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Connection
     [BooleanField(
         "Enable Request Security",
         DefaultBooleanValue = false,
-        Description = "When enabled, the the security column for request would be displayed.",
+        Description = "When enabled, the security column for the request would be displayed.",
         Key = AttributeKey.EnableRequestSecurity,
         IsRequired = true,
         Order = 8

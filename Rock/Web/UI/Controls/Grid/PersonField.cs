@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
             set { ViewState["UrlFormatString"] = value; }
         }
 
-        // Use private variable to store resolved format string.  This is so that the the string
+        // Use private variable to store resolved format string.  This is so the string
         // does not need to be resolved on every row
         private string _resolvedUrlFormatString = null;
         private string ResolvedUrlFormatString
