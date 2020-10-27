@@ -54,7 +54,7 @@
                             </div>
                             <div class="col-sm-6">
 
-                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-square pull-right" ToolTip="Refresh Chart"
                                     OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
 
                                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
@@ -85,7 +85,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>
                 </div>

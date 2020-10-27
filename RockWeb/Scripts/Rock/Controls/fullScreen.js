@@ -45,6 +45,7 @@
             exitHandler: function (elem) {
                 if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
                     $(elem.target).removeClass('is-fullscreen');
+                    document.dispatchEvent(new Event('RockExitFullscreen'));
                 }
             }
         };

@@ -531,8 +531,9 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + RockInstanceConfig.PhysicalDirectory;
-
+            lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
+            lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;
+            
             lLastMigrations.Text = GetLastMigrationData();
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );

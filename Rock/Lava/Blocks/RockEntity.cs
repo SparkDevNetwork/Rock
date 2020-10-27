@@ -389,7 +389,7 @@ namespace Rock.Lava.Blocks
                                             Returns only 2 items (incorrect) - because of the offset
 
                                             SECOND
-                                            If the limit is moved before the security check it's possible that the the security checks
+                                            If the limit is moved before the security check it's possible that the security checks
                                             will remove items and will therefore not give you the amount of items that you asked for.
 
                                             Unfortunately this has to be an inefficent process to ensure pagination works. I will also

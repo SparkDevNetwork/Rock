@@ -55,12 +55,13 @@
             this.lblAssemblyDateTime = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.cbEnsureCopyrightHeaders = new System.Windows.Forms.CheckBox();
+            this.cbHofixMigrations = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGenerate.Location = new System.Drawing.Point(9, 423);
+            this.btnGenerate.Location = new System.Drawing.Point(12, 441);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -76,7 +77,7 @@
             this.cblModels.FormattingEnabled = true;
             this.cblModels.Location = new System.Drawing.Point(12, 104);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(569, 148);
+            this.cblModels.Size = new System.Drawing.Size(569, 132);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
@@ -104,7 +105,7 @@
             this.cbRest.AutoSize = true;
             this.cbRest.Checked = true;
             this.cbRest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRest.Location = new System.Drawing.Point(9, 299);
+            this.cbRest.Location = new System.Drawing.Point(12, 281);
             this.cbRest.Name = "cbRest";
             this.cbRest.Size = new System.Drawing.Size(48, 17);
             this.cbRest.TabIndex = 6;
@@ -117,7 +118,7 @@
             this.cbService.AutoSize = true;
             this.cbService.Checked = true;
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbService.Location = new System.Drawing.Point(9, 275);
+            this.cbService.Location = new System.Drawing.Point(12, 257);
             this.cbService.Name = "cbService";
             this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
@@ -137,7 +138,7 @@
             this.cbClient.AutoSize = true;
             this.cbClient.Checked = true;
             this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbClient.Location = new System.Drawing.Point(9, 323);
+            this.cbClient.Location = new System.Drawing.Point(12, 305);
             this.cbClient.Name = "cbClient";
             this.cbClient.Size = new System.Drawing.Size(53, 17);
             this.cbClient.TabIndex = 8;
@@ -166,7 +167,7 @@
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(364, 427);
+            this.progressBar1.Location = new System.Drawing.Point(369, 441);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(212, 23);
             this.progressBar1.TabIndex = 11;
@@ -176,7 +177,7 @@
             // 
             this.tbServiceFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbServiceFolder.Location = new System.Drawing.Point(113, 275);
+            this.tbServiceFolder.Location = new System.Drawing.Point(117, 255);
             this.tbServiceFolder.Name = "tbServiceFolder";
             this.tbServiceFolder.Size = new System.Drawing.Size(464, 21);
             this.tbServiceFolder.TabIndex = 12;
@@ -186,7 +187,7 @@
             // 
             this.tbRestFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbRestFolder.Location = new System.Drawing.Point(113, 299);
+            this.tbRestFolder.Location = new System.Drawing.Point(117, 279);
             this.tbRestFolder.Name = "tbRestFolder";
             this.tbRestFolder.Size = new System.Drawing.Size(464, 21);
             this.tbRestFolder.TabIndex = 13;
@@ -196,7 +197,7 @@
             // 
             this.tbClientFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbClientFolder.Location = new System.Drawing.Point(113, 323);
+            this.tbClientFolder.Location = new System.Drawing.Point(117, 303);
             this.tbClientFolder.Name = "tbClientFolder";
             this.tbClientFolder.Size = new System.Drawing.Size(464, 21);
             this.tbClientFolder.TabIndex = 14;
@@ -231,7 +232,7 @@
             // 
             this.tbDatabaseFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbDatabaseFolder.Location = new System.Drawing.Point(113, 347);
+            this.tbDatabaseFolder.Location = new System.Drawing.Point(117, 327);
             this.tbDatabaseFolder.Name = "tbDatabaseFolder";
             this.tbDatabaseFolder.Size = new System.Drawing.Size(464, 21);
             this.tbDatabaseFolder.TabIndex = 19;
@@ -242,7 +243,7 @@
             this.cbDatabaseProcs.AutoSize = true;
             this.cbDatabaseProcs.Checked = true;
             this.cbDatabaseProcs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDatabaseProcs.Location = new System.Drawing.Point(9, 347);
+            this.cbDatabaseProcs.Location = new System.Drawing.Point(12, 329);
             this.cbDatabaseProcs.Name = "cbDatabaseProcs";
             this.cbDatabaseProcs.Size = new System.Drawing.Size(101, 17);
             this.cbDatabaseProcs.TabIndex = 18;
@@ -254,19 +255,19 @@
             this.tbResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbResults.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbResults.Location = new System.Drawing.Point(8, 479);
+            this.tbResults.Location = new System.Drawing.Point(12, 493);
             this.tbResults.Multiline = true;
             this.tbResults.Name = "tbResults";
             this.tbResults.ReadOnly = true;
             this.tbResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbResults.Size = new System.Drawing.Size(573, 179);
+            this.tbResults.Size = new System.Drawing.Size(569, 165);
             this.tbResults.TabIndex = 20;
             // 
             // cbGenerateObsoleteExport
             // 
             this.cbGenerateObsoleteExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbGenerateObsoleteExport.AutoSize = true;
-            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(9, 375);
+            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(12, 356);
             this.cbGenerateObsoleteExport.Name = "cbGenerateObsoleteExport";
             this.cbGenerateObsoleteExport.Size = new System.Drawing.Size(105, 17);
             this.cbGenerateObsoleteExport.TabIndex = 21;
@@ -287,7 +288,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(8, 460);
+            this.label2.Location = new System.Drawing.Point(9, 477);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(60, 13);
             this.label2.TabIndex = 22;
@@ -297,18 +298,33 @@
             // 
             this.cbEnsureCopyrightHeaders.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbEnsureCopyrightHeaders.AutoSize = true;
-            this.cbEnsureCopyrightHeaders.Location = new System.Drawing.Point(9, 399);
+            this.cbEnsureCopyrightHeaders.Location = new System.Drawing.Point(12, 379);
             this.cbEnsureCopyrightHeaders.Name = "cbEnsureCopyrightHeaders";
             this.cbEnsureCopyrightHeaders.Size = new System.Drawing.Size(152, 17);
             this.cbEnsureCopyrightHeaders.TabIndex = 23;
             this.cbEnsureCopyrightHeaders.Text = "Ensure Copyright Headers";
             this.cbEnsureCopyrightHeaders.UseVisualStyleBackColor = true;
             // 
+            // cbHofixMigrations
+            // 
+            this.cbHofixMigrations.AutoSize = true;
+            this.cbHofixMigrations.BackColor = System.Drawing.SystemColors.Control;
+            this.cbHofixMigrations.ForeColor = System.Drawing.Color.Red;
+            this.cbHofixMigrations.Location = new System.Drawing.Point(12, 402);
+            this.cbHofixMigrations.Name = "cbHofixMigrations";
+            this.cbHofixMigrations.Size = new System.Drawing.Size(330, 17);
+            this.cbHofixMigrations.TabIndex = 24;
+            this.cbHofixMigrations.Text = "Disable Hotfix Migrations. DO NOT USE ON HOTFIX BRANCHES!";
+            this.toolTip1.SetToolTip(this.cbHofixMigrations, "This option will rename the Up() method to OldUp() and create\r\na new empty Up() m" +
+        "ethod for plugin hotfix migrations.");
+            this.cbHofixMigrations.UseVisualStyleBackColor = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(596, 672);
+            this.Controls.Add(this.cbHofixMigrations);
             this.Controls.Add(this.cbEnsureCopyrightHeaders);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.cbGenerateObsoleteExport);
@@ -367,6 +383,7 @@
         private System.Windows.Forms.Label lblAssemblyDateTime;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox cbEnsureCopyrightHeaders;
+        private System.Windows.Forms.CheckBox cbHofixMigrations;
     }
 }
 

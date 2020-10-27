@@ -192,6 +192,27 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class Badge
+    {
+        public const string ASSESSMENTS = "CCE09793-89F6-4042-A98A-ED38392BCFCC";
+        public const string ATTENDING_DURATION = "260EAD7D-5073-4F88-A6A9-427F6E95985E";
+        public const string BAPTISM = "66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE";
+        public const string CAMPUS = "B21DCD49-AC35-4B2B-9857-75213209B643";
+        public const string CONNECTION_STATUS = "66972BFF-42CD-49AB-9A7A-E1B9DECA4EBF";
+        public const string DISC_PERSONALITY_ASSESSMENT_RESULT = "6C491A10-E942-4CA5-8D13-ACBC28511714";
+        public const string ERA = "7FC986B9-CA1E-CBB7-4E63-C79EAC34F39D";
+        public const string FAMILY_16_WEEK_ATTENDANCE = "66972BFF-42CD-49AB-9A7A-E1B9DECA4EBA";
+        public const string FAMILY_ATTENDANCE = "3F7D648D-D6BA-4F03-931C-AFBDFA24BBD8";
+        public const string GROUP_REQUIREMENTS = "132F9C2A-0AF4-4AD9-87EF-7730B284E10E";
+        public const string IN_SERVING_TEAM = "E0455598-82B0-4F49-B806-C3A41C71E9DA";
+        public const string LAST_VISIT_ON_EXTERNAL_SITE = "8A9AD88E-359F-46FD-9BA1-8B0603644F17";
+        public const string PERSONAL_DEVICES = "307CB56D-140C-4CC9-8B54-DD551CC40174";
+        public const string RECORD_STATUS = "66972BFF-42CD-49AB-9A7A-E1B9DECA4ECA";
+        public const string TOP_PERSON_SIGNAL = "B4B336CE-137E-44BE-9123-27740D0064C2";
+    }
+
+    /// <summary>
+    /// </summary>
     public class BinaryFiletype
     {
         public const string BENEVOLENCE_REQUEST_DOCUMENTS = "2599DDBE-40E1-158E-4436-AACA6C00556E";
@@ -368,6 +389,7 @@ namespace Rock.Client.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
         public const string COMMUNICATION_SAFE_SENDER_DOMAINS = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED";
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
+        public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
         public const string CONTENT_COMPONENT_TEMPLATE = "313B579F-F442-4247-ADBB-BBD25E255003";
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
@@ -1036,6 +1058,14 @@ namespace Rock.Client.SystemGuid
         public const string CHECK_IN_LABEL = "B565FDF8-959F-4AC8-ACDF-3B1B5CFE79F5";
         public const string CHECK_IN_LABELS = "7C093A63-F2AC-4FE3-A826-8BF06D204EA2";
         public const string CHECK_IN_MANAGER = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B";
+        public const string CHECK_IN_MANAGER_LIVE_METRICS = "04F70D50-5D27-4C12-A76D-B25E6E4CB177";
+        public const string CHECK_IN_MANAGER_LOGIN = "31F51DBB-AC84-4724-9219-B46FADAB9CB2";
+        public const string CHECK_IN_MANAGER_LOGOUT = "9762DE9F-F431-4108-9F1A-AE88DFEB3289";
+        public const string CHECK_IN_MANAGER_ROOM_MANAGER = "CECB1460-10D4-4054-B5C3-903991CA40AB";
+        public const string CHECK_IN_MANAGER_ROOM_SETTINGS = "0416FF62-3252-4A84-85DB-79F4CAE82C75";
+        public const string CHECK_IN_MANAGER_ROSTER = "BA04BF01-5244-4637-B12D-7A962D2A9E77";
+        public const string CHECK_IN_MANAGER_SEARCH = "5BB14114-BE20-4330-943A-5BC7E367116E";
+        public const string CHECK_IN_MANAGER_SETTINGS = "62C70118-0A6F-432A-9D84-A5296655CB9E";
         public const string CHECK_IN_ROCK_SETTINGS = "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D";
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
         public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
@@ -1329,6 +1359,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class PageRoute
     {
+        public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
         public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "9660B9FB-C90F-4AFE-9D58-C0EC271C1377";
         public const string OIDC_AUTHORIZE = "E35CD82E-C162-444E-AC5F-E42F20DA79F3";
         public const string OIDC_LOGOUT = "5137F15D-61EA-4935-A9E1-16534959AEFA";
@@ -1382,6 +1413,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Site
     {
+        public const string CHECK_IN_MANAGER = "A5FA7C3C-A238-4E0B-95DE-B540144321EC";
         public const string EXTERNAL_SITE = "F3F82256-2D66-432B-9D67-3552CD2F4C2B";
         public const string SITE_ROCK_INTERNAL = "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
     }

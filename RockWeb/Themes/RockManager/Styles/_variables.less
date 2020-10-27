@@ -1,0 +1,557 @@
+////
+
+@white: #fff;
+@gray-50: #f9fafb;
+@gray-100: #f4f5f7; //#f8f9fa;
+@gray-200: #e9ecef;
+@gray-300: #dee2e6;
+@gray-400: #ced4da;
+@gray-500: #adb5bd;
+@gray-600: #6c757d;
+@gray-700: #495057;
+@gray-800: #343a40;
+@gray-900: #212529;
+
+
+@gray-base:              #000;
+@gray-darker:            @gray-900; // #222
+@gray-dark:              @gray-800;   // #333
+@gray:                   @gray-700; // #555
+@gray-light:             @gray-600; // #777
+@gray-lighter:           @gray-200; // #eee
+@gray-lightest:          @gray-100;
+
+
+@ui-2:                        @gray-50;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
+@ui-3:                        @gray-100;                        // Modal footer background. #color
+@ui-4:                        @gray-300;                        // Table, panel, well, and hr border color. #color
+@ui-5:                        @gray-400;
+
+@brand-primary:         #ee7725;
+@brand-success:         #28a745;
+@brand-info:            #009ce3;
+@brand-warning:         #ffc107;
+@brand-danger:          #dc3545;
+
+
+@body-bg: @gray-100;
+@text-color: @gray-900;
+@text-muted: @gray-600;
+
+@adminbar-bg:                 @gray-900;
+@adminbar-text-color:         @gray-200;
+
+
+@font-weight-normal: 400;
+@font-weight-bold: 500;
+@font-weight-bolder: 700;
+
+@headings-font-weight:    700;
+
+@grid-gutter-width:         16px;
+
+// DARK MODE TEST
+
+// @white: #000;
+// @gray-900: #f9fafb;
+// @gray-800: #f4f5f7; //#f8f9fa;
+// @gray-700: #e9ecef;
+// @gray-600: #dee2e6;
+// @gray-500: #ced4da;
+// @gray-400: #adb5bd;
+// @gray-300: #6c757d;
+// @gray-200: #495057;
+// @gray-100: #343a40;
+// @gray-50: #212529;
+
+/////////
+
+@font-size-h5:            20px;
+@font-size-h6:            @font-size-base; // ~12px
+
+
+@link-color:                  #007acc;                      // The color for all links. #color
+@link-hover-color:            #009ce3;
+
+@font-family-sans-serif:      system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"; // The base font to use for text. Be sure when defining this font that the various weights are configured.
+@font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+
+@shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.05);
+@shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+@shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+@shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+@shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+@shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+@shadow-2xl:  0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+
+@shadow-raised:               @shadow;
+@shadow-overlay:              @shadow-md;
+@shadow-sticky-nav:           0 6px 12px 0 rgba(0,0,0,.1);
+@shadow-temporary-nav:        0 8px 16px 0 rgba(0,0,0,.1);
+@shadow-modal:                @shadow-2xl;
+
+
+@help-color:                  #76a9fa; // The color of the help icon used in Rock.
+@required-field-color:        #f98080; // Color of the small dot that denotes required fields.
+@control-label-weight: 500;
+
+@label-campus-bg: #E4ECFE;
+@label-campus-color: #473B9F;
+@label-type-bg: #567d8c;
+
+@badge-danger-bg:             #FDE8E7;
+@badge-warning-bg:            #FDF6B2;
+@badge-success-bg:            #DEF7EC;
+@badge-info-bg:               #E1EFFE;
+@badge-critical-bg:           #FEECDC;
+
+@badge-danger-color:          #9A1D1D;
+@badge-warning-color:         #79451C;
+@badge-success-color:         #04543F;
+@badge-info-color:            #294DA4;
+@badge-critical-color:        #974225;
+
+
+// Buttons
+@enable-btn-focus-outline:    true;
+@btn-font-weight:             normal;
+//--
+@btn-default-color:           @gray-700;
+@btn-default-bg:              @white;
+@btn-default-border:          @gray-300;
+//--
+@btn-primary-color:           @white;
+@btn-primary-bg:              @brand-primary;
+@btn-primary-border:          @btn-primary-bg;
+//--
+@btn-success-color:           @white;
+@btn-success-bg:              @brand-success;
+@btn-success-border:          @btn-success-bg;
+//--
+@btn-warning-color:           @white;
+@btn-warning-bg:              @brand-warning;
+@btn-warning-border:          @btn-warning-bg;
+//--
+@btn-danger-color:            @white;
+@btn-danger-bg:               @brand-danger;
+@btn-danger-border:           @btn-danger-bg;
+//--
+@btn-info-color:              @white;
+@btn-info-bg:                 @brand-info;
+@btn-info-border:             @btn-info-bg;
+//--
+@btn-action-color:            @white;
+@btn-action-bg:               @gray;
+@btn-action-border:           @btn-action-bg;
+//--
+@btn-security-color:          @btn-default-color;
+@btn-security-bg:             @btn-default-bg;
+@btn-security-border:         @btn-default-border;
+//--
+@btn-link-disabled-color:     @gray-light;
+
+//== Tables
+//
+//## Customizes the `.table` component with basic values, each used across all table variations.
+//** Default background color used for all tables.
+@table-bg:                      @white;
+//** Background color used for `.table-striped`.
+@table-bg-accent:               @gray-50;
+//** Background color used for `.table-hover`.
+@table-bg-hover:                @gray-200;
+@table-bg-active:               @table-bg-hover;
+
+//** Border color for table and cell borders.
+@table-border-color:            @gray-200;
+
+// Rock Grid
+@grid-border-color:           @gray-200; // The border color of the grids cells.
+@grid-padding:                12px; // The default padding of the grid cells.
+
+//// Filter Section
+@grid-filter-bg:              @panel-heading-bg; // The background color of the filter section of the grid.
+@grid-filter-color:           @panel-heading-text-color; // The text color of the filter section of the grid.
+
+//// Grid Header
+@grid-column-header-bg:             @gray-50; // The background color of the grid header.
+@grid-column-header-text-color:     @gray-700; // The text color of the grid header.
+@grid-column-header-font-size:      @font-size-small; // The font size of the grid header.
+@grid-column-header-font-weight:    500; // The font weight of the grid header.
+@grid-column-header-border-color:   @grid-border-color; // The border color of the grid header.
+//--
+@grid-column-header-bold-bg:        @nav-bg; // Background color for bold table headers like the merge person page.
+@grid-column-header-bold-color:     @nav-color; // The text color for bold table headers like the merge person page.
+
+//// Row Striping
+@grid-row-even-bg:            @panel-bg; // The even rows background color.
+@grid-row-even-color:         @text-color; // The even rows text color.
+@grid-row-odd-bg:             @table-bg-accent; // The odd rows background color.
+@grid-row-odd-color:          @text-color; // The odd rows text color.
+
+//// Hover
+@grid-hover-bg:               #e1effe; // Row background color when hovered over.
+@grid-hover-color:            @text-color; // Row text color when hovered over.
+
+//// Section Headers
+@grid-section-bg:             @theme-4; // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color:          @theme-4-text; // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+
+//// Pager Section
+@grid-pager-bg:               @panel-heading-bg;
+@grid-pager-color:            @panel-heading-text-color;
+//--
+@grid-pager-button-bg:              darken(@grid-pager-bg, 5%);
+@grid-pager-button-color:           @text-color;
+@grid-pager-button-border:          darken(@grid-pager-button-bg, 20%);
+@grid-pager-button-active-bg:       lighten(@grid-pager-button-bg, 10%);
+@grid-pager-button-active-border:   @grid-pager-button-border;
+@grid-pager-button-active-color:    @grid-pager-button-color;
+
+//// Footer
+@grid-footer-bg:              @white;
+@grid-footer-text-color:      @panel-heading-text-color;
+@grid-footer-font-size:       10px;
+@grid-footer-font-weight:     300;
+//--
+@grid-footer-button-bg:                 darken(@grid-footer-bg, 5%);
+@grid-footer-button-text-color:         @text-color;
+@grid-footer-button-border:             darken(@grid-footer-bg, 20%);
+
+//== Pagination
+//
+//##
+
+@pagination-color:                      @gray-500;
+@pagination-bg:                         #ffffff;
+@pagination-border:                     @gray-300;
+
+@pagination-hover-color:                @gray-400;
+@pagination-hover-bg:                   @pagination-bg;
+@pagination-hover-border:               @pagination-border;
+
+@pagination-active-color:               @gray-700;
+@pagination-active-bg:                  @gray-100;
+@pagination-active-border:              @pagination-border;
+
+@pagination-disabled-color:             @gray-300;
+@pagination-disabled-bg:                @gray-50;
+@pagination-disabled-border:            @pagination-border;
+
+
+// Autocomplete Styles
+@autocomplete-bg:                       @white;
+@autocomplete-border:                   @gray-200;
+@autocomplete-text:                     @gray-700;
+@autocomplete-rollover-bg:              @gray-100;                         // the background color of the rollover for autocompletes.
+@autocomplete-rollover-color:           @gray-900;
+
+// Smart Search
+@smartsearch-bg:                          @white;
+@smartsearch-border-color:                @smartsearch-bg;
+@smartsearch-box-shadow:                  @shadow-lg;
+@smartsearch-input-text-color:            @input-color;
+@smartsearch-text-color:                  @gray-700;
+
+// Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
+@wizard-bg:                             @pagetitle-bg;
+@wizard-item-bar-color:                 @gray-400;
+@wizard-item-bar-complete-color:        @nav-pills-active-link-hover-bg;
+//--
+@wizard-item-label-active-color:        @pagetitle-text-color;
+@wizard-item-icon-active-color:         @white;
+@wizard-item-icon-active-bg:            @nav-pills-active-link-hover-bg;
+//--
+@wizard-item-label-complete-color:      @wizard-item-label-active-color;
+@wizard-item-icon-complete-color:       @wizard-item-icon-active-bg;
+@wizard-item-icon-complete-bg:          @wizard-item-icon-active-color;
+//--
+@wizard-item-label-color:               @text-color;
+@wizard-item-icon-color:                @text-muted;
+@wizard-item-icon-bg:                   @white;
+
+//== Forms
+//
+//##
+
+//** `<input>` background color
+@input-bg:                       @white;
+//** `<input disabled>` background color
+@input-bg-disabled:              @gray-lightest;
+
+//** Text color for `<input>`s
+@input-color:                    @gray-900;
+//** `<input>` border color
+@input-border:                   @gray-300;
+
+// TODO: Rename `@input-border-radius` to `@input-border-radius-base` in v4
+//** Default `.form-control` border radius
+// This has no effect on `<select>`s in some browsers, due to the limited stylability of `<select>`s in CSS.
+@input-border-radius:            @border-radius-base;
+//** Large `.form-control` border radius
+@input-border-radius-large:      @border-radius-large;
+//** Small `.form-control` border radius
+@input-border-radius-small:      @border-radius-small;
+
+//** Border color for inputs on focus
+@input-border-focus:             @brand-primary;
+
+@input-focus-rgba:            fade(@input-border-focus, 40%);
+@input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
+@input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
+
+
+//** Placeholder text color
+@input-color-placeholder:        @gray-500;   // The text color of input placeholder text.
+@input-group-addon-bg:           @gray-lighter;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
+@input-group-addon-border-color: @input-border;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
+
+@control-label-weight:           @font-weight-semibold;
+
+@custom-control-indicator-size: 20px;
+@custom-control-indicator-offset: 2px;
+
+
+//== List group
+//
+//##
+
+//** Background color on `.list-group-item`
+@list-group-bg:                 @white;
+//** `.list-group-item` border color
+@list-group-border:             @gray-200;
+//** Background color of single list items on hover
+@list-group-hover-bg:           @gray-50;
+
+//** Text color of disabled list items
+@list-group-disabled-color:      @gray-light;
+//** Background color of disabled list items
+@list-group-disabled-bg:         @gray-lighter;
+//** Text color for content within disabled list items
+@list-group-disabled-text-color: @list-group-disabled-color;
+
+@list-group-link-color:         @text-color;
+@list-group-link-hover-color:   @list-group-link-color;
+@list-group-link-heading-color: @gray-800;
+
+
+//== Panels
+//
+//##
+
+@panel-bg:                    @white;
+//** Border color for elements within panels
+@panel-inner-border:          @gray-200;
+@panel-footer-bg:             @gray-50;
+
+@panel-default-text:          @text-color;
+@panel-default-border:        @gray-200;
+@panel-default-heading-bg:    @gray-50;
+
+// Rock Panel
+@panel-text:                  @text-color; // The text color of the panel.
+@panel-border:                @panel-default-border; // The panel's border color.
+@panel-top-border-color:      @panel-border; // Color of the panel's top border often used as an accent color.
+//--
+@panel-heading-bg:            @panel-footer-bg; // The background color of the panel's header.
+@panel-heading-text-color:    @panel-default-text; // The heading's text color.
+@panel-heading-border:        @panel-border; // The headings border color.
+//--
+@panel-following-active-bg:   @panel-top-border-color; // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
+//--
+@panel-footer-color:          @panel-text; // The color text of the panel's footer.
+
+
+
+
+//== Badges
+//
+//##
+
+@badge-color:                 @gray-800;
+//** Linked badge text color on hover
+@badge-link-hover-color:      @gray-600;
+@badge-bg:                    @gray-200;
+
+//** Badge text color in active nav link
+@badge-active-color:          @link-color;
+//** Badge background color in active nav link
+@badge-active-bg:             @white;
+@badge-font-weight:           600;
+@badge-line-height:           1.25;
+@badge-border-radius:         9999px;
+
+// Modals
+@modal-header-bg:             @theme-2;
+@modal-header-text-color:     @theme-2-text;
+@modal-body-bg:               @white;
+@modal-body-text-color:       @text-color;
+@modal-footer-bg:             @modal-body-bg;
+@modal-footer-text-color:     @modal-body-text-color;
+@modal-dropshadow-color:      rgba(0,0,0,.6);
+
+//== Components
+//
+//## Define common padding and border radius sizes and more. Values based on 14px text and 1.428 line-height (~20px to start).
+
+@padding-base-vertical:       6px;
+@padding-base-horizontal:     12px;
+
+@padding-large-vertical:      10px;
+@padding-large-horizontal:    16px;
+
+@padding-small-vertical:      5px;
+@padding-small-horizontal:    10px;
+
+@padding-xs-vertical:         1px;
+@padding-xs-horizontal:       5px;
+
+@line-height-large:           1.3333333;                      // extra decimals for Win 8.1 Chrome
+@line-height-small:           1.5;
+
+
+@state-warning-text:          #723b13;
+@state-warning-bg:            #FDFDEA;
+@state-warning-border:        @brand-warning;
+//--
+@state-danger-text:           #c81e1e;
+@state-danger-bg:             #FDF2F2;
+@state-danger-border:         @brand-danger;
+
+//--
+@state-success-text:          #046c4e;
+@state-success-bg:            #F2FAF7;
+@state-success-border:        @brand-success;
+//--
+@state-info-text:             #1B57DB;
+@state-info-bg:               #EBF5FF;
+@state-info-border:           @brand-info;
+
+//== Alerts
+//
+//## Define alert colors, border radius, and padding.
+
+@alert-padding:               15px;
+@alert-border-radius:         @border-radius-base;
+@alert-link-font-weight:      bold;
+
+@alert-success-bg:            @state-success-bg;
+@alert-success-text:          @state-success-text;
+@alert-success-border:        @state-success-border;
+
+@alert-info-bg:               @state-info-bg;
+@alert-info-text:             @state-info-text;
+@alert-info-border:           @state-info-border;
+
+@alert-warning-bg:            @state-warning-bg;
+@alert-warning-text:          @state-warning-text;
+@alert-warning-border:        @state-warning-border;
+
+@alert-danger-bg:             @state-danger-bg;
+@alert-danger-text:           @state-danger-text;
+@alert-danger-border:         @state-danger-border;
+
+@alert-validation-bg:         @alert-warning-bg;
+@alert-validation-border:     @alert-warning-border;
+@alert-validation-heading:    @state-danger-text;
+@alert-validation-text:       @text-color;
+
+// List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
+@listasblocks-bg:                       @white;
+@listasblocks-border-color:             fade(@gray-900, 15%);
+@listasblocks-color:                    @text-color;
+@listasblocks-rollover-bg:              @gray-50;
+@listasblocks-rollover-text-color:      @listasblocks-color;
+@listasblocks-rollover-border-color:    @listasblocks-rollover-text-color;
+@listasblocks-active-bg:                @gray-600;
+@listasblocks-active-border-color:      @gray-900;
+@listasblocks-active-color:             @listasblocks-bg;
+
+
+//// Bio Bar
+@persondetails-bio-bg:                  @white;
+@persondetails-bio-color:               @text-color;
+@persondetails-bio-action-color:        @white;
+@persondetails-bio-action-bg:           @gray-600;
+@persondetails-bio-action-border:       darken(@persondetails-bio-action-bg, 5%);
+@persondetails-bio-photo-border:        @gray-100;
+@persondetails-bio-photo-following:     @gray-500;
+
+//// Badge Bar
+@persondetails-badge-bg:                @white;
+@persondetails-badge-color:             @gray-200;
+@badge-grid-width:                      86px;
+
+//// Family Bar
+@persondetails-familybar-bg:            @white;
+@persondetails-familybar-color:         @text-color;
+@persondetails-familybar-action-color:  @white;
+@persondetails-familybar-action-bg:     @gray-600;
+@persondetails-familybar-action-border: @gray-600;
+@persondetails-familybar-photo-bg:      @gray-600;
+
+
+@enable-global-custom-controls: true;
+
+
+// Tree Viewer
+@tree-rollover-bg:            @gray-600;  // Background color of the rollover for items in the treeview.
+@tree-rollover-color:         @tree-selected-color;             // Text color of the rollover for items in the treeview.
+@tree-selected-bg:            @gray-700;                        // Background color of selected items in the treeview.
+@tree-selected-color:         @white;
+
+
+@font-size-base:              16px;                           // The default text size.
+@font-size-small:             14px;
+@font-size-sm:                @font-size-small;
+@font-size-xs:                12px;
+@line-height-base:            1.5;
+
+@breadcrumb-bg: transparent;
+@breadcrumb-color: #9EA6B2;
+@breadcrumb-separator:        @fa-var-chevron-right;
+@breadcrumb-active-color: @gray-600;
+
+
+@navbartop-color: @white;
+
+
+@table-column-border-width: 0;
+
+@pagetitle-background: @white;
+
+// Side Navigation *show in editor*
+@side-navigation-background-color:      #3d3d3d;            // This is the background color for the right-hand menu. #color
+@side-navigation-open-background-color: #484848;            // #color
+@side-navigation-text-color:            @gray-100;            // #color
+
+// Side Navigation Conversions
+@side-navigation-width:       194px;
+@navbar-top-height: 64px;
+@navbarside-background-color: @side-navigation-background-color;
+@navbarside-sub-bg:           @side-navigation-open-background-color;
+@navbarside-color:            @side-navigation-text-color;
+@navbarside-width:            @side-navigation-width;
+
+
+@pagetitle-bg:                @white;
+@pagetitle-text-color:        @text-color;
+
+
+@picker-action-bg:            @gray-50;
+@picker-action-border:        @gray-200;
+@dropdown-border:             @gray-300;
+
+@enable-btn-focus-outline: true;
+// Add Button focus shadow
+.btn-outline-mixin(true) {
+  .button-variant(@color; @background; @border) {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      outline: 0;
+      box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
+    }
+  }
+}
+.btn-outline-mixin(false) { }
+.btn-outline-mixin(@enable-btn-focus-outline);

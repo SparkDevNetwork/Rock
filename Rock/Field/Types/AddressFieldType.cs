@@ -74,7 +74,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AddressControl { ID = id };
+            return new AddressControl { ID = id, SetDefaultValues = false };
         }
 
         /// <summary>
@@ -91,7 +91,8 @@ namespace Rock.Field.Types
                 var locationService = new LocationService( rockContext );
                 string result = null;
 
-                if ( addressControl != null )
+                if ( addressControl != null
+                     && addressControl.HasValue )
                 {
                     var guid = Guid.Empty;
 

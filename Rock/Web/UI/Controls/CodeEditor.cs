@@ -638,6 +638,10 @@ namespace Rock.Web.UI.Controls
                     ce_{0}.resize();
                 }}, 0);
 
+                document.addEventListener('RockExitFullscreen', function () {{
+                    ce_{0}.resize();
+                }}, false);
+
                 {6}
 ";
 

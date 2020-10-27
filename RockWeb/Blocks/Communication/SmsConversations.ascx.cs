@@ -90,7 +90,6 @@ namespace RockWeb.Blocks.Communication
     // Start here to build the person description lit field after selecting recipient.
     public partial class SmsConversations : RockBlock
     {
-
         #region Attribute Keys
         protected static class AttributeKey
         {
@@ -639,7 +638,7 @@ namespace RockWeb.Blocks.Communication
             e.Row.AddCssClass( "selected" );
             e.Row.RemoveCssClass( "unread" );
 
-            if ( recipientPerson == null || ( recipientPerson.IsNameless() ) )
+            if ( recipientPerson == null || recipientPerson.IsNameless() )
             {
                 lbLinkConversation.Visible = true;
             }
