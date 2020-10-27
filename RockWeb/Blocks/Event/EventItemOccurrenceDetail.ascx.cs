@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
 
 using Rock;
@@ -167,17 +167,15 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCreateNewRegistration_Click( object sender, EventArgs e )
         {
-            ShowNewLinkageDialog();
-        }
+            pnlEditRegistrationInstance.Visible = false;
+            pnlNewRegistrationInstance.Visible = false;
+            rieNewLinkage.Visible = false;
 
-        /// <summary>
-        /// Handles the Click event of the lbLinkToExistingRegistration control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbLinkToExistingRegistration_Click( object sender, EventArgs e )
-        {
-            ShowExistingLinkageDialog();
+            tbNewLinkageUrlSlug.Text = string.Empty;
+            gpNewLinkageGroup.SetValue( null );
+            bgLinkageOptions.SetValue( "None" );
+
+            ShowDialog( "EVENTITEMNEWLINKAGE" );
         }
 
         /// <summary>
@@ -187,7 +185,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
         protected void lbEditRegistration_Command( object sender, CommandEventArgs e )
         {
-            int? groupMapId = e.CommandArgument.ToString().AsIntegerOrNull();
+            var groupMapId = e.CommandArgument.ToString().AsGuidOrNull();
 
             if ( groupMapId == null )
             {
@@ -204,14 +202,14 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
         protected void lbDeleteRegistration_Command( object sender, CommandEventArgs e )
         {
-            int? groupMapId = e.CommandArgument.ToString().AsIntegerOrNull();
+            var groupMapId = e.CommandArgument.ToString().AsGuidOrNull();
 
             if ( groupMapId == null )
             {
                 return;
             }
 
-            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Guid == groupMapId );
             LinkedRegistrationsState.Remove( eventItemOccurrenceGroupMap );
             BindEditRegistrationsRepeater();
         }
@@ -296,6 +294,10 @@ namespace RockWeb.Blocks.Event
             Helper.AddDisplayControls( eventItemOccurrence, phAttributes, null, false, false );
         }
 
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
@@ -324,15 +326,11 @@ namespace RockWeb.Blocks.Event
             switch ( hfActiveDialog.Value )
             {
                 case "EVENTITEMNEWLINKAGE":
-                    dlgNewLinkage.Show();
+                    dlgNewEventRegistrationGroupLinkage.Show();
                     break;
 
                 case "EVENTITEMEDITLINKAGE":
                     dlgEditLinkage.Show();
-                    break;
-
-                case "EVENTITEMEXISTINGLINKAGE":
-                    dlgExistingLinkage.Show();
                     break;
             }
         }
@@ -345,15 +343,11 @@ namespace RockWeb.Blocks.Event
             switch ( hfActiveDialog.Value )
             {
                 case "EVENTITEMNEWLINKAGE":
-                    dlgNewLinkage.Hide();
+                    dlgNewEventRegistrationGroupLinkage.Hide();
                     break;
 
                 case "EVENTITEMEDITLINKAGE":
                     dlgEditLinkage.Hide();
-                    break;
-
-                case "EVENTITEMEXISTINGLINKAGE":
-                    dlgExistingLinkage.Hide();
                     break;
             }
 
@@ -383,35 +377,40 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItemOccurrence.Linkages.Any() )
             {
-                var linkageTable = new System.Text.StringBuilder();
-                linkageTable.AppendLine( "<table>" );
+                var linkageGrid = new System.Text.StringBuilder( "<table class='w-100'>" );
 
                 foreach ( var linkage in eventItemOccurrence.Linkages )
                 {
+                    var registrationLink = string.Empty;
+                    var groupLink = string.Empty;
+
                     if ( linkage.RegistrationInstance != null )
                     {
-                        
                         var qryParams = new Dictionary<string, string> { { "RegistrationInstanceId", linkage.RegistrationInstance.Id.ToString() } };
-                        string registrationLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.RegistrationInstancePage, qryParams ), linkage.RegistrationInstance.Name );
-                        string separator = string.Empty;
-                        string groupLink = string.Empty;
+                        registrationLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.RegistrationInstancePage, qryParams ), linkage.RegistrationInstance.Name );
 
                         if ( linkage.Group != null )
                         {
-                            separator = " - ";
-
-                            qryParams = new Dictionary<string, string> { {  "GroupId", linkage.Group.Id.ToString() } };
+                            qryParams = new Dictionary<string, string> { { "GroupId", linkage.Group.Id.ToString() } };
                             groupLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.GroupDetailPage, qryParams ), linkage.Group.Name );
                         }
-
-                        linkageTable.AppendLine( "<tr><td>" );
-                        linkageTable.AppendLine( registrationLink + separator + groupLink );
-                        linkageTable.AppendLine( "</td></tr>" );
                     }
+
+                    if ( linkage.Group != null )
+                    {
+                        var qryParams = new Dictionary<string, string> { { "GroupId", linkage.Group.Id.ToString() } };
+                        groupLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.GroupDetailPage, qryParams ), linkage.Group.Name );
+                    }
+
+                    linkageGrid.AppendFormat(
+                        "<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>",
+                        registrationLink,
+                        groupLink,
+                        linkage.UrlSlug );
                 }
 
-                linkageTable.AppendLine( "</table>" );
-                leftDesc.Add( "Linkages (Registration Instance - Group)", linkageTable.ToString() );
+                linkageGrid.AppendLine( "</table>" );
+                leftDesc.Add( "Event / Registration / Group Linkages", linkageGrid.ToString() );
             }
 
             lLeftDetails.Text = leftDesc.Html;
@@ -469,13 +468,11 @@ namespace RockWeb.Blocks.Event
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                var messageKey = ( HiddenField ) e.Item.FindControl( "hfGroupMapId" );
-                var lbCreateNewRegistration = ( LinkButton ) e.Item.FindControl( "lbCreateNewRegistration" );
-                var lbLinkToExistingRegistration = ( LinkButton ) e.Item.FindControl( "lbLinkToExistingRegistration" );
+                var groupMapId = ( HiddenField ) e.Item.FindControl( "hfGroupMapId" );
                 var lbEditRegistration = ( LinkButton ) e.Item.FindControl( "lbEditRegistration" );
                 var lbDeleteRegistration = ( LinkButton ) e.Item.FindControl( "lbDeleteRegistration" );
 
-                if ( messageKey.Value != string.Empty )
+                if ( groupMapId.Value != string.Empty )
                 {
                     lbEditRegistration.Visible = true;
                     lbDeleteRegistration.Visible = true;
@@ -496,8 +493,10 @@ namespace RockWeb.Blocks.Event
             var registrations = LinkedRegistrationsState
                 .Select( r => new
                 {
-                    GroupMapId = r.RegistrationInstance != null ? r.Id.ToString() : string.Empty,
-                    OccurrenceRegistration = r.RegistrationInstance != null ? r.RegistrationInstance.Name + ( r.Group != null ? " - " + r.Group.Name : " - No Group Assigned" ) : string.Empty
+                    GroupMapId = r.Guid.ToString(),
+                    PublicName = r.RegistrationInstance != null ? r.RegistrationInstance.Name : string.Empty,
+                    GroupName = r.Group != null ? r.Group.Name : string.Empty,
+                    r.UrlSlug,
                 } )
             .ToList();
 
@@ -951,11 +950,8 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the new linkage dialog.
         /// </summary>
-        private void ShowNewLinkageDialog()
+        private void ShowNewLinkageWithNewRegistrationDialog()
         {
-            rieNewLinkage.ShowActive = false;
-            rieNewLinkage.ShowUrlSlug = true;
-
             ddlNewLinkageTemplate.Items.Clear();
 
             using ( var rockContext = new RockContext() )
@@ -991,6 +987,7 @@ namespace RockWeb.Blocks.Event
                     eventItemOccurrenceGroupMap.RegistrationInstance.ContactEmail = registrationInstance.ContactEmail;
                     eventItemOccurrenceGroupMap.RegistrationInstance.AdditionalReminderDetails = registrationInstance.AdditionalReminderDetails;
                     eventItemOccurrenceGroupMap.RegistrationInstance.AdditionalConfirmationDetails = registrationInstance.AdditionalConfirmationDetails;
+                    eventItemOccurrenceGroupMap.RegistrationInstance.IsActive = true;
                     var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( registrationInstance.RegistrationTemplateId );
                     if ( registrationTemplate != null )
                     {
@@ -1010,10 +1007,10 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                gpNewLinkageGroup.SetValue( eventItemOccurrenceGroupMap.Group );
+                tbRegistrationInstanceName.Text = string.Empty;
+                tbNewLinkagePublicName.Text = string.Empty;
 
                 rieNewLinkage.SetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
-                rieNewLinkage.UrlSlug = eventItemOccurrenceGroupMap.UrlSlug;
 
                 if ( eventItemOccurrenceGroupMap.RegistrationInstance == null )
                 {
@@ -1045,16 +1042,12 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-
-            ShowDialog( "EventItemNewLinkage", true );
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the dlgExistingLinkage control.
+        /// Handles the saving of a new linkage with a new registration.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgNewLinkage_SaveClick( object sender, EventArgs e )
+        protected void SaveNewLinkageWithNewRegistration()
         {
             int? registrationTemplateId = ddlNewLinkageTemplate.SelectedValueAsInt();
             if ( registrationTemplateId.HasValue )
@@ -1074,6 +1067,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rieNewLinkage.GetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
+                eventItemOccurrenceGroupMap.RegistrationInstance.Name = tbRegistrationInstanceName.Text;
 
                 int? groupId = gpNewLinkageGroup.SelectedValueAsInt();
                 if ( groupId.HasValue )
@@ -1086,8 +1080,8 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                eventItemOccurrenceGroupMap.PublicName = rieNewLinkage.Name;
-                eventItemOccurrenceGroupMap.UrlSlug = rieNewLinkage.UrlSlug;
+                eventItemOccurrenceGroupMap.PublicName = tbNewLinkagePublicName.Text;
+                eventItemOccurrenceGroupMap.UrlSlug = tbNewLinkageUrlSlug.Text;
 
                 // Set the Guid now (otherwise it will not be valid )
                 eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
@@ -1110,19 +1104,25 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the edit linkage dialog.
         /// </summary>
-        private void ShowEditLinkageDialog( int groupMapId )
+        private void ShowEditLinkageDialog( Guid groupMapId )
         {
-            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
-
-            rieEditLinkage.ShowActive = false;
-            rieEditLinkage.ShowUrlSlug = false;
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Guid == groupMapId );
 
             hfEditLinkageGroupMapId.Value = groupMapId.ToString();
-            lEditLinkageTemplate.Text = eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate.Name;
             gpEditLinkageGroup.SetValue( eventItemOccurrenceGroupMap.Group );
-            tbEditLinkagePublicName.Text = eventItemOccurrenceGroupMap.PublicName;
             tbEditLinkageUrlSlug.Text = eventItemOccurrenceGroupMap.UrlSlug;
-            rieEditLinkage.SetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
+
+            pnlEditLinkageRegistrationType.Visible = false;
+            rieEditLinkage.Visible = false;
+
+            if ( eventItemOccurrenceGroupMap.RegistrationInstance != null )
+            {
+                lEditLinkageTemplate.Text = eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate.Name;
+                tbEditLinkagePublicName.Text = eventItemOccurrenceGroupMap.PublicName;
+                rieEditLinkage.SetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
+                rieEditLinkage.Visible = true;
+                pnlEditLinkageRegistrationType.Visible = true;
+            }
 
             ShowDialog( "EventItemEditLinkage", true );
         }
@@ -1134,38 +1134,43 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEditLinkage_SaveClick( object sender, EventArgs e )
         {
-            int groupMapId = hfEditLinkageGroupMapId.ValueAsInt();
-            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            var groupMapId = hfEditLinkageGroupMapId.Value.AsGuid();
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Guid == groupMapId );
+
+            eventItemOccurrenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
+            eventItemOccurrenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
+
+            int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
+            var group = GetGroup( groupId, null );
+
+            if ( group != null )
+            {
+                eventItemOccurrenceGroupMap.GroupId = group.Id;
+                eventItemOccurrenceGroupMap.Group = group;
+            }
+            else
+            {
+                eventItemOccurrenceGroupMap.GroupId = null;
+                eventItemOccurrenceGroupMap.Group = null;
+            }
 
             if ( eventItemOccurrenceGroupMap.RegistrationInstance != null )
             {
-                var rockContext = new RockContext();
-
                 rieEditLinkage.GetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
-
-                int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
-                if ( groupId.HasValue && groupId.Value != ( eventItemOccurrenceGroupMap.GroupId ?? 0 ) )
-                {
-                    var group = new GroupService( rockContext ).Get( groupId.Value );
-                    if ( group != null )
-                    {
-                        eventItemOccurrenceGroupMap.GroupId = group.Id;
-                        eventItemOccurrenceGroupMap.Group = group;
-                    }
-                }
-
-                eventItemOccurrenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
-                eventItemOccurrenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
 
                 if ( !eventItemOccurrenceGroupMap.IsValid )
                 {
                     return;
                 }
-
-                BindEditRegistrationsRepeater();
-
-                HideDialog();
             }
+
+            BindEditRegistrationsRepeater();
+            HideDialog();
         }
 
         #endregion Edit Linkage Modal
@@ -1197,9 +1202,10 @@ namespace RockWeb.Blocks.Event
         /// Shows the linkage dialog.
         /// </summary>
         /// <param name="itemLinkage">The item linkage.</param>
-        private void ShowExistingLinkageDialog()
+        private void ShowNewLinkageWithExistingRegistrationDialog()
         {
             ddlExistingLinkageTemplate.Items.Clear();
+            tbExistingLinkagePublicName.Text = string.Empty;
 
             using ( var rockContext = new RockContext() )
             {
@@ -1214,8 +1220,6 @@ namespace RockWeb.Blocks.Event
             }
 
             PopulateDdlExistingLinkageInstance();
-
-            ShowDialog( "EventItemExistingLinkage", true );
         }
 
         /// <summary>
@@ -1223,59 +1227,65 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgExistingLinkage_SaveClick( object sender, EventArgs e )
+        protected void SaveNewLinkageWithExistingRegistration()
         {
+            var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
+
+            eventItemOccurrenceGroupMap.PublicName = tbExistingLinkagePublicName.Text;
+            eventItemOccurrenceGroupMap.UrlSlug = tbNewLinkageUrlSlug.Text;
+
+            int? groupId = gpNewLinkageGroup.SelectedValueAsInt();
             int? registrationInstanceId = ddlExistingLinkageInstance.SelectedValueAsInt();
-            if ( registrationInstanceId.HasValue )
+
+            Group group = null;
+            RegistrationInstance registrationInstance = null;
+
+            using ( var rockContext = new RockContext() )
             {
-                var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
-                var rockContext = new RockContext();
+                group = GetGroup( groupId, rockContext );
+                registrationInstance = GetRegistrationInstance( registrationInstanceId, rockContext );
+            }
 
-                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
-                if ( registrationInstance != null )
-                {
-                    eventItemOccurrenceGroupMap.RegistrationInstanceId = registrationInstance.Id;
-                    eventItemOccurrenceGroupMap.RegistrationInstance = registrationInstance;
-                }
+            if ( group != null )
+            {
+                eventItemOccurrenceGroupMap.GroupId = group.Id;
+                eventItemOccurrenceGroupMap.Group = group;
+            }
+            else
+            {
+                eventItemOccurrenceGroupMap.GroupId = null;
+                eventItemOccurrenceGroupMap.Group = null;
+            }
 
-                int? groupId = gpExistingLinkageGroup.SelectedValueAsInt();
-                if ( groupId.HasValue )
-                {
-                    var group = new GroupService( rockContext ).Get( groupId.Value );
-                    if ( group != null )
-                    {
-                        eventItemOccurrenceGroupMap.GroupId = group.Id;
-                        eventItemOccurrenceGroupMap.Group = group;
-                    }
-                }
+            if ( registrationInstance != null )
+            {
+                eventItemOccurrenceGroupMap.RegistrationInstanceId = registrationInstance.Id;
+                eventItemOccurrenceGroupMap.RegistrationInstance = registrationInstance;
+            }
 
-                eventItemOccurrenceGroupMap.PublicName = tbExistingLinkagePublicName.Text;
-                eventItemOccurrenceGroupMap.UrlSlug = tbExistingLinkageUrlSlug.Text;
+            // Set the Guid now (otherwise it will not be valid )
+            bool isNew = eventItemOccurrenceGroupMap.Guid == Guid.Empty;
+            if ( isNew )
+            {
+                eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
+            }
 
-                // Set the Guid now (otherwise it will not be valid )
-                bool isNew = eventItemOccurrenceGroupMap.Guid == Guid.Empty;
+            if ( !eventItemOccurrenceGroupMap.IsValid )
+            {
+                // If validation failed and this is new, reset the guid back to empty
                 if ( isNew )
                 {
-                    eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
+                    eventItemOccurrenceGroupMap.Guid = Guid.Empty;
                 }
 
-                if ( !eventItemOccurrenceGroupMap.IsValid )
-                {
-                    // If validation failed and this is new, reset the guid back to empty
-                    if ( isNew )
-                    {
-                        eventItemOccurrenceGroupMap.Guid = Guid.Empty;
-                    }
-
-                    return;
-                }
-
-                // The last item is empty strings which will keep the add new and add exiting buttons on the bottom, so insert this as a second to the end instead of the end.
-                LinkedRegistrationsState.Insert( LinkedRegistrationsState.Count(), eventItemOccurrenceGroupMap );
-                BindEditRegistrationsRepeater();
-
-                HideDialog();
+                return;
             }
+
+            // The last item is empty strings which will keep the add new and add exiting buttons on the bottom, so insert this as a second to the end instead of the end.
+            LinkedRegistrationsState.Insert( LinkedRegistrationsState.Count(), eventItemOccurrenceGroupMap );
+            BindEditRegistrationsRepeater();
+
+            HideDialog();
         }
 
         /// <summary>
@@ -1289,5 +1299,187 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Existing Linkage Modal
+
+        protected void dlgNewEventRegistrationGroupLinkage_SaveClick( object sender, EventArgs e )
+        {
+            if ( Page.IsValid )
+            {
+                switch ( bgLinkageOptions.SelectedValue )
+                {
+                    case "New":
+                        SaveNewLinkageWithNewRegistration();
+                        break;
+
+                    case "Existing":
+                        SaveNewLinkageWithExistingRegistration();
+                        break;
+                    default:
+                        SaveNewLinkageWithNoRegistration();
+                        break;
+                }
+            }
+        }
+
+        private void SaveNewLinkageWithNoRegistration()
+        {
+            var eventItemOccurrenceGroupMap = GetNoRegEventItemOccurrenceGroupMap();
+
+            if ( eventItemOccurrenceGroupMap != null )
+            {
+                // The last item is empty strings which will keep the add new and add exiting buttons on the bottom, so insert this as a second to the end instead of the end.
+                LinkedRegistrationsState.Insert( LinkedRegistrationsState.Count(), eventItemOccurrenceGroupMap );
+                BindEditRegistrationsRepeater();
+            }
+
+            HideDialog();
+        }
+
+        private EventItemOccurrenceGroupMap GetNoRegEventItemOccurrenceGroupMap()
+        {
+            int? groupId = gpNewLinkageGroup.SelectedValueAsInt();
+            string urlSlug = tbNewLinkageUrlSlug.Text;
+
+            if ( urlSlug.IsNullOrWhiteSpace() && groupId == null )
+            {
+                return null;
+            }
+
+            var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap
+            {
+                UrlSlug = urlSlug
+            };
+
+            var group = GetGroup( groupId, null );
+            if ( group != null )
+            {
+                eventItemOccurrenceGroupMap.GroupId = group.Id;
+                eventItemOccurrenceGroupMap.Group = group;
+            }
+
+            // Set the Guid now (otherwise it will not be valid )
+            bool isNew = eventItemOccurrenceGroupMap.Guid == Guid.Empty;
+            if ( isNew )
+            {
+                eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
+            }
+
+            if ( !eventItemOccurrenceGroupMap.IsValid )
+            {
+                // If validation failed and this is new, reset the guid back to empty
+                if ( isNew )
+                {
+                    eventItemOccurrenceGroupMap.Guid = Guid.Empty;
+                }
+
+                return null;
+            }
+
+            return eventItemOccurrenceGroupMap;
+        }
+
+        private Group GetGroup( int? groupId, RockContext rockContext )
+        {
+            Func<RockContext, Group> getGroup = ( rockContextFunc ) =>
+            {
+                var group = new GroupService( rockContextFunc ).Get( groupId.Value );
+                if ( group != null )
+                {
+                    // We need to serialize it here so the RockContext is open. Otherwise the block will crash when the block is serialized later.
+                    var serializedGroup = group.ToJson();
+                    return group;
+                }
+
+                return null;
+            };
+
+            if ( groupId != null )
+            {
+                if ( rockContext == null )
+                {
+                    return GetEntityInOwnContext<Group>( getGroup );
+                }
+
+                return getGroup( rockContext );
+            }
+
+            return null;
+        }
+
+        private T GetEntityInOwnContext<T>( Func<RockContext, T> action )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return action( rockContext );
+            }
+        }
+
+        private RegistrationInstance GetRegistrationInstance( int? registrationInstanceId, RockContext rockContext )
+        {
+            Func<RockContext, RegistrationInstance> getRegistrationInstance = ( rockContextFunc ) =>
+            {
+                var registrationInstance = new RegistrationInstanceService( rockContextFunc ).Get( registrationInstanceId.Value );
+                if ( registrationInstance != null )
+                {
+                    // We need to serialize it here so the RockContext is open. Otherwise the block will crash when the block is serialized later.
+                    var serializedRegistrationInstance = registrationInstance.ToJson();
+                    return registrationInstance;
+                }
+
+                return null;
+            };
+
+            if ( registrationInstanceId != null )
+            {
+                if ( rockContext == null )
+                {
+                    return GetEntityInOwnContext<RegistrationInstance>( getRegistrationInstance );
+                }
+
+                return getRegistrationInstance( rockContext );
+            }
+
+            return null;
+        }
+
+        protected void bgLinkageOptions_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            pnlEditRegistrationInstance.Visible = false;
+            pnlNewRegistrationInstance.Visible = false;
+            rieNewLinkage.Visible = false;
+
+            switch ( bgLinkageOptions.SelectedValue )
+            {
+                case "New":
+                    ShowNewLinkageWithNewRegistrationDialog();
+
+                    pnlNewRegistrationInstance.Visible = true;
+                    rieNewLinkage.Visible = true;
+
+                    break;
+                case "Existing":
+                    ShowNewLinkageWithExistingRegistrationDialog();
+
+                    pnlEditRegistrationInstance.Visible = true;
+                    break;
+            }
+        }
+
+        protected void cvUrlSlug_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var urlSlug = args.Value;
+            if ( urlSlug.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var groupMapId = hfEditLinkageGroupMapId.Value.AsGuid();
+            using ( var rockContext = new RockContext() )
+            {
+                var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
+                var existsInCurrentList = LinkedRegistrationsState.Any( m => m.UrlSlug == urlSlug && m.Guid != groupMapId );
+
+                args.IsValid = !existsInCurrentList && !eventMapingService.Queryable().AsNoTracking().Any( m => m.UrlSlug == urlSlug && m.Guid != groupMapId );
+            }
+        }
     }
 }
