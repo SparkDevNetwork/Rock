@@ -230,8 +230,8 @@
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
-			                <div id="emaileditor-designer">
-				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+			                <div id="emaileditor-designer" style="opacity: 0;">
+				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="display:none;"></iframe>
 			                </div>
 			                <div id="emaileditor-properties">
 
@@ -1472,15 +1472,13 @@
                     });
                 };
 
-                $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 0);
-
                 $editorIframe.load(function ()
                 {
-                    frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
-                    frames['emaileditor-iframe'].document.head.appendChild(cssLink);
-                    frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
-                    frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
-                    frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+                    frames['emaileditor-iframe'].document.head.appendChild(cssLink)
+                        .appendChild(jqueryLoaderScript)
+                        .appendChild(fontAwesomeLink)
+                        .appendChild(dragulaLoaderScript)
+                        .appendChild(editorScript);
 
                     var $this = $(this);
                     var contents = $this.contents();
@@ -1488,7 +1486,6 @@
                     var editorMarkup = $('#editor-controls-markup').contents();
 
                     $(contents).find('body').prepend(editorMarkup);
-                    $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 1);
                 });
 
                 if ($editorIframe.length) {
@@ -1502,6 +1499,9 @@
                     Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
+
+                    $editorIframe.show();
+                    $('#emaileditor-designer').delay(300).css('opacity', '1');
                 }
             }
 
