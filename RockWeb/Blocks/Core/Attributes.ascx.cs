@@ -568,6 +568,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void mdAttribute_SaveClick( object sender, EventArgs e )
         {
+            // If page is not valid, exit and allow validators to display error messages.
+            Page.Validate();
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             Rock.Model.Attribute attribute = null;
 
             if ( _isEntityTypeConfigured )
@@ -600,6 +608,14 @@ namespace RockWeb.Blocks.Core
         {
             if ( _displayValueEdit )
             {
+                // If page is not valid, exit and allow validators to display error messages.
+                Page.Validate();
+
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
+
                 int attributeId = 0;
                 if ( hfIdValues.Value != string.Empty && !int.TryParse( hfIdValues.Value, out attributeId ) )
                 {

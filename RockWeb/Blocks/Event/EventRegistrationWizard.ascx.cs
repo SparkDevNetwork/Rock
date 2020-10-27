@@ -24,15 +24,15 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Constants;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Event
 {
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE,
-        Order = 4)]
+        Order = 4 )]
 
     [LinkedPage(
         "Group Viewer Page",
@@ -463,7 +463,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 List<int> selectedSchedules = spGroupLocationSchedule.SelectedValuesAsInt().ToList();
-                selectedSchedules.Remove(0);
+                selectedSchedules.Remove( 0 );
                 if ( lpGroupLocation.Location != null )
                 {
                     groupDescription += "  Location: " + lpGroupLocation.Location.Name;
@@ -636,7 +636,7 @@ namespace RockWeb.Blocks.Event
                         groupLocation.LocationId = lpGroupLocation.Location.Id;
 
                         List<int> selectedSchedules = spGroupLocationSchedule.SelectedValuesAsInt().ToList();
-                        selectedSchedules.Remove(0);
+                        selectedSchedules.Remove( 0 );
                         if ( selectedSchedules.Any() )
                         {
                             var scheduleService = new ScheduleService( rockContext );
@@ -797,7 +797,7 @@ namespace RockWeb.Blocks.Event
             {
                 var qryEventDetail = new Dictionary<string, string>();
                 qryEventDetail.Add( "EventItemId", result.EventItemId );
-                qryEventDetail.Add( "EventCalendarId", result.FirstEventCalendarId  );
+                qryEventDetail.Add( "EventCalendarId", result.FirstEventCalendarId );
                 hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
             }
 
@@ -819,8 +819,8 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     var qryExternalEventOccurrence = new Dictionary<string, string>();
-                    qryExternalEventOccurrence.Add("EventOccurrenceId", result.EventOccurrenceId);
-                    hlExternalEventDetails.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.EventDetailsPage ), qryExternalEventOccurrence);
+                    qryExternalEventOccurrence.Add( "EventOccurrenceId", result.EventOccurrenceId );
+                    hlExternalEventDetails.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.EventDetailsPage ), qryExternalEventOccurrence );
                 }
             }
         }
@@ -907,18 +907,18 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
-        private bool GroupTypeIsCheckinGroup(int groupTypeId, RockContext rockContext)
+        private bool GroupTypeIsCheckinGroup( int groupTypeId, RockContext rockContext )
         {
-            var checkInGroupGuids = GetAttributeValues(AttributeKey.CheckInGroupTypes).AsGuidList();
+            var checkInGroupGuids = GetAttributeValues( AttributeKey.CheckInGroupTypes ).AsGuidList();
             if ( !checkInGroupGuids.Any() )
             {
                 return false;
             }
 
-            var groupTypeService = new GroupTypeService(rockContext);
+            var groupTypeService = new GroupTypeService( rockContext );
             var checkinGroups = groupTypeService.Queryable().AsNoTracking()
-                .Where(gt => checkInGroupGuids.Contains(gt.Guid))
-                .Where(gt => gt.Id == groupTypeId);
+                .Where( gt => checkInGroupGuids.Contains( gt.Guid ) )
+                .Where( gt => gt.Id == groupTypeId );
             return checkinGroups.Any();
         }
 
@@ -948,7 +948,7 @@ namespace RockWeb.Blocks.Event
             {
                 SetActiveWizardStep( ActiveWizardStep.InitiateWizard );
 
-                using (var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
                     Init_SetContact();
                     Init_SetRegistrationTemplateValues( rockContext );
@@ -1335,8 +1335,10 @@ namespace RockWeb.Blocks.Event
 
             switch ( step )
             {
-                case ActiveWizardStep.InitiateWizard: break;
-                case ActiveWizardStep.Registration: break;
+                case ActiveWizardStep.InitiateWizard:
+                    break;
+                case ActiveWizardStep.Registration:
+                    break;
                 case ActiveWizardStep.Group:
                     lbRegistration.Enabled = true;
                     break;
@@ -1377,8 +1379,10 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                     break;
-                case ActiveWizardStep.Finished: break;
-                default: break;
+                case ActiveWizardStep.Finished:
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1421,6 +1425,11 @@ namespace RockWeb.Blocks.Event
 
         protected void lbNext_Registration_Click( object sender, EventArgs e )
         {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             if ( SelectedTemplateHasGroupType() )
             {
                 SetActiveWizardStep( ActiveWizardStep.Group );
@@ -1644,9 +1653,25 @@ namespace RockWeb.Blocks.Event
 
         protected void gpParentGroup_SelectItem( object sender, EventArgs e )
         {
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
                 ValidateParentGroupSelection( rockContext );
+            }
+        }
+
+        protected void cvUrlSlug_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var urlSlug = args.Value;
+            if ( urlSlug.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
+
+                args.IsValid = !eventMapingService.Queryable().AsNoTracking().Any( m => m.UrlSlug == urlSlug );
             }
         }
 
@@ -1686,7 +1711,7 @@ namespace RockWeb.Blocks.Event
         protected void gAudiences_Delete( object sender, RowEventArgs e )
         {
             List<int> audiencesState = ViewState["AudiencesState"] as List<int> ?? new List<int>();
-            Guid guid = (Guid)e.RowKeyValue;
+            Guid guid = ( Guid ) e.RowKeyValue;
             var audience = DefinedValueCache.Get( guid );
             if ( audience != null )
             {
@@ -1815,7 +1840,7 @@ namespace RockWeb.Blocks.Event
                     // set attributes
                     if ( linkage.Group != null )
                     {
-                        workflow.SetAttributeValue("Group", linkage.Group.Guid);
+                        workflow.SetAttributeValue( "Group", linkage.Group.Guid );
                     }
 
                     if ( linkage.RegistrationInstance != null )

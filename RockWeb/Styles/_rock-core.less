@@ -175,6 +175,11 @@ a.warning {
   max-height: 85vh;
   overflow-y: auto;
 
+  &.datepicker-dropdown {
+    max-height: none;
+    overflow-y: hidden;
+  }
+
   // Added to Support Right Aligned Dropdowns
   .dropdown-right & {
     right: 0;
@@ -527,7 +532,7 @@ th[align="right"] {
   }
 
   .panel-body {
-    background-color: #fff;
+    background-color: @white;
 
     .form-group.static-control {
       margin-bottom: 2px;

@@ -13,28 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.Security;
-using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Security;
-using System.Text;
 
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// Displays currently logged in user's name along with options to Login, Logout, or manage account.
     /// </summary>
     [DisplayName( "Log Out" )]
     [Category( "Security" )]
     [Description( "This block logs the current person out." )]
 
-    [LinkedPage( "Redirect Page", "The page to redirect the user to.", false, order:0 )]
-    [CodeEditorField( "Message", "The message to display if no redirect page was provided.", Rock.Web.UI.Controls.CodeEditorMode.Lava, defaultValue: @"<div class=""alert alert-success"">You have been logged out.</div>", order:1 )]
+    [LinkedPage( "Redirect Page", "The page to redirect the user to.", false, order: 0 )]
+    [CodeEditorField( "Message", "The message to display if no redirect page was provided.", Rock.Web.UI.Controls.CodeEditorMode.Lava, defaultValue: @"<div class=""alert alert-success"">You have been logged out.</div>", order: 1 )]
 
     public partial class Logout : Rock.Web.UI.RockBlock
     {
@@ -73,7 +69,7 @@ namespace RockWeb.Blocks.Security
         #endregion
 
         /// <summary>
-        /// Logouts the person.
+        /// Logs out the person.
         /// </summary>
         private void LogoutPerson()
         {

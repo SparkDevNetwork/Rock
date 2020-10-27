@@ -405,6 +405,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use the CSS styles that would normally be used for a Grid using the 'Full' <see cref="GridDisplayType"/>.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use the CSS styles that would normally be used for a Grid using the 'Full' <see cref="GridDisplayType"/>]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( false ),
+        Description( "If true and DisplayMode is 'Light', the CSS styles that would normally be used for a Grid using the 'Full' Display Type will be used, which includes a table border, row striping, Etc. If false, a much simpler set of styling rules will be applied.")
+        ]
+        public virtual bool UseFullStylesForLightGrid
+        {
+            get
+            {
+                return ( ViewState["UseFullStylesForLightGrid"] as string ).AsBoolean();
+            }
+
+            set
+            {
+                this.ViewState["UseFullStylesForLightGrid"] = value.ToString();
+            }
+        }
+
+        /// <summary>
         /// Gets the sort property.
         /// </summary>
         public SortProperty SortProperty
@@ -1109,7 +1133,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 divClasses.Add( "table-responsive" );
             }
 
-            if ( DisplayType == GridDisplayType.Light )
+            if ( DisplayType == GridDisplayType.Light && !UseFullStylesForLightGrid )
             {
                 divClasses.Add( "table-no-border" );
             }
@@ -1134,7 +1158,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 this.AddCssClass( "sticky-headers" );
             }
 
-            if ( DisplayType == GridDisplayType.Light )
+            if ( DisplayType == GridDisplayType.Light && !UseFullStylesForLightGrid )
             {
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
@@ -4769,7 +4793,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         DataSource,
 
         /// <summary>
-        /// The the columns and formatting that is displayed in output
+        /// The columns and formatting that is displayed in output
         /// </summary>
         ColumnOutput
     }

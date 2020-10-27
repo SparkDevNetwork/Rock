@@ -260,11 +260,11 @@ namespace Rock.Utility
         {
             var dataView = new DataViewService( rockContext ).Get( campaignConfiguration.DataViewGuid );
             var personService = new PersonService( rockContext );
-
+            int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var filteredPersonIds = new List<int>();
 
             var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-            var personQuery = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>();
+            var personQuery = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>().Where( a => a.RecordStatusValueId != recordStatusInactiveId );
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
@@ -281,6 +281,7 @@ namespace Rock.Utility
                     {
                         a.GroupId,
                         a.PersonId,
+                        PersonIsActive = a.Person.RecordStatusValueId != recordStatusInactiveId,
                         PersonIsDeceased = a.Person.IsDeceased,
                         GroupRoleOrder = a.GroupRole.Order,
                         PersonGender = a.Person.Gender
@@ -313,7 +314,7 @@ namespace Rock.Utility
 
                     // Get all the head of house personIds of leftout family.
                     var headOfHouse = familyWithMembers[familyId]
-                          .Where( m => !m.PersonIsDeceased )
+                          .Where( m => !m.PersonIsDeceased && m.PersonIsActive )
                           .OrderBy( m => m.GroupRoleOrder )
                           .ThenBy( m => m.PersonGender )
                           .Select( a => a.PersonId )
@@ -654,12 +655,12 @@ namespace Rock.Utility
         internal static bool PersonAlreadyHasConnectionRequest( int connectionOpportunityId, RockContext rockContext, DateTime lastConnectionDateTime, int personId )
         {
             return new ConnectionRequestService( rockContext )
-                                .Queryable()
-                                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
-                                    && ( a.ConnectionState == ConnectionState.Active
-                                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                                         || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
-                                .Any();
+                .Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
+                    && ( a.ConnectionState == ConnectionState.Active
+                            || a.ConnectionState == ConnectionState.FutureFollowUp
+                            || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                .Any();
         }
 
         /// <summary>

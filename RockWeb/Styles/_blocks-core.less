@@ -48,6 +48,27 @@
   }
 }
 
+.panel-section {
+  border-width: 0;
+  box-shadow: none !important;
+
+  > .panel-heading {
+    background: @panel-section-heading-bg;
+    &::after {
+      position: absolute;
+      right: 25px;
+      left: 25px;
+      margin-top: 12px;
+      content: "";
+      border-bottom: 1px solid @input-border;
+    }
+  }
+
+  > .panel-body {
+    background: @panel-section-body-bg;
+  }
+}
+
 // Fancy Scrollbars
 
 .styled-scroll {
@@ -78,7 +99,7 @@
 
   .panel-body {
     padding: 0;
-    background-color: #fff;
+    background-color: @white;
   }
 
   .panel-heading {

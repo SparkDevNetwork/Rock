@@ -1,0 +1,52 @@
+@widget-gap: 18px;
+
+.profile-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 68px;
+  position: relative;
+  font-size: 18px;
+  line-height: 1.1;
+  margin: 0 @widget-gap;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+
+  &:after {
+    content: ' ';
+    position: absolute;
+    display: block;
+    background: #E5E7EB;
+    width: 1px;
+    right: -@widget-gap;
+    top: 18px;
+    bottom: 18px;
+  }
+
+  &:last-of-type {
+    &:after {
+      display: none;;
+    }
+  }
+}
+
+.widget-gender {
+  width: 50px;
+
+  &::before {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    content: @fa-var-restroom;
+    color: rgba(0,0,0,0.05);
+    font-size: 38px;
+    line-height: 1;
+  }
+}
+
