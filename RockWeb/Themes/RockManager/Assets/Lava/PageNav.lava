@@ -1,0 +1,23 @@
+{% if CurrentPerson %}
+{%- if Page.DisplayChildPages and Page.Pages != empty -%}
+    <ul class="nav nav-stacked navbar-side">
+		{%- for childPage in Page.Pages -%}
+				<li class="{%- if childPage.Current or childPage.IsParentOfCurrent -%}current{%- endif -%}{% if forloop.first %} my-4{% endif %}{% if forloop.last %} mt-auto{% endif %}">
+                {%- comment -%}Link to the First Child of the Room Manager{%- endcomment -%}
+                {%- if childPage.Title == "Room Manager" and childPage.Pages != empty -%}
+                    {%- assign menuUrl = childPage.Pages[0].Url -%}
+                {% else %}
+                    {%- assign menuUrl = childPage.Url -%}
+                {%- endif -%}
+
+                <a href="{{ menuUrl }}">
+                    <i class="fa-fw {{ childPage.IconCssClass }}"></i> {{ childPage.Title }}
+                </a>
+            </li>
+        {%- endfor -%}
+        <li class="login">
+            <a href="/CheckinManager/logout"><img src="{{ CurrentPerson.PhotoUrl }}" class="avatar avatar-sm" alt=""> {{ CurrentPerson.FullName }}</a>
+        </li>
+    </ul>
+{%- endif -%}
+{% endif %}

@@ -127,6 +127,14 @@ namespace Rock.CheckIn
         public bool AllowCheckoutDefault => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
 
         /// <summary>
+        /// Gets a value indicating whether [enable presence].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable presence]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnablePresence => GetSetting( "core_checkin_EnablePresence" ).AsBoolean( false );
+
+        /// <summary>
         /// Gets a value indicating whether [use same options].
         /// </summary>
         /// <value>

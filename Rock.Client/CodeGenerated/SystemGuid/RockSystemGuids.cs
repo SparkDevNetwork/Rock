@@ -1036,6 +1036,13 @@ namespace Rock.Client.SystemGuid
         public const string CHECK_IN_LABEL = "B565FDF8-959F-4AC8-ACDF-3B1B5CFE79F5";
         public const string CHECK_IN_LABELS = "7C093A63-F2AC-4FE3-A826-8BF06D204EA2";
         public const string CHECK_IN_MANAGER = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B";
+        public const string CHECK_IN_MANAGER_LIVE_METRICS = "04F70D50-5D27-4C12-A76D-B25E6E4CB177";
+        public const string CHECK_IN_MANAGER_LOGIN = "31F51DBB-AC84-4724-9219-B46FADAB9CB2";
+        public const string CHECK_IN_MANAGER_ROOM_MANAGER = "CECB1460-10D4-4054-B5C3-903991CA40AB";
+        public const string CHECK_IN_MANAGER_ROOM_SETTINGS = "0416FF62-3252-4A84-85DB-79F4CAE82C75";
+        public const string CHECK_IN_MANAGER_ROSTER = "BA04BF01-5244-4637-B12D-7A962D2A9E77";
+        public const string CHECK_IN_MANAGER_SEARCH = "5BB14114-BE20-4330-943A-5BC7E367116E";
+        public const string CHECK_IN_MANAGER_SETTINGS = "7484FB24-BAE9-4797-961D-6962D4E9DB76";
         public const string CHECK_IN_ROCK_SETTINGS = "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D";
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
         public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
@@ -1329,6 +1336,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class PageRoute
     {
+        public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
         public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "9660B9FB-C90F-4AFE-9D58-C0EC271C1377";
         public const string OIDC_AUTHORIZE = "E35CD82E-C162-444E-AC5F-E42F20DA79F3";
         public const string OIDC_LOGOUT = "5137F15D-61EA-4935-A9E1-16534959AEFA";
@@ -1382,6 +1390,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Site
     {
+        public const string CHECK_IN_MANAGER = "A5FA7C3C-A238-4E0B-95DE-B540144321EC";
         public const string EXTERNAL_SITE = "F3F82256-2D66-432B-9D67-3552CD2F4C2B";
         public const string SITE_ROCK_INTERNAL = "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
     }

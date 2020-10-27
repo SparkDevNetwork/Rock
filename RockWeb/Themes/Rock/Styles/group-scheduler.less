@@ -18,27 +18,8 @@
 @belowdesired-icon-color: fade(@brand-warning, 75%);
 @belowminimum-icon-color: fade(@brand-danger, 75%);
 
-
-.panel-body-parent {
-  height: ~"calc(100vh - 290px)";
-  min-height: 200px;
-  overflow: hidden;
-}
-
-.board-scroll {
-  width: 100%;
-  height: 100%;
-  padding: 8px 0;
-  overflow-x: auto;
-  overflow-y: scroll;
-}
-
 .group-scheduler {
   // Duplicated Style for Embedding in External Themes
-  .sidebar-border {
-    border-right: 1px solid @panel-default-border;
-  }
-
   .panel.panel-block {
 
     position: relative;
@@ -81,30 +62,37 @@
   }
 }
 
-.group-schedule-filter-options {
-  background: #f3f3f3;
-  border-right: 1px solid #ddd;
-}
-
 .resource-list {
-  position: relative;
-  top: auto !important;
-  display: -ms-flexbox !important;
-  display: flex !important;
-  flex: 0 1 auto !important;
-  -ms-flex-direction: column !important;
-  flex-direction: column !important;
-  width: 100%;
-  max-height: none !important;
-  overflow: hidden;
+  position: sticky !important;
+  top: 16px;
+  max-height: ~"calc(100vh - 32px)";
+
+  .is-fullscreen & {
+    top: 16px;
+    max-height: ~"calc(100vh - 100px)";
+  }
+
+  .panel-body {
+    position: relative;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    flex: 0 1 auto !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    width: 100%;
+    overflow: hidden;
+  }
 
   .scroll-list {
     flex-shrink: 1 !important;
     flex-grow: 1 !important;
     height: 100%;
     min-height: 0;
+    padding: 12px;
     overflow-y: scroll;
     background-color: fade(@panel-heading-bg, 40%);
+    -ms-flex-positive: 1 !important;
+    -ms-flex-negative: 1 !important;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -120,19 +108,14 @@
         background-color: rgba(0,0,0, .3);
       }
     }
-
-    .resource-container {
-      padding: 12px;
-    }
   }
 }
 
 .resource {
   display: block;
-  padding: 16px 12px;
+  padding: 6px 8px;
   margin-bottom: 12px;
   font-family: @font-family-sans-serif;
-  line-height: 1;
   color: @btn-default-color;
   cursor: move;
   cursor: -webkit-grab;
@@ -149,26 +132,22 @@
     flex-direction: row !important;
     flex-wrap: nowrap;
     flex-shrink: 0;
-    align-items: center;
-    justify-content: space-between !important;
 
     &::before {
       display: block;
       flex-shrink: 0;
-      margin-right: 8px;
-      font-family: @fa-font-face;
-      font-weight: @fa-theme-weight;
-      color: #fff;
-      content: "@{fa-var-circle}";
+      width: 24px;
+      height: 24px;
+      margin-right: 7.5px;
+      content: " ";
+      background-color: @white;
+      border: 1px solid #d8d8d8;
+      border-radius: 50%;
     }
   }
 
   .resource-meta {
     margin-left: auto;
-
-    &:empty {
-      display: none;
-    }
   }
 
   .btn {
@@ -176,7 +155,6 @@
     padding: 0;
     line-height: 16px;
     color: #d8d8d8;
-    border: 0;
 
     &:hover,
     &:focus,
@@ -201,7 +179,6 @@
   &[data-has-blackout-conflict="true"] {
     cursor: default;
     background-color: @state-warning-bg;
-
     &:hover {
       background-color: @state-warning-bg;
     }
@@ -213,7 +190,6 @@
 
   &[data-has-requirements-conflict="true"] {
     background-color: @state-warning-bg;
-
     .resource-requirements-conflict {
       display: block;
     }
@@ -224,24 +200,13 @@
   }
 
   .resource-name {
+    //display: block;
     margin-right: 20px;
-    font-weight: @font-weight-semibold;
     white-space: nowrap;
   }
 
-  .resource-header {
-    display: block;
-    margin-top: 6px;
-    font-weight: @font-weight-semibold;
-  }
-
-  .resource-preference,
-  .resource-scheduled {
-    margin-top: 4px;
-  }
-
   .dropdown-menu {
-    font-size: (@font-size-base * .75);
+    font-size: @font-size-small;
   }
 
   .resource-blackout-status {
@@ -262,37 +227,30 @@
 }
 
 .flex::before {
-  .resource[data-matches-preference="not-matches-preference"] & {
-    content: "@{fa-var-minus-circle}";
-  }
-
-  .resource[data-matches-preference="matches-preference"] & {
-    content: "@{fa-var-check-circle}";
-  }
-
   .resource[data-status="pending"] & {
-    color: @pending-icon-color;
+    background-color: @pending-icon-color;
   }
 
   .resource[data-status="confirmed"] & {
-    color: @confirmed-icon-color;
+    background-color: @confirmed-icon-color;
   }
 
   .resource[data-status="declined"] & {
-    color: @declined-icon-color;
+    background-color: @declined-icon-color;
   }
 }
 
 
 .panel-groupscheduler .resource-area {
   height: 100%;
+  padding-top: 15px;
+  padding-bottom: 15px;
 
   > .row {
     height: 100%;
   }
 }
 
-// obsolete
 .panel-groupscheduler .filter-options {
   min-width: 160px;
   padding-top: 15px;
@@ -300,18 +258,11 @@
   background-color: #f3f3f3;
 }
 
-.panel-groupscheduler .resource-filter-options {
-  background-color: #f3f3f3;
-}
-
-.panel-groupscheduler .occurrence-filter-options {
-  margin-bottom: 15px;
-  background-color: #f0f;
-}
-
 .dropzone {
   &:empty {
     position: relative;
+    padding: 40px 0;
+    outline-offset: -2px;
 
     &::after {
       position: absolute;
@@ -345,44 +296,26 @@
 .location .panel-body {
   padding: 0;
 
-  // > .dropzone {
-  //   min-height: 82px;
-  // }
+  > .dropzone {
+    min-height: 82px;
+    padding: @panel-body-padding;
+  }
 }
 
 .scheduler-target-container {
-  @grid-height: 51px;
-  @border-start: @grid-height - 1px;
-  @border-end: @grid-height + 1px;
-  min-height: ~"calc("@grid-height~"*var(--desiredSpots,2))"; //var(--emptySpots)
-  background-image: -webkit-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -moz-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -ms-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -o-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-position: 0 -1px;
-  background-size: @grid-height @grid-height;
-
   &:empty {
+    outline: 2px dashed rgba(0, 0, 0, .1);
+
     &::after {
-      content: "";
+      content: "Drag and Drop Here";
     }
   }
 
   .resource {
     display: inline-block;
-    width: 100%;
-    max-width: 100% !important;
-    margin: 0;
-    border-width: 0;
-    border-bottom-width: 1px;
-    border-radius: 0;
-    box-shadow: none;
+    margin-right: 8px;
 
-    .resource-meta,
-    .resource-preferences,
-    .resource-scheduled,
-    .resource-lastattendeddate {
+    .resource-meta {
       display: none;
     }
   }
@@ -392,7 +325,6 @@
   border-bottom: 1px solid @panel-default-border;
 }
 
-.resource-member-role,
 .resource-lastattendeddate {
   font-size: 80%;
 }
@@ -400,7 +332,6 @@
 .resource-note {
   display: -webkit-box;
   max-height: 32px;
-  margin-top: 8px;
   overflow: hidden;
   font-size: 12px;
   line-height: 16px;
@@ -411,7 +342,7 @@
 
 /* Resource List */
 .group-scheduler-resourcelist {
-  height: 1px;
+  height: 100%;
 
   .resource {
     .flex {
@@ -422,10 +353,10 @@
       }
     }
 
-    // &.has-note .flex {
-    //   -ms-flex-direction: column !important;
-    //   flex-direction: column !important;
-    // }
+    &.has-note .flex {
+      -ms-flex-direction: column !important;
+      flex-direction: column !important;
+    }
   }
 
 
@@ -433,17 +364,13 @@
 
 /* Location (Attendance Occurrence) */
 .scheduling-status {
-  @progress-height: 14px;
   .progress {
-
-    height: @progress-height;
     margin-bottom: 0;
-    background: #c4c4c4;
-    box-shadow: none;
   }
 
   .scheduling-status-progress {
-    width: 100%;
+    float: left;
+    width: 100px;
 
     .scheduling-progress-confirmed {
       background-color: @confirmed-icon-color;
@@ -461,33 +388,43 @@
       position: relative;
       width: 1px;
       height: 100%;
-      background-color: #fff;
+      background-color: @white;
     }
 
     .desired-indicator {
       position: relative;
-      top: -(@progress-height);
+      top: -24px;
       width: 1px;
       height: 100%;
-      background-color: #006400;
+      background-color: darkgreen;
+    }
+  }
+
+  .scheduling-status-light {
+    float: right;
+    width: 24px;
+    height: 24px;
+    margin-left: 8px;
+    border: 1px solid #d8d8d8;
+    border-radius: 50%;
+
+    &[data-status="below-minimum"] {
+      background-color: @belowminimum-icon-color;
+    }
+
+    &[data-status="below-desired"] {
+      background-color: @belowdesired-icon-color;
+    }
+
+    &[data-status="meets-desired"] {
+      background-color: @meetsdesired-icon-color;
+    }
+
+    &[data-status="none"] {
+      display: none;
     }
   }
 }
-
-.occurrence {
-  &[data-status="below-minimum"] {
-    border-top: 4px solid @belowminimum-icon-color !important;
-  }
-
-  &[data-status="below-desired"] {
-    border-top: 4px solid  @belowdesired-icon-color !important;
-  }
-
-  &[data-status="meets-desired"] {
-    border-top: 4px solid  @meetsdesired-icon-color !important;
-  }
-}
-
 
 /* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
 .gu-transit .container {
@@ -531,7 +468,7 @@
   }
 
   td.schedule-location {
-    min-width: 258px;
+    min-width: 160px;
     padding: 0 !important;
     margin: 0;
     overflow: hidden;
@@ -552,16 +489,17 @@
   }
 
   .person {
-    background-color: #fff;
+    background-color: @white;
 
     &.pending {
-      color: @text-muted;
+      .person-name {
+        color: @text-muted;
+      }
     }
 
     &.declined {
-      color: #aaa;
-
       .person-name {
+        color: #aaa;
         text-decoration: line-through;
       }
     }
@@ -599,211 +537,15 @@
 
 .scheduler-target-container .resource.gu-transit,
 .resource.gu-mirror {
-  max-width: 270px;
-  max-height: 51px;
+  max-height: 38px;
 
   .hide-transit {
     display: none;
   }
 }
 
-.scheduler-target-container .resource.gu-transit {
-  padding-right: 32px;
-}
-
 .resource.gu-mirror {
   background: rgba(255,255,255,.8);
   box-shadow: 0 5px 20px 0 rgba(21,27,38,.08);
   opacity: 1;
-
-  .flex::before {
-    display: none;
-  }
-}
-
-// TEMP
-
-.main-content #page-content {
-  min-height: 0;
-}
-.panel-collapsable {
-  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
-}
-.panel-collapsable .panel-drawer {
-  border-bottom: 1px solid #dbdbdb;
-}
-.panel-toolbar {
-  padding: 4px 16px;
-  font-size: 12px;
-  border-bottom: 1px solid #dbdbdb;
-}
-
-.panel-toolbar .btn,
-.panel-toolbar .picker .picker-label {
-  padding: 1px 5px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: @line-height-small;
-  color: #6f7782;
-  background: transparent;
-  border: 0;
-}
-.panel-toolbar .btn:hover,
-.panel-toolbar .btn:active,
-.panel-toolbar .picker .picker-label:hover,
-.panel-toolbar .picker .picker-label:active,
-.panel-toolbar .picker .picker-label:focus,
-.open .panel-toolbar .btn {
-  background: #e9ecee;
-  outline: 0;
-  box-shadow: none;
-}
-
-.panel-toolbar .picker .picker-select-none {
-  display: none !important;
-}
-
-.panel-toolbar .btn:hover,
-.panel-toolbar .btn:active,
-.open .panel-toolbar .btn {
-  background: #e9ecee;
-}
-.overflow-scroll {
-  height: calc(100vh - 290px);
-  min-height: 200px;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.board-column-container:active,
-.board-column:active {
-  cursor: move;
-  cursor: -moz-grabbing;
-  cursor: -webkit-grabbing;
-  cursor: grabbing;
-}
-
-.board-column {
-  position: relative;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  display: flex;
-  flex: 0 0 345px;
-  flex-direction: column;
-  width: 345px;
-  max-width: 345px;
-  height: 100%;
-  margin: 0 8px;
-  overflow: hidden;
-  border-radius: 6px;
-  transition: box-shadow 250ms;
-}
-
-.occurrence-column-selected {
-  background: #f7f7f7;
-  border-radius: 4px;
-  box-shadow: 0 0 1px rgba(0, 0, 0, .08), 0 2px 2px rgba(0, 0, 0, .24);
-}
-
-.board-heading {
-  padding: 0 16px;
-}
-.board-heading-pill {
-  height: 4px;
-  border-radius: 2px;
-}
-.board-cards {
-  padding: 1px 16px 130px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-}
-.board-card {
-  display: block;
-  align-items: center;
-  width: 280px;
-  padding: 15px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #dbdbdb;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
-  transition: box-shadow 100ms, transform 100ms, background-color 100ms, border-color 100ms;
-}
-.board-card:hover {
-  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, .1);
-}
-.board-card-photo {
-  position: relative;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  vertical-align: top;
-  background: ~"center/cover #cbd4db";
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
-}
-.board-card-assigned {
-  font-size: 12px;
-}
-.board-card-pills {
-  display: flex;
-  flex-flow: row wrap;
-  align-content: space-between;
-  margin: -5px -5px 0;
-  margin-bottom: 10px;
-}
-.board-card-pill {
-  width: 42px;
-  height: 6px;
-  margin: 5px 5px 0;
-  background-color: #7a6ff0;
-  border-radius: 3px;
-}
-.board-card-meta {
-  font-size: 11px;
-}
-.dropdown-menu-mega {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 2000;
-  width: 300px;
-  overflow-y: scroll;
-}
-.dropdown-menu-mega li {
-  position: relative;
-}
-.dropdown-menu-mega .dropdown-header {
-  padding: 8px 0;
-  margin: 24px 16px 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #484848;
-  border-bottom: 1px solid #e4e4e4;
-}
-.dropdown-menu-mega .dropdown-header:first-child {
-  margin-top: 0;
-}
-
-.styled-scroll ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.styled-scroll ::-webkit-scrollbar-thumb {
-  width: 8px;
-}
-
-.styled-scroll-white ::-webkit-scrollbar-track .styled-scroll-white::-webkit-scrollbar-track {
-  background-color: #fff !important;
-}
-
-.focus-no-outline:focus,
-.focus-no-outline:active:focus {
-  outline: none !important;
 }

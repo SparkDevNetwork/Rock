@@ -83,12 +83,12 @@
 @modal-footer-bg:             @modal-footer-background;       // The header color for modal dialogs. #color
 @modal-backdrop-bg:           @modal-backdrop-background;     // The backdrop color that overlays the page when a modal is displayed. #color
 
-@modal-header-text-color:     #fff;
-@modal-body-bg:               #fff;
+@modal-header-text-color:     @white;
+@modal-body-bg:               @white;
 @modal-body-text-color:       @text-color;
 @modal-dropshadow-color:      rgba(0,0,0,.6);
 @modal-backdrop-opacity:      1;
-@modal-footer-text-color:     #fff;
+@modal-footer-text-color:     @white;
 
 @brand-primary:               @brand-color;
 
@@ -162,7 +162,7 @@
 @text-selection-bg:           @text-selection-background;
 
 
-@navbartop-color:             #fff;
+@navbartop-color:             @white;
 
 @body-bg:                     @body-background;
 
@@ -187,16 +187,16 @@
 // Page Areas
 
 //// Header
-@header-bg:                   #fff;                         // The header background color. #color
+@header-bg:                   @white;                         // The header background color. #color
 @header-text-color:           @gray-base;                     // The header text color. #color
 //--
-@header-hambuger-color:       #fff;                         // The text color of the header minimizer. #color
+@header-hambuger-color:       @white;                         // The text color of the header minimizer. #color
 @header-hambuger-bg:          @brand-primary;                 // The background color of the header minimizer. #color
 @header-hamburger-border:     @brand-primary;                 // The border color of the header minimizer. #color
 
 
 //// Page Title
-@pagetitle-background:        #fff;
+@pagetitle-background:        @white;
 @pagetitle-bg:                @pagetitle-background;          // The background color of the page title section. #color
 @pagetitle-text-color:        @text-color;                    // The text color of the page title section. #color
 
@@ -235,7 +235,7 @@
 
 // Control Variables
 //// Inputs
-@input-bg:                    #fff;                         // The background color of input fields.
+@input-bg:                    @white;                         // The background color of input fields.
 @input-bg-disabled:           @gray-lightest;                 // The background of inputs in a disabled state.
 @input-color:                 @gray;                          // The text color of inputs.
 @input-border:                @gray-light;                    // The border color of inputs.
@@ -270,7 +270,7 @@
 
 
 // Panel
-@panel-bg:                    #fff;                         // The background color of the panel body.
+@panel-bg:                    @white;                         // The background color of the panel body.
 @panel-body-padding:          16px;
 @panel-heading-padding:       16px;
 @panel-heading-bg:            @gray-lightest;                 // The background color of the panel's header.
@@ -350,11 +350,11 @@
 @pagination-active-border:              @gray;
 
 @pagination-disabled-color:             @gray-light;
-@pagination-disabled-bg:                #fff;
+@pagination-disabled-bg:                @white;
 @pagination-disabled-border:            transparent;
 
 //// Footer
-@grid-footer-bg:                        #fff;
+@grid-footer-bg:                        @white;
 @grid-footer-text-color:                @panel-heading-text-color;
 @grid-footer-font-size:                 10px;
 @grid-footer-font-weight:               300;
@@ -368,9 +368,9 @@
 
 // Person Profile
 //// Bio Bar
-@persondetails-bio-bg:                  #fff;
+@persondetails-bio-bg:                  @white;
 @persondetails-bio-color:               @text-color;
-@persondetails-bio-action-color:        #fff;
+@persondetails-bio-action-color:        @white;
 @persondetails-bio-action-bg:           @brand-color;
 @persondetails-bio-action-border:       @brand-color;
 @persondetails-bio-photo-border:        @ui-3;
@@ -381,9 +381,9 @@
 @persondetails-badge-color:             @ui-5;
 
 //// Family Bar
-@persondetails-familybar-bg:            #fff;
+@persondetails-familybar-bg:            @white;
 @persondetails-familybar-color:         @text-color;
-@persondetails-familybar-action-color:  #fff;
+@persondetails-familybar-action-color:  @white;
 @persondetails-familybar-action-bg:     #6a6a6a;
 @persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
 @persondetails-familybar-photo-bg:      darken(@persondetails-familybar-bg, 20%);
@@ -396,7 +396,7 @@
 @note-highlight-border:       @alert-danger-border;
 
 //// Private / Personal Note
-@note-personal-bg:            #fff;
+@note-personal-bg:            @white;
 @note-personal-text:          @alert-info-text;
 @note-personal-border:        @alert-info-border;
 
@@ -406,7 +406,7 @@
 
 @tooltip-max-width:           240px;
 @tooltip-color:               @text-color;
-@tooltip-bg:                  #fff;
+@tooltip-bg:                  @white;
 @tooltip-opacity:             1;
 @tooltip-arrow-width:         5px;
 @tooltip-arrow-color:         @tooltip-bg;
@@ -426,7 +426,7 @@
 
 // Pills
 @nav-pills-active-link-hover-bg:        @brand-color;
-@nav-pills-active-link-hover-color:     #fff;
+@nav-pills-active-link-hover-color:     @white;
 @nav-pills-link-color:                  @text-color;          // The color of the none active pill link.
 
 // List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
@@ -434,20 +434,20 @@
 @listasblocks-border-color:             darken(@listasblocks-bg, 10%);
 @listasblocks-color:                    @text-color;
 @listasblocks-rollover-bg:              darken(@listasblocks-bg, 45%);
-@listasblocks-rollover-text-color:      #fff;
+@listasblocks-rollover-text-color:      @white;
 @listasblocks-rollover-border-color:    darken(@listasblocks-rollover-bg, 5%);
 @listasblocks-active-bg:                darken(@listasblocks-bg, 45%);
 @listasblocks-active-border-color:      darken(@listasblocks-active-bg, 10%);
-@listasblocks-active-color:             #fff;
+@listasblocks-active-color:             @white;
 
 // Tags { Styles for the tag control used on the person profile. }
 @tag-bg:                                #bababa;
-@tag-text-color:                        #FFFFFF;
+@tag-text-color:                        @white;
 @tag-border-radius:                     @border-radius-base;
 @tag-bg-alt:                            lighten(@tag-bg, 15%);
 
 // Autocomplete Styles
-@autocomplete-bg:                       #fff;
+@autocomplete-bg:                       @white;
 @autocomplete-border:                   darken(@autocomplete-bg, 10%);
 @autocomplete-text:                     @theme-4-text;
 @autocomplete-rollover-bg:              #e5f2f7;                         // the background color of the rollover for autocompletes.
@@ -459,7 +459,7 @@
 @smartsearch-box-shadow:                  0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
 @smartsearch-input-text-color:            @navbartop-color;
 @smartsearch-input-selection-background:  #2e2e2e;
-@smartsearch-input-selection-text-color:  #fff;
+@smartsearch-input-selection-text-color:  @white;
 @smartsearch-text-color:                  @navbartop-color;
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
@@ -468,7 +468,7 @@
 @wizard-item-bar-complete-color:        @nav-pills-active-link-hover-bg;
 //--
 @wizard-item-label-active-color:        @pagetitle-text-color;
-@wizard-item-icon-active-color:         #fff;
+@wizard-item-icon-active-color:         @white;
 @wizard-item-icon-active-bg:            @nav-pills-active-link-hover-bg;
 //--
 @wizard-item-label-complete-color:      @wizard-item-label-active-color;
@@ -477,43 +477,43 @@
 //--
 @wizard-item-label-color:               @text-color;
 @wizard-item-icon-color:                lighten(@text-color, 25%);
-@wizard-item-icon-bg:                   #fff;
+@wizard-item-icon-bg:                   @white;
 
 // Tree Viewer
 @tree-rollover-bg:            lighten(@tree-selected-bg, 20%);  // Background color of the rollover for items in the treeview.
 @tree-rollover-color:         @tree-selected-color;             // Text color of the rollover for items in the treeview.
 @tree-selected-bg:            #6a6a6a;                        // Background color of selected items in the treeview.
-@tree-selected-color:         #fff;                           // Text color of selected items in the treeview.
+@tree-selected-color:         @white;                           // Text color of selected items in the treeview.
 
 // Buttons
 @enable-btn-focus-outline:    true;
 @btn-font-weight:             normal;
 //--
 @btn-default-color:           @gray-dark;
-@btn-default-bg:              #fff;
+@btn-default-bg:              @white;
 @btn-default-border:          @ui-4;
 //--
-@btn-primary-color:           #fff;
+@btn-primary-color:           @white;
 @btn-primary-bg:              @brand-primary;
 @btn-primary-border:          @btn-primary-bg;
 //--
-@btn-success-color:           #fff;
+@btn-success-color:           @white;
 @btn-success-bg:              @brand-success;
 @btn-success-border:          @btn-success-bg;
 //--
-@btn-warning-color:           #fff;
+@btn-warning-color:           @white;
 @btn-warning-bg:              @brand-warning;
 @btn-warning-border:          @btn-warning-bg;
 //--
-@btn-danger-color:            #fff;
+@btn-danger-color:            @white;
 @btn-danger-bg:               @brand-danger;
 @btn-danger-border:           @btn-danger-bg;
 //--
-@btn-info-color:              #fff;
+@btn-info-color:              @white;
 @btn-info-bg:                 @brand-info;
 @btn-info-border:             @btn-info-bg;
 //--
-@btn-action-color:            #fff;
+@btn-action-color:            @white;
 @btn-action-bg:               @gray;
 @btn-action-border:           @btn-action-bg;
 //--
@@ -546,7 +546,7 @@
 @pre-scrollable-max-height:   340px;
 
 // Dropdowns
-@dropdown-bg:                    #fff;
+@dropdown-bg:                    @white;
 @dropdown-border:                rgba(0,0,0,.15);
 @dropdown-fallback-border:       #ccc;
 @dropdown-divider-bg:            #e5e5e5;
