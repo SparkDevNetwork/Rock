@@ -66,7 +66,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="pull-right">
-                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" EnableSelfSelection="true" />
                                 </div>
                             </div>
                         </div>
