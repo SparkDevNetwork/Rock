@@ -34,12 +34,12 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Content Channel Item Self Update" )]
-    [Description( "This job runs through all items in a channel, and using the configured Lava attribute 'Template Key' (for each item), the job will update another attribute specified by the 'Target Key' (on that item) with the results." )]
+    [Description( "This job runs through all items in a channel, and using the configured Lava attribute 'Template Key' (for each item), the job will update another attribute specified by the 'Target Key' (on that item) with the results.  The 'ContentChannelItem' will be available to the Lava as a merge field." )]
 
     #region Job Attributes
 
     [ContentChannelField( "Content Channel",
-        Description = "Lists all content channels on the system.",
+        Description = "The content channel the job should operate over.",
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.ContentChannel )]
@@ -86,6 +86,8 @@ namespace Rock.Jobs
                 return;
             }
 
+            var errors = new List<string>();
+            List<Exception> exceptions = new List<Exception>();
             var rockContext = new RockContext();
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
@@ -110,6 +112,13 @@ namespace Rock.Jobs
                         contentChannelItem.LoadAttributes();
                         var lavaTemplate = contentChannelItem.GetAttributeValue( attributeLink.Key );
                         var lavaOutput = contentChannelItem.GetAttributeValue( attributeLink.Value.ToString() );
+                        if ( lavaTemplate == null || lavaOutput == null )
+                        {
+                            var errorMessage = $"Template with key '{attributeLink.Key}' or target with key '{attributeLink.Value}' not found.";
+                            errors.Add( errorMessage );
+                            continue;
+                        }
+
                         var mergedContent = lavaTemplate.ResolveMergeFields( itemMergeFields );
 
                         if ( lavaOutput.Equals( mergedContent ) )
@@ -128,7 +137,8 @@ namespace Rock.Jobs
                     }
                     catch ( Exception ex )
                     {
-                        jobResultStringBuilder.AppendLine( ex.Message );
+                        exceptions.Add( ex );
+                        jobResultStringBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> error(s) occurred. See exception log for details." );
                         ExceptionLogService.LogException( ex );
                         continue;
                     }
@@ -138,9 +148,21 @@ namespace Rock.Jobs
             }
 
             jobResultStringBuilder.AppendLine( $"Updated {updatedAttributes} ContentChannelItem {"attribute".PluralizeIf( updatedAttributes != 1 )} in {updatedItems} of {totalItems} ContentChannelItems" );
+
+            foreach ( var error in errors )
+            {
+                jobResultStringBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> {error}" );
+            }
+
             context.Result = jobResultStringBuilder.ToString();
 
             rockContext.SaveChanges();
+
+            if ( exceptions.Any() || errors.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more exceptions occurred in ContentChannelItemSelfUpdate.", exceptions );
+                throw new RockJobWarningException( "ContentChannelItemSelfUpdate completed with warnings", exceptionList );
+            }
         }
     }
 }
