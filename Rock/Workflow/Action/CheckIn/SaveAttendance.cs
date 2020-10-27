@@ -67,6 +67,8 @@ namespace Rock.Workflow.Action.CheckIn
             int securityCodeNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericLength : 0;
             bool securityCodeNumericRandom = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericRandom : true;
 
+            bool enablePresence = checkInState.CheckInType != null && checkInState.CheckInType.EnablePresence;
+
             var attendanceCodeService = new AttendanceCodeService( rockContext );
             var attendanceService = new AttendanceService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -210,9 +212,25 @@ namespace Rock.Workflow.Action.CheckIn
                                     attendance.AttendanceCodeId = attendanceCode.Id;
                                     attendance.StartDateTime = startDateTime;
                                     attendance.EndDateTime = null;
+                                    attendance.CheckedOutByPersonAliasId = null;
                                     attendance.DidAttend = true;
                                     attendance.Note = group.Notes;
                                     attendance.IsFirstTime = person.FirstTime;
+
+                                    /*
+                                        7/16/2020 - JH
+                                        If EnablePresence is true for this Check-in configuration, it will be the responsibility of the room
+                                        attendants to mark a given Person as present, so do not set the 'Present..' property values below.
+                                        Otherwise, set the values to match those of the Check-in values: the Person checking them in will
+                                        have simultaneously marked them as present.
+
+                                        Also, note that we sometimes reuse Attendance records (i.e. the Person was already checked into this
+                                        schedule/group/location, might have already been checked out, and also might have been previously
+                                        marked as present). In this case, the same 'Present..' rules apply, but we might need to go so far
+                                        as to null-out the previously set 'Present..' property values, hence the conditional operators below.
+                                    */
+                                    attendance.PresentDateTime = enablePresence ? (DateTime?)null : startDateTime;
+                                    attendance.PresentByPersonAliasId = enablePresence ? null : checkInState.CheckIn.CheckedInByPersonAliasId;
 
                                     KioskLocationAttendance.AddAttendance( attendance );
                                     isCheckedIntoLocation = true;

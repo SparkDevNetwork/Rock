@@ -261,7 +261,7 @@ textarea,
 
 .tooltip-inner {
   padding: (@padding-base-horizontal / 2);
-  color: #fff;
+  color: @white;
   text-align: left;
   background-color: @gray-darker;
   border: 1px solid @ui-4;
@@ -280,7 +280,7 @@ textarea,
   .form-well {
     padding: @panel-body-padding;
     margin: 0 -(@panel-body-padding);
-    background: #fff;
+    background: @white;
     border: 0;
     .box-shadow(none);
   }
@@ -577,7 +577,7 @@ textarea,
     height: 100vh !important;
     margin: 0;
     overflow: auto;
-    background-color: #fff;
+    background-color: @white;
 
     .panel-block {
       height: auto !important;
@@ -673,8 +673,8 @@ body.nav-open {
 
 .rock-top-header {
   margin-bottom: 0;
-  background-color: @brand-color;
-  background-color: var(--brand-color);
+  background-color: @brand-primary;
+  background-color: var(--brand-primary, @brand-primary);
   border: 0;
 
   @media (max-width: @screen-sm-max) {
@@ -725,7 +725,7 @@ body.nav-open {
     margin: 0;
     font-size: 1.5em;
     line-height: @navbar-top-height;
-    color: #fff;
+    color: @white;
     cursor: pointer;
 
     .navbar-side-open & {
@@ -751,14 +751,14 @@ body.nav-open {
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 6px;
-    color: #fff;
-    background-color: @brand-color;
-    background-color: var(--brand-color);
+    color: @white;
+    background-color: @brand-primary;
+    background-color: var(--brand-primary, @brand-primary);
     background-size: 45px;
 
     .nav-open & {
       background-color: @navbarside-background-color;
-      background-color: var(--navbarside-background-color);
+      background-color: var(--navbarside-background-color, @navbarside-background-color);
     }
 
     &.no-logo::after {
@@ -931,11 +931,11 @@ body.nav-open {
         left: auto;
         @media (max-width: @screen-xs-max) {
           position: absolute;
-          top: 80px;
+          top: @navbar-top-height;
           left: 0;
           z-index: 1000;
-          background-color: @brand-color;
-          background-color: var(--brand-color);
+          background-color: @brand-primary;
+          background-color: var(--brand-primary, @brand-primary);
 
           & > li > a {
             color: @navbartop-color;
@@ -964,9 +964,9 @@ body.nav-open {
       line-height: 34px;
 
       &:hover {
-        color: #fff;
-        background-color: @brand-color;
-        background-color: var(--brand-color);
+        color: @white;
+        background-color: @brand-primary;
+        background-color: var(--brand-primary, @brand-primary);
         opacity: 1;
       }
     }
@@ -980,7 +980,7 @@ body.nav-open {
         margin-left: -6px;
         content: "";
         border-right: 8px solid transparent;
-        border-bottom: 8px solid #fff;
+        border-bottom: 8px solid @white;
         border-left: 8px solid transparent;
       }
     }
@@ -990,7 +990,7 @@ body.nav-open {
 
 .navbar-brand-side {
   height: (@navbarside-width * .325) + (24 * 2);
-  color: #fff;
+  color: @white;
 
   &.no-logo::after {
     position: absolute;
@@ -1074,7 +1074,7 @@ body.nav-open {
   }
 
   @media (min-width: @screen-sm-min) {
-    top: 80px;
+    top: @navbar-top-height;
     margin-top: 0;
   }
 
@@ -1140,7 +1140,7 @@ body.nav-open {
 
       &.open {
         background-color: @navbarside-sub-bg;
-        box-shadow: inset 3px 0 0 0 @brand-color;
+        box-shadow: inset 3px 0 0 0 @brand-primary;
 
         @media @sm {
           &::before {
@@ -1166,9 +1166,9 @@ body.nav-open {
 
       &.current,
       &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-color;
+        box-shadow: inset 3px 0 0 0 @brand-primary;
         > i {
-          color: #fff;
+          color: @white;
         }
       }
 
@@ -1209,7 +1209,7 @@ body.nav-open {
               margin-right: 14px;
               margin-bottom: 1px;
               content: " ";
-              background: @brand-color;
+              background: @brand-primary;
             }
 
             &:focus {
@@ -1218,7 +1218,7 @@ body.nav-open {
             }
 
             &:hover {
-              color: #fff;
+              color: @white;
               background-color: @navbarside-sub-bg;
 
               &::before {
@@ -1232,7 +1232,7 @@ body.nav-open {
           &.current {
             a {
               font-weight: 600;
-              color: #fff;
+              color: @white;
               &::before {
                 width: 8px;
                 padding-left: 8px;
@@ -1363,7 +1363,6 @@ body.navbar-side-open {
 
     .page-icon {
       display: none;
-      float: left;
     }
 
     .breadcrumb {
@@ -1382,7 +1381,7 @@ body.navbar-side-open {
       > li + li::before {
         font-family: @fa-font-face;
         font-size: 80%;
-        font-weight: 600;
+        font-weight: @fa-theme-weight;
         content: "@{breadcrumb-separator}";
       }
     }
@@ -1438,8 +1437,8 @@ body.navbar-side-open {
     width: 120px;
     height: 120px;
     margin: 0 auto 40px;
-    fill: @brand-color;
-    fill: var(--brand-color);
+    fill: @brand-primary;
+    fill: var(--brand-primary, @brand-primary);
   }
 
   .login-block {
@@ -1459,12 +1458,12 @@ body.navbar-side-open {
 // workflow page
 .workflow-activity {
   & > .panel-heading {
-    color: #fff;
+    color: @white;
     background-color: @btn-action-bg;
     border-color: @btn-action-bg;
 
     a.btn-link {
-      color: #fff;
+      color: @white;
     }
   }
 
@@ -1534,12 +1533,12 @@ body.navbar-side-open {
 
 .note-btn {
   padding: 5px 10px 7px;
-  background: #fff;
+  background: @white;
   border: 0;
 
   &:hover,
   &:focus {
-    background: #fff;
+    background: @white;
   }
 
   &:active,

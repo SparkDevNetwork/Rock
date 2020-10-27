@@ -17,13 +17,15 @@
 using System;
 using System.Web;
 using System.Web.UI;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// abstract class for controls used to render a Person Profile Badge
+    /// Abstract class for controls used to render an Entity Badge
     /// </summary>
     public class BadgeControl : Control
     {
@@ -64,7 +66,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the parent person block.
+        /// Gets the parent <seealso cref="Rock.Web.UI.ContextEntityBlock"/>. If <see cref="Entity"/> is not set, this will help determine which Entity the badge will use 
         /// </summary>
         /// <value>
         /// The parent person block.
@@ -87,17 +89,16 @@ namespace Rock.Web.UI.Controls
 
                 return null;
             }
-
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// The Entity to use for this Badges
+        /// If this is left null, the Entity will be determined using <see cref="ContextEntityBlock"> Context Awareness</see>
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
-        {
-            base.OnInit( e );
-        }
+        /// <value>
+        /// The entity.
+        /// </value>
+        public IEntity Entity { get; set; }
 
         /// <summary>
         /// Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
@@ -109,47 +110,61 @@ namespace Rock.Web.UI.Controls
             var personBadgeCache = new PersonBadgeCache( BadgeCache );
 #pragma warning restore CS0618 // Type or member is obsolete
             var badgeComponent = BadgeCache?.BadgeComponent;
-            if ( badgeComponent != null )
+
+            if ( badgeComponent == null )
             {
-                var contextEntityBlock = ContextEntityBlock;
-                if ( contextEntityBlock != null )
-                {
-                    if ( BadgeService.DoesBadgeApplyToEntity( BadgeCache, contextEntityBlock.Entity ) )
-                    {
-                        try
-                        {
-                            badgeComponent.ParentContextEntityBlock = contextEntityBlock;
-                            badgeComponent.Entity = contextEntityBlock.Entity;
-                            badgeComponent.Render( BadgeCache, writer );
+                return;
+            }
+
+            var entity = Entity;
+            if ( entity == null )
+            {
+                entity = ContextEntityBlock?.Entity;
+            }
+
+            if ( entity == null )
+            {
+                return;
+            }
+
+            if ( !BadgeService.DoesBadgeApplyToEntity( BadgeCache, entity ) )
+            {
+                return;
+            }
+
+            try
+            {
+                badgeComponent.ParentContextEntityBlock = ContextEntityBlock;
+                badgeComponent.Entity = entity;
+                badgeComponent.Render( BadgeCache, writer );
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                            badgeComponent.Render( personBadgeCache, writer );
+                badgeComponent.Render( personBadgeCache, writer );
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                            var script = badgeComponent.GetWrappedJavaScript( BadgeCache );
+                var script = badgeComponent.GetWrappedJavaScript( BadgeCache );
 
-                            if ( !script.IsNullOrWhiteSpace() )
-                            {
-                                ScriptManager.RegisterStartupScript( this, GetType(), $"badge_{ClientID}", script, true );
-                            }
-                        }
-                        catch ( Exception ex )
-                        {
-                            var errorMessage = $"An error occurred rendering badge: {BadgeCache?.Name }, badge-id: {BadgeCache?.Id}";
-                            ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
-                            var badgeNameClass = BadgeCache?.Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
-                            writer.Write( $"<div class='badge badge-{badgeNameClass} badge-id-{BadgeCache?.Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
-                            writer.Write( $"  <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>" );
-                            writer.Write( "</div>" );
-                        }
-                        finally
-                        {
-                            const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
-                            ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
-                        }
-                    }
+                if ( !script.IsNullOrWhiteSpace() )
+                {
+                    ScriptManager.RegisterStartupScript( this, GetType(), $"badge_{ClientID}", script, true );
                 }
             }
+            catch ( Exception ex )
+            {
+                var errorMessage = $"An error occurred rendering badge: {BadgeCache?.Name }, badge-id: {BadgeCache?.Id}";
+                ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
+                var badgeNameClass = BadgeCache?.Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
+                writer.Write( $"<div class='badge badge-{badgeNameClass} badge-id-{BadgeCache?.Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
+                writer.Write( $"  <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>" );
+                writer.Write( "</div>" );
+            }
+            finally
+            {
+                const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
+            }
         }
+
+
     }
 }

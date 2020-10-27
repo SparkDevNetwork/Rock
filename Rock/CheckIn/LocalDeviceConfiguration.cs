@@ -46,7 +46,8 @@ namespace Rock.CheckIn
         public int? CurrentKioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current checkin type identifier (which is a <see cref="Rock.Model.GroupType" />)
+        /// Gets or sets the current 'Check-in Configuration' Id (which is a <see cref="Rock.Model.GroupType" /> Id).
+        /// For example "Weekly Service Check-in".
         /// </summary>
         /// <value>
         /// The current checkin type identifier.
