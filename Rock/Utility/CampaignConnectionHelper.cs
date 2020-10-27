@@ -265,10 +265,11 @@ namespace Rock.Utility
 
             var dataView = new DataViewService( rockContext ).Get( campaignConfiguration.DataViewGuid );
             var personService = new PersonService( rockContext );
-
+            int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var filteredPersonIds = new List<int>();
             var personQuery = dataView.GetQuery( null, rockContext, null, out errorMessages )
-                .OfType<Rock.Model.Person>();
+                .OfType<Rock.Model.Person>()
+                .Where( a => a.RecordStatusValueId != recordStatusInactiveId );
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
@@ -285,6 +286,7 @@ namespace Rock.Utility
                     {
                         a.GroupId,
                         a.PersonId,
+                        PersonIsActive = a.Person.RecordStatusValueId != recordStatusInactiveId,
                         PersonIsDeceased = a.Person.IsDeceased,
                         GroupRoleOrder = a.GroupRole.Order,
                         PersonGender = a.Person.Gender
@@ -317,7 +319,7 @@ namespace Rock.Utility
 
                     // Get all the head of house personIds of leftout family.
                     var headOfHouse = familyWithMembers[familyId]
-                          .Where( m => !m.PersonIsDeceased )
+                          .Where( m => !m.PersonIsDeceased && m.PersonIsActive )
                           .OrderBy( m => m.GroupRoleOrder )
                           .ThenBy( m => m.PersonGender )
                           .Select( a => a.PersonId )
