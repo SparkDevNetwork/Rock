@@ -95,9 +95,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger(upnlContent);
-            //SetAllowedGroupTypes();
 
-            //CheckForLavaToPdfPlugin();
             CheckRedirectPageId();
 
         }
@@ -118,8 +116,6 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
 
                 BindDropDownItems();
 
-                //HandleSpecialCases();
-
                 BindGrid();
             }
             
@@ -131,49 +127,6 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
 
         #region Private Methods
 
-        /// <summary>
-        /// SetAllowedGroupTypes
-        /// </summary>
-        //private void SetAllowedGroupTypes()
-        //{
-        //    // limit GroupType selection to what Block Attributes allow
-        //    hfGroupTypesInclude.Value = string.Empty;
-        //    List<Guid> groupTypeIncludeGuids = GetAttributeValue("GroupTypes").SplitDelimitedValues().AsGuidList();
-
-        //    if (groupTypeIncludeGuids.Any())
-        //    {
-        //        var groupTypeIdIncludeList = new List<int>();
-        //        foreach (Guid guid in groupTypeIncludeGuids)
-        //        {
-        //            var groupType = GroupTypeCache.Get(guid);
-        //            if (groupType != null)
-        //            {
-        //                groupTypeIdIncludeList.Add(groupType.Id);
-        //            }
-        //        }
-
-        //        hfGroupTypesInclude.Value = groupTypeIdIncludeList.AsDelimited(",");
-        //    }
-
-        //    hfGroupTypesExclude.Value = string.Empty;
-        //    List<Guid> groupTypeExcludeGuids = GetAttributeValue("GroupTypesExclude").SplitDelimitedValues().AsGuidList();
-        //    if (groupTypeExcludeGuids.Any())
-        //    {
-        //        var groupTypeIdExcludeList = new List<int>();
-        //        foreach (Guid guid in groupTypeExcludeGuids)
-        //        {
-        //            var groupType = GroupTypeCache.Get(guid);
-        //            if (groupType != null)
-        //            {
-        //                groupTypeIdExcludeList.Add(groupType.Id);
-        //            }
-        //        }
-
-        //        hfGroupTypesExclude.Value = groupTypeIdExcludeList.AsDelimited(",");
-        //    }
-        //}
-
-        
 
         /// <summary>
         /// Checks the redirect page for 0 value
@@ -191,7 +144,8 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
         /// </summary>
         private void SetCampusByQueryStringOrCurrentPersonDefault()
         {
-            CampusPicker campusPicker = FindControl("r_CampusPicker") as CampusPicker;
+            BindCampuses();
+            RockDropDownList bddlCampus = FindControl( "bddlCampus" ) as RockDropDownList;
 
             if (!string.IsNullOrEmpty(Request.QueryString["campusId"]))
             {
@@ -202,7 +156,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
                     {
                         CampusService campusService = new CampusService(rockContext);
                         Campus campus = campusService.Get(campusId);
-                        campusPicker.SelectedCampusId = campusId;
+                        bddlCampus.SelectedValue = campusId.ToString();
                         SelectedCampus = campus;
                     }
                 }
@@ -214,7 +168,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
 
                 if (campus != null)
                 {
-                    campusPicker.SelectedCampusId = campus.Id;
+                    bddlCampus.SelectedValue = campus.Id.ToString();
                     SelectedCampus = campus;
                 }
             }
@@ -232,6 +186,14 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
                 Campus campus = campusService.Get(campusId);
                 SelectedCampus = campus;
             }
+        }
+
+        private void BindCampuses()
+        {
+            bddlCampus.DataSource = CampusCache.All();
+            bddlCampus.DataBind();
+            bddlCampus.Items.Insert( 0, new ListItem( " ", "" ) );
+
         }
 
         #endregion
@@ -277,7 +239,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
             
 
             //Show Filters based on block attributes
-            r_CampusPicker.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
+            bddlCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
             rddl_ParentGroup.Visible = GetAttributeValue( "ShowParentGroupFilter" ).AsBoolean();
             rddl_ClassSelector.Visible = GetAttributeValue( "ShowLocationFilter" ).AsBoolean();
             rddl_ServiceTimeSelector.Visible = GetAttributeValue( "ShowScheduleFilter" ).AsBoolean();
@@ -302,7 +264,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
             }
 
             //Try to get campus
-            int? campusId = r_CampusPicker.SelectedCampusId;
+            int? campusId = bddlCampus.SelectedValueAsId();
 
             //Bind Parent Groups
             var parentGroups = new GroupService( rockContext ).GetByGroupTypeId( groupTypeId.Value )
@@ -480,9 +442,9 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
             queryString.Set( "ViewDocument", "true" );
             queryString.Set( "RoomType", GetAttributeValue( "Ministry" ) );
 
-            if ( r_CampusPicker.SelectedCampusId.HasValue )
+            if ( bddlCampus.SelectedValueAsId().HasValue )
             {
-                queryString.Set( "CampusId", r_CampusPicker.SelectedCampusId.Value.ToStringSafe() );
+                queryString.Set( "CampusId", bddlCampus.SelectedValueAsId().Value.ToStringSafe() );
             }
 
             // Lets help our report a bit for combined classes and just pass another string value
@@ -575,7 +537,7 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
         {
             List<GroupItem> groupItemList = new List<GroupItem>();
             
-            CampusPicker campusPicker = FindControl("r_CampusPicker") as CampusPicker;
+            RockDropDownList campusPicker = FindControl( "bddlCampus" ) as RockDropDownList;
             RockDropDownList groupTypePicker = FindControl( "ddl_GroupType" ) as RockDropDownList;
             RockListBox parentGroups = FindControl( "rddl_ParentGroup" ) as RockListBox;
             RockListBox serviceTimes = FindControl("rddl_ServiceTimeSelector") as RockListBox;
@@ -600,9 +562,10 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
                         && groupTypeId == p.GroupTypeId
                     );
 
-                if (campusPicker.IsNotNull() && campusPicker.SelectedCampusId.HasValue)
+                if (campusPicker.IsNotNull() && campusPicker.SelectedValueAsId().HasValue)
                 {
-                    queryable = queryable.Where(p => p.CampusId == campusPicker.SelectedCampusId.Value);
+                    int campusId = campusPicker.SelectedValueAsId().Value;
+                    queryable = queryable.Where(p => p.CampusId == campusId);
                 }
                 
 
@@ -777,17 +740,16 @@ namespace RockWeb.Plugins.com_bemaservices.BarcodeAttendance
         /// <param name="e"></param>
         protected void r_CampusPicker_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CampusPicker campusPicker = sender as CampusPicker;
+            RockDropDownList campusPicker = sender as RockDropDownList;
 
-            if (!campusPicker.SelectedCampusId.HasValue)
+            if (!campusPicker.SelectedValueAsId().HasValue)
             {
                 SelectedCampus = null; // Null it out.
                 BindDropDownItems();
                 return;
             }
 
-            SetSelectedCampusFromLocationItemPicker(campusPicker.SelectedCampusId.Value);
-
+            SetSelectedCampusFromLocationItemPicker(campusPicker.SelectedValueAsId().Value);
             BindDropDownItems();
             
         }
