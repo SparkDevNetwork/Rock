@@ -237,9 +237,16 @@ namespace Rock.Model
         /// <param name="deviceTypeData">The device type data (either a plain DeviceType name or the whole useragent string).</param>
         /// <returns></returns>
         [Obsolete]
-        [RockObsolete( "1.12" )]
+        [RockObsolete( "1.11" )]
         public InteractionDeviceType GetInteractionDeviceType( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
+            /*
+             * 2020-10-22 ETD
+             * This method was used by GetInteractionDeviceTypeId(). Discussed with Mike and Nick and it was
+             * decided to mark it as obsolete and create private method GetOrCreateInteractionDeviceTypeId()
+             * instead.
+             */
+
             var rockContext = new RockContext();
             InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
             InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
