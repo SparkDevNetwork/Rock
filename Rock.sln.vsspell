@@ -24,15 +24,31 @@
     <Ignore>enums</Ignore>
     <Ignore>geocode</Ignore>
     <Ignore>Guid</Ignore>
+    <Ignore>guids</Ignore>
+    <Ignore>href</Ignore>
+    <Ignore>javascript</Ignore>
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
+    <Ignore>postback</Ignore>
     <Ignore>Queryable</Ignore>
+    <Ignore>readonly</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
+    <Ignore>Autofill</Ignore>
+    <Ignore>Pre-HTML</Ignore>
+    <Ignore>formfield</Ignore>
+    <Ignore>columncommand</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
     <FilePattern>*\CodeGenerated\*.cs</FilePattern>
   </IgnoredFilePatterns>
   <IgnoredWordsFile></IgnoredWordsFile>
+  <ExclusionExpressions>
+    <Expression Match="alert alert-.*" />
+    <Expression Match="col-.*-\d*" />
+    <Expression Match="fa fa-.*" />
+    <Expression Match="input-width-.*" />
+    <Expression Match="table table-.*" />
+  </ExclusionExpressions>
 </SpellCheckerConfiguration>
