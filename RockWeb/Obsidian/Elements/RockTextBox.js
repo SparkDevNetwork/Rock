@@ -16,7 +16,7 @@
     },
     data: function() {
         return {
-            uniqueId: `rock-textbox-${Obsidian.Util.getGuid()}`,
+            uniqueId: `rock-textbox-${Obsidian.Util.newGuid()}`,
             internalValue: this.value
         };
     },

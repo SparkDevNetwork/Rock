@@ -18,47 +18,57 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using Rock.Rest;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
-namespace Rock.Obsidian.Controls
+namespace Rock.Obsidian.Controllers.Controls
 {
     /// <summary>
-    /// Defined Type Picker
+    /// Defined Value Picker
     /// </summary>
-    public class DefinedTypePickerController : ApiControllerBase
+    public class DefinedValuePickerController : ObsidianController
     {
         /// <summary>
-        /// Gets the defined types.
+        /// Gets the defined values.
         /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="IsActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/obsidian/v1/controls/definedtypepicker" )]
-        public IEnumerable<DefinedTypeViewModel> GetDefinedTypes( [FromUri] bool IsActive = true )
+        [System.Web.Http.Route( "api/obsidian/v1/controls/definedvaluepicker/{definedTypeGuid}" )]
+        public IEnumerable<DefinedValueViewModel> GetDefinedValues( Guid definedTypeGuid, [FromUri] bool IsActive = true )
         {
-            IEnumerable<DefinedTypeCache> viewModels = DefinedTypeCache.All();
+            IEnumerable<DefinedValueCache> viewModels = DefinedTypeCache.Get(definedTypeGuid)?.DefinedValues;
+
+            if ( viewModels == null )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The defined type was not found" );
+                throw new HttpResponseException( errorResponse );
+            }
 
             if ( IsActive )
             {
-                viewModels = viewModels.Where( dt => dt.IsActive );
+                viewModels = viewModels.Where( dv => dv.IsActive );
             }
 
-            return viewModels.Select( dt => new DefinedTypeViewModel
+            return viewModels.Select( dv => new DefinedValueViewModel
             {
-                Guid = dt.Guid,
-                Name = dt.Name
+                Guid = dv.Guid,
+                Value = dv.Value
             } );
         }
     }
 
     /// <summary>
-    /// Defined Type View Model
+    /// Defined Value View Model
     /// </summary>
-    public sealed class DefinedTypeViewModel
+    public sealed class DefinedValueViewModel
     {
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -66,8 +76,8 @@ namespace Rock.Obsidian.Controls
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the value.
         /// </summary>
-        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

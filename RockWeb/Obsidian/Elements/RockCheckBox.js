@@ -11,7 +11,7 @@
     },
     data: function() {
         return {
-            uniqueId: `rock-checkbox-${Obsidian.Util.getGuid()}`,
+            uniqueId: `rock-checkbox-${Obsidian.Util.newGuid()}`,
             internalValue: this.value
         };
     },

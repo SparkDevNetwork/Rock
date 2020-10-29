@@ -102,6 +102,8 @@ public class BundleConfig
             "~/Obsidian/Vendor/vue.js",
             "~/Obsidian/Vendor/vuex.js",
             "~/Obsidian/init.js",
+            "~/Obsidian/Util/*.js",
+            "~/Obsidian/Bus/*.js",
             "~/Obsidian/Templates/*.js",
             "~/Obsidian/Elements/*.js",
             "~/Obsidian/Controls/*.js",

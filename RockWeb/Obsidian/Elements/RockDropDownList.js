@@ -23,7 +23,7 @@
     },
     data: function() {
         return {
-            uniqueId: `rock-dropdownlist-${Obsidian.Util.getGuid()}`,
+            uniqueId: `rock-dropdownlist-${Obsidian.Util.newGuid()}`,
             internalValue: this.value
         };
     },

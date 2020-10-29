@@ -6,35 +6,28 @@
             currentPerson: null
         },
         mutations: {
-            setWasInitialized(state) {
+            setWasInitialized(state, payload) {
                 state.wasInitialized = true;
             },
-            setCurrentPerson(state, { currentPerson }) {
-                state.currentPerson = currentPerson;
+            applyInitializationData(state, { data }) {
+                state.currentPerson = data.CurrentPerson;
             },
             setAreSecondaryBlocksShown(state, { areSecondaryBlocksShown }) {
                 state.areSecondaryBlocksShown = areSecondaryBlocksShown
             }
         },
         actions: {
-            async initialize(context) {
+            async initializePage(context, { pageGuid }) {
                 if (context.state.wasInitialized) {
                     return;
                 }
 
-                context.commit('setWasInitialized');
-
-                try {
-                    const response = await axios.get('/api/People/GetCurrentPerson');
-                    context.commit('setCurrentPerson', { currentPerson: response.data });
-                }
-                catch (e) {
-                    console.log('Get current person error:', e);
-                }
+                context.commit('setWasInitialized', {});
+                const response = await axios.get(`/api/obsidian/v1/page/initialization/${pageGuid}`);
+                context.commit('applyInitializationData', { data: response.data });
             }
         }
     });
 
-    _store.dispatch('initialize');
     return _store;
 })();
