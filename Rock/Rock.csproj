@@ -565,7 +565,7 @@
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
-    <Compile Include="Lava\Blocks\EventOccurrences.cs" />
+    <Compile Include="Lava\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\Blocks\InteractionWrite.cs" />
     <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
     <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />

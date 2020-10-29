@@ -28,14 +28,14 @@ namespace Rock.Lava.Blocks
     /// A Lava Block that provides access to a filtered set of events from a specified calendar.
     /// Lava objects are created in the block context to provide access to the set of event occurrences matching the filter parameters.
     /// The <c>EventItems</c> collection contains information about the Event instances.
-    /// The <c>EventItemOccurrences</c> collection contains the occurrences of the Event that match the filter parameters.
+    /// The <c>EventScheduledInstances</c> collection contains the occurrences of the Event that match the filter parameters.
     /// </summary>
-    public class EventOccurrences : RockLavaBlockBase
+    public class EventScheduledInstance : RockLavaBlockBase
     {
         /// <summary>
         /// The name of the element as it is used in the source document.
         /// </summary>
-        public static readonly string TagSourceName = "eventoccurrences";
+        public static readonly string TagSourceName = "eventscheduledinstance";
 
         private string _attributesMarkup;
         private bool _renderErrors = true;
@@ -47,7 +47,7 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public override void OnStartup()
         {
-            Template.RegisterTag<EventOccurrences>( TagSourceName );
+            Template.RegisterTag<EventScheduledInstance>( TagSourceName );
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Rock.Lava.Blocks
         {
             var eventSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
-                .GroupBy( e => e.Name )
+                .GroupBy( e => e.EventItemOccurrence.Id )
                 .Select( e => e.ToList() )
                 .ToList();
 
@@ -111,7 +111,7 @@ namespace Rock.Lava.Blocks
                 .ToList();
 
             context["EventItems"] = eventSummaries;
-            context["EventItemOccurrences"] = eventOccurrenceSummaries;
+            context["EventScheduledInstances"] = eventOccurrenceSummaries;
         }
     }
 }
