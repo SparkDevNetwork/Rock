@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-
+using System.Web.UI;
 using Rock.Blocks;
 
 namespace Rock.Web.UI
@@ -54,6 +54,16 @@ namespace Rock.Web.UI
                 Block.BlockCache = BlockCache;
                 Block.PageCache = PageCache;
             }
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            base.RenderControl( writer );
+            writer.Write( Block.GetControlMarkup() );
         }
 
         #endregion

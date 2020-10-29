@@ -772,6 +772,7 @@
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
+    <Compile Include="Security\SimpleCookie.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />

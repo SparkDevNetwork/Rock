@@ -30,6 +30,20 @@ namespace Rock
     public static class Reflection
     {
         /// <summary>
+        /// Gets the namespaces that start with the given root.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="rootNamespace">The root namespace.</param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetNamespacesThatStartWith( Assembly assembly, string rootNamespace )
+        {
+            return assembly.GetTypes()
+                .Select( t => t.Namespace )
+                .Where( ns => ns != null && ns.StartsWith( rootNamespace ) )
+                .Distinct();
+        }
+
+        /// <summary>
         /// Finds the first matching type in Rock or any of the assemblies that reference Rock
         /// </summary>
         /// <param name="baseType">Type of the base.</param>

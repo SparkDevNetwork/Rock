@@ -55,5 +55,11 @@ namespace Rock.Blocks
         /// The request context.
         /// </value>
         RockRequestContext RequestContext { get; set; }
+
+        /// <summary>
+        /// Gets the control markup.
+        /// </summary>
+        /// <returns></returns>
+        string GetControlMarkup();
     }
 }

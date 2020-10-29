@@ -65,6 +65,15 @@ namespace Rock.Blocks
         #endregion
 
         /// <summary>
+        /// Gets the control markup.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetControlMarkup()
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the attribute value.
         /// </summary>
         /// <param name="key">The key.</param>

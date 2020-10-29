@@ -14,8 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
+using System.Reflection;
 using System.Web.Optimization;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 
 /// <summary>
 /// Loads and concats JS bundles, fired during App_Start
@@ -91,6 +95,23 @@ public class BundleConfig
         // to be included for HtmlEditor
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/StructureContentEditorPlugins" ).Include(
             "~/Scripts/editor.js/*.js" ) );
+
+        // Add Obsidian scripts
+        var obsidianScriptPaths = new List<string> {
+            "~/Obsidian/Vendor/axios.js",
+            "~/Obsidian/Vendor/vue.js",
+            "~/Obsidian/Vendor/vuex.js",
+            "~/Obsidian/init.js",
+            "~/Obsidian/Templates/*.js",
+            "~/Obsidian/Elements/*.js",
+            "~/Obsidian/Controls/*.js",
+            "~/Obsidian/Fields/*.js",
+            "~/Obsidian/Store/*.js"
+        };
+
+        var obsidianBlockCategories = Rock.Obsidian.Util.Reflection.GetBlockCategories();
+        obsidianScriptPaths.AddRange( obsidianBlockCategories.Select( c => string.Format( "~/Obsidian/Blocks/{0}/*.js", c ) ) );
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include( obsidianScriptPaths.ToArray() ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occasionally was an empty string.
         foreach ( var bundle in bundles )

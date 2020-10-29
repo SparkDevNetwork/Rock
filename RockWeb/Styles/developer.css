@@ -7,7 +7,10 @@
     !!!!
 
     */
-
+/* BJW .btn.btn-link shows an outline on focus state and I don't think it should ever be outlined */
+.btn.btn-link:focus {
+    outline: none;
+}
 
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
 .clearExceptionsLink {
