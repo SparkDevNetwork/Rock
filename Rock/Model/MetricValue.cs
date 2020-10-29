@@ -150,7 +150,7 @@ namespace Rock.Model
         /// The metric value source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate MetricValueSourceDate { get; set; }
+        public virtual AnalyticsSourceDate MetricValueSourceDate { get; set; }
         #endregion
 
         #region Methods

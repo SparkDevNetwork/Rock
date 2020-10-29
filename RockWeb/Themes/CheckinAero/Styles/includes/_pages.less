@@ -118,6 +118,32 @@
   }
 }
 
+.checkin-anotherperson {
+  .checkin-scroll-panel {
+    bottom: 165px !important;
+  }
+
+  .checkin-actions .btn-default {
+    .btn-checkin-select();
+    position: absolute;
+    right: 15px;
+    bottom: 88px;
+    left: 15px;
+    z-index: 100;
+    padding: 14px 26px !important;
+    font-size: 24px !important;
+    font-weight: @checkin-button-text-weight !important;
+    min-height: 0 !important;
+
+    @media (min-width: @screen-xs-min) {
+      right: 100px;
+      // bottom: 88px;
+      left: 100px;
+    }
+  }
+}
+
+
 // Checkin Background Sheet
 .sheet-background,
 .block-instance,
