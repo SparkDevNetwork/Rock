@@ -261,7 +261,7 @@ namespace Rock.Model
         /// The created source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate CreatedSourceDate { get; set; }
+        public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
         #endregion
 
         #region Methods

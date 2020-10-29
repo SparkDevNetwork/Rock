@@ -554,7 +554,7 @@ namespace Rock.Model
         /// The send source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate SendSourceDate { get; set; }
+        public virtual AnalyticsSourceDate SendSourceDate { get; set; }
         #endregion
 
         #region ISecured

@@ -129,61 +129,71 @@ namespace Rock.Tests.Integration.Model
             var completedYear = 2016;
             var endYear = 2017;
 
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
-
-            var minStartDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, startYear );
-            var maxStartDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, startYear );
-
-            var minCompletedDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, completedYear );
-            var maxCompletedDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, completedYear );
-
-            var minEndDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, endYear );
-            var maxEndDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, endYear );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
-                var startDate = TestDataHelper.GetRandomDateInRange( minStartDateValue, maxStartDateValue );
-                var endDate = TestDataHelper.GetRandomDateInRange( minEndDateValue, maxEndDateValue );
-                var completedDate = TestDataHelper.GetRandomDateInRange( minCompletedDateValue, maxCompletedDateValue );
+                var stepService = new StepService( rockContext );
 
-                while ( endDate < startDate )
+                var minStartDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, startYear );
+                var maxStartDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, startYear );
+
+                var minCompletedDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, completedYear );
+                var maxCompletedDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, completedYear );
+
+                var minEndDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, endYear );
+                var maxEndDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, endYear );
+
+                for ( var i = 0; i < 15; i++ )
                 {
-                    endDate = TestDataHelper.GetRandomDateInRange( minEndDateValue, maxEndDateValue );
+                    var startDate = TestDataHelper.GetRandomDateInRange( minStartDateValue, maxStartDateValue );
+                    var endDate = TestDataHelper.GetRandomDateInRange( minEndDateValue, maxEndDateValue );
+                    var completedDate = TestDataHelper.GetRandomDateInRange( minCompletedDateValue, maxCompletedDateValue );
+
+                    while ( endDate < startDate )
+                    {
+                        endDate = TestDataHelper.GetRandomDateInRange( minEndDateValue, maxEndDateValue );
+                    }
+
+                    while ( completedDate < startDate )
+                    {
+                        completedDate = TestDataHelper.GetRandomDateInRange( minCompletedDateValue, maxCompletedDateValue );
+                    }
+
+                    var step = BuildStep( rockContext, completedDate, startDate, endDate );
+
+                    stepService.Add( step );
                 }
 
-                while ( completedDate < startDate )
-                {
-                    completedDate = TestDataHelper.GetRandomDateInRange( minCompletedDateValue, maxCompletedDateValue );
-                }
-
-                var step = BuildStep( rockContext, completedDate, startDate, endDate );
-
-                stepService.Add( step );
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
+            using ( var rockContext = new RockContext() )
+            {
+                var stepService = new StepService( rockContext );
 
-            var steps = stepService.
-                                Queryable( "AnalyticsSourceDate" ).
+                var steps = stepService.
+                                Queryable().
                                 Where( i => i.ForeignKey == stepForiegnKey ).
                                 Where( i => i.CompletedSourceDate.CalendarYear == completedYear );
 
-            Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.IsNotNull( steps.First().CompletedSourceDate );
 
-            steps = stepService.
-                                Queryable( "AnalyticsSourceDate" ).
-                                Where( i => i.ForeignKey == stepForiegnKey ).
-                                Where( i => i.StartSourceDate.CalendarYear == startYear );
+                steps = stepService.
+                                    Queryable().
+                                    Where( i => i.ForeignKey == stepForiegnKey ).
+                                    Where( i => i.StartSourceDate.CalendarYear == startYear );
 
-            Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.IsNotNull( steps.First().StartSourceDate );
 
-            steps = stepService.
-                                Queryable( "AnalyticsSourceDate" ).
-                                Where( i => i.ForeignKey == stepForiegnKey ).
-                                Where( i => i.EndSourceDate.CalendarYear == endYear );
+                steps = stepService.
+                                    Queryable().
+                                    Where( i => i.ForeignKey == stepForiegnKey ).
+                                    Where( i => i.EndSourceDate.CalendarYear == endYear );
 
-            Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.AreEqual( expectedRecordCount, steps.Count() );
+                Assert.IsNotNull( steps.First().EndSourceDate );
+            }
         }
 
         private Rock.Model.Step BuildStep( RockContext rockContext, DateTime completeDateTime, DateTime startDateTime, DateTime endDateTime )

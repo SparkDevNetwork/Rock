@@ -337,7 +337,7 @@ namespace Rock.Model
         /// The occurrence source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate OccurrenceSourceDate { get; set; }
+        public virtual AnalyticsSourceDate OccurrenceSourceDate { get; set; }
         #endregion
 
         #region Public Methods
