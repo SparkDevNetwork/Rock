@@ -27,7 +27,7 @@
     position: relative;
     padding: 30px;
     outline: 2px dashed rgba(0,0,0,.3);
-    outline-offset: -2px;
+    outline-offset: -3px;
     &::after {
       position: absolute;
       top: 50%;
@@ -37,7 +37,7 @@
       font-size: 10px;
       color: rgba(0, 0, 0, .3);
       text-align: center;
-      content: "Drop something here";
+      content: "Drop component here";
       transform: translateY(-50%);
     }
   }
@@ -92,7 +92,8 @@
 
   &.selected {
     cursor: move;
-    outline: 2px solid #59c9a5;
+    outline-offset: -2px;
+    outline: 3px solid #59c9a5;
     opacity: 1;
   }
 }
@@ -105,10 +106,10 @@
 .component-section[data-state="component"] {
   box-sizing: border-box;
   display: block;
-  width: ~"calc(100% + 40px)" !important;
+  width: ~"calc(100% + 36px)" !important;
   padding: 0 15px;
-  margin-left: -20px;
-  border: 5px solid transparent;
+  margin-left: -18px;
+  border: 3px solid transparent;
   border-top: 0;
   border-bottom: 0;
   outline: none !important;
