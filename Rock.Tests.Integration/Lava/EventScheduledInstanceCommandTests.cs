@@ -9,31 +9,33 @@ using Rock.Tests.Shared;
 namespace Rock.Tests.Integration.Lava
 {
     /// <summary>
-    /// Tests for Lava Command "EventOccurrences".
+    /// Tests for Lava Command "EventScheduledInstance".
     /// </summary>
     /// <remarks>
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
-    public class EventOccurrencesCommandTests
+    public class EventScheduledInstanceCommandTests
     {
         private static string StaffMeetingEventGuidString = "93104654-DAFA-489B-A175-5F2AB3A846F1";
 
         private static string LavaTemplateEventOccurrences = @";
-{% eventoccurrences {parameters} %}
-  {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
-  <<EventCount = {{ EventItemOccurrences | Size }}>>
-  {% for eventItemOccurrence in EventItemOccurrences %}
+{% eventscheduledinstance {parameters} %}
+  {% assign eventItemOccurrenceCount = EventScheduledInstances | Size %}
+  <<EventCount = {{ EventScheduledInstances | Size }}>>
+  {% for eventItemOccurrence in EventScheduledInstances %}
     <<{{ eventItemOccurrence.Name }}|{{ eventItemOccurrence.Date | Date: 'yyyy-MM-dd' }}|{{ eventItemOccurrence.Time }}|{{ eventItemOccurrence.Location }}>>
     <<Calendars: {{ eventItemOccurrence.CalendarNames | Join:', ' }}>>
     <<Audiences: {{ eventItemOccurrence.AudienceNames | Join:', ' }}>>
   {% endfor %}
-{% endeventoccurrences %}
+{% endeventscheduledinstance %}
 ";
 
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
+            InitializeTestData();
+
             // Initialize the Lava Engine.
             Liquid.UseRubyDateFormat = false;
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
@@ -41,7 +43,7 @@ namespace Rock.Tests.Integration.Lava
             Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
             // Register the Lava commands required for testing.
-            var lavaCommand = new EventOccurrences();
+            var lavaCommand = new EventScheduledInstance();
 
             lavaCommand.OnStartup();
         }
@@ -54,7 +56,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithUnknownParameterName_RendersErrorMessage()
+        public void EventScheduledInstanceCommand_WithUnknownParameterName_RendersErrorMessage()
         {
             var template = GetTestTemplate( "eventid:'1' unknown_parameter:'any_value'" );
 
@@ -64,7 +66,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithEventAsName_RetrievesOccurrencesInCorrectEvent()
+        public void EventScheduledInstanceCommand_WithEventAsName_RetrievesOccurrencesInCorrectEvent()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
@@ -76,7 +78,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithEventAsId_RetrievesOccurrencesInCorrectEvent()
+        public void EventScheduledInstanceCommand_WithEventAsId_RetrievesOccurrencesInCorrectEvent()
         {
             // Get Event Item Id for "Warrior Youth Event".
             var rockContext = new RockContext();
@@ -96,7 +98,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithEventAsGuid_RetrievesOccurrencesInCorrectEvent()
+        public void EventScheduledInstanceCommand_WithEventAsGuid_RetrievesOccurrencesInCorrectEvent()
         {
             var template = GetTestTemplate( $"eventid:'{StaffMeetingEventGuidString}' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
@@ -107,7 +109,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithEventNotSpecified_RendersErrorMessage()
+        public void EventScheduledInstanceCommand_WithEventNotSpecified_RendersErrorMessage()
         {
             var template = GetTestTemplate( "startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
@@ -117,7 +119,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithEventInvalidValue_RendersErrorMessage()
+        public void EventScheduledInstanceCommand_WithEventInvalidValue_RendersErrorMessage()
         {
             var template = GetTestTemplate( "eventid:'no_event' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
@@ -127,7 +129,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeInMonths_ReturnsExpectedEvents()
+        public void EventScheduledInstanceCommand_WithDateRangeInMonths_ReturnsExpectedEvents()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'3m'" );
 
@@ -142,7 +144,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeInWeeks_ReturnsExpectedEvents()
+        public void EventScheduledInstanceCommand_WithDateRangeInWeeks_ReturnsExpectedEvents()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'5w'" );
 
@@ -156,7 +158,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeInDays_ReturnsExpectedEvents()
+        public void EventScheduledInstanceCommand_WithDateRangeInDays_ReturnsExpectedEvents()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'27d'" );
 
@@ -170,7 +172,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeContainingNoEvents_ReturnsNoEvents()
+        public void EventScheduledInstanceCommand_WithDateRangeContainingNoEvents_ReturnsNoEvents()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'1020-1-1' daterange:'12m'" );
 
@@ -180,7 +182,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeUnspecified_ReturnsAllEvents()
+        public void EventScheduledInstanceCommand_WithDateRangeUnspecified_ReturnsAllEvents()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:200" );
 
@@ -191,7 +193,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithDateRangeInvalidValue_RendersErrorMessage()
+        public void EventScheduledInstanceCommand_WithDateRangeInvalidValue_RendersErrorMessage()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' daterange:'invalid'" );
 
@@ -201,7 +203,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithMaxOccurrencesUnspecified_ReturnsDefaultNumberOfOccurrences()
+        public void EventScheduledInstanceCommand_WithMaxOccurrencesUnspecified_ReturnsDefaultNumberOfOccurrences()
         {
             // First, ensure that there are more than the default maximum number of events to return.
             // The default maximum is 100 events.
@@ -220,7 +222,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithMaxOccurrencesLessThanAvailableEvents_ReturnsMaxOccurrences()
+        public void EventScheduledInstanceCommand_WithMaxOccurrencesLessThanAvailableEvents_ReturnsMaxOccurrences()
         {
             // First, ensure that there are more than the test maximum number of events to return.
             var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:11" );
@@ -238,7 +240,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        public void EventOccurrencesCommand_WithMaxOccurrencesInvalidValue_RendersErrorMessage()
+        public void EventScheduledInstanceCommand_WithMaxOccurrencesInvalidValue_RendersErrorMessage()
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:'invalid_value'" );
 
@@ -246,5 +248,98 @@ namespace Rock.Tests.Integration.Lava
 
             Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\"." );
         }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
+        {
+            var template = @"
+{%- eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' -%}
+    {%- for occurrence in EventItems -%}
+        <b>Series {{forloop.index}}</b><br>
+
+        {%- for item in occurrence -%}
+            {%- if forloop.first -%}
+                {{ item.Name }}
+                <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
+                <ol>
+            {% endif %}
+
+            <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
+
+            {%- if forloop.last -%}
+                </ol>
+            {% endif %}
+        {% endfor %}
+
+    {% endfor %}
+{% endeventscheduledinstance %}
+";
+            var output = template.ResolveMergeFields( null );
+
+            // Verify that the output contains series headings and relevant dates for both schedules.
+            Assert.That.Contains( output, "<b>Series 1</b>" );
+            Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+            Assert.That.Contains( output, "<b>Series 2</b>" );
+            Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+        }
+
+        #region Test Data
+
+        private const string TestDataForeignKey = "test_data";
+        private const string EventFinancesClassGuid = "6EFC00B0-F5D3-4352-BC3B-F09852FB5788";
+        private const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+        private const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
+        private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
+        private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
+
+        private static void InitializeTestData()
+        {
+            var rockContext = new RockContext();
+
+            // Get existing schedules.
+            var scheduleService = new ScheduleService( rockContext );
+
+            var scheduleSat1630Id = scheduleService.GetId( ScheduleSat1630Guid.AsGuid() );
+            var scheduleSat1800Id = scheduleService.GetId( ScheduleSun1200Guid.AsGuid() );
+
+            // Get Event "Rock Solid Finances".
+            var eventItemService = new EventItemService( rockContext );
+            var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+            var financeEvent = eventItemService.Get( EventFinancesClassGuid.AsGuid() );
+
+            // Add an occurrence of this event for each Schedule.
+            var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
+
+            if ( financeEvent1 == null )
+            {
+                financeEvent1 = new EventItemOccurrence();
+            }
+
+            financeEvent1.Location = "Meeting Room 1";
+            financeEvent1.ForeignKey = TestDataForeignKey;
+            financeEvent1.ScheduleId = scheduleSat1630Id;
+            financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
+
+            financeEvent.EventItemOccurrences.Add( financeEvent1 );
+
+            var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
+
+            if ( financeEvent2 == null )
+            {
+                financeEvent2 = new EventItemOccurrence();
+            }
+
+            financeEvent2.Location = "Meeting Room 2";
+            financeEvent2.ForeignKey = TestDataForeignKey;
+            financeEvent2.ScheduleId = scheduleSat1800Id;
+            financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
+
+            financeEvent.EventItemOccurrences.Add( financeEvent2 );
+
+            rockContext.SaveChanges();
+        }
+
+        #endregion
     }
 }

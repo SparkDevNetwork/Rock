@@ -73,7 +73,7 @@ namespace Rock.Lava.Blocks
         public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings )
         {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnknownAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
@@ -126,7 +126,7 @@ namespace Rock.Lava.Blocks
         public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings )
         {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnknownAttributes( new List<string> { ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
