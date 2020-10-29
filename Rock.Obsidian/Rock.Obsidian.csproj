@@ -58,7 +58,6 @@
     <Compile Include="Controllers\Controls\DefinedValuePickerController.cs" />
     <Compile Include="Controllers\Controls\DefinedTypePickerController.cs" />
     <Compile Include="Controllers\ObsidianController.cs" />
-    <Compile Include="Controllers\PageController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\JavaScript.cs" />
     <Compile Include="Util\Reflection.cs" />
