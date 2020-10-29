@@ -96,7 +96,6 @@ $@"<div id=""{rootElementId}""></div>
     Obsidian.initializeBlock({{
         blockFileIdentifier: '{BlockMarkupFileIdentifier}',
         rootElement: document.getElementById('{rootElementId}'),
-        pageGuid: '{BlockCache.Page.Guid}',
         blockGuid: '{BlockCache.Guid}',
         configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() )},
     }});

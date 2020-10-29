@@ -7,6 +7,10 @@
     Obsidian.Blocks = {};
     Obsidian.Fields = {};
 
+    Obsidian.initializePage = function (pageData) {
+        Obsidian.Store.commit('setPageInitializationData', pageData);
+    };
+
     Obsidian.initializeBlock = function (config) {
         return new Vue({
             el: config.rootElement,
@@ -19,9 +23,6 @@
                 return {
                     config: config
                 };
-            },
-            created() {
-                this.$store.dispatch('initializePage', { pageGuid: this.config.pageGuid });
             },
             template: `<RockBlock :config="config" />`
         });

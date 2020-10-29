@@ -18,10 +18,14 @@
     data() {
         return {
             blockGuid: this.config.blockGuid,
-            pageGuid: this.config.pageGuid,
             log: [],
             blockComponent: Obsidian.Blocks[this.config.blockFileIdentifier]
         };
+    },
+    computed: {
+        pageGuid() {
+            return this.$store.state.pageGuid;
+        }
     },
     methods: {
         httpCall(method, url, params, data) {
