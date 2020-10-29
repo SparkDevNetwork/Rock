@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var groupLocationsQuery = groupLocationService.Queryable().Where( a => selectedGroupIds.Contains( a.GroupId ) && a.Group.GroupType.IsSchedulingEnabled == true );
 
             // get all the schedules that are in use by at least one of the GroupLocations
-            var groupsScheduleList = groupLocationsQuery.SelectMany( a => a.Schedules ).Distinct().AsNoTracking().ToList();
+            var groupsScheduleList = groupLocationsQuery.SelectMany( a => a.Schedules ).Where( s => s.IsActive ).Distinct().AsNoTracking().ToList();
             if ( !groupsScheduleList.Any() )
             {
                 nbGroupsWarning.Text = "The selected groups don't have any location schedules configured.";
@@ -258,6 +258,8 @@ namespace RockWeb.Blocks.GroupScheduling
                         PersonId = m.PersonId,
                         GroupRoleId = m.GroupRoleId
                     } ).ToList(),
+                // We are currently showing active and inactive locations (not filtering by gl => gl.Location.IsActive).
+                // A room may be closed due to capacity but it will continue to show on the status board.
                 LocationScheduleCapacitiesList = g.GroupLocations.OrderBy( gl => gl.Order ).ThenBy( gl => gl.Location.Name ).Select( a => new LocationScheduleCapacityInfo
                 {
                     ScheduleCapacitiesList = a.GroupLocationScheduleConfigs.Select( sc =>
