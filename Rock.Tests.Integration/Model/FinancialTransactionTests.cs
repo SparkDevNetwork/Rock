@@ -100,41 +100,51 @@ namespace Rock.Tests.Integration.Model
             var expectedRecordCount = 15;
             var transactionYear = 2015;
             var settledYear = 2016;
-            var rockContext = new RockContext();
-
-            var minTransactionDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, transactionYear );
-            var maxTransactionDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, transactionYear );
-
-            var minSettledDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, settledYear );
-            var maxSettledDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, settledYear );
-
-            var financialTransactionService = new FinancialTransactionService( rockContext );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var financialTransactionService = new FinancialTransactionService( rockContext );
 
-                var financialTransaction = BuildFinancialTransaction( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minTransactionDateValue, maxTransactionDateValue ),
-                    TestDataHelper.GetRandomDateInRange( minSettledDateValue, maxSettledDateValue ) );
+                var minTransactionDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, transactionYear );
+                var maxTransactionDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, transactionYear );
 
-                financialTransactionService.Add( financialTransaction );
+                var minSettledDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, settledYear );
+                var maxSettledDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, settledYear );
+
+
+
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var financialTransaction = BuildFinancialTransaction( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minTransactionDateValue, maxTransactionDateValue ),
+                        TestDataHelper.GetRandomDateInRange( minSettledDateValue, maxSettledDateValue ) );
+
+                    financialTransactionService.Add( financialTransaction );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
+            using ( var rockContext = new RockContext() )
+            {
+                var financialTransactionService = new FinancialTransactionService( rockContext );
 
-            var financialTransactions = financialTransactionService.
-                                Queryable( "AnalyticsSourceDate" ).
+                var financialTransactions = financialTransactionService.
+                                Queryable().
                                 Where( i => i.ForeignKey == financialTransactionForeignKey ).
                                 Where( i => i.TransactionSourceDate.CalendarYear == transactionYear );
 
-            Assert.AreEqual( expectedRecordCount, financialTransactions.Count() );
+                Assert.AreEqual( expectedRecordCount, financialTransactions.Count() );
+                Assert.IsNotNull( financialTransactions.First().TransactionSourceDate );
 
-            financialTransactions = financialTransactionService.
-                                Queryable( "AnalyticsSourceDate" ).
-                                Where( i => i.ForeignKey == financialTransactionForeignKey ).
-                                Where( i => i.SettledSourceDate.CalendarYear == settledYear );
+                financialTransactions = financialTransactionService.
+                                    Queryable().
+                                    Where( i => i.ForeignKey == financialTransactionForeignKey ).
+                                    Where( i => i.SettledSourceDate.CalendarYear == settledYear );
 
-            Assert.AreEqual( expectedRecordCount, financialTransactions.Count() );
+                Assert.AreEqual( expectedRecordCount, financialTransactions.Count() );
+                Assert.IsNotNull( financialTransactions.First().SettledSourceDate );
+            }
         }
 
         private Rock.Model.FinancialTransaction BuildFinancialTransaction( RockContext rockContext, DateTime transactionDateTime, DateTime settledDate )

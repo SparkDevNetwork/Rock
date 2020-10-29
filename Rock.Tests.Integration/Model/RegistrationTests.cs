@@ -91,29 +91,38 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var registrationService = new RegistrationService( rockContext );
 
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var registrationService = new RegistrationService( rockContext );
 
-                var registration = BuildRegistration( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                registrationService.Add( registration );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var registration = BuildRegistration( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    registrationService.Add( registration );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationService = new RegistrationService( rockContext );
 
-            var registrations = registrationService.
-                                Queryable( "AnalyticsSourceDate" ).
+                var registrations = registrationService.
+                                Queryable().
                                 Where( i => i.ForeignKey == registrationForiegnKey ).
                                 Where( i => i.CreatedSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, registrations.Count() );
+                Assert.AreEqual( expectedRecordCount, registrations.Count() );
+                Assert.IsNotNull( registrations.First().CreatedSourceDate );
+            }
         }
 
         private Rock.Model.Registration BuildRegistration( RockContext rockContext, DateTime? requestDate )
