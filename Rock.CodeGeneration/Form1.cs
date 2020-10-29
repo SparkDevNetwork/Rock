@@ -113,6 +113,7 @@ namespace Rock.CodeGeneration
             string rockClientFolder = tbClientFolder.Text;
 
             Cursor = Cursors.WaitCursor;
+            entityPropertyShouldBeVirtualWarnings = new List<string>();
 
             progressBar1.Visible = true;
             progressBar1.Maximum = cblModels.CheckedItems.Count;
@@ -199,7 +200,7 @@ namespace Rock.CodeGeneration
         {
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
-            StringBuilder singletonClassVariablesWarnings = new StringBuilder();
+            List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
@@ -338,7 +339,7 @@ namespace Rock.CodeGeneration
                                         string fullyQualifiedFieldName = $"{type.FullName}.{fieldOrPropertyName}";
                                         if ( !ignoredThreadSafeFieldWarning.Contains( fullyQualifiedFieldName ) )
                                         {
-                                            singletonClassVariablesWarnings.AppendLine( $" - {fullyQualifiedFieldName}" );
+                                            singletonClassVariablesWarnings.Add( $" - {fullyQualifiedFieldName}", true );
                                         }
                                     }
                                 }
@@ -351,15 +352,29 @@ namespace Rock.CodeGeneration
             }
 
             StringBuilder warnings = new StringBuilder();
-            if ( singletonClassVariablesWarnings.Length > 0 )
+            if (entityPropertyShouldBeVirtualWarnings.Count > 0)
             {
+                warnings.AppendLine( "Model Properties that should be marked virtual" );
+                foreach ( var warning in entityPropertyShouldBeVirtualWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
+            }
+
+
+            if ( singletonClassVariablesWarnings.Count > 0 )
+            {
+                warnings.AppendLine();
                 warnings.AppendLine( "Singleton non-threadsafe class variables." );
-                warnings.Append( singletonClassVariablesWarnings );
+                foreach ( var warning in singletonClassVariablesWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
             }
 
             if ( missingDbSetWarnings.Length > 0 )
             {
-                warnings.AppendLine();
+                
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }
@@ -367,7 +382,7 @@ namespace Rock.CodeGeneration
             if ( rockObsoleteWarnings.Length > 0 )
             {
                 warnings.AppendLine();
-                warnings.AppendLine( "[Obsolete] that does't have [RockObsolete]" );
+                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
                 warnings.Append( rockObsoleteWarnings );
             }
 
@@ -547,7 +562,7 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type, false, true );
+            var properties = GetEntityProperties( type, false, true, true );
 
             var sb = new StringBuilder();
 
@@ -721,7 +736,7 @@ GO
                 string parentTable = reader["FKTABLE_NAME"] as string;
                 string columnName = reader["FKCOLUMN_NAME"] as string;
                 bool isCascadeDelete = reader["DELETE_RULE"] as short? == 0;
-                
+
                 bool ignoreCanDelete = false;
                 bool hasEntityModel = true;
 
@@ -1095,14 +1110,17 @@ GO
             }
         }
 
+        private List<string> entityPropertyShouldBeVirtualWarnings = null;
+
         /// <summary>
         /// Gets the entity properties.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="includeRockClientIncludes">if set to <c>true</c> [include rock client includes].</param>
         /// <param name="includeObsolete">if set to <c>true</c> [include obsolete].</param>
+        /// <param name="reportVirtualPropertyWarnings">if set to <c>true</c> [report virtual property warnings].</param>
         /// <returns></returns>
-        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete, bool reportVirtualPropertyWarnings )
         {
             var properties = new Dictionary<string, PropertyInfo>();
 
@@ -1151,6 +1169,15 @@ GO
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
                             properties.Add( property.Name, property );
+
+                            if ( reportVirtualPropertyWarnings )
+                            {
+                                if ( property.PropertyType.IsClass
+                                && !property.PropertyType.Namespace.StartsWith( "System" ) )
+                                {
+                                    entityPropertyShouldBeVirtualWarnings.Add( $" - {type.FullName} {property.Name}", true );
+                                }
+                            }
                         }
                     }
                 }
@@ -1325,7 +1352,7 @@ GO
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
+            var entityProperties = GetEntityProperties( type, true, true, false ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1883,7 +1910,7 @@ GO
             }
         }
 
-        
+
     }
 
     public static class HelperExtensions
