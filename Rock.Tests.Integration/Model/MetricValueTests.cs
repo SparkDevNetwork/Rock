@@ -71,29 +71,38 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var metricValueService = new MetricValueService( rockContext );
 
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var metricValueService = new MetricValueService( rockContext );
 
-                var metricValue = BuildMetricValue( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                metricValueService.Add( metricValue );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var metricValue = BuildMetricValue( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    metricValueService.Add( metricValue );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
+            using ( var rockContext = new RockContext() )
+            {
+                var metricValueService = new MetricValueService( rockContext );
 
-            var metricValues = metricValueService.
-                                Queryable( "AnalyticsSourceDate" ).
+                var metricValues = metricValueService.
+                                Queryable().
                                 Where( i => i.ForeignKey == metricValueForeignKey ).
                                 Where( i => i.MetricValueSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, metricValues.Count() );
+                Assert.AreEqual( expectedRecordCount, metricValues.Count() );
+                Assert.IsNotNull( metricValues.First().MetricValueSourceDate );
+            }
         }
 
         private Rock.Model.MetricValue BuildMetricValue( RockContext rockContext, DateTime requestDate )

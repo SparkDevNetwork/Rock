@@ -243,6 +243,15 @@ namespace RockWeb.Blocks.CheckIn
                             mergeFields.Add( "ZebraPrintMessageList", messages );
                         }
 
+                        if ( lbAnother.Visible )
+                        {
+                            var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
+                            if ( bodyTag != null )
+                            {
+                                bodyTag.AddCssClass( "checkin-anotherperson" );
+                            }
+                        }
+
                         var successLavaTemplate = CurrentCheckInState.CheckInType.SuccessLavaTemplate;
                         lCheckinResultsHtml.Text = successLavaTemplate.ResolveMergeFields( mergeFields );
 
