@@ -1022,7 +1022,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group status defined.
         /// </value>
-        public DefinedType GroupStatusDefinedType { get; set; }
+        public virtual DefinedType GroupStatusDefinedType { get; set; }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
