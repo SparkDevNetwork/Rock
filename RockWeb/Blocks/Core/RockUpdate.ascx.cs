@@ -947,6 +947,7 @@ namespace RockWeb.Blocks.Core
             pnlError.Visible = true;
             pnlUpdateSuccess.Visible = false;
             pnlNoUpdates.Visible = false;
+            nbErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
 
             if ( ex.Message.Contains( "404" ) )
             {
@@ -956,9 +957,10 @@ namespace RockWeb.Blocks.Core
             {
                 nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
-            else if ( ex.Message.Contains( "Unable to connect" ) )
+            else if ( ex.Message.Contains( "Unable to connect" ) || ex.Message.Contains( "(503)" ) )
             {
-                nbErrors.Text = "The update server is down. Try again later.";
+                nbErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbErrors.Text = "The update server is currently unavailable (possibly undergoing maintenance). Please try again later.";
             }
             else
             {
