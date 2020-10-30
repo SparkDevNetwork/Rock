@@ -32,6 +32,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -1122,7 +1123,7 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
                     {
-                        string script =
+                        var script =
 $@"Rock.settings.initialize({{
     siteId: {_pageCache.Layout.SiteId},
     layoutId: {_pageCache.LayoutId},
@@ -1135,7 +1136,8 @@ Obsidian.initializePage({{
     pageId: {_pageCache.Id},
     pageGuid: '{_pageCache.Guid}',
     pageParameters: {PageParameters().ToJson()},
-    currentPerson: {(CurrentPerson == null ? "null" : CurrentPerson.ToJson())}
+    currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToJson() )},
+    contextEntities: {GetContextEntities().ToJson()}
 }});";
 
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
@@ -2175,6 +2177,32 @@ Sys.Application.add_load(function () {
             }
 
             return resolvedUrl;
+        }
+
+        /// <summary>
+        /// Gets the context entities.
+        /// </summary>
+        /// <returns></returns>
+        internal Dictionary<string, object> GetContextEntities()
+        {
+            var contextEntities = new Dictionary<string, object>();
+
+            foreach ( var contextEntityType in GetContextEntityTypes() )
+            {
+                var contextEntity = GetCurrentContext( contextEntityType );
+
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+
+                    if ( type != null )
+                    {
+                        contextEntities.Add( type.Name, contextEntity );
+                    }
+                }
+            }
+
+            return contextEntities;
         }
 
         /// <summary>

@@ -111,9 +111,21 @@ public class BundleConfig
             "~/Obsidian/Store/*.js"
         };
 
-        var obsidianBlockCategories = Rock.Obsidian.Util.Reflection.GetBlockCategories();
-        obsidianScriptPaths.AddRange( obsidianBlockCategories.Select( c => string.Format( "~/Obsidian/Blocks/{0}/*.js", c ) ) );
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include( obsidianScriptPaths.ToArray() ) );
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" )
+            .Include(
+                "~/Obsidian/Vendor/axios.js",
+                "~/Obsidian/Vendor/vue.js",
+                "~/Obsidian/Vendor/vuex.js",
+                "~/Obsidian/init.js",
+                "~/Obsidian/Util/*.js",
+                "~/Obsidian/Bus/*.js",
+                "~/Obsidian/Templates/*.js",
+                "~/Obsidian/Elements/*.js",
+                "~/Obsidian/Controls/*.js",
+                "~/Obsidian/Fields/*.js",
+                "~/Obsidian/Store/*.js" )
+            .IncludeDirectory( "~/Obsidian/Blocks/", "*.js", true )
+            .IncludeDirectory( "~/ObsidianPlugins/", "*.js", true ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occasionally was an empty string.
         foreach ( var bundle in bundles )

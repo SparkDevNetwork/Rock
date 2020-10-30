@@ -61,5 +61,11 @@
             }
         }
     },
-    template: `<component :is="blockComponent" />`
+    template:
+`<div class="obsidian-block">
+    <component :is="blockComponent" />
+    <div v-if="!blockComponent" class="alert alert-danger">
+        Could not find JS block component: "{{this.config.blockFileIdentifier}}"
+    </div>
+</div>`
 };

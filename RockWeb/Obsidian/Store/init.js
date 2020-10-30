@@ -4,6 +4,7 @@
             areSecondaryBlocksShown: true,
             currentPerson: null,
             pageParameters: {},
+            contextEntities: {},
             pageId: 0,
             pageGuid: ''
         },
@@ -12,10 +13,11 @@
                 state.areSecondaryBlocksShown = areSecondaryBlocksShown
             },
             setPageInitializationData(state, data) {
-                state.currentPerson = data.currentPerson;
-                state.pageParameters = data.pageParameters;
-                state.pageId = data.pageId;
-                state.pageGuid = data.pageGuid;
+                state.currentPerson = data.currentPerson || null;
+                state.pageParameters = data.pageParameters || {};
+                state.contextEntities = data.contextEntities || {};
+                state.pageId = data.pageId || 0;
+                state.pageGuid = data.pageGuid || '';
             }
         }
     });

@@ -83,19 +83,7 @@ namespace Rock.Lava
 
             if ( options.GetPageContext && rockPage != null )
             {
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var contextEntityType in rockPage.GetContextEntityTypes() )
-                {
-                    var contextEntity = rockPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                    {
-                        var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                        if ( type != null )
-                        {
-                            contextObjects.Add( type.Name, contextEntity );
-                        }
-                    }
-                }
+                var contextObjects = rockPage.GetContextEntities();
 
                 if ( contextObjects.Any() )
                 {
