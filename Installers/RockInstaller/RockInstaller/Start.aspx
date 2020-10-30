@@ -55,14 +55,14 @@
 
     void Page_Load( object sender, EventArgs e )
     {
-        // .Net 4.5 defaults to TLS1.1, force this to 1.2 to be compatible with IIS servers that are enforcing latest encryption.
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_9_0";
+        string version = "2_9_2";
         bool isDebug = false;
+
+        // Make sure the latest security protocols for .net 4.5.2 are turned on for the client in case they are required by the server or network.
+        System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
 
         // prepare redirect links
         redirectPage = "Install.aspx?";
