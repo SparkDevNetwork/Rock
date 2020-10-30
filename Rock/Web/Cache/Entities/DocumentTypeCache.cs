@@ -51,7 +51,7 @@ namespace Rock.Web.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type id.
@@ -116,7 +116,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public string DefaultDocumentNameTemplate
         {
-            get; set;
+            get; private set;
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Rock.Web.Cache
         /// The binary file type type identifier.
         /// </value>
         [DataMember]
-        public int BinaryFileTypeId { get; set; }
+        public int BinaryFileTypeId { get; private set; }
 
         #endregion
 
