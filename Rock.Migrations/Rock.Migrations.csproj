@@ -197,6 +197,10 @@
     <Compile Include="Migrations\202010272130222_Rollup_1027.Designer.cs">
       <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.cs" />
+    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.Designer.cs">
+      <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1544,6 +1548,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202010272130222_Rollup_1027.resx">
       <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010301403238_AddOfflineAccessClaim.resx">
+      <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
