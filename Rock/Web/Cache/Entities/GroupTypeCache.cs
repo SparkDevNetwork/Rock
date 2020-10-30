@@ -443,7 +443,7 @@ namespace Rock.Web.Cache
         /// The RSVP reminder system communication identifier.
         /// </value>
         [DataMember]
-        public int? RSVPReminderSystemCommunicationId { get; set; }
+        public int? RSVPReminderSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
@@ -452,7 +452,7 @@ namespace Rock.Web.Cache
         /// The number of days.
         /// </value>
         [DataMember]
-        public int? RSVPReminderOffsetDays { get; set; }
+        public int? RSVPReminderOffsetDays { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type

@@ -41,7 +41,7 @@ namespace Rock.Web.Cache
         /// The entity note types.
         /// </value>
 		[DataMember]
-        public List<EntityNoteTypes> EntityNoteTypes { get; set; }
+        public List<EntityNoteTypes> EntityNoteTypes { get; private set; }
 
         /// <summary>
         /// Use Static Get() method to instantiate a new Global Attributes object

@@ -41,7 +41,7 @@ namespace Rock.Web.Cache
         /// The title.
         /// </value>
         [DataMember]
-        public string Title { get; set; }
+        public string Title { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -50,7 +50,7 @@ namespace Rock.Web.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the assessment path.
@@ -59,7 +59,7 @@ namespace Rock.Web.Cache
         /// The assessment path.
         /// </value>
         [DataMember]
-        public string AssessmentPath { get; set; }
+        public string AssessmentPath { get; private set; }
 
         /// <summary>
         /// Gets or sets the assessment results path.
@@ -68,7 +68,7 @@ namespace Rock.Web.Cache
         /// The assessment results path.
         /// </value>
         [DataMember]
-        public string AssessmentResultsPath { get; set; }
+        public string AssessmentResultsPath { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -77,7 +77,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public Boolean IsActive { get; set; }
+        public Boolean IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [requires request].
@@ -86,7 +86,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [requires request]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public Boolean RequiresRequest { get; set; }
+        public Boolean RequiresRequest { get; private set; }
 
         /// <summary>
         /// Gets or sets the minimum days to retake.
@@ -95,7 +95,7 @@ namespace Rock.Web.Cache
         /// The minimum days to retake.
         /// </value>
         [DataMember]
-        public int MinimumDaysToRetake { get; set; }
+        public int MinimumDaysToRetake { get; private set; }
 
         /// <summary>
         /// Gets or sets the duration (in days) that the assessment is considered valid.
@@ -104,7 +104,7 @@ namespace Rock.Web.Cache
         /// The duration (in days) the <see cref="Rock.Model.AssessmentType"/> is considered valid.
         /// </value>
         [DataMember]
-        public int ValidDuration { get; set; }
+        public int ValidDuration { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -122,7 +122,7 @@ namespace Rock.Web.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the color of the badge.
@@ -131,7 +131,7 @@ namespace Rock.Web.Cache
         /// The color of the badge.
         /// </value>
         [DataMember]
-        public string BadgeColor { get; set; }
+        public string BadgeColor { get; private set; }
 
         /// <summary>
         /// Gets or sets the badge summary lava.
@@ -140,7 +140,7 @@ namespace Rock.Web.Cache
         /// The badge summary lava.
         /// </value>
         [DataMember]
-        public string BadgeSummaryLava { get; set; }
+        public string BadgeSummaryLava { get; private set; }
 
         #endregion Properties
 
