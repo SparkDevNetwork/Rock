@@ -605,7 +605,14 @@ namespace RockWeb.Blocks.Core
             {
                 // Get the installed package so we can check its version...
                 var installedPackage = NuGetService.GetInstalledPackage( _rockPackageId );
-                if ( installedPackage != null )
+                if ( installedPackage == null )
+                {
+                    pnlNoUpdates.Visible = false;
+                    pnlError.Visible = true;
+                    nbErrors.Text = "No packages were found under App_Data\\Packages\\, so it's not possible to perform an update using this block.";
+                    return false;
+                }
+                else
                 {
                     _installedVersion = installedPackage.Version;
                 }
@@ -646,7 +653,7 @@ namespace RockWeb.Blocks.Core
             {
                 pnlNoUpdates.Visible = false;
                 pnlError.Visible = true;
-                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
+                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</div>", ex.Message );
             }
 
             if ( verifiedPackages.Count > 0 )
