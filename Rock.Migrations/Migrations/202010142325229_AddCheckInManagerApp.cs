@@ -97,6 +97,21 @@ BEGIN
 	SET PageId = @rosterPageId
 	WHERE Guid = '{Rock.SystemGuid.PageRoute.CHECK_IN_MANAGER}'
 END" );
+
+            // If Fix CHECK_IN_MANAGER_LOGOUT page so the Parent Page is CHECK_IN_MANAGER_LOGIN (this same fix is in a migration roll up in case the prior version of this migration was run)
+            Sql( $@"
+UPDATE [Page]
+SET [ParentPageId] = (
+        SELECT TOP 1 [Id]
+        FROM [Page] x
+        WHERE x.[Guid] = '{Rock.SystemGuid.Page.CHECK_IN_MANAGER_LOGIN}'
+        )
+WHERE [Guid] = '{Rock.SystemGuid.Page.CHECK_IN_MANAGER_LOGOUT}' AND [ParentPageId] != (
+        SELECT TOP 1 [Id]
+        FROM [Page] x
+        WHERE x.[Guid] = '{Rock.SystemGuid.Page.CHECK_IN_MANAGER_LOGIN}'
+        )
+" );
         }
 
         /// <summary>
