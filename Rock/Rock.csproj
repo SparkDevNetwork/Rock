@@ -553,6 +553,7 @@
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
     <Compile Include="Jobs\JobMigration.cs" />
+    <Compile Include="Jobs\PostInstallDataMigrations.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
