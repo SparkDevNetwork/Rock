@@ -21,6 +21,7 @@ npm run lint
 ```
 
 ### Run StyleGuide in preview and Build StyleGuide Commands
+[StyleGuidist Documentation](https://vue-styleguidist.github.io/docs/Documenting.html#code-comments)
 ```
 npm run styleguide
 npm run styleguide:build
