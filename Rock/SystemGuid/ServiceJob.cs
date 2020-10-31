@@ -156,5 +156,10 @@ namespace Rock.SystemGuid
         /// The Job to send an email digest with an attendance summary of all child groups to regional group leaders
         /// </summary>
         public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
+
+        /// <summary>
+        /// A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer.
+        /// </summary>
+        public const string POST_INSTALL_DATA_MIGRATIONS = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3";
     }
 }
