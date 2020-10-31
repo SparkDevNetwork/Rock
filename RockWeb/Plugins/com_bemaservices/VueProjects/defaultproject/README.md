@@ -20,5 +20,10 @@ npm run build
 npm run lint
 ```
 
+### Run StyleGuide in preview and Build StyleGuide Commands
+```
+npm run styleguide
+npm run styleguide:build
+```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
