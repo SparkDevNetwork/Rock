@@ -40,8 +40,15 @@ module.exports = {
   },
   sections: [
     {
-      name: 'Introduction',
+      name: 'Documentation',
       content: 'docs/introduction.md',
+      sections: [
+        {
+          name: 'Installation',
+          content: 'docs/installation.md',
+          description: 'What you will do after you have cloned the repo and copied the project.',
+        },
+      ],
     },
   ],
   // components: 'src/components/**/*.vue',

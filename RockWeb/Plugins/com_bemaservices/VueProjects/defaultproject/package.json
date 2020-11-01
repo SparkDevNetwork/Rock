@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "styleguide": "vue-cli-service styleguidist",
+    "styleguide": "vue-cli-service styleguidist --open",
     "styleguide:build": "vue-cli-service styleguidist:build"
   },
   "dependencies": {
