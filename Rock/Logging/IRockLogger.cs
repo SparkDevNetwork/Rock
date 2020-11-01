@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Logging
 {
@@ -32,9 +33,21 @@ namespace Rock.Logging
         IRockLogConfiguration LogConfiguration { get; }
 
         /// <summary>
+        /// Gets the log files.
+        /// </summary>
+        /// <value>
+        /// The log files.
+        /// </value>
+        List<string> LogFiles { get; }
+
+        /// <summary>
         /// Closes this instance and releases file locks.
         /// </summary>
         void Close();
+        /// <summary>
+        /// Deletes all of the log files.
+        /// </summary>
+        void Delete();
         /// <summary>
         /// Debugs the specified exception.
         /// </summary>

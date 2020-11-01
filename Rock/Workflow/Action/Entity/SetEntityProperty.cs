@@ -36,13 +36,57 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Entity Property Set" )]
 
-    [EntityTypeField( "Entity Type", false, "The type of Entity.", true, "", 0, "EntityType" )]
-    [WorkflowTextOrAttribute( "Entity Id or Guid", "Entity Attribute", "The id or guid of the entity. <span class='tip tip-lava'></span>", true, "", "", 1, "EntityIdGuid" )]
-    [WorkflowTextOrAttribute( "Property Name", "Property Name Attribute", "The name of the property to set. <span class='tip tip-lava'></span>", true, "", "", 2, "PropertyName" )]
-    [WorkflowTextOrAttribute( "Property Value", "Property Value Attribute", "The value to set. <span class='tip tip-lava'></span>", false, "", "", 3, "PropertyValue" )]
-    [CustomDropdownListField( "Empty Value Handling", "How to handle empty property values.", "IGNORE^Ignore empty values,EMPTY^Set to empty,NULL^Set to NULL", true, "", "", 4, "EmptyValueHandling" )]
+    [EntityTypeField(
+        "Entity Type",
+        Description = "The type of Entity.",
+        IsRequired = true,
+        Order = 0,
+        IncludeGlobalAttributeOption = false,
+        Key = AttributeKey.EntityType )]
+    [WorkflowTextOrAttribute(
+        "Entity Id or Guid",
+        "Entity Attribute",
+        Description = "The id or guid of the entity. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.EntityIdGuid )]
+    [WorkflowTextOrAttribute(
+        "Property Name",
+        "Property Name Attribute",
+        Description = "The name of the property to set. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKey.PropertyName )]
+    [WorkflowTextOrAttribute(
+        "Property Value",
+        "Property Value Attribute",
+        Description = "The value to set. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.PropertyValue )]
+    [CustomDropdownListField(
+        "Empty Value Handling",
+        Description = "How to handle empty property values.",
+        ListSource = "IGNORE^Ignore empty values,EMPTY^Set to empty,NULL^Set to NULL",
+        IsRequired = true,
+        Order = 4,
+        Key = AttributeKey.EmptyValueHandling )]
     public class SetEntityProperty : ActionComponent
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string EntityType = "EntityType";
+            public const string EntityIdGuid = "EntityIdGuid";
+            public const string PropertyName = "PropertyName";
+            public const string PropertyValue = "PropertyValue";
+            public const string EmptyValueHandling = "EmptyValueHandling";
+        }
+
+        #endregion
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -57,7 +101,7 @@ namespace Rock.Workflow.Action
 
             // Get the entity type
             EntityTypeCache entityType = null;
-            var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
+            var entityTypeGuid = GetAttributeValue( action, AttributeKey.EntityType ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
                 entityType = EntityTypeCache.Get( entityTypeGuid.Value );
@@ -74,19 +118,25 @@ namespace Rock.Workflow.Action
             // Get the entity
             EntityTypeService entityTypeService = new EntityTypeService( _rockContext );
             IEntity entityObject = null;
-            string entityIdGuidString = GetAttributeValue( action, "EntityIdGuid", true ).ResolveMergeFields( mergeFields ).Trim();
-            var entityGuid = entityIdGuidString.AsGuidOrNull();
-            if ( entityGuid.HasValue )
+            string entityIdGuidString = GetAttributeValue( action, AttributeKey.EntityIdGuid, true ).ResolveMergeFields( mergeFields ).Trim();
+            var entityId = entityIdGuidString.AsIntegerOrNull();
+            if ( entityId.HasValue )
             {
-                entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
+                entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
             }
             else
             {
-                var entityId = entityIdGuidString.AsIntegerOrNull();
-                if ( entityId.HasValue )
+                var entityGuid = entityIdGuidString.AsGuidOrNull();
+                if ( entityGuid.HasValue )
                 {
-                    entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
+                    entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
                 }
+            }
+
+            if ( entityObject == null )
+            {
+                var value = GetActionAttributeValue( action, AttributeKey.EntityIdGuid );
+                entityObject = action.GetEntityFromAttributeValue( value, rockContext );
             }
 
             if ( entityObject == null )
@@ -96,9 +146,9 @@ namespace Rock.Workflow.Action
             }
 
             // Get the property settings
-            string propertyName = GetAttributeValue( action, "PropertyName", true ).ResolveMergeFields( mergeFields );
-            string propertyValue = GetAttributeValue( action, "PropertyValue", true ).ResolveMergeFields( mergeFields );
-            string emptyValueHandling = GetAttributeValue( action, "EmptyValueHandling" );
+            string propertyName = GetAttributeValue( action, AttributeKey.PropertyName, true ).ResolveMergeFields( mergeFields );
+            string propertyValue = GetAttributeValue( action, AttributeKey.PropertyValue, true ).ResolveMergeFields( mergeFields );
+            string emptyValueHandling = GetAttributeValue( action, AttributeKey.EmptyValueHandling );
 
             if ( emptyValueHandling == "IGNORE" && String.IsNullOrWhiteSpace( propertyValue ) )
             {
