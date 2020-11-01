@@ -22,13 +22,40 @@ namespace com.lcbcchurch.NewVisitor.Job
     /// Job to update engagement scoring based on the Engagement Automation settings.
     /// Engagement Automation tasks are tasks that update the engagement related attribute of person.
     /// </summary>
-    [InteractionChannelField( "Interaction Channel", "The Interaction channel to use.", true, order: 0 )]
+
+    #region Attributes
+
+    [InteractionChannelField(
+        "Interaction Channel",
+        Description = "The Interaction channel to use.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.InteractionChannel )]
+    [BooleanField(
+        "Enable Updating Family Campus",
+        Description = "When enabled, the family's campus will be updated if any adults in the family have attendance at the campus.",
+        DefaultBooleanValue = true,
+        Order = 1,
+        Key = AttributeKey.EnableUpdatingFamilyCampus
+        )]
     [DisallowConcurrentExecution]
+
+    #endregion Attributes
     public class EngagementAutomation : IJob
     {
         private const string USER_PREFERENCE_KEY_ENGAGEMENT_SCORE = "lcbc_EngagementScoreResults";
         private const string SOURCE_OF_CHANGE = "Engagement Automation";
         private HttpContext _httpContext = null;
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string InteractionChannel = "InteractionChannel";
+            public const string EnableUpdatingFamilyCampus = "EnableUpdatingFamilyCampus";
+        }
+
+        #endregion Attribute Keys
 
         #region Constructor
 
@@ -53,13 +80,19 @@ namespace com.lcbcchurch.NewVisitor.Job
         public void Execute( IJobExecutionContext context )
         {
             _httpContext = HttpContext.Current;
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             string engagementScoringResult = CalculateEngagementScore( context );
-            string updateFamilyResult = UpdateFamilyCampus( context );
+            var message = new StringBuilder();
+            message.AppendLine( $@"Engagement Scoring: {engagementScoringResult}" );
 
-            context.UpdateLastStatusMessage( $@"Engagement Scoring: {engagementScoringResult}
-Update Family Campus: {updateFamilyResult}
-" );
+            if ( dataMap.GetString( AttributeKey.EnableUpdatingFamilyCampus ).AsBoolean() )
+            {
+                string updateFamilyResult = UpdateFamilyCampus( context );
+                message.AppendLine( $@"Update Family Campus: {updateFamilyResult}" );
+            }
+
+            context.UpdateLastStatusMessage( message.ToString() );
         }
 
         #region Helper Methods
@@ -96,6 +129,10 @@ Update Family Campus: {updateFamilyResult}
 
                 var persons = new PersonService( rockContext ).GetByIds( personIds );
                 var changeFamilyCampusList = new Dictionary<int, int>();
+
+                var groupTypeFamily = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                var adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+
                 foreach ( var person in persons )
                 {
                     var family = person.GetFamily( rockContext );
@@ -104,13 +141,13 @@ Update Family Campus: {updateFamilyResult}
                         continue;
                     }
 
-                    var familyPersonIds = family.Members.Select( a => a.PersonId ).ToList();
+                    var familyAdultPersonIds = family.Members.Where( a => a.GroupRoleId == adultRoleId ).Select( a => a.PersonId ).ToList();
                     var attendanceCampus = new AttendanceService( rockContext )
                                     .Queryable().AsNoTracking()
                                     .Where( a =>
                                         a.DidAttend == true &&
                                         a.CampusId.HasValue &&
-                                        familyPersonIds.Contains( a.PersonAlias.PersonId ) )
+                                        familyAdultPersonIds.Contains( a.PersonAlias.PersonId ) )
                                     .OrderByDescending( a => a.StartDateTime )
                                     .FirstOrDefault();
 
@@ -360,7 +397,7 @@ Update Family Campus: {updateFamilyResult}
                     case ScoringItemType.AttendanceInGroupOfTypeCumulative:
                         {
                             var groupType = GroupTypeCache.Get( scoringItem.EntityItemsGuid.FirstOrDefault() );
-                            var personIdsWithAttendance = GetPeopleTotalAttenceForGroupType( groupType.Id, periodInDays, targetPersonIds, rockContext );
+                            var personIdsWithAttendance = GetPeopleTotalAttendanceForGroupType( groupType.Id, periodInDays, targetPersonIds, rockContext );
                             foreach ( var personId in targetPersonIds )
                             {
                                 var engagementScoreResult = engagementScoreResults.Single( a => a.PersonId == personId );
@@ -500,7 +537,7 @@ Update Family Campus: {updateFamilyResult}
         private Dictionary<int, DateTime> GetPeopleWhoAttendedGroupType( int groupTypeId, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var qry = new AttendanceService( rockContext )
@@ -533,7 +570,7 @@ Update Family Campus: {updateFamilyResult}
         private Dictionary<int, DateTime> GetPeopleWhoAreActiveMemberOfGroupType( int groupTypeId, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var qry = new GroupMemberService( rockContext )
@@ -560,10 +597,10 @@ Update Family Campus: {updateFamilyResult}
         /// <param name="personIds">The person ids.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Dictionary<int, List<DateTime>> GetPeopleTotalAttenceForGroupType( int groupTypeId, int periodInDays, List<int> personIds, RockContext rockContext )
+        private Dictionary<int, List<DateTime>> GetPeopleTotalAttendanceForGroupType( int groupTypeId, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var qry = new AttendanceService( rockContext )
@@ -594,7 +631,7 @@ Update Family Campus: {updateFamilyResult}
         private Dictionary<int, DateTime> GetPeopleWithGroupTypeAttributeValue( AttributeCache attribute, string entityQualifierValue, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var groupTypeEntityTypeId = EntityTypeCache.Get( typeof( GroupType ) ).Id;
@@ -640,7 +677,7 @@ Update Family Campus: {updateFamilyResult}
         private Dictionary<int, DateTime> GetPeopleWithNewPersonAttributeValue( int attributeId, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
@@ -651,6 +688,8 @@ Update Family Campus: {updateFamilyResult}
                     a.CreatedDateTime.HasValue &&
                     a.CreatedDateTime.Value >= startDate &&
                     a.CreatedDateTime.Value < tomorrowDate &&
+                    a.Value != null &&
+                    a.Value != string.Empty &&
                     a.Attribute.EntityTypeId == personEntityTypeId &&
                     a.AttributeId == attributeId &&
                     a.EntityId.HasValue &&
@@ -674,7 +713,7 @@ Update Family Campus: {updateFamilyResult}
         private List<int> GetPeopleWhoAreInDataView( Guid dataViewGuid, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var dataView = new DataViewService( rockContext ).Get( dataViewGuid );
@@ -703,7 +742,7 @@ Update Family Campus: {updateFamilyResult}
         private Dictionary<int, DateTime> GetPeopleWhoContributed( List<Guid> accountsGuid, int periodInDays, List<int> personIds, RockContext rockContext )
         {
             var currentDate = RockDateTime.Now.Date;
-            var tomorrowDate = RockDateTime.Now.Date;
+            var tomorrowDate = currentDate.AddDays( 1 );
             var startDate = currentDate.AddDays( -periodInDays );
 
             var accounts = new FinancialAccountService( rockContext ).GetListByGuids( accountsGuid );
@@ -768,8 +807,24 @@ Update Family Campus: {updateFamilyResult}
         /// <returns></returns>
         private InteractionComponentCache GetComponent( InteractionChannelCache channel, ScoringItem scoringItem )
         {
+            var interactionComponentIds = new InteractionComponentService( new RockContext() )
+                .GetByChannelId( channel.Id )
+                .Select( v => v.Id )
+                .ToList();
+
+            var components = new List<InteractionComponentCache>();
+
+            foreach ( var id in interactionComponentIds )
+            {
+                var componentCache = InteractionComponentCache.Get( id );
+                if ( componentCache != null )
+                {
+                    components.Add( componentCache );
+                }
+            }
+
             // Find by Name
-            var component = channel.InteractionComponents.FirstOrDefault( c => c.Name.Equals( scoringItem.Name, StringComparison.OrdinalIgnoreCase ) );
+            var component = components.FirstOrDefault( c => c.Name.Equals( scoringItem.Name, StringComparison.OrdinalIgnoreCase ) );
             if ( component != null )
             {
                 return component;
@@ -781,7 +836,7 @@ Update Family Campus: {updateFamilyResult}
                 var interactionComponent = new InteractionComponent();
                 interactionComponent.Name = scoringItem.Name;
                 interactionComponent.ComponentData = scoringItem.IconCssClass;
-                interactionComponent.ChannelId = channel.Id;
+                interactionComponent.InteractionChannelId = channel.Id;
                 new InteractionComponentService( newRockContext ).Add( interactionComponent );
                 newRockContext.SaveChanges();
 

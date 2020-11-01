@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -67,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
+      <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
