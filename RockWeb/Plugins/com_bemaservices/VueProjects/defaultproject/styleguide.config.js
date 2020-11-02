@@ -44,9 +44,14 @@ module.exports = {
       content: 'docs/introduction.md',
       sections: [
         {
-          name: 'Installation',
-          content: 'docs/installation.md',
-          description: 'What you will do after you have cloned the repo and copied the project.',
+          name: 'System Setup',
+          description: 'Useful tips and scripts for setting up your system for Vue Development',
+          content: 'docs/system_setup.md',
+        },
+        {
+          name: 'Useful VS Code Extensions',
+          description: 'A list of Useful VS Code Extensions',
+          content: 'docs/vscodextensions.md',
         },
       ],
     },
