@@ -53,7 +53,7 @@ module.exports = {
       ,
     },
     {
-      name: 'Documentation',
+      name: 'Project Documentation',
       content: 'docs/project_introduction.md',
       sections: [
       ],
