@@ -1373,8 +1373,9 @@ namespace Rock.Web.UI
 
                         var lbCacheControl = new LinkButton();
                         lbCacheControl.Click += lbCacheControl_Click;
-                        lbCacheControl.CssClass = $"margin-l-md fa fa-memory {cacheIndicator}";
+                        lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
                         lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
