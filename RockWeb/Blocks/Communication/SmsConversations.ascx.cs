@@ -359,14 +359,15 @@ namespace RockWeb.Blocks.Communication
 
             if ( ddlSmsNumbers.Visible )
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString(), false );
+                this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString() );
                 hfSmsNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
             }
             else
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString(), false );
+                this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString() );
             }
-            this.SetUserPreference( keyPrefix + "showRead", tglShowRead.Checked.ToString(), false );
+
+            this.SetUserPreference( keyPrefix + "showRead", tglShowRead.Checked.ToString() );
         }
 
         /// <summary>
@@ -681,6 +682,12 @@ namespace RockWeb.Blocks.Communication
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
                 lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
                 lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
+
+                if ( communicationRecipientResponse.MessageStatus == CommunicationRecipientStatus.Pending )
+                {
+                    lblMessageDateTime.Text += " (Pending)";
+                }
+
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 
                 if ( communicationRecipientResponse.IsOutbound )

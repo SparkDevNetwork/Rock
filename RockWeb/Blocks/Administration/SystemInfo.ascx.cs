@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using System.Web.UI;
@@ -175,10 +176,23 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Server Variables:", "", response );
             foreach ( string key in Request.ServerVariables )
             {
-                if ( !key.Equals("HTTP_COOKIE", StringComparison.OrdinalIgnoreCase ) )
+                bool isCookieOrPassword = key.Equals( "HTTP_COOKIE", StringComparison.OrdinalIgnoreCase ) || key.Equals( "AUTH_PASSWORD", StringComparison.OrdinalIgnoreCase );
+                // Skip cookies
+                if ( isCookieOrPassword )
+                {
+                    continue;
+                }
+
+                bool isSensitiveData = key.IndexOf( "ALL_HTTP", StringComparison.OrdinalIgnoreCase ) >= 0 || key.IndexOf( "ALL_RAW", StringComparison.OrdinalIgnoreCase ) >= 0;
+                if ( isSensitiveData )
+                {
+                    // strip out any sensitive data
+                    ResponseWrite( key, Regex.Replace( Request.ServerVariables[key], @"ASP.NET_SessionId=\S*;|\.ROCK=\S*;", string.Empty, RegexOptions.Multiline ), response );
+                }
+                else
                 {
                     ResponseWrite( key, Request.ServerVariables[key], response );
-                } 
+                }
             }
 
             response.Flush();

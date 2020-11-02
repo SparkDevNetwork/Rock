@@ -10,6 +10,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using System;
+using Rock;
 
 namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 {
@@ -63,8 +64,25 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <returns>The rest client.</returns>
         private static RestClient RestClient()
         {
-            string token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
-            var restClient = new RestClient( MinistrySafeConstants.MINISTRYSAFE_APISERVER );           
+            string token = null;
+            bool isStaging = false;
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                if ( settings != null )
+                {
+                    token = GetSettingValue( settings, "AccessToken", true );
+                    isStaging = GetSettingValue( settings, "IsStaging", false ).AsBoolean();
+                }
+            }
+
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                token = GlobalAttributesCache.Value( "MinistrySafeAPIToken" );
+            }
+
+            var serverLink = isStaging ? MinistrySafeConstants.MINISTRYSAFE_STAGING_APISERVER : MinistrySafeConstants.MINISTRYSAFE_APISERVER;
+            var restClient = new RestClient( serverLink );
 
             restClient.AddDefaultHeader( "Authorization", string.Format( "Token token={0}", token ) );
             return restClient;
@@ -118,15 +136,18 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
             return JsonConvert.SerializeObject( responseToLog );
         }
+
         #endregion
+
         #region Public Methods
+
         /// <summary>
         /// Gets the packages.
         /// </summary>
         /// <param name="getPackagesResponse">The get packages response.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        internal static bool GetUsers( out GetUsersResponse getUsersResponse, List<string> errorMessages )
+        internal static bool GetUsers( out List<UserResponse> getUsersResponse, List<string> errorMessages )
         {
             getUsersResponse = null;
             RestClient restClient = RestClient();
@@ -145,8 +166,43 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            getUsersResponse = JsonConvert.DeserializeObject<GetUsersResponse>( restResponse.Content );
+            getUsersResponse = JsonConvert.DeserializeObject<List<UserResponse>>( restResponse.Content );
             if ( getUsersResponse == null )
+            {
+                errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the packages.
+        /// </summary>
+        /// <param name="getPackagesResponse">The get packages response.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns>True/False value of whether the request was successfully sent or not.</returns>
+        internal static bool GetPackages( out List<PackageResponse> getPackagesResponse, List<string> errorMessages )
+        {
+            getPackagesResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_PACKAGES_URL );
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Failed to authorize MinistrySafe. Please confirm your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.OK )
+            {
+                errorMessages.Add( "Failed to get MinistrySafe Users: " + restResponse.Content );
+                return false;
+            }
+
+            getPackagesResponse = JsonConvert.DeserializeObject<List<PackageResponse>>( restResponse.Content );
+            if ( getPackagesResponse == null )
             {
                 errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
                 return false;
@@ -162,11 +218,12 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <param name="createCandidateResponse">The create candidate response.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        internal static bool CreateUser(Rock.Model.Workflow workflow, Person person, int personAliasId, string userType, out CreateUserResponse createUserResponse, List<string> errorMessages )
+        internal static bool CreateUser( Rock.Model.Workflow workflow, Person person, int personAliasId, string userType, out UserResponse createUserResponse, List<string> errorMessages )
         {
             createUserResponse = null;
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_USERS_URL, Method.POST );
+
             restRequest.AddJsonBody( new
             {
                 user = new CreateUserRequest()
@@ -174,7 +231,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                     first_name = person.FirstName,
                     last_name = person.LastName,
                     email = person.Email,
-                    external_id = workflow.Id.ToString(),
+                    external_id = personAliasId.ToString(),
                     user_type = userType
                 }
             } );
@@ -193,7 +250,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            createUserResponse = JsonConvert.DeserializeObject<CreateUserResponse>( restResponse.Content );
+            createUserResponse = JsonConvert.DeserializeObject<UserResponse>( restResponse.Content );
             if ( createUserResponse == null )
             {
                 errorMessages.Add( "Create User Response is not valid: " + restResponse.Content );
@@ -201,6 +258,39 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             }
 
             return true;
+        }
+
+        internal static bool GetUser( Rock.Model.Workflow workflow, Person person, int personAliasId, string userType, out UserResponse userResponse, List<string> errorMessages )
+        {
+            userResponse = null;
+            List<UserResponse> usersResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_USERS_URL );
+            restRequest.AddParameter( "external_id", personAliasId );
+
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized || restResponse.StatusCode == HttpStatusCode.Forbidden )
+            {
+                errorMessages.Add( "Failed to authorize MinistrySafe. Please confirm your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.OK )
+            {
+                errorMessages.Add( "Failed to get MinistrySafe Users: " + restResponse.Content );
+                return false;
+            }
+
+            usersResponse = JsonConvert.DeserializeObject<List<UserResponse>>( restResponse.Content );
+            if ( usersResponse == null )
+            {
+                errorMessages.Add( "Get Users is not valid: " + restResponse.Content );
+                return false;
+            }
+            userResponse = usersResponse.FirstOrDefault();
+
+            return userResponse != null;
         }
 
         /// <summary>
@@ -211,7 +301,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         /// <param name="createInvitationResponse">The create invitation response.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        internal static bool AssignTraining( string candidateId, string surveyCode, out AssignTrainingResponse assignTrainingResponse, List<string> errorMessages )
+        internal static bool AssignTraining( string candidateId, string surveyCode, out TrainingResponse assignTrainingResponse, List<string> errorMessages )
         {
             assignTrainingResponse = null;
             RestClient restClient = RestClient();
@@ -232,7 +322,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            assignTrainingResponse = JsonConvert.DeserializeObject<AssignTrainingResponse>( restResponse.Content );
+            assignTrainingResponse = JsonConvert.DeserializeObject<TrainingResponse>( restResponse.Content );
             if ( assignTrainingResponse == null )
             {
                 errorMessages.Add( "Assign Training Response is not valid: " + restResponse.Content );
@@ -242,7 +332,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             return true;
         }
 
-        internal static bool ResendTraining( string candidateId, string surveyCode, out AssignTrainingResponse resendTrainingResponse, List<string> errorMessages )
+        internal static bool ResendTraining( string candidateId, string surveyCode, out TrainingResponse resendTrainingResponse, List<string> errorMessages )
         {
             resendTrainingResponse = null;
             RestClient restClient = RestClient();
@@ -263,7 +353,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                 return false;
             }
 
-            resendTrainingResponse = JsonConvert.DeserializeObject<AssignTrainingResponse>( restResponse.Content );
+            resendTrainingResponse = JsonConvert.DeserializeObject<TrainingResponse>( restResponse.Content );
             if ( resendTrainingResponse == null )
             {
                 errorMessages.Add( "Assign Training Response is not valid: " + restResponse.Content );
@@ -301,6 +391,76 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
 
             return true;
         }
+
+        internal static bool GetBackgroundCheck( string backgroundCheckId, out BackgroundCheckResponse getBackgroundCheckResponse, List<string> errorMessages )
+        {
+            getBackgroundCheckResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( String.Format( "{0}/{1}", MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, backgroundCheckId ) );
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Invalid MinistrySafe access token. To Re-authenticate go to Admin Tools > System Settings > MinistrySafe. Click edit to change your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.OK )
+            {
+                errorMessages.Add( "Failed to get MinistrySafe Training: " + restResponse.Content );
+                return false;
+            }
+
+            getBackgroundCheckResponse = JsonConvert.DeserializeObject<BackgroundCheckResponse>( restResponse.Content );
+            if ( getBackgroundCheckResponse == null )
+            {
+                errorMessages.Add( "Get Training is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool CreateBackgroundCheck( string userId, string level, string packageCode, out BackgroundCheckResponse backgroundCheckResponse, List<string> errorMessages )
+        {
+            backgroundCheckResponse = null;
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_BACKGROUNDCHECK_URL, Method.POST );
+            restRequest.AddParameter( "background_check[user_id]", userId );
+            restRequest.AddParameter( "background_check[quickapp]", "true" );
+            if ( level.IsNotNullOrWhiteSpace() )
+            {
+                restRequest.AddParameter( "background_check[level]", level );
+            }
+            if ( packageCode.IsNotNullOrWhiteSpace() )
+            {
+                restRequest.AddParameter( "background_check[custom_background_check_package_code]", packageCode );
+            }
+
+            IRestResponse restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
+            {
+                errorMessages.Add( "Invalid MinistrySafe access token. To Re-authenticate go to Admin Tools > System Settings > MinistrySafe. Click edit to change your access token." );
+                return false;
+            }
+
+            if ( restResponse.StatusCode != HttpStatusCode.Created )
+            {
+                errorMessages.Add( "Failed to create MinistrySafe Background Check: " + restResponse.Content );
+                return false;
+            }
+
+            backgroundCheckResponse = JsonConvert.DeserializeObject<BackgroundCheckResponse>( restResponse.Content );
+            if ( backgroundCheckResponse == null )
+            {
+                errorMessages.Add( "Create  Background Check is not valid: " + restResponse.Content );
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion
     }
 }

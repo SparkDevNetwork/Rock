@@ -96,5 +96,13 @@ namespace Rock.DownhillCss
         /// The white.
         /// </value>
         public string White { get; set; } = "#ffffff";
+
+        /// <summary>
+        /// Gets or sets the brand color.
+        /// </summary>
+        /// <value>
+        /// The brand.
+        /// </value>
+        public string Brand { get; set; } = "#007bff";
     }
 }

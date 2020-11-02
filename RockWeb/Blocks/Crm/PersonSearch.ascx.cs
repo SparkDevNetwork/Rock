@@ -322,11 +322,14 @@ namespace RockWeb.Blocks.Crm
                         }
                     case ( "email" ):
                         {
-
+                            var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                             var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
                             people = personService.Queryable()
-                                .Where( p => ( term != "" && p.Email == term )
-                                        || searchKeyQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == term ) );
+                                .Where( p => ( term != "" && p.Email.Contains( term ) )
+                                        || searchKeyQry.Any( a => emailSearchTypeValueId.HasValue
+                                            && a.SearchTypeValueId == emailSearchTypeValueId.Value
+                                            && a.PersonAlias.PersonId == p.Id
+                                            && a.SearchValue.Contains( term ) ) );
                             break;
                         }
                     case ( "birthdate" ):

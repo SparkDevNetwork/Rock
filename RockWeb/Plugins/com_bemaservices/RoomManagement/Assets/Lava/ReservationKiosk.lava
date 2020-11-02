@@ -1,0 +1,69 @@
+  {% assign reservationCount = ReservationSummaries | Size %}
+
+  <div class="row margin-h-md" ><h1 class="pull-left">What's Happening?</h1><h1 class="pull-right">{{ 'Now' | Date:'h:mm tt' }}</h1></div>
+
+  {% if reservationCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+      <div class="panel-heading clearfix">
+		<h2 class="panel-title pull-left">
+			{{ Location }} - {{ 'Now' | Date:'dddd,  MMMM d, yyyy' }}
+		</h2>
+    </div>
+    <div class="panel-body margin-all-md text-muted"> There are no reservations today.</div>
+  </div>
+  {% endif %}
+
+  {% for reservationDate in ReservationSummaries %}
+  {% assign firstReservation = reservationDate | First %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+		<h2 class="panel-title pull-left">
+			{{ Location }} - {{ firstReservation.CalendarDate }}
+		</h2>
+    </div>
+    <div class="panel-body">
+		<div class="row hidden">
+			<div class="col-xs-3">       
+				<b>Event Time</b>
+			</div>
+			<div class="col-xs-9">
+				<b>Name</b>
+			</div>
+		</div>
+		{% for reservationSummary in reservationDate %}
+			{% assign startTimeDiff = 'Now' | DateDiff:reservationSummary.EventStartDateTime,'s' %}
+			{% assign endTimeDiff = 'Now' | DateDiff:reservationSummary.EventEndDateTime,'s' %}
+
+			{% assign bold = "" %}
+			{% if endTimeDiff < 0  %}
+				{% assign rowclasss = 'text-muted' %}
+			{% elseif startTimeDiff < 0 and endTimeDiff > 0 %}
+				{% assign rowclasss = 'bg-info' %}
+				{% assign bold = 'font-weight: bold' %}
+			{% else %}
+				{% assign rowclasss = '' %}
+			{% endif %}
+
+		<div class="row {{ rowclasss }}" style="{{bold}}" >
+
+			<div class="col-xs-3">       
+				{{ reservationSummary.EventDateTimeDescription }}
+			</div>
+			
+			<div class="col-xs-9">
+				{{ reservationSummary.ReservationName }}
+			</div>
+		</div>
+		<br/>
+		{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+	$('.js-group-item').tooltip();
+  });
+
+</script>

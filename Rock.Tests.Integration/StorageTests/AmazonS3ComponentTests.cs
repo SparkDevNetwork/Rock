@@ -126,6 +126,33 @@ namespace Rock.Tests.Integration.StorageTests
             Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
+        [TestMethod]
+        public void TestCreate2kFolders()
+        {
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
+
+                var subFolder = new Asset();
+                subFolder.Name = "TwoThousandFolders/";
+                subFolder.Type = AssetType.Folder;
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
+
+
+                int i = 0;
+                while ( i < 2000 )
+                {
+                    subFolder = new Asset();
+                    subFolder.Name = $"TwoThousandFolders/TestFolder-{i}/";
+                    subFolder.Type = AssetType.Folder;
+
+                    Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, subFolder ) );
+                    i++;
+                }
+            }
+        }
+
         /// <summary>
         /// Upload a file using RootFolder and Asset.Name.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
@@ -380,6 +407,58 @@ namespace Rock.Tests.Integration.StorageTests
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-9" ) );
                 Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
                 Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
+            }
+        }
+
+        /// <summary>
+        /// Tests the ListFoldersInFolder method with 2K folders.
+        /// This method will create the folders, get a list of them, and then delete the folders when it is done.
+        /// There is no dependency on other tests.
+        /// </summary>
+        [TestMethod]
+        public void TestList2kFolders()
+        {
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
+
+                // Create a folder to hold all of the subfolders.
+                var subFolder = new Asset();
+                subFolder.Name = "TwoThousandFolders/";
+                subFolder.Type = AssetType.Folder;
+
+                // Delete the subfolder holding all 2K folders
+                s3Component.DeleteAsset( assetStorageProvider, subFolder );
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
+
+                // Create the 2K folders
+                int i = 0;
+                while ( i < 2000 )
+                {
+                    var asset = new Asset();
+                    asset.Name = $"TwoThousandFolders/TestFolder-{i}/";
+                    asset.Type = AssetType.Folder;
+
+                    Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+                    i++;
+                }
+
+                // Get a list of the 2K folders
+                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), subFolder );
+
+                // Verify that all 2K folders are in the list
+                i = 0;
+                while ( i < 2000 )
+                {
+                    string folderName = $"TestFolder-{i}";
+
+                    Assert.IsTrue( assetList.Any( a => a.Name == folderName ) );
+                    i++;
+                }
+
+                // Delete the subfolder holding all 2K folders
+                s3Component.DeleteAsset( assetStorageProvider, subFolder );
             }
         }
 

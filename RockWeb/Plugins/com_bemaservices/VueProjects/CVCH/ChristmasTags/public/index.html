@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= htmlWebpackPlugin.title %></title>
+
+</head>
+<body>
+    <div id="app">
+        
+    </div>
+    <script>
+        let firstName = '{{CurrentPerson.NickName}}';
+        let lastName = '{{CurrentPerson.LastName}}';
+        let email = '{{CurrentPerson.Email}}';
+        let personCampus = 1;
+
+        const tagsSource = [{
+      "id": 1307,
+      "description": "Toy Car",
+      "ageRange": {
+        "id": 1255,
+        "description": "0-4 Yo"
+      },
+      "gender": {
+        "id": 1,
+        "description": "Boy"
+      }
+    }];
+
+
+    const ageRanges = [ { "id":1255, "description":"0-4 Yo" }, { "id":1256, "description":"5-8 Yo" }, { "id":1257, "description":"9-12 Yo" }, { "id":1297, "description":"13-18 Yo" } ]
+    const campuses = [ { "id":1, "description":"Mooresville Campus" }, { "id":31, "description":"Denver Campus" }, { "id":35, "description":"Statesville Campus" }, { "id":36, "description":"West Rowan Campus" }]
+    
+
+    const defaultMessage = `Make a difference in a family''s life.`
+    const colorOptions = [{
+        id: 1,
+        scale: 1,
+        rules: ['rule-red', 'rule-shape'],
+        shape: '<i class="fas fa-sleigh" style="transform:translateY(-10px);"></i>', //&starf;
+      },
+      {
+        id: 2,
+        scale: 1,
+        rules: ['rule-diagonal'],
+        shape: '',
+      },
+      {
+        id: 3,
+        scale: .9,
+        rules: ['rule-shape'],
+        shape: '<i class="fas fa-gifts" style="transform:translateY(-15px);"></i>', //&#10052;
+      },
+    ]
+    </script>
+</body>
+</html>

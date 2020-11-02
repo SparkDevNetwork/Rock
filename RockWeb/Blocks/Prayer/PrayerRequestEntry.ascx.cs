@@ -109,6 +109,11 @@ namespace RockWeb.Blocks.Prayer
                 cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
             }
 
+            if ( EnableCommentsFlag )
+            {
+                cbAllowComments.Checked = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+            }
+
             pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
@@ -193,10 +198,9 @@ namespace RockWeb.Blocks.Prayer
 
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
-            phAttributes.Controls.Clear();
-            // Filter to only include attribute / attribute values that the person is authorized to edit.
-            var excludeForEdit = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup, excludeForEdit );
+            avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( prayerRequest );
+            avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
         }
 
         #endregion
@@ -352,7 +356,7 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
             prayerRequestService.Add( prayerRequest );
             prayerRequest.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
+            avcEditAttributes.GetEditValues( prayerRequest );
 
             if ( !prayerRequest.IsValid )
             {

@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 
 
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Security
 Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [SystemCommunicationField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
 {%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked.  Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.
 ", "", 5 )]
@@ -264,7 +264,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
 
-                if ( ( bool? ) Session["InvalidPersonToken"] == true )
+                if ( (bool?)Session["InvalidPersonToken"] == true )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     lInvalidPersonTokenText.Text = GetAttributeValue( "InvalidPersonTokenText" ).ResolveMergeFields( mergeFields );
@@ -320,7 +320,6 @@ Thank you for logging in, however, we need to confirm the email associated with 
                 }
             }
 
-
             string helpUrl = string.Empty;
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
@@ -344,7 +343,6 @@ Thank you for logging in, however, we need to confirm the email associated with 
             /* BEMA.FE1.End */
 
         }
-
 
         /// <summary>
         /// Checks if a username is locked out or needs confirmation, and handles those events
@@ -408,7 +406,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             if ( sender is LinkButton )
             {
-                LinkButton lb = ( LinkButton ) sender;
+                LinkButton lb = (LinkButton)sender;
 
                 foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {
@@ -518,9 +516,9 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects( returnUrl );
-                redirectUrl = Server.UrlDecode( redirectUrl );
-                Response.Redirect( redirectUrl );
+                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                redirectUrl =  Server.UrlDecode( redirectUrl );
+                Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
@@ -551,8 +549,8 @@ Thank you for logging in, however, we need to confirm the email associated with 
             mergeFields.Add( "Person", userLogin.Person );
             mergeFields.Add( "User", userLogin );
 
-            var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+            var recipients = new List<RockEmailMessageRecipient>();
+            recipients.Add( new RockEmailMessageRecipient( userLogin.Person, mergeFields ) );
 
             var message = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
             message.SetRecipients( recipients );

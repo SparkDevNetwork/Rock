@@ -1,0 +1,95 @@
+﻿{% assign viewer = CurrentPerson %}
+{% assign personId = 'Global' | PageParameter:'PersonId' %}
+{% assign person = personId | PersonById %}
+
+{% assign canView = false %}
+{% assign canEditAllocations = false %}
+{% comment %} RSR - Human Resources Administration {% endcomment%}
+{% group where:'Guid == "628C51A8-4613-43ED-A18D-4A6FB999273E"' securityenabled:'false' %}
+    {% capture groupIdString %}{{group.Id}}{% endcapture %}
+    {% assign groupMembers = viewer | Group:groupIdString %}
+    {% for groupMember in groupMembers %}
+        {% assign canView = true %}
+        {% assign canEditAllocations = true %}
+    {% endfor %}
+{% endgroup %}
+
+{% if canView == false %}
+{% comment %} RSR - Rock Administration {% endcomment%}
+	{% group where:'Guid == "6F8AABA3-5BC8-468B-90DD-F0686F38E373"' securityenabled:'false' %}
+		{% capture groupIdString %}{{group.Id}}{% endcapture %}
+		{% assign groupMembers = viewer | Group:groupIdString %}
+		{% for groupMember in groupMembers %}
+				{% assign canView = true %}
+				{% assign canEditAllocations = true %}
+		{% endfor %}
+	{% endgroup %}
+{% endif %}
+
+{% if canView == false %}
+    {% assign supervisor = person | Attribute:'Supervisor', 'Object' %}
+    {% if supervisor.Id == viewer.Id %}
+        {% assign canView = true %}
+		{% assign canEditAllocations = false %}
+    {% endif %}
+{% endif %}
+
+{% if canView == false %}
+    {% if person.Id == viewer.Id %}
+        {% assign canView = true %}
+		{% assign canEditAllocations = false %}
+    {% endif %}
+{% endif %}
+
+{% if canView %}
+	<div class="panel panel-block">
+		<div class="panel-heading">
+			<h3 class="panel-title pull-left"><i class="fa fa-clock"></i>
+				{{ person.NickName | Possessive }} Time Off Summary
+			</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table table-responsive">
+				<tr>
+					<th><strong>PTO Type</strong><br></th>
+					<th><strong>Allocated</strong><br></th>
+					<th><strong>Used</strong><br></th>
+					<th><strong>Available</strong><br></th>
+					<th></th>
+				</tr>
+				{% for alias in person.Aliases %}
+					{% ptoallocation where:'PersonAliasId == {{alias.Id}}' %}
+						{% for ptoAllocation in ptoallocationItems %}
+                            {% if ptoAllocation.PtoAllocationStatus != 0 %}
+							    {% assign usedHours = 0.0 %}
+							    {% for ptoRequest in ptoAllocation.PtoRequests %}
+								    {% if ptoRequest.PtoRequestApprovalState != 2 and ptoRequest.PtoRequestApprovalState != 3 %}{% comment %}Check to make sure it is note pending or canceled.{% endcomment %}
+									    {% assign usedHours = usedHours | Plus:ptoRequest.Hours %}
+								    {% endif %}
+							    {% endfor %}
+							    <tr>
+								    <td>
+										{% if canEditAllocations == true %}
+                                        {% page where:'Guid == "278DE672-B691-4017-BD0A-893C50652EDF"' securityenabled:'false' %}
+										    <a href='/page/{{page.Id}}?ptoAllocationId={{ptoAllocation.Id}}'>{{ptoAllocation.PtoType.Name}}</a>
+                                        {% endpage %}
+										{% else %}
+										{{ptoAllocation.PtoType.Name}}
+										{% endif %}
+											{% if ptoAllocation.PtoAllocationStatus == 2 %} <small>(Pending)</small>{% endif %}</br>
+											<small>({{ptoAllocation.StartDate | Date:'M/d/yyyy' }}{% if ptoAllocation.EndDate != null %}-{{ptoAllocation.EndDate | Date:'M/d/yyyy' }}{% endif %})
+
+								    </td>
+								    <td>{{ ptoAllocation.Hours }}</td>
+								    <td>{{ usedHours }}</td>
+								    <td>{% assign remainingHours = ptoAllocation.Hours | Minus:usedHours %}<div {% if remainingHours < 0 %}style="color:red;"{% endif %}>{{remainingHours}}</div></td>
+									<td>{% if ptoAllocation.Note != null and ptoAllocation.Note != empty %}<div data-toggle="tooltip" data-original-title="{{ ptoAllocation.Note }}"><i class="fa fa-comment"></i></div>{% endif %}</td>
+							    </tr>
+                            {% endif %}
+						{% endfor %}
+					{% endptoallocation %}
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+{% endif %}

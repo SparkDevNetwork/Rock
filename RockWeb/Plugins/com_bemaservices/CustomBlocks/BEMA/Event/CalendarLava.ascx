@@ -98,8 +98,7 @@
                     </div>
                 <% } %>
 
-                <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
-                <asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
+                <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" /><asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
 
             </asp:Panel>
 

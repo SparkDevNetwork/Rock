@@ -1,0 +1,63 @@
+{% comment %}Include in Head{% endcomment %}
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/css/app.css" rel="preload" as="style">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/css/chunk-vendors.css" rel="preload" as="style">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/js/app.js" rel="preload" as="script">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/js/chunk-vendors.js" rel="preload" as="script">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/css/chunk-vendors.css" rel="stylesheet">
+<link href="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/css/app.css" rel="stylesheet">
+{% comment %} End Head Link Section{% endcomment %}
+
+{% comment %}HTML Element Hook for Vue App and warning if javascript is not enabled{% endcomment %}
+
+<noscript><strong>We're sorry but vue-christmas-tags doesn't work properly without JavaScript enabled. Please
+      enable it to continue.</strong></noscript>
+
+  <div id="app"></div>
+
+{% comment %}Script to get current user information if known and server side render campus information{% endcomment %}
+  <script>
+    const firstName = '{{CurrentPerson.FirstName}}';
+    const lastName = '{{CurrentPerson.LastName}}';
+    const email = '{{CurrentPerson.Email}}';
+    const personCampus = {{CurrentPerson.PrimaryCampusId | WithFallback:'','1' | AsInteger}};
+    {% capture campuses %}
+        {% campus where:'IsActive == "True" && Id != "37"'%}
+            {% for campus in campusItems %}
+                {"id":{{campus.Id | AsInteger }},
+                  "description":"{{campus.Name}}"
+                },
+            {% endfor %}
+        {% endcampus %}
+    {% endcapture %}
+
+    const campuses = [{{campuses | ReplaceLast:',',''}}]
+const tagsSource = [];
+
+
+    const defaultMessage = `Make a difference in a family''s life.`
+
+{% comment %}An array of color choices for tag options{% endcomment %}
+    const colorOptions = [{
+        id: 1,
+        scale: 1,
+        rules: ['rule-red', 'rule-shape'],
+        shape: '<i class="fas fa-sleigh" style="transform:translateY(-10px);"></i>', //&starf;
+      },
+      {
+        id: 2,
+        scale: 1,
+        rules: ['rule-diagonal'],
+        shape: '',
+      },
+      {
+        id: 3,
+        scale: .9,
+        rules: ['rule-shape'],
+        shape: '<i class="fas fa-gifts" style="transform:translateY(-15px);"></i>', //&#10052;
+      },
+    ]
+
+  </script>
+ <script src="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/js/chunk-vendors.js"></script>
+    <script src="/Plugins/com_bemaservices/CustomBlocks/CVCH/ChristmasTags/Assets/js/app.js"></script>

@@ -28,7 +28,7 @@ namespace com.bemaservices.Webhooks
             if ( request.HttpMethod != "POST" )
             {
                 response.Write( "Invalid request type." );
-                response.StatusCode = (int)HttpStatusCode.NotImplemented;
+                response.StatusCode = ( int ) HttpStatusCode.NotImplemented;
                 return;
             }
 
@@ -44,13 +44,13 @@ namespace com.bemaservices.Webhooks
 
                 if ( !com.bemaservices.MinistrySafe.MinistrySafe.SaveWebhookResults( postedData ) )
                 {
-                    response.StatusCode = (int)HttpStatusCode.OK; //If it is not ok, the website will re-direct to the error screen
+                    response.StatusCode = ( int ) HttpStatusCode.OK; //If it is not ok, the website will re-direct to the error screen
                     return;
                 }
 
                 try
                 {
-                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.StatusCode = ( int ) HttpStatusCode.OK;
                 }
                 catch { }
             }

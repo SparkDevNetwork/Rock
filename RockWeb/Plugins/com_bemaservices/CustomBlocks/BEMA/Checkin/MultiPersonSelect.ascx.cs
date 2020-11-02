@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.4.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
     [Category( "BEMA Services > Check-in" )]
     [Description( "Lists people who match the selected family and provides option of selecting multiple." )]
 
-    [LinkedPage( "Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
+    [LinkedPage("Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
     [CodeEditorField( "Pre-Selected Options Format", "The format to use when displaying auto-checkin options", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
 <span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
 <span class='auto-select-group'>{{ Group.Name }}</span>
@@ -64,13 +64,16 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
     public partial class MultiPersonSelect : CheckInBlock
     {
         /* BEMA.Start */
+		
         #region Attribute Keys
+		
         private static class BemaAttributeKey
         {
             public const string IsPersonAgeDisplayed = "IsPersonAgeDisplayed";
         }
 
         #endregion
+		
         /* BEMA.End */
 
         bool _hidePhotos = false;
@@ -275,7 +278,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                         var pnlChangeButton = e.Item.FindControl( "pnlChangeButton" ) as Panel;
                         if ( pnlPersonButton != null && pnlChangeButton != null )
                         {
-                            pnlPersonButton.CssClass = "col-xs-12 col-sm-9 col-md-10";
+                            pnlPersonButton.CssClass = "checkin-person-btn checkin-person-has-change col-xs-12 col-sm-9 col-md-10";
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }
@@ -291,9 +294,9 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                     {
                         lPersonButton.Text = string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 auto-select text-light'>
-        <div class='auto-select-caption'>is checking into...</div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'>
+        <div class='auto-select-caption'>Current Selection</div>
         <div class='auto-select-details'>{1}</div>
     </div>
 </div>
@@ -539,8 +542,8 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                 {
                     return string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 text-light'><small>is checking into...<br/>{1}</small></div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'><div class='auto-select-caption'>Current Selection</div><div class='auto-select-details'>{1}</div></div>
 </div>
 ", person.Person.FullName, options.AsDelimited( "<br/>" ) );
                 }
@@ -733,13 +736,12 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
             if ( options.Any() )
             {
                 lPersonButton.Text = string.Format( @"
-                            <div class='row'>
-                                <div class='col-md-4 family-personselect'>{0}<br/>{2}</div>
-                                <div class='col-md-8 auto-select text-light'>
-                                    <div class='auto-select-caption'>is checking into...</div>
-                                    <div class='auto-select-details'>{1}</div>
-                                </div>
-                            </div>
+							<div class='row'>
+							    <div class='col-md-5 family-personselect'>{0}</br>{2}</div>
+							    <div class='col-md-7 auto-select family-auto-select'>
+									<div class='auto-select-caption'>Current Selection</div>
+									<div class='auto-select-details'>{1}</div></div>
+							</div>
                             ",
                     person.Person.FullName,
                     options.AsDelimited( "<br/>" ),

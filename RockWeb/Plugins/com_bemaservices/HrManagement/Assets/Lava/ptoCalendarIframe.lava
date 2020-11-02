@@ -1,0 +1,14 @@
+<iframe id='calendar' title="vue calendar" src="{{'Global' | Attribute:'InternalApplicationRoot'}}/ptovuecalendar" style="width:100%; height:0px;padding:0px; margin:0px;" onload="resizeIframe(this)"></iframe>
+
+<script>
+  function resizeIframe(obj) {
+    console.log("Fired")
+    obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+
+
+  }
+
+
+
+
+</script>

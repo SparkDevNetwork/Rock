@@ -2249,18 +2249,25 @@ namespace Rock.Model
             // cleanup phone
             phoneNumber = PhoneNumber.CleanNumber( phoneNumber );
 
-            // Just in case PhoneNUmber.CountryCode is NULL, also check if there is a matching phone number that doesn't have a country code
-            string fromPhoneNoCountryCode = phoneNumber;
-            if ( phoneNumber.Length > 10 )
+            var peopleWithMobileNumberQuery = new PhoneNumberService( this.Context as RockContext ).Queryable();
+
+            // North American mobile phone numbers always include the country code and area code
+            if ( phoneNumber.Length == 11 && phoneNumber.StartsWith( "1" ) )
             {
-                fromPhoneNoCountryCode = phoneNumber.Right( 10 );
+                // since this appears to be a North American phone number, we can query using Number in a way that uses the Number Index
+                var phoneNumberWithoutCountryCode = phoneNumber.Substring( 1 );
+                peopleWithMobileNumberQuery = peopleWithMobileNumberQuery.Where( t => t.Number == phoneNumberWithoutCountryCode && ( t.CountryCode ?? "" ) == "1" );
+            }
+            else
+            {
+                // if this is a phone number that doesnt' have '1' as a country code, we'll have to concatenate CountryCode and Number. This will cause a full table scan since
+                // the number index cannot be used (this will be fixed in v11)
+                peopleWithMobileNumberQuery = peopleWithMobileNumberQuery.Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber );
             }
 
             // order so that non-nameless person with an SMS number with messaging enabled are listed first
             // then sort by the oldest person record in case there are multiple people with the same number
-
-            var person = new PhoneNumberService( this.Context as RockContext ).Queryable()
-                .Where( pn => ( pn.CountryCode + pn.Number ) == phoneNumber || pn.Number == fromPhoneNoCountryCode )
+            var person = peopleWithMobileNumberQuery
                 .OrderByDescending( pn => pn.IsMessagingEnabled )
                 .ThenByDescending( pn => pn.NumberTypeValueId == numberTypeMobileValueId )
                 .ThenByDescending( p => p.Person.RecordTypeValueId != recordTypeValueIdNameless )
@@ -4035,8 +4042,8 @@ FROM (
 			,p2.[BirthDay]
 		) pf
 	WHERE (
-			p.GivingLeaderId IS NULL
-			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			p.GivingLeaderId = 0
+			OR (p.GivingLeaderId != ISNULL(pf.CalculatedGivingLeaderId, p.Id))
 			)" );
 
             if ( personId.HasValue )
