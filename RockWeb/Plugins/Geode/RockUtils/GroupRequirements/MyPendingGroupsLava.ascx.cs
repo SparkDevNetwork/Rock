@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -62,13 +62,6 @@ namespace Geode.RockUtils.GroupRequirements.Blocks
         }
 
         #endregion Attribute Keys
-
-        #region Controls
-
-        protected Literal lLavaOutput;
-        protected UpdatePanel upnlContent;
-
-        #endregion
 
         #region Base Control Methods
 
