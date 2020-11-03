@@ -68,7 +68,7 @@ namespace Rock.Utility
                         a.ConnectionOpportunityId == connectionOpportunity.Id && (
                         a.ConnectionState == ConnectionState.Active
                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                        || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                        || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
                 .Select( a => a.PersonAlias.PersonId )
                 .ToList();
 
@@ -265,14 +265,18 @@ namespace Rock.Utility
 
             var dataView = new DataViewService( rockContext ).Get( campaignConfiguration.DataViewGuid );
             var personService = new PersonService( rockContext );
-
+            int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var filteredPersonIds = new List<int>();
             var personQuery = dataView.GetQuery( null, rockContext, null, out errorMessages )
-                .OfType<Rock.Model.Person>();
+                .OfType<Rock.Model.Person>()
+                .Where( a => a.RecordStatusValueId != recordStatusInactiveId );
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {
-                var familyMembersQuery = personQuery.SelectMany( a => a.PrimaryFamily.Members ).Distinct();
+                var familyMembersQuery = personQuery
+                    .Where( a => a.PrimaryFamily != null )
+                    .SelectMany( a => a.PrimaryFamily.Members )
+                    .Distinct();
 
                 //// Get all family group Id and all it's family member in dictionary.
                 //// We will all the family members to both figure out if might be opted out
@@ -280,13 +284,15 @@ namespace Rock.Utility
                 var familyWithMembers = familyMembersQuery.AsNoTracking()
                     .Select( a => new
                     {
+                        a.GroupId,
                         a.PersonId,
+                        PersonIsActive = a.Person.RecordStatusValueId != recordStatusInactiveId,
                         PersonIsDeceased = a.Person.IsDeceased,
                         GroupRoleOrder = a.GroupRole.Order,
                         PersonGender = a.Person.Gender
                     } )
                     .ToList()
-                    .GroupBy( a => a.PersonId )
+                    .GroupBy( a => a.GroupId )
                     .ToDictionary( k => k.Key, v => v );
 
                 if ( campaignConfiguration.OptOutGroupGuid.HasValue )
@@ -313,7 +319,7 @@ namespace Rock.Utility
 
                     // Get all the head of house personIds of leftout family.
                     var headOfHouse = familyWithMembers[familyId]
-                          .Where( m => !m.PersonIsDeceased )
+                          .Where( m => !m.PersonIsDeceased && m.PersonIsActive )
                           .OrderBy( m => m.GroupRoleOrder )
                           .ThenBy( m => m.PersonGender )
                           .Select( a => a.PersonId )
@@ -654,12 +660,12 @@ namespace Rock.Utility
         internal static bool PersonAlreadyHasConnectionRequest( int connectionOpportunityId, RockContext rockContext, DateTime lastConnectionDateTime, int personId )
         {
             return new ConnectionRequestService( rockContext )
-                                .Queryable()
-                                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
-                                    && ( a.ConnectionState == ConnectionState.Active
-                                         || a.ConnectionState == ConnectionState.FutureFollowUp
-                                         || ( a.ConnectionState == ConnectionState.Connected && a.ModifiedDateTime > lastConnectionDateTime ) ) )
-                                .Any();
+                .Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunityId == connectionOpportunityId
+                    && ( a.ConnectionState == ConnectionState.Active
+                            || a.ConnectionState == ConnectionState.FutureFollowUp
+                            || ( ( a.ConnectionState == ConnectionState.Connected || a.ConnectionState == ConnectionState.Inactive ) && a.ModifiedDateTime > lastConnectionDateTime ) ) )
+                .Any();
         }
 
         /// <summary>

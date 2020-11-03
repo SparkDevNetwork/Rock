@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Crm
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
     #endregion Block Attributes
-    public partial class Documents : RockBlock
+    public partial class Documents : RockBlock, ISecondaryBlock
     {
         private static class AttributeKeys
         {
@@ -76,6 +76,19 @@ namespace RockWeb.Blocks.Crm
 
         protected string icon;
         protected string title;
+
+        #region ISecondaryBlock Implementation
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
+
+        #endregion ISecondaryBlock Implementation
 
         #region Control Overrides
 
@@ -112,7 +125,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !IsPostBack )
             {
-                PopulateDocumentTypeDropDownLists();
+                PopulateFilterDocumentTypeDropDownList();
                 BindGrid();
             }
             else
@@ -136,7 +149,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            PopulateDocumentTypeDropDownLists();
+            PopulateFilterDocumentTypeDropDownList();
             BindGrid();
         }
 
@@ -155,7 +168,6 @@ namespace RockWeb.Blocks.Crm
             var blockContextEntityTypes = ContextTypesRequired;
             bool hasError = false;
 
-            upPanel.Visible = true;
             nbMessage.Text = string.Empty;
             nbMessage.Visible = false;
 
@@ -186,7 +198,7 @@ namespace RockWeb.Blocks.Crm
             // If there isn't an entity at this point a new item is being created and there isn't an ID for it yet. So don't show the block.
             if ( this.ContextEntity() == null )
             {
-                upPanel.Visible = false;
+                pnlContent.Visible = false;
                 return false;
             }
 
@@ -225,17 +237,75 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Creates a list of valid DocumentTypes for the ContextEntity and populates the document type drop down lists.
+        /// Populates the filter document type drop down list.
         /// </summary>
-        private void PopulateDocumentTypeDropDownLists()
+        private void PopulateFilterDocumentTypeDropDownList()
+        {
+            var filteredDocumentTypes = GetFilteredDocumentTypes();
+            ddlDocumentType.Items.Clear();
+            if ( filteredDocumentTypes.Any() )
+            {
+                ddlDocumentType.Items.Add( new ListItem( "All Document Types", string.Empty ) );
+
+                foreach ( var documentType in filteredDocumentTypes )
+                {
+                    ddlDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Populates the edit document type drop down list.
+        /// </summary>
+        private void PopulateEditDocumentTypeDropDownList( bool isNew = false )
+        {
+            var filteredDocumentTypes = GetFilteredDocumentTypes();
+
+            /*
+               SK 20120-10-10
+               Only check for Audit authorization for new documents as document type field is readonly on edit
+            */
+            if ( isNew )
+            {
+                var editAccessDeniedForDocumentTypeList = new List<int>();
+                foreach ( var documentType in filteredDocumentTypes )
+                {
+                    if ( !documentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        editAccessDeniedForDocumentTypeList.Add( documentType.Id );
+                    }
+                }
+
+                filteredDocumentTypes = filteredDocumentTypes
+                    .Where( d => !editAccessDeniedForDocumentTypeList.Contains( d.Id ) );
+            }
+
+            filteredDocumentTypes = filteredDocumentTypes.Where( a => !isNew || a.UserSelectable );
+
+            ddlAddEditDocumentType.Items.Clear();
+            ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            if ( filteredDocumentTypes.Any() )
+            {
+                foreach ( var documentType in filteredDocumentTypes )
+                {
+                    ddlAddEditDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get filtered document Types
+        /// </summary>
+        private IEnumerable<DocumentTypeCache> GetFilteredDocumentTypes()
         {
             var contextEntity = this.ContextEntity();
             if ( contextEntity == null )
             {
-                return;
+                return new List<DocumentTypeCache>();
             }
             var entityTypeId = contextEntity.TypeId;
-            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
+            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, true );
 
             // Get the document types allowed from the block settings and only have those in the list of document types for the entity
             if ( GetAttributeValue( AttributeKeys.DocumentTypes ).IsNotNullOrWhiteSpace() )
@@ -246,8 +316,6 @@ namespace RockWeb.Blocks.Crm
 
             // Remove document types from the list that do not match the EntityTypeQualifiers
             var accessDeniedForDocumentTypeList = new List<int>();
-            var editAccessDeniedForDocumentTypeList = new List<int>();
-
             foreach ( var documentType in documentypesForContextEntityType )
             {
                 // Check System Security on the type
@@ -256,12 +324,6 @@ namespace RockWeb.Blocks.Crm
                     accessDeniedForDocumentTypeList.Add( documentType.Id );
                     continue;
                 }
-
-                if ( !documentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
-                {
-                    editAccessDeniedForDocumentTypeList.Add( documentType.Id );
-                }
-
 
                 // If the document does not have a qualifier column specified then allow it by default
                 if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
@@ -285,40 +347,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // Create the list of document types that are valid for this entity, satisfy EntityTypeQualifiers, and that the current user has rights to view
-            var filteredDocumentTypes = documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
-            var editFilteredDocumentTypes = filteredDocumentTypes.Where( d => !editAccessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
-
-            PopulateDdlDocumentType( filteredDocumentTypes );
-            PopulateDdlAddEditDocumentType( editFilteredDocumentTypes );
-        }
-
-        /// <summary>
-        /// Populates the DocumentType DDL on the add/edit panel
-        /// </summary>
-        /// <param name="documentTypes">The document types.</param>
-        private void PopulateDdlAddEditDocumentType( List<DocumentTypeCache> documentTypes )
-        {
-            ddlAddEditDocumentType.Items.Clear();
-            ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach ( var documentType in documentTypes )
-            {
-                ddlAddEditDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
-            }
-        }
-
-        /// <summary>
-        /// Populates the DocumentType DDL on the grid filter
-        /// </summary>
-        /// <param name="documentTypes">The document types.</param>
-        private void PopulateDdlDocumentType( List<DocumentTypeCache> documentTypes )
-        {
-            ddlDocumentType.Items.Add( new ListItem( "All Document Types", string.Empty ) );
-
-            foreach ( var documentType in documentTypes )
-            {
-                ddlDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
-            }
+            return documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) );
         }
 
         #endregion Private Methods
@@ -399,6 +428,7 @@ namespace RockWeb.Blocks.Crm
 
         protected void gFileList_RowSelected( object sender, RowEventArgs e )
         {
+            PopulateEditDocumentTypeDropDownList();
             ClearForm();
 
             using ( var rockContext = new RockContext() )
@@ -440,6 +470,7 @@ namespace RockWeb.Blocks.Crm
 
         protected void gFileList_Add( object sender, EventArgs e )
         {
+            PopulateEditDocumentTypeDropDownList( true );
             ClearForm();
             pdAuditDetails.Visible = false;
             pnlAddEdit.Visible = true;

@@ -169,87 +169,86 @@ public class Mailgun : IHttpHandler
 
     private void ProcessRequest()
     {
-        using ( var rockContext = new Rock.Data.RockContext() )
+        var rockContext = new Rock.Data.RockContext();
+
+        // We need to get the transport type now that there are two
+        var emailMediumEntity = EntityTypeCache.Get( "Rock.Communication.Medium.Email" );
+
+        var emailMediumAttribute = new AttributeService( rockContext )
+            .Queryable()
+            .Where( a => a.EntityTypeId == emailMediumEntity.Id && a.Key == "TransportContainer" )
+            .FirstOrDefault();
+
+        var emailMediumAttributeValue = new AttributeValueService( rockContext )
+            .Queryable()
+            .Where( v => v.AttributeId == emailMediumAttribute.Id )
+            .FirstOrDefault();
+
+        string apiKey = string.Empty;
+
+        var mailgunEntity = EntityTypeCache.Get( emailMediumAttributeValue.Value.AsGuid(), rockContext );
+        if ( mailgunEntity != null )
         {
-            // We need to get the transport type now that there are two
-            var emailMediumEntity = EntityTypeCache.Get( "Rock.Communication.Medium.Email" );
-
-            var emailMediumAttribute = new AttributeService( rockContext )
+            apiKey = new AttributeValueService( rockContext )
                 .Queryable()
-                .Where( a => a.EntityTypeId == emailMediumEntity.Id && a.Key == "TransportContainer" )
+                .AsNoTracking()
+                .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "APIKey" )
+                .Select( v => v.Value )
                 .FirstOrDefault();
+        }
 
-            var emailMediumAttributeValue = new AttributeValueService( rockContext )
-                .Queryable()
-                .Where( v => v.AttributeId == emailMediumAttribute.Id )
-                .FirstOrDefault();
-
-            string apiKey = string.Empty;
-
-            var mailgunEntity = EntityTypeCache.Get( emailMediumAttributeValue.Value.AsGuid(), rockContext );
-            if ( mailgunEntity != null )
-            {
-                apiKey = new AttributeValueService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "APIKey" )
-                    .Select( v => v.Value )
-                    .FirstOrDefault();
-            }
-
-            if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, apiKey ) )
-            {
-                response.Write( "Invalid request signature." );
-                response.StatusCode = 406;
-                return;
-            }
+        if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, apiKey ) )
+        {
+            response.Write( "Invalid request signature." );
+            response.StatusCode = 406;
+            return;
+        }
             
-            Guid? actionGuid = null;
-            Guid? communicationRecipientGuid = null;
+        Guid? actionGuid = null;
+        Guid? communicationRecipientGuid = null;
 
-            if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.WorkflowActionGuid ) )
-            {
-                actionGuid = mailgunRequestPayload.WorkflowActionGuid.Split( ',' )[0].AsGuidOrNull();
-            }
+        if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.WorkflowActionGuid ) )
+        {
+            actionGuid = mailgunRequestPayload.WorkflowActionGuid.Split( ',' )[0].AsGuidOrNull();
+        }
 
-            if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.CommunicationRecipientGuid ) )
-            {
-                communicationRecipientGuid = mailgunRequestPayload.CommunicationRecipientGuid.Split( ',' )[0].AsGuidOrNull();
-            }
+        if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.CommunicationRecipientGuid ) )
+        {
+            communicationRecipientGuid = mailgunRequestPayload.CommunicationRecipientGuid.Split( ',' )[0].AsGuidOrNull();
+        }
 
-            if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.XMailgunVariables ) )
+        if ( !string.IsNullOrWhiteSpace( mailgunRequestPayload.XMailgunVariables ) )
+        {
+            // for http sent email, mailgun puts the info as URL encoded JSON into the form key "X-Mailgun-Variables"
+            string mailgunVariables = HttpContext.Current.Server.UrlDecode( mailgunRequestPayload.XMailgunVariables );
+            if ( mailgunVariables.IsNotNullOrWhiteSpace() )
             {
-                // for http sent email, mailgun puts the info as URL encoded JSON into the form key "X-Mailgun-Variables"
-                string mailgunVariables = HttpContext.Current.Server.UrlDecode( mailgunRequestPayload.XMailgunVariables );
-                if ( mailgunVariables.IsNotNullOrWhiteSpace() )
+                var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
+
+                if ( actionGuid == null && mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) )
                 {
-                    var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
+                    actionGuid = mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull();
+                }
 
-                    if ( actionGuid == null && mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) )
-                    {
-                        actionGuid = mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull();
-                    }
-
-                    if ( communicationRecipientGuid == null && mailgunVarDictionary.ContainsKey( "communication_recipient_guid" ) )
-                    {
-                        communicationRecipientGuid = mailgunVarDictionary["communication_recipient_guid"].AsGuidOrNull();
-                    }
+                if ( communicationRecipientGuid == null && mailgunVarDictionary.ContainsKey( "communication_recipient_guid" ) )
+                {
+                    communicationRecipientGuid = mailgunVarDictionary["communication_recipient_guid"].AsGuidOrNull();
                 }
             }
-
-            if ( actionGuid != null )
-            {
-                ProcessForWorkflow( actionGuid, rockContext );
-            }
-
-            if ( communicationRecipientGuid != null )
-            {
-                ProcessForReceipent( communicationRecipientGuid, rockContext );
-            }
-
-            response.Write( string.Format( "Successfully processed '{0}' message", mailgunRequestPayload.EventType ) );
-            response.StatusCode = ( int ) System.Net.HttpStatusCode.OK;
         }
+
+        if ( actionGuid != null )
+        {
+            ProcessForWorkflow( actionGuid, rockContext );
+        }
+
+        if ( communicationRecipientGuid != null )
+        {
+            ProcessForReceipent( communicationRecipientGuid, rockContext );
+        }
+
+        response.Write( string.Format( "Successfully processed '{0}' message", mailgunRequestPayload.EventType ) );
+        response.StatusCode = ( int ) System.Net.HttpStatusCode.OK;
     }
 
     /// <summary>
