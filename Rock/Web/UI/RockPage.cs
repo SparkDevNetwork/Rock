@@ -1365,6 +1365,18 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
+                        var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+                        var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+                        var cacheIndicator = isCacheEnabled ? "text-success" : "text-danger";
+                        var cacheEnabled = isCacheEnabled ? "enabled" : "disabled";
+
+                        var lbCacheControl = new LinkButton();
+                        lbCacheControl.Click += lbCacheControl_Click;
+                        lbCacheControl.CssClass = $"margin-l-md fa fa-memory {cacheIndicator}";
+                        lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        adminFooter.Controls.Add( lbCacheControl );
+
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
@@ -3514,6 +3526,35 @@ Sys.Application.add_load(function () {
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
+        /// <summary>
+        /// Handles the Click event of the lbCacheControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbCacheControl_Click( object sender, EventArgs e )
+        {
+            var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+            var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+            if ( cacheControlCookie == null )
+            {
+                cacheControlCookie = new HttpCookie( RockCache.CACHE_CONTROL_COOKIE );
+            }
+
+            cacheControlCookie.Value = ( !isCacheEnabled ).ToString();
+
+            AddOrUpdateCookie( cacheControlCookie );
+
+            if ( PageReference != null )
+            {
+                string pageUrl = PageReference.BuildUrl();
+                if ( !string.IsNullOrWhiteSpace( pageUrl ) )
+                {
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+        }
         #endregion
     }
 

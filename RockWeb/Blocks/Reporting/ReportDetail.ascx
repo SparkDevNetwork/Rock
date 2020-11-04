@@ -102,7 +102,7 @@
                                 <div class="pull-right">
                                     <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
-                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>
                             </div>
                         </div>

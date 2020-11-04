@@ -454,9 +454,12 @@ namespace Rock.Model
             // Find people who have a good confidence score
             var goodMatches = foundPeople.Values
                 .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
-                .OrderByDescending( match => match.ConfidenceScore );
+                .OrderByDescending( match => match.ConfidenceScore )
+                .Select( match => match.PersonId )
+                .ToList();
 
-            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
+            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
         }
 
         #region FindPersonClasses
@@ -931,7 +934,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="personConnectionStatusId">A <see cref="System.Int32"/> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be

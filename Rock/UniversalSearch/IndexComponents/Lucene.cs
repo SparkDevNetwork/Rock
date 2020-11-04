@@ -267,7 +267,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                     if ( indexModelType != null )
                     {
-                        document = (IndexModelBase)jObject.ToObject( indexModelType ); // return the source document as the derived type
+                        document = ( IndexModelBase ) jObject.ToObject( indexModelType ); // return the source document as the derived type
                     }
                     else
                     {
@@ -281,7 +281,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 return document;
             }
-            catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+            catch
+            {
+                // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+            }
+
             return null;
         }
         #endregion
@@ -312,7 +316,6 @@ namespace Rock.UniversalSearch.IndexComponents
             get
             {
                 return _path;
-
             }
         }
         #endregion
@@ -500,7 +503,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 var entityTypeService = new EntityTypeService( rockContext );
                 if ( entities == null || entities.Count == 0 )
                 {
-                    //add all entities
+                    // add all entities
                     allEntities = true;
                     var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 
@@ -525,30 +528,57 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
 
                 indexModelTypes = indexModelTypes.Distinct().ToList();
-                CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
-
-                if ( entities != null && entities.Count != 0 && !allEntities )
-                {
-                    var indexModelTypesQuery = new BooleanQuery();
-                    indexModelTypes.ForEach( f => indexModelTypesQuery.Add( new TermQuery( new Term( "type", f.Name.ToLower() ) ), Occur.SHOULD ) );
-                    queryContainer.Add( indexModelTypesQuery, Occur.MUST );
-                }
             }
 
-            TopDocs topDocs = null;
-            // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
+            CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
 
-            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+            var entityFieldFilter = new BooleanQuery();
+            if ( entities != null && entities.Count != 0 && !allEntities )
             {
                 Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
-                foreach ( var match in fieldCriteria.FieldValues )
+                var indexModelTypesQuery = new BooleanQuery();
+
+                foreach ( var modelType in indexModelTypes )
                 {
-                    BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
-                    booleanClause.Query.Boost = match.Boost;
-                    queryContainer.Add( booleanClause );
+                    var modelFilter = new BooleanQuery();
+                    modelFilter.Add( new TermQuery( new Term( "type", modelType.Name.ToLower() ) ), Occur.MUST );
+
+                    if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+                    {
+                        var fieldQuery = new BooleanQuery();
+                        foreach ( var field in fieldCriteria.FieldValues )
+                        {
+                            var fieldName = field.Field.Substring( 0, 1 ).ToUpper() + field.Field.Substring( 1 );
+
+                            if ( modelType.GetProperty( fieldName ) != null )
+                            {
+                                // Add field filter
+                                var phraseQuery = new PhraseQuery();
+
+                                foreach ( var word in field.Value.Split( ' ' ) )
+                                {
+                                    phraseQuery.Add( new Term( fieldName, word.ToLower() ) );
+                                }
+
+                                BooleanClause booleanClause = new BooleanClause( phraseQuery, occur );
+                                booleanClause.Query.Boost = field.Boost;
+                                fieldQuery.Add( booleanClause );
+                            }
+                        }
+
+                        if ( fieldQuery.Clauses.Count() > 0 )
+                        {
+                            modelFilter.Add( fieldQuery, Occur.MUST );
+                        }
+                    }
+
+                    indexModelTypesQuery.Add( modelFilter, Occur.SHOULD );
                 }
+
+                entityFieldFilter.Add( indexModelTypesQuery, Occur.MUST );
             }
+
+            queryContainer.Add( entityFieldFilter, Occur.MUST );
 
             switch ( searchType )
             {
@@ -594,6 +624,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                     break;
                 }
+
                 case SearchType.Fuzzy:
                 {
                     foreach ( var field in combinedFields )
@@ -603,6 +634,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                     break;
                 }
+
                 case SearchType.Wildcard:
                 {
                     bool enablePhraseSearch = true;
@@ -636,17 +668,17 @@ namespace Rock.UniversalSearch.IndexComponents
                             if ( queryTerms.Count() > 1 && ( indexModelTypes.Contains( typeof( PersonIndex ) ) || indexModelTypes.Contains( typeof( BusinessIndex ) ) ) )
                             {
                                 BooleanQuery nameQuery = new BooleanQuery
-                                    {
-                                        { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                        { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                    };
+                                {
+                                    { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                    { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                };
                                 wildcardQuery.Add( nameQuery, Occur.SHOULD );
 
                                 nameQuery = new BooleanQuery
-                                    {
-                                        { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                        { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                    };
+                                {
+                                    { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                    { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                };
                                 wildcardQuery.Add( nameQuery, Occur.SHOULD );
                             }
 
@@ -684,6 +716,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
             OpenReader();
 
+            TopDocs topDocs = null;
             if ( from.HasValue )
             {
                 TopScoreDocCollector collector = TopScoreDocCollector.Create( returnSize * 10, true ); // Search for 10 pages with returnSize entries in each page
@@ -771,21 +804,22 @@ namespace Rock.UniversalSearch.IndexComponents
                                 case IndexFieldType.Boolean:
                                 case IndexFieldType.Date:
                                 case IndexFieldType.Number:
-                                    {
-                                        typeMappingProperty.IndexType = IndexType.NotAnalyzed;
-                                        typeMappingProperty.Analyzer = string.Empty;
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        typeMappingProperty.IndexType = attribute.Index;
-                                        if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
-                                        {
-                                            typeMappingProperty.Analyzer = attribute.Analyzer;
-                                        }
+                                {
+                                    typeMappingProperty.IndexType = IndexType.NotAnalyzed;
+                                    typeMappingProperty.Analyzer = string.Empty;
+                                    break;
+                                }
 
-                                        break;
+                                default:
+                                {
+                                    typeMappingProperty.IndexType = attribute.Index;
+                                    if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
+                                    {
+                                        typeMappingProperty.Analyzer = attribute.Analyzer;
                                     }
+
+                                    break;
+                                }
                             }
 
                             typeMapping.Add( propertyName, typeMappingProperty );
@@ -796,7 +830,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 {
                                     var tokenizer = new StandardTokenizer( _matchVersion, reader );
                                     var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
-                                    sbpff.Inform(new ClasspathResourceLoader( documentType ) );
+                                    sbpff.Inform( new ClasspathResourceLoader( documentType ) );
                                     TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
                                     return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
                                 } );
@@ -870,7 +904,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
 
                 // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-                PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
+                var analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion, new CharArraySet( _matchVersion, 0, true ) ), fieldAnalyzers: index.FieldAnalyzers );
 
                 OpenWriter();
                 lock ( _lockWriter )
@@ -887,14 +921,13 @@ namespace Rock.UniversalSearch.IndexComponents
                 ExceptionLogService.LogException( ex, context2 );
             }
         }
-#endregion
+        #endregion
 
-/// <summary>
-/// Dispose of the index from memory and close all files.
-/// </summary>
-
-#region Constructors and Destructors
-public static void Dispose()
+        #region Constructors and Destructors
+        /// <summary>
+        /// Dispose of the index from memory and close all files.
+        /// </summary>
+        public static void Dispose()
         {
             lock ( _lockWriter )
             {

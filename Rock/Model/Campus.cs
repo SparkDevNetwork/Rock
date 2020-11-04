@@ -232,7 +232,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the the campus status.
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the campus status.
         /// </summary>
         /// <value>
         /// A <see cref="DefinedValue"/> object representing the campus status.

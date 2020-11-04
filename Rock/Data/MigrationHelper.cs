@@ -117,11 +117,20 @@ namespace Rock.Data
 	                DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
 	                DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
 	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+                    DECLARE @OldGuidString nvarchar(50) = LOWER(CAST(@Guid AS nvarchar(50)))
 
-                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), @OldGuidString, LOWER('{5}') )
 	                FROM [AttributeValue] V
 	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
-	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+	                WHERE
+                        (
+                            A.[FieldTypeId] = @EntityTypeFieldTypeId OR
+                            A.[FieldTypeId] = @ComponentFieldTypeId	OR
+                            A.[FieldTypeId] = @ComponentsFieldTypeId
+                        ) AND
+                        Value IS NOT NULL AND
+                        Value != '' AND
+                        V.Value LIKE '%' + @OldGuidString + '%' -- short circuit unnecessary writes, which are slow because of indexes
                     OPTION (RECOMPILE)
 
                 END
@@ -3326,14 +3335,15 @@ END" );
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         public void DeleteAttributesByEntityType( string entityTypeGuid )
         {
-            Migration.Sql( string.Format( @"
-                SELECT a.*
-                FROM Attribute a
-                WHERE a.EntityTypeId IN (
-	                SELECT w.Id
-	                FROM EntityType w
-	                WHERE w.Guid = '{0}'
-                )", entityTypeGuid ) );
+            Migration.Sql( $@"
+                DECLARE @EntityTypeGuid AS varchar(50) = '{entityTypeGuid}'
+                DECLARE @EntityTypeId AS int = (SELECT [Id] FROM [dbo].[EntityType] WHERE [Guid] = @EntityTypeGuid)
+
+                IF (@EntityTypeId IS NOT NULL)
+                BEGIN
+	                DELETE FROM [dbo].[Attribute] WHERE [EntityTypeId] = @EntityTypeId
+                END" );
+
         }
 
         /// <summary>

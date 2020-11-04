@@ -909,7 +909,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> that represents the the purpose of the GroupType.
+        /// A <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }

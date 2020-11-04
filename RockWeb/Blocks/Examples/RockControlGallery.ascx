@@ -565,6 +565,10 @@
                     </div>
 
                     <h2 runat="server">Locations</h2>
+                    <a id="LocationList"></a>
+                    <div id="Div3" runat="server" class="r-example">
+                        <Rock:LocationList ID="LocationList1" runat="server" Label="Rock:LocationList" AllowAdd="true" ShowCityState="true" IsAddressRequired="true" />
+                    </div>
 
                     <a id="LocationPicker"></a>
                     <div id="Div2" runat="server" class="r-example">

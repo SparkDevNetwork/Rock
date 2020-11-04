@@ -207,7 +207,7 @@ namespace Rock.Net
                 }
 
                 //
-                // Determine the the entity type in question.
+                // Determine the entity type in question.
                 //
                 var entityName = kvp.Key.Substring( 16 );
                 var type = EntityTypeCache.All()
