@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Connection
         Order = 8
     )]
     #endregion Block Attributes
-    public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
+    public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock, Rock.Web.UI.ICustomGridColumns
     {
         #region Attribute Keys
         private static class AttributeKey
