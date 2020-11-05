@@ -42,12 +42,12 @@ module.exports = {
     {
       name: 'System Setup',
       description: 'Useful tips and scripts for setting up your system for Vue Development',
-      content: 'docs/System_Setup/system_setup.md',
+      content: 'docs/System_Setup/Documentation/system_setup.md',
       sections: [
         {
           name: 'Useful VS Code Extensions',
           description: 'A list of Useful VS Code Extensions',
-          content: 'docs/System_Setup/vscodextensions.md',
+          content: 'docs/System_Setup/Documentation/vscodextensions.md',
         },
       ]
       ,
