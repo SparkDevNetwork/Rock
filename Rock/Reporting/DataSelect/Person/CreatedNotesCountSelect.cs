@@ -228,17 +228,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
-        {
-            base.RenderControls( parentControl, writer, controls );
-        }
-
-        /// <summary>
         /// Gets the selection.
         /// </summary>
         /// <param name="controls">The controls.</param>
@@ -286,7 +275,8 @@ namespace Rock.Reporting.DataSelect.Person
         private class CreatedNotesCountSelectSettings : SettingsStringBase
         {
             public readonly List<int> NoteTypeIds = new List<int>();
-            public string DelimitedValues;
+
+            public string DelimitedValues { get; set; }
 
             public CreatedNotesCountSelectSettings()
             {
@@ -309,7 +299,7 @@ namespace Rock.Reporting.DataSelect.Person
                     NoteTypeIds.Add( noteTypeId.AsInteger() );
                 }
 
-                DelimitedValues = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 1 ).Replace(";","|");
+                DelimitedValues = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 1 ).Replace( ";", "|" );
             }
 
             protected override IEnumerable<string> OnGetParameters()
