@@ -172,7 +172,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, true );
+            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, string.Empty, string.Empty, true );
             if ( !documentypesForContextEntityType.Any( d => attributeFilteredDocumentType == d.Id ) )
             {
                 var message = "The Document Type does not match the selected entity type.";
@@ -205,6 +205,13 @@ namespace Rock.Workflow.Action
             document.DocumentTypeId = documentType.Id;
             document.SetBinaryFile( binaryFile.Id, rockContext );
 
+            if ( !document.IsValidDocument( rockContext, out string errorMessage ) )
+            {
+                errorMessages.Add( errorMessage );
+                action.AddLogEntry( errorMessage, true );
+                return false;
+            }
+
             var documentService = new DocumentService( rockContext );
             documentService.Add( document );
             rockContext.SaveChanges();
@@ -214,4 +221,3 @@ namespace Rock.Workflow.Action
         }
     }
 }
-
