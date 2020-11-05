@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -170,6 +171,92 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Actions to perform prior to saving the changes to the GroupMember object in the context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State != EntityState.Deleted )
+            {
+                if ( !IsValidDocument( ( RockContext ) dbContext, out string errorMessage ) )
+                {
+                    var ex = new DocumentValidationException( errorMessage );
+                    ExceptionLogService.LogException( ex );
+                    throw ex;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// NOTE: Try using IsValidDocument instead
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        result = this.IsValidDocument( rockContext, out string errorMessage );
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Calls IsValid with the specified context (to avoid deadlocks)
+        /// Try to call this instead of IsValid when possible.
+        /// Note that this same validation will be done by the service layer when SaveChanges() is called
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid group member] [the specified rock context]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValidDocument( RockContext rockContext, out string errorMessage )
+        {
+            var result = base.IsValid;
+            errorMessage = string.Empty;
+            if ( result )
+            {
+                var documentType = DocumentType ?? new DocumentTypeService( rockContext ).Get( DocumentTypeId );
+
+                if ( documentType == null )
+                {
+                    errorMessage = $"Invalid document type found.";
+                    ValidationResults.Add( new ValidationResult( errorMessage ) );
+                    result = false;
+                }
+
+                if ( documentType != null && documentType.MaxDocumentsPerEntity.HasValue )
+                {
+                    var documentsPerEntityCount = new DocumentService( rockContext )
+                        .Queryable()
+                        .Where( a => a.DocumentTypeId == DocumentTypeId && EntityId == this.EntityId )
+                        .Count();
+
+                    if ( documentsPerEntityCount >= documentType.MaxDocumentsPerEntity.Value )
+                    {
+                        errorMessage = $"Unable to add document because there is a limit of {documentType.MaxDocumentsPerEntity} documents for this type.";
+                        ValidationResults.Add( new ValidationResult( errorMessage ) );
+                        result = false;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Indexing Methods
@@ -262,6 +349,25 @@ namespace Rock.Model
         {
             return false;
         }
+        #endregion
+
+        #region Exceptions
+
+        /// <summary>
+        /// Exception to throw if Document validation rules are invalid (and can't be checked using .IsValid)
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        public class DocumentValidationException : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DocumentValidationException"/> class.
+            /// </summary>
+            /// <param name="message">The message that describes the error.</param>
+            public DocumentValidationException( string message ) : base( message )
+            {
+            }
+        }
+
         #endregion
 
         /// <summary>
