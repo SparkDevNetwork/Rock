@@ -48,25 +48,22 @@
 
                     <%-- Steps Activity Summary --%>
                     <div id="pnlActivitySummary" runat="server">
-                        <div class="row">
-                            <div class="col-sm-5">
+                        <div class="d-flex flex-wrap">
+                            <div>
                                 <h5 class="mt-0">Steps Activity Summary</h5>
                             </div>
-                            <div class="col-sm-7">
-                                <div class="d-flex justify-content-end">
+                            <div class="flex-grow-1 d-flex justify-content-end">
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                                            runat="server"
+                                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                            EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                            SlidingDateRangeMode="Current"
+                                            TimeUnit="Year"
+                                            FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end"
+                                            Label="" />
 
-                                    <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
-                                                runat="server"
-                                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                                EnabledSlidingDateRangeUnits="Week, Month, Year"
-                                                SlidingDateRangeMode="Current"
-                                                TimeUnit="Year"
-                                                FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end"
-                                                Label="" />
-
-                                    <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Refresh Chart"
-                                        OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
-                                </div>
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
                         <%-- Steps Activity Chart --%>
