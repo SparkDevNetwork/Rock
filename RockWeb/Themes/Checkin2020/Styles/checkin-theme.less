@@ -1,0 +1,62 @@
+/*
+     
+     NewPointe Orange Check-in Theme
+     Crafted by: NewPointe Community Church
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () { }
+
+.checkinBackgroundRetina() { }
+
+//
+// Custom Overrides
+// --------------------------------------------------
+
+.checkin-count h3,
+.checkin-count li {
+    color: #4c4c4b;
+}
+
+h1 {
+    text-transform: uppercase;
+    letter-spacing: 0px;
+}
+
+.btn {
+    border-radius: 0;
+    border: 2px solid #fff;
+    text-transform: uppercase;
+    display: inline-flex;
+    justify-content: center;
+}
+
+body {
+    background: url('../Assets/Images/background.svg') repeat top left, linear-gradient(#f7941d, #f67a22) fixed;
+    animation: fadein 0.4s;
+    -ms-touch-action: none !important;
+    touch-action: none;   /* Disable any special actions on tap/touch */
+    -ms-content-zooming: none; /* Disables zooming */
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@import "_css-overrides.less";
