@@ -49,22 +49,24 @@
                     <%-- Steps Activity Summary --%>
                     <div id="pnlActivitySummary" runat="server">
                         <div class="row">
-                            <div class="col-sm-6">
-                                <h5 class="margin-t-none">Steps Activity Summary</h5>
+                            <div class="col-sm-5">
+                                <h5 class="mt-0">Steps Activity Summary</h5>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-7">
+                                <div class="d-flex justify-content-end">
 
-                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-square pull-right" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                                    <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                                                runat="server"
+                                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                                EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                                SlidingDateRangeMode="Current"
+                                                TimeUnit="Year"
+                                                FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end"
+                                                Label="" />
 
-                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
-                                            runat="server"
-                                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                            EnabledSlidingDateRangeUnits="Week, Month, Year"
-                                            SlidingDateRangeMode="Current"
-                                            TimeUnit="Year"
-                                            CssClass="pull-right" Label="" />
-
+                                    <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Refresh Chart"
+                                        OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                                </div>
                             </div>
                         </div>
                         <%-- Steps Activity Chart --%>
