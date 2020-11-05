@@ -35,12 +35,7 @@
                 url
             });
 
-            return axios({
-                method,
-                url,
-                data,
-                params
-            });
+            return Obsidian.Http.doApiCall(method, url, data, params);
         },
         httpGet(url, params) {
             return this.httpCall('GET', url, params);

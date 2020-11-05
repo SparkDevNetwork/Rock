@@ -1,5 +1,5 @@
-﻿Obsidian.Blocks['Crm/AttributeValues'] = {
-    name: 'Crm_AttributeValues',
+﻿Obsidian.Blocks['Crm.AttributeValues'] = {
+    name: 'Crm.AttributeValues',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
         RockLoading: Obsidian.Controls.RockLoading,

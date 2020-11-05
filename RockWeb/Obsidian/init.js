@@ -7,8 +7,20 @@
     Obsidian.Blocks = {};
     Obsidian.Fields = {};
 
+    Obsidian.Http = {
+        doApiCall(method, url, params, data) {
+            return axios({ method, url, data, params });
+        },
+        get(url, params) {
+            return Obsidian.Http.doApiCall('GET', url, params);
+        },
+        post(url, params, data) {
+            return Obsidian.Http.doApiCall('POST', url, params, data);
+        }
+    };
+
     Obsidian.initializePage = function (pageData) {
-        Obsidian.Store.commit('setPageInitializationData', pageData);
+        Obsidian.Store.dispatch('initialize', { pageData });
     };
 
     Obsidian.initializeBlock = function (config) {
