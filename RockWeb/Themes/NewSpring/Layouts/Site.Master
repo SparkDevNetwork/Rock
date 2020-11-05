@@ -81,11 +81,25 @@
                 <Rock:Zone Name="Header" runat="server" />
             </div>
 
+            <Rock:Lava ID="PageConstrained" runat="server">
+                {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
+                {% if isPageConstrained == 'Yes' %}
+                    <div class="page-constrained mx-auto">
+                {% endif %}
+            </Rock:Lava>
+
             <div id="content" class="clearfix">
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
                 <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
                 <Rock:Zone Name="Footer" runat="server" />                
             </div>
+
+            <Rock:Lava ID="PageConstrainedClose" runat="server">
+                {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
+                {% if isPageConstrained == 'Yes' %}
+                    </div>
+                {% endif %}
+            </Rock:Lava>
 
             <%-- controls for scriptmanager and update panel --%>
             <asp:ScriptManager ID="sManager" runat="server"/>
