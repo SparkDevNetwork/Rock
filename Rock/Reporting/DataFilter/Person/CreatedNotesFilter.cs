@@ -129,7 +129,6 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-
             var result = "Created Person Note";
 
             var selectionConfig = SelectionConfig.Parse( selection );
@@ -149,6 +148,7 @@ namespace Rock.Reporting.DataFilter.Person
                             noteTypeNames.Add( noteType.Name );
                         }
                     }
+
                     result += string.Format( " with note types: {0}.", noteTypeNames.AsDelimited( "," ) );
                 }
 
@@ -211,18 +211,6 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( nbMinimumCount );
 
             return new System.Web.UI.Control[3] { cblNoteTypes, slidingDateRangePicker, nbMinimumCount };
-        }
-
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
-        {
-            base.RenderControls( entityType, filterControl, writer, controls );
         }
 
         /// <summary>
