@@ -314,7 +314,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public virtual void LoadDefinedValues()
         {
-            throw new NotImplementedException();
+            // Not Implemented
         }
 
         /// <summary>
