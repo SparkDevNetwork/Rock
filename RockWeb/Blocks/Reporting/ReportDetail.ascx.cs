@@ -1205,6 +1205,10 @@ namespace RockWeb.Blocks.Reporting
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lReportDescription.Text = report.Description.ConvertMarkdownToHtml();
 
+            SetupTimeToRunLabel( report );
+            SetupNumberOfRuns( report );
+            SetupLastRun( report );
+
             if ( report.DataView != null )
             {
                 lbDataView.Visible = UserCanEdit;
@@ -1221,6 +1225,93 @@ namespace RockWeb.Blocks.Reporting
             }
 
             BindGrid( report, false );
+        }
+
+        /// <summary>
+        /// Sets up the last run highlight label
+        /// </summary>
+        /// <param name="report">The report.</param>
+        private void SetupLastRun( Report report )
+        {
+            if ( report.LastRunDateTime == null )
+            {
+                return;
+            }
+
+            hlLastRun.Text = string.Format( "Last Run: {0}", report.LastRunDateTime.ToShortDateString() );
+            hlLastRun.LabelType = LabelType.Default;
+        }
+
+        /// <summary>
+        /// Sets up the number of runs highlight label
+        /// </summary>
+        /// <param name="report">The report.</param>
+        private void SetupNumberOfRuns( Report report )
+        {
+            hlRunSince.Text = "Not Run";
+            hlRunSince.LabelType = LabelType.Info;
+
+            var status = "Since Creation";
+
+            if ( report.RunCount == null || report.RunCount.Value == 0 )
+            {
+                hlRunSince.LabelType = LabelType.Warning;
+                hlRunSince.Text = string.Format( "Not Run {0}", status );
+                return;
+            }
+
+            hlRunSince.Text = string.Format( "{0:0} Runs {1}", report.RunCount, status );
+        }
+
+        /// <summary>
+        /// Sets up the time to run highlight label.
+        /// </summary>
+        /// <param name="report">The report.</param>
+        private void SetupTimeToRunLabel( Report report )
+        {
+            hlTimeToRun.Text = string.Empty;
+            hlTimeToRun.LabelType = LabelType.Default;
+
+            if ( report == null || report.TimeToRunDurationMilliseconds == null )
+            {
+                return;
+            }
+
+            var labelValue = report.TimeToRunDurationMilliseconds.Value;
+            var labelUnit = "ms";
+            var labelType = LabelType.Success;
+            if ( labelValue > 1000 )
+            {
+                labelValue = labelValue / 1000;
+                labelUnit = "s";
+
+                if ( labelValue > 10 )
+                {
+                    labelType = LabelType.Warning;
+                }
+            }
+
+            if ( labelValue > 60 && labelUnit == "s" )
+            {
+                labelValue = labelValue / 60;
+                labelUnit = "m";
+
+                if ( labelValue > 1 )
+                {
+                    labelType = LabelType.Danger;
+                }
+            }
+
+            hlTimeToRun.LabelType = labelType;
+            var isValueAWholeNumber = Math.Abs( labelValue % 1 ) < 0.01;
+            if ( isValueAWholeNumber )
+            {
+                hlTimeToRun.Text = string.Format( "Time To Run: {0:0}{1}", labelValue, labelUnit );
+            }
+            else
+            {
+                hlTimeToRun.Text = string.Format( "Time To Run: {0:0.0}{1}", labelValue, labelUnit );
+            }
         }
 
         /// <summary>
