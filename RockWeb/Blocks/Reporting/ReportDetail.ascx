@@ -88,6 +88,14 @@
                         </div>
                         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
+                            <div class="text-right">
+                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlRunSince" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                            </div>
+
                             <p class="description">
                                 <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
                             </p>
