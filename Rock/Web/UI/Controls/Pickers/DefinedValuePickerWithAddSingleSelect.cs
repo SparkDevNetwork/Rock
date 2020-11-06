@@ -103,11 +103,8 @@ namespace Rock.Web.UI.Controls
 
             if ( DefinedTypeId.HasValue )
             {
-                if ( IncludeEmptyOption )
-                {
-                    // add Empty option first
-                    _ddlDefinedValues.Items.Add( new ListItem() );
-                }
+                // add Empty option first
+                _ddlDefinedValues.Items.Add( new ListItem() );
 
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
                 var definedValuesList = definedTypeCache?.DefinedValues
