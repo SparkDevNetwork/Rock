@@ -48,6 +48,7 @@ using Helper = Rock.Attribute.Helper;
  * - FE1) Added Ability to waitlist someone if a single select option they have does not have available slots left
  * - FE2) Added for when calculating the available slots, include those that are on the waitlist for the slot in the total.
  * - UI1) Added Ability to modify the error message presented when there's no match on the registration instance
+ * - FE3) Added option to show or hide the availble slots to the end-user in the registration form. 
  */
 namespace RockWeb.Plugins.com_bemaservices.Event
 {
@@ -98,6 +99,11 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.UI1.Start */
     [TextField( "Custom Error Message", "The custom error message displayed when no matching registration instances are found.", false, "", "BEMA Additional Features", 14, BemaAttributeKey.CustomErrorMessage )]
     /* BEMA.UI1.End */
+
+    /* BEMA.FE3.Start */
+    [BooleanField( "Show Available Slots to User","Option to show the number of available slots on the user's registration form.", true, "BEMA Additional Features", 15, BemaAttributeKey.DisplayAvailableSlots )]
+    /* BEMA.FE3.End */
+    
     public partial class RegistrationEntryWithSlots : RockBlock
     {
         private static class AttributeKey
@@ -116,6 +122,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             public const string SingleSelectKeyAttribute = "SingleSelectKeyAttribute";
             public const string FilterKeyAttribute = "FilterKeyAttribute";
             public const string CustomErrorMessage = "CustomErrorMessage";
+            public const string DisplayAvailableSlots = "DisplayAvailableSlots";
         }
 
         /* BEMA.End */
@@ -6067,14 +6074,20 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                     availableSlots = 0;
                                 }
 
-                                if ( availableSlots == 1 )
+                                /* BEMA.FE3.Begin */
+                                /* BEMA.FE3.Comment: This will append the available slots count only if the block attribute is set to true.
+                                 * otherwise the itemText will remain unchanged */
+                                bool displayAvailableSlots = GetAttributeValue( BemaAttributeKey.DisplayAvailableSlots ).AsBoolean();
+
+                                if ( availableSlots == 1 && displayAvailableSlots == true)
                                 {
                                     itemText += " (1 slot available)";
                                 }
-                                else
+                                else if (displayAvailableSlots == true)
                                 {
                                     itemText += string.Format( " ({0} slots available)", availableSlots );
                                 }
+                                /* BEMA.FE3.END */
                             }
                         }
                     }
