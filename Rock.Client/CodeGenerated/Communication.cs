@@ -141,9 +141,6 @@ namespace Rock.Client
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        public AnalyticsSourceDate SendSourceDate { get; set; }
-
-        /// <summary />
         public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary />
@@ -224,7 +221,6 @@ namespace Rock.Client
             this.Segments = source.Segments;
             this.SendDateTime = source.SendDateTime;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
-            this.SendSourceDate = source.SendSourceDate;
             this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             this.SMSMessage = source.SMSMessage;
             this.Status = source.Status;
@@ -268,6 +264,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate SendSourceDate { get; set; }
 
         /// <summary />
         public DefinedValue SMSFromDefinedValue { get; set; }
