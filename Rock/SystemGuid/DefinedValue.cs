@@ -63,7 +63,61 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
 
-        #endregion
+        #endregion Block Template
+
+        #region Button Styles
+
+        /// <summary>
+        /// Button HTML - Primary 
+        /// </summary>
+        public const string BUTTON_HTML_PRIMARY = "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03";
+
+        /// <summary>
+        /// Button HTML - Secondary 
+        /// </summary>
+        public const string BUTTON_HTML_SECONDARY = "8CF6E927-4FA5-4241-991C-391038B79631";
+
+        /// <summary>
+        /// Button HTML - Deny 
+        /// </summary>
+        public const string BUTTON_HTML_DENY = "D6B809A9-C1CC-4EBB-816E-33D8C1E53EA4";
+
+        /// <summary>
+        /// Button HTML - Approve 
+        /// </summary>
+        public const string BUTTON_HTML_APPROVE = "C88FEF94-95B9-444A-BC93-58E983F3C047";
+
+        /// <summary>
+        /// Button HTML - Success 
+        /// </summary>
+        public const string BUTTON_HTML_SUCCESS = "53CA2CB9-8BFA-450C-A3AA-FD3F3FD3BC8A";
+
+        /// <summary>
+        /// Button HTML - Info 
+        /// </summary>
+        public const string BUTTON_HTML_INFO = "3C026B37-29D4-47CB-BB6E-DA43AFE779FE";
+
+        /// <summary>
+        /// Button HTML - Warning 
+        /// </summary>
+        public const string BUTTON_HTML_WARNING = "F03C9591-C497-4E27-A714-6A482E745141";
+
+        /// <summary>
+        /// Button HTML - Danger 
+        /// </summary>
+        public const string BUTTON_HTML_DANGER = "9B329020-E074-4326-8831-9DD534F491DF";
+
+        /// <summary>
+        /// Button HTML - Default 
+        /// </summary>
+        public const string BUTTON_HTML_DEFAULT = "638BEEE0-2F8F-4706-B9A4-5BAB70386697";
+
+        /// <summary>
+        /// Button HTML - Cancel 
+        /// </summary>
+        public const string BUTTON_HTML_CANCEL = "5683E775-B9F3-408C-80AC-94DE0E51CF3A";
+
+        #endregion Button Styles
 
         #region Campus
 
@@ -88,7 +142,7 @@ namespace Rock.SystemGuid
         public const string CAMPUS_TYPE_PHYSICAL = "5A61507B-79CB-4DA2-AF43-6F82260203B3";
 
         /// <summary>
-        /// The campus type online
+        /// The campus type on-line
         /// </summary>
         public const string CAMPUS_TYPE_ONLINE = "10101010-2DB4-4C95-B07D-C400E412289B";
 
@@ -121,7 +175,7 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
 
         /// <summary>
-        /// Scanned Id Search Type. This type is always supported and if a barcode or bio id is scanned, the attendance will be updated to reflect this type os search was used.
+        /// Scanned Id Search Type. This type is always supported and if a BarCode or Bio id is scanned, the attendance will be updated to reflect this type OS search was used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
 
@@ -212,32 +266,32 @@ namespace Rock.SystemGuid
         #region Credit Card Types
 
         /// <summary>
-        /// The creditcard type amex
+        /// The credit card type AMEX
         /// </summary>
         public const string CREDITCARD_TYPE_AMEX = "696A54E3-352C-49FB-88A1-BCDBD81AA9EC";
 
         /// <summary>
-        /// The creditcard type diners club
+        /// The credit card type diners club
         /// </summary>
         public const string CREDITCARD_TYPE_DINERS_CLUB = "1A9A4DB9-AFF3-4773-875C-C10346BD1CA7";
 
         /// <summary>
-        /// The creditcard type discover
+        /// The credit card type discover
         /// </summary>
         public const string CREDITCARD_TYPE_DISCOVER = "4B746601-E9EB-4660-BA13-C0B66B24E248";
 
         /// <summary>
-        /// The creditcard type JCB
+        /// The credit card type JCB
         /// </summary>
         public const string CREDITCARD_TYPE_JCB = "	4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
 
         /// <summary>
-        /// The creditcard type mastercard
+        /// The credit card type MasterCard
         /// </summary>
         public const string CREDITCARD_TYPE_MASTERCARD = "6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621";
 
         /// <summary>
-        /// The creditcard type visa
+        /// The credit card type visa
         /// </summary>
         public const string CREDITCARD_TYPE_VISA = "FC66B5F8-634F-4800-A60D-436964D27B64";
 
@@ -324,17 +378,17 @@ namespace Rock.SystemGuid
         #region Group Location Type
 
         /// <summary>
-        /// Home location type
+        /// Address Type - Home 
         /// </summary>
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
         /// <summary>
-        /// Work location Type
+        /// Address Type - Work
         /// </summary>
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
         /// <summary>
-        /// Previous Location Type
+        /// Address Type - Previous
         /// </summary>
         public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
 
@@ -345,7 +399,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Some other type of Group Location
-        /// NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slinghshot.
+        /// NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot.
         /// </summary>
         public const string GROUP_LOCATION_TYPE_OTHER = "D49965C7-5254-4D2D-BC77-F390375F0C44";
 
@@ -354,7 +408,7 @@ namespace Rock.SystemGuid
         #region Group Type Purpose
 
         /// <summary>
-        /// Group Type Purpose of Check-in Template
+        /// Group Type Purpose of Check-in Template (Weekly Service Check-in, etc)
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE = "4A406CB0-495B-4795-B788-52BDFDE00B01";
 
@@ -465,7 +519,7 @@ namespace Rock.SystemGuid
         #region Metrics
 
         /// <summary>
-        /// Metric values come from a dataview
+        /// Metric values come from a DataView
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_DATAVIEW = "2EC60BCF-EF63-4CCC-A970-F152292765D0";
 
@@ -475,7 +529,7 @@ namespace Rock.SystemGuid
         public const string METRIC_SOURCE_VALUE_TYPE_MANUAL = "1D6511D6-B15D-4DED-B3C4-459CD2A7EC0E";
 
         /// <summary>
-        /// Metric values are populated from custom sql
+        /// Metric values are populated from custom SQL
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
 
@@ -527,17 +581,17 @@ namespace Rock.SystemGuid
         #region Person Record Status
 
         /// <summary>
-        /// Active Record Status
+        /// Record Status - Active
         /// </summary>
         public const string PERSON_RECORD_STATUS_ACTIVE = "618F906C-C33D-4FA3-8AEF-E58CB7B63F1E";
 
         /// <summary>
-        /// Inactive Record Status
+        /// Record Status - Inactive 
         /// </summary>
         public const string PERSON_RECORD_STATUS_INACTIVE = "1DAD99D5-41A9-4865-8366-F269902B80A4";
 
         /// <summary>
-        /// Pending Record Status
+        /// Record Status - Pending
         /// </summary>
         public const string PERSON_RECORD_STATUS_PENDING = "283999EC-7346-42E3-B807-BCE9B2BABB49";
 
@@ -546,17 +600,17 @@ namespace Rock.SystemGuid
         #region Person Record Status Reason
 
         /// <summary>
-        /// Inactive record status reason of Deceased 
+        /// Record Status set to Inactive because person is Deceased 
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
         /// <summary>
-        /// Inactive record status reason of No Activity 
+        /// Record Status set to Inactive because person has No Activity
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
 
         /// <summary>
-        /// Inactive record status reason of Moved
+        /// Record Status set to Inactive because person moved
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_MOVED = "3684CF84-F30F-4CE0-9EB9-D6AFFEA9B99B";
 
@@ -565,22 +619,22 @@ namespace Rock.SystemGuid
         #region Person Record Type
 
         /// <summary>
-        /// Person Record Type
+        /// Person Record Type - Person
         /// </summary>
         public const string PERSON_RECORD_TYPE_PERSON = "36CF10D6-C695-413D-8E7C-4546EFEF385E";
 
         /// <summary>
-        /// Business Record Type
+        /// Person Record Type - Business
         /// </summary>
         public const string PERSON_RECORD_TYPE_BUSINESS = "BF64ADD3-E70A-44CE-9C4B-E76BBED37550";
 
         /// <summary>
-        /// Rest User Record Type
+        /// Person Record Type - REST User
         /// </summary>
         public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
 
         /// <summary>
-        /// NamelessPerson Record Type
+        /// Person Record Type - Nameless Person (usually due to SMS from unknown person)
         /// </summary>
         public const string PERSON_RECORD_TYPE_NAMELESS = "721300ED-1267-4DA0-B4F2-6C6B5B17B1C5";
 
@@ -589,28 +643,27 @@ namespace Rock.SystemGuid
         #region Person Connection Status
 
         /// <summary>
-        /// Member Person Connection Status
+        /// Person Connection Status - Member
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_MEMBER = "41540783-D9EF-4C70-8F1D-C9E83D91ED5F";
 
         /// <summary>
-        /// Attendee Person Connection Status
+        /// Person Connection Status - Attendee
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_ATTENDEE = "39F491C5-D6AC-4A9B-8AC0-C431CB17D588";
 
         /// <summary>
-        /// Visitor Person Connection Status
-        /// TODO: some places have B91BA046-BC1E-400C-B85D-638C1F4E0CE2
+        /// Person Connection Status - Visitor
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
 
         /// <summary>
-        /// Participant Connection Status
+        /// Person Connection Status - Participant
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
 
         /// <summary>
-        /// Web Prospect Connection Status
+        /// Person Connection Status - Web Prospect
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
@@ -619,7 +672,7 @@ namespace Rock.SystemGuid
         #region Person Review Reason
 
         /// <summary>
-        /// Member Person Connection Status
+        /// Person needs review due to being Self-Inactivated
         /// </summary>
         public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
 
@@ -628,12 +681,12 @@ namespace Rock.SystemGuid
         #region Personal Device Type
 
         /// <summary>
-        /// Mobile Personal device type
+        /// Personal Device Type - Mobile
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
 
         /// <summary>
-        /// Computer personal device type
+        /// Personal Device Type - Computer
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_COMPUTER = "828ADECE-EFE7-49DF-BA8C-B3F132509A95";
 
@@ -702,9 +755,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
 
-
         /// <summary>
-        /// The default ical description
+        /// The default iCal description
         /// </summary>
         public const string DEFAULT_ICAL_DESCRIPTION = "DCBA4862-73E9-49B5-8AD5-08E17BE68025";
 
@@ -768,7 +820,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
 
-
         /// <summary>
         /// Person Search Type: Alternate Id
         /// </summary>
@@ -782,7 +833,6 @@ namespace Rock.SystemGuid
         /// Spiritual Gifts: Administration
         /// </summary>
         public const string SPIRITUAL_GIFTS_ADMINISTRATION = "A276421D-F662-4723-99DA-6FDF3E9CFF7C";
-
 
         /// <summary>
         /// Spiritual Gifts: Apostleship
@@ -1039,77 +1089,96 @@ namespace Rock.SystemGuid
         #endregion Motivator Theme
 
         #region Logging
+
         /// <summary>
         /// The logging domain CMS
         /// </summary>
         public const string LOGGING_DOMAIN_CMS = "C8A94BA4-9450-459C-B32E-E34C153AD02F";
+
         /// <summary>
         /// The logging domain event
         /// </summary>
         public const string LOGGING_DOMAIN_EVENT = "EF558F8A-08DA-4001-BBAA-83390613D20E";
+
         /// <summary>
         /// The logging domain reporting
         /// </summary>
         public const string LOGGING_DOMAIN_REPORTING = "A2960B6B-0DF5-458B-906C-F64521CB8C83";
+
         /// <summary>
         /// The logging domain communications
         /// </summary>
         public const string LOGGING_DOMAIN_COMMUNICATIONS = "8EE2657E-FF42-4E04-A5DA-15B14C8086B8";
+
         /// <summary>
         /// The logging domain finance
         /// </summary>
         public const string LOGGING_DOMAIN_FINANCE = "24230441-AE17-4F8B-ABF7-DA32CC5F2571";
+
         /// <summary>
         /// The logging domain steps
         /// </summary>
         public const string LOGGING_DOMAIN_STEPS = "0FE30F0C-E503-4DE6-A8EE-1E86B141967B";
+
         /// <summary>
         /// The logging domain connection
         /// </summary>
         public const string LOGGING_DOMAIN_CONNECTION = "E5125727-8361-4BBB-A615-28B3F045BA7E";
+
         /// <summary>
         /// The logging domain group
         /// </summary>
         public const string LOGGING_DOMAIN_GROUP = "134088B7-A12A-4ED8-AA18-E059FB5D17B5";
+
         /// <summary>
         /// The logging domain streaks
         /// </summary>
         public const string LOGGING_DOMAIN_STREAKS = "E7D3D04F-7BB8-4FE4-B2C2-924D8C0CA62B";
+
         /// <summary>
         /// The logging domain core
         /// </summary>
         public const string LOGGING_DOMAIN_CORE = "3B4F21DC-C169-453E-B119-8F33E122C84C";
+
         /// <summary>
         /// The logging domain jobs
         /// </summary>
         public const string LOGGING_DOMAIN_JOBS = "2741A4A3-8E57-4B58-ABCC-56C0A31C3A25";
+
         /// <summary>
         /// The logging domain workflow
         /// </summary>
         public const string LOGGING_DOMAIN_WORKFLOW = "FF8CBA1B-5DAF-4C0E-A7DA-A0277F7AA1E5";
+
         /// <summary>
         /// The logging domain CRM
         /// </summary>
         public const string LOGGING_DOMAIN_CRM = "5D737243-E7E0-4981-87A5-0787E52631C6";
+
         /// <summary>
         /// The logging domain prayer
         /// </summary>
         public const string LOGGING_DOMAIN_PRAYER = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781";
+
         /// <summary>
         /// The logging domain other
         /// </summary>
         public const string LOGGING_DOMAIN_OTHER = "83CFDA4F-5867-4D4B-853F-D9B535EC5131";
+
         #endregion
 
         #region "Checkin Attendance Types"
+
         /// <summary>
         /// The check in attendance type physical
         /// </summary>
         public const string CHECK_IN_ATTENDANCE_TYPE_PHYSICAL = "290CE89F-7DA0-41ED-82C1-1249A4A42BA4";
+
         /// <summary>
         /// The check in attendance type virtual
         /// </summary>
         public const string CHECK_IN_ATTENDANCE_TYPE_VIRTUAL = "DF1C89D0-7D8A-48C2-B251-DFF3376C2931";
+
         #endregion
     }
 }

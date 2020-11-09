@@ -63,8 +63,8 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
-        /// that this is.
+        /// The Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
+        /// that this is. Examples: Home Address, Work Address, Primary Address.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> referencing the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.

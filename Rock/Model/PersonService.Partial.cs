@@ -2380,17 +2380,20 @@ namespace Rock.Model
 
             newPerson.PhoneNumbers = new List<PhoneNumber>();
 
-            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+            var namelessPersonMobilePhoneNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
 
-            // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
-            var newPersonMobilePhoneNumber = new PhoneNumber
+            if ( namelessPersonMobilePhoneNumber != null )
             {
-                NumberTypeValueId = mobilePhoneTypeId,
-                IsMessagingEnabled = true,
-                Number = namelessPersonMobilePhoneNumberNumber
-            };
+                // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+                var newPersonMobilePhoneNumber = new PhoneNumber
+                {
+                    NumberTypeValueId = mobilePhoneTypeId,
+                    IsMessagingEnabled = true,
+                    Number = namelessPersonMobilePhoneNumber.Number
+                };
 
-            newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+                newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+            }
 
             var groupMember = new GroupMember();
             groupMember.GroupRoleId = newPersonGroupRoleId;
@@ -3398,7 +3401,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
-        /// Returns the new Family(Group) that was created for the person.
+        /// Returns the new Family(Group) that was created for the person. The Person and Family are saved to the database.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -3492,7 +3495,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to family.
+        /// Adds the person to family and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>
