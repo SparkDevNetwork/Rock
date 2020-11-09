@@ -209,6 +209,10 @@
     <Compile Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.Designer.cs">
       <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.cs" />
+    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.Designer.cs">
+      <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1565,6 +1569,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.resx">
       <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011092037356_AddCacheControlHeaderToPage.resx">
+      <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
