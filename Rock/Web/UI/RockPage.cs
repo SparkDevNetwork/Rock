@@ -1495,11 +1495,9 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache
                     // so it should always exist
-                    if ( _pageCache.OutputCacheDuration > 0 )
+                    if ( _pageCache.CacheControlHeader != null )
                     {
-                        Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
-                        Response.Cache.SetValidUntilExpires( true );
+                        _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
 
