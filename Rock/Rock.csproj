@@ -529,6 +529,7 @@
     <Compile Include="Model\DocumentService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\138_MigrationRollupsFor11_4_1.cs" />
     <Compile Include="Plugin\HotFixes\137_MigrationRollupsFor11_4_0.cs" />
     <Compile Include="Plugin\HotFixes\136_MigrationRollupsFor11_3_0.cs" />
     <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
