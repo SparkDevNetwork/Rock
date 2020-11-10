@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Crm
                 return new List<DocumentTypeCache>();
             }
             var entityTypeId = contextEntity.TypeId;
-            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, string.Empty, string.Empty, true );
+            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, true );
             if ( considerMaxDocumentsPerEntity )
             {
                 var rockContext = new RockContext();
@@ -425,7 +425,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( ddlDocumentType.SelectedIndex > 0 )
                 {
-                    int filterDocumentTypeId = ddlDocumentType.SelectedValueAsInt().Value;
+                    var filterDocumentTypeId = ddlDocumentType.SelectedValueAsInt().Value;
                     documents = documents.Where( d => d.DocumentTypeId == filterDocumentTypeId );
                 }
 
