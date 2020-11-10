@@ -1,8 +1,8 @@
-﻿Obsidian.Blocks['Crm.AttributeValues'] = {
+﻿Obsidian.Blocks.registerBlock({
     name: 'Crm.AttributeValues',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        RockLoading: Obsidian.Controls.RockLoading,
+        Loading: Obsidian.Controls.Loading,
         RockField: Obsidian.Controls.RockField
     },
     inject: [
@@ -15,27 +15,32 @@
             attributeDataList: []
         };
     },
-    async created() {
-        try {
-            this.isLoading = true;
-            const result = await this.blockAction('GetAttributeDataList');
+    methods: {
+        async loadData() {
+            try {
+                this.isLoading = true;
+                const result = await this.blockAction('GetAttributeDataList');
 
-            if (result.data) {
-                this.attributeDataList = result.data;
+                if (result.data) {
+                    this.attributeDataList = result.data;
+                }
+            }
+            finally {
+                this.isLoading = false;
             }
         }
-        finally {
-            this.isLoading = false;
-        }
+    },
+    async mounted() {
+        await this.loadData();
     },
     template:
 `<PaneledBlockTemplate class="panel-persondetails">
-    <template slot="title">
+    <template v-slot:title>
         <i :class="configurationValues.BlockIconCssClass"></i>
         {{ configurationValues.BlockTitle }}
     </template>
-    <template>
-        <RockLoading :isLoading="isLoading">
+    <template v-slot:default>
+        <Loading :isLoading="isLoading">
             <fieldset class="attribute-values ui-sortable">
                 <div v-for="a in attributeDataList" class="form-group static-control">
                     <label class="control-label">
@@ -48,7 +53,7 @@
                     </div>
                 </div>
             </fieldset>
-        </RockLoading>
+        </Loading>
     </template>
 </PaneledBlockTemplate>`
-};
+});

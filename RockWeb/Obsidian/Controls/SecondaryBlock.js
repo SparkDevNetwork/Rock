@@ -1,4 +1,5 @@
-﻿Obsidian.Controls.SecondaryBlock = {
+﻿Obsidian.Controls.registerControl({
+    name: 'SecondaryBlock',
     computed: {
         isVisible() {
             return this.$store.state.areSecondaryBlocksShown;
@@ -8,4 +9,4 @@
 `<div class="secondary-block">
     <slot v-if="isVisible" />
 </div>`
-};
+});

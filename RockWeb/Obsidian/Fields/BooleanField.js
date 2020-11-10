@@ -1,14 +1,14 @@
-﻿Obsidian.Fields.BooleanField = {
+﻿Obsidian.Fields.registerField('1EDAFDED-DFE6-4334-B019-6EECBA89E05A', {
     name: 'BooleanField',
     props: {
-        value: {
+        modelValue: {
             type: String,
             required: true
         }
     },
     computed: {
         safeValue() {
-            return (this.value || '').trim().toLowerCase();
+            return (this.modelValue || '').trim().toLowerCase();
         },
         valueIsNull() {
             return !this.safeValue
@@ -36,6 +36,4 @@
     },
     template:
 `<span>{{ valueAsYesNoOrNull }}</span>`
-};
-
-Obsidian.Fields['1EDAFDED-DFE6-4334-B019-6EECBA89E05A'] = Obsidian.Fields.BooleanField;
+});

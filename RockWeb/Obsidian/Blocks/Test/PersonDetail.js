@@ -1,9 +1,9 @@
-﻿Obsidian.Blocks['Test.PersonDetail'] = {
+﻿Obsidian.Blocks.registerBlock({
     name: 'Test.PersonDetail',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
         RockButton: Obsidian.Elements.RockButton,
-        RockTextBox: Obsidian.Elements.RockTextBox
+        TextBox: Obsidian.Elements.TextBox
     },
     data() {
         const person = {
@@ -59,16 +59,16 @@
     },
     template:
 `<PaneledBlockTemplate>
-    <template slot="title">
+    <template v-slot:title>
         <i class="fa fa-flask"></i>
         Detail Block: {{blockTitle}}
     </template>
-    <template>
+    <template v-slot:default>
         <template v-if="isEditMode">
             <div class="row">
                 <div class="col-sm-6 col-lg-4">
-                    <RockTextBox label="First Name" v-model="personForEditing.FirstName" />
-                    <RockTextBox label="Last Name" v-model="personForEditing.LastName" />
+                    <TextBox label="First Name" v-model="personForEditing.FirstName" />
+                    <TextBox label="Last Name" v-model="personForEditing.LastName" />
                 </div>
             </div>
         </template>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="well">
-                        <RockTextBox label="Message" v-model="messageToPublish" />
+                        <TextBox label="Message" v-model="messageToPublish" />
                         <RockButton class="btn-primary btn-sm" @click="doPublish">Publish</RockButton>
                     </div>
                     <p>
@@ -106,4 +106,4 @@
         </div>
     </template>
 </PaneledBlockTemplate>`
-};
+});

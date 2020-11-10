@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Rock.Rest;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
@@ -63,21 +62,21 @@ namespace Rock.Obsidian.Controllers.Controls
                 Value = dv.Value
             } );
         }
-    }
-
-    /// <summary>
-    /// Defined Value View Model
-    /// </summary>
-    public sealed class DefinedValueViewModel
-    {
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the value.
+        /// Defined Value View Model
         /// </summary>
-        public string Value { get; set; }
+        public sealed class DefinedValueViewModel
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            public string Value { get; set; }
+        }
     }
 }

@@ -1,7 +1,7 @@
-﻿Obsidian.Elements.RockTextBox = {
-    name: 'RockTextBox',
+﻿Obsidian.Elements.registerElement({
+    name: 'TextBox',
     props: {
-        value: {
+        modelValue: {
             type: String,
             required: true
         },
@@ -14,23 +14,23 @@
             default: 'text'
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             uniqueId: `rock-textbox-${Obsidian.Util.newGuid()}`,
-            internalValue: this.value
+            internalValue: this.modelValue
         };
     },
     methods: {
         handleInput: function() {
-            this.$emit('input', this.internalValue);
+            this.$emit('update:modelValue', this.internalValue);
         },
-        handleChange: function() {
-            this.$emit('change', this.internalValue);
-        }
     },
     watch: {
         value: function() {
-            this.internalValue = this.value;
+            this.internalValue = this.modelValue;
         }
     },
     template:
@@ -39,7 +39,7 @@
         {{label}}
     </label>
     <div class="control-wrapper">
-        <input :id="uniqueId" :type="type" class="form-control" v-model="internalValue" @change="handleChange" @input="handleInput" />
+        <input :id="uniqueId" :type="type" class="form-control" v-model="internalValue" @input="handleInput" />
     </div>
 </div>`
-};
+});

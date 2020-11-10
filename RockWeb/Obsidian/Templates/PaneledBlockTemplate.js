@@ -1,4 +1,5 @@
-﻿Obsidian.Templates.PaneledBlockTemplate = {
+﻿// Provides a generic Rock Block structure
+Obsidian.Templates.registerTemplate({
     name: 'PaneledBlockTemplate',
     template:
 `<div class="panel panel-block">
@@ -13,4 +14,4 @@
         </div>
     </div>
 </div>`
-};
+});

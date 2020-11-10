@@ -1,13 +1,13 @@
-﻿Obsidian.Controls.RockDefinedValuePicker = {
-    name: 'RockDefinedValuePicker',
+﻿Obsidian.Controls.registerControl({
+    name: 'DefinedValuePicker',
     components: {
-        RockDropDownList: Obsidian.Elements.RockDropDownList
+        DropDownList: Obsidian.Elements.DropDownList
     },
     inject: [
         'http'
     ],
     props: {
-        value: {
+        modelValue: {
             type: String,
             required: true
         },
@@ -24,9 +24,12 @@
             default: false
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function () {
         return {
-            internalValue: this.value,
+            internalValue: this.modelValue,
             definedValues: [],
             isLoading: false
         };
@@ -45,13 +48,12 @@
     },
     methods: {
         onChange: function () {
-            this.$emit('input', this.internalValue);
-            this.$emit('change', this.internalValue);
+            this.$emit('update:modelValue', this.internalValue);
         }
     },
     watch: {
         value: function () {
-            this.internalValue = this.value;
+            this.internalValue = this.modelValue;
         },
         definedTypeGuid: {
             immediate: true,
@@ -76,5 +78,5 @@
         }
     },
     template:
-`<RockDropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
-};
+`<DropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
+});

@@ -1,4 +1,5 @@
-﻿Obsidian.Elements.RockButton = {
+﻿Obsidian.Elements.registerElement({
+    name: 'RockButton',
     props: {
         isLoading: {
             type: Boolean,
@@ -9,8 +10,11 @@
             default: 'Loading...'
         }
     },
+    emits: [
+        'click'
+    ],
     methods: {
-        handleClick: function() {
+        handleClick: function () {
             this.$emit('click');
         }
     },
@@ -21,4 +25,4 @@
     </template>
     <slot v-else />
 </button>`
-};
+});

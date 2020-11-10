@@ -1,6 +1,7 @@
-﻿Obsidian.Elements.RockCheckBox = {
+﻿Obsidian.Elements.registerElement({
+    name: 'CheckBox',
     props: {
-        value: {
+        modelValue: {
             type: Boolean,
             required: true
         },
@@ -9,23 +10,23 @@
             required: true
         }
     },
-    data: function() {
+    emits: [
+        'update:modelValue'
+    ],
+    data: function () {
         return {
             uniqueId: `rock-checkbox-${Obsidian.Util.newGuid()}`,
-            internalValue: this.value
+            internalValue: this.modelValue
         };
     },
     methods: {
-        handleInput: function() {
-            this.$emit('input', this.internalValue);
-        },
-        handleChange: function() {
-            this.$emit('change', this.internalValue);
+        handleInput: function () {
+            this.$emit('update:modelValue', this.internalValue);
         }
     },
     watch: {
-        value: function() {
-            this.internalValue = this.value;
+        value: function () {
+            this.internalValue = this.modelValue;
         }
     },
     template:
@@ -35,4 +36,4 @@
         <span class="label-text ">{{label}}</span>
     </label>
 </div>`
-};
+});

@@ -1,7 +1,7 @@
-﻿Obsidian.Controls.RockLoading = {
-    name: 'RockLoading',
+﻿Obsidian.Controls.registerControl({
+    name: 'Loading',
     components: {
-        RockLoadingIndicator: Obsidian.Elements.RockLoadingIndicator
+        LoadingIndicator: Obsidian.Elements.LoadingIndicator
     },
     props: {
         isLoading: {
@@ -12,6 +12,6 @@
     template:
 `<div>
     <slot v-if="!isLoading" />
-    <RockLoadingIndicator v-else />
+    <LoadingIndicator v-else />
 </div>`
-};
+});

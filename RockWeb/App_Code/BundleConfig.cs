@@ -16,10 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Reflection;
 using System.Web.Optimization;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 
 /// <summary>
 /// Loads and concats JS bundles, fired during App_Start
@@ -97,22 +94,9 @@ public class BundleConfig
             "~/Scripts/editor.js/*.js" ) );
 
         // Add Obsidian scripts
-        var obsidianScriptPaths = new List<string> {
-            "~/Obsidian/Vendor/axios.js",
-            "~/Obsidian/Vendor/vue.js",
-            "~/Obsidian/Vendor/vuex.js",
-            "~/Obsidian/init.js",
-            "~/Obsidian/Util/*.js",
-            "~/Obsidian/Bus/*.js",
-            "~/Obsidian/Templates/*.js",
-            "~/Obsidian/Elements/*.js",
-            "~/Obsidian/Controls/*.js",
-            "~/Obsidian/Fields/*.js",
-            "~/Obsidian/Store/*.js"
-        };
-
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" )
             .Include(
+                "~/Obsidian/Vendor/mitt.js",
                 "~/Obsidian/Vendor/axios.js",
                 "~/Obsidian/Vendor/vue.js",
                 "~/Obsidian/Vendor/vuex.js",

@@ -1,7 +1,7 @@
 ﻿Obsidian.Controls.RockField = {
     name: 'RockField',
     props: {
-        value: {
+        modelValue: {
             type: String,
             required: true
         },
@@ -16,5 +16,5 @@
         }
     },
     template:
-`<component :is="fieldComponent" :value="value" />`
+`<component :is="fieldComponent" v-model="modelValue" />`
 };

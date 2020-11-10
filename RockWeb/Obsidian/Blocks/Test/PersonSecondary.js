@@ -1,9 +1,9 @@
-﻿Obsidian.Blocks['Test.PersonSecondary'] = {
+﻿Obsidian.Blocks.registerBlock({
     name: 'Test.PersonSecondary',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
         SecondaryBlock: Obsidian.Controls.SecondaryBlock,
-        RockTextBox: Obsidian.Elements.RockTextBox,
+        TextBox: Obsidian.Elements.TextBox,
         RockButton: Obsidian.Elements.RockButton
     },
     data() {
@@ -45,11 +45,11 @@
     template:
 `<SecondaryBlock>
     <PaneledBlockTemplate>
-        <template slot="title">
+        <template v-slot:title>
             <i class="fa fa-flask"></i>
             Secondary Block
         </template>
-        <template>
+        <template v-slot:default>
             <div class="row">
                 <div class="col-sm-6">
                     <p>
@@ -60,7 +60,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="well">
-                        <RockTextBox label="Message" v-model="messageToPublish" />
+                        <TextBox label="Message" v-model="messageToPublish" />
                         <RockButton class="btn-primary btn-sm" @click="doPublish">Publish</RockButton>
                     </div>
                     <p>
@@ -72,4 +72,4 @@
         </template>
     </PaneledBlockTemplate>
 </SecondaryBlock>`
-};
+});

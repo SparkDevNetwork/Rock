@@ -1,4 +1,5 @@
-﻿Obsidian.Controls.RockBlock = {
+﻿Obsidian.Controls.registerControl({
+    name: 'RockBlock',
     props: {
         config: {
             type: Object,
@@ -19,7 +20,7 @@
         return {
             blockGuid: this.config.blockGuid,
             log: [],
-            blockComponent: Obsidian.Blocks[this.config.blockFileIdentifier]
+            blockComponent: Vue.markRaw(Obsidian.Blocks[this.config.blockFileIdentifier])
         };
     },
     computed: {
@@ -35,7 +36,7 @@
                 url
             });
 
-            return Obsidian.Http.doApiCall(method, url, data, params);
+            return Obsidian.Http.doApiCall(method, url, params, data);
         },
         httpGet(url, params) {
             return this.httpCall('GET', url, params);
@@ -45,7 +46,7 @@
         },
         blockAction(actionName, data) {
             try {
-                return this.httpPost(`/api/blocks/action/${this.pageGuid}/${this.blockGuid}/${actionName}`, undefined, data);
+                return this.httpPost(`/api/blocks/action/${this.blockGuid}/${actionName}`, undefined, data);
             }
             catch (e) {
                 if (e.response && e.response.data && e.response.data.Message) {
@@ -63,4 +64,4 @@
         Could not find JS block component: "{{this.config.blockFileIdentifier}}"
     </div>
 </div>`
-};
+});

@@ -1,9 +1,8 @@
-﻿Obsidian.Blocks['Security.Login'] = {
+﻿Obsidian.Blocks.registerBlock({
     name: 'Security.Login',
     components: {
-        RockBlock: Obsidian.Controls.RockBlock,
-        RockTextBox: Obsidian.Elements.RockTextBox,
-        RockCheckBox: Obsidian.Elements.RockCheckBox,
+        TextBox: Obsidian.Elements.TextBox,
+        CheckBox: Obsidian.Elements.CheckBox,
         RockButton: Obsidian.Elements.RockButton,
     },
     inject: [
@@ -69,6 +68,10 @@
             }
         },
         async submitLogin() {
+            if (this.isLoading) {
+                return;
+            }
+
             this.isLoading = true;
             this.errorMessage = '';
 
@@ -108,9 +111,9 @@
         <div class="alert alert-danger" v-if="errorMessage" v-html="errorMessage"></div>
 
         <form @submit.prevent="submitLogin">
-            <RockTextBox label="Username" v-model="username" />
-            <RockTextBox label="Password" v-model="password" type="password" />
-            <RockCheckBox label="Keep me logged in" v-model="rememberMe" />
+            <TextBox label="Username" v-model="username" />
+            <TextBox label="Password" v-model="password" type="password" />
+            <CheckBox label="Keep me logged in" v-model="rememberMe" />
             <RockButton :is-loading="isLoading" loading-text="Logging In..." class="btn btn-primary" @click="submitLogin" type="submit">
                 Log In
             </RockButton>
@@ -122,4 +125,4 @@
 
     </fieldset>
 </div>`
-};
+});

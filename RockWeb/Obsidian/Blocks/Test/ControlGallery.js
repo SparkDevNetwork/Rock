@@ -1,36 +1,58 @@
-﻿Obsidian.Blocks['Test.ControlGallery'] = {
+﻿Obsidian.Blocks.registerBlock({
     name: 'Test.ControlGallery',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        RockDefinedTypePicker: Obsidian.Controls.RockDefinedTypePicker,
-        RockDefinedValuePicker: Obsidian.Controls.RockDefinedValuePicker
+        DefinedTypePicker: Obsidian.Controls.DefinedTypePicker,
+        DefinedValuePicker: Obsidian.Controls.DefinedValuePicker,
+        CampusPicker: Obsidian.Controls.CampusPicker
     },
     data() {
         return {
             definedTypeGuid: '',
-            definedValueGuid: ''
+            definedValueGuid: '',
+            campusGuid: ''
         };
+    },
+    computed: {
+        campusName() {
+            const campus = this.$store.getters['campuses/getByGuid'](this.campusGuid);
+            return campus ? campus.Name : '';
+        },
+        definedTypeName() {
+            const definedType = this.$store.getters['definedTypes/getByGuid'](this.definedTypeGuid);
+            return definedType ? definedType.Name : '';
+        }
     },
     template:
 `<PaneledBlockTemplate>
-    <template slot="title">
+    <template v-slot:title>
         <i class="fa fa-flask"></i>
         Obsidian Control Gallery
     </template>
-    <template>
+    <template v-slot:default>
         <div class="row">
             <div class="col-sm-12 col-md-6 col-lg-4">
-                <RockDefinedTypePicker label="Defined Type" v-model="definedTypeGuid" />
-                <RockDefinedValuePicker label="Defined Value" v-model="definedValueGuid" :defined-type-guid="definedTypeGuid" />
+                <DefinedTypePicker label="Defined Type" v-model="definedTypeGuid" />
+                <DefinedValuePicker label="Defined Value" v-model="definedValueGuid" :defined-type-guid="definedTypeGuid" />
+                <CampusPicker label="Campus" v-model="campusGuid" />
             </div>
         </div>
         <hr />
         <div class="row">
             <div class="col-sm-12">
-                <p><strong>Defined Type Guid</strong> {{definedTypeGuid}}</p>
+                <p>
+                    <strong>Defined Type Guid</strong>
+                    {{definedTypeGuid}}
+                    <span v-if="definedTypeName">({{definedTypeName}})</span>
+                </p>
                 <p><strong>Defined Value Guid</strong> {{definedValueGuid}}</p>
+                <p>
+                    <strong>Campus Guid</strong>
+                    {{campusGuid}}
+                    <span v-if="campusName">({{campusName}})</span>
+                </p>
             </div>
         </div>
     </template>
 </PaneledBlockTemplate>`
-};
+});

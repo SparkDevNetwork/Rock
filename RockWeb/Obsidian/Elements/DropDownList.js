@@ -1,6 +1,7 @@
-﻿Obsidian.Elements.RockDropDownList = {
+﻿Obsidian.Elements.registerElement({
+    name: 'DropDownList',
     props: {
-        value: {
+        modelValue: {
             type: String,
             required: true
         },
@@ -21,21 +22,23 @@
             required: true
         }
     },
-    data: function() {
+    emits: [
+        'update:modelValue'
+    ],
+    data: function () {
         return {
             uniqueId: `rock-dropdownlist-${Obsidian.Util.newGuid()}`,
-            internalValue: this.value
+            internalValue: this.modelValue
         };
     },
     methods: {
         onChange: function () {
-            this.$emit('input', this.internalValue);
-            this.$emit('change', this.internalValue);
+            this.$emit('update:modelValue', this.internalValue);
         }
     },
     watch: {
-        value: function() {
-            this.internalValue = this.value;
+        value: function () {
+            this.internalValue = this.modelValue;
         }
     },
     template:
@@ -48,4 +51,4 @@
         </select>
     </div>
 </div>`
-};
+});
