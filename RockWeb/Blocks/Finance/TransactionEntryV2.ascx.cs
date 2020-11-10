@@ -531,7 +531,7 @@ mission. We are so grateful for your commitment.</p>
                 </span>
 
                 <div class='panel-actions pull-right'>
-                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-plus'></span>
+                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-chevron-down'></span>
                 </div>
             </div>
 
@@ -597,7 +597,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.hide();
             }
 
-            $toggle.removeClass('fa-plus').addClass('fa-minus');
+            $toggle.removeClass('fa-chevron-down').addClass('fa-chevron-up');
         } else {
             if (animate) {
                 $scheduledDetails.slideUp();
@@ -607,7 +607,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.show();
             }
 
-            $toggle.removeClass('fa-minus').addClass('fa-plus');
+            $toggle.removeClass('fa-chevron-up').addClass('fa-chevron-down');
         }
     };
 
