@@ -2179,5 +2179,17 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;KPI&apos;, N&apos;Create quick key performance indicators.&apos;, N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202011102025121_Rollup_1110_kpisortcode {
+            get {
+                return ResourceManager.GetString("_202011102025121_Rollup_1110_kpisortcode", resourceCulture);
+            }
+        }
     }
 }
