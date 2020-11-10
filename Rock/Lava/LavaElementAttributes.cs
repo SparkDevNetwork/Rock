@@ -135,24 +135,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Compare the set of attribute names against a set of valid names and return those that do not match.
+        /// Compare the set of attribute names against a set of known names and return those that do not match.
         /// </summary>
-        /// <param name="validNames"></param>
+        /// <param name="matchNamesList"></param>
         /// <returns></returns>
-        public List<string> GetUnknownAttributes( List<string> validNames )
+        public List<string> GetUnmatchedAttributes( List<string> matchNamesList )
         {
-            var unknownNames = new List<string>();
+            var unmatchedNames = new List<string>();
 
             if ( _settings == null )
             {
-                unknownNames.AddRange( validNames );
+                unmatchedNames.AddRange( matchNamesList );
             }
-            else if ( validNames != null )
+            else if ( matchNamesList != null )
             {
-                unknownNames.AddRange( _settings.Keys.AsQueryable().Except( validNames, StringComparer.OrdinalIgnoreCase ) );
+                unmatchedNames.AddRange( _settings.Keys.AsQueryable().Except( matchNamesList, StringComparer.OrdinalIgnoreCase ) );
             }
 
-            return unknownNames;
+            return unmatchedNames;
         }
 
         /// <summary>

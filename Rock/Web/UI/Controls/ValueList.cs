@@ -205,10 +205,22 @@ namespace Rock.Web.UI.Controls
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         /// <summary>
-        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
+        /// Gets or sets an optional validation group to use.
         /// </summary>
-        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
-        public string ValidationGroup { get; set; }
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return this.RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                this.RequiredFieldValidator.ValidationGroup = value;
+            }
+        }
 
         #endregion
 
@@ -317,6 +329,7 @@ namespace Rock.Web.UI.Controls
         {
             this.HelpBlock = new HelpBlock();
             this.WarningBlock = new WarningBlock();
+            this.RequiredFieldValidator = new HiddenFieldValidator();
         }
 
         /// <summary>
@@ -335,6 +348,9 @@ namespace Rock.Web.UI.Controls
             _hfValueDisableVrm = new HiddenField();
             _hfValueDisableVrm.ID = _hfValue.ID + "_dvrm";
             Controls.Add( _hfValueDisableVrm );
+
+            // Link the RequiredFieldValidator to the hidden field that stores the value list.
+            this.RequiredFieldValidator.ControlToValidate = _hfValue.ID;
         }
 
         /// <summary>
@@ -345,6 +361,9 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                // Set the required field message here because the control label may have been modified during initialization.
+                this.RequiredFieldValidator.ErrorMessage = string.Format( "{0} must have at least one value.", this.Label );
+
                 RockControlHelper.RenderControl( this, writer );
             }
         }

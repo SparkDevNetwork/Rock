@@ -63,27 +63,33 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            var interactionService = new InteractionService( rockContext );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
-                var interaction = BuildInteraction( rockContext, TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
-                interactionService.Add( interaction );
+                var interactionService = new InteractionService( rockContext );
+
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
+
+                for ( var i = 0; i < 15; i++ )
+                {
+                    var interaction = BuildInteraction( rockContext, TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                    interactionService.Add( interaction );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
-
-            var interactions = interactionService.
-                                Queryable( "AnalyticsSourceDate" ).
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionService = new InteractionService( rockContext );
+                var interactions = interactionService.
+                                Queryable().
                                 Where( i => i.ForeignKey == interactionForeignKey ).
                                 Where( i => i.InteractionSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, interactions.Count() );
+                Assert.AreEqual( expectedRecordCount, interactions.Count() );
+                Assert.IsNotNull( interactions.First().InteractionSourceDate );
+            }
         }
 
         private Rock.Model.Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )

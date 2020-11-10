@@ -16,23 +16,48 @@
     <Ignore>Admin</Ignore>
     <Ignore>api</Ignore>
     <Ignore>auth</Ignore>
+    <Ignore>Autofill</Ignore>
     <Ignore>birthdate</Ignore>
     <Ignore>birthyear</Ignore>
     <Ignore>Checkin</Ignore>
+    <Ignore>columncommand</Ignore>
     <Ignore>deserialize</Ignore>
     <Ignore>deserialized</Ignore>
     <Ignore>enums</Ignore>
+    <Ignore>formfield</Ignore>
     <Ignore>geocode</Ignore>
+    <Ignore>geocoded</Ignore>
+    <Ignore>geocoding</Ignore>
     <Ignore>Guid</Ignore>
+    <Ignore>guids</Ignore>
+    <Ignore>href</Ignore>
+    <Ignore>javascript</Ignore>
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
+    <Ignore>postback</Ignore>
     <Ignore>Queryable</Ignore>
+    <Ignore>readonly</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
+    <Ignore>workflows</Ignore>
+    <Ignore>onblur</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
     <FilePattern>*\CodeGenerated\*.cs</FilePattern>
   </IgnoredFilePatterns>
   <IgnoredWordsFile></IgnoredWordsFile>
+  <ExclusionExpressions>
+    <Expression Match="alert alert-.*" />
+    <Expression Match="col-.*-\d*" />
+    <Expression Match="fa fa-.*" />
+    <Expression Match="input-width-.*" />
+    <Expression Match="Pre-Html" Options="IgnoreCase" />
+    <Expression Match="table table-.*" />
+    <Expression Match="btn btn-.*" />
+    <Expression Match="btn-.*" />
+    <Expression Match="js-.*" />
+    <Expression Match="runat=server" />
+    <Expression Match="panel panel-.*" />
+  </ExclusionExpressions>
 </SpellCheckerConfiguration>

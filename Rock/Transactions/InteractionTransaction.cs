@@ -254,11 +254,11 @@ namespace Rock.Transactions
                 interaction.ChannelCustom1 = info.InteractionChannelCustom1?.Trim();
                 interaction.ChannelCustom2 = info.InteractionChannelCustom2?.Trim();
                 interaction.ChannelCustomIndexed1 = info.InteractionChannelCustomIndexed1?.Trim();
-                interaction.Source = info.InteractionSource?.Trim();
-                interaction.Medium = info.InteractionMedium?.Trim();
-                interaction.Campaign = info.InteractionCampaign?.Trim();
-                interaction.Content = info.InteractionContent?.Trim();
-                interaction.Term = info.InteractionTerm?.Trim();
+                interaction.Source = interaction.Source ?? info.InteractionSource?.Trim();
+                interaction.Medium = interaction.Medium ?? info.InteractionMedium?.Trim();
+                interaction.Campaign = interaction.Campaign ?? info.InteractionCampaign?.Trim();
+                interaction.Content = interaction.Content ?? info.InteractionContent?.Trim();
+                interaction.Term = interaction.Term ?? info.InteractionTerm?.Trim();
 
                 interaction.SetInteractionData( info.InteractionData?.Trim() );
                 interactionsToInsert.Add( interaction );

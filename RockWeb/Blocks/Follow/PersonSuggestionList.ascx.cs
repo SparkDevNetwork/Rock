@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Follow
             gSuggestions.DataKeyNames = new string[] { "Id" };
             gSuggestions.IsDeleteEnabled = false;
             gSuggestions.GridRebind += gSuggestions_GridRebind;
-            gSuggestions.PersonIdField = "Id";
+            gSuggestions.PersonIdField = "Person.Id";
 
             var lbFollow = new LinkButton();
             lbFollow.ID = "lbFollow";

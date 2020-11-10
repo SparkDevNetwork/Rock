@@ -307,12 +307,16 @@ namespace Rock.Web.UI.Controls
             _btnSave.Click += btnSave_Click;
             Controls.Add( _btnSave );
 
+            var cancelButtonJs = $@"javascript:$('.{this.ClientID}-js-defined-value-editor').fadeToggle(400, 'swing', function() {{
+                $('.{DefinedValueSelectorClientId}-js-defined-value-selector').fadeToggle();
+                }}); return false;";
+
             _btnCancel = new LinkButton();
             _btnCancel.ID = this.ID + "_btnCancel";
             _btnCancel.Text = "Cancel";
             _btnCancel.CssClass = "btn btn-link btn-xs";
             _btnCancel.CausesValidation = false;
-            _btnCancel.OnClientClick = $"javascript:$('.{this.ClientID}-js-defined-value-editor').fadeToggle(400, 'swing', function() {{ $('.{DefinedValueSelectorClientId}-js-defined-value-selector').fadeToggle(); }}); return false;";
+            _btnCancel.OnClientClick = cancelButtonJs;
             Controls.Add( _btnCancel );
 
             LoadDefinedValueAttributes();

@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ActionAttributeGuid = source.ActionAttributeGuid;
             target.Actions = source.Actions;
             target.AllowNotes = source.AllowNotes;
+            target.AllowPersonEntry = source.AllowPersonEntry;
             target.Footer = source.Footer;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -106,6 +107,24 @@ namespace Rock.Model
             #pragma warning disable 612, 618
             target.NotificationSystemEmailId = source.NotificationSystemEmailId;
             #pragma warning restore 612, 618
+            target.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
+            target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
+            target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
+            target.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
+            target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
+            target.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
+            target.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;
+            target.PersonEntryMobilePhoneEntryOption = source.PersonEntryMobilePhoneEntryOption;
+            target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
+            target.PersonEntryPostHtml = source.PersonEntryPostHtml;
+            target.PersonEntryPreHtml = source.PersonEntryPreHtml;
+            target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
+            target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
+            target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

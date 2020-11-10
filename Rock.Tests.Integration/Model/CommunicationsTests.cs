@@ -71,29 +71,36 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var communicationService = new CommunicationService( rockContext );
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var communicationService = new CommunicationService( rockContext );
 
-                var communication = BuildCommunication( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                communicationService.Add( communication );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var communication = BuildCommunication( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    communicationService.Add( communication );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
-
-            var communications = communicationService.
-                                Queryable( "AnalyticsSourceDate" ).
+            using ( var rockContext = new RockContext() )
+            {
+                var communicationService = new CommunicationService( rockContext );
+                var communications = communicationService.
+                                Queryable().
                                 Where( i => i.ForeignKey == communicationForeignKey ).
                                 Where( i => i.SendSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, communications.Count() );
+                Assert.AreEqual( expectedRecordCount, communications.Count() );
+                Assert.IsNotNull( communications.First().SendSourceDate );
+            }
         }
 
         private Rock.Model.Communication BuildCommunication( RockContext rockContext, DateTime requestDate )
