@@ -1,34 +1,34 @@
 @widget-gap: 18px;
 
 .profile-widget {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 68px;
-  position: relative;
+  margin: 0 @widget-gap;
   font-size: 18px;
   line-height: 1.1;
-  margin: 0 @widget-gap;
 
   &:first-of-type {
     margin-left: 0;
   }
 
-  &:after {
-    content: ' ';
+  &::after {
     position: absolute;
-    display: block;
-    background: #E5E7EB;
-    width: 1px;
-    right: -@widget-gap;
     top: 18px;
+    right: -@widget-gap;
     bottom: 18px;
+    display: block;
+    width: 1px;
+    content: " ";
+    background: #e5e7eb;
   }
 
   &:last-of-type {
-    &:after {
-      display: none;;
+    &::after {
+      display: none;
     }
   }
 }
@@ -39,14 +39,14 @@
   &::before {
     position: absolute;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
-    content: @fa-var-restroom;
-    color: rgba(0,0,0,0.05);
     font-size: 38px;
+    font-weight: @fa-theme-weight;
     line-height: 1;
+    color: rgba(0,0,0,.05);
+    content: @fa-var-restroom;
   }
 }
 

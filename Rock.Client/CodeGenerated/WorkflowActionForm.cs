@@ -44,6 +44,9 @@ namespace Rock.Client
         public bool? AllowNotes { get; set; }
 
         /// <summary />
+        public bool AllowPersonEntry { get; set; }
+
+        /// <summary />
         public string Footer { get; set; }
 
         /// <summary />
@@ -70,6 +73,60 @@ namespace Rock.Client
         // Made Obsolete in Rock "1.10"
         [Obsolete( "Use NotificationSystemCommunicationId instead.", false )]
         public int? NotificationSystemEmailId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryAddressEntryOption { get; set; }
+
+        /// <summary />
+        public bool PersonEntryAutofillCurrentPerson { get; set; } = true;
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryBirthdateEntryOption { get; set; }
+
+        /// <summary />
+        public bool PersonEntryCampusIsVisible { get; set; } = true;
+
+        /// <summary />
+        public int? PersonEntryConnectionStatusValueId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryEmailEntryOption { get; set; } = Rock.Client.Enums.WorkflowActionFormPersonEntryOption.Required;
+
+        /// <summary />
+        public Guid? PersonEntryFamilyAttributeGuid { get; set; }
+
+        /// <summary />
+        public int? PersonEntryGroupLocationTypeValueId { get; set; }
+
+        /// <summary />
+        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = true;
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryMobilePhoneEntryOption { get; set; }
+
+        /// <summary />
+        public Guid? PersonEntryPersonAttributeGuid { get; set; }
+
+        /// <summary />
+        public string PersonEntryPostHtml { get; set; }
+
+        /// <summary />
+        public string PersonEntryPreHtml { get; set; }
+
+        /// <summary />
+        public int? PersonEntryRecordStatusValueId { get; set; }
+
+        /// <summary />
+        public Guid? PersonEntrySpouseAttributeGuid { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntrySpouseEntryOption { get; set; }
+
+        /// <summary />
+        public string PersonEntrySpouseLabel { get; set; } = @"Spouse";
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -107,6 +164,7 @@ namespace Rock.Client
             this.ActionAttributeGuid = source.ActionAttributeGuid;
             this.Actions = source.Actions;
             this.AllowNotes = source.AllowNotes;
+            this.AllowPersonEntry = source.AllowPersonEntry;
             this.Footer = source.Footer;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -117,6 +175,24 @@ namespace Rock.Client
             #pragma warning disable 612, 618
             this.NotificationSystemEmailId = source.NotificationSystemEmailId;
             #pragma warning restore 612, 618
+            this.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
+            this.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
+            this.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
+            this.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            this.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            this.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
+            this.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            this.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
+            this.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
+            this.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;
+            this.PersonEntryMobilePhoneEntryOption = source.PersonEntryMobilePhoneEntryOption;
+            this.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
+            this.PersonEntryPostHtml = source.PersonEntryPostHtml;
+            this.PersonEntryPreHtml = source.PersonEntryPreHtml;
+            this.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            this.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
+            this.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
+            this.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -134,6 +210,15 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntryConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntryGroupLocationTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntryRecordStatusValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

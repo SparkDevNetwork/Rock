@@ -486,7 +486,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the additional settings.
@@ -495,7 +495,7 @@ namespace Rock.Web.Cache
         /// The additional settings.
         /// </value>
         [DataMember]
-        public string AdditionalSettings { get; set; }
+        public string AdditionalSettings { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the site.
@@ -504,7 +504,7 @@ namespace Rock.Web.Cache
         /// The type of the site.
         /// </value>
         [DataMember]
-        public SiteType SiteType { get; set; }
+        public SiteType SiteType { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration mobile phone file identifier.
@@ -513,7 +513,7 @@ namespace Rock.Web.Cache
         /// The configuration mobile phone file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration tablet binary file identifier.
@@ -522,7 +522,7 @@ namespace Rock.Web.Cache
         /// The configuration tablet binary file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the thumbnail file identifier.
@@ -531,7 +531,7 @@ namespace Rock.Web.Cache
         /// The thumbnail file identifier.
         /// </value>
         [DataMember]
-        public int? ThumbnailBinaryFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the latest version date time.
@@ -539,7 +539,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The latest version date time.
         /// </value>
-        public DateTime? LatestVersionDateTime { get; set; }
+        public DateTime? LatestVersionDateTime { get; private set; }
 
         /// <summary>
         /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
@@ -548,7 +548,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableExclusiveRoutes { get; set; }
+        public bool EnableExclusiveRoutes { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration mobile file path.
@@ -556,7 +556,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The configuration mobile file path.
         /// </value>
-        public string ConfigurationMobilePhoneFileUrl { get; set; }
+        public string ConfigurationMobilePhoneFileUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration tablet file path.
@@ -564,7 +564,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The configuration tablet file path.
         /// </value>
-        public string ConfigurationMobileTabletFileUrl { get; set; }
+        public string ConfigurationMobileTabletFileUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the thumbnail file URL.
@@ -572,7 +572,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The thumbnail file URL.
         /// </value>
-        public string ThumbnailFileUrl { get; set; }
+        public string ThumbnailFileUrl { get; private set; }
 
         #endregion
 

@@ -1373,8 +1373,9 @@ namespace Rock.Web.UI
 
                         var lbCacheControl = new LinkButton();
                         lbCacheControl.Click += lbCacheControl_Click;
-                        lbCacheControl.CssClass = $"margin-l-md fa fa-memory {cacheIndicator}";
+                        lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
                         lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
@@ -1494,11 +1495,9 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache
                     // so it should always exist
-                    if ( _pageCache.OutputCacheDuration > 0 )
+                    if ( _pageCache.CacheControlHeader != null )
                     {
-                        Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
-                        Response.Cache.SetValidUntilExpires( true );
+                        _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
 

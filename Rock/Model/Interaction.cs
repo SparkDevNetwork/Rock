@@ -380,7 +380,7 @@ namespace Rock.Model
         /// The interaction source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate InteractionSourceDate { get; set; }
+        public virtual AnalyticsSourceDate InteractionSourceDate { get; set; }
 
         #endregion Virtual Properties
 

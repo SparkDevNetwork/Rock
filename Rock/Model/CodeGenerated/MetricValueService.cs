@@ -94,7 +94,6 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.MetricId = source.MetricId;
             target.MetricValueDateTime = source.MetricValueDateTime;
-            target.MetricValueSourceDate = source.MetricValueSourceDate;
             target.MetricValueType = source.MetricValueType;
             target.Note = source.Note;
             target.XValue = source.XValue;

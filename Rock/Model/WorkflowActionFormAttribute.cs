@@ -103,10 +103,10 @@ namespace Rock.Model
         public bool HideLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the pre HTML.
+        /// Gets or sets the PreHTML.
         /// </summary>
         /// <value>
-        /// The pre HTML.
+        /// The preHTML.
         /// </value>
         [DataMember]
         public string PreHtml { get; set; }

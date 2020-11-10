@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace Rock.Utility
     /// <summary>
     /// Represent the Cache-Control settings used inside Rock.
     /// </summary>
+    [Serializable]
     public class RockCacheability
     {
         private const string PUBLIC_OPTION = "public";
@@ -36,25 +38,26 @@ namespace Rock.Utility
         private readonly HashSet<string> _noAgeOptions = new HashSet<string>( new string[] { NO_CACHE_OPTION, NO_STORE_OPTION } );
         private readonly Dictionary<RockCacheablityType, string> _cacheabilityTypeOptionMap = new Dictionary<RockCacheablityType, string>
         {
-                {RockCacheablityType.Public, PUBLIC_OPTION },
-                {RockCacheablityType.Private, PRIVATE_OPTION },
-                {RockCacheablityType.NoCache, NO_CACHE_OPTION },
-                {RockCacheablityType.NoStore, NO_STORE_OPTION },
+                { RockCacheablityType.Public, PUBLIC_OPTION },
+                { RockCacheablityType.Private, PRIVATE_OPTION },
+                { RockCacheablityType.NoCache, NO_CACHE_OPTION },
+                { RockCacheablityType.NoStore, NO_STORE_OPTION },
         };
 
         private readonly Dictionary<string, bool> _supportedCacheOptions = new Dictionary<string, bool>
         {
-            {PUBLIC_OPTION, false },
-            {PRIVATE_OPTION, false },
-            {NO_CACHE_OPTION, false },
-            {NO_STORE_OPTION, false },
-            {MAX_AGE_OPTION, true },
-            {MAX_SHARED_AGE_OPTION, true }
+            { PUBLIC_OPTION, false },
+            { PRIVATE_OPTION, false },
+            { NO_CACHE_OPTION, false },
+            { NO_STORE_OPTION, false },
+            { MAX_AGE_OPTION, true },
+            { MAX_SHARED_AGE_OPTION, true }
         };
 
         private readonly Dictionary<string, TimeInterval> _cacheOptions = new Dictionary<string, TimeInterval>();
 
         private RockCacheablityType _rockCacheablityType;
+
         /// <summary>
         /// Gets or sets the directive that will be used in the Cache-Control header.
         /// </summary>
@@ -67,6 +70,7 @@ namespace Rock.Utility
             {
                 return _rockCacheablityType;
             }
+
             set
             {
                 _rockCacheablityType = value;
@@ -138,6 +142,7 @@ namespace Rock.Utility
                     sbCacheString.Append( option.Key );
                 }
             }
+
             return sbCacheString.ToString();
         }
 
@@ -228,6 +233,7 @@ namespace Rock.Utility
             {
                 return _cacheOptions[option];
             }
+
             return null;
         }
     }

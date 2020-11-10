@@ -59,10 +59,6 @@ html {
 @import "_variable-overrides.less";
 
 
-.checkin-scroll-panel {
-  bottom: 0 !important;
-}
-
 // Checkin Body Label and Edit Family Link Adjustment
 // .checkin-body-container > .btn-link,
 .checkin-body-container > label,
@@ -111,8 +107,9 @@ html {
   font-size: 26px;
 }
 
+@screen-xs-max: (@screen-xs-min + 1);
 .photo-container {
-  @media (max-width: @screen-xs-min + 1) {
+  @media (max-width: @screen-xs-max) {
     flex-shrink: 1;
     width: auto;
     margin-right: 10px;
@@ -151,7 +148,7 @@ html {
 // Only Replace with PNG when using the default image
 .ie-fix (@welcome-image);
 .ie-fix( @welcome-image ) when (@welcome-image = "../Assets/KidsIllustration.svg") {
-  .is-ie .welcome .js-active::before { background-image: url(../Assets/KidsIllustration.png); }
+  .is-ie .welcome .js-active::before { background-image: url("../Assets/KidsIllustration.png"); }
 }
 
 .welcome-cover-mixin(@welcome-background-cover-mode);

@@ -553,6 +553,7 @@
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
     <Compile Include="Jobs\JobMigration.cs" />
+    <Compile Include="Jobs\PostInstallDataMigrations.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
@@ -565,7 +566,7 @@
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
-    <Compile Include="Lava\Blocks\EventOccurrences.cs" />
+    <Compile Include="Lava\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\Blocks\InteractionWrite.cs" />
     <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
     <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />
@@ -592,12 +593,15 @@
     <Compile Include="Model\DocumentService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\138_MigrationRollupsFor11_4_1.cs" />
     <Compile Include="Plugin\HotFixes\137_MigrationRollupsFor11_4_0.cs" />
     <Compile Include="Plugin\HotFixes\136_MigrationRollupsFor11_3_0.cs" />
     <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
     <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CreatedNotesFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\CreatedNotesCountSelect.cs" />
     <Compile Include="Reporting\ReportGetQueryableArgs.cs" />
     <Compile Include="Reporting\RockReportingException.cs" />
     <Compile Include="Plugin\HotFixes\131_MigrationRollupsFor11_1_1.cs" />

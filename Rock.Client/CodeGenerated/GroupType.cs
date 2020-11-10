@@ -110,9 +110,6 @@ namespace Rock.Client
         public bool GroupsRequireCampus { get; set; }
 
         /// <summary />
-        public DefinedType GroupStatusDefinedType { get; set; }
-
-        /// <summary />
         public int? GroupStatusDefinedTypeId { get; set; }
 
         /// <summary />
@@ -439,7 +436,6 @@ namespace Rock.Client
             this.GroupCapacityRule = source.GroupCapacityRule;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupsRequireCampus = source.GroupsRequireCampus;
-            this.GroupStatusDefinedType = source.GroupStatusDefinedType;
             this.GroupStatusDefinedTypeId = source.GroupStatusDefinedTypeId;
             this.GroupTerm = source.GroupTerm;
             this.GroupTypeColor = source.GroupTypeColor;

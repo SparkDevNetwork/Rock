@@ -44,6 +44,9 @@
                         <div class="col-md-6">
                             <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Entity Type" Required="true" EnhanceForLongLists="true" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsImage" Label="Is Image" runat="server" />
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -53,6 +56,11 @@
                             <Rock:RockTextBox ID="rtbIconCssClass" runat="server" Label="Icon CSS Class" />
                         </div>
                     </div>
+                     <div class="row">
+                        <div class="col-md-6">
+                            <Rock:NumberBox ID="nbMaxDocumentsPerEntity" Label="Max Documents Per Entity" runat="server" NumberType="Integer" Help="This would limit the number of the documents of that type per entity. A blank value means no limit." />
+                        </div>
+                     </div>
                     <div class="row">
                         <div class="col-sm-12 text-right">
                             <asp:HiddenField ID="hfShowAdvancedSettings" runat="server" />
