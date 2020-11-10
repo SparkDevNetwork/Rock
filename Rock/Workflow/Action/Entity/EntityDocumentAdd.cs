@@ -172,10 +172,19 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, string.Empty, string.Empty, true );
+            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, true );
             if ( !documentypesForContextEntityType.Any( d => attributeFilteredDocumentType == d.Id ) )
             {
                 var message = "The Document Type does not match the selected entity type.";
+                errorMessages.Add( message );
+                action.AddLogEntry( message, true );
+                return false;
+            }
+
+            var isDocumentTypeValid = IsDocumentTypeValidForEntity( entityObject, documentType );
+            if ( !isDocumentTypeValid )
+            {
+                var message = "The Document Type selected is not valid for the entity.";
                 errorMessages.Add( message );
                 action.AddLogEntry( message, true );
                 return false;
@@ -218,6 +227,40 @@ namespace Rock.Workflow.Action
 
             action.AddLogEntry( "Added document to the Entity." );
             return true;
+        }
+
+        /// <summary>
+        /// Check if document type is valid for entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="documentType">The document type.</param>
+        /// <returns></returns>
+        private bool IsDocumentTypeValidForEntity( IEntity entity, DocumentTypeCache documentType )
+        {
+            bool isValid = true;
+            // If the document does not have a qualifier column specified then allow it by default
+            if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
+            {
+                // Check that the EntityTypeQualifierColumn is a property for this entity, if not then remove it by default
+                if ( entity.GetType().GetProperty( documentType.EntityTypeQualifierColumn ) == null )
+                {
+                    isValid = false;
+                }
+
+                if ( isValid )
+                {
+                    // Get the value of the property specified in DocumentType.EntityTypeQualifierColumn from the current ContextEntity
+                    string entityPropVal = entity.GetPropertyValue( documentType.EntityTypeQualifierColumn ).ToString();
+
+                    // If the entity property values does not match DocumentType.EntityTypeQualifierValue then it should be removed.
+                    if ( entityPropVal != documentType.EntityTypeQualifierValue )
+                    {
+                        isValid = false;
+                    }
+                }
+            }
+
+            return isValid;
         }
     }
 }
