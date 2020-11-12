@@ -1868,7 +1868,7 @@ function onTaskCompleted( resultData )
 
             var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );            
             sampleCommunicationRecipient.Communication = communication;
-            sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId );
+            sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId.Value );
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
             Rock.Communication.MediumComponent emailMediumWithActiveTransport = MediumContainer.GetActiveMediumComponentsWithActiveTransports()
@@ -2077,7 +2077,7 @@ function onTaskCompleted( resultData )
             var firstRecipient = GetSampleCommunicationRecipient( communication, rockContext );
             if ( firstRecipient != null )
             {
-                firstRecipient.PersonAlias = firstRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( firstRecipient.PersonAliasId );
+                firstRecipient.PersonAlias = firstRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( firstRecipient.PersonAliasId.Value );
                 hfSMSSampleRecipientPersonId.Value = firstRecipient.PersonAlias.PersonId.ToString();
             }
 
