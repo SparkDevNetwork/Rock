@@ -1089,7 +1089,7 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            if (!pnlPersonEntry.Visible)
+            if ( !form.AllowPersonEntry )
             {
                 return;
             }
