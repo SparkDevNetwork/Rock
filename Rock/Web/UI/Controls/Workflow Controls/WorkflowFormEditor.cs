@@ -419,7 +419,7 @@ namespace Rock.Web.UI.Controls
             _ceHeaderText = new CodeEditor
             {
                 Label = "Form Header",
-                Help = "Text to display to user above the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
+                Help = "HTML to display above the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 ID = "_ebHeaderText",
                 EditorMode = CodeEditorMode.Lava,
                 EditorTheme = CodeEditorTheme.Rock,
@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
             _ceFooterText = new CodeEditor
             {
                 Label = "Form Footer",
-                Help = "Text to display to user below the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
+                Help = "HTML to display below the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 ID = "_ebFooterText",
                 EditorMode = CodeEditorMode.Lava,
                 EditorTheme = CodeEditorTheme.Rock,
@@ -495,7 +495,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "_cePersonEntryPreHtml",
                 Label = "Person Form Pre-HTML",
-                Help = "Text to display to user above the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
+                Help = "HTML to display above the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 EditorMode = CodeEditorMode.Lava,
                 EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"
@@ -611,21 +611,21 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "_ddlPersonEntrySpouseAttribute",
                 Label = "Spouse Attribute",
-                Help = "Workflow attribute for entered person's spouse"
+                Help = "Attribute where the matched/created person's spouse will be stored for the workflow to use."
             };
 
             _ddlPersonEntryFamilyAttribute = new RockDropDownList
             {
                 ID = "_ddlPersonEntryFamilyAttribute",
                 Label = "Family Attribute",
-                Help = "Workflow attribute for entered person's family"
+                Help = "A group attribute where the matched/created family group will be stored for the workflow to use"
             };
 
             _cePersonEntryPostHtml = new CodeEditor
             {
                 ID = "_cePersonEntryPostHtml",
                 Label = "Person Form Post-HTML",
-                Help = "Text to display to user below the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
+                Help = "HTML to display below the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 EditorMode = CodeEditorMode.Lava,
                 EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"

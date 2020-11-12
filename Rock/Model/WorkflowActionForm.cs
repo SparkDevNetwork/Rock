@@ -171,7 +171,7 @@ namespace Rock.Model
         ///   <c>true</c> if [person entry hide if current person known]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = true;
+        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the person entry spouse entry option.
