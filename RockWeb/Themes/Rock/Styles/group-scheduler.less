@@ -18,6 +18,7 @@
 @belowdesired-icon-color: fade(@brand-warning, 75%);
 @belowminimum-icon-color: fade(@brand-danger, 75%);
 
+@grid-height: 51px;
 
 .panel-body-parent {
   height: ~"calc(100vh - 290px)";
@@ -31,6 +32,7 @@
   padding: 8px 0;
   overflow-x: auto;
   overflow-y: scroll;
+  //background-color: @panel-heading-bg;
 }
 
 .group-scheduler {
@@ -341,7 +343,6 @@
 }
 
 .scheduler-target-container {
-  @grid-height: 51px;
   @border-start: @grid-height - 1px;
   @border-end: @grid-height + 1px;
   min-height: ~"calc("@grid-height~"*var(--desiredSpots,2))"; //var(--emptySpots)
@@ -586,7 +587,8 @@
 .scheduler-target-container .resource.gu-transit,
 .resource.gu-mirror {
   max-width: 270px;
-  max-height: 51px;
+  height: @grid-height;
+  max-height: @grid-height;
 
   .hide-transit {
     display: none;
@@ -612,48 +614,18 @@
 .main-content #page-content {
   min-height: 0;
 }
+
 .panel-collapsable {
   box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
-}
-.panel-collapsable .panel-drawer {
-  border-bottom: 1px solid #dbdbdb;
-}
-.panel-toolbar {
-  padding: 4px 16px;
-  font-size: 12px;
-  border-bottom: 1px solid #dbdbdb;
-}
-
-.panel-toolbar .btn,
-.panel-toolbar .picker .picker-label {
-  padding: 1px 5px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: @line-height-small;
-  color: #6f7782;
-  background: transparent;
-  border: 0;
-}
-.panel-toolbar .btn:hover,
-.panel-toolbar .btn:active,
-.panel-toolbar .picker .picker-label:hover,
-.panel-toolbar .picker .picker-label:active,
-.panel-toolbar .picker .picker-label:focus,
-.open .panel-toolbar .btn {
-  background: #e9ecee;
-  outline: 0;
-  box-shadow: none;
+  .panel-drawer {
+    border-bottom: 1px solid @panel-border;
+  }
 }
 
 .panel-toolbar .picker .picker-select-none {
   display: none !important;
 }
 
-.panel-toolbar .btn:hover,
-.panel-toolbar .btn:active,
-.open .panel-toolbar .btn {
-  background: #e9ecee;
-}
 .overflow-scroll {
   height: calc(100vh - 290px);
   min-height: 200px;
@@ -679,14 +651,25 @@
   height: 100%;
   margin: 0 8px;
   overflow: hidden;
+  border: 1px solid @panel-border;
   border-radius: 6px;
   transition: box-shadow 250ms;
 }
 
+.board-column-title {
+  font-weight: @font-weight-semibold;
+}
+
+.occurrence-column {
+  background: @panel-heading-bg;
+  opacity: .9;
+}
+
 .occurrence-column-selected {
-  background: #f7f7f7;
+  background: @white;
   border-radius: 4px;
-  box-shadow: 0 0 1px rgba(0, 0, 0, .08), 0 2px 2px rgba(0, 0, 0, .24);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+  opacity: 1;
 }
 
 .board-heading {
@@ -700,77 +683,6 @@
   padding: 1px 16px 130px;
   overflow-x: hidden;
   overflow-y: scroll;
-}
-.board-card {
-  display: block;
-  align-items: center;
-  width: 280px;
-  padding: 15px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  background: @white;
-  border: 1px solid #dbdbdb;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
-  transition: box-shadow 100ms, transform 100ms, background-color 100ms, border-color 100ms;
-}
-.board-card:hover {
-  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, .1);
-}
-.board-card-photo {
-  position: relative;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  vertical-align: top;
-  background: ~"center/cover #cbd4db";
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
-}
-.board-card-assigned {
-  font-size: 12px;
-}
-.board-card-pills {
-  display: flex;
-  flex-flow: row wrap;
-  align-content: space-between;
-  margin: -5px -5px 0;
-  margin-bottom: 10px;
-}
-.board-card-pill {
-  width: 42px;
-  height: 6px;
-  margin: 5px 5px 0;
-  background-color: #7a6ff0;
-  border-radius: 3px;
-}
-.board-card-meta {
-  font-size: 11px;
-}
-.dropdown-menu-mega {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 2000;
-  width: 300px;
-  overflow-y: scroll;
-}
-.dropdown-menu-mega li {
-  position: relative;
-}
-.dropdown-menu-mega .dropdown-header {
-  padding: 8px 0;
-  margin: 24px 16px 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #484848;
-  border-bottom: 1px solid #e4e4e4;
-}
-.dropdown-menu-mega .dropdown-header:first-child {
-  margin-top: 0;
 }
 
 .styled-scroll ::-webkit-scrollbar {
