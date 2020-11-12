@@ -1,4 +1,7 @@
-INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N'KPI', N'Create quick key performance indicators.', N'<p>Basic Usage:</p>
+IF NOT EXISTS (SELECT Id FROM [LavaShortcode] WHERE [Guid] = '8A49FD01-D59E-4611-8FF4-9E226C99FB22')
+BEGIN
+INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+VALUES (N'KPI', N'Create quick key performance indicators.', N'<p>Basic Usage:</p>
 <pre><code>{[kpis]}
   [<span class="hljs-string">[ kpi icon:''fa-highlighter'' value:''4'' label:''Highlighters'' color:''yellow-700''</span>]][[ endkpi ]]
   [<span class="hljs-string">[ kpi icon:''fa-pen-fancy'' value:''8'' label:''Pens'' color:''indigo-700''</span>]][[ endkpi ]]
@@ -168,4 +171,5 @@ INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem],
         </div>
     {% endfor %}
 </div>
-', '2', N'', N'icontype^fa|height^', '8A49FD01-D59E-4611-8FF4-9E226C99FB22');
+', '2', N'', N'icontype^fa|height^', '8A49FD01-D59E-4611-8FF4-9E226C99FB22')
+END
