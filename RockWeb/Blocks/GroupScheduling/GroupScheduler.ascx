@@ -89,7 +89,7 @@
                             <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options d-flex justify-content-between align-items-center">
                                 <asp:Panel ID="pnlResourceListFilter" runat="server">
                                     <div class="btn-group">
-                                        <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                                        <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                             <i class="fa fa-list-ul"></i>
                                             <asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />
                                             List: <asp:Literal ID="lSelectedResourceTypeDropDownText" runat="server" Text="Group Members" />
@@ -107,7 +107,7 @@
                                     </div>
                                 </asp:Panel>
 
-                                <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-default js-add-resource" ToolTip="Add Person">
+                                <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-tool js-add-resource" ToolTip="Add Person">
                                     <i class="fa fa-plus"></i>
                                 </asp:Panel>
                             </div>
@@ -128,7 +128,7 @@
                                     <!-- Filter for Week -->
                                     <div class="d-block">
                                         <asp:Panel ID="pnlWeekFilter" CssClass="btn-group" runat="server">
-                                                <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                                     <asp:HiddenField ID="hfWeekSundayDate" runat="server" />
                                                     <asp:Literal ID="lWeekFilterText" runat="server" Text="Week: -- " />
                                                 </div>
@@ -147,7 +147,7 @@
                                     <!-- Filter for Locations -->
                                         <asp:Panel ID="pnlLocationFilter" CssClass="btn-group" runat="server">
 
-                                                <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                                     <asp:HiddenField ID="hfPickedLocationIds" runat="server" />
                                                     <asp:Literal ID="lSelectedLocationFilterText" runat="server" Text="Locations...." />
                                                 </div>
@@ -166,7 +166,7 @@
 
                                     <!-- Filter for Schedules -->
                                         <asp:Panel ID="pnlScheduleFilter" CssClass="btn-group" runat="server">
-                                                <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                                     <asp:HiddenField ID="hfSelectedScheduleId" runat="server" />
                                                     <asp:Literal ID="lScheduleFilterText" runat="server" Text="Schedule..." />
                                                 </div>
@@ -238,7 +238,7 @@
 
 
 
-                <Rock:NotificationBox ID="nbFilterMessage" runat="server" />
+                <Rock:NotificationBox ID="nbFilterMessage" runat="server" CssClass="m-3" />
                 <Rock:NotificationBox ID="nbAuthorizedGroupsWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                 <Rock:NotificationBox ID="nbSchedulingDisabledWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                 <asp:Literal ID="lDebug" runat="server" Visible="false" />
@@ -427,12 +427,12 @@
                                                                             <%-- Occurrence Panel Heading when in Multi-Group mode --%>
                                                                             <asp:Panel ID="pnlMultiGroupModePanelHeading" runat="server" CssClass="d-flex justify-content-between align-items-center w-100">
                                                                                 <div class="d-flex flex-column">
-                                                                                <asp:Literal ID="lMultiGroupModeLocationTitle" runat="server" />
-                                                                                <span class="small text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
+                                                                                <span class="location"><asp:Literal ID="lMultiGroupModeLocationTitle" runat="server" /></span>
+                                                                                <span class="date small text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
                                                                                 </div>
 
                                                                                 <div>
-                                                                                    <asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledTime" />
+                                                                                    <span class="scheduled-time"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledTime" /></span>
 
                                                                                     <span class="autoscheduler-warning js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
                                                                                         <i class="fa fa-exclamation-triangle"></i>
