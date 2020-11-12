@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Groups
                         boundField.HeaderText = attribute.Name;
                         boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
-                        gGroupMembers.Columns.Add( boundField );
+                        gGroupMembers.AddColumnBeforeControls( boundField );
                     }
                 }
             }
