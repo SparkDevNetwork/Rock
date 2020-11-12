@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         if ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue )
                         {
-                            // not assigned 
+                            // not assigned
                             return true;
                         }
 
@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            // Get the workflow type 
+            // Get the workflow type
             if ( WorkflowTypeId.HasValue )
             {
                 return WorkflowTypeCache.Get( WorkflowTypeId.Value );
@@ -698,7 +698,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     string formattedValue = null;
 
-                    // get formatted value 
+                    // get formatted value
                     if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     {
                         formattedValue = field.FormatValueAsHtml( phAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
@@ -840,6 +840,8 @@ namespace RockWeb.Blocks.WorkFlow
             SetPersonEditorOptions( pePerson1, form );
             SetPersonEditorOptions( pePerson2, form );
             pePerson2.PersonLabelPrefix = form.PersonEntrySpouseLabel;
+            cbShowPerson2.TextCssClass = "font-weight-semibold";
+            cbShowPerson2.ContainerCssClass = "show-spouse mt-3 mb-4";
             cbShowPerson2.Text = string.Format( "Show {0}", form.PersonEntrySpouseLabel );
             switch ( form.PersonEntrySpouseEntryOption )
             {
@@ -1178,7 +1180,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( acPersonEntryAddress.Visible && form.PersonEntryGroupLocationTypeValueId.HasValue && acPersonEntryAddress.HasValue )
             {
-                // a Person should always have a PrimaryFamilyId, but check to make sure, just in case 
+                // a Person should always have a PrimaryFamilyId, but check to make sure, just in case
                 if ( primaryFamily != null )
                 {
                     var groupLocationService = new GroupLocationService( personEntryRockContext );
@@ -1364,10 +1366,10 @@ namespace RockWeb.Blocks.WorkFlow
             #4
             - Person1 Fields match Bill Hills.
             - Bill has a spouse named Jill Hills
-            - 
+            -
 
             In case #4, since Bill has a spouse, the data in the Spouse fields will be used to update Bill's spouse Jill Hills
-             
+
              */
 
             if ( personEntryPerson != null && limitMatchToFamily != null )
