@@ -75,6 +75,7 @@
     <Compile Include="FileFormatTypeComponent.cs" />
     <Compile Include="FileFormatTypeContainer.cs" />
     <Compile Include="FileFormatTypes\BankOfAmericaMerrillLynch.cs" />
+    <Compile Include="FileFormatTypes\ComericaBank.cs" />
     <Compile Include="FileFormatTypes\Regions.cs" />
     <Compile Include="FileFormatTypes\FifthThirdBank.cs" />
     <Compile Include="FileFormatTypes\BBVACompass.cs" />
