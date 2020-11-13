@@ -70,7 +70,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                 var fileFormats = fileFormatService.Queryable().Where( f => f.IsActive == true );
 
                 ddlFileFormat.Items.Clear();
-                ddlFileFormat.Items.Add( new ListItem() );
+                //ddlFileFormat.Items.Add( new ListItem() );
                 foreach ( var fileFormat in fileFormats )
                 {
                     ddlFileFormat.Items.Add( new ListItem( fileFormat.Name, fileFormat.Id.ToString() ) );
