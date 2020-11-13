@@ -1037,10 +1037,11 @@ td.grid-actions {
   }
 }
 
-.nav-open-lg {
-  #cms-admin-footer {
-    left: @navbarside-width;
-    width: auto;
+@media (max-width: @screen-sm) {
+  .nav-open-lg {
+    #cms-admin-footer {
+      z-index: @zindex-navbar-fixed;
+    }
   }
 }
 
