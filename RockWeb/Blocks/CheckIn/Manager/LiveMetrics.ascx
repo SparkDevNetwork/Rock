@@ -43,8 +43,9 @@
             , scales: {
                 yAxes: [{
                     ticks: {
-                        min: 0,
-                        stepSize: 1
+                        beginAtZero: true,
+                        maxTicksLimit: 6,
+                        precision: 0
                     },
                 }]
             }
@@ -53,7 +54,6 @@
         var data = {
             labels: chartLabel,
             datasets: [{
-                label: 'People',
                 fill: false,
                 backgroundColor: '#059BFF',
                 borderColor: '#059BFF',
