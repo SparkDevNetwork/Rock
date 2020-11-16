@@ -177,6 +177,14 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         DefaultValue = "Campus",
         Order = 16 )]
+
+    [BooleanField(
+        "Require Gender",
+        Key = AttributeKey.RequireGender,
+        Description = "Controls whether or not the gender field is required.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        Order = 17)]
     #endregion
 
     public partial class PublicProfileEdit : RockBlock
@@ -200,6 +208,7 @@ namespace RockWeb.Blocks.Cms
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string RequireGender = "RequireGender";
         }
 
         #region Fields
@@ -1240,7 +1249,20 @@ namespace RockWeb.Blocks.Cms
                         tbLastName.Text = person.LastName;
                         dvpSuffix.SetValue( person.SuffixValueId );
                         bpBirthDay.SelectedDate = person.BirthDate;
-                        rblGender.SelectedValue = person.Gender.ConvertToString();
+
+                        // Setup the gender radio button list according to the required field
+                        var genderRequired = GetAttributeValue( AttributeKey.RequireGender ).AsBooleanOrNull() ?? true;
+                        if ( !genderRequired )
+                        {
+                            rblGender.Items.Add( new ListItem( "Unknown", "Unknown" ) );
+                        }
+
+                        // Add this check to handle if the gender requirement became required after an "Unknown" value was already set
+                        if ( rblGender.Items.FindByValue( person.Gender.ConvertToString() ) != null )
+                        {
+                            rblGender.SelectedValue = person.Gender.ConvertToString();
+                        }
+
                         if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
                         {
                             _IsEditRecordAdult = false;
