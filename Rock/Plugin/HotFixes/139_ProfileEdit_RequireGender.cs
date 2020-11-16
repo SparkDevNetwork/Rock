@@ -30,7 +30,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // Attribute for BlockType: Public Profile Edit:Require Gender
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "841D1670-8BFD-4913-8409-FB47EB7A2AB9", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Gender", "RequireGender", "Require Gender", @"Controls whether or not the gender field is required.", 17, @"True", "F49B0742-D0D3-4384-8F37-F9EDE7B15A31" );
+            //RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "841D1670-8BFD-4913-8409-FB47EB7A2AB9", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Gender", "RequireGender", "Require Gender", @"Controls whether or not the gender field is required.", 17, @"True", "F49B0742-D0D3-4384-8F37-F9EDE7B15A31" );
         }
 
         /// <summary>
