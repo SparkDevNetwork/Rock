@@ -183,7 +183,7 @@ namespace Rock.Model
                 attendance.AttendanceCodeId = attendanceCodeId;
             attendance.StartDateTime = checkinDateTime;
             attendance.DidAttend = true;
-            
+
             return attendance;
         }
 
@@ -1221,6 +1221,7 @@ namespace Rock.Model
                         {
                             PersonId = pa.PersonId,
                             GroupId = a.Occurrence.GroupId,
+                            GroupName = a.Occurrence.Group.Name,
                             ScheduleId = a.Occurrence.ScheduleId.Value,
                             ScheduleName = a.Occurrence.Schedule.Name,
                             LocationId = a.Occurrence.LocationId,
@@ -1238,6 +1239,7 @@ namespace Rock.Model
                         v => v.Select( x => new SchedulerResourceScheduled
                         {
                             GroupId = x.GroupId.Value,
+                            GroupName = x.GroupName,
                             LocationId = x.LocationId,
                             LocationName = x.LocationName,
                             ScheduleId = x.ScheduleId,
@@ -1258,7 +1260,7 @@ namespace Rock.Model
                     schedulerResource.ConfirmationStatus = ScheduledAttendanceItemStatus.Unscheduled.ConvertToString( false ).ToLower();
 
                     // see if they are scheduled for some other group during this occurrence
-                    schedulerResource.HasSchedulingConflict = scheduledForOccurrences?.Any( ao => ao.GroupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ) ?? false;
+                    schedulerResource.SchedulingConflicts = scheduledForOccurrences?.Where( ao => ao.GroupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ).ToList();
 
                     // get list of places where this person is already scheduled for this Group
                     List<SchedulerResourceScheduled> schedulerResourceScheduledList = scheduledForOccurrences
@@ -1266,6 +1268,7 @@ namespace Rock.Model
                         .Select( ao => new SchedulerResourceScheduled
                         {
                             GroupId = ao.GroupId,
+                            GroupName = ao.GroupName,
                             LocationId = ao.LocationId,
                             LocationName = ao.LocationName,
                             ScheduleId = ao.ScheduleId,
@@ -1404,11 +1407,23 @@ namespace Rock.Model
                 RecordTypeValueId = ap.Person.RecordTypeValueId,
 
                 // set HasSchedulingConflict = true if the same person is requested/scheduled for another attendance within the same ScheduleId/Date
-                HasSchedulingConflict = conflictingScheduledAttendancesQuery.Any( c => c.Id != ap.Attendance.Id
-                                                                                && c.PersonAlias.PersonId == ap.Person.Id
-                                                                                && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
-                                                                                && c.Occurrence.ScheduleId == scheduleId
-                                                                                && c.Occurrence.OccurrenceDate == occurrenceDate ),
+                SchedulingConflicts = conflictingScheduledAttendancesQuery
+                    .Where( c => c.Id != ap.Attendance.Id
+                    && c.PersonAlias.PersonId == ap.Person.Id
+                    && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
+                    && c.Occurrence.ScheduleId == scheduleId
+                    && c.Occurrence.OccurrenceDate == occurrenceDate )
+                    .Select( x => new SchedulerResourceScheduled
+                    {
+                        GroupId = x.Occurrence.GroupId.Value,
+                        GroupName = x.Occurrence.Group.Name,
+                        LocationId = x.Occurrence.LocationId,
+                        LocationName = x.Occurrence.Location.Name,
+                        ScheduleId = attendanceOccurrenceInfo.ScheduleId.Value,
+                        ScheduleName = attendanceOccurrenceInfo.Schedule.Name,
+                        OccurrenceDate = occurrenceDate
+                    } ).ToList(),
+
                 BlackoutDateRanges = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == ap.Person.Id ).Select( s => new { s.StartDate, s.EndDate } ).ToList()
             } );
 
@@ -1539,7 +1554,7 @@ namespace Rock.Model
                     PersonNickName = a.NickName,
                     PersonLastName = a.LastName,
                     PersonName = Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
-                    HasSchedulingConflict = a.HasSchedulingConflict,
+                    SchedulingConflicts = a.SchedulingConflicts,
                     BlackoutDates = personBlackoutDates,
 
                     // not needed for resource that is getting listed in an occurrence
@@ -2368,6 +2383,14 @@ namespace Rock.Model
         public int GroupId { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the group.
+        /// </summary>
+        /// <value>
+        /// The name of the group.
+        /// </value>
+        public string GroupName { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedule identifier.
         /// </summary>
         /// <value>
@@ -2585,12 +2608,20 @@ namespace Rock.Model
         public bool HasGroupRequirementsConflict { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this Person has scheduling conflict with some other group for this schedule+date
+        /// Gets a value indicating whether this Person has scheduling conflict with some other group for this schedule+date
         /// </summary>
         /// <value>
         ///   <c>true</c> if this Person has scheduling conflict; otherwise, <c>false</c>.
         /// </value>
-        public bool HasSchedulingConflict { get; set; }
+        public bool HasSchedulingConflict => SchedulingConflicts?.Any() == true;
+
+        /// <summary>
+        /// Gets or sets the scheduling conflicts.
+        /// </summary>
+        /// <value>
+        /// The scheduling conflicts.
+        /// </value>
+        public List<SchedulerResourceScheduled> SchedulingConflicts { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this Person is already scheduled for this group+schedule+date
@@ -2691,7 +2722,6 @@ namespace Rock.Model
         Unscheduled,
     }
 
-
     /// <summary>
     /// 
     /// </summary>
@@ -2781,7 +2811,6 @@ namespace Rock.Model
         /// The attendance occurrence group identifier.
         /// </value>
         public int AttendanceOccurrenceGroupId { get; set; }
-
 
         /// <summary>
         /// Gets or sets the attendance occurrence schedule identifier.
