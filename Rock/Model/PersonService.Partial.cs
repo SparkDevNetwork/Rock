@@ -283,7 +283,6 @@ namespace Rock.Model
             return FindPersons( new PersonMatchQuery( firstName, lastName, email, string.Empty ) );
         }
 
-
         /// <summary>
         /// Finds people who are considered to be good matches based on the query provided.
         /// </summary>
@@ -317,6 +316,17 @@ namespace Rock.Model
             if ( searchParameters.Gender.HasValue )
             {
                 query = query.Where( a => a.Gender == searchParameters.Gender.Value || a.Gender == Gender.Unknown );
+            }
+
+            /* 2020-11-12 MDP
+              if Email is specified and the Matched Person has an email, it MUST match the person's primary email. This avoids
+              a problem where an email could be changed on an existing person.
+              see https://app.asana.com/0/1181881054809083/1199161381220905/f for why this was done
+            */
+            if ( searchParameters.Email.IsNotNullOrWhiteSpace() )
+            {
+
+                query = query.Where( a => a.Email == searchParameters.Email || a.Email == string.Empty || a.Email == null );
             }
 
             // Create dictionary
@@ -2288,7 +2298,7 @@ namespace Rock.Model
             var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
 
             int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-           
+
             // cleanup phone
             phoneNumber = PhoneNumber.CleanNumber( phoneNumber );
 
