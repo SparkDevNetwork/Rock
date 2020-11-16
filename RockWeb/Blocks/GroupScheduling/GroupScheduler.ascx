@@ -240,7 +240,6 @@
 
                 <Rock:NotificationBox ID="nbFilterMessage" runat="server" CssClass="m-3" />
                 <Rock:NotificationBox ID="nbAuthorizedGroupsWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
-                <Rock:NotificationBox ID="nbSchedulingDisabledWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                 <asp:Literal ID="lDebug" runat="server" Visible="false" />
 
                     <asp:Panel ID="pnlSchedulerContainer" runat="server" CssClass="h-100">
@@ -418,6 +417,9 @@
                                                         <div class="board-heading-pill mt-2 mb-3" style="background:#C8C8C8"></div>
                                                     </asp:Panel>
                                                     <div class="board-cards">
+                                                        <asp:Panel ID="pnlGroupHasSchedulingDisabled" runat="server">
+                                                            <span class="group-scheduling-disabled-label">Scheduling Not Enabled</span>
+                                                        </asp:Panel>
                                                     <asp:Repeater ID="rptAttendanceOccurrences" runat="server" OnItemDataBound="rptAttendanceOccurrences_ItemDataBound">
                                                         <ItemTemplate>
 
@@ -472,6 +474,11 @@
                                                                     </asp:Panel>
 
                                                                     <div class="panel-body p-0">
+                                                                        <div class="alert alert-danger js-alert js-scheduler-schedule-person-error margin-all-md" style="display: none">
+                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                                            <span class="js-scheduler-schedule-person-error-text"></span>
+                                                                        </div>
+
                                                                         <div class="scheduler-target-container js-scheduler-target-container dropzone"></div>
                                                                     </div>
                                                             </asp:Panel>

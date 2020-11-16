@@ -28,7 +28,7 @@
                 // initialize dragula
                 var containers = [];
 
-                // add the resource list as a dragular container
+                // add the resource list as a dragula container
                 containers.push($control.find('.js-scheduler-source-container')[0]);
 
                 // add all the occurrences (locations) as dragula containers
@@ -49,7 +49,7 @@
                         }
 
                         if (source.classList.contains('js-scheduler-target-container')) {
-                            // If multi-group mode this will be a group, and resources can only be dragged out of this occurrence column it is the the currently selected (active) group
+                            // If multi-group mode this will be a group, and resources can only be dragged out of this occurrence column if it is the currently selected (active) group
                             // In single-group mode, this will be a schedule/day, so resources can be dragged out of any occurrence column
 
                             var $occurrenceColumn = $(source).closest('.js-occurrence-column');
@@ -80,9 +80,19 @@
                             if (!isSchedulerTargetColumn) {
                                 return false;
                             }
-
+                            
                             var blackoutDates = $resourceDiv.data('blackout-dates');
                             var allowedDate = $resourceDiv.data('occurrenceDate');
+                            var singleScheduleMode = $resourceDiv.data('displayed-time-slot-count') == 1;
+                            var hasConflict = $resourceDiv.data('has-scheduling-conflict');
+
+                            // If SingleSchedule mode, and there is a conflict, prevent dragging
+                            //
+                            // If Multi-Schedule mode, the conflicts will be listed, but the person can be dragged into slots.
+                            // If that slot has a conflict, an error message will be displayed to explain the conflict
+                            if (singleScheduleMode && hasConflict) {
+                                return false;
+                            }
 
                             var $targetOccurrence = $(target).closest('.js-scheduled-occurrence')
                             var targetOccurrenceDate = new Date($targetOccurrence.find('.js-attendanceoccurrence-date').val()).getTime();
@@ -172,52 +182,71 @@
 
                             var personId = $scheduledResource.attr('data-person-id');
                             var attendanceOccurrenceId = $(target).closest('.js-scheduled-occurrence').data('attendanceoccurrence-id');
-                            var $occurrence = $(el).closest('.js-scheduled-occurrence');
-                            var scheduledPersonAddUrl = scheduledPersonAddPendingUrl;
 
-                            // if they were dragged from another occurrence, remove them from that first
+                            var canSchedulePersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/CanSchedulePerson';
+                            var canSchedulePersonParams = '?personId=' + personId + '&attendanceOccurrenceId=' + attendanceOccurrenceId;
+                            
+                            // if they were dragged from another occurrence, we can exclude the source occurrence when checking CanSchedulePerson
                             if (source.classList.contains('js-scheduler-target-container')) {
-
-                                // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
-                                var sourceConfirmationStatus = $scheduledResource.attr('data-status');
-                                if (sourceConfirmationStatus == 'confirmed') {
-                                    scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
-                                }
-                                var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
-                                self.removeResource($scheduledResource, $sourceOccurrence);
-                            }
-                            else {
-                                // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
-                                $scheduledResource.attr('data-status', 'pending');
+                                var fromAttendanceOccurrenceId = $(source).closest('.js-scheduled-occurrence').data('attendanceoccurrence-id');
+                                canSchedulePersonParams += '&fromAttendanceOccurrenceId=' + fromAttendanceOccurrenceId;
                             }
 
-                            var refreshAllOccurrences = $scheduledResource.data('displayed-time-slot-count') > 1;
-
-                            // add as pending (or confirmed if already confirmed) to target occurrence
+                            // first do a GET to CanSchedulePerson to see if the person can be scheduled for the specified occurrence
                             $.ajax({
-                                method: "PUT",
-                                url: scheduledPersonAddUrl + '?personId=' + personId + '&attendanceOccurrenceId=' + attendanceOccurrenceId
-                            }).done(function (scheduledAttendance) {
-                                // after adding a resource, repopulate the list of resources for the occurrence
-                                if (refreshAllOccurrences) {
+                                method: "GET",
+                                url: canSchedulePersonUrl + canSchedulePersonParams
+                            }).done(function () {
 
-                                    // After scheduling resource they stay in the list if there are time-slots that can still be dragged into.
-                                    // but that resource stays in the list, the Assignments section will need to be repopulated
-                                    self.updateSchedulerResource(self.$resourceList, $scheduledResource);
+                                var $occurrence = $(el).closest('.js-scheduled-occurrence');
+                                var scheduledPersonAddUrl = scheduledPersonAddPendingUrl;
 
-                                    // If there are multiple time-slots during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
-                                    self.populateAllScheduledOccurrences();
-                                } else {
-                                    // if there is only one time slot shown, we only have to repopulate one occurrence.
-                                    // Also, we don't need to repopulate the resources since the person is no longer listed
-                                    self.populateScheduledOccurrence($occurrence);
+                                // if they were dragged from another occurrence, remove them from that first
+                                if (source.classList.contains('js-scheduler-target-container')) {
+
+                                    // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
+                                    var sourceConfirmationStatus = $scheduledResource.attr('data-status');
+                                    if (sourceConfirmationStatus == 'confirmed') {
+                                        scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
+                                    }
+                                    var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
+                                    self.removeResource($scheduledResource, $sourceOccurrence);
                                 }
-                            }).fail(function (a) {
-                                console.log('fail:' + a.responseText);
-                                $(".ajax-error-message").html(a.responseText);
-                                $(".ajax-error").show();
+                                else {
+                                    // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
+                                    $scheduledResource.attr('data-status', 'pending');
+                                }
 
+                                var refreshAllOccurrences = $scheduledResource.data('displayed-time-slot-count') > 1;
+
+                                // add as pending (or confirmed if already confirmed) to target occurrence
+                                $.ajax({
+                                    method: "PUT",
+                                    url: scheduledPersonAddUrl + '?personId=' + personId + '&attendanceOccurrenceId=' + attendanceOccurrenceId
+                                }).done(function (scheduledAttendance) {
+                                    // after adding a resource, repopulate the list of resources for the occurrence
+                                    if (refreshAllOccurrences) {
+
+                                        // After scheduling resource they stay in the list if there are time-slots that can still be dragged into.
+                                        // but that resource stays in the list, the Assignments section will need to be repopulated
+                                        self.updateSchedulerResource(self.$resourceList, $scheduledResource);
+
+                                        // If there are multiple time-slots during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
+                                        self.populateAllScheduledOccurrences();
+                                    } else {
+                                        // if there is only one time slot shown, we only have to repopulate one occurrence.
+                                        // Also, we don't need to repopulate the resources since the person is no longer listed
+                                        self.populateScheduledOccurrence($occurrence);
+                                    }
+                                }).fail(function (jqXHR) {
+                                    var $occurrence = $(el).closest('.js-scheduled-occurrence');
+                                    self.showSchedulePersonError($occurrence, jqXHR, $scheduledResource);
+                                });
+                            }).fail(function (jqXHR) {
+                                var $occurrence = $(el).closest('.js-scheduled-occurrence');
+                                self.showSchedulePersonError($occurrence, jqXHR, $scheduledResource);
                             });
+
                         }
                         self.trimSourceContainer();
                     });
@@ -253,10 +282,10 @@
                 }).done(function (scheduledAttendance) {
 
                     // $scheduledResource is the div that is being dragged from an occurrence.
-                    // There are a couple of scenerios
+                    // There are a couple of scenarios
                     // 1) The Person is already in the list (they weren't removed when they were scheduled, but they could still be scheduled for other spots)
                     //   - in the case of #1, just find the existing div in $resourceList and update it (and delete the dragged resource div)
-                    // 2) The Person is not in the Resource List (they got scheduled for all possible visible timeslots)
+                    // 2) The Person is not in the Resource List (they got scheduled for all possible visible time-slots)
                     //  - in the case of #2, the dragged div will end in the resource list (in the position it was dragged to), and we'll update that
 
                     // After un-scheduling resource they go back into the list
@@ -303,7 +332,7 @@
 
                 if (!desiredCapacity) {
                     $autoschedulerWarning.show();
-                    $autoschedulerWarning.tooltip();
+                    $autoschedulerWarning.tooltip({ html: true });
                 }
                 else {
                     $autoschedulerWarning.hide();
@@ -324,7 +353,6 @@
                             $occurrence.show();
                         }
                     }
-
 
                     // temporarily detach $schedulerTargetContainer to speed up adding the resourcedivs
                     var schedulerTargetContainerParent = $schedulerTargetContainer.parent();
@@ -421,6 +449,17 @@
                     $progressPending.find('.js-progress-text-percent').val(pendingPercent);
 
                 });
+            },
+            showSchedulePersonError: function ($occurrence, jqXHR, $draggedPerson) {
+                $draggedPerson.remove();
+
+                var self = this;
+                var $schedulePersonError = $('.js-scheduler-schedule-person-error', $occurrence);
+
+                // hide any other alerts that are showing
+                $('.js-alert', self.$groupScheduler).not($schedulePersonError).hide();
+                $schedulePersonError.find('.js-scheduler-schedule-person-error-text').text((jqXHR.responseJSON && jqXHR.responseJSON.Message || jqXHR.responseText));
+                $schedulePersonError.show();
             },
             /** gets a specific Scheduler Resource and updates the contents of the $resource with any changed data **/
             updateSchedulerResource: function ($resourceList, $scheduledResource) {
@@ -620,14 +659,40 @@
 
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
-                    $resourceDiv.tooltip();
+                    $resourceDiv.tooltip({ html: true });
                 } else if (schedulerResource.HasGroupRequirementsConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " does not meet the requirements for this group.");
-                    $resourceDiv.tooltip();
+                    $resourceDiv.tooltip({ html: true });
                 } else if (schedulerResource.HasSchedulingConflict || schedulerResource.HasPartialBlackoutConflict) {
                     var resourceTooltip = schedulerResource.PersonName;
                     if (schedulerResource.HasSchedulingConflict) {
-                        resourceTooltip += " has a scheduling conflict";
+                        var schedulingConflicts = schedulerResource.SchedulingConflicts;
+                        var schedulingConflictHtml = '';
+                        for (var i = 0; i < schedulingConflicts.length; i++) {
+
+                            var schedulingConflict = schedulingConflicts[i];
+                            var schedulingConflictsMessage = '';
+                            schedulingConflictHtml += '<div class="resource-scheduled">'
+                                + '<span class="resource-scheduled-schedule">'
+                                + schedulingConflict.ScheduleName
+                                + '</span>';
+
+                            if (schedulingConflict.GroupId) {
+                                schedulingConflictHtml += ' - ' + '<span class="resource-scheduled-group">'
+                                    + schedulingConflict.GroupName
+                                    + '</span>';
+                            }
+
+                            if (schedulingConflict.LocationName) {
+                                schedulingConflictHtml += ' - ' + '<span class="resource-scheduled-location">'
+                                    + schedulingConflict.LocationName
+                                    + '</span>';
+                            }
+
+                            schedulingConflictsMessage += schedulingConflictHtml + '</div>';
+                        }
+
+                        resourceTooltip += " has scheduling conflicts: <br>" + '<div class="resource-scheduled small">' + schedulingConflictsMessage + '</div';
                     }
                     if (schedulerResource.HasSchedulingConflict && schedulerResource.HasPartialBlackoutConflict) {
                         resourceTooltip += " and";
@@ -643,7 +708,7 @@
                     }
 
                     $resourceDiv.attr('title', resourceTooltip + ".");
-                    $resourceDiv.tooltip();
+                    $resourceDiv.tooltip({ html: true });
                 }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
@@ -690,6 +755,11 @@
             /**  */
             initializeEventHandlers: function () {
                 var self = this;
+
+                $('.js-hide-alert', self.$groupScheduler).click(function () {
+                    // default bootstrap alert deletes the div, but we want to reuse it so just hide instead
+                    $(this).closest('.js-alert').hide();
+                });
 
                 self.$groupScheduler.on('click', '.js-markconfirmed, .js-markdeclined, .js-markpending, .js-resendconfirmation, .js-remove', function (a, b, c) {
                     var $resource = $(this).closest('.js-resource');
