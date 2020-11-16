@@ -102,7 +102,9 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
+            target.IsImage = source.IsImage;
             target.IsSystem = source.IsSystem;
+            target.MaxDocumentsPerEntity = source.MaxDocumentsPerEntity;
             target.Name = source.Name;
             target.Order = source.Order;
             target.UserSelectable = source.UserSelectable;

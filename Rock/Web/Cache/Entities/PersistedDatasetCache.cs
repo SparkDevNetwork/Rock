@@ -180,7 +180,7 @@ namespace Rock.Web.Cache
         /// The result format.
         /// </value>
         [DataMember]
-        public PersistedDatasetDataFormat ResultFormat { get; set; } = PersistedDatasetDataFormat.JSON;
+        public PersistedDatasetDataFormat ResultFormat { get; private set; } = PersistedDatasetDataFormat.JSON;
 
         /// <summary>
         /// Gets or sets the memory cache duration ms.
@@ -189,7 +189,7 @@ namespace Rock.Web.Cache
         /// The memory cache duration ms.
         /// </value>
         [DataMember]
-        public int? MemoryCacheDurationMS { get; set; }
+        public int? MemoryCacheDurationMS { get; private set; }
 
         /// <summary>
         /// Gets or sets the build script. See <seealso cref="BuildScriptType"/>
@@ -198,7 +198,7 @@ namespace Rock.Web.Cache
         /// The build script.
         /// </value>
         [DataMember]
-        public string BuildScript { get; set; }
+        public string BuildScript { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the build script.
@@ -207,7 +207,7 @@ namespace Rock.Web.Cache
         /// The type of the build script.
         /// </value>
         [DataMember]
-        public PersistedDatasetScriptType BuildScriptType { get; set; } = PersistedDatasetScriptType.Lava;
+        public PersistedDatasetScriptType BuildScriptType { get; private set; } = PersistedDatasetScriptType.Lava;
 
         /// <summary>
         /// Gets or sets a flag indicating that this PesistedDataset is part of the Rock core system/framework. This property is required.
@@ -216,7 +216,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this PesistedDataset is part of the core system/framework, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -225,7 +225,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; private set; } = true;
 
         /// <summary>
         /// The amount of time that it took to persist the <see cref="ResultData"/>
@@ -234,7 +234,7 @@ namespace Rock.Web.Cache
         /// The time to build ms.
         /// </value>
         [DataMember]
-        public double? TimeToBuildMS { get; set; }
+        public double? TimeToBuildMS { get; private set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"/> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
@@ -243,7 +243,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>
         /// </value>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// The DateTime when to stop updating the <see cref="ResultData"/>
@@ -252,7 +252,7 @@ namespace Rock.Web.Cache
         /// The expire date time.
         /// </value>
         [DataMember]
-        public DateTime? ExpireDateTime { get; set; }
+        public DateTime? ExpireDateTime { get; private set; }
 
         /// <summary>
         /// Lookup the Id for a PersistedDataSet from AccessKey

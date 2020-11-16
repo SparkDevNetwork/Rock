@@ -87,8 +87,8 @@ h4 {
 }
 
 .site-name {
-  margin-left: 16px;
   padding-bottom: 4px;
+  margin-left: 16px;
   font-size: 28px;
   font-weight: @font-weight-bold;
 }
@@ -437,11 +437,11 @@ textarea,
     }
 
     &.grid-columnaction {
-      text-align: right;
+      width: 1%;
       min-width: 30px;
       padding: 0 6px;
+      text-align: right;
       vertical-align: middle;
-      width: 1%;
     }
 
     &.grid-bool-field {
@@ -491,9 +491,9 @@ textarea,
 
 .badge-circle {
   width: @line-height-computed;
-  border-radius: 50%;
-  padding-left: 0;
   padding-right: 0;
+  padding-left: 0;
+  border-radius: 50%;
 }
 
 .grid-select-cell .status-list .badge {
@@ -636,8 +636,8 @@ textarea,
 
     .grid.grid-panel {
       margin: -15px -15px -16px;
-      border-radius: 0 0 4px 4px;
       overflow: hidden;
+      border-radius: 0 0 4px 4px;
 
       .table-responsive {
         margin-bottom: 0;
@@ -808,12 +808,12 @@ td.grid-actions {
     border: 1px solid @navbartop-color;
     border-radius: @btn-border-radius-base;
     .dropdown-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       width: 100%;
       padding: 7px 14px;
       color: @navbartop-color;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
 
       &:hover,
       &:focus {
@@ -826,8 +826,8 @@ td.grid-actions {
     }
 
     .dropdown-menu {
-      background: @white;
       max-width: ~"calc(100vw - 75px)";
+      background: @white;
       border-radius: 0 0 @btn-border-radius-base @btn-border-radius-base;
     }
   }
@@ -905,12 +905,12 @@ td.grid-actions {
   z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
+  height: 100% !important;
   overflow-x: hidden;
   overflow-y: auto;
   color: @navbarside-color;
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
-  height: 100% !important;
 
   .zone-instance,
   .zone-content,
@@ -928,7 +928,7 @@ td.grid-actions {
     height: ~"calc(100% - @{navbar-top-height})" !important;
 
     .zone-instance {
-      height:100% !important;
+      height: 100% !important;
     }
   }
 
@@ -958,10 +958,10 @@ td.grid-actions {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     height: @navbar-top-height;
     font-size: 1.5em;
     cursor: pointer;
-    width: 100%;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
     @media (min-width: @screen-sm-min) {
@@ -1038,7 +1038,7 @@ td.grid-actions {
 }
 
 .nav-open-lg {
-    #cms-admin-footer {
+  #cms-admin-footer {
     left: @navbarside-width;
     width: auto;
   }
@@ -1253,13 +1253,13 @@ td.grid-actions {
 
 .picker-menu {
   -webkit-animation-name: picker-transition;
-          animation-name: picker-transition;
+  animation-name: picker-transition;
   -webkit-animation-duration: .367s;
-          animation-duration: .367s;
+  animation-duration: .367s;
   -webkit-animation-timing-function: cubic-bezier(.1, .9, .2, 1);
-          animation-timing-function: cubic-bezier(.1, .9, .2, 1);
+  animation-timing-function: cubic-bezier(.1, .9, .2, 1);
   -webkit-animation-fill-mode: both;
-          animation-fill-mode: both;
+  animation-fill-mode: both;
 }
 
 @-webkit-keyframes picker-transition {
@@ -1335,29 +1335,30 @@ td.grid-actions {
 .badge-zone {
   --badge-size: 36px;
   height: 60px;
-  padding-left: 12px;
   padding-right: 12px;
+  padding-left: 12px;
 
   .badge {
     background-color: transparent;
   }
 
   .badge-attendance {
-    padding-bottom: 0;
     align-self: flex-end;
+    padding-bottom: 0;
 
     @media (max-width: @screen-sm) {
       &,
       .attendance-chart {
-      padding-left: 0;
-      padding-right: 0;
-      width: 100%;
+        width: 100%;
+        padding-right: 0;
+        padding-left: 0;
       }
     }
   }
 }
 
 @import "includes/_person-profile.less";
+
 /* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";

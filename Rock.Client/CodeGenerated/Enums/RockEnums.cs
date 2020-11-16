@@ -847,6 +847,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum WorkflowActionFormPersonEntryOption
+    {
+        Hidden = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,

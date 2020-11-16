@@ -53,6 +53,9 @@ namespace Rock.Client
         public string BrowserTitle { get; set; }
 
         /// <summary />
+        public string CacheControlHeaderSettings { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -110,9 +113,6 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
-
-        /// <summary />
-        public int OutputCacheDuration { get; set; }
 
         /// <summary />
         public bool PageDisplayBreadCrumb { get; set; } = true;
@@ -174,6 +174,7 @@ namespace Rock.Client
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             this.BrowserTitle = source.BrowserTitle;
+            this.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             this.Description = source.Description;
             this.DisplayInNavWhen = source.DisplayInNavWhen;
             this.EnableViewState = source.EnableViewState;
@@ -193,7 +194,6 @@ namespace Rock.Client
             this.MenuDisplayIcon = source.MenuDisplayIcon;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
-            this.OutputCacheDuration = source.OutputCacheDuration;
             this.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             this.PageDisplayDescription = source.PageDisplayDescription;
             this.PageDisplayIcon = source.PageDisplayIcon;

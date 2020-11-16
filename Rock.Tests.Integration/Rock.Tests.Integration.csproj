@@ -140,7 +140,7 @@
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
     <Compile Include="Lava\CachingTests.cs" />
-    <Compile Include="Lava\EventOccurrencesCommandTests.cs" />
+    <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
     <Compile Include="Lava\CalendarEventsCommandTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />

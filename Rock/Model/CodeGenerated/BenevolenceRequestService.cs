@@ -103,7 +103,6 @@ namespace Rock.Model
             target.ProvidedNextSteps = source.ProvidedNextSteps;
             target.RequestDateTime = source.RequestDateTime;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            target.RequestSourceDate = source.RequestSourceDate;
             target.RequestStatusValueId = source.RequestStatusValueId;
             target.RequestText = source.RequestText;
             target.ResultSummary = source.ResultSummary;

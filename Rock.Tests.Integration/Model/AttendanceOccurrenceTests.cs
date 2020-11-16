@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Model
 {
@@ -63,39 +62,48 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2016;
-            var rockContext = new RockContext();
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
-
-            var dates = new List<DateTime>();
-            DateTime GetUniqueDate()
+            using ( var rockContext = new RockContext() )
             {
-                var date = TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue );
-                while ( dates.Contains( date ) )
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
+
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+
+                var dates = new List<DateTime>();
+                DateTime GetUniqueDate()
                 {
-                    date = TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue );
+                    var date = TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue );
+                    while ( dates.Contains( date ) )
+                    {
+                        date = TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue );
+                    }
+                    dates.Add( date );
+                    return date;
                 }
-                dates.Add( date );
-                return date;
+
+                for ( var i = 0; i < 15; i++ )
+                {
+                    var attendanceOccurrence = BuildAttendanceOccurrence( rockContext, GetUniqueDate() );
+                    attendanceOccurrenceService.Add( attendanceOccurrence );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
-                var attendanceOccurrence = BuildAttendanceOccurrence( rockContext, GetUniqueDate() );
-                attendanceOccurrenceService.Add( attendanceOccurrence );
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+
+                var attendanceOccurrences = attendanceOccurrenceService.
+                                    Queryable().
+                                    Where( i => i.ForeignKey == attendanceOccurrenceForeignKey ).
+                                    Where( i => i.OccurrenceSourceDate.CalendarYear == year );
+
+                Assert.AreEqual( expectedRecordCount, attendanceOccurrences.Count() );
+                var actualAttendanceOccurrences = attendanceOccurrences.First();
+                var actualOccurrenceSourceDate = actualAttendanceOccurrences.OccurrenceSourceDate;
+                Assert.IsNotNull( actualOccurrenceSourceDate );
             }
-
-            rockContext.SaveChanges();
-
-            var attendanceOccurrences = attendanceOccurrenceService.
-                                Queryable( "AnalyticsSourceDate" ).
-                                Where( i => i.ForeignKey == attendanceOccurrenceForeignKey ).
-                                Where( i => i.OccurrenceSourceDate.CalendarYear == year );
-
-            Assert.AreEqual( expectedRecordCount, attendanceOccurrences.Count() );
         }
 
         private void CleanUpData( string foreignKey )

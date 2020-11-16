@@ -22,12 +22,12 @@ namespace Rock.Tests.Integration.Lava
 
         private static string LavaTemplateCalendarEvents = @";
 {% calendarevents {parameters} %}
-  {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
-  <<EventCount = {{ EventItemOccurrences | Size }}>>
-  {% for eventItemOccurrence in EventItemOccurrences %}
-    <<{{ eventItemOccurrence.Name }}|{{ eventItemOccurrence.Date | Date: 'yyyy-MM-dd' }}|{{ eventItemOccurrence.Time }}|{{ eventItemOccurrence.Location }}>>
-    <<Calendars: {{ eventItemOccurrence.CalendarNames | Join:', ' }}>>
-    <<Audiences: {{ eventItemOccurrence.AudienceNames | Join:', ' }}>>
+  {% assign eventScheduledInstanceCount = EventScheduledInstances | Size %}
+  <<EventCount = {{ EventScheduledInstances | Size }}>>
+  {% for eventScheduledInstance in EventScheduledInstances %}
+    <<{{ eventScheduledInstance.Name }}|{{ eventScheduledInstance.Date | Date: 'yyyy-MM-dd' }}|{{ eventScheduledInstance.Time }}|{{ eventScheduledInstance.Location }}>>
+    <<Calendars: {{ eventScheduledInstance.CalendarNames | Join:', ' }}>>
+    <<Audiences: {{ eventScheduledInstance.AudienceNames | Join:', ' }}>>
   {% endfor %}
 {% endcalendarevents %}
 ";
