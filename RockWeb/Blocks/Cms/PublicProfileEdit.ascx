@@ -171,7 +171,6 @@
                                     <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" FormGroupCssClass="gender-picker" Required="true">
                                         <asp:ListItem Text="Male" Value="Male" />
                                         <asp:ListItem Text="Female" Value="Female" />
-                                        <asp:ListItem Text="Unknown" Value="Unknown" />
                                     </Rock:RockRadioButtonList>
                                 </div>
                                 <div class="col-md-6">
