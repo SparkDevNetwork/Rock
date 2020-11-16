@@ -13,10 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
-using Rock.Field;
+
+/*
+ * 2020-11-16 ETD
+ * IMPORTANT!
+ * This class is used by the CheckScanner which does not have the Rock dll. This file cannot contain any dependencies on that assembly or NuGet packages.
+ */
 
 namespace Rock
 {
@@ -239,21 +244,6 @@ namespace Rock
             }
         }
 
-        /// <summary>
-        /// Gets the configuration value as string.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public static string GetConfigurationValueAsString( this Dictionary<string, ConfigurationValue> configurationValues, string key )
-        {
-            if ( configurationValues != null && configurationValues.TryGetValue( key, out var configurationValue ) )
-            {
-                return configurationValue.Value;
-            }
-
-            return string.Empty;
-        }
         #endregion Dictionary<TKey, TValue> extension methods
     }
 }

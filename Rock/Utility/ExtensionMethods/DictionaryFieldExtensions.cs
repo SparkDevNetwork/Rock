@@ -41,5 +41,21 @@ namespace Rock
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets the configuration value as string.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string GetConfigurationValueAsString( this Dictionary<string, ConfigurationValue> configurationValues, string key )
+        {
+            if ( configurationValues != null && configurationValues.TryGetValue( key, out var configurationValue ) )
+            {
+                return configurationValue.Value;
+            }
+
+            return string.Empty;
+        }
     }
 }
