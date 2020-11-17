@@ -42,7 +42,7 @@ namespace Rock.Migrations
             /* 2020/11/12 MDP  
              * this PersonEntryHideIfCurrentPersonKnown was changed to default to false. If this migration was already ran, the WorkflowActionFormChanges migration will take care of changing it
              */ 
-            AddColumn( "dbo.WorkflowActionForm", "PersonEntryHideIfCurrentPersonKnown", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.WorkflowActionForm", "PersonEntryHideIfCurrentPersonKnown", c => c.Boolean( nullable: false, defaultValue: false ) );
             
             
             AddColumn( "dbo.WorkflowActionForm", "PersonEntrySpouseEntryOption", c => c.Int( nullable: false, defaultValue: ( int ) WorkflowActionFormPersonEntryOption.Hidden ) );

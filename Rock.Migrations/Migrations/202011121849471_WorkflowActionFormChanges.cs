@@ -59,6 +59,11 @@ BEGIN
     WHERE AllowPersonEntry = 0 AND PersonEntryHideIfCurrentPersonKnown = 1
 END
 " );
+
+            Sql( @"ALTER TABLE [WorkflowActionForm]
+ADD CONSTRAINT[df_PersonEntryHideIfCurrentPersonKnown]
+DEFAULT 0 FOR[PersonEntryHideIfCurrentPersonKnown];
+            " );
         }
         
         /// <summary>
