@@ -225,6 +225,10 @@
     <Compile Include="Migrations\202011131523168_CommunicationReceipientPersonalDevice.Designer.cs">
       <DependentUpon>202011131523168_CommunicationReceipientPersonalDevice.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202011171509310_BusAndFarmModels.cs" />
+    <Compile Include="Migrations\202011171509310_BusAndFarmModels.Designer.cs">
+      <DependentUpon>202011171509310_BusAndFarmModels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1593,6 +1597,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202011131523168_CommunicationReceipientPersonalDevice.resx">
       <DependentUpon>202011131523168_CommunicationReceipientPersonalDevice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011171509310_BusAndFarmModels.resx">
+      <DependentUpon>202011171509310_BusAndFarmModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

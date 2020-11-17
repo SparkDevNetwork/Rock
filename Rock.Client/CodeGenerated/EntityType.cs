@@ -71,6 +71,9 @@ namespace Rock.Client
         public bool IsIndexingEnabled { get; set; }
 
         /// <summary />
+        public bool IsMessageBusEventPublishEnabled { get; set; }
+
+        /// <summary />
         public bool IsSecured { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.IsCommon = source.IsCommon;
             this.IsEntity = source.IsEntity;
             this.IsIndexingEnabled = source.IsIndexingEnabled;
+            this.IsMessageBusEventPublishEnabled = source.IsMessageBusEventPublishEnabled;
             this.IsSecured = source.IsSecured;
             this.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             this.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
