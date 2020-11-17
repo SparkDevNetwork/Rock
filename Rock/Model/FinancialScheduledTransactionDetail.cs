@@ -96,6 +96,16 @@ namespace Rock.Model
         [DataMember]
         public int? EntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The fee coverage amount.
+        /// </value>
+        [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision(18, 2)]
+        public decimal? FeeCoverageAmount { get; set; }
         #endregion
 
         #region Virtual Properties
