@@ -909,10 +909,11 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 var personService = new PersonService( rockContext );
                 personEntryPerson = personService.Get( CurrentPersonId.Value );
+                personEntrySpouse = personEntryPerson.GetSpouse();
             }
             else
             {
-                // Not using the current person, so initialize with the current value of PersonEntryPersonAttributeGuid
+                // Not using the current person, so initialize with the current value of PersonEntryPersonAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
                 if ( form.PersonEntryPersonAttributeGuid.HasValue )
                 {
                     AttributeCache personEntryPersonAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryPersonAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
@@ -926,29 +927,38 @@ namespace RockWeb.Blocks.WorkFlow
                         personEntryPerson = personAliasService.GetPerson( personAliasGuid.Value );
                     }
                 }
+
+                // Not using the current person, so initialize with the current value PersonEntrySpouseAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
+                if ( form.PersonEntrySpouseAttributeGuid.HasValue )
+                {
+                    AttributeCache personEntrySpouseAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntrySpouseAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
+
+                    var spousePersonAliasGuid = GetWorkflowAttributeEntityAttributeValue( personEntrySpouseAttribute ).AsGuidOrNull();
+
+                    if ( spousePersonAliasGuid.HasValue )
+                    {
+                        // the workflow already set a value for the FormEntry person, so use that
+                        var personAliasService = new PersonAliasService( rockContext );
+                        personEntrySpouse = personAliasService.GetPerson( spousePersonAliasGuid.Value );
+                    }
+                }
             }
 
             if ( personEntryPerson != null )
             {
                 cpPersonEntryCampus.SetValue( personEntryPerson.PrimaryCampusId );
                 dvpMaritalStatus.SetValue( personEntryPerson.MaritalStatusValueId );
-
-                /* 2020-11-06 MDP
-                 * if we were able determine the person, either from the AutofillCurrentPerson option, or from the current value in the  PersonEntryPersonAttributeGuid value
-                 * get the spouse and family from that person.
-                 * To be consistent and to avoid weird edge cases, always get Spouse and Family from person, instead of also checking SpouseAttributeGuid and FamilyAttributeGuid.
-                 */
-
-                personEntrySpouse = personEntryPerson.GetSpouse();
                 personEntryFamilyId = personEntryPerson.PrimaryFamilyId;
+            }
+            else
+            {
+
+                // default to Married if this is a new person
+                var maritalStatusMarriedValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+                dvpMaritalStatus.SetValue( maritalStatusMarriedValueId );
             }
 
             pePerson1.SetFromPerson( personEntryPerson );
-            if ( personEntrySpouse != null )
-            {
-                // don't show marital status if person has a spouse
-                dvpMaritalStatus.Visible = false;
-            }
 
             if ( form.PersonEntrySpouseEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
             {
@@ -993,6 +1003,9 @@ namespace RockWeb.Blocks.WorkFlow
             personBasicEditor.ShowPersonRole = false;
             personBasicEditor.ShowGrade = false;
 
+            personBasicEditor.RequireGender = form.PersonEntryGenderEntryOption == WorkflowActionFormPersonEntryOption.Required;
+            personBasicEditor.ShowGender = form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
+
             personBasicEditor.RequireEmail = form.PersonEntryEmailEntryOption == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowEmail = form.PersonEntryEmailEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
 
@@ -1018,38 +1031,6 @@ namespace RockWeb.Blocks.WorkFlow
         protected void cbShowPerson2_CheckedChanged( object sender, EventArgs e )
         {
             pePerson2.Visible = cbShowPerson2.Checked;
-
-            if ( cbShowPerson2.Checked )
-            {
-                // if prompting for a spouse, don't show the marital status option
-                // If adding/editing a spouse, MaritalStatus will be set to Married
-                dvpMaritalStatus.Visible = false;
-            }
-            else
-            {
-                if ( _actionType != null && _actionType.WorkflowForm != null )
-                {
-                    var form = _actionType.WorkflowForm;
-                    if ( form.PersonEntryMaritalStatusEntryOption == WorkflowActionFormPersonEntryOption.Hidden )
-                    {
-                        dvpMaritalStatus.Visible = false;
-                    }
-                    else
-                    {
-                        // if not prompting for a spouse, and they don't currently have spouse, prompt for marital status
-                        dvpMaritalStatus.Visible = true;
-                        if ( form.PersonEntryAutofillCurrentPerson && CurrentPerson != null )
-                        {
-                            var currentSpouse = CurrentPerson.GetSpouse();
-                            if ( currentSpouse != null )
-                            {
-                                // don't prompt for marital status if they already have a spouse
-                                dvpMaritalStatus.Visible = false;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -1159,9 +1140,23 @@ namespace RockWeb.Blocks.WorkFlow
                     personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
 
-                    // if adding/editing a spouse, set both people to married
-                    personEntryPersonSpouse.MaritalStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
-                    personEntryPerson.MaritalStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+                    // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
+
+                    /* 2020-11-16 MDP
+                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them 
+                     *  from changing the Marital status on the two people. However, this should be considered a mis-use of this feature.
+                     *  Unexpected things could happen. 
+                     *  
+                     *  Example of what would happen if 'Daughter' was the label for 'Spouse':
+                     *  Ted Decker is Person1, and Cindy Decker gets auto-filled as Person2. but since the label is 'Daughter', he changes
+                     *  Cindy's information to Alex Decker's information, then sets Marital status to Single.
+                     *  
+                     *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
+                     *  and it was decided we shouldn't do anything to prevent this type of problem.
+                     
+                     */
+                    personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
+                    personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
 
                     PersonService.AddPersonToFamily( personEntryPersonSpouse, true, primaryFamily.Id, pePerson2.PersonGroupRoleId, personEntryRockContext );
                 }
