@@ -42,11 +42,14 @@ module.exports = {
     {
       name: 'Project Documentation',
       content: 'docs/project_introduction.md',
+    },
+    {
+      name: 'Component Documentation',
       sections: [
         {
-          name: 'Pages',
+          name: 'Views',
           description: 'An optional set of components to control application views. These are traditionally useed with Vue Router.',
-          components: 'src/pages/**/*.vue',
+          components: 'src/views/**/*.vue',
         },
         {
           name: 'Components',
@@ -54,6 +57,11 @@ module.exports = {
           components: 'src/components/**/*.vue',
         },
       ],
+    },
+    {
+      name: 'Sample Backend Responses',
+      description: 'These are the backend responses that the app expects.',
+      content: 'docs/sampleBackend/samples.md',
     },
     {
       name: 'System Setup',
