@@ -1513,6 +1513,8 @@ namespace Rock.Model
         /// Handles the interaction record.
         /// </summary>
         /// <param name="interaction">The interaction.</param>
+        [RockObsolete("1.12")]
+        [Obsolete( "Use the override with the Interaction Id instead of the Interaction object.")]
         public static void HandleInteractionRecord( Interaction interaction )
         {
             var rockContext = new RockContext();
@@ -1551,11 +1553,102 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Handles the interaction record for streaks. Use this method with the ID instead of the whole object if there is
+        /// a chance the context for the interaction could be disposed. e.g. if this method is being run in a new Task.
+        /// </summary>
+        /// <param name="interactionId">The interaction identifier.</param>
+        public static void HandleInteractionRecord( int interactionId )
+        {
+            var rockContext = new RockContext();
+            var streakTypeService = new StreakTypeService( rockContext );
+            var safeInteraction = new InteractionService( rockContext ).Get( interactionId );
+
+            streakTypeService.HandleInteractionRecordForStreak( safeInteraction, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                ExceptionLogService.LogException( $"Error while handling interaction record for streaks: {errorMessage}" );
+            }
+            else
+            {
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Handles the interaction record for streak. This is used when the Interaction object is known to have an active DbContext and can safely use navigation properties.
+        /// </summary>
+        /// <param name="interaction">The interaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private void HandleInteractionRecordForStreak( Interaction interaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( interaction == null )
+            {
+                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
+                // of an interaction model. We don't even know if this interaction was supposed to be related to a streak type.
+                return;
+            }
+
+            if ( !interaction.PersonAliasId.HasValue )
+            {
+                // If we don't know what person this interaction is tied to then it is impossible to mark engagement in a streak. This is not
+                // an error because a null PersonAliasId is a valid state for the interaction model.
+                return;
+            }
+
+            if ( interaction.PersonAlias.Person == null )
+            {
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The person alias {interaction.PersonAliasId.Value} did not produce a valid person record.";
+                return;
+            }
+
+            // Get the person's streaks
+            var personId = interaction.PersonAlias.Person.Id;
+            var streakService = new StreakService( new RockContext() );
+            var enrolledInStreakTypeIdQuery = streakService.Queryable()
+                .AsNoTracking()
+                .Where( se => se.PersonAlias.PersonId == personId )
+                .Select( se => se.StreakTypeId );
+            var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
+
+            // Calculate the interaction hierarchy details
+            var componentId = interaction.InteractionComponentId;
+            var channelId = interaction.InteractionComponent?.InteractionChannelId;
+            var mediumId = interaction.InteractionComponent?.InteractionChannel?.ChannelTypeMediumValueId;
+
+            // Query each active streak type and mark engagement for it if the person
+            // is enrolled or the streak type does not require enrollment
+            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
+                s.IsActive &&
+                s.StructureType.HasValue &&
+                s.StructureEntityId.HasValue &&
+                (
+                    !s.RequiresEnrollment ||
+                    enrolledInStreakTypeIds.Contains( s.Id )
+                ) &&
+                (
+                    ( s.StructureType == StreakStructureType.InteractionChannel && s.StructureEntityId.Value == channelId ) ||
+                    ( s.StructureType == StreakStructureType.InteractionComponent && s.StructureEntityId.Value == componentId ) ||
+                    ( s.StructureType == StreakStructureType.InteractionMedium && s.StructureEntityId.Value == mediumId )
+                ) );
+
+            foreach ( var streakType in matchedStreakTypes )
+            {
+                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, null );
+            }
+        }
+
+        /// <summary>
         /// When an interaction record is created or modified (example: page view), the method should be called to synchronize that
         /// interaction to any matching streak types and streaks using this method.
         /// </summary>
         /// <param name="interaction"></param>
         /// <param name="errorMessage"></param>
+        [RockObsolete("1.11")]
+        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access.")]
         public void HandleInteractionRecord( Interaction interaction, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1597,8 +1690,11 @@ namespace Rock.Model
 
             // Calculate the interaction hierarchy details
             var componentId = interaction.InteractionComponentId;
-            var channelId = interaction.InteractionComponent?.InteractionChannelId;
-            var mediumId = interaction.InteractionComponent?.InteractionChannel?.ChannelTypeMediumValueId;
+
+            // Get the InteractionComponent since it's possible the incoming model does not have the virtual InteractionComponent loaded
+            var interactionComponent = new InteractionComponentService( rockContext ).Get( componentId );
+            var channelId = interactionComponent.InteractionChannelId;
+            var mediumId = interactionComponent.InteractionChannel?.ChannelTypeMediumValueId;
 
             // Query each active streak type and mark engagement for it if the person
             // is enrolled or the streak type does not require enrollment
