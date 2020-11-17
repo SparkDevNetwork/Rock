@@ -408,7 +408,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleInteractionRecord( this ) );
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );
