@@ -233,6 +233,10 @@
     <Compile Include="Migrations\202011171636199_FeeCoverageAmount.Designer.cs">
       <DependentUpon>202011171636199_FeeCoverageAmount.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.cs" />
+    <Compile Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.Designer.cs">
+      <DependentUpon>202011171742444_WorkflowActionFormPersonEntryGenderOption.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1607,6 +1611,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202011171636199_FeeCoverageAmount.resx">
       <DependentUpon>202011171636199_FeeCoverageAmount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.resx">
+      <DependentUpon>202011171742444_WorkflowActionFormPersonEntryGenderOption.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>

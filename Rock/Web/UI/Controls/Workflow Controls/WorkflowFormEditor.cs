@@ -57,6 +57,7 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbPersonEntryAutofillCurrentPerson;
         private RockCheckBox _cbPersonEntryHideIfCurrentPersonKnown;
         private RockDropDownList _ddlPersonEntrySpouseEntryOption;
+        private RockDropDownList _ddlPersonEntryGenderEntryOption;
         private RockDropDownList _ddlPersonEntryEmailEntryOption;
         private RockDropDownList _ddlPersonEntryMobilePhoneEntryOption;
         private RockDropDownList _ddlPersonEntryBirthdateEntryOption;
@@ -132,6 +133,7 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryHideIfCurrentPersonKnown = _cbPersonEntryHideIfCurrentPersonKnown.Checked;
             form.PersonEntrySpouseEntryOption = _ddlPersonEntrySpouseEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
 
+            form.PersonEntryGenderEntryOption = _ddlPersonEntryGenderEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryEmailEntryOption = _ddlPersonEntryEmailEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryMobilePhoneEntryOption = _ddlPersonEntryMobilePhoneEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryBirthdateEntryOption = _ddlPersonEntryBirthdateEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
@@ -207,6 +209,7 @@ namespace Rock.Web.UI.Controls
             _cbPersonEntryAutofillCurrentPerson.Checked = workflowActionForm.PersonEntryAutofillCurrentPerson;
             _cbPersonEntryHideIfCurrentPersonKnown.Checked = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;
             _ddlPersonEntrySpouseEntryOption.SetValue( ( int ) workflowActionForm.PersonEntrySpouseEntryOption );
+            _ddlPersonEntryGenderEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryGenderEntryOption );
             _ddlPersonEntryEmailEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryEmailEntryOption );
             _ddlPersonEntryMobilePhoneEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryMobilePhoneEntryOption );
             _ddlPersonEntryBirthdateEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryBirthdateEntryOption );
@@ -529,6 +532,14 @@ namespace Rock.Web.UI.Controls
 
             _ddlPersonEntrySpouseEntryOption.BindToEnum<WorkflowActionFormPersonEntryOption>();
 
+            _ddlPersonEntryGenderEntryOption = new RockDropDownList
+            {
+                ID = "_ddlPersonEntryGenderEntryOption",
+                Label = "Gender"
+            };
+
+            _ddlPersonEntryGenderEntryOption.BindToEnum<WorkflowActionFormPersonEntryOption>();
+
             _ddlPersonEntryEmailEntryOption = new RockDropDownList
             {
                 ID = "_ddlPersonEntryEmailEntryOption",
@@ -709,11 +720,11 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow2.Controls.Add( pnlPersonEntryRow2Col3 );
             pnlPersonEntryRow2.Controls.Add( pnlPersonEntryRow2Col4 );
 
-            pnlPersonEntryRow2Col1.Controls.Add( _ddlPersonEntryEmailEntryOption );
-            pnlPersonEntryRow2Col2.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
-            pnlPersonEntryRow2Col3.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
-            pnlPersonEntryRow2Col4.Controls.Add( _ddlPersonEntryAddressEntryOption );
-
+            pnlPersonEntryRow2Col1.Controls.Add( _ddlPersonEntryGenderEntryOption );
+            pnlPersonEntryRow2Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
+            pnlPersonEntryRow2Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
+            pnlPersonEntryRow2Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
+            
             /* Person Entry - Row 3*/
             Panel pnlPersonEntryRow3 = new Panel
             {
@@ -746,16 +757,17 @@ namespace Rock.Web.UI.Controls
             };
 
             _pnlPersonEntry.Controls.Add( pnlPersonEntryRow3 );
+
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col1 );
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col2 );
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col3 );
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col4 );
 
-            pnlPersonEntryRow3Col1.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
-            pnlPersonEntryRow3Col2.Controls.Add( _tbPersonEntrySpouseLabel );
-            pnlPersonEntryRow3Col3.Controls.Add( _dvpPersonEntryConnectionStatus );
-            pnlPersonEntryRow3Col4.Controls.Add( _dvpPersonEntryRecordStatus );
-
+            pnlPersonEntryRow3Col1.Controls.Add( _ddlPersonEntryAddressEntryOption );
+            pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
+            pnlPersonEntryRow3Col3.Controls.Add( _tbPersonEntrySpouseLabel );
+            pnlPersonEntryRow3Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
+            
             /* Person Entry - Row 4*/
             Panel pnlPersonEntryRow4 = new Panel
             {
@@ -793,7 +805,8 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow4.Controls.Add( pnlPersonEntryRow4Col3 );
             pnlPersonEntryRow4.Controls.Add( pnlPersonEntryRow4Col4 );
 
-            pnlPersonEntryRow4Col1.Controls.Add( _dvpPersonEntryGroupLocationType );
+            pnlPersonEntryRow4Col1.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow4Col2.Controls.Add( _dvpPersonEntryGroupLocationType );
 
             /* Person Entry - Row 5*/
             Panel pnlPersonEntryRow5 = new Panel

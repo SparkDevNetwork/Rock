@@ -46,6 +46,7 @@
             this.tbClientFolder = new System.Windows.Forms.TextBox();
             this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.cbHofixMigrations = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.lblDatabase = new System.Windows.Forms.Label();
             this.tbDatabaseFolder = new System.Windows.Forms.TextBox();
@@ -55,7 +56,6 @@
             this.lblAssemblyDateTime = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.cbEnsureCopyrightHeaders = new System.Windows.Forms.CheckBox();
-            this.cbHofixMigrations = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnGenerate
@@ -209,6 +209,21 @@
             this.fdbRockClient.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fdbRockClient.ShowNewFolderButton = false;
             // 
+            // cbHofixMigrations
+            // 
+            this.cbHofixMigrations.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbHofixMigrations.AutoSize = true;
+            this.cbHofixMigrations.BackColor = System.Drawing.SystemColors.Control;
+            this.cbHofixMigrations.ForeColor = System.Drawing.Color.Red;
+            this.cbHofixMigrations.Location = new System.Drawing.Point(12, 402);
+            this.cbHofixMigrations.Name = "cbHofixMigrations";
+            this.cbHofixMigrations.Size = new System.Drawing.Size(330, 17);
+            this.cbHofixMigrations.TabIndex = 24;
+            this.cbHofixMigrations.Text = "Disable Hotfix Migrations. DO NOT USE ON HOTFIX BRANCHES!";
+            this.toolTip1.SetToolTip(this.cbHofixMigrations, "This option will rename the Up() method to OldUp() and create\r\na new empty Up() m" +
+        "ethod for plugin hotfix migrations.");
+            this.cbHofixMigrations.UseVisualStyleBackColor = false;
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -304,20 +319,6 @@
             this.cbEnsureCopyrightHeaders.TabIndex = 23;
             this.cbEnsureCopyrightHeaders.Text = "Ensure Copyright Headers";
             this.cbEnsureCopyrightHeaders.UseVisualStyleBackColor = true;
-            // 
-            // cbHofixMigrations
-            // 
-            this.cbHofixMigrations.AutoSize = true;
-            this.cbHofixMigrations.BackColor = System.Drawing.SystemColors.Control;
-            this.cbHofixMigrations.ForeColor = System.Drawing.Color.Red;
-            this.cbHofixMigrations.Location = new System.Drawing.Point(12, 402);
-            this.cbHofixMigrations.Name = "cbHofixMigrations";
-            this.cbHofixMigrations.Size = new System.Drawing.Size(330, 17);
-            this.cbHofixMigrations.TabIndex = 24;
-            this.cbHofixMigrations.Text = "Disable Hotfix Migrations. DO NOT USE ON HOTFIX BRANCHES!";
-            this.toolTip1.SetToolTip(this.cbHofixMigrations, "This option will rename the Up() method to OldUp() and create\r\na new empty Up() m" +
-        "ethod for plugin hotfix migrations.");
-            this.cbHofixMigrations.UseVisualStyleBackColor = false;
             // 
             // Form1
             // 

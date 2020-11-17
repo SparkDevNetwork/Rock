@@ -183,6 +183,15 @@ namespace Rock.Model
         public WorkflowActionFormPersonEntryOption PersonEntrySpouseEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
 
         /// <summary>
+        /// Gets or sets the person entry gender entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry gender entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryGenderEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Required;
+
+        /// <summary>
         /// Gets or sets the person entry email entry option.
         /// </summary>
         /// <value>
