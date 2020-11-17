@@ -61,181 +61,190 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202007211806064_Rollup_0721.cs" />
-    <Compile Include="Migrations\202007211806064_Rollup_0721.Designer.cs">
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.Designer.cs">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.cs" />
-    <Compile Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007292255395_ConvertWorkflowLogToNonModel.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007292255395_ConvertWorkflowLogToNonModel.Designer.cs">
       <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.cs" />
-    <Compile Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007310704148_AddConnectionRequestDetailPageToConnectionType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007310704148_AddConnectionRequestDetailPageToConnectionType.Designer.cs">
       <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008031623133_EntityAchievements.cs" />
-    <Compile Include="Migrations\202008031623133_EntityAchievements.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008031623133_EntityAchievements.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008031623133_EntityAchievements.Designer.cs">
       <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008042038088_StepAchievements.cs" />
-    <Compile Include="Migrations\202008042038088_StepAchievements.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008042038088_StepAchievements.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008042038088_StepAchievements.Designer.cs">
       <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008042327182_Rollup_0804.cs" />
-    <Compile Include="Migrations\202008042327182_Rollup_0804.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008042327182_Rollup_0804.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008042327182_Rollup_0804.Designer.cs">
       <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.cs" />
-    <Compile Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008052332582_ChangeScheduleCascadeDeleteRelationships.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008052332582_ChangeScheduleCascadeDeleteRelationships.Designer.cs">
       <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008071645528_AchievementIndexes.cs" />
-    <Compile Include="Migrations\202008071645528_AchievementIndexes.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008071645528_AchievementIndexes.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008071645528_AchievementIndexes.Designer.cs">
       <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.cs" />
-    <Compile Include="Migrations\202008101306418_InteractionIndexUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008101306418_InteractionIndexUpdate.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008101306418_InteractionIndexUpdate.Designer.cs">
       <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.cs" />
-    <Compile Include="Migrations\202008121743577_UpdatePersonalDeviceModel.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008121743577_UpdatePersonalDeviceModel.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008121743577_UpdatePersonalDeviceModel.Designer.cs">
       <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.cs" />
-    <Compile Include="Migrations\202008181633260_GroupSchedulingV2.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008181633260_GroupSchedulingV2.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008181633260_GroupSchedulingV2.Designer.cs">
       <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008182000056_Rollup_0818.cs" />
-    <Compile Include="Migrations\202008182000056_Rollup_0818.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008182000056_Rollup_0818.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008182000056_Rollup_0818.Designer.cs">
       <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.cs" />
-    <Compile Include="Migrations\202008211513093_AddOidcModelsAndPages.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008211513093_AddOidcModelsAndPages.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008211513093_AddOidcModelsAndPages.Designer.cs">
       <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.cs" />
-    <Compile Include="Migrations\202008272036178_AddDocumentsToPersonMerge.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge.Designer.cs">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009011709326_Rollup_0901.cs" />
-    <Compile Include="Migrations\202009011709326_Rollup_0901.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009011709326_Rollup_0901.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009011709326_Rollup_0901.Designer.cs">
       <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.cs" />
-    <Compile Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009081251514_AddEnableArchiveSummaryAttribute.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009081251514_AddEnableArchiveSummaryAttribute.Designer.cs">
       <DependentUpon>202009081251514_AddEnableArchiveSummaryAttribute.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009081439056_AchievementAttemptPrecision.cs" />
-    <Compile Include="Migrations\202009081439056_AchievementAttemptPrecision.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009081439056_AchievementAttemptPrecision.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009081439056_AchievementAttemptPrecision.Designer.cs">
       <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs" />
-    <Compile Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.Designer.cs">
       <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009151704402_Rollup_0915.cs" />
-    <Compile Include="Migrations\202009151704402_Rollup_0915.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009151704402_Rollup_0915.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009151704402_Rollup_0915.Designer.cs">
       <DependentUpon>202009151704402_Rollup_0915.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs" />
-    <Compile Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.Designer.cs">
       <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009221801451_ConnectionBoard.cs" />
-    <Compile Include="Migrations\202009221801451_ConnectionBoard.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009221801451_ConnectionBoard.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009221801451_ConnectionBoard.Designer.cs">
       <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009251835424_DataViewResultsBlock.cs" />
-    <Compile Include="Migrations\202009251835424_DataViewResultsBlock.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009251835424_DataViewResultsBlock.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009251835424_DataViewResultsBlock.Designer.cs">
       <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.cs" />
-    <Compile Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009281821169_CommunicationTemplateImageFileForeignKey.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009281821169_CommunicationTemplateImageFileForeignKey.Designer.cs">
       <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202009291713442_Rollup_0929.cs" />
-    <Compile Include="Migrations\202009291713442_Rollup_0929.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009291713442_Rollup_0929.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202009291713442_Rollup_0929.Designer.cs">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs" />
-    <Compile Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.Designer.cs">
       <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs" />
-    <Compile Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.Designer.cs">
       <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.cs" />
-    <Compile Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061838137_AddCommunicationRecipientAddIndexJob.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061838137_AddCommunicationRecipientAddIndexJob.Designer.cs">
       <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010061901509_AddWorkflowChangeLogNote.cs" />
-    <Compile Include="Migrations\202010061901509_AddWorkflowChangeLogNote.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061901509_AddWorkflowChangeLogNote.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010061901509_AddWorkflowChangeLogNote.Designer.cs">
       <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.cs" />
-    <Compile Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010071848155_AddCoveringIndexForCommunicationGetQueued.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010071848155_AddCoveringIndexForCommunicationGetQueued.Designer.cs">
       <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.cs" />
-    <Compile Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010081924575_AddIsFirstTimeToAttendance.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010081924575_AddIsFirstTimeToAttendance.Designer.cs">
       <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.cs" />
-    <Compile Include="Migrations\202010122113208_AddIsDateRequiredToStepType.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010122113208_AddIsDateRequiredToStepType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010122113208_AddIsDateRequiredToStepType.Designer.cs">
       <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010131811466_Rollup_1013.cs" />
-    <Compile Include="Migrations\202010131811466_Rollup_1013.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010131811466_Rollup_1013.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010131811466_Rollup_1013.Designer.cs">
       <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010142325229_AddCheckInManagerApp.cs" />
-    <Compile Include="Migrations\202010142325229_AddCheckInManagerApp.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010142325229_AddCheckInManagerApp.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010142325229_AddCheckInManagerApp.Designer.cs">
       <DependentUpon>202010142325229_AddCheckInManagerApp.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010272130222_Rollup_1027.cs" />
-    <Compile Include="Migrations\202010272130222_Rollup_1027.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010272130222_Rollup_1027.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010272130222_Rollup_1027.Designer.cs">
       <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.cs" />
-    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010301403238_AddOfflineAccessClaim.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202010301403238_AddOfflineAccessClaim.Designer.cs">
       <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011051623216_UpdateDocumentType.cs" />
-    <Compile Include="Migrations\202011051623216_UpdateDocumentType.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011051623216_UpdateDocumentType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011051623216_UpdateDocumentType.Designer.cs">
       <DependentUpon>202011051623216_UpdateDocumentType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.cs" />
-    <Compile Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011052358368_WorkflowActionFormAllowPersonEntry.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011052358368_WorkflowActionFormAllowPersonEntry.Designer.cs">
       <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.cs" />
-    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011092037356_AddCacheControlHeaderToPage.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011092037356_AddCacheControlHeaderToPage.Designer.cs">
       <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011102025121_Rollup_1110.cs" />
-    <Compile Include="Migrations\202011102025121_Rollup_1110.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011102025121_Rollup_1110.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011102025121_Rollup_1110.Designer.cs">
       <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011121849471_WorkflowActionFormChanges.cs" />
-    <Compile Include="Migrations\202011121849471_WorkflowActionFormChanges.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011121849471_WorkflowActionFormChanges.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011121849471_WorkflowActionFormChanges.Designer.cs">
       <DependentUpon>202011121849471_WorkflowActionFormChanges.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011131523168_CommunicationReceipientPersonalDevice.cs" />
-    <Compile Include="Migrations\202011131523168_CommunicationReceipientPersonalDevice.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011131523168_CommunicationReceipientPersonalDevice.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011131523168_CommunicationReceipientPersonalDevice.Designer.cs">
       <DependentUpon>202011131523168_CommunicationReceipientPersonalDevice.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011171509310_BusAndFarmModels.cs" />
-    <Compile Include="Migrations\202011171509310_BusAndFarmModels.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171509310_BusAndFarmModels.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171509310_BusAndFarmModels.Designer.cs">
       <DependentUpon>202011171509310_BusAndFarmModels.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011171636199_FeeCoverageAmount.cs" />
-    <Compile Include="Migrations\202011171636199_FeeCoverageAmount.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171636199_FeeCoverageAmount.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171636199_FeeCoverageAmount.Designer.cs">
       <DependentUpon>202011171636199_FeeCoverageAmount.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.cs" />
-    <Compile Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171742444_WorkflowActionFormPersonEntryGenderOption.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011171742444_WorkflowActionFormPersonEntryGenderOption.Designer.cs">
       <DependentUpon>202011171742444_WorkflowActionFormPersonEntryGenderOption.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011172219271_Rollup_1117.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011172219271_Rollup_1117.Designer.cs">
+      <DependentUpon>202011172219271_Rollup_1117.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
@@ -248,11 +257,6 @@
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202007072028366_Rollup_0707.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202007072028366_Rollup_0707.Designer.cs">
       <DependentUpon>202007072028366_Rollup_0707.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202002182206291_Rollup_0218.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202002182206291_Rollup_0218.Designer.cs">
@@ -1483,137 +1487,140 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202007211806064_Rollup_0721.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.resx">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202007292255395_ConvertWorkflowLogToNonModel.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202007292255395_ConvertWorkflowLogToNonModel.resx">
       <DependentUpon>202007292255395_ConvertWorkflowLogToNonModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202007310704148_AddConnectionRequestDetailPageToConnectionType.resx">
       <DependentUpon>202007310704148_AddConnectionRequestDetailPageToConnectionType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008031623133_EntityAchievements.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008031623133_EntityAchievements.resx">
       <DependentUpon>202008031623133_EntityAchievements.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008042038088_StepAchievements.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008042038088_StepAchievements.resx">
       <DependentUpon>202008042038088_StepAchievements.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008042327182_Rollup_0804.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008042327182_Rollup_0804.resx">
       <DependentUpon>202008042327182_Rollup_0804.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008052332582_ChangeScheduleCascadeDeleteRelationships.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008052332582_ChangeScheduleCascadeDeleteRelationships.resx">
       <DependentUpon>202008052332582_ChangeScheduleCascadeDeleteRelationships.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008071645528_AchievementIndexes.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008071645528_AchievementIndexes.resx">
       <DependentUpon>202008071645528_AchievementIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008101306418_InteractionIndexUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008101306418_InteractionIndexUpdate.resx">
       <DependentUpon>202008101306418_InteractionIndexUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008121743577_UpdatePersonalDeviceModel.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008121743577_UpdatePersonalDeviceModel.resx">
       <DependentUpon>202008121743577_UpdatePersonalDeviceModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008181633260_GroupSchedulingV2.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008181633260_GroupSchedulingV2.resx">
       <DependentUpon>202008181633260_GroupSchedulingV2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008182000056_Rollup_0818.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008182000056_Rollup_0818.resx">
       <DependentUpon>202008182000056_Rollup_0818.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008211513093_AddOidcModelsAndPages.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008211513093_AddOidcModelsAndPages.resx">
       <DependentUpon>202008211513093_AddOidcModelsAndPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202008272036178_AddDocumentsToPersonMerge.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge.resx">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009011709326_Rollup_0901.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009011709326_Rollup_0901.resx">
       <DependentUpon>202009011709326_Rollup_0901.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009081251514_AddEnableArchiveSummaryAttribute.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009081251514_AddEnableArchiveSummaryAttribute.resx">
       <DependentUpon>202009081251514_AddEnableArchiveSummaryAttribute.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009081439056_AchievementAttemptPrecision.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009081439056_AchievementAttemptPrecision.resx">
       <DependentUpon>202009081439056_AchievementAttemptPrecision.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.resx">
       <DependentUpon>202009091234207_AddShouldRequireTrailingForwardSlashToUrlLinkFieldType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009151704402_Rollup_0915.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009151704402_Rollup_0915.resx">
       <DependentUpon>202009151704402_Rollup_0915.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.resx">
       <DependentUpon>202009162058255_AddShouldAlwaysShowCondensedToUrlLinkFieldType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009221801451_ConnectionBoard.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009221801451_ConnectionBoard.resx">
       <DependentUpon>202009221801451_ConnectionBoard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009251835424_DataViewResultsBlock.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009251835424_DataViewResultsBlock.resx">
       <DependentUpon>202009251835424_DataViewResultsBlock.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009281821169_CommunicationTemplateImageFileForeignKey.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009281821169_CommunicationTemplateImageFileForeignKey.resx">
       <DependentUpon>202009281821169_CommunicationTemplateImageFileForeignKey.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202009291713442_Rollup_0929.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202009291713442_Rollup_0929.resx">
       <DependentUpon>202009291713442_Rollup_0929.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010030017413_AddIndexOnAttendanceCode_IssueDateTime.resx">
       <DependentUpon>202010030017413_AddIndexOnAttendanceCode_IssueDateTime.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.resx">
       <DependentUpon>202010061746345_AddAttendanceOccurrenceAttendanceTypeValueId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010061838137_AddCommunicationRecipientAddIndexJob.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010061838137_AddCommunicationRecipientAddIndexJob.resx">
       <DependentUpon>202010061838137_AddCommunicationRecipientAddIndexJob.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010061901509_AddWorkflowChangeLogNote.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010061901509_AddWorkflowChangeLogNote.resx">
       <DependentUpon>202010061901509_AddWorkflowChangeLogNote.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010071848155_AddCoveringIndexForCommunicationGetQueued.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010071848155_AddCoveringIndexForCommunicationGetQueued.resx">
       <DependentUpon>202010071848155_AddCoveringIndexForCommunicationGetQueued.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010081924575_AddIsFirstTimeToAttendance.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010081924575_AddIsFirstTimeToAttendance.resx">
       <DependentUpon>202010081924575_AddIsFirstTimeToAttendance.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010122113208_AddIsDateRequiredToStepType.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010122113208_AddIsDateRequiredToStepType.resx">
       <DependentUpon>202010122113208_AddIsDateRequiredToStepType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010131811466_Rollup_1013.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010131811466_Rollup_1013.resx">
       <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010142325229_AddCheckInManagerApp.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010142325229_AddCheckInManagerApp.resx">
       <DependentUpon>202010142325229_AddCheckInManagerApp.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010272130222_Rollup_1027.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010272130222_Rollup_1027.resx">
       <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202010301403238_AddOfflineAccessClaim.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202010301403238_AddOfflineAccessClaim.resx">
       <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011051623216_UpdateDocumentType.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011051623216_UpdateDocumentType.resx">
       <DependentUpon>202011051623216_UpdateDocumentType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011052358368_WorkflowActionFormAllowPersonEntry.resx">
       <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011092037356_AddCacheControlHeaderToPage.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011092037356_AddCacheControlHeaderToPage.resx">
       <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011102025121_Rollup_1110.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011102025121_Rollup_1110.resx">
       <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011121849471_WorkflowActionFormChanges.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011121849471_WorkflowActionFormChanges.resx">
       <DependentUpon>202011121849471_WorkflowActionFormChanges.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011131523168_CommunicationReceipientPersonalDevice.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011131523168_CommunicationReceipientPersonalDevice.resx">
       <DependentUpon>202011131523168_CommunicationReceipientPersonalDevice.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011171509310_BusAndFarmModels.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011171509310_BusAndFarmModels.resx">
       <DependentUpon>202011171509310_BusAndFarmModels.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011171636199_FeeCoverageAmount.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011171636199_FeeCoverageAmount.resx">
       <DependentUpon>202011171636199_FeeCoverageAmount.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202011171742444_WorkflowActionFormPersonEntryGenderOption.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011171742444_WorkflowActionFormPersonEntryGenderOption.resx">
       <DependentUpon>202011171742444_WorkflowActionFormPersonEntryGenderOption.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011172219271_Rollup_1117.resx">
+      <DependentUpon>202011172219271_Rollup_1117.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -2562,10 +2569,10 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202011102025121_Rollup_1110_kpisortcode.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.0\202011102025121_Rollup_1110_kpisortcode.sql">
       <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 11.0\Version 1.11.0\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
