@@ -2685,6 +2685,9 @@ namespace RockWeb.Blocks.Event
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
                     string email = registrantInfo.GetEmail( RegistrationTemplate );
 
+                    var birthday = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
+                    var mobilePhone = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
+
                     if ( registrantInfo.Id > 0 )
                     {
                         registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
@@ -2720,16 +2723,15 @@ namespace RockWeb.Blocks.Event
 
                     if ( person == null )
                     {
-                        // Try to find a matching person based on name and email address
-                        person = personService.FindPerson( firstName, lastName, email, true );
+                        // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+                        person = personService.FindPerson( personQuery, true );
 
                         // Try to find a matching person based on name within same family as registrar
                         if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
                         {
                             var familyMembers = registrar.GetFamilyMembers( true, rockContext )
-                                .Where( m =>
-                                    ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
-                                    m.Person.LastName == lastName )
+                                .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
                                 .Select( m => m.Person )
                                 .ToList();
 

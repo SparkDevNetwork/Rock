@@ -397,7 +397,7 @@ namespace Rock.Services.NuGet
         /// <param name="rockContext">The rock context.</param>
         /// <param name="page">The current Page to save</param>
         /// <param name="newBlockTypes">List of BlockTypes not currently installed</param>
-        /// <param name="parentPageId">Id of the the current Page's parent</param>
+        /// <param name="parentPageId">Id of the current Page's parent</param>
         /// <param name="siteId">Id of the site the current Page is being imported into</param>
         private void SavePages( RockContext rockContext, Page page, IEnumerable<BlockType> newBlockTypes, int parentPageId, int siteId )
         {

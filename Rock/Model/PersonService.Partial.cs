@@ -454,9 +454,12 @@ namespace Rock.Model
             // Find people who have a good confidence score
             var goodMatches = foundPeople.Values
                 .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
-                .OrderByDescending( match => match.ConfidenceScore );
+                .OrderByDescending( match => match.ConfidenceScore )
+                .Select( match => match.PersonId )
+                .ToList();
 
-            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
+            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
         }
 
         #region FindPersonClasses
@@ -931,7 +934,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="personConnectionStatusId">A <see cref="System.Int32"/> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
@@ -2377,17 +2380,20 @@ namespace Rock.Model
 
             newPerson.PhoneNumbers = new List<PhoneNumber>();
 
-            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+            var namelessPersonMobilePhoneNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
 
-            // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
-            var newPersonMobilePhoneNumber = new PhoneNumber
+            if ( namelessPersonMobilePhoneNumber != null )
             {
-                NumberTypeValueId = mobilePhoneTypeId,
-                IsMessagingEnabled = true,
-                Number = namelessPersonMobilePhoneNumberNumber
-            };
+                // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+                var newPersonMobilePhoneNumber = new PhoneNumber
+                {
+                    NumberTypeValueId = mobilePhoneTypeId,
+                    IsMessagingEnabled = true,
+                    Number = namelessPersonMobilePhoneNumber.Number
+                };
 
-            newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+                newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+            }
 
             var groupMember = new GroupMember();
             groupMember.GroupRoleId = newPersonGroupRoleId;
@@ -3395,7 +3401,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
-        /// Returns the new Family(Group) that was created for the person.
+        /// Returns the new Family(Group) that was created for the person. The Person and Family are saved to the database.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -3489,7 +3495,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to family.
+        /// Adds the person to family and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>

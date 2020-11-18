@@ -22,7 +22,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -38,7 +40,6 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Block used to display person and details about recent check-ins
     /// </summary>
     [DisplayName( "Person Profile" )]
     [Category( "Check-in > Manager" )]
@@ -46,12 +47,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [LinkedPage(
         "Manager Page",
+        Key = AttributeKey.ManagerPage,
         Description = "Page used to manage check-in locations",
         IsRequired = true,
         Order = 0 )]
 
     [BooleanField(
         "Show Related People",
+        Key = AttributeKey.ShowRelatedPeople,
         Description = "Should anyone who is allowed to check-in the current person also be displayed with the family members?",
         IsRequired = false,
         Order = 1 )]
@@ -67,6 +70,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [AttributeCategoryField(
         "Child Attribute Category",
+        Key = AttributeKey.ChildAttributeCategory,
         Description = "The children Attribute Category to display attributes from.",
         AllowMultiple = false,
         EntityTypeName = "Rock.Model.Person",
@@ -75,6 +79,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [AttributeCategoryField(
         "Adult Attribute Category",
+        Key = AttributeKey.AdultAttributeCategory,
         Description = "The adult Attribute Category to display attributes from.",
         AllowMultiple = false,
         EntityTypeName = "Rock.Model.Person",
@@ -89,6 +94,25 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Category = "Manager Settings",
         Order = 5 )]
 
+    [BadgesField(
+        "Badges - Left",
+        Key = AttributeKey.BadgesLeft,
+        Description = "The badges to display on the left side of the badge bar.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Badge.FAMILY_ATTENDANCE,
+        Order = 6 )]
+
+    [BadgesField(
+        "Badges - Right",
+        Key = AttributeKey.BadgesRight,
+        Description = "The badges to display on the right side of the badge bar.",
+        IsRequired = false,
+        DefaultValue =
+            Rock.SystemGuid.Badge.LAST_VISIT_ON_EXTERNAL_SITE + ","
+            + Rock.SystemGuid.Badge.FAMILY_16_WEEK_ATTENDANCE + ","
+            + Rock.SystemGuid.Badge.BAPTISM + ","
+            + Rock.SystemGuid.Badge.IN_SERVING_TEAM,
+        Order = 7 )]
     public partial class Person : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -101,13 +125,45 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string ChildAttributeCategory = "ChildAttributeCategory";
             public const string AdultAttributeCategory = "AdultAttributeCategory";
             public const string AllowLabelReprinting = "AllowLabelReprinting";
+            public const string BadgesLeft = "BadgesLeft";
+            public const string BadgesRight = "BadgesRight";
         }
 
         #endregion
 
+        #region ViewState Keys
+
+        private static class ViewStateKey
+        {
+            public const string SmsPhoneNumberId = "SmsPhoneNumberId";
+        }
+
+        #endregion ViewState Keys
+
         #region Page Parameter Constants
 
-        private const string PERSON_GUID_PAGE_QUERY_KEY = "Person";
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The person Guid
+            /// </summary>
+            public const string PersonGuid = "Person";
+
+            /// <summary>
+            /// The person identifier
+            /// </summary>
+            public const string PersonId = "PersonId";
+
+            /// <summary>
+            /// The area Guid
+            /// </summary>
+            public const string AreaGuid = "Area";
+
+            /// <summary>
+            /// The location identifier
+            /// </summary>
+            public const string LocationId = "LocationId";
+        }
 
         #endregion
 
@@ -121,6 +177,23 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #region Properties
 
         // used for public / protected properties
+
+        /// <summary>
+        /// This is a potentially-temporary property, until we decide whether to re-work this Block to allow sending SMS messages to ALL SMS-enabled phone numbers.
+        /// As of now, we are only allowing the sending of the first SMS-enabled phone number for a given person.
+        /// </summary>
+        public int SmsPhoneNumberId
+        {
+            get
+            {
+                return ( ViewState[ViewStateKey.SmsPhoneNumberId] as string ).AsInteger();
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.SmsPhoneNumberId] = value.ToString();
+            }
+        }
 
         #endregion
 
@@ -145,7 +218,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gHistory.DataKeyNames = new string[] { "Id" };
-            gHistory.RowDataBound += gHistory_RowDataBound;
+
+
+            var leftBadgeGuids = GetAttributeValues( AttributeKey.BadgesLeft ).AsGuidList();
+            var rightBadgeGuids = GetAttributeValues( AttributeKey.BadgesRight ).AsGuidList();
+
+            var leftBadges = leftBadgeGuids.Select( a => BadgeCache.Get( a ) ).Where( a => a != null ).OrderBy( a => a.Order ).ToList();
+            var rightBadges = rightBadgeGuids.Select( a => BadgeCache.Get( a ) ).Where( a => a != null ).OrderBy( a => a.Order ).ToList();
+
+            // set BadgeEntity using a new RockContext that won't get manually disposed
+            var badgesEntity = new PersonService( new RockContext() ).Get( GetPersonGuid() );
+            blBadgesLeft.Entity = badgesEntity;
+            blBadgesRight.Entity = badgesEntity;
+
+            foreach ( var badge in leftBadges )
+            {
+                blBadgesLeft.BadgeTypes.Add( badge );
+            }
+
+            foreach ( var badge in rightBadges )
+            {
+                blBadgesRight.BadgeTypes.Add( badge );
+            }
         }
 
         /// <summary>
@@ -156,21 +250,25 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnLoad( e );
 
+            Guid personGuid = GetPersonGuid();
+
             if ( !Page.IsPostBack )
             {
                 if ( IsUserAuthorized( Authorization.VIEW ) )
                 {
-                    Guid? personGuid = PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuidOrNull();
-                    if ( personGuid.HasValue )
+                    if ( personGuid != Guid.Empty )
                     {
-                        ShowDetail( personGuid.Value );
+                        ShowDetail( personGuid );
                     }
                 }
             }
             else
             {
-                var person = new PersonService( new RockContext() ).Get( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
-                BindAttribute( person );
+                var person = new PersonService( new RockContext() ).Get( personGuid );
+                if ( person != null )
+                {
+                    BindAttribute( person );
+                }
             }
         }
 
@@ -187,7 +285,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
+            ShowDetail( GetPersonGuid() );
         }
 
         /// <summary>
@@ -195,42 +293,63 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
+            if ( e.Row.RowType != DataControlRowType.DataRow )
             {
-                var attendanceInfo = e.Row.DataItem as AttendanceInfo;
-                if ( attendanceInfo == null )
-                {
-                    var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
-                    if ( cell != null )
-                    {
-                        cell.Visible = false;
-                    }
+                return;
+            }
 
-                }
-                else
+            var attendanceInfo = e.Row.DataItem as AttendanceInfo;
+            if ( attendanceInfo == null )
+            {
+                var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
+                if ( cell != null )
                 {
-                    Literal lActive = ( Literal ) e.Row.FindControl( "lActive" );
-                    if ( attendanceInfo.IsActive && lActive != null )
-                    {
-                        e.Row.AddCssClass( "success" );
-                        lActive.Text = "<span class='label label-success'>Current</span>";
-                        var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().ToList();
-                        attendanceIds.Add( attendanceInfo.Id.ToStringSafe() );
-                        hfCurrentAttendanceIds.Value = attendanceIds.AsDelimited( "," );
-                    }
-
-                    Literal lWhoCheckedIn = ( Literal ) e.Row.FindControl( "lWhoCheckedIn" );
-                    if ( lWhoCheckedIn != null && attendanceInfo.CheckInByPersonGuid.HasValue )
-                    {
-                        string url = String.Format( "{0}{1}{2}{3}?Person={4}", Request.Url.Scheme, Uri.SchemeDelimiter, Request.Url.Authority, Request.Url.AbsolutePath, attendanceInfo.CheckInByPersonGuid );
-                        lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">by: {1}</a>", url, attendanceInfo.CheckInByPersonName );
-                    }
+                    cell.Visible = false;
                 }
+
+                return;
+            }
+
+            var lCheckinDate = ( Literal ) e.Row.FindControl( "lCheckinDate" );
+            var lCheckinScheduleName = ( Literal ) e.Row.FindControl( "lCheckinScheduleName" );
+            var lWhoCheckedIn = ( Literal ) e.Row.FindControl( "lWhoCheckedIn" );
+            lCheckinDate.Text = attendanceInfo.Date.ToShortDateString();
+            lCheckinScheduleName.Text = attendanceInfo.ScheduleName;
+            if ( lWhoCheckedIn != null && attendanceInfo.CheckInByPersonGuid.HasValue )
+            {
+                var oldWayUrl = String.Format( "{0}{1}{2}{3}?Person={4}", Request.Url.Scheme, Uri.SchemeDelimiter, Request.Url.Authority, Request.Url.AbsolutePath, attendanceInfo.CheckInByPersonGuid );
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "Person", attendanceInfo.CheckInByPersonGuid.ToString() );
+                var urlWithPersonParameter = GetCurrentPageUrl( queryParams );
+                lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">by: {1}</a>", urlWithPersonParameter, attendanceInfo.CheckInByPersonName );
+            }
+
+
+            var lLocationName = ( Literal ) e.Row.FindControl( "lLocationName" );
+            var lGroupName = ( Literal ) e.Row.FindControl( "lGroupName" );
+            var lCode = ( Literal ) e.Row.FindControl( "lCode" );
+            var lActiveLabel = ( Literal ) e.Row.FindControl( "lActiveLabel" );
+            lLocationName.Text = attendanceInfo.LocationNameHtml;
+            lGroupName.Text = attendanceInfo.GroupName;
+            lCode.Text = attendanceInfo.Code;
+
+            if ( attendanceInfo.IsActive && lActiveLabel != null )
+            {
+                e.Row.AddCssClass( "success" );
+                lActiveLabel.Text = "<span class='label label-success'>Current</span>";
+                var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().ToList();
+                attendanceIds.Add( attendanceInfo.Id.ToStringSafe() );
+                hfCurrentAttendanceIds.Value = attendanceIds.AsDelimited( "," );
             }
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gHistory_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             using ( var rockContext = new RockContext() )
@@ -244,46 +363,57 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
-            ShowDetail( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
+            ShowDetail( GetPersonGuid() );
         }
 
-        protected void rptrFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrPhones control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptrPhones_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                dynamic familyMember = e.Item.DataItem as dynamic;
-                Literal lFamilyIcon = ( Literal ) e.Item.FindControl( "lFamilyIcon" );
+            PhoneNumber phoneNumber = e.Item.DataItem as PhoneNumber;
 
-                if ( familyMember.FamilyRole.ToString() == "Child" )
+            if ( phoneNumber.Id == SmsPhoneNumberId )
+            {
+                LinkButton btnSms = ( LinkButton ) e.Item.FindControl( "btnSms" );
+                if ( btnSms != null )
                 {
-                    lFamilyIcon.Text = "<i class='fa fa-child'></i>";
-                }
-                else if ( familyMember.Gender == Gender.Female )
-                {
-                    lFamilyIcon.Text = "<i class='fa fa-female'></i>";
-                }
-                else
-                {
-                    lFamilyIcon.Text = "<i class='fa fa-male'></i>";
+                    btnSms.Visible = true;
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptrFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var familyMember = e.Item.DataItem as PersonInfo;
+
+                Literal lFamilyPhoto = ( Literal ) e.Item.FindControl( "lFamilyPhoto" );
+                lFamilyPhoto.Text = familyMember.PhotoTag;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrRelationships control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrRelationships_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                dynamic relatedMember = e.Item.DataItem as dynamic;
-                Literal lRelationshipsIcon = ( Literal ) e.Item.FindControl( "lRelationshipsIcon" );
+                PersonInfo relatedMember = e.Item.DataItem as PersonInfo;
 
-                if ( relatedMember.Gender == Gender.Female )
-                {
-                    lRelationshipsIcon.Text = "<i class='fa fa-female'></i>";
-                }
-                else
-                {
-                    lRelationshipsIcon.Text = "<i class='fa fa-male'></i>";
-                }
+                Literal lRelationshipPhoto = ( Literal ) e.Item.FindControl( "lRelationshipPhoto" );
+                lRelationshipPhoto.Text = relatedMember.PhotoTag;
             }
         }
 
@@ -294,7 +424,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSms_Click( object sender, EventArgs e )
         {
-            btnSms.Visible = false;
             nbResult.Visible = false;
             nbResult.Text = string.Empty;
             tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = true;
@@ -331,7 +460,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             var rockContext = new RockContext();
-            var person = new PersonService( rockContext ).Get( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
+            var person = new PersonService( rockContext ).Get( GetPersonGuid() );
             var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled );
             if ( phoneNumber == null )
             {
@@ -374,9 +503,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             nbReprintMessage.Visible = false;
 
-            Guid? personGuid = PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuidOrNull();
+            Guid personGuid = GetPersonGuid();
 
-            if ( personGuid == null || !personGuid.HasValue )
+            if ( personGuid == Guid.Empty )
             {
                 maNoLabelsFound.Show( "No person was found.", ModalAlertType.Alert );
                 return;
@@ -392,8 +521,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
-            // Get the person Id from the Guid in the page parameter
-            var personId = new PersonService( rockContext ).Queryable().Where( p => p.Guid == personGuid.Value ).Select( p => p.Id ).FirstOrDefault();
+            // Get the person Id from the PersonId page parameter, or look it up based on the Person Guid page parameter.
+            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            int personId = personIdParam.HasValue
+                ? personIdParam.Value
+                : new PersonService( rockContext ).GetId( personGuid ).GetValueOrDefault();
+
             hfPersonId.Value = personId.ToString();
 
             var possibleLabels = ZebraPrint.GetLabelTypesForPerson( personId, attendanceIds );
@@ -479,6 +612,47 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
+        private Guid? _personGuid;
+
+        /// <summary>
+        /// Gets the person unique identifier.
+        /// </summary>
+        private Guid GetPersonGuid()
+        {
+            /*
+                7/23/2020 - JH
+                This Block was originally written specifically around Person Guid, so its usage is interwoven throughout the Block.
+                We are now introducing Person ID as an alternate query string parameter, so we might get one or the other.. or both.
+                Rather than re-factor all existing usages throughout the Block to be aware of either identifier, this method will
+                serve as a central point to merge either identifier into a Guid result.
+
+                Reason: Enhancing Check-in functionality.
+            */
+
+            if ( _personGuid.HasValue )
+            {
+                return _personGuid.Value;
+            }
+
+            Guid? personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
+            if ( personGuid.HasValue )
+            {
+                _personGuid = personGuid;
+                return _personGuid.Value;
+            }
+
+            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    _personGuid = new PersonService( rockContext ).GetGuid( personId.Value );
+                }
+            }
+
+            return _personGuid ?? Guid.Empty;
+        }
+
         /// <summary>
         /// Show the details for the given person.
         /// </summary>
@@ -491,7 +665,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 var personService = new PersonService( rockContext );
 
-                var person = personService.Queryable( true, true ).Include(a => a.PhoneNumbers).Include(a => a.RecordStatusValue)
+                var person = personService.Queryable( true, true ).Include( a => a.PhoneNumbers ).Include( a => a.RecordStatusValue )
                     .FirstOrDefault( a => a.Guid == personGuid );
 
                 if ( person == null )
@@ -522,37 +696,56 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     hlCampus.Visible = false;
                 }
 
-                lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
+                lGender.Text = person.Gender != Gender.Unknown ?
+                    string.Format( @"<div class=""text-semibold text-uppercase"">{0}</div>", person.Gender.ConvertToString().Substring( 0, 1 ) ) : string.Empty;
 
                 if ( person.BirthDate.HasValue )
                 {
                     string ageText = ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ?
-                        string.Format( "{0} yrs old ", person.BirthDate.Value.Age() ) : string.Empty;
-                    lAge.Text = string.Format( "{0} <small>({1})</small><br/>", ageText, person.BirthDate.Value.ToShortDateString() );
+                        string.Format( @"<div class=""text-semibold"">{0}yrs</div>", person.BirthDate.Value.Age() ) : string.Empty;
+                    lAge.Text = string.Format( @"{0}<div class=""text-sm text-muted"">{1}</div>", ageText, person.BirthDate.Value.ToShortDateString() );
                 }
                 else
                 {
                     lAge.Text = string.Empty;
                 }
 
-                lGrade.Text = person.GradeFormatted;
+                string grade = person.GradeFormatted;
+                string[] gradeParts = grade.Split( ' ' );
+                if ( gradeParts.Length >= 2 )
+                {
+                    // Note that Grade names might be different in other countries. See  https://separatedbyacommonlanguage.blogspot.com/2006/12/types-of-schools-school-years.html for examples
+                    var firstWord = gradeParts[0];
+                    var remainderWords = gradeParts.Skip( 1 ).ToList().AsDelimited( " " );
+                    if ( firstWord.Equals( "Year", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        // MDP 2020-10-21 (at request of GJ)
+                        // Special case if formatted grade is 'Year 1', 'Year 2', etc (see https://separatedbyacommonlanguage.blogspot.com/2006/12/types-of-schools-school-years.html)
+                        // Make the word Year on the top
+                        grade = string.Format( @"<div class=""text-semibold"">{0}</div><div class=""text-sm text-muted"">{1}</div>", remainderWords, firstWord );
+                    }
+                    else
+                    {
+                        grade = string.Format( @"<div class=""text-semibold"">{0}</div><div class=""text-sm text-muted"">{1}</div>", firstWord, remainderWords );
+                    }
+                }
+
+                lGrade.Text = grade;
 
                 lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
-                lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
+                lEmail.Text = string.Format( @"<div class=""text-truncate"">{0}</div>", person.GetEmailTag( ResolveRockUrl( "/" ) ) );
 
                 BindAttribute( person );
+
                 // Text Message
                 var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
                 if ( GetAttributeValue( AttributeKey.SMSFrom ).IsNotNullOrWhiteSpace() && phoneNumber != null )
                 {
-                    btnSms.Text = string.Format( "<i class='fa fa-mobile'></i> {0} <small>({1})</small>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue );
-                    btnSms.Visible = true;
-                    rcwTextMessage.Label = "Text Message";
+                    SmsPhoneNumberId = phoneNumber.Id;
                 }
                 else
                 {
-                    btnSms.Visible = false;
-                    rcwTextMessage.Label = string.Empty;
+                    SmsPhoneNumberId = 0;
                 }
 
                 // Get all family member from all families ( including self )
@@ -566,30 +759,29 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     isFamilyChild.Add( thisPerson.GroupId, thisPerson.GroupRole.Guid.Equals( childGuid ) );
                 }
 
-                // Get the current url's root (without the person's guid)
-                string urlRoot = Request.Url.ToString().ReplaceCaseInsensitive( personGuid.ToString(), "" );
-
                 // Get the other family members and the info needed for rendering
                 var familyMembers = allFamilyMembers.Where( m => m.PersonId != person.Id )
                     .OrderBy( m => m.GroupId )
                     .ThenBy( m => m.Person.BirthDate )
-                    .Select( m => new
+                    .Select( m => new PersonInfo
                     {
-                        Url = urlRoot + m.Person.Guid.ToString(),
-                        FullName = m.Person.FullName,
-                        Gender = m.Person.Gender,
-                        FamilyRole = m.GroupRole,
-                        Note = isFamilyChild[m.GroupId] ?
-                            ( m.GroupRole.Guid.Equals( childGuid ) ? " (Sibling)" : "(Parent)" ) :
-                            ( m.GroupRole.Guid.Equals( childGuid ) ? " (Child)" : "" )
+                        PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
+                        Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
+                        NickName = m.Person.NickName,
+                        //FullName = m.Person.FullName,
+                        //Gender = m.Person.Gender,
+                        //FamilyRole = m.GroupRole,
+                        //Note = isFamilyChild[m.GroupId] ?
+                        //    ( m.GroupRole.Guid.Equals( childGuid ) ? " (Sibling)" : "(Parent)" ) :
+                        //    ( m.GroupRole.Guid.Equals( childGuid ) ? " (Child)" : "" )
                     } )
                     .ToList();
 
-                rcwFamily.Visible = familyMembers.Any();
+                pnlFamily.Visible = familyMembers.Any();
                 rptrFamily.DataSource = familyMembers;
                 rptrFamily.DataBind();
 
-                rcwRelationships.Visible = false;
+                pnlRelationships.Visible = false;
                 if ( GetAttributeValue( AttributeKey.ShowRelatedPeople ).AsBoolean() )
                 {
                     var roles = new List<int>();
@@ -621,16 +813,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var relatedMembers = personService.GetRelatedPeople( new List<int> { person.Id }, roles )
                             .OrderBy( m => m.Person.LastName )
                             .ThenBy( m => m.Person.NickName )
-                            .Select( m => new
+                            .Select( m => new PersonInfo
                             {
-                                Url = urlRoot + m.Person.Guid.ToString(),
-                                FullName = m.Person.FullName,
-                                Gender = m.Person.Gender,
-                                Note = " (" + m.GroupRole.Name + ")"
+                                PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
+                                Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
+                                NickName = m.Person.NickName,
+                                //FullName = m.Person.FullName,
+                                //Gender = m.Person.Gender,
+                                //Note = " (" + m.GroupRole.Name + ")"
                             } )
                             .ToList();
 
-                        rcwRelationships.Visible = relatedMembers.Any();
+                        pnlRelationships.Visible = relatedMembers.Any();
                         rptrRelationships.DataSource = relatedMembers;
                         rptrRelationships.DataBind();
                     }
@@ -639,7 +833,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
-                rcwPhone.Visible = phoneNumbers.Any();
+                pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;
 
                 var schedules = new ScheduleService( rockContext )
                     .Queryable().AsNoTracking()
@@ -648,19 +842,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
-                int? personAliasId = person.PrimaryAliasId;
+                var personAliasIds = person.Aliases.Select( a => a.Id ).ToList();
 
                 PersonAliasService personAliasService = new PersonAliasService( rockContext );
-                if ( !personAliasId.HasValue )
-                {
-                    personAliasId = personAliasService.GetPrimaryAliasId( person.Id );
-                }
 
                 var attendances = new AttendanceService( rockContext )
                     .Queryable( "Occurrence.Schedule,Occurrence.Group,Occurrence.Location,AttendanceCode" )
                     .Where( a =>
                         a.PersonAliasId.HasValue &&
-                        a.PersonAliasId == personAliasId &&
+                        personAliasIds.Contains( a.PersonAliasId.Value ) &&
                         a.Occurrence.ScheduleId.HasValue &&
                         a.Occurrence.GroupId.HasValue &&
                         a.Occurrence.LocationId.HasValue &&
@@ -682,10 +872,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             Id = a.Id,
                             Date = a.StartDateTime,
                             GroupId = a.Occurrence.Group.Id,
-                            Group = a.Occurrence.Group.Name,
+                            GroupName = a.Occurrence.Group.Name,
                             LocationId = a.Occurrence.LocationId.Value,
-                            Location = a.Occurrence.Location.Name,
-                            Schedule = a.Occurrence.Schedule.Name,
+                            LocationName = a.Occurrence.Location.Name,
+                            ScheduleName = a.Occurrence.Schedule.Name,
                             IsActive = a.IsCurrentlyCheckedIn,
                             Code = a.AttendanceCode != null ? a.AttendanceCode.Code : "",
                             CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName : string.Empty,
@@ -695,18 +885,35 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     ).ToList();
 
                 // Set active locations to be a link to the room in manager page
-                var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "Group", "" );
-                qryParam.Add( "Location", "" );
-                foreach ( var attendance in attendances.Where( a => a.IsActive ) )
+                var qryParams = new Dictionary<string, string>
                 {
-                    qryParam["Group"] = attendance.GroupId.ToString();
-                    qryParam["Location"] = attendance.LocationId.ToString();
-                    attendance.Location = string.Format( "<a href='{0}'>{1}</a>",
-                        LinkedPageUrl( AttributeKey.ManagerPage, qryParam ), attendance.Location );
+                    { PageParameterKey.LocationId, string.Empty }
+                };
+
+                // If an Area Guid was passed to the Page, pass it back.
+                string areaGuid = PageParameter( PageParameterKey.AreaGuid );
+                if ( areaGuid.IsNotNullOrWhiteSpace() )
+                {
+                    qryParams.Add( PageParameterKey.AreaGuid, areaGuid );
                 }
 
-                rcwCheckinHistory.Visible = attendances.Any();
+                foreach ( var attendance in attendances )
+                {
+                    if ( attendance.IsActive )
+                    {
+                        qryParams[PageParameterKey.LocationId] = attendance.LocationId.ToString();
+                        attendance.LocationNameHtml = string.Format(
+                            "<a href='{0}'>{1}</a>",
+                            LinkedPageUrl( AttributeKey.ManagerPage, qryParams ),
+                            attendance.LocationName );
+                    }
+                    else
+                    {
+                        attendance.LocationNameHtml = attendance.LocationName;
+                    }
+                }
+
+                pnlCheckinHistory.Visible = attendances.Any();
 
                 // Get the index of the delete column
                 var deleteField = gHistory.Columns.OfType<Rock.Web.UI.Controls.DeleteField>().First();
@@ -715,6 +922,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 gHistory.DataSource = attendances;
                 gHistory.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the related person URL.
+        /// </summary>
+        private string GetRelatedPersonUrl( Rock.Model.Person currentPerson, Guid relatedPersonGuid, int relatedPersonId )
+        {
+            var template = "{0}={1}";
+            var relatedPersonUrl = Request.Url.ToString()
+                .ReplaceCaseInsensitive( string.Format( template, PageParameterKey.PersonGuid, currentPerson.Guid ), string.Format( template, PageParameterKey.PersonGuid, relatedPersonGuid ) )
+                .ReplaceCaseInsensitive( string.Format( template, PageParameterKey.PersonId, currentPerson.Id ), string.Format( template, PageParameterKey.PersonId, relatedPersonId ) );
+
+            return relatedPersonUrl;
         }
 
         /// <summary>
@@ -727,18 +947,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var isAdult = person.AgeClassification == AgeClassification.Adult || person.AgeClassification == AgeClassification.Unknown;
             var isChild = person.AgeClassification == AgeClassification.Child || person.AgeClassification == AgeClassification.Unknown;
 
-            pnlAdultFields.Visible = isAdult && adultCategoryGuid.HasValue;
-            pnlChildFields.Visible = isChild && childCategoryGuid.HasValue;
+            pnlAdultFields.Visible = false;
+            pnlChildFields.Visible = false;
             if ( isAdult && adultCategoryGuid.HasValue )
             {
                 avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
                 avcAdultAttributes.AddDisplayControls( person );
+
+                pnlAdultFields.Visible = avcAdultAttributes.GetDisplayedAttributes().Any();
             }
 
             if ( isChild && childCategoryGuid.HasValue )
             {
                 avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
                 avcChildAttributes.AddDisplayControls( person );
+
+                pnlChildFields.Visible = avcChildAttributes.GetDisplayedAttributes().Any();
             }
         }
 
@@ -748,7 +972,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private void ResetSms()
         {
             // If this method got called, we've already checked the person has a valid number
-            btnSms.Visible = true;
             tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = false;
             tbSmsMessage.Value = String.Empty;
         }
@@ -774,14 +997,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public int Id { get; set; }
             public DateTime Date { get; set; }
             public int GroupId { get; set; }
-            public string Group { get; set; }
+            public string GroupName { get; set; }
             public int LocationId { get; set; }
-            public string Location { get; set; }
-            public string Schedule { get; set; }
+            public string LocationName { get; set; }
+            public string LocationNameHtml { get; set; }
+            public string ScheduleName { get; set; }
             public bool IsActive { get; set; }
             public string Code { get; set; }
             public string CheckInByPersonName { get; set; }
             public Guid? CheckInByPersonGuid { get; set; }
+        }
+
+        private class PersonInfo
+        {
+            public string PhotoTag { get; set; }
+            public string Url { get; set; }
+            public string NickName { get; set; }
         }
 
         #endregion

@@ -78,37 +78,45 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var financialPledgeService = new FinancialPledgeService( rockContext );
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var financialPledgeService = new FinancialPledgeService( rockContext );
 
-                var financialPledge = BuildFinancialPledge( rockContext,
-                                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ),
-                                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                financialPledgeService.Add( financialPledge );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var financialPledge = BuildFinancialPledge( rockContext,
+                                            TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ),
+                                            TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    financialPledgeService.Add( financialPledge );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
-
-            var financialPledges = financialPledgeService.
-                                Queryable( "AnalyticsSourceDate" ).
+            using ( var rockContext = new RockContext() )
+            {
+                var financialPledgeService = new FinancialPledgeService( rockContext );
+                var financialPledges = financialPledgeService.
+                                Queryable().
                                 Where( i => i.ForeignKey == financialPledgeForeignKey ).
                                 Where( i => i.StartSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, financialPledges.Count() );
+                Assert.AreEqual( expectedRecordCount, financialPledges.Count() );
+                Assert.IsNotNull( financialPledges.First().StartSourceDate );
 
-            financialPledges = financialPledgeService.
-                                Queryable( "AnalyticsSourceDate" ).
-                                Where( i => i.ForeignKey == financialPledgeForeignKey ).
-                                Where( i => i.EndSourceDate.CalendarYear == year );
+                financialPledges = financialPledgeService.
+                                    Queryable().
+                                    Where( i => i.ForeignKey == financialPledgeForeignKey ).
+                                    Where( i => i.EndSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, financialPledges.Count() );
+                Assert.AreEqual( expectedRecordCount, financialPledges.Count() );
+                Assert.IsNotNull( financialPledges.First().EndSourceDate );
+            }
         }
 
         private Rock.Model.FinancialPledge BuildFinancialPledge( RockContext rockContext, DateTime startDate, DateTime endDate )

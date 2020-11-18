@@ -122,6 +122,19 @@
 
                     $(selector).prop("checked", $(this).is(':checked'));
                 });
+
+                $(".js-entity-filter-field input").on('click', function () {
+
+                    var input = $(this);
+                    
+                    if (input.val()) {
+                        var parentNode = input.parents(".js-entity-filter-field");
+                        var entityClass = [...parentNode[0].classList].find((c) => c.indexOf("js-entity-id-") >= 0);
+                        var entityId = entityClass.replace("js-entity-id-", "");
+
+                        $(".js-model-filter input[value='" + entityId + "'").prop("checked", true);
+                    }
+                });
             });
         </script>
 

@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Security
 
 
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [SystemCommunicationField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
+    [SystemCommunicationField( "Forgot Username Email Template", "The email template to use when sending the forgot username (and password) email.  The following merge fields are available for use in the template: Person, Users, and SupportsChangePassword (an array of the usernames that support password changes.)", false, Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Security
                 .Where( p => p.Users.Any()))
             {
                 var users = new List<UserLogin>();
+                List<string> supportsChangePassword = new List<string>();
                 foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.EntityType != null )
@@ -108,6 +109,10 @@ namespace RockWeb.Blocks.Security
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                         if ( component != null && !component.RequiresRemoteAuthentication )
                         {
+                            if ( component.SupportsChangePassword )
+                            {
+                                supportsChangePassword.Add( user.UserName );
+                            }
                             users.Add( user );
                             hasAccountWithPasswordResetAbility = true;
                         }
@@ -117,8 +122,9 @@ namespace RockWeb.Blocks.Security
                 }
 
                 var resultsDictionary = new Dictionary<string, object>();
-                resultsDictionary.Add( "Person", person);
+                resultsDictionary.Add( "Person", person );
                 resultsDictionary.Add( "Users", users );
+                resultsDictionary.Add( "SupportsChangePassword", supportsChangePassword );
                 results.Add( resultsDictionary );
             }
 

@@ -1365,6 +1365,19 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
+                        var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+                        var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+                        var cacheIndicator = isCacheEnabled ? "text-success" : "text-danger";
+                        var cacheEnabled = isCacheEnabled ? "enabled" : "disabled";
+
+                        var lbCacheControl = new LinkButton();
+                        lbCacheControl.Click += lbCacheControl_Click;
+                        lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
+                        lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
+                        adminFooter.Controls.Add( lbCacheControl );
+
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
@@ -1482,11 +1495,9 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache
                     // so it should always exist
-                    if ( _pageCache.OutputCacheDuration > 0 )
+                    if ( _pageCache.CacheControlHeader != null )
                     {
-                        Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
-                        Response.Cache.SetValidUntilExpires( true );
+                        _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
 
@@ -3514,6 +3525,35 @@ Sys.Application.add_load(function () {
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
+        /// <summary>
+        /// Handles the Click event of the lbCacheControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbCacheControl_Click( object sender, EventArgs e )
+        {
+            var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+            var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+            if ( cacheControlCookie == null )
+            {
+                cacheControlCookie = new HttpCookie( RockCache.CACHE_CONTROL_COOKIE );
+            }
+
+            cacheControlCookie.Value = ( !isCacheEnabled ).ToString();
+
+            AddOrUpdateCookie( cacheControlCookie );
+
+            if ( PageReference != null )
+            {
+                string pageUrl = PageReference.BuildUrl();
+                if ( !string.IsNullOrWhiteSpace( pageUrl ) )
+                {
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+        }
         #endregion
     }
 

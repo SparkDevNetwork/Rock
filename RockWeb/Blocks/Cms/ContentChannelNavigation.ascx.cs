@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
 
     [CategoryField( "Parent Category",
         Description = "The parent category to use as the root category available for the user to pick from.",
-        IsRequired = true,
+        IsRequired = false,
         EntityType = typeof( Rock.Model.ContentChannel ),
         Key = AttributeKey.ParentCategory,
         Order = 6 )]

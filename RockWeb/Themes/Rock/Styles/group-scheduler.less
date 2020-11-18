@@ -42,9 +42,7 @@
   .panel.panel-block {
 
     position: relative;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: column;
     flex-direction: column;
     min-width: 0;
     border: 1px solid @panel-default-border;
@@ -64,7 +62,6 @@
   }
 
   .panel-block > .panel-heading {
-    display: -ms-flexbox;
     display: flex;
     align-content: center;
     align-items: center;
@@ -89,10 +86,8 @@
 .resource-list {
   position: relative;
   top: auto !important;
-  display: -ms-flexbox !important;
   display: flex !important;
   flex: 0 1 auto !important;
-  -ms-flex-direction: column !important;
   flex-direction: column !important;
   width: 100%;
   max-height: none !important;
@@ -143,9 +138,7 @@
   box-shadow: 0 1px 0 hsl(228, 7%, 83%);
 
   .flex {
-    display: -ms-flexbox !important;
     display: flex !important;
-    -ms-flex-direction: row !important;
     flex-direction: row !important;
     flex-wrap: nowrap;
     flex-shrink: 0;
@@ -158,7 +151,7 @@
       margin-right: 8px;
       font-family: @fa-font-face;
       font-weight: @fa-theme-weight;
-      color: #fff;
+      color: @white;
       content: "@{fa-var-circle}";
     }
   }
@@ -323,9 +316,6 @@
       color: rgba(0, 0, 0, .4);
       text-align: center;
       content: "No People Available";
-      -webkit-transform: translateY(-50%);
-      -moz-transform: translateY(-50%);
-      -ms-transform: translateY(-50%);
       transform: translateY(-50%);
     }
   }
@@ -355,10 +345,6 @@
   @border-start: @grid-height - 1px;
   @border-end: @grid-height + 1px;
   min-height: ~"calc("@grid-height~"*var(--desiredSpots,2))"; //var(--emptySpots)
-  background-image: -webkit-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -moz-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -ms-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
-  background-image: -o-linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
   background-image: linear-gradient(0deg, transparent @border-start, @panel-default-border @border-start, @panel-default-border @border-end, transparent @border-end);
   background-position: 0 -1px;
   background-size: @grid-height @grid-height;
@@ -434,8 +420,8 @@
 /* Location (Attendance Occurrence) */
 .scheduling-status {
   @progress-height: 14px;
-  .progress {
 
+  .progress {
     height: @progress-height;
     margin-bottom: 0;
     background: #c4c4c4;
@@ -461,7 +447,7 @@
       position: relative;
       width: 1px;
       height: 100%;
-      background-color: #fff;
+      background-color: @white;
     }
 
     .desired-indicator {
@@ -552,7 +538,7 @@
   }
 
   .person {
-    background-color: #fff;
+    background-color: @white;
 
     &.pending {
       color: @text-muted;
@@ -678,14 +664,12 @@
 .board-column-container:active,
 .board-column:active {
   cursor: move;
-  cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
   cursor: grabbing;
 }
 
 .board-column {
   position: relative;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
   display: flex;
   flex: 0 0 345px;
@@ -724,7 +708,7 @@
   padding: 15px;
   margin-bottom: 12px;
   cursor: pointer;
-  background: #fff;
+  background: @white;
   border: 1px solid #dbdbdb;
   border-radius: 4px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
@@ -735,7 +719,6 @@
 }
 .board-card-photo {
   position: relative;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;

@@ -38,9 +38,6 @@ namespace Rock.Client
         public string ConfirmationEmail { get; set; }
 
         /// <summary />
-        public AnalyticsSourceDate CreatedSourceDate { get; set; }
-
-        /// <summary />
         public decimal DiscountAmount { get; set; }
 
         /// <summary />
@@ -115,7 +112,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ConfirmationEmail = source.ConfirmationEmail;
-            this.CreatedSourceDate = source.CreatedSourceDate;
             this.DiscountAmount = source.DiscountAmount;
             this.DiscountCode = source.DiscountCode;
             this.DiscountPercentage = source.DiscountPercentage;
@@ -146,6 +142,9 @@ namespace Rock.Client
     {
         /// <summary />
         public int? CreatedDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate CreatedSourceDate { get; set; }
 
         /// <summary />
         public ICollection<RegistrationRegistrant> Registrants { get; set; }

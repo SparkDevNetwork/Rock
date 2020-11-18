@@ -47,7 +47,7 @@ namespace Rock.Model
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this Workflow instance is executing.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the WorkflowTypeId fo the <see cref="Rock.Model.WorkflowType"/> that is being executed.
+        /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is being executed.
         /// </value>
         [DataMember]
         public int WorkflowTypeId { get; set; }

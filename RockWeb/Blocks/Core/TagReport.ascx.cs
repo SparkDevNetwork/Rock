@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             gReport.DataKeyNames = new string[] { "Id" };
+            gReport.EntityIdField = "Id";
             gReport.Actions.ShowAdd = false;
             gReport.GridRebind += gReport_GridRebind;
             gReport.Actions.AddClick += gReport_AddClick;
@@ -93,7 +94,6 @@ namespace RockWeb.Blocks.Core
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
                             gReport.PersonIdField = "PersonId";
-                            gReport.EntityIdField = "PersonId";
                             gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 
@@ -328,11 +328,7 @@ namespace RockWeb.Blocks.Core
                         } );
                 }
 
-                if ( TagEntityType != null )
-                {
-                    gReport.EntityTypeId = TagEntityType.Id;
-                }
-
+                gReport.EntityTypeId = EntityTypeCache.Get<TaggedItem>().Id;
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }

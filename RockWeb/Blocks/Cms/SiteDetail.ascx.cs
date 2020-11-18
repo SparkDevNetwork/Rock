@@ -917,7 +917,6 @@ namespace RockWeb.Blocks.Cms
             if ( siteEntityType != null && !siteEntityType.IsIndexingEnabled )
             {
                 cbEnableIndexing.Visible = false;
-                tbIndexStartingLocation.Visible = false;
             }
 
             var attributeService = new AttributeService( new RockContext() );
@@ -980,8 +979,6 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Visible = mobileRedirectVisible;
 
             nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
-
-            tbIndexStartingLocation.Visible = cbEnableIndexing.Checked;
         }
 
         #endregion

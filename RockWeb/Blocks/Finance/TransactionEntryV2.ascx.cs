@@ -531,7 +531,7 @@ mission. We are so grateful for your commitment.</p>
                 </span>
 
                 <div class='panel-actions pull-right'>
-                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-plus'></span>
+                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-chevron-down'></span>
                 </div>
             </div>
 
@@ -597,7 +597,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.hide();
             }
 
-            $toggle.removeClass('fa-plus').addClass('fa-minus');
+            $toggle.removeClass('fa-chevron-down').addClass('fa-chevron-up');
         } else {
             if (animate) {
                 $scheduledDetails.slideUp();
@@ -607,7 +607,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.show();
             }
 
-            $toggle.removeClass('fa-minus').addClass('fa-plus');
+            $toggle.removeClass('fa-chevron-up').addClass('fa-chevron-down');
         }
     };
 
@@ -2307,6 +2307,7 @@ mission. We are so grateful for your commitment.</p>
             int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
 
             int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+            int firstAndFifteenthFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() ) ?? 0;
             bool oneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
@@ -2331,6 +2332,26 @@ mission. We are so grateful for your commitment.</p>
                 btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonScheduledText );
                 dtpStartDate.Visible = true;
                 dtpStartDate.Label = "Start Giving On";
+            }
+
+            if ( selectedScheduleFrequencyId == firstAndFifteenthFrequencyId )
+            {
+                var selectedDate = dtpStartDate.SelectedDate ?? RockDateTime.Now;
+
+                // Get the day of month (Day of Month for 11/9/2020 would be 9)
+                var nextBillDayOfMonth = selectedDate.Day;
+                if ( nextBillDayOfMonth > 1 && nextBillDayOfMonth < 15 )
+                {
+                    // they specified a start between the 1st and 15th, so round up the next 15th
+                    var nextFifteenth = new DateTime( selectedDate.Year, selectedDate.Month, 15 );
+                    dtpStartDate.SelectedDate = nextFifteenth;
+                }
+                else if ( nextBillDayOfMonth > 15 )
+                {
+                    // they specified a start after 15th, so round up the next month's 1st
+                    var nextFirst = new DateTime( selectedDate.Year, selectedDate.Month, 1 ).AddMonths( 1 );
+                    dtpStartDate.SelectedDate = nextFirst;
+                }
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );

@@ -189,6 +189,34 @@
     <Compile Include="Migrations\202010131811466_Rollup_1013.Designer.cs">
       <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202010142325229_AddCheckInManagerApp.cs" />
+    <Compile Include="Migrations\202010142325229_AddCheckInManagerApp.Designer.cs">
+      <DependentUpon>202010142325229_AddCheckInManagerApp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010272130222_Rollup_1027.cs" />
+    <Compile Include="Migrations\202010272130222_Rollup_1027.Designer.cs">
+      <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.cs" />
+    <Compile Include="Migrations\202010301403238_AddOfflineAccessClaim.Designer.cs">
+      <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202011051623216_UpdateDocumentType.cs" />
+    <Compile Include="Migrations\202011051623216_UpdateDocumentType.Designer.cs">
+      <DependentUpon>202011051623216_UpdateDocumentType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.cs" />
+    <Compile Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.Designer.cs">
+      <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.cs" />
+    <Compile Include="Migrations\202011092037356_AddCacheControlHeaderToPage.Designer.cs">
+      <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202011102025121_Rollup_1110.cs" />
+    <Compile Include="Migrations\202011102025121_Rollup_1110.Designer.cs">
+      <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.cs" />
     <Compile Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.Designer.cs">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
@@ -1531,6 +1559,27 @@
     <EmbeddedResource Include="Migrations\202010131811466_Rollup_1013.resx">
       <DependentUpon>202010131811466_Rollup_1013.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010142325229_AddCheckInManagerApp.resx">
+      <DependentUpon>202010142325229_AddCheckInManagerApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010272130222_Rollup_1027.resx">
+      <DependentUpon>202010272130222_Rollup_1027.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010301403238_AddOfflineAccessClaim.resx">
+      <DependentUpon>202010301403238_AddOfflineAccessClaim.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011051623216_UpdateDocumentType.resx">
+      <DependentUpon>202011051623216_UpdateDocumentType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011052358368_WorkflowActionFormAllowPersonEntry.resx">
+      <DependentUpon>202011052358368_WorkflowActionFormAllowPersonEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011092037356_AddCacheControlHeaderToPage.resx">
+      <DependentUpon>202011092037356_AddCacheControlHeaderToPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011102025121_Rollup_1110.resx">
+      <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 11.0\Version 1.11.0\202006231558281_PrayerRequestWorkflowAction.resx">
       <DependentUpon>202006231558281_PrayerRequestWorkflowAction.cs</DependentUpon>
     </EmbeddedResource>
@@ -2480,6 +2529,9 @@
     </Content>
     <Content Include="Migrations\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202011102025121_Rollup_1110_kpisortcode.sql">
+      <DependentUpon>202011102025121_Rollup_1110.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 11.0\Version 1.11.0\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>

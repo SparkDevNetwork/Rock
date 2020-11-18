@@ -84,6 +84,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the name of the machine.
+        /// </summary>
+        /// <value>
+        /// The name of the machine.
+        /// </value>
+        public string MachineName
+        {
+            get
+            {
+                return System.Environment.MachineName;
+            }
+        }
+
+        /// <summary>
         /// Returns the database properties of the Rock application.
         /// </summary>
         public RockInstanceDatabaseConfiguration Database { get; }

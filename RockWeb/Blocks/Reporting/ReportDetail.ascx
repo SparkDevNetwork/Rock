@@ -88,6 +88,14 @@
                         </div>
                         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
+                            <div class="text-right">
+                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlRunSince" />
+
+                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                            </div>
+
                             <p class="description">
                                 <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
                             </p>
@@ -102,7 +110,7 @@
                                 <div class="pull-right">
                                     <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
-                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>
                             </div>
                         </div>

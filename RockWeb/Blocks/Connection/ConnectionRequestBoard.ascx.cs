@@ -3450,12 +3450,14 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddCampaignRequests_Click( object sender, EventArgs e )
         {
-            var campaignConnectionItems = Rock.Web.SystemSettings.GetValue( CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
-            campaignConnectionItems = campaignConnectionItems.Where( c => c.IsActive ).OrderBy( a => a.Name ).ToList();
-            var rockContext = new RockContext();
+            var campaignConnectionItems = SystemSettings.GetValue( CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
+            GetConnectionOpportunity();
 
-            // limit to campaigns that the current person is a connector in
-            campaignConnectionItems = campaignConnectionItems.Where( a => CampaignConnectionHelper.GetConnectorCampusIds( a, CurrentPerson ).Any() ).ToList();
+            campaignConnectionItems = campaignConnectionItems
+                .Where( a => CampaignConnectionHelper.GetConnectorCampusIds( a, CurrentPerson ).Any()
+                    && a.IsActive && a.OpportunityGuid == _connectionOpportunity.Guid )
+                .OrderBy( a => a.Name )
+                .ToList();
 
             ddlCampaignConnectionItemsMultiple.Items.Clear();
 
@@ -3472,15 +3474,17 @@ namespace RockWeb.Blocks.Connection
 
             nbAddConnectionRequestsMessage.Visible = false;
             nbNumberOfRequests.Visible = true;
+            mdAddCampaignRequests.SaveButtonText = "Assign";
 
             if ( campaignConnectionItems.Count() == 0 )
             {
                 nbAddConnectionRequestsMessage.Text = "There are no campaigns available for you to request connections for.";
-                nbAddConnectionRequestsMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbAddConnectionRequestsMessage.NotificationBoxType = NotificationBoxType.Warning;
                 nbAddConnectionRequestsMessage.Visible = true;
                 ddlCampaignConnectionItemsMultiple.Visible = false;
                 lCampaignConnectionItemSingle.Visible = false;
                 nbNumberOfRequests.Visible = false;
+                mdAddCampaignRequests.SaveButtonText = string.Empty;
             }
             else if ( campaignConnectionItems.Count() == 1 )
             {
@@ -3488,8 +3492,8 @@ namespace RockWeb.Blocks.Connection
                 lCampaignConnectionItemSingle.Visible = true;
                 int pendingCount = campaignConnectionItemsPendingCount.GetValueOrNull( campaignConnectionItem ) ?? 0;
                 lCampaignConnectionItemSingle.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
-
                 ddlCampaignConnectionItemsMultiple.Visible = false;
+                
             }
             else
             {
