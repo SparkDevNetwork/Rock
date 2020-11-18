@@ -363,7 +363,7 @@ namespace Rock.Model
                     break;
 
                 case RegistrationPersonFieldType.Email:
-                    var tbEmail = new EmailBox
+                    var tbEmail = new EmailConfirmBox
                     {
                         ID = "tbEmail",
                         Label = "Email",

@@ -5049,7 +5049,7 @@ namespace RockWeb.Blocks.Event
                     break;
 
                 case RegistrationPersonFieldType.Email:
-                    var tbEmail = phRegistrantControls.FindControl( "tbEmail" ) as EmailBox;
+                    var tbEmail = phRegistrantControls.FindControl( "tbEmail" ) as EmailConfirmBox;
                     string email = tbEmail != null ? tbEmail.Text : null;
                     return string.IsNullOrWhiteSpace( email ) ? null : email;
 

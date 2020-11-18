@@ -29,7 +29,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                        <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" />

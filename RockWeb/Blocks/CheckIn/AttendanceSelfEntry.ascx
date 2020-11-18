@@ -26,7 +26,7 @@
                             <fieldset>
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ValidationGroup="vgPrimary" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ValidationGroup="vgPrimary" />
-                                <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgPrimary" />
+                                <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgPrimary" />
                                 <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" ValidationGroup="vgPrimary" />
                                 <asp:Panel ID="pnlPhone" runat="server" CssClass="margin-b-lg">
                                     <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" ValidationGroup="vgPrimary" />
@@ -55,7 +55,7 @@
                                 <Rock:RockDropDownList ID="ddlRelation" runat="server" Label="Relation" ValidationGroup="vgOther" OnSelectedIndexChanged="ddlRelation_SelectedIndexChanged" AutoPostBack="true" />
                                 <Rock:RockTextBox ID="tbOtherFirstName" runat="server" Label="First Name" Required="true" ValidationGroup="vgOther" />
                                 <Rock:RockTextBox ID="tbOtherLastName" runat="server" Label="Last Name" Required="true" ValidationGroup="vgOther" />
-                                <Rock:EmailBox ID="tbOtherEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgOther" />
+                                <Rock:EmailConfirmBox ID="tbOtherEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgOther" />
                                 <Rock:BirthdayPicker ID="bpOtherBirthDay" runat="server" Label="Birthday" ValidationGroup="vgOther" />
                                 <asp:Panel ID="pnlOtherPhone" runat="server" CssClass="margin-b-lg">
                                     <Rock:PhoneNumberBox ID="pnOtherMobile" runat="server" Label="Mobile Phone" ValidationGroup="vgOther" />

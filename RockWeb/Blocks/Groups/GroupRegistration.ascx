@@ -32,7 +32,7 @@
                             <Rock:RockCheckBox ID="cbSms"  runat="server" Label="&nbsp;" Text="Enable SMS" />
                         </div>
                     </asp:Panel>
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ></Rock:EmailBox>
+                    <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" ></Rock:EmailConfirmBox>
                     <Rock:AddressControl ID="acAddress" runat="server" Label="Address" />
                 </asp:Panel>
 
@@ -47,7 +47,7 @@
                             <Rock:RockCheckBox ID="cbSpouseSms"  runat="server" Label="&nbsp;" Text="Enable SMS" />
                         </div>
                     </div>
-                    <Rock:EmailBox ID="tbSpouseEmail" runat="server" Label="Spouse Email" />
+                    <Rock:EmailConfirmBox ID="tbSpouseEmail" runat="server" Label="Spouse Email" />
                 </asp:Panel>
 
             </div>

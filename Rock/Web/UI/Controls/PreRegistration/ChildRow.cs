@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         private DatePicker _dpBirthdate;
         private GradePicker _ddlGradePicker;
         private PhoneNumberBox _pnbMobile;
-        private EmailBox _ebEmail;
+        private EmailConfirmBox _ebEmail;
         private RockDropDownList _ddlRelationshipType;
         private PlaceHolder _phAttributes;
 
@@ -686,7 +686,7 @@ namespace Rock.Web.UI.Controls
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
             _ddlGradePicker.Label = string.Empty;
             _pnbMobile = new PhoneNumberBox();
-            _ebEmail = new EmailBox();
+            _ebEmail = new EmailConfirmBox();
             _ddlRelationshipType = new RockDropDownList();
             _phAttributes = new PlaceHolder();
             _lbDelete = new LinkButton();

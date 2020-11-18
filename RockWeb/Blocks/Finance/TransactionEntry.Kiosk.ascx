@@ -219,7 +219,7 @@
                         <Rock:RockTextBox ID="tbLastName" Label="Last Name" runat="server" Required="true" />
                         <Rock:PhoneNumberBox ID="pnbHomePhone" Label="Home Phone" runat="server" Required="true" />
                         <Rock:AddressControl ID="acAddress" ShowAddressLine2="false" runat="server" Required="true"/>
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                        <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     </div>
                     <div class="col-md-4">
                         <asp:LinkButton ID="lbRegisterNext" runat="server" OnClick="lbRegisterNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>

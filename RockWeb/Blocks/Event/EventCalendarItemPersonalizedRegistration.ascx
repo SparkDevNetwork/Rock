@@ -67,7 +67,7 @@
                             <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:EmailBox ID="ebEmailReminder" runat="server" Label="Email Reminder Address" />
+                            <Rock:EmailConfirmBox ID="ebEmailReminder" runat="server" Label="Email Reminder Address" />
                         </div>
                     </div>
 

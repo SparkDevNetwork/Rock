@@ -1549,7 +1549,7 @@ ORDER BY [Text]";
             RockDropDownList ddlGender,
             DatePicker dpBirthDate,
             DefinedValuePicker dvpMaritalStatus,
-            EmailBox tbEmail,
+            EmailConfirmBox tbEmail,
             PhoneNumberBox pnMobilePhone,
             DynamicPlaceholder phAttributes )
         {

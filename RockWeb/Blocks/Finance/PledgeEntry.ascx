@@ -20,7 +20,7 @@
 
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                    <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                     <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" MinimumValue="0" Required="true" Help="The total amount that you are pledging. If you intend to give $100 monthly for one year, enter $1,200." />

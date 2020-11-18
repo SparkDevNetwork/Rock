@@ -66,7 +66,7 @@
                                 <Rock:PhoneNumberBox ID="pnMobilePhone1" runat="server" Label="Mobile Phone" />
                             </asp:Panel>
                             <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlEmail1">
-                                <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
+                                <Rock:EmailConfirmBox ID="tbEmail1" runat="server" Label="Email" />
                             </asp:Panel>
                             <Rock:DynamicPlaceholder ID="phAttributes1" runat="server" />
                         </div>
@@ -108,7 +108,7 @@
                                     <Rock:PhoneNumberBox ID="pnMobilePhone2" runat="server" Label="Mobile Phone" />
                                 </asp:Panel>
                                 <asp:Panel CssClass="col-sm-6 js-Adult2Required" runat="server" ID="pnlEmail2">
-                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
+                                    <Rock:EmailConfirmBox ID="tbEmail2" runat="server" Label="Email" />
                                 </asp:Panel>
                                 <Rock:DynamicPlaceholder ID="phAttributes2" runat="server" />
                             </div>

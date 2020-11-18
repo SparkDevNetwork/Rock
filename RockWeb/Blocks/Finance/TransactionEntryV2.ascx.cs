@@ -2076,7 +2076,7 @@ mission. We are so grateful for your commitment.</p>
             var promptForEmail = this.GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
             var promptForPhone = this.GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
             PhoneNumberBox pnbPhone;
-            EmailBox tbEmail;
+            EmailConfirmBox tbEmail;
             int numberTypeId;
             Guid locationTypeGuid;
             AddressControl acAddress;

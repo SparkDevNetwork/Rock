@@ -89,7 +89,7 @@
                     <legend>Your Information</legend>
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                    <Rock:EmailConfirmBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender">
                         <asp:ListItem Text="" Value="U"></asp:ListItem>
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>
