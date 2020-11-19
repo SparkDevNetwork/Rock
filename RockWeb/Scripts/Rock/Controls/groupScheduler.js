@@ -775,7 +775,7 @@
                         scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonPending';
                     }
                     else if ($(this).hasClass('js-resendconfirmation')) {
-                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonSendConfirmationEmail';
+                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonSendConfirmationCommunication';
                     }
                     else if ($(this).hasClass('js-remove')) {
                         var $occurrence = $resource.closest('.js-scheduled-occurrence');
