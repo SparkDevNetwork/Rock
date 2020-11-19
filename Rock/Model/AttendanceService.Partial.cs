@@ -678,6 +678,8 @@ namespace Rock.Model
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendScheduleConfirmationCommunication instead." )]
+        [RockObsolete( "1.13" )]
         public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
         {
             int emailsSent = 0;
@@ -690,11 +692,14 @@ namespace Rock.Model
                 && a.PersonAlias.Person.IsEmailActive );
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
-            {
-                ScheduleConfirmationSystemCommunicationId = s.Key.Value,
-                Attendances = s.ToList()
-            } ).ToList();
+            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList
+                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId )
+                .Where( a => a.Key.HasValue )
+                .Select( s => new
+                {
+                    ScheduleConfirmationSystemCommunicationId = s.Key.Value,
+                    Attendances = s.ToList()
+                } ).ToList();
 
             var rockContext = this.Context as RockContext;
 
@@ -763,15 +768,20 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendScheduleReminderSystemCommunication instead." )]
+        [RockObsolete( "1.13" )]
         public int SendScheduleReminderSystemEmails( IQueryable<Attendance> sendReminderAttendancesQuery )
         {
             int emailsSent = 0;
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
-            {
-                ScheduleReminderSystemCommunicationId = s.Key.Value,
-                Attendances = s.ToList()
-            } ).ToList();
+            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList
+                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId )
+                .Where( a => a.Key.HasValue ).Select( s => new
+                {
+                    ScheduleReminderSystemCommunicationId = s.Key.Value,
+                    Attendances = s.ToList()
+                } )
+                .ToList();
 
             var rockContext = this.Context as RockContext;
 
@@ -813,6 +823,201 @@ namespace Rock.Model
             }
 
             return emailsSent;
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication.
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <returns></returns>
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery )
+        {
+            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
+                .Where( a =>
+                    ( a.PersonAlias.Person.Email != null
+                    && a.PersonAlias.Person.Email != string.Empty
+                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                    && a.PersonAlias.Person.IsEmailActive )
+                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
+                .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
+
+            var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
+
+            var sendConfirmationIndividuals = sendConfirmationAttendancesQueryList
+                .GroupBy( a => new
+                {
+                    a.PersonAlias.Person,
+                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
+                    a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                } )
+                .Select( s => new SendSystemCommunicationIndividual
+                {
+                    SystemCommunicationId = s.Key.ScheduleConfirmationSystemCommunicationId.Value,
+                    Individual = s.Key.Person,
+                    GroupCommunicationPreference = s.Key.CommunicationPreference,
+                    Attendances = s.ToList()
+                } );
+
+            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true );
+
+            // group messages that are exactly the same and put a count of those in the message
+            sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( sendMessageResults.Exceptions.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmations", sendMessageResults.Exceptions ) );
+            }
+
+            return sendMessageResults;
+        }
+
+        /// <summary>
+        /// Sends the schedule reminder system communication.
+        /// </summary>
+        /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
+        /// <returns></returns>
+        public SendMessageResult SendScheduleReminderSystemCommunication( IQueryable<Attendance> sendReminderAttendancesQuery )
+        {
+            sendReminderAttendancesQuery = sendReminderAttendancesQuery
+                .Where( a =>
+                    ( a.PersonAlias.Person.Email != null
+                    && a.PersonAlias.Person.Email != string.Empty
+                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                    && a.PersonAlias.Person.IsEmailActive )
+                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
+                .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId.HasValue );
+
+            var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
+            var sendReminderIndividuals = sendReminderAttendancesQueryList
+                .GroupBy( a => new
+                {
+                    a.PersonAlias.Person,
+                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
+                    a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                } )
+                .Select( s => new SendSystemCommunicationIndividual
+                {
+                    SystemCommunicationId = s.Key.ScheduleReminderSystemCommunicationId.Value,
+                    Individual = s.Key.Person,
+                    GroupCommunicationPreference = s.Key.CommunicationPreference,
+                    Attendances = s.ToList()
+                } );
+
+            var sendMessageResults = SendSystemCommunications( sendReminderIndividuals, ( attendance ) => attendance.ScheduleReminderSent = true );
+
+            // group messages that are exactly the same and put a count of those in the message
+            sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( sendMessageResults.Exceptions.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule reminders.", sendMessageResults.Exceptions ) );
+            }
+
+            return sendMessageResults;
+        }
+
+        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord )
+        {
+            var communicationMap = new Dictionary<int, SystemCommunication>();
+            var rockContext = this.Context as RockContext;
+            var sendMessageResults = new SendMessageResult();
+
+            foreach ( var individualNotification in sendSystemCommunicationIndividuals )
+            {
+                SystemCommunication communicationMessage = null;
+                if ( !communicationMap.TryGetValue( individualNotification.SystemCommunicationId, out communicationMessage ) )
+                {
+                    var scheduleConfirmationSystemCommunicaiton = new SystemCommunicationService( rockContext )
+                        .GetNoTracking( individualNotification.SystemCommunicationId );
+                    communicationMessage = scheduleConfirmationSystemCommunicaiton;
+                    communicationMap.Add( individualNotification.SystemCommunicationId, communicationMessage );
+                }
+
+                var recipient = individualNotification.Individual;
+                var attendances = individualNotification.Attendances;
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
+                mergeFields.Add( "Attendances", attendances );
+
+                var forceCommunicationType = CommunicationType.RecipientPreference;
+                var validSmsTemplateExists = communicationMessage.SMSMessage.IsNotNullOrWhiteSpace() && communicationMessage.SMSFromDefinedValueId != null;
+                var individualHasValidSmsNumber = recipient.PhoneNumbers.Any( ph => ph.IsMessagingEnabled );
+                if ( !validSmsTemplateExists || !individualHasValidSmsNumber )
+                {
+                    forceCommunicationType = CommunicationType.Email;
+                }
+
+                var mediumType = Communication.DetermineMediumEntityTypeId(
+                                   ( int ) CommunicationType.Email,
+                                   ( int ) CommunicationType.SMS,
+                                   ( int ) CommunicationType.PushNotification,
+                                   forceCommunicationType,
+                                   individualNotification.GroupCommunicationPreference,
+                                   individualNotification.Individual.CommunicationPreference );
+                try
+                {
+                    var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
+
+                    sendMessageResults.Errors.AddRange( sendIndividualMessageResult.Errors );
+                    sendMessageResults.Warnings.AddRange( sendIndividualMessageResult.Warnings );
+
+                    if ( sendIndividualMessageResult.MessagesSent > 0 )
+                    {
+                        sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
+                        foreach ( var attendance in attendances )
+                        {
+                            updateAttendanceRecord( attendance );
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { individualNotification.Individual }", ex );
+                    sendMessageResults.Errors.Add( emailException.Message );
+                    sendMessageResults.Exceptions.Add( emailException );
+                }
+            }
+
+            return sendMessageResults;
+        }
+
+        /// <summary>
+        /// This class is used by the send schedule communication functions so the data can be passed to a single shared method.
+        /// </summary>
+        private class SendSystemCommunicationIndividual
+        {
+            /// <summary>
+            /// Gets or sets the individual.
+            /// </summary>
+            /// <value>
+            /// The individual.
+            /// </value>
+            public Person Individual { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group communication preference.
+            /// </summary>
+            /// <value>
+            /// The group communication preference.
+            /// </value>
+            public CommunicationType GroupCommunicationPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets the system communication identifier.
+            /// </summary>
+            /// <value>
+            /// The system communication identifier.
+            /// </value>
+            public int SystemCommunicationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attendances.
+            /// </summary>
+            /// <value>
+            /// The attendances.
+            /// </value>
+            public List<Attendance> Attendances { get; set; }
         }
 
         #region GroupScheduling Related
