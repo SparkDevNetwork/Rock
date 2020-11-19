@@ -59,6 +59,15 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         {
             base.OnInit( e );
 
+            var contextEntity = this.ContextEntity();
+            if ( contextEntity != null )
+            {
+                if ( contextEntity is Person )
+                {
+                    _person = contextEntity as Person;
+                }
+            }
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -96,14 +105,6 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            var contextEntity = this.ContextEntity();
-            if ( contextEntity != null )
-            {
-                if ( contextEntity is Person )
-                {
-                    _person = contextEntity as Person;
-                }
-            }
 
             if ( !Page.IsPostBack )
             {
