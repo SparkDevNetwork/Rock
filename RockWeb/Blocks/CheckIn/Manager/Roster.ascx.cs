@@ -541,7 +541,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 attendees = GetAttendees( rockContext );
             }
 
-            ToggleColumnVisibility();
+            bool anyRoomHasAllowCheckout = attendees.Any( a => a.RoomHasAllowCheckout );
+
+            ToggleColumnVisibility( anyRoomHasAllowCheckout );
 
             var attendeesSorted = attendees.OrderByDescending( a => a.Status == RosterAttendeeStatus.Present ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
 
@@ -570,6 +572,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // Get all Attendance records for the current day and location
             var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
                 a.StartDateTime >= startDateTime
+                && a.DidAttend == true
                 && a.StartDateTime <= currentDateTime
                 && a.Occurrence.GroupId.HasValue
                 && a.PersonAliasId.HasValue
@@ -604,7 +607,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 attendanceQuery = attendanceQuery.Where( a => a.PresentDateTime.HasValue && !a.EndDateTime.HasValue );
             }
 
-            var attendanceList = attendanceQuery
+            List<Attendance> attendanceList = attendanceQuery
                 .Include( a => a.AttendanceCode )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Occurrence.Schedule )
@@ -942,7 +945,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <summary>
         /// Toggles the column visibility within the gAttendees grid based on the current filter
         /// </summary>
-        private void ToggleColumnVisibility()
+        /// <param name="anyRoomHasAllowCheckout">if set to <c>true</c> [any room has allow checkout].</param>
+        private void ToggleColumnVisibility(bool anyRoomHasAllowCheckout )
         {
             // StatusFilter.All:
             var mobileIconField = gAttendees.ColumnsOfType<RockLiteralField>().First( c => c.ID == "lMobileIcon" );
@@ -971,9 +975,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // The actual button's visibility will be determined per row in the btnPresent_OnDatabound event
             btnPresentField.Visible = CurrentStatusFilter == RosterStatusFilter.CheckedIn;
 
-            // only show these action button's Column if they are on the Present Tab
-            // The actual button's visibility will be determined per row in the btnCheckout_OnDatabound event
-            btnCheckOutField.Visible = CurrentStatusFilter == RosterStatusFilter.Present;
+            if ( anyRoomHasAllowCheckout )
+            {
+                // only show these action button's Column if they are on the Present Tab
+                // The actual button's visibility will be determined per row in the btnCheckout_OnDatabound event
+                btnCheckOutField.Visible = CurrentStatusFilter == RosterStatusFilter.Present;
+            }
+            else
+            {
+                // if none of the rooms of the displayed attendees has AllowCheckout, don't show the column
+                btnCheckOutField.Visible = false;
+            }
         }
 
         #endregion Internal Methods
