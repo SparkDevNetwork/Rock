@@ -32,6 +32,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using com.bemaservices.HrManagement.Model;
+using Rock.Security;
 
 namespace RockWeb.Plugins.com_bemaservices.HrManagement
 {
@@ -67,9 +68,10 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             gfPtoRequestFilter.DisplayFilterValue += gfPtoRequestFilter_DisplayFilterValue;
 
             gPtoRequestList.DataKeyNames = new string[] { "Id" };
-            gPtoRequestList.Actions.ShowAdd = true;
+            gPtoRequestList.Actions.ShowAdd = GetEditRights();
+            gPtoRequestList.RowClickEnabled = GetEditRights();
             gPtoRequestList.Actions.AddClick += gPtoRequestList_Add;
-            gPtoRequestList.IsDeleteEnabled = GetViewRights();
+            gPtoRequestList.IsDeleteEnabled = GetEditRights();
             gPtoRequestList.ShowConfirmDeleteDialog = false;
 
             AddDynamicControls();
@@ -119,9 +121,41 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
             }
         }
 
+        private bool GetEditRights()
+        {
+            var canEdit = this.UserCanEdit;
+
+            if ( _person != null )
+            {
+                if ( CurrentPerson.Id == _person.Id )
+                {
+                    canEdit = true;
+                }
+
+                if ( canEdit == false )
+                {
+                    _person.LoadAttributes();
+                    var supervisorAliasGuid = _person.GetAttributeValue( "Supervisor" ).AsGuidOrNull();
+                    if ( supervisorAliasGuid != null )
+                    {
+                        var personAlias = new PersonAliasService( new RockContext() ).Get( supervisorAliasGuid.Value );
+                        if ( personAlias != null )
+                        {
+                            if ( personAlias.PersonId == CurrentPerson.Id )
+                            {
+                                canEdit = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return canEdit;
+        }
+
         private bool GetViewRights()
         {
-            var canView = this.UserCanEdit;
+            var canView = this.IsUserAuthorized( Authorization.VIEW );
 
             if ( _person != null )
             {
@@ -270,13 +304,16 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
 
         protected void gPtoRequestList_Delete( object sender, RowEventArgs e )
         {
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
-            var ptoRequest = new PtoRequestService( new RockContext() ).Get( e.RowKeyId );
-            if ( workflowType != null && ptoRequest != null )
+            if ( GetEditRights() )
             {
-                var url = string.Format( "/WorkflowEntry/{0}?PTORequest={1}&CancelRequest=Yes", workflowType.Id, ptoRequest.Guid.ToString() );
-                Response.Redirect( url, false );
-                Context.ApplicationInstance.CompleteRequest();
+                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
+                var ptoRequest = new PtoRequestService( new RockContext() ).Get( e.RowKeyId );
+                if ( workflowType != null && ptoRequest != null )
+                {
+                    var url = string.Format( "/WorkflowEntry/{0}?PTORequest={1}&CancelRequest=Yes", workflowType.Id, ptoRequest.Guid.ToString() );
+                    Response.Redirect( url, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
         }
 
@@ -287,13 +324,16 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPtoRequestList_Edit( object sender, RowEventArgs e )
         {
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
-            var ptoRequest = new PtoRequestService( new RockContext() ).Get( e.RowKeyId );
-            if ( workflowType != null && ptoRequest != null )
+            if ( GetEditRights() )
             {
-                var url = string.Format( "/WorkflowEntry/{0}?PTORequest={1}", workflowType.Id, ptoRequest.Guid.ToString() );
-                Response.Redirect( url, false );
-                Context.ApplicationInstance.CompleteRequest();
+                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
+                var ptoRequest = new PtoRequestService( new RockContext() ).Get( e.RowKeyId );
+                if ( workflowType != null && ptoRequest != null )
+                {
+                    var url = string.Format( "/WorkflowEntry/{0}?PTORequest={1}", workflowType.Id, ptoRequest.Guid.ToString() );
+                    Response.Redirect( url, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
         }
 
@@ -304,17 +344,20 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gPtoRequestList_Add( object sender, EventArgs e )
         {
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
-            if ( workflowType != null )
+            if ( GetEditRights() )
             {
-                var url = string.Format( "/WorkflowEntry/{0}", workflowType.Id );
-                if ( _person != null )
+                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( "PTORequestWorkflow" ).AsGuid() );
+                if ( workflowType != null )
                 {
-                    url += string.Format( "?Person={0}", _person.PrimaryAlias.Guid );
-                }
+                    var url = string.Format( "/WorkflowEntry/{0}", workflowType.Id );
+                    if ( _person != null )
+                    {
+                        url += string.Format( "?Person={0}", _person.PrimaryAlias.Guid );
+                    }
 
-                Response.Redirect( url, false );
-                Context.ApplicationInstance.CompleteRequest();
+                    Response.Redirect( url, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
         }
 
@@ -340,7 +383,7 @@ namespace RockWeb.Plugins.com_bemaservices.HrManagement
                 gPtoRequestList.Columns.Remove( deleteCol );
             }
 
-            if ( GetViewRights() )
+            if ( GetEditRights() )
             {
                 // Add delete column
                 var deleteField = new DeleteField();
