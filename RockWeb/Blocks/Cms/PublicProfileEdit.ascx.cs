@@ -738,13 +738,17 @@ namespace RockWeb.Blocks.Cms
             var groupId = hfGroupId.Value.AsIntegerOrNull();
             if ( !groupId.HasValue )
             {
-                // invalid situation/tampering; return and report nothing.
+                // GroupId wasn't specified due to invalid situation
+                // Return and report nothing.
+                return;
             }
 
             var group = new GroupService( rockContext ).Get( groupId.Value );
             if ( group == null )
             {
-                // invalid situation/tampering; return and report nothing.
+                // A valid group wasn't specified.
+                // Return and report nothing.
+                return;
             }
 
             // invalid situation; return and report nothing.
