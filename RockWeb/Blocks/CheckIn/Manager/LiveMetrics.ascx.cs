@@ -415,11 +415,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 mobileIcon = string.Format( mobileIcon, "minus" );
                 desktopStatus = "Checked-out";
             }
-            else if ( NavData.EnablePresence && person.PresentDateTime.HasValue )
+            else if ( person.PresentDateTime.HasValue )
             {
                 statusClass = "success";
                 mobileIcon = string.Format( mobileIcon, "check" );
-                desktopStatus = "Present";
+                if ( NavData.EnablePresence )
+                {
+                    desktopStatus = "Present";
+                }
+                else
+                {
+                    desktopStatus = "Checked-in";
+                }
             }
             else
             {
@@ -727,7 +734,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 // Get the attendance counts
                 var dayStart = RockDateTime.Today;
-                var now = GetCampusTime();
+                var currentCampusDateTime = GetCampusTime();
 
                 groupIds = NavData.Groups.Select( g => g.Id ).ToList();
 
@@ -750,8 +757,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.Occurrence.ScheduleId.HasValue &&
                         a.Occurrence.GroupId.HasValue &&
                         a.Occurrence.LocationId.HasValue &&
-                        a.StartDateTime > dayStart &&
-                        a.StartDateTime < now &&
+                        a.StartDateTime >= dayStart &&
+                        a.StartDateTime <= currentCampusDateTime &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         checkinAreaGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
@@ -791,19 +798,36 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     List<int> checkedInPeople = new List<int>();
                     List<int> checkedOutPeople = new List<int>();
 
-                    if ( NavData.EnablePresence )
+                    List<Attendance> groupAttendanceList = groupLoc.Select( gl => gl ).Where( a => a.PersonAliasId.HasValue ).ToList();
+                    foreach ( var attendance in groupAttendanceList )
                     {
-                        pendingPeople = groupLoc.Where( a => a.PresentDateTime.HasValue && !a.EndDateTime.HasValue ).Select( a => a.PersonAlias.PersonId ).ToList();
-                        checkedInPeople = groupLoc.Where( a => !a.PresentDateTime.HasValue ).Select( a => a.PersonAlias.PersonId ).ToList();
-                    }
-                    else
-                    {
-                        checkedInPeople = groupLoc.Select( a => a.PersonAlias.PersonId ).ToList();
-                    }
+                        var personId = attendance.PersonAlias.PersonId;
 
-                    if ( NavData.AllowCheckout )
-                    {
-                        checkedOutPeople = groupLoc.Where( a => a.EndDateTime.HasValue ).Select( a => a.PersonAlias.PersonId ).ToList();
+                        if ( attendance.EndDateTime.HasValue )
+                        {
+                            // if the Attendance has an EndDateTime, the person has checked out
+                            checkedOutPeople.Add( personId );
+                        }
+                        else if ( attendance.PresentDateTime.HasValue )
+                        {
+                            // if the attendance has PresentDateTime, they are checked in (which is called present when Presence is Enabled)
+                            checkedInPeople.Add( personId );
+                        }
+                        else
+                        {
+                            // if the attendance doesn't have PresentDateTime (which can only happen if Presence is Enabled)
+
+                            if ( NavData.EnablePresence )
+                            {
+                                // they have "checked-in" but haven't been marked present
+                                pendingPeople.Add( personId );
+                            }
+                            else
+                            {
+                                // Shouldn't happen, but if EnablePresence is false, AND PresentDatetime is null, consider them checked-in (not pending)
+                                checkedInPeople.Add( personId );
+                            }
+                        }
                     }
 
                     AddPersonCountByGroup( groupLoc.Key.GroupId, pendingPeople, checkedInPeople, checkedOutPeople );
@@ -899,7 +923,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( navLocation != null )
             {
                 navLocation.CheckedInPeople = navLocation.CheckedInPeople.Union( checkedInPeople ).ToList();
-                navLocation.CheckedOutPeople = navLocation.PendingPeople.Union( checkedOutPeople ).ToList();
+                navLocation.CheckedOutPeople = navLocation.CheckedOutPeople.Union( checkedOutPeople ).ToList();
                 navLocation.PendingPeople = navLocation.PendingPeople.Union( pendingPeople ).ToList();
 
                 if ( navLocation.ParentId.HasValue )
@@ -1273,12 +1297,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         // Get all Attendance records for the current day and location, limited to groups within the selected check-in area
                         var dayStart = RockDateTime.Today.AddDays( -1 );
+                        var currentCampusDateTime = GetCampusTime();
+
                         var attendees = new AttendanceService( rockContext )
                             .Queryable( "Occurrence.Group,PersonAlias.Person,Occurrence.Schedule,AttendanceCode" )
                             .AsNoTracking()
                             .Where( a =>
                                 a.PersonAliasId.HasValue &&
                                 a.StartDateTime > dayStart &&
+                                a.StartDateTime < currentCampusDateTime &&
                                 a.Occurrence.LocationId.HasValue &&
                                 a.Occurrence.LocationId == locationItem.Id &&
                                 a.Occurrence.GroupId.HasValue &&
