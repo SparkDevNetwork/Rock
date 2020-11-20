@@ -418,7 +418,7 @@
                                                     </asp:Panel>
                                                     <div class="board-cards">
                                                         <asp:Panel ID="pnlGroupHasSchedulingDisabled" runat="server">
-                                                            <span class="group-scheduling-disabled-label">Scheduling Not Enabled</span>
+                                                            <span class="group-scheduling-disabled-label d-block small text-center text-muted">Scheduling Not Enabled</span>
                                                         </asp:Panel>
                                                     <asp:Repeater ID="rptAttendanceOccurrences" runat="server" OnItemDataBound="rptAttendanceOccurrences_ItemDataBound">
                                                         <ItemTemplate>
