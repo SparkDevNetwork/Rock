@@ -154,6 +154,7 @@
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Model\ConnectionRequestServiceTests.cs" />
     <Compile Include="Model\CommunicationServiceTests.cs" />
+    <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />
@@ -215,6 +216,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="app.ConnectionStrings.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
