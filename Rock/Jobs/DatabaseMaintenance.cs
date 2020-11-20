@@ -345,14 +345,18 @@ SELECT
                 try
                 {
                     DbService.ExecuteCommand( rebuildSQL, System.Data.CommandType.Text, null, commandTimeoutSeconds );
-
-                    stopwatch.Stop();
-                    databaseMaintenanceTaskResult.Elapsed = stopwatch.Elapsed;
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( new Exception( $"Error rebuilding index [{indexInfo.TableName}].[{indexInfo.IndexName}]", ex ) );
+                    stopwatch.Stop();
+
+                    ExceptionLogService.LogException( new Exception( $"Error rebuilding index [{indexInfo.TableName}].[{indexInfo.IndexName}] with Command: {rebuildSQL}. Elapsed time: {stopwatch.Elapsed}", ex ) );
                     databaseMaintenanceTaskResult.Exception = ex;
+                }
+                finally
+                {
+                    stopwatch.Stop();
+                    databaseMaintenanceTaskResult.Elapsed = stopwatch.Elapsed;
                 }
             }
         }
