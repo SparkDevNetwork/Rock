@@ -104,6 +104,7 @@ namespace RockWeb.Blocks.CheckIn
                                         var now = attendance.Campus != null ? attendance.Campus.CurrentDateTime : RockDateTime.Now;
 
                                         attendance.EndDateTime = now;
+                                        attendance.CheckedOutByPersonAliasId = GetCheckoutPersonAliasId();
 
                                         if ( attendance.Occurrence.Group != null &&
                                             attendance.Occurrence.Location != null &&
@@ -178,7 +179,7 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
 
         // setup deviceready event to wait for cordova
-	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {{
+	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/) && typeof window.RockCheckinNative === 'undefined') {{
             document.addEventListener('deviceready', onDeviceReady, false);
         }} else {{
             $( document ).ready(function() {{
@@ -198,10 +199,6 @@ namespace RockWeb.Blocks.CheckIn
             }}
 		}}
 		
-		function alertDismissed() {{
-		    // do something
-		}}
-		
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
             	JSON.stringify(labelData), 
@@ -213,17 +210,41 @@ namespace RockWeb.Blocks.CheckIn
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
-                    navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
-                        alertDismissed,         // callback
-                        'Error',            // title
-                        'Ok'                  // buttonName
-                    );
+                    alert('An error occurred while printing the labels. ' + error[0]);
 			    }}
             );
 	    }}
 ", jsonObject );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
+        }
+
+        private int? GetCheckoutPersonAliasId()
+        {
+            if ( CurrentCheckInState.CheckIn.CheckedInByPersonAliasId.HasValue )
+            {
+                return CurrentCheckInState.CheckIn.CheckedInByPersonAliasId;
+            }
+
+            int? personAliasId = null;
+            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
+            {
+                var personAliasGuid = Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
+                if ( personAliasGuid.HasValue )
+                {
+                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
+                    if ( personAlias != null )
+                    {
+                        personAliasId = personAlias.Id;
+                    }
+                }
+            }
+
+            if ( !personAliasId.HasValue )
+            {
+                personAliasId = CurrentPersonAliasId;
+            }
+
+            return personAliasId;
         }
 
     }

@@ -24,10 +24,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
+    /// Data Migrations for v7.4
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Data Migrations for v7.4" )]
+    [DisplayName( "Rock Update Helper v7.4" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v74. After all the operations are done, this job will delete itself." )]
     public class PostV74DataMigrations : IJob
     {

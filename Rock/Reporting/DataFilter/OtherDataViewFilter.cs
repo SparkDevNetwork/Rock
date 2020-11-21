@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities using another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
-    public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides
+    public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides, IRelatedChildDataView
     {
         #region Properties
 
@@ -112,20 +112,26 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string s = "Another Data View";
 
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            if ( selectionConfig.DataViewId.HasValue )
+            int? dataviewId = selectionConfig.DataViewId;
+            if ( dataviewId.HasValue && dataviewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( selectionConfig.DataViewId.Value );
+                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataviewId.Value );
                 if ( dataView != null )
                 {
-                    return string.Format( "Included in '{0}' Data View", dataView.Name );
+                    return $"Included in '{dataView.Name}' Data View";
+                }
+                else
+                {
+                    // a DataView id was specified, but we couldn't find it. So we have a problem.
+                    return $"#DataView not found for DataViewId: {dataviewId}#";
                 }
             }
 
-            return s;
+            // no dataview was specified, so let's show...
+            return "Another Data View";
         }
 
         /// <summary>
@@ -163,7 +169,7 @@ namespace Rock.Reporting.DataFilter
             // if selecting another dataview, default the cbUsePersisted to True
             Control control = sender as Control;
             FilterField filterField = control.FirstParentControlOfType<FilterField>();
-            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.CssClass.Contains( "js-usepersisted" ) ).FirstOrDefault();
+            var cbUsePersisted = filterField?.ControlsOfTypeRecursive<RockCheckBox>().Where( a => a.HasCssClass( "js-usepersisted" ) ).FirstOrDefault();
             if ( cbUsePersisted != null )
             {
                 cbUsePersisted.Checked = true;
@@ -299,7 +305,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         private DataView GetSelectedDataView( SelectionConfig selectionConfig )
         {
-            if ( selectionConfig.DataViewId.HasValue )
+            if ( selectionConfig.DataViewId.HasValue && selectionConfig.DataViewId > 0 )
             {
                 var dataView = new DataViewService( new RockContext() ).Get( selectionConfig.DataViewId.Value );
                 return dataView;
@@ -324,6 +330,26 @@ namespace Rock.Reporting.DataFilter
             return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
         }
 
+        /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId( Control[] controls )
+        {
+            if ( controls == null )
+            {
+                return null;
+            }
+
+            var ddlDataView = ( DataViewItemPicker ) controls[0];
+            if ( ddlDataView == null )
+            {
+                return null;
+            }
+
+            return ddlDataView.SelectedValueAsId();
+        }
         #endregion
 
         #region IDataFilterWithOverrides
@@ -344,68 +370,35 @@ namespace Rock.Reporting.DataFilter
 
             var dataView = this.GetSelectedDataView( selectionConfig );
 
+            if ( dataView == null )
+            {
+                if ( selectionConfig.DataViewId.HasValue && selectionConfig.DataViewId > 0 )
+                {
+                    // if there is DataViewId but it isn't in the database, the DataView might have been deleted.  If so, this could return unexpected results.
+                    throw new RockDataViewFilterExpressionException( $"DataViewFilter unable to determine DataView for DataViewId {selectionConfig.DataViewId}" );
+                }
+            }
+
             if ( dataView != null && dataView.DataViewFilter != null )
             {
-                
                 // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
-                if ( !IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
+                if ( DataViewService.IsViewInFilter( dataView, dataView.DataViewFilter ) )
                 {
-                    var errorMessages = new List<string>();
-                    if ( selectionConfig.UsePersisted == false )
-                    {
-                        dataViewFilterOverrides?.IgnoreDataViewPersistedValues.Add( dataView.Id );
-                    }
-
-                    Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides, out errorMessages );
-                    if ( errorMessages.Any() )
-                    {
-                        throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-                    }
-
-                    return expression;
+                    throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection( entityType, selection ) } data filter." );
                 }
+
+                if ( selectionConfig.UsePersisted == false )
+                {
+                    dataViewFilterOverrides?.IgnoreDataViewPersistedValues.Add( dataView.Id );
+                }
+
+                Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides );
+                return expression;
             }
 
             return null;
         }
 
         #endregion IDataFilterWithOverrides
-
-        #region Private Methods
-
-        /// <summary>
-        /// Determines whether [is view in filter] [the specified data view id].
-        /// </summary>
-        /// <param name="dataViewId">The data view id.</param>
-        /// <param name="filter">The filter.</param>
-        /// <returns>
-        ///   <c>true</c> if [is view in filter] [the specified data view id]; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
-        {
-            if ( filter.EntityTypeId == EntityTypeCache.Get( this.GetType() ).Id )
-            {
-                int? filterDataViewId = filter.Selection.AsIntegerOrNull();
-                if ( filterDataViewId.HasValue )
-                {
-                    if ( filterDataViewId == dataViewId )
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            foreach ( var childFilter in filter.ChildFilters )
-            {
-                if ( IsViewInFilter( dataViewId, childFilter ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
     }
 }

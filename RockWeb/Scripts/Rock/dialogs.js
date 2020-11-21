@@ -4,7 +4,7 @@
     Rock.dialogs = (function () {
         var _dialogs = {},
             exports = {
-                // Presents a bootstrap style alert box with the specified message 
+                // Presents a bootstrap style alert box with the specified message
                 // then executes the callback function(result)
                 alert: function (msg) {
                     bootbox.dialog({
@@ -18,7 +18,7 @@
                     });
                 },
 
-                // Presents a bootstrap style alert box with the specified message 
+                // Presents a bootstrap style alert box with the specified message
                 // then executes the callback function(result)
                 confirm: function (msg, callback) {
                     bootbox.dialog({
@@ -33,7 +33,7 @@
                             },
                             cancel: {
                                 label: 'Cancel',
-                                className: 'btn-secondary',
+                                className: 'btn-default',
                                 callback: function () {
                                     callback(false);
                                 }
@@ -63,13 +63,13 @@
                             },
                             cancel: {
                                 label: 'Cancel',
-                                className: 'btn-secondary'
+                                className: 'btn-default'
                             }
                         }
                     });
                 },
-                
-                // Presents a bootstrap style alert box with a 'Are you sure you want to delete this ...' message 
+
+                // Presents a bootstrap style alert box with a 'Are you sure you want to delete this ...' message
                 // Returns true if the user selects OK
                 confirmDelete: function (e, nameText, additionalMsg)
                 {

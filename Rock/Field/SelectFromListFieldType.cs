@@ -55,7 +55,7 @@ namespace Rock.Field.Types
             List<Control> controls = base.ConfigurationControls();
 
             var tbRepeatColumns = new NumberBox();
-            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Label = "Number of Columns";
             tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
             tbRepeatColumns.MinimumValue = "0";
             tbRepeatColumns.AutoPostBack = true;
@@ -75,7 +75,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
             string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null && controls.Count > 0 )
             {
@@ -116,12 +116,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if (value == null)
+            if ( value == null )
             {
                 return string.Empty;
             }
             var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-            return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( ", " );
+            return this.GetListSource( configurationValues ).Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( ", " );
         }
 
         #endregion
@@ -134,7 +134,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The list source.
         /// </value>
-        internal abstract Dictionary<string, string> ListSource { get; }
+        internal abstract Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -149,14 +149,17 @@ namespace Rock.Field.Types
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
-            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            // Fixed bug preventing what was is stated in the 'Columns' help text: "If blank or 0 then 4 columns..."
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) && configurationValues[REPEAT_COLUMNS].Value.AsInteger() != 0 )
             {
                 editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
             }
 
-            if ( ListSource.Any() )
+            var listSource = GetListSource( configurationValues );
+
+            if ( listSource.Any() )
             {
-                foreach ( var item in ListSource )
+                foreach ( var item in listSource )
                 {
                     ListItem listItem = new ListItem( item.Value, item.Key );
                     editControl.Items.Add( listItem );
@@ -182,7 +185,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is RockCheckBoxList )
             {
-                RockCheckBoxList cbl = (RockCheckBoxList)control;
+                RockCheckBoxList cbl = ( RockCheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                     if ( li.Selected )
                         values.Add( li.Value );
@@ -203,11 +206,11 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 List<string> values = new List<string>();
-                values.AddRange( value.Split( ',' ) );
+                values.AddRange( value.SplitDelimitedValues() );
 
                 if ( control != null && control is RockCheckBoxList )
                 {
-                    RockCheckBoxList cbl = (RockCheckBoxList)control;
+                    RockCheckBoxList cbl = ( RockCheckBoxList ) control;
                     foreach ( ListItem li in cbl.Items )
                         li.Selected = values.Contains( li.Value, StringComparer.OrdinalIgnoreCase );
                 }
@@ -251,9 +254,11 @@ namespace Rock.Field.Types
                 ddlList.Items.Add( new ListItem() );
             }
 
-            if ( ListSource.Any() )
+            var listSource = GetListSource( configurationValues );
+
+            if ( listSource.Any() )
             {
-                foreach ( var item in ListSource )
+                foreach ( var item in listSource )
                 {
                     ListItem listItem = new ListItem( item.Value, item.Key );
                     ddlList.Items.Add( listItem );
@@ -275,7 +280,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( ( RockDropDownList ) control ).SelectedValue;
             }
 
             return string.Empty;
@@ -291,7 +296,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                ( (RockDropDownList)control ).SetValue( value );
+                ( ( RockDropDownList ) control ).SetValue( value );
             }
         }
 
@@ -304,11 +309,13 @@ namespace Rock.Field.Types
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var values = new List<string>();
+            var listSource = GetListSource( configurationValues );
+
             foreach ( string key in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                if ( ListSource.ContainsKey(key))
+                if ( listSource.ContainsKey( key ) )
                 {
-                    values.Add( ListSource[key] );
+                    values.Add( listSource[key] );
                 }
             }
 

@@ -34,48 +34,79 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows a list of all person devices." )]
 
-    [LinkedPage( "Interactions Page", "The interactions associated with a specific personal device." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
-<div class=""panel panel-block"">       
+    [ContextAware( typeof( Person ) )]
+
+    [LinkedPage(
+        "Interactions Page",
+        Key = AttributeKey.InteractionsPage,
+        Description = "The interactions associated with a specific personal device.",
+        Order = 0 )]
+
+    [CodeEditorField(
+        "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = CodeEditorValue.LavaTemplate,
+        Order = 1 )]
+
+    public partial class PersonalDevices : RockBlock
+    {
+        #region Attribute Keys and Values
+
+        private static class AttributeKey
+        {
+            public const string InteractionsPage = "InteractionsPage";
+            public const string LavaTemplate = "LavaTemplate";
+        }
+
+        private static class CodeEditorValue
+        {
+            public const string LavaTemplate = @"
+<div class=""panel panel-block"">
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
-            <div class=""panel-panel-title""><i class=""fa fa-mobile""></i> {{ Person.FullName }}</div>
+            <div class='panel-panel-title'><i class=""fa fa-mobile""></i> {{ Person.FullName }}</div>
         </h4>
     </div>
     <div class=""panel-body"">
-        <div class=""row row-eq-height-md"">
-            {% for item in PersonalDevices %}
-                <div class=""col-md-3 col-sm-4"">                  
-                    <div class=""well margin-b-none rollover-container"">                        
-                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
+        <div class=""row row-eq-height-md flex-wrap"">
+            {%- for item in PersonalDevices -%}
+                <div class=""col-md-3 col-sm-4 mb-4"">
+                    <div class=""well mb-0 rollover-container h-100"">
+                        <a class=""pull-right rollover-item btn btn-xs btn-square btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
                         <div style=""min-height: 120px;"">
-                            <h3 class=""margin-v-none"">
-                                {% if item.DeviceIconCssClass != '' %}
+                            <h3 class=""my-0"">
+                                {%- if item.DeviceIconCssClass != '' -%}
                                     <i class=""fa {{ item.DeviceIconCssClass }}""></i>
-                                {% endif %}
-                                {% if item.PersonalDevice.NotificationsEnabled == true %}
+                                {%- endif -%}
+                                {%- if item.PersonalDevice.NotificationsEnabled == true -%}
                                     <i class=""fa fa-comment-o""></i>
-                                {% endif %}
+                                {%- endif -%}
                             </h3>
                             <dl>
-                                {% if item.PlatformValue != '' %}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{% endif %}
-                                {% if item.PersonalDevice.CreatedDateTime != null %}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{% endif %}                              
-                                {% if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null %}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{% endif %}
+                                {%- if item.PlatformValue != '' -%}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{%- endif -%}
+                                {%- if item.PersonalDevice.CreatedDateTime != null -%}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{%- endif -%}
+                                {%- if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null -%}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{%- endif -%}
                             </dl>
                         </div>
-                        {% if LinkUrl != '' %}
+                        {%- if LinkUrl != '' -%}
                             <a href=""{{ LinkUrl | Replace:'[Id]',item.PersonalDevice.Id }}"" class=""btn btn-default btn-xs""> Interactions</a>
-                        {% endif %}
+                        {%- endif -%}
                     </div>
                 </div>
-            {% endfor %}
+            {%- endfor -%}
         </div>
     </div>
 </div>
-", "", 2, "LavaTemplate" )]
-    [ContextAware( typeof( Person ) )]
-    public partial class PersonalDevices : RockBlock
-    {
+";
+        }
+
+        #endregion Attribute Keys and Values
+
         #region Fields
 
         private Person _person = null;
@@ -177,7 +208,7 @@ namespace RockWeb.Blocks.Crm
                 mergeFields.Add( "PersonalDevices", items );
 
                 var queryParams = new Dictionary<string, string>();
-                queryParams.Add( "personalDeviceId", "_PersonDeviceIdParam_" );
+                queryParams.Add( "PersonalDeviceId", "_PersonDeviceIdParam_" );
                 string url = LinkedPageUrl( "InteractionsPage", queryParams );
                 if ( !string.IsNullOrWhiteSpace( url ) )
                 {
@@ -187,7 +218,7 @@ namespace RockWeb.Blocks.Crm
                 mergeFields.Add( "LinkUrl", url );
 
 
-                string template = GetAttributeValue( "LavaTemplate" );
+                string template = GetAttributeValue( AttributeKey.LavaTemplate );
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
             }
             else

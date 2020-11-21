@@ -165,6 +165,12 @@ namespace RockWeb.Blocks.Event
 
             var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
 
+            if ( !cpCampusPicker.Visible )
+            {
+                cpCampusPicker.SelectedCampusId = null;
+                return;
+            }
+
             if ( this.GetAttributeValue( "UseCampusContext" ).AsBoolean() )
             {
                 var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;

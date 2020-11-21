@@ -35,6 +35,8 @@ namespace Rock.CheckIn
     {
         private static ConcurrentDictionary<int, object> _locks = new ConcurrentDictionary<int,object>();
 
+        #region Constructors
+
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskDevice" /> class from being created.
         /// </summary>
@@ -54,6 +56,27 @@ namespace Rock.CheckIn
             Device.LoadAttributes();
             KioskGroupTypes = new List<KioskGroupType>();
         }
+
+        #endregion Constructors
+
+        #region Lifespan
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. This is set to the time from now
+        /// until midnight for each cache item instance.
+        /// </summary>
+        public override TimeSpan? Lifespan
+        {
+            get
+            {
+                // Expire cache items at midnight
+                var now = RockDateTime.Now;
+                var timespan = now.Date.AddDays( 1 ).Subtract( now );
+                return timespan;
+            }
+        }
+
+        #endregion Lifespan
 
         /// <summary>
         /// Gets or sets the device.
@@ -83,7 +106,7 @@ namespace Rock.CheckIn
         public bool RegistrationModeEnabled => Device.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean();
 
         /// <summary>
-        /// The group types associated with this kiosk
+        /// The group types (Checkin Areas) associated with this kiosk
         /// </summary>
         /// <value>
         /// The group types.
@@ -92,9 +115,9 @@ namespace Rock.CheckIn
         public List<KioskGroupType> KioskGroupTypes { get; set; }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes
+        /// Subset of the KioskGroupTypes (Checkin Areas)
         /// </summary>
-        /// <param name="configuredGroupTypes">The current group types.</param>
+        /// <param name="configuredGroupTypes">The current group types (Checkin Areas).</param>
         /// <returns></returns>
         public List<KioskGroupType> FilteredGroupTypes( List<int> configuredGroupTypes )
         {
@@ -111,9 +134,9 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes that are configured and currently active or check in.
+        /// Subset of the KioskGroupTypes (Checkin Areas) that are configured and currently active for check in.
         /// </summary>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         public List<KioskGroupType> ActiveGroupTypes( List<int> configuredGroupTypes )
         {
@@ -121,10 +144,24 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Subset of the KioskGroupTypes (Checkin Areas) that are configured and currently active for check out.
+        /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns></returns>
+        public List<KioskGroupType> ActiveForCheckOutGroupTypes( List<int> configuredGroupTypes )
+        {
+            return FilteredGroupTypes( configuredGroupTypes ).Where( t => t.IsCheckOutActive ).ToList();
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance has active locations.
         /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if the specified configured group types has locations; otherwise, <c>false</c>.
+        /// </returns>
         /// <value>
-        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
         public bool HasLocations(List<int> configuredGroupTypes)
         {
@@ -134,8 +171,12 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets a value indicating whether this instance has active locations.
         /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if [has active locations] [the specified configured group types]; otherwise, <c>false</c>.
+        /// </returns>
         /// <value>
-        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
         public bool HasActiveLocations(List<int> configuredGroupTypes)
         {
@@ -143,9 +184,24 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance has active locations for check-out.
+        /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if [has active check out locations] [the specified configured group types]; otherwise, <c>false</c>.
+        /// </returns>
+        /// <value>
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasActiveCheckOutLocations( List<int> configuredGroupTypes )
+        {
+            return ActiveForCheckOutGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckOutActive ) );
+        }
+
+        /// <summary>
         /// returns the locations for this Kiosk for the configured group types
         /// </summary>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types. (Checkin Areas)</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
@@ -190,10 +246,10 @@ namespace Rock.CheckIn
         /// Reads the device by id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead." )]
+        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead.", true )]
         public static KioskDevice Read( int id, List<int> configuredGroupTypes )
         {
             return Get( id, configuredGroupTypes );
@@ -203,15 +259,18 @@ namespace Rock.CheckIn
         /// Reads the device by id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         public static KioskDevice Get( int id, List<int> configuredGroupTypes )
         {
-            var now = RockDateTime.Now;
-            var timespan = now.Date.AddDays( 1 ).Subtract( now );
-            return GetOrAddExisting( id, () => Create( id ), timespan );
+            return GetOrAddExisting( id, () => Create( id ), () => GetAllIds() );
         }
 
+        /// <summary>
+        /// Creates the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         private static KioskDevice Create( int id )
         {
             using ( var rockContext = new RockContext() )
@@ -248,11 +307,33 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a list of IDs for all devices of type CheckinKiosk
+        /// </summary>
+        /// <returns></returns>
+        private static List<string> GetAllIds()
+        {
+            int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
+
+            using( var rockContext = new RockContext() )
+            {
+                var deviceService = new DeviceService( rockContext );
+                var ids = deviceService.Queryable().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId ).Select( d => d.Id ).ToList().ConvertAll( d => d.ToString() );
+
+                if ( ids.Any() )
+                {
+                    return ids;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.")]
+        [Obsolete( "Use Remove( int id ) instead.", true )]
         public static void Flush( int id )
         {
             Remove( id );
@@ -262,7 +343,7 @@ namespace Rock.CheckIn
         /// Flushes all.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Clear() instead." )]
+        [Obsolete( "Use Clear() instead.", true )]
         public static void FlushAll()
         {
             Clear();
@@ -344,7 +425,7 @@ namespace Rock.CheckIn
                         var kioskSchedule = new KioskSchedule( schedule );
                         kioskSchedule.CampusId = kioskLocation.CampusId;
                         kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( currentDateTime );
-                        if ( kioskSchedule.IsCheckInActive || kioskSchedule.NextActiveDateTime.HasValue )
+                        if ( kioskSchedule.IsCheckInActive || kioskSchedule.IsCheckOutActive || kioskSchedule.NextActiveDateTime.HasValue )
                         {
                             kioskLocation.KioskSchedules.Add( kioskSchedule );
                             activeSchedules.Add( schedule.Id, kioskSchedule );

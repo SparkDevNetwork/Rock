@@ -23,12 +23,12 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to pick a school grade
     /// </summary>
     public class GradePicker : RockDropDownList
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DayOfWeekPicker"/> class.
+        /// Initializes a new instance of the <see cref="GradePicker"/> class.
         /// </summary>
         public GradePicker()
             : base()
@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the maximum grade offset for grades that are defined 
+        /// Gets the maximum grade offset for grades that are defined
         /// For example, 12 (Kindergarten) would be the max grade offset (or whatever the lowest grade level is)
         /// </summary>
         /// <value>
@@ -152,16 +152,16 @@ namespace Rock.Web.UI.Controls
             int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
 
             string gradeSelectionScript = $@"
-    $('#{this.ClientID}').change(function(){{
+    $('#{this.ClientID}').on('change', function(){{
         var selectedGradeOffsetValue = $(this).val();
         if ( selectedGradeOffsetValue == '') {{
             $('#{ypGraduationYear.ClientID}').val('');
         }} else {{
             $('#{ypGraduationYear.ClientID}').val( {gradeTransitionDate.Year} + ( {gradeOffsetRefactor} + parseInt( selectedGradeOffsetValue ) ) );
-        }} 
+        }}
     }});
 
-    $('#{1}').change(function(){{
+    $('#{1}').on('change', function(){{
         var selectedYearValue = $(this).val();
         if (selectedYearValue == '') {{
             $('#{this.ClientID}').val('');
@@ -181,6 +181,36 @@ namespace Rock.Web.UI.Controls
     }});";
             return gradeSelectionScript;
         }
+
+        /// <summary>
+        /// Gets or sets the selected grade offset.
+        /// </summary>
+        /// <value>
+        /// The selected grade offset.
+        /// </value>
+        public int? SelectedGradeOffset
+        {
+            get
+            {
+                EnsureChildControls();
+                return this.SelectedGradeValue?.Value.AsIntegerOrNull();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                if ( this.UseGradeOffsetAsValue )
+                {
+                    this.SelectedValue = value?.ToString();
+                }
+                else
+                {
+                    var selectedDefinedValueGuid = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.GetDefinedValueFromValue( value?.ToString() )?.Guid;
+                    this.SelectedValue = selectedDefinedValueGuid?.ToString();
+                }
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the selected grade value unique identifier.
@@ -214,7 +244,7 @@ namespace Rock.Web.UI.Controls
                     {
                         this.SetValue( value.Guid );
                     }
-                        
+
                 }
                 else
                 {

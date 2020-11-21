@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -70,7 +71,7 @@ namespace Rock.Model
         public string CountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone number. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
+        /// Gets or sets the phone number without country code. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the phone number without string formatting.
@@ -79,6 +80,33 @@ namespace Rock.Model
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
         public string Number { get; set; }
+
+        /// <summary>
+        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons. 
+        /// NOTE: If <seealso cref="Number"/> is a partial number (for example, no area code), then FullNumber isn't really the full number, and neither is NumberFormatted.
+        /// </summary>
+        /// <value>
+        /// The full number.
+        /// </value>
+        [Required]
+        [MaxLength( 23 )]
+        [DataMember( IsRequired = true )]
+        [Index( "IX_FullNumber" )]
+        public string FullNumber
+        {
+            get
+            {
+                _fullNumber = this.CountryCode + this.Number;
+                return _fullNumber;
+            }
+
+            private set
+            {
+                _fullNumber = value;
+            }
+        }
+
+        private string _fullNumber;
 
         /// <summary>
         /// Gets or sets the formatted number. Note: value is recalculated on every add/modify of entity during context's default SaveChanges() method.
@@ -209,17 +237,20 @@ namespace Rock.Model
                 {
                     CountryCode = PhoneNumber.DefaultCountryCode();
                 }
-                
+
+                // Clean up the number so that the Formatted number looks like (555) 123-4567 (without country code prefix)
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+
+                // then use the NumberFormatted to set the cleaned up 'Number' value, so it would be 5551234567
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-			// Check for duplicate
-			if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
-			{
-				var rockContext = ( RockContext ) dbContext;
-				var phoneNumberService = new PhoneNumberService( rockContext );
-				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+            // Check for duplicate
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
 
                 // Make sure this number isn't considered a duplicate
                 if ( entry.State == EntityState.Modified )
@@ -228,25 +259,25 @@ namespace Rock.Model
                 }
 
                 if ( duplicates.Any() )
-				{
-					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
-					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
-					{
+                {
+                    var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault();
+                    if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+                    {
                         // Ensure that we preserve the PhoneNumber with the highest preference phone type
-						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
-						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
-						{
-							entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
-						}
-						else
-						{
-							phoneNumberService.DeleteRange( duplicates);
-						}
-					}
-				}
-			}
+                        var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+                        if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+                        {
+                            entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
+                        }
+                        else
+                        {
+                            phoneNumberService.DeleteRange( duplicates );
+                        }
+                    }
+                }
+            }
 
-			int personId = PersonId;
+            int personId = PersonId;
             PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
@@ -255,8 +286,8 @@ namespace Rock.Model
                     {
 
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
                         break;
                     }
 
@@ -312,7 +343,7 @@ namespace Rock.Model
 
             // update the ModifiedDateTime on the Person that this phone number is associated with
             var currentDateTime = RockDateTime.Now;
-            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable(true, true).Where( a => a.Id == this.PersonId );
+            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == this.PersonId );
             rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
 
             base.PostSaveChanges( dbContext );
@@ -337,6 +368,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Converts the phone number to a string that is correctly formatted to be used as an SMS phone number.
+        /// </summary>
+        /// <returns></returns>
+        public string ToSmsNumber()
+        {
+            string smsNumber = this.Number;
+            if ( !string.IsNullOrWhiteSpace( this.CountryCode ) )
+            {
+                smsNumber = "+" + this.CountryCode + this.Number;
+            }
+            return smsNumber;
+        }
+
+        /// <summary>
         /// Gets the defaults country code.
         /// </summary>
         /// <returns></returns>
@@ -356,7 +401,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Formats a provided string of numbers .
+        /// Formats the PhoneNumber in the format defined for the COMMUNICATION_PHONE_COUNTRY_CODE defined value(s).
+        /// For example, for formatted number would look something like '(555) 555-1212'.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">A <see cref="System.String" /> containing the number to format.</param>

@@ -16,11 +16,7 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
@@ -32,11 +28,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 {
     [DisplayName( "Badges" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Handles displaying badges for a person." )]
+    [Description( "Handles displaying badges for an entity." )]
 
-    [PersonBadgesField( "Badges" )]
-    public partial class Badges : Rock.Web.UI.PersonBlock
+    [BadgesField(
+        "Badges",
+        Key = AttributeKey.Badges,
+        Description = "The badges to display.",
+        Order = 0 )]
+
+    public partial class Badges : ContextEntityBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string Badges = "Badges";
+        }
+        #endregion Attribute Keys
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -45,9 +53,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            if ( !Page.IsPostBack && Person != null && Person.Id != 0 )
+            if ( !Page.IsPostBack && Entity != null && Entity.Id != 0 )
             {
-                string badgeList = GetAttributeValue( "Badges" );
+                string badgeList = GetAttributeValue( AttributeKey.Badges );
                 if ( !string.IsNullOrWhiteSpace( badgeList ) )
                 {
                     foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
@@ -55,10 +63,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Get( guid );
-                            if ( personBadge != null )
+                            var badge = BadgeCache.Get( guid );
+                            if ( badge != null )
                             {
-                                blBadges.PersonBadges.Add( personBadge );
+                                blBadges.BadgeTypes.Add( badge );
                             }
                         }
                     }

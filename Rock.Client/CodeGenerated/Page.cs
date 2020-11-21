@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
         public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
@@ -48,6 +51,9 @@ namespace Rock.Client
 
         /// <summary />
         public string BrowserTitle { get; set; }
+
+        /// <summary />
+        public string CacheControlHeaderSettings { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -68,6 +74,9 @@ namespace Rock.Client
         public string HeaderContent { get; set; }
 
         /// <summary />
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
@@ -86,6 +95,9 @@ namespace Rock.Client
         public int LayoutId { get; set; }
 
         /// <summary />
+        public double? MedianPageLoadTimeDurationSeconds { get; set; }
+
+        /// <summary />
         public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary />
@@ -101,9 +113,6 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
-
-        /// <summary />
-        public int OutputCacheDuration { get; set; }
 
         /// <summary />
         public bool PageDisplayBreadCrumb { get; set; } = true;
@@ -159,29 +168,32 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Page source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.AllowIndexing = source.AllowIndexing;
             this.BodyCssClass = source.BodyCssClass;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             this.BrowserTitle = source.BrowserTitle;
+            this.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             this.Description = source.Description;
             this.DisplayInNavWhen = source.DisplayInNavWhen;
             this.EnableViewState = source.EnableViewState;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.HeaderContent = source.HeaderContent;
+            this.IconBinaryFileId = source.IconBinaryFileId;
             this.IconCssClass = source.IconCssClass;
             this.IncludeAdminFooter = source.IncludeAdminFooter;
             this.InternalName = source.InternalName;
             this.IsSystem = source.IsSystem;
             this.KeyWords = source.KeyWords;
             this.LayoutId = source.LayoutId;
+            this.MedianPageLoadTimeDurationSeconds = source.MedianPageLoadTimeDurationSeconds;
             this.MenuDisplayChildPages = source.MenuDisplayChildPages;
             this.MenuDisplayDescription = source.MenuDisplayDescription;
             this.MenuDisplayIcon = source.MenuDisplayIcon;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
-            this.OutputCacheDuration = source.OutputCacheDuration;
             this.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             this.PageDisplayDescription = source.PageDisplayDescription;
             this.PageDisplayIcon = source.PageDisplayIcon;

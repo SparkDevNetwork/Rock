@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -34,8 +35,6 @@ namespace Rock.Web.Cache
     {
 
         #region Properties
-
-        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -63,6 +62,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string Path { get; private set; }
+
+        /// <summary>
+        /// Gets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -114,16 +122,71 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
         public bool CheckedSecurityActions { get; private set; }
 
+        private ConcurrentDictionary<string, string> _securityActions = null;
+
         /// <summary>
-        /// Gets or sets the security actions.
+        /// Gets the security action attributes for the <seealso cref="SecurityActionAttribute">SecurityAction</seealso> attributes on this <seealso cref="System.Type"/> of this block
+        /// </summary>
+        /// <returns></returns>
+        private ConcurrentDictionary<string, string> GetSecurityActionAttributes()
+        {
+            var blockType = this.GetCompiledType();
+
+            if ( blockType == null )
+            {
+                return new ConcurrentDictionary<string, string>();
+            }
+
+            var securityActions = new ConcurrentDictionary<string, string>();
+            object[] customAttributes = blockType.GetCustomAttributes( typeof( SecurityActionAttribute ), true );
+            foreach ( var customAttribute in customAttributes )
+            {
+                var securityActionAttribute = customAttribute as SecurityActionAttribute;
+                if ( securityActionAttribute != null )
+                {
+                    securityActions.TryAdd( securityActionAttribute.Action, securityActionAttribute.Description );
+                }
+            }
+
+            return securityActions;
+        }
+
+        /// <summary>
+        /// Gets the security actions.
         /// </summary>
         /// <value>
         /// The security actions.
         /// </value>
         [DataMember]
-        public ConcurrentDictionary<string, string> SecurityActions { get; private set; }
+        public ConcurrentDictionary<string, string> SecurityActions
+        {
+            get
+            {
+                /* MDP 2020-03-17
+                This was changed to Load On Demand instead of getting set by RockPage.
+                This was done because nothing in core was using SecurityActions, and because loading them without needing them causes unneccessary overhead
+                 */
+
+                if ( _securityActions == null )
+                {
+                    _securityActions = GetSecurityActionAttributes();
+                }
+
+                return _securityActions;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public EntityTypeCache EntityType => EntityTypeId.HasValue ? EntityTypeCache.Get( EntityTypeId.Value ) : null;
 
         #endregion
 
@@ -133,19 +196,24 @@ namespace Rock.Web.Cache
         /// Sets the security actions.
         /// </summary>
         /// <param name="blockControl">The block control.</param>
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
         public void SetSecurityActions( Web.UI.RockBlock blockControl )
         {
-            lock ( _obj )
-            {
-                if ( CheckedSecurityActions ) return;
+            // SecurityActions is now loaded on demand, so we don't need to do anything here
+            return;
+        }
 
-                SecurityActions = new ConcurrentDictionary<string, string>();
-                foreach ( var action in blockControl.GetSecurityActionAttributes() )
-                {
-                    SecurityActions.TryAdd( action.Key, action.Value );
-                }
-                CheckedSecurityActions = true;
-            }
+        /// <summary>
+        /// Sets the security actions.
+        /// </summary>
+        /// <param name="blockType">The block type.</param>
+        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
+        [RockObsolete( "1.11" )]
+        public void SetSecurityActions( Type blockType )
+        {
+            // SecurityActions is now loaded on demand, so we don't need to do anything here
+            return;
         }
 
         /// <summary>
@@ -157,11 +225,15 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var blockType = entity as BlockType;
-            if ( blockType == null ) return;
+            if ( blockType == null )
+            {
+                return;
+            }
 
             IsSystem = blockType.IsSystem;
             IsCommon = blockType.IsCommon;
             Path = blockType.Path;
+            EntityTypeId = blockType.EntityTypeId;
             Name = blockType.Name;
             Description = blockType.Description;
             Category = blockType.Category;
@@ -174,6 +246,14 @@ namespace Rock.Web.Cache
         public override void PostCached()
         {
             base.PostCached();
+
+            //
+            // This method is only necessary if there is an associated file on disk.
+            //
+            if ( string.IsNullOrWhiteSpace( Path ) )
+            {
+                return;
+            }
 
             string physicalPath;
 
@@ -190,7 +270,10 @@ namespace Rock.Web.Cache
             }
 
             var fileinfo = new FileInfo( physicalPath );
-            if ( !fileinfo.Exists ) return;
+            if ( !fileinfo.Exists )
+            {
+                return;
+            }
 
             // Create a new FileSystemWatcher and set its properties.
             var watcher = new FileSystemWatcher
@@ -215,7 +298,44 @@ namespace Rock.Web.Cache
         public void MarkInstancePropertiesVerified( bool verified )
         {
             IsInstancePropertiesVerified = verified;
-            UpdateCacheItem( this.Id.ToString(), this, TimeSpan.MaxValue );
+            UpdateCacheItem( this.Id.ToString(), this );
+        }
+
+        /// <summary>
+        /// Gets the compiled type of this block type. If this is a legacy ASCX block then it
+        /// is dynamically compiled (and cached), otherwise a lookup is done via Entity Type.
+        /// </summary>
+        /// <returns>A Type that represents the logic class of this block type.</returns>
+        public Type GetCompiledType()
+        {
+            if ( !string.IsNullOrWhiteSpace( this.Path ) )
+            {
+                try
+                {
+                    return System.Web.Compilation.BuildManager.GetCompiledType( Path );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return null;
+                }
+                
+            }
+            else if ( EntityTypeId.HasValue )
+            {
+                try
+                {
+                    return EntityType.GetEntityType();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return null;;
+                }
+                
+            }
+
+            return null;
         }
 
         /// <summary>

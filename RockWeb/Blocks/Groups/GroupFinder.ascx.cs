@@ -28,7 +28,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using DotLiquid;
-
+using DotLiquid.Tags;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -99,13 +99,11 @@ namespace RockWeb.Blocks.Groups
     {% endif %}
 {% endif %}
 ", "CustomSetting" )]
-    [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
     [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
-    [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
     // Grid Settings
     [BooleanField( "Show Grid", "", false, "CustomSetting" )]
@@ -118,6 +116,7 @@ namespace RockWeb.Blocks.Groups
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
     [BooleanField( "Sort By Distance", "", false, "CustomSetting" )]
     [TextField( "Page Sizes", "To show a dropdown of page sizes, enter a comma delimited list of page sizes. For example: 10,20 will present a drop down with 10,20,All as options with the default as 10", false, "", "CustomSetting" )]
+    [BooleanField( "Include Pending", "", true, "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
@@ -292,7 +291,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "GroupType", GetGroupTypeGuid( gtpGroupType.SelectedGroupTypeId ) );
             SetAttributeValue( "GeofencedGroupType", GetGroupTypeGuid( gtpGeofenceGroupType.SelectedGroupTypeId ) );
 
-            SetAttributeValue( "DayOfWeekLabel", tbDayOfWeekLabel.Text);
+            SetAttributeValue( "DayOfWeekLabel", tbDayOfWeekLabel.Text );
             SetAttributeValue( "TimeOfDayLabel", tbTimeOfDayLabel.Text );
             SetAttributeValue( "CampusLabel", tbCampusLabel.Text );
 
@@ -329,6 +328,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
             SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
             SetAttributeValue( "AttributeColumns", cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+            SetAttributeValue( "IncludePending", cbIncludePending.Checked.ToString() );
 
             var ppFieldType = new PageReferenceFieldType();
             SetAttributeValue( "GroupDetailPage", ppFieldType.GetEditValue( ppGroupDetailPage, null ) );
@@ -377,10 +377,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroups_RowSelected( object sender, RowEventArgs e )
         {
-            if (!NavigateToLinkedPage("GroupDetailPage", "GroupId", e.RowKeyId))
+            if ( !NavigateToLinkedPage( "GroupDetailPage", "GroupId", e.RowKeyId ) )
             {
                 ShowResults();
-                ScriptManager.RegisterStartupScript(pnlMap, pnlMap.GetType(), "group-finder-row-selected", "openInfoWindowById("+e.RowKeyId+");", true);
+                ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-finder-row-selected", "openInfoWindowById(" + e.RowKeyId + ");", true );
             }
         }
 
@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.Groups
 
             var rockContext = new RockContext();
             var groupTypes = new GroupTypeService( rockContext )
-                .Queryable().AsNoTracking().ToList();
+                .Queryable().AsNoTracking().OrderBy( t => t.Order ).ToList();
 
             BindGroupType( gtpGroupType, groupTypes, "GroupType" );
             BindGroupType( gtpGeofenceGroupType, groupTypes, "GeofencedGroupType" );
@@ -444,13 +444,17 @@ namespace RockWeb.Blocks.Groups
             tbTimeOfDayLabel.Text = GetAttributeValue( "TimeOfDayLabel" );
 
             var scheduleFilters = GetAttributeValue( "ScheduleFilters" ).SplitDelimitedValues( false ).ToList();
-            if ( scheduleFilters.Contains("Day") )
+            if ( scheduleFilters.Contains( "Day" ) )
             {
                 rblFilterDOW.SetValue( "Day" );
             }
-            else if ( scheduleFilters.Contains( "Days"))
+            else if ( scheduleFilters.Contains( "Days" ) )
             {
                 rblFilterDOW.SetValue( "Days" );
+            }
+            else
+            {
+                rblFilterDOW.SelectedIndex = 0;
             }
 
             cbFilterTimeOfDay.Checked = scheduleFilters.Contains( "Time" );
@@ -496,6 +500,7 @@ namespace RockWeb.Blocks.Groups
                     li.Selected = true;
                 }
             }
+            cbIncludePending.Checked = GetAttributeValue( "IncludePending" ).AsBoolean();
 
             var ppFieldType = new PageReferenceFieldType();
             ppFieldType.SetEditValue( ppGroupDetailPage, null, GetAttributeValue( "GroupDetailPage" ) );
@@ -680,7 +685,7 @@ namespace RockWeb.Blocks.Groups
                 dowsFilterControl.Label = GetAttributeValue( "DayOfWeekLabel" );
                 dowsFilterControl.BindToEnum<DayOfWeek>();
                 dowsFilterControl.RepeatDirection = RepeatDirection.Horizontal;
-                
+
                 AddFilterControl( dowsFilterControl, "Days of Week", "The day of week that group meets on." );
             }
 
@@ -697,13 +702,13 @@ namespace RockWeb.Blocks.Groups
                 string timeOfDayLabel = GetAttributeValue( "TimeOfDayLabel" );
                 AddFilterControl( control, timeOfDayLabel, "The time of day that group meets." );
             }
-            
+
             if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
             {
 
                 cblCampus.Label = GetAttributeValue( "CampusLabel" );
                 cblCampus.Visible = true;
-                cblCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true );
+                cblCampus.DataSource = CampusCache.All( includeInactive: false );
                 cblCampus.DataBind();
             }
             else
@@ -840,6 +845,7 @@ namespace RockWeb.Blocks.Groups
             gGroups.Columns[3].Visible = GetAttributeValue( "ShowCount" ).AsBoolean();
             gGroups.Columns[4].Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
 
+            var includePending = GetAttributeValue( "IncludePending" ).AsBoolean();
             bool showProximity = GetAttributeValue( "ShowProximity" ).AsBoolean();
             gGroups.Columns[6].Visible = showProximity;  // Distance
 
@@ -857,7 +863,7 @@ namespace RockWeb.Blocks.Groups
             if ( dowsFilterControl != null )
             {
                 var dows = new List<DayOfWeek>();
-                dowsFilterControl.SelectedValuesAsInt.ForEach( i => dows.Add( (DayOfWeek)i ) );
+                dowsFilterControl.SelectedValuesAsInt.ForEach( i => dows.Add( ( DayOfWeek ) i ) );
 
                 if ( dows.Any() )
                 {
@@ -1068,9 +1074,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
 
-                    bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
-                    lMapInfoDebug.Visible = showDebug;
-
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
                     foreach ( var gl in groupLocations )
@@ -1107,12 +1110,6 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "AllowedActions", securityActions );
 
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-
-                            if ( showDebug )
-                            {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", string.Empty );
-                                showDebug = false;
-                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1172,13 +1169,6 @@ namespace RockWeb.Blocks.Groups
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 
-                bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the summary info.</span>" );
-                }
-
                 pnlLavaOutput.Visible = true;
             }
             else
@@ -1198,7 +1188,20 @@ namespace RockWeb.Blocks.Groups
                 // Bind the grid
                 gGroups.DataSource = groups.Select( g =>
                 {
-                    var qryMembers = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == g.Id );
+                    var qryMembers = new GroupMemberService( rockContext )
+                        .Queryable()
+                        .Where( a => a.GroupId == g.Id );
+
+                    if ( includePending )
+                    {
+                        qryMembers = qryMembers.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active
+                            || m.GroupMemberStatus == GroupMemberStatus.Pending );
+                    }
+                    else
+                    {
+                        qryMembers = qryMembers.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+                    }
+
                     var groupType = GroupTypeCache.Get( g.GroupTypeId );
 
                     return new

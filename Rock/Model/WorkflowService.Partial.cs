@@ -79,6 +79,17 @@ namespace Rock.Model
                             Add( workflow );
                         }
 
+                        // Set EntityId and EntityTypeId if they are not already set and the included entity object is appropriate.
+                        if ( ( workflow.EntityId == null ) && ( workflow.EntityTypeId == null ) && ( entity != null ) )
+                        {
+                            var typedEntity = entity as IEntity;
+                            if ( typedEntity != null )
+                            {
+                                workflow.EntityId = typedEntity.Id;
+                                workflow.EntityTypeId = typedEntity.TypeId;
+                            }
+                        }
+
                         rockContext.SaveChanges();
 
                         workflow.SaveAttributeValues( rockContext );

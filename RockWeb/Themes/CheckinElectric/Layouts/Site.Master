@@ -1,0 +1,56 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme-dark.css", true) %>" media="(prefers-color-scheme: dark)"/>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+    </form>
+
+    <script>
+        function checkinSounds() {
+            var tapSound = new Howl({
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
+                volume: 0.4
+            });
+
+            var successSound = new Howl({
+                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+                volume: 0.8
+            });
+
+            if ($('.block-instance.success').length){
+                successSound.play();
+            }
+
+            $("a, button").on("click", function(){
+                tapSound.play();
+            });
+        }
+
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("#form1").rockFadeIn();
+                checkinSounds();
+
+                $(document).on("shown.bs.modal", function (event) {
+                    checkinSounds();
+                });
+        });
+    </script>
+</body>
+</html>

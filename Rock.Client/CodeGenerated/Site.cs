@@ -56,10 +56,10 @@ namespace Rock.Client
         public int? CommunicationPageRouteId { get; set; }
 
         /// <summary />
-        public int? ConfigurationMobilePhoneFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
 
         /// <summary />
-        public int? ConfigurationMobileTabletFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
 
         /// <summary />
         public int? DefaultPageId { get; set; }
@@ -72,6 +72,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool EnabledForShortening { get; set; } = true;
+
+        /// <summary />
+        public bool EnableExclusiveRoutes { get; set; }
 
         /// <summary />
         public bool EnableMobileRedirect { get; set; }
@@ -99,7 +102,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Moved to Theme", false )]
+        [Obsolete( "Moved to Theme", true )]
         public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
 
         /// <summary />
@@ -165,7 +168,7 @@ namespace Rock.Client
         public string Theme { get; set; }
 
         /// <summary />
-        public int? ThumbnailFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -207,12 +210,13 @@ namespace Rock.Client
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
-            this.ConfigurationMobilePhoneFileId = source.ConfigurationMobilePhoneFileId;
-            this.ConfigurationMobileTabletFileId = source.ConfigurationMobileTabletFileId;
+            this.ConfigurationMobilePhoneBinaryFileId = source.ConfigurationMobilePhoneBinaryFileId;
+            this.ConfigurationMobileTabletBinaryFileId = source.ConfigurationMobileTabletBinaryFileId;
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
             this.EnabledForShortening = source.EnabledForShortening;
+            this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
@@ -221,9 +225,6 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            #pragma warning disable 612, 618
-            this.IconCssWeight = source.IconCssWeight;
-            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;
@@ -244,7 +245,7 @@ namespace Rock.Client
             this.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
             this.SiteType = source.SiteType;
             this.Theme = source.Theme;
-            this.ThumbnailFileId = source.ThumbnailFileId;
+            this.ThumbnailBinaryFileId = source.ThumbnailBinaryFileId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

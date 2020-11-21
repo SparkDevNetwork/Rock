@@ -60,6 +60,11 @@ namespace Rock.Web.UI.Controls
                     writer.AddStyleAttribute( key, this.Style[key] );
                 }
 
+                if ( !this.Visible )
+                {
+                    writer.AddStyleAttribute( "display", "none" );
+                }
+
                 writer.AddAttribute("data-toggle", "tooltip");
                 writer.AddAttribute("data-placement", "auto");
                 writer.AddAttribute("data-container", "body");

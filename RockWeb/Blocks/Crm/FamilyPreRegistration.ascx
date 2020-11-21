@@ -55,6 +55,7 @@
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlGender1">
                                 <Rock:RockDropDownList ID="ddlGender1" runat="server" Label="Gender" />
                             </asp:Panel>
+                            <div class="clearfix"></div>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate1">
                                 <Rock:DatePicker ID="dpBirthDate1" runat="server" Label="Birthdate" AllowFutureDates="False" RequireYear="True" ShowOnFocus="false" StartView="decade" />
                             </asp:Panel>
@@ -96,6 +97,7 @@
                                 <asp:Panel CssClass="col-sm-3 js-Adult2Required" runat="server" ID="pnlGender2">
                                     <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
                                 </asp:Panel>
+                                <div class="clearfix"></div>
                                 <asp:Panel CssClass="col-sm-3 js-Adult2Required" runat="server" ID="pnlBirthDate2">
                                     <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDates="False" ShowOnFocus="false" StartView="decade" />
                                 </asp:Panel>

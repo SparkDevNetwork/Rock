@@ -17,15 +17,15 @@
 
                 }
 
-                $('.tenkey a.digit').click(function () {
+                $('.tenkey a.digit').on('click', function () {
                     $phoneNumber = $("input[id$='tbPhone']");
                     $phoneNumber.val($phoneNumber.val() + $(this).html());
                 });
-                $('.tenkey a.back').click(function () {
+                $('.tenkey a.back').on('click', function () {
                     $phoneNumber = $("input[id$='tbPhone']");
                     $phoneNumber.val($phoneNumber.val().slice(0,-1));
                 });
-                $('.tenkey a.clear').click(function () {
+                $('.tenkey a.clear').on('click', function () {
                     $phoneNumber = $("input[id$='tbPhone']");
                     $phoneNumber.val('');
                 });
@@ -65,7 +65,7 @@
     <div class="checkin-body">
         <div class="checkin-scroll-panel">
             <div class="scroller">
-                <div class="checkin-search-body <%= (CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == new Guid(Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER) ? "search-phone" : "search-name") %>">
+                <div class="checkin-search-body <%= (!CurrentCheckInState.Kiosk.RegistrationModeEnabled && (CurrentCheckInType == null ||CurrentCheckInType.SearchType.Guid == new Guid(Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER)) ? "search-phone" : "search-name") %>">
 
                     <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
                         <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />

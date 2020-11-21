@@ -1,13 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg enable-background="new 0 0 298.8 298.7" version="1.1" viewBox="0 0 298.8 298.7" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-<style type="text/css">
-	.st0{opacity:0.6;fill:url(#a);enable-background:new    ;}
-	.st1{fill:#ADADAD;}
-</style>
-<linearGradient id="a" x1="149.41" x2="149.41" y1="-192.29" y2="-491.1" gradientTransform="matrix(1 0 0 -1 0 -192.29)" gradientUnits="userSpaceOnUse">
-	<stop stop-color="#DFDFDF" offset="0"/>
-	<stop stop-color="#C9C9C9" offset="1"/>
-</linearGradient>
-<rect class="st0" width="298.8" height="298.8"/>
-<path class="st1" d="m272.6 164.5l-30.3 51.9c-4.8 8.2-13.6 13.3-23.1 13.3h-167.4c-7.8 0-12.6-8.4-8.7-15.1l30.3-51.9c4.8-8.2 13.6-13.3 23.1-13.3h167.3c7.9 0 12.7 8.4 8.8 15.1zm-176-28.5h137.2v-20.1c0-11.1-9-20.1-20.1-20.1h-66.9l-26.8-26.8h-66.9c-11.1 0-20.1 9-20.1 20.1v116.3l28.9-49.5c7.2-12.3 20.5-19.9 34.7-19.9z"/>
-</svg>
+<svg viewBox="0 0 298.8 298.7" xmlns="http://www.w3.org/2000/svg"><linearGradient id="a" x1="149.41" x2="149.41" y1="-192.29" y2="-491.1" gradientTransform="matrix(1 0 0 -1 0 -192.29)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFDFDF" offset="0"/><stop stop-color="#C9C9C9" offset="1"/></linearGradient><path opacity=".6" fill="url(#a)" d="M0 0h298.8v298.8H0z"/><path d="M272.6 164.5l-30.3 51.9c-4.8 8.2-13.6 13.3-23.1 13.3H51.8c-7.8 0-12.6-8.4-8.7-15.1l30.3-51.9c4.8-8.2 13.6-13.3 23.1-13.3h167.3c7.9 0 12.7 8.4 8.8 15.1zM96.6 136h137.2v-20.1c0-11.1-9-20.1-20.1-20.1h-66.9L120 69H53.1C42 69 33 78 33 89.1v116.3l28.9-49.5c7.2-12.3 20.5-19.9 34.7-19.9z" fill="#adadad"/></svg>

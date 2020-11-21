@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -64,8 +64,11 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Expression GetExpression( IService serviceInstance, ParameterExpression parameterExpression, Expression whereExpression )
         {
-            IQueryable<int> idQuery = serviceInstance.GetIds( parameterExpression, whereExpression );
-            return BuildExpression( serviceInstance, idQuery, parameterExpression );
+            var personService = serviceInstance as Service<Rock.Model.Person>;
+
+            IQueryable<Model.Person> personQuery = personService.Get( parameterExpression, whereExpression, null, null );
+
+            return BuildExpression( serviceInstance, personQuery, parameterExpression );
         }
 
         /// <summary>
@@ -77,24 +80,52 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Expression GetExpression( IService serviceInstance, IQueryable<Rock.Model.Person> personQueryable, ParameterExpression parameterExpression )
         {
-            return BuildExpression( serviceInstance, personQueryable.Select( p => p.Id ), parameterExpression );
+            return BuildExpression( serviceInstance, personQueryable, parameterExpression );
         }
 
         /// <summary>
         /// Builds the expression.
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="idQuery">The id query.</param>
+        /// <param name="personQuery">The person query.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
+        private Expression BuildExpression( IService serviceInstance, IQueryable<Rock.Model.Person> personQuery, ParameterExpression parameterExpression )
         {
-            var rockContext = ( RockContext ) serviceInstance.Context;
+            int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+            int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
-            var personSpouseQuery = idQuery.Select( a => RockUdfHelper.ufnCrm_GetSpousePersonIdFromPersonId( a ) );
-            int maritalStatusMarriedId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            IQueryable<Model.Person> qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                .Where( p =>
+                        // spouse of person is Married
+                        p.MaritalStatusValueId == marriedDefinedValueId
 
-            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => p.MaritalStatusValueId == maritalStatusMarriedId && personSpouseQuery.Contains( p.Id ) );
+                        // spouse of person is Adult
+                        && p.Members.Where( sgm =>
+                            sgm.GroupRoleId == adultRoleId
+                        )
+                    .Any( a => a.Group.Members
+                    .Any( pgm =>
+                        // person is adult
+                        pgm.GroupRoleId == adultRoleId
+
+                        && personQuery.Any( origPerson =>
+                            // person is in the original personQuery 
+                            origPerson.Id == pgm.PersonId
+
+                            // person is married
+                            && origPerson.MaritalStatusValueId == marriedDefinedValueId
+
+                            // person is not the same gender as spouse (if gender is known)
+                            && ( ( origPerson.Gender != p.Gender ) || origPerson.Gender == Gender.Unknown || p.Gender == Gender.Unknown )
+
+                            // person isn't one of the spouses we are returning
+                            && origPerson.Id != p.Id )
+                        )
+                    )
+                    );
+
+
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }

@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.ConnectionRequestDetailPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, ConnectionType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ChangePasswordPageRouteId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
@@ -126,6 +132,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsGlobal = source.IsGlobal;
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;
             target.Route = source.Route;

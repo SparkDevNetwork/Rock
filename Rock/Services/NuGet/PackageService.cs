@@ -270,7 +270,7 @@ namespace Rock.Services.NuGet
             {
                 var blockType = block.BlockType;
 
-                if ( !blockTypes.ContainsKey( blockType.Guid ) )
+                if ( !blockTypes.ContainsKey( blockType.Guid ) && !string.IsNullOrWhiteSpace( blockType.Path ) )
                 {
                     blockTypes.Add( blockType.Guid, blockType );
 
@@ -397,7 +397,7 @@ namespace Rock.Services.NuGet
         /// <param name="rockContext">The rock context.</param>
         /// <param name="page">The current Page to save</param>
         /// <param name="newBlockTypes">List of BlockTypes not currently installed</param>
-        /// <param name="parentPageId">Id of the the current Page's parent</param>
+        /// <param name="parentPageId">Id of the current Page's parent</param>
         /// <param name="siteId">Id of the site the current Page is being imported into</param>
         private void SavePages( RockContext rockContext, Page page, IEnumerable<BlockType> newBlockTypes, int parentPageId, int siteId )
         {
@@ -494,7 +494,7 @@ namespace Rock.Services.NuGet
             // Remove export.json file from the list of files to be unzipped
             var filesToUnzip = packageFiles.Where( f => !f.Path.Contains( "export.json" ) ).ToList();
             var blockTypeService = new BlockTypeService( new RockContext() );
-            var installedBlockTypes = blockTypeService.Queryable();
+            var installedBlockTypes = blockTypeService.Queryable().Where( b => !string.IsNullOrEmpty( b.Path ) );
             var webRoot = HttpContext.Current.Server.MapPath( "~" );
 
             // Compare the packages files with currently installed block types, removing anything that already exists

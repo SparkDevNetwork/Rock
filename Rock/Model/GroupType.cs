@@ -41,18 +41,6 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupType"/> class.
-        /// </summary>
-        public GroupType()
-        {
-            ShowInGroupList = true;
-            ShowInNavigation = true;
-            GroupTerm = "Group";
-            GroupMemberTerm = "Member";
-            AdministratorTerm = "Administrator";
-        }
-
         #region Entity Properties
 
         /// <summary>
@@ -97,7 +85,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string GroupTerm { get; set; }
+        public string GroupTerm { get; set; } = "Group";
 
         /// <summary>
         /// Gets or sets the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> that belongs to this GroupType is called.
@@ -112,7 +100,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string GroupMemberTerm { get; set; }
+        public string GroupMemberTerm { get; set; } = "Member";
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
@@ -139,7 +127,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if a <see cref="Rock.Model.Group"/> of this GroupType will be shown in the GroupList; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInGroupList { get; set; }
+        public bool ShowInGroupList { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a flag indicating if this GroupType and its <see cref="Rock.Model.Group">Groups</see> are shown in Navigation.
@@ -152,7 +140,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupType and Groups should be displayed in Navigation controls.
         /// </value>
         [DataMember]
-        public bool ShowInNavigation { get; set; }
+        public bool ShowInNavigation { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
@@ -385,7 +373,7 @@ namespace Rock.Model
             }
         }
         private string _groupViewLavaTemplate;
-        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and Group.GroupCapacity != '' %}
 		{% assign warningLevel = ''warning'' %}
 
 		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
@@ -453,7 +441,7 @@ namespace Rock.Model
 		{% for groupLocation in groupLocations %}
 	    	{% if groupLocation.Location.GeoPoint != null and groupLocation.Location.GeoPoint != '' %}
 	    	{% capture markerPoints %}{{ groupLocation.Location.Latitude }},{{ groupLocation.Location.Longitude }}{% endcapture %}
-	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints   %}
+	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints %}
 	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}','' %}
 	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=450x250&zoom=13&format=png&key=' %}
             {% assign mapLink = mapLink | Append: googleAPIKey %}
@@ -469,11 +457,11 @@ namespace Rock.Model
 	    	    {% endif %}
 	    	 </div>
 		    {% endif %}
-		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != ''  %}
+		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != '' %}
 
 		    {% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}','' %}
 		    {% assign googlePolygon = 'enc:' | Append: groupLocation.Location.GooglePolygon %}
-	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon  %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon %}
 	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=350x200&format=png&key=' %}
 	    	{% assign mapLink = mapLink | Append: googleAPIKey %}
 		    <div class='group-location-map'>
@@ -504,7 +492,7 @@ namespace Rock.Model
 			{% assign countRegistration = countRegistration | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
-		{% if countRegistration > 0 and countLoop == linkageCount  %}
+		{% if countRegistration > 0 and countLoop == linkageCount %}
 		</ul>
 		{% endif %}
 	{% endfor %}
@@ -519,7 +507,7 @@ namespace Rock.Model
 			{% assign countEventItemOccurrences = countEventItemOccurrences | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
-		{% if countEventItemOccurrences > 0  and countLoop == linkageCount %}
+		{% if countEventItemOccurrences > 0 and countLoop == linkageCount %}
 			</ul>
 		{% endif %}
 	{% endfor %}
@@ -530,7 +518,7 @@ namespace Rock.Model
 			{% if contentChannelItemsCount > 0 %}
 			{% assign contentChannelItems = linkage.EventItemOccurrence.ContentChannelItems %}
 				{% for contentChannelItem in contentChannelItems %}
-				{% if contentChannelItem.ContentChannelItem != null  %}
+				{% if contentChannelItem.ContentChannelItem != null %}
 					{% if countContentItems == 0 %}
 					<strong> Content Items</strong>
 					<ul class=""list-unstyled"">
@@ -597,6 +585,15 @@ namespace Rock.Model
         public bool EnableGroupHistory { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether group tag should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group tag]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupTag { get; set; } = false;
+
+        /// <summary>
         /// The color used to visually distinguish groups on lists.
         /// </summary>
         /// <value>
@@ -616,6 +613,149 @@ namespace Rock.Model
         public int? GroupStatusDefinedTypeId { get; set; }
 
         /// <summary>
+        /// Indicates whether RSVP functionality should be enabled for this group.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool EnableRSVP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable inactive reason].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable inactive reason]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableInactiveReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires inactive reason].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires inactive reason]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresInactiveReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if group type allows any child group type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; set; }
+
+        #endregion Entity Properties
+
+        #region Group Scheduling Related
+
+        /// <summary>
+        /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is scheduling enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsSchedulingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated.
+        /// </summary>
+        /// <value>
+        /// The scheduled system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled system email identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
+        public int? ScheduleConfirmationSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use when sending a schedule reminder.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system email identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
+        public int? ScheduleReminderSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The schedule cancellation workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleCancellationWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupMember.ScheduleReminderEmailOffsetDays"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires reason if decline schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresReasonIfDeclineSchedule { get; set; }
+
+        /// <summary>
         /// Gets or sets the administrator term for the group of this GroupType.
         /// </summary>
         /// <value>
@@ -623,7 +763,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        public string AdministratorTerm { get; set; }
+        public string AdministratorTerm { get; set; } = "Administrator";
 
         /// <summary>
         /// Gets or sets a value indicating whether administrator for the group of this GroupType will be shown.
@@ -662,6 +802,25 @@ namespace Rock.Model
         [DataMember, LavaIgnore]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
+            /* 2020-09-03 MDP
+             ChildGroupTypes (GroupTypeAssociation) is sort of used for two different things. Which can be a little confusing:
+             There is an explanation in Asana at https://app.asana.com/0/0/1191515790495258/f, but here is a summary...
+
+            1) In Checkin Configuration, Checkin Areas are GroupTypes under the covers.
+               In this case, it is used as a hierarchy tree. For example:
+                - Kids Areas
+                    - Area 1
+                        - Kittens Group
+                    - Area 2
+                        - Bobcat Group    
+                    - Area 3
+                        - Tigers Group
+                        - Bears Group
+            2) As the Allowed Child Types (Group Type Detail).
+               In this case, it is as used for child GroupTypes that are allowed to be added. It is *not* used as a hierarchy tree.
+               It would just be the Group Types you could choose from when adding a new group.
+             */
+
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
             set { _childGroupTypes = value; }
         }
@@ -750,10 +909,59 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> that represents the the purpose of the GroupType.
+        /// A <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled system email.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead." )]
+        [RockObsolete( "1.10" )]
+        public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when sending a Schedule Reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system email.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleReminderSystemCommunication instead." )]
+        [RockObsolete( "1.10" )]
+        public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication ScheduleConfirmationSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use when sending a Schedule Reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication ScheduleReminderSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The type of the schedule cancellation workflow.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType ScheduleCancellationWorkflowType { get; set; }
 
         /// <summary>
         /// Gets a count of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
@@ -814,7 +1022,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group status defined.
         /// </value>
-        public DefinedType GroupStatusDefinedType { get; set; }
+        public virtual DefinedType GroupStatusDefinedType { get; set; }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -828,6 +1036,7 @@ namespace Rock.Model
                     _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
                     _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                     _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
                 }
                 return _supportedActions;
             }
@@ -967,6 +1176,48 @@ namespace Rock.Model
                     groupType = null;
                 }
             }
+
+            return groupTypeIds;
+        }
+
+        /// <summary>
+        /// Gets all dependent group type ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public List<int> GetAllDependentGroupTypeIds( Rock.Data.RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeIds = new List<int>(10);
+
+            var groupType = this;
+
+            //
+            // Loop until we find a recursive loop or run out of parent group types.
+            //
+            List<int> childGroupTypeIds = null;
+            do
+            {
+                if ( childGroupTypeIds == null )
+                {
+                    childGroupTypeIds = groupTypeService
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( t => t.InheritedGroupTypeId == groupType.Id )
+                                    .Select( t => t.Id ).ToList();
+                } else
+                {
+                    childGroupTypeIds = groupTypeService
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( t => t.InheritedGroupTypeId != null && childGroupTypeIds.Contains(t.InheritedGroupTypeId.Value) )
+                                    .Select( t => t.Id ).ToList();
+                }
+                groupTypeIds.AddRange( childGroupTypeIds );
+
+            } while ( childGroupTypeIds.Count > 0 );
 
             return groupTypeIds;
         }
@@ -1133,6 +1384,15 @@ namespace Rock.Model
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupStatusDefinedType ).WithMany().HasForeignKey( p => p.GroupStatusDefinedTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleConfirmationSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            this.HasOptional( p => p.ScheduleConfirmationSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleReminderSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemEmailId ).WillCascadeOnDelete( false );
+#pragma warning restore CS0618 // Type or member is obsolete
+
         }
     }
 

@@ -136,17 +136,12 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
-        /// The GroupPicker
-        /// </summary>
-        private GroupPicker gp = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            gp = new GroupPicker();
+            var gp = new GroupPicker();
             gp.ID = filterControl.ID + "_gp";
             gp.Label = "Group(s)";
             gp.CssClass = "js-group-picker";
@@ -228,16 +223,27 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             List<Guid> groupGuids = selection.Split( ',' ).AsGuidList();
             var groupService = new GroupService( rockContext );
             var groupIds = groupService.GetByGuids( groupGuids ).Select( a => a.Id ).Distinct().ToList();
 
-            var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => groupIds.Contains( xx.GroupId ) );
+            var groupMemberServiceQry = groupMemberService.Queryable( true );
 
-            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+            if ( groupIds.Count == 1 )
+            {
+                // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
+                var groupId = groupIds[0];
+                groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId );
+            }
+            else
+            {
+                groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupIds.Contains( xx.GroupId ) );
+            }
+
+            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                 .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

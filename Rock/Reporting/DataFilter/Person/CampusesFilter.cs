@@ -52,14 +52,30 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
-        /// Gets the section.
+        /// Gets the name of the section in which the filter should be displayed in a browsable list.
         /// </summary>
         /// <value>
-        /// The section.
+        /// The section name.
         /// </value>
-        public override string Section
+        public override string Section => "Additional Filters";
+
+        /// <summary>
+        /// Set this to show descriptive text that can help explain how complex filters work or offer assistance on possibly other filters that have better performance.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public override string Description
         {
-            get { return "Additional Filters"; }
+            get
+            {
+                if ( CampusCache.All( IncludeInactive ).Count == 1 )
+                {
+                    return "This filter is only needed when there are multiple campuses.";
+                }
+
+                return "Consider using the 'Primary Campus' filter if you are concerned with speed. This filter is slower as it checks the campus of all families the person might belong to.";
+            }
         }
 
         /// <summary>
@@ -277,7 +293,7 @@ function() {{
                 var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
                 int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
-                var groupMemberServiceQry = groupMemberService.Queryable()
+                var groupMemberServiceQry = groupMemberService.Queryable( true )
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId )
                     .Where( xx => campusIds.Contains( xx.Group.CampusId ?? 0 ) );
 

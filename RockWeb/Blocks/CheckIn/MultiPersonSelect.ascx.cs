@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }}
 
-        $('a.js-person-select').click( function() {{
+        $('a.js-person-select').on('click', function() {{
             $(this).toggleClass('active');
             $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
             var ids = '';
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }}
 
-        $('a.js-option-select').click( function() {{
+        $('a.js-option-select').on('click', function() {{
             $(this).removeClass('btn-dimmed');
             $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
             var scheduleId = $(this).attr('data-schedule-id');
@@ -223,9 +223,6 @@ namespace RockWeb.Blocks.CheckIn
                 var pnlPhoto = e.Item.FindControl( "pnlPhoto" ) as Panel;
                 pnlPhoto.Visible = !_hidePhotos;
 
-                var pnlPerson = e.Item.FindControl( "pnlPerson" ) as Panel;
-                pnlPerson.CssClass = ( _hidePhotos ? "col-md-10 col-sm-10 col-xs-8" : "col-md-10 col-sm-8 col-xs-6" );
-
                 var lPersonButton = e.Item.FindControl( "lPersonButton" ) as Literal;
                 var person = e.Item.DataItem as CheckInPerson;
 
@@ -253,7 +250,7 @@ namespace RockWeb.Blocks.CheckIn
                         var pnlChangeButton = e.Item.FindControl( "pnlChangeButton" ) as Panel;
                         if ( pnlPersonButton != null && pnlChangeButton != null )
                         {
-                            pnlPersonButton.CssClass = "col-xs-12 col-sm-9 col-md-10";
+                            pnlPersonButton.CssClass = "checkin-person-btn checkin-person-has-change col-xs-12 col-sm-9 col-md-10";
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }
@@ -269,9 +266,9 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         lPersonButton.Text = string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 auto-select text-light'>
-        <div class='auto-select-caption'>is checking into...</div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'>
+        <div class='auto-select-caption'>Current Selection</div>
         <div class='auto-select-details'>{1}</div>
     </div>
 </div>
@@ -510,8 +507,8 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     return string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 text-light'><small>is checking into...<br/>{1}</small></div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'><div class='auto-select-caption'>Current Selection</div><div class='auto-select-details'>{1}</div></div>
 </div>
 ", person.Person.FullName, options.AsDelimited( "<br/>" ) );
                 }

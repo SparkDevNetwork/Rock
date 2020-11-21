@@ -1,0 +1,24 @@
+## Instructions
+## - This requires the humao.rest-client extension ##
+
+#### variables
+### Edit your VSCode settings.json file to include these settings
+##
+##    "rest-client.rememberCookiesForSubsequentRequests": true,
+##    "rest-client.environmentVariables": {
+##        "$shared": {
+##            "rockBaseUrl": "http://localhost:6229",
+##        },
+##    }
+###
+
+### This will set the .ROCK cookie and keep it for any other REST calls that you submit 
+## (you'll see cookie in the response)
+
+POST {{rockBaseUrl}}/api/Auth/Login  HTTP/1.1
+content-type: application/json
+
+{
+	"UserName" : "admin",
+	"Password" : "admin",
+}

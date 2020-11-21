@@ -267,6 +267,48 @@ namespace Rock.Model
         [DataMember]
         public string PostHtml { get; set; }
 
+        /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string AbbreviatedName
+        {
+            get
+            {
+                if ( _abbreviatedName.IsNullOrWhiteSpace() )
+                {
+                    return Name.Truncate( 100, false );
+                }
+
+                return _abbreviatedName;
+            }
+            set
+            {
+                _abbreviatedName = value;
+            }
+        }
+        private string _abbreviatedName;
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -338,12 +380,12 @@ namespace Rock.Model
                 {
                     var entityType = EntityTypeCache.Get( entityTypeId.Value );
                     var type = entityType.GetEntityType();
-                    if ( type != null && 
-                        ( typeof( ISecured ).IsAssignableFrom( type ) )  &&
+                    if ( type != null &&
+                        ( typeof( ISecured ).IsAssignableFrom( type ) ) &&
                         !( typeof( Rock.Extension.Component ).IsAssignableFrom( type ) )
                     )
                     {
-                        return (ISecured)Activator.CreateInstance( type );  
+                        return ( ISecured ) Activator.CreateInstance( type );
                     }
                 }
 
@@ -371,7 +413,7 @@ namespace Rock.Model
                     Guid? binaryFileGuid = DefaultValue.AsGuidOrNull();
                     if ( binaryFileGuid.HasValue )
                     {
-                        BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                        BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
                         var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
@@ -462,13 +504,9 @@ namespace Rock.Model
                 GlobalAttributesCache.Remove();
             }
 
-            if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn== Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
+            if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn == Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
             {
-                if ( entityState != EntityState.Modified )
-                {
-                    // if a SystemSettings was Added or Removed, flush the SystemSettings cache (if it was only modified, it'll will point to the updated AttributeCache value)
-                    Rock.Web.SystemSettings.Remove();
-                }
+                Rock.Web.SystemSettings.Remove();
             }
 
             if ( entityTypeId.HasValue )
@@ -528,7 +566,7 @@ namespace Rock.Model
                             GroupTypeCache.FlushItem( groupTypeId.Value );
                         }
                     }
-                    else if ( entityTypeQualifierColumn.Equals( "GroupTypePurposeValueId", StringComparison.OrdinalIgnoreCase ))
+                    else if ( entityTypeQualifierColumn.Equals( "GroupTypePurposeValueId", StringComparison.OrdinalIgnoreCase ) )
                     {
                         int? groupTypePurposeValueId = entityTypeQualifierValue.AsIntegerOrNull();
                         if ( groupTypePurposeValueId.HasValue )

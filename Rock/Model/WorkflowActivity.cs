@@ -186,7 +186,7 @@ namespace Rock.Model
         {
             get
             {
-                return (this.ActivityType?.IsActive ?? true) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+                return ( this.ActivityType?.IsActive ?? true ) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
             private set { }
         }
@@ -321,7 +321,7 @@ namespace Rock.Model
 
             AddLogEntry( "Processing Complete" );
 
-            if (!this.ActiveActions.Any())
+            if ( !this.ActiveActions.Any() )
             {
                 MarkComplete();
             }
@@ -340,7 +340,7 @@ namespace Rock.Model
             if ( this.Workflow != null )
             {
                 var workflowType = this.Workflow.WorkflowTypeCache;
-                if( force || (
+                if ( force || (
                     workflowType != null && (
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
@@ -379,49 +379,6 @@ namespace Rock.Model
         #endregion
 
         #region Static Methods
-
-        /// <summary>
-        /// Activates the specified WorkflowActivity
-        /// </summary>
-        /// <param name="activityType">The <see cref="Rock.Model.WorkflowActivityType"/> to activate.</param>
-        /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow"/> instance that this Workflow activity belongs to.</param>
-        /// <returns>The activated <see cref="Rock.Model.WorkflowActivity"/>.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead.", true )]
-        public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return Activate( activityType, workflow, rockContext );
-            }
-        }
-
-        /// <summary>
-        /// Activates the specified WorkflowActivity
-        /// </summary>
-        /// <param name="activityType">The <see cref="Rock.Model.WorkflowActivityType" /> to activate.</param>
-        /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow" /> instance that this Workflow activity belongs to.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>
-        /// The activated <see cref="Rock.Model.WorkflowActivity" />.
-        /// </returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead.", true )]
-        public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow, RockContext rockContext )
-        {
-            if ( activityType != null )
-            {
-                var activityTypeCache = WorkflowActivityTypeCache.Get( activityType.Id );
-                var activity = Activate( activityTypeCache, workflow, rockContext );
-                if ( activity != null )
-                {
-                    activity.ActivityType = activityType;
-                }
-                return activity;
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Activates the specified WorkflowActivity
@@ -484,8 +441,8 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities ).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );

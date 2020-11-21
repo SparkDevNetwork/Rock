@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Entity;
@@ -31,8 +32,11 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// Job that populates Rock's family analytics.
     /// </summary>
+    [DisplayName( "Family Analytics" )]
+    [Description( "Job that populates Rock's family analytics." )]
+
     [WorkflowTypeField( "eRA Entry Workflow", "The workflow type to launch when a family becomes an eRA.", key: "EraEntryWorkflow", order: 0)]
     [WorkflowTypeField( "eRA Exit Workflow", "The workflow type to launch when a family exits from being an eRA.", key: "EraExitWorkflow", order: 1 )]
 
@@ -122,6 +126,8 @@ namespace Rock.Jobs
                 // if era ensure it still meets requirements
                 if ( result.IsEra )
                 {
+                    // This process will not remove eRA status from a single inactive family member if the family is considered eRA, even if the person record status is inactive.
+                    // It removes eRA status from all family members if the family no longer meets the eRA requirements.
                     if (result.ExitGiftCountDuration < exitGivingCount && result.ExitAttendanceCountDurationShort < exitAttendanceCountShort && result.ExitAttendanceCountDurationLong < exitAttendanceCountLong )
                     {
                         // exit era (delete attribute value from each person in family)
@@ -188,7 +194,17 @@ namespace Rock.Jobs
 
                     if ( family != null )
                     {
-                        foreach ( var person in family.Members.Where( m => ! m.Person.IsDeceased ).Select( m => m.Person ) )
+                        // The stored procedure does not filter out inactive users because we want to exit the family from eRA if they are not active.
+                        // So check the status for each person here and do not add the person if they are inactive. If the system defined value for 
+                        // an inactive person is not available then use "-1" as every record should pass != -1.
+                        int inactiveStatusId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ) ?? -1;
+
+                        var familyMembers = family.Members
+                            .Where( m => !m.Person.IsDeceased )
+                            .Where( m => m.Person.RecordStatusValueId != inactiveStatusId )
+                            .Select( m => m.Person );
+
+                        foreach ( var person in familyMembers )
                         {
                             // set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();

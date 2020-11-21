@@ -26,7 +26,7 @@ using Rock.Data;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a workflow type and then a workflow of that type
     /// </summary>
     public class WorkflowPicker : CompositeControl, IRockControl
     {

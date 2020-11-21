@@ -20,7 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
-using DDay.iCal;
+
+using Ical.Net;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -30,6 +31,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using System.Data.Entity;
+using Ical.Net.DataTypes;
 
 namespace RockWeb.Blocks.Core
 {
@@ -50,7 +52,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string scheduleIdParam = PageParameter( "scheduleId" );
+                string scheduleIdParam = PageParameter( "ScheduleId" );
                 if ( !string.IsNullOrWhiteSpace( scheduleIdParam ) )
                 {
                     ShowDetail( scheduleIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
@@ -64,7 +66,7 @@ namespace RockWeb.Blocks.Core
             {
                 var rockContext = new RockContext();
                 Schedule schedule;
-                int? itemId = PageParameter( "scheduleId" ).AsIntegerOrNull();
+                int? itemId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
                 if ( itemId.HasValue && itemId > 0 )
                 {
                     schedule = new ScheduleService( rockContext ).Get( itemId.Value );
@@ -265,12 +267,12 @@ namespace RockWeb.Blocks.Core
             hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
 <div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
 
-            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as iCalendar;
-            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
+            var calendar = Calendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as Calendar;
+            var calendarEvent = calendar.Events[0] as Event;
 
-            if ( calendarEvent.DTStart != null )
+            if ( calendarEvent.DtStart != null )
             {
-                List<Occurrence> nextOccurrences = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( 26 ).ToList();
+                var nextOccurrences = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( 26 ).ToList();
 
                 string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
                 foreach ( var occurrence in nextOccurrences )
@@ -427,7 +429,7 @@ namespace RockWeb.Blocks.Core
             hlInactive.Visible = schedule.IsActive == false;
 
             string occurrenceText = string.Empty;
-            var occurrences = schedule.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+            var occurrences = schedule.GetICalOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
             if ( occurrences.Any() )
             {
                 occurrenceText = GetOccurrenceText( occurrences[0] );
@@ -495,6 +497,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlEditDetails.Visible = editable;
             pnlViewDetails.Visible = !editable;
+            HideSecondaryBlocks( editable );
         }
 
         #endregion

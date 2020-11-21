@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -33,8 +34,11 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to run quick SQL queries on a schedule
+    /// Sends payment reminders to registration contacts with an active balance
     /// </summary>
+    [DisplayName( "Event Payment Reminders" )]
+    [Description( "This job sends payment reminders to registration contacts with an active balance. For the reminder to be sent the registration template must have a 'Payment Reminder Time Span' configured. Also emails will not be sent to registrations where the instance close date is past the job's 'Cut-off Date' setting." )]
+
     [IntegerField("Cut-off Date", "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.", true, 30, key:"CutoffDate")]
     [DisallowConcurrentExecution]
     public class SendRegistrationPaymentReminders : IJob
@@ -74,13 +78,14 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
-                var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+                var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
                 var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
+                // Do not filter registrations by template or instance cost, it will miss $0 registrations that have optional fees.
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>
                                                          r.RegistrationInstance.RegistrationTemplate.IsActive
@@ -89,7 +94,6 @@ namespace Rock.Jobs
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.Length > 0
-                                                         && (r.RegistrationInstance.RegistrationTemplate.Cost != 0 || (r.RegistrationInstance.Cost != null && r.RegistrationInstance.Cost != 0))
                                                          && (r.RegistrationInstance.EndDateTime == null || currentDate <= System.Data.Entity.SqlServer.SqlFunctions.DateAdd("day", cutoffDays,  r.RegistrationInstance.EndDateTime) ) )
                                                  .ToList();
 
@@ -110,11 +114,12 @@ namespace Rock.Jobs
 
                             var emailMessage = new RockEmailMessage();
                             emailMessage.AdditionalMergeFields = mergeObjects;
-                            emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                            emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeObjects ) );
                             emailMessage.FromEmail = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail;
                             emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
                             emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName;
                             emailMessage.Message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
+                            emailMessage.AppRoot = publicAppRoot;
                             var emailErrors = new List<string>();
                             emailMessage.Send(out errors);
 

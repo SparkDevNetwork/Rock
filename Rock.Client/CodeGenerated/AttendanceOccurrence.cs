@@ -35,7 +35,19 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary />
         public int? AnonymousAttendanceCount { get; set; }
+
+        /// <summary />
+        public int? AttendanceTypeValueId { get; set; }
+
+        /// <summary />
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary />
+        public string DeclineReasonValueIds { get; set; }
 
         /// <summary />
         public bool? DidNotOccur { get; set; }
@@ -58,6 +70,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public string Notes { get; set; }
 
         /// <summary />
@@ -65,6 +80,15 @@ namespace Rock.Client
 
         /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool ShowDeclineReasons { get; set; }
+
+        /// <summary />
+        public int? StepTypeId { get; set; }
+
+        /// <summary />
+        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -99,16 +123,24 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AttendanceOccurrence source )
         {
             this.Id = source.Id;
+            this.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             this.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            this.AttendanceTypeValueId = source.AttendanceTypeValueId;
+            this.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
+            this.DeclineReasonValueIds = source.DeclineReasonValueIds;
             this.DidNotOccur = source.DidNotOccur;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
+            this.ShowDeclineReasons = source.ShowDeclineReasons;
+            this.StepTypeId = source.StepTypeId;
+            this.SundayDate = source.SundayDate;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -128,7 +160,13 @@ namespace Rock.Client
         public ICollection<Attendance> Attendees { get; set; }
 
         /// <summary />
-        public DateTime SundayDate { get; set; }
+        public int OccurrenceDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate OccurrenceSourceDate { get; set; }
+
+        /// <summary />
+        public StepType StepType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

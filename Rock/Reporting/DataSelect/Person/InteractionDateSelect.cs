@@ -159,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
                 else
                 {
-                    interactionQry = interactionQry.Where( xx => xx.InteractionComponent.Channel.Guid == interactionChannelGuid );
+                    interactionQry = interactionQry.Where( xx => xx.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid );
                 }
 
                 string operation = string.Empty;
@@ -257,7 +257,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 var interactionComponentService = new InteractionComponentService( new RockContext() );
                 var interactionComponents = interactionComponentService.Queryable()
-                                    .Where( a => a.ChannelId == ( interactionChannelId ?? 0 ) )
+                                    .Where( a => a.InteractionChannelId == ( interactionChannelId ?? 0 ) )
                                     .OrderBy( a => a.Name ).
                                     Select( a => new
                                     {

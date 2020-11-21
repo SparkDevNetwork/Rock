@@ -38,6 +38,11 @@ namespace Rock.Client
         public bool AddUserAccountsDuringSync { get; set; }
 
         /// <summary />
+        public int? ExitSystemCommunicationId { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "Use ExitSystemCommunicationId instead.", false )]
         public int? ExitSystemEmailId { get; set; }
 
         /// <summary />
@@ -52,15 +57,26 @@ namespace Rock.Client
         /// <summary />
         public int GroupTypeRoleId { get; set; }
 
+        /// <summary />
+        public DateTime? LastRefreshDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int? ScheduleIntervalMinutes { get; set; }
+
+        /// <summary />
         public int SyncDataViewId { get; set; }
 
         /// <summary />
+        public int? WelcomeSystemCommunicationId { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "Use WelcomeSystemCommunicationId instead.", false )]
         public int? WelcomeSystemEmailId { get; set; }
 
         /// <summary>
@@ -97,14 +113,22 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
+            this.ExitSystemCommunicationId = source.ExitSystemCommunicationId;
+            #pragma warning disable 612, 618
             this.ExitSystemEmailId = source.ExitSystemEmailId;
+            #pragma warning restore 612, 618
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.GroupTypeRoleId = source.GroupTypeRoleId;
+            this.LastRefreshDateTime = source.LastRefreshDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.ScheduleIntervalMinutes = source.ScheduleIntervalMinutes;
             this.SyncDataViewId = source.SyncDataViewId;
+            this.WelcomeSystemCommunicationId = source.WelcomeSystemCommunicationId;
+            #pragma warning disable 612, 618
             this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
+            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -121,7 +145,7 @@ namespace Rock.Client
     public partial class GroupSync : GroupSyncEntity
     {
         /// <summary />
-        public SystemEmail ExitSystemEmail { get; set; }
+        public SystemCommunication ExitSystemCommunication { get; set; }
 
         /// <summary />
         public Group Group { get; set; }
@@ -133,7 +157,7 @@ namespace Rock.Client
         public DataView SyncDataView { get; set; }
 
         /// <summary />
-        public SystemEmail WelcomeSystemEmail { get; set; }
+        public SystemCommunication WelcomeSystemCommunication { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

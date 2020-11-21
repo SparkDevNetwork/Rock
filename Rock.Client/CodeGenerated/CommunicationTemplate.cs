@@ -96,7 +96,19 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PushData { get; set; }
+
+        /// <summary />
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary />
         public string PushMessage { get; set; }
+
+        /// <summary />
+        public int /* PushOpenAction*/? PushOpenAction { get; set; }
+
+        /// <summary />
+        public string PushOpenMessage { get; set; }
 
         /// <summary />
         public string PushSound { get; set; }
@@ -170,7 +182,11 @@ namespace Rock.Client
             this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PushData = source.PushData;
+            this.PushImageBinaryFileId = source.PushImageBinaryFileId;
             this.PushMessage = source.PushMessage;
+            this.PushOpenAction = source.PushOpenAction;
+            this.PushOpenMessage = source.PushOpenMessage;
             this.PushSound = source.PushSound;
             this.PushTitle = source.PushTitle;
             this.ReplyToEmail = source.ReplyToEmail;
@@ -200,6 +216,9 @@ namespace Rock.Client
         public Category Category { get; set; }
 
         /// <summary />
+        public BinaryFile ImageFile { get; set; }
+
+        /// <summary />
         public bool IsPersonal { get; set; }
 
         /// <summary />
@@ -207,6 +226,9 @@ namespace Rock.Client
 
         /// <summary />
         public BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary />
+        public BinaryFile PushImageBinaryFile { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }

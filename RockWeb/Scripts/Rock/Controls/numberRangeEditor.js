@@ -16,9 +16,9 @@
 
                 if (required) {
                     // if required, then make sure that the number range has a lower and/or upper value (can't both be blank)
-                    if (lowerValue.length == 0 && upperValue.length == 0) {
+                    if (lowerValue.length === 0 && upperValue.length === 0) {
                         isValid = false;
-                        validator.errormessage = itemLabelText + " is required";
+                        validator.errormessage = itemLabelText + ' is required';
                     }
                 }
 

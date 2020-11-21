@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -28,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest
 {
@@ -73,7 +75,7 @@ namespace Rock.Rest
         [EnableQuery]
         public virtual IQueryable<T> Get()
         {
-            var result = Service.Queryable();
+            var result = Service.Queryable().AsNoTracking();
             return result;
         }
 
@@ -116,13 +118,91 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets records that have a particular attribute value.
+        /// Example: api/People/GetByAttributeValue?attributeKey=FirstVisit&amp;value=2012-12-15
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="caseSensitive">if set to <c>true</c> [case sensitive].</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByAttributeValue" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByAttributeValue( [FromUri] int? attributeId = null, [FromUri] string attributeKey = null, [FromUri] string value = null, [FromUri] bool caseSensitive = false )
+        {
+            // Value is always required
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The value param is required" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Either key or id is required, but not both
+            var queryByKey = !attributeKey.IsNullOrWhiteSpace();
+            var queryById = attributeId.HasValue;
+
+            if ( queryByKey == queryById )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Either attributeKey or attributeId must be specified, but not both" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Query for the models that have the value for the attribute
+            var rockContext = Service.Context as RockContext;
+            var query = Service.Queryable().AsNoTracking();
+            var valueComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if ( queryById )
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.AttributeId == attributeId && a.Value.Equals( value, valueComparison ) );
+            }
+            else
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets items associated with a campus using the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByCampus" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByCampus( [FromUri] int campusId )
+        {
+            if ( !typeof( T ).GetInterfaces().Contains( typeof( ICampusFilterable ) ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The model does not support campus filtering." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var rockContext = Service.Context as RockContext;
+            var result = Service
+                .Queryable()
+                .AsNoTracking()
+                .WhereCampus( rockContext, campusId );
+
+            return result;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
-        public virtual HttpResponseMessage Post( [FromBody]T value )
+        public virtual HttpResponseMessage Post( [FromBody] T value )
         {
             if ( value == null )
             {
@@ -142,10 +222,7 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            }
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 
@@ -164,7 +241,7 @@ namespace Rock.Rest
         /// <exception cref="HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        public virtual void Put( int id, [FromBody]T value )
+        public virtual void Put( int id, [FromBody] T value )
         {
             if ( value == null )
             {
@@ -185,10 +262,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -209,7 +283,7 @@ namespace Rock.Rest
         /// <exception cref="HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
+        public virtual void Patch( int id, [FromBody] Dictionary<string, object> values )
         {
             // Check that something was sent in the body
             if ( values == null || !values.Keys.Any() )
@@ -311,10 +385,7 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -359,27 +430,67 @@ namespace Rock.Rest
         [EnableQuery]
         public IQueryable<T> GetDataView( int id )
         {
-            var dataView = new DataViewService( new RockContext() ).Get( id );
+            var rockContext = new RockContext();
+            var dataView = new DataViewService( rockContext ).Get( id );
 
-            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
-            CheckCanView( dataView, GetPerson() );
+            ValidateDataView( dataView );
 
-            SetProxyCreation( false );
+            var paramExpression = Service.ParameterExpression;
+            var whereExpression = dataView.GetExpression( Service, paramExpression );
+            return Service.GetNoTracking( paramExpression, whereExpression );
+        }
 
-            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
+        /// <summary>
+        /// Determines if the entity id is in the data view
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "InDataView" )]
+        [EnableQuery]
+        [HttpGet]
+        public bool InDataView( int dataViewId, int entityId )
+        {
+            var rockContext = new RockContext();
+
+            var dataView = new DataViewService( rockContext ).Get( dataViewId );
+
+            ValidateDataView( dataView );
+
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                var errorMessages = new List<string>();
+                DbContext = rockContext
+            };
 
-                var paramExpression = Service.ParameterExpression;
-                var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
+            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
+            qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
 
-                if ( paramExpression != null )
-                {
-                    return Service.Get( paramExpression, whereExpression );
-                }
+            return qryGroupsInDataView.Any();
+        }
+
+        /// <summary>
+        /// Checks to makes sure DataView exists, has the correct entityType, and person has View rights, etc
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        private void ValidateDataView( DataView dataView )
+        {
+            if ( dataView == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            return null;
+            var controllerEntityType = EntityTypeCache.Get<T>();
+            if ( dataView.EntityTypeId != controllerEntityType?.Id )
+            {
+                HttpResponseMessage errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"{dataView.Name} is not a {controllerEntityType?.Name} dataview" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // since DataViews can be secured at the DataView or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
         }
 
         /// <summary>
@@ -448,6 +559,35 @@ namespace Rock.Rest
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+        }
+
+        /// <summary>
+        /// Gets a query of the items that are followed by a specific person. For example, ~/api/Groups/FollowedItems
+        /// would return a list of groups that the person is following. Either ?personId= or ?personAliasId= can be
+        /// specified to indicate what person you want to see the followed items for.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "FollowedItems" )]
+        [EnableQuery]
+        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        {
+            if ( !personId.HasValue )
+            {
+                if ( personAliasId.HasValue )
+                {
+                    personId = new PersonAliasService( this.Service.Context as RockContext ).GetPersonId( personAliasId.Value );
+                }
+            }
+
+            if ( personId.HasValue )
+            {
+                return Service.GetFollowed( personId.Value );
+            }
+
+            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified" } );
         }
 
         /// <summary>
@@ -550,15 +690,10 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-            var contextCookie = httpContext.Request.Cookies[cookieName];
-            if ( contextCookie == null )
-            {
-                contextCookie = new System.Web.HttpCookie( cookieName );
-            }
-
+            var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            httpContext.Response.Cookies.Add( contextCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
@@ -649,7 +784,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable proxy creation].
+        /// Gets or sets a value indicating whether [enable proxy creation]. This is needed if lazy loading is needed or Editing/Deleting an entity, etc
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable proxy creation]; otherwise, <c>false</c>.

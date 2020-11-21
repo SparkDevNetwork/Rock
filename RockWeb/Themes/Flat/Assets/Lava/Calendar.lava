@@ -27,11 +27,11 @@
     <div class="panel-body">
       <div class="col-md-2">
         <div class="row">
-          <b>Date</b>
+          <strong>Date</strong>
         </div>
         <div class="row">
-          {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
-            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+          {% if eventItemOccurrence.Date != eventItemOccurrence.EndDate %}
+            {{ eventItemOccurrence.Date | Date: 'MMM d' }} - {{ eventItemOccurrence.EndDate | Date: 'MMM d' }}
           {% else %}
             {{ eventItemOccurrence.Date | Date: 'MMM d' }}
           {% endif %}
@@ -39,7 +39,7 @@
       </div>
       <div class="col-md-2">
         <div class="row">
-          <b>Time</b>
+          <strong>Time</strong>
         </div>
         <div class="row">
           {{ eventItemOccurrence.Time }}
@@ -47,7 +47,7 @@
       </div>
       <div class="col-md-3">
         <div class="row">
-          <b>Location</b>
+          <strong>Location</strong>
         </div>
         <div class="row">
           {{ eventItemOccurrence.Location }}
@@ -55,7 +55,7 @@
       </div>
       <div class="col-md-4">
         <div class="row">
-          <b>Summary</b>
+          <strong>Summary</strong>
         </div>
         <div class="row">
           {{ eventItemOccurrence.Summary }}

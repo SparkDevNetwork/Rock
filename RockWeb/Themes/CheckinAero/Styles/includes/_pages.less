@@ -1,0 +1,222 @@
+// Checkin Header
+.checkin-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0;
+  margin: 10px 0 12px;
+  text-align: center;
+
+  @media (min-width: @screen-xs-min) {
+    height: 60px;
+    margin: 10px 0 30px;
+  }
+
+  h1{
+    max-width: ~"calc(100vw - 125px)";
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 24px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @media (min-width: @screen-xs-min) {
+      max-width: ~"calc(100vw - 150px)";
+      font-size: @font-size-h1;
+    }
+  }
+
+  .checkin-sub-title {
+    display: block;
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 400;
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+// Checkin Footer
+.checkin-footer {
+  position: inherit;
+  height: 90px;
+  padding: 0;
+  margin: 0;
+
+  .location-select &,
+  .family-select & {
+    height: 0;
+  }
+
+  .checkin-actions {
+    .btn-cancel,
+    .btn-back {
+      position: absolute;
+      top: 10px;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      font-size: 0;
+      line-height: 44px;
+      color: @navigation-button-color;
+      background: @navigation-button-background;
+      border: 1px solid @navigation-button-border;
+      border-radius: 50%;
+
+      @media (min-width: @screen-xs-min) {
+        width: 60px;
+        height: 60px;
+        line-height: 58px;
+      }
+
+      &::before {
+        font-family: @fa-font-face;
+        font-size: 20px;
+        font-weight: @fa-theme-weight;
+      }
+    }
+
+    .btn-back {
+      left: 10px;
+      &::before {
+        content: @fa-var-chevron-left;
+      }
+    }
+
+    .btn-cancel {
+      right: 10px;
+      &::before {
+        content: @fa-var-times;
+      }
+    }
+  }
+}
+
+.checkin-footer .checkin-actions .btn-primary,
+.btn-footer {
+  position: absolute;
+  right: 15px;
+  bottom: 24px;
+  left: 15px;
+  z-index: 100;
+  padding: 14px 26px;
+  font-size: 24px;
+  font-weight: @checkin-button-text-weight;
+  background: @primary-button-background;
+  border-radius: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
+
+  @media (min-width: @screen-xs-min) {
+    right: 100px;
+    bottom: 24px;
+    left: 100px;
+  }
+}
+
+.checkin-anotherperson {
+  .checkin-scroll-panel {
+    bottom: 165px !important;
+  }
+
+  .checkin-actions .btn-default {
+    .btn-checkin-select();
+    position: absolute;
+    right: 15px;
+    bottom: 88px;
+    left: 15px;
+    z-index: 100;
+    padding: 14px 26px !important;
+    font-size: 24px !important;
+    font-weight: @checkin-button-text-weight !important;
+    min-height: 0 !important;
+
+    @media (min-width: @screen-xs-min) {
+      right: 100px;
+      // bottom: 88px;
+      left: 100px;
+    }
+  }
+}
+
+
+// Checkin Background Sheet
+.sheet-background,
+.block-instance,
+.kioskmanager-locations,
+.checkin-inactive,
+.js-manager-login {
+  &::before {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    content: "";
+    background: @sheet-background;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 0 6px rgba(0, 0, 0, .1), 0 0 4px rgba(0, 0, 0, .06);
+
+    @media (min-width: @screen-xs-min) {
+      border-radius: 20px 20px 0 0;
+    }
+  }
+}
+
+
+.block-instance,
+.checkin-inactive,
+.kioskmanager-locations {
+  &::before {
+    top: 65px;
+
+    @media (min-width: @screen-xs-min) {
+      top: 90px;
+    }
+  }
+}
+
+.block-instance {
+  &.search {
+    &::before {
+      top: 170px;
+
+      @media (min-width: @screen-xs-min) {
+        top: 220px;
+      }
+    }
+  }
+
+  &.group-type-select,
+  &.search,
+  &.ability-level-select {
+    .checkin-scroll-panel {
+      bottom: 0 !important;
+    }
+  }
+
+  &.welcome,
+  &.edit-family,
+  &.idle-redirect {
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.js-manager-login {
+  &::before {
+    top: 80px;
+  }
+}
+
+//
+
+// No Checkin Available Styling
+.group-type-select {
+  text-align: center;
+}

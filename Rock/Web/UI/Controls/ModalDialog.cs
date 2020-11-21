@@ -167,6 +167,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets additional CSS classes for the modal
+        /// If js hooks are needed this is the place to add them.
+        /// </summary>
+        /// <value>
+        /// The modal CSS class.
+        /// </value>
+        public string ModalCssClass
+        {
+            get => ViewState["ModalCssClass"] as string ?? string.Empty;
+            set => ViewState["ModalCssClass"] = value;
+        }
+
+        /// <summary>
         /// Gets the Control for the SaveButton
         /// </summary>
         /// <value>
@@ -222,6 +235,15 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["OnCancelScript"] as string ?? string.Empty; }
             set { ViewState["OnCancelScript"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether clicking the backdrop closes the modal.
+        /// </summary>
+        public bool ClickBackdropToClose
+        {
+            get => ViewState["ClickBackdropToClose"].ToStringSafe().AsBoolean();
+            set => ViewState["ClickBackdropToClose"] = value;
         }
 
         /// <summary>
@@ -314,15 +336,26 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public void Hide()
         {
+            Hide( null );
+        }
+
+        /// <summary>
+        /// Hides this instance.
+        /// </summary>
+        /// <param name="managerId">The ID of the modal's manager (HTML element).</param>
+        public void Hide( string managerId )
+        {
             EnsureChildControls();
             _hfModalVisible.Value = "0";
 
+            var managerSelector = managerId.IsNullOrWhiteSpace() ? GetModalManagerSelector() : $"#{managerId}";
+            var managerArg = !string.IsNullOrWhiteSpace( managerId ) ? $", $('{managerSelector}')" : string.Empty;
+
             // make sure the close script gets fired, even if the modal isn't rendered
-            string hideScript = string.Format( "Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID );
+            string hideScript = string.Format( "Rock.controls.modal.closeModalDialog($('#{0}'){1});", _dialogPanel.ClientID, managerArg );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
 
             this.Visible = false;
-
         }
 
         /// <summary>
@@ -437,6 +470,11 @@ namespace Rock.Web.UI.Controls
             _serverSaveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
             _serverSaveLink.AddCssClass( SaveButtonCssClass );
+            if ( ModalCssClass.IsNotNullOrWhiteSpace() )
+            {
+                _dialogPanel.AddCssClass( ModalCssClass );
+            }
+
             if ( SaveButtonCausesValidation )
             {
                 _serverSaveLink.CausesValidation = true;
@@ -470,40 +508,52 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the modal manager.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetModalManagerSelector()
+        {
+            var parentPanel = this.ParentUpdatePanel();
+            return parentPanel != null ? "#" + parentPanel.ClientID : "body";
+        }
+
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         protected void RegisterJavaScript()
         {
-            var parentPanel = this.ParentUpdatePanel();
-            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
+            var modalManager = GetModalManagerSelector();
 
             // if this is Modal is a child of a another Modal, make sure the parent modal stays visible if this modal is closed
             var parentModal = this.FirstParentControlOfType<ModalDialog>();
             string showParentModalOnCloseScript = null;
             if ( parentModal != null )
             {
-                showParentModalOnCloseScript = $@"Rock.controls.modal.showModalDialog($('#{parentModal._dialogPanel.ClientID}'), '{modalManager}');";
+                showParentModalOnCloseScript = $@"Rock.controls.modal.showModalDialog($('#{parentModal._dialogPanel.ClientID}'), '{modalManager}', {parentModal.ClickBackdropToClose.ToJavaScriptValue()}, $('#{parentModal._hfModalVisible.ClientID}') );";
             }
+
+            // if the Modal's manger is an UpdatePanel, provide the appropriate jQuery selector to the closeModalDialog function
+            var closeDialogManagerArg = modalManager != "body" ? $", $('{modalManager}')" : string.Empty;
 
             string script = $@"
 if ($('#{_hfModalVisible.ClientID}').val() == '1') {{
-    Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}');
-}} 
+    Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}', {ClickBackdropToClose.ToJavaScriptValue()}, $('#{_hfModalVisible.ClientID}') );
+}}
 else {{
-    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'){closeDialogManagerArg});
 }}
 
-$('#{_cancelLink.ClientID}, #{_closeLink.ClientID}').click(function () {{
+$('#{_cancelLink.ClientID}, #{_closeLink.ClientID}').on('click', function () {{
     {this.OnCancelScript}
     $('#{_hfModalVisible.ClientID}').val('0');
-    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'){closeDialogManagerArg});
     {showParentModalOnCloseScript}
 }});
 
-$('#{_saveLink.ClientID}').click(function () {{
+$('#{_saveLink.ClientID}').on('click', function () {{
     {this.OnOkScript}
     $('#{_hfModalVisible.ClientID}').val('0');
-    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'){closeDialogManagerArg});
 }});
 
 ";

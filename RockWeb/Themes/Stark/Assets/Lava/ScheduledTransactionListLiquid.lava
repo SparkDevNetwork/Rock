@@ -7,8 +7,13 @@
   {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}
   {% endif %}<br>
   {{ ScheduledTransaction.FrequencyDescription | downcase }}.
-
+    
   {% if ScheduledTransaction.NextPaymentDate != null %}
   Next gift will be on {{ ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy" }}.
   {% endif %}
+
+  {% if ScheduledTransaction.EditPage == null %}
+    <p>Please contact us to if you need to change this scheduled transaction.</p>
+  {% endif %}
+
 </div>

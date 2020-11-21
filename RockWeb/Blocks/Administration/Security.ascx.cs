@@ -131,12 +131,6 @@ namespace RockWeb.Blocks.Administration
                     var blockCache = BlockCache.Get( block.Id );
                     if ( blockCache != null && blockCache.BlockType != null )
                     {
-                        // just in case the block hasn't had its security actions set (they get loaded on page load), set them
-                        if ( blockCache.BlockType.SecurityActions == null)
-                        {
-                            blockCache.BlockType.SetSecurityActions( TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock );
-                        }
-
                         foreach ( var action in blockCache.BlockType.SecurityActions )
                         {
                             if ( block.SupportedActions.ContainsKey( action.Key ) )

@@ -58,6 +58,9 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public string ItemGlobalKey { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -77,6 +80,9 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.ContentChannelItemStatus Status { get; set; }
+
+        /// <summary />
+        public string StructuredContent { get; set; }
 
         /// <summary />
         public string Title { get; set; }
@@ -122,12 +128,14 @@ namespace Rock.Client
             this.ExpireDateTime = source.ExpireDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.ItemGlobalKey = source.ItemGlobalKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.Permalink = source.Permalink;
             this.Priority = source.Priority;
             this.StartDateTime = source.StartDateTime;
             this.Status = source.Status;
+            this.StructuredContent = source.StructuredContent;
             this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

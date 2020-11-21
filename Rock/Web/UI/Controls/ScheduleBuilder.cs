@@ -23,13 +23,15 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using DDay.iCal;
-using DDay.iCal.Serialization.iCalendar;
+using Ical.Net;
+using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.DataTypes;
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilder : CompositeControl, IRockControl
     {
@@ -265,7 +267,6 @@ namespace Rock.Web.UI.Controls
 
                 if ( rockPage != null )
                 {
-                    rockPage.AddScriptLink( "~/Scripts/moment.min.js" );
                     rockPage.AddScriptLink( "~/Scripts/moment-with-locales.min.js" );
                 }
 
@@ -329,6 +330,28 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _btnShowPopup.ToolTip = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show start date time].
+        /// Set this to false if you are using this to build a Schedule Template.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show start date time]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowStartDateTime
+        {
+            get
+            {
+                EnsureChildControls();
+                return _scheduleBuilderPopupContents.ShowStartDateTime;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _scheduleBuilderPopupContents.ShowStartDateTime = value;
             }
         }
 
@@ -466,7 +489,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilderPopupContents : CompositeControl
     {
@@ -509,7 +532,7 @@ namespace Rock.Web.UI.Controls
         private NumberBox _tbMonthlyDayX;
         private NumberBox _tbMonthlyXMonths;
         private RockRadioButton _radMonthlyNth;
-        private RockDropDownList _ddlMonthlyNth;
+        private RockListBox _lbMonthlyNth;
         private RockDropDownList _ddlMonthlyDayName;
 
         // end date
@@ -579,7 +602,7 @@ END:VCALENDAR
             _tbMonthlyDayX = new NumberBox();
             _tbMonthlyXMonths = new NumberBox();
             _radMonthlyNth = new RockRadioButton();
-            _ddlMonthlyNth = new RockDropDownList();
+            _lbMonthlyNth = new RockListBox();
             _ddlMonthlyDayName = new RockDropDownList();
 
             // end date
@@ -608,6 +631,25 @@ END:VCALENDAR
             set
             {
                 ViewState["_iCalendarContent"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show start date time].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show start date time]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowStartDateTime
+        {
+            get
+            {
+                return ViewState["ShowStartDateTime"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowStartDateTime"] = value;
             }
         }
 
@@ -656,6 +698,26 @@ END:VCALENDAR
         {
             EnsureChildControls();
 
+            var specificDateTimes = _hfSpecificDateListValues.Value.SplitDelimitedValues()
+                .Select( s => s.AsDateTime() )
+                .Where( d => d.HasValue )
+                .Select( d => d.Value.Add( _dpStartDateTime.SelectedTime.HasValue ?
+                    _dpStartDateTime.SelectedTime.Value :
+                    new TimeSpan() ) )
+                .OrderBy( d => d );
+
+            // if they set some specific dates but no start date, assume the min specific date is the start date
+            // https://app.asana.com/0/767023941425027/932463467734953/f
+            if ( !_dpStartDateTime.SelectedDateTime.HasValue && specificDateTimes.Any() )
+            {
+                _dpStartDateTime.SelectedDateTime = specificDateTimes.First();
+            }
+
+            if ( !this.ShowStartDateTime && _dpStartDateTime.SelectedDateTimeIsBlank )
+            {
+                _dpStartDateTime.SelectedDateTime = RockDateTime.Now;
+            }
+
             if ( _dpStartDateTime.SelectedDateTimeIsBlank )
             {
                 if ( _radRecurring.Checked )
@@ -678,9 +740,9 @@ END:VCALENDAR
                 }
             }
 
-            DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
-            calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
-            calendarEvent.DTStart.HasTime = true;
+            var calendarEvent = new Event();
+            calendarEvent.DtStart = new CalDateTime( _dpStartDateTime.SelectedDateTime.Value );
+            calendarEvent.DtStart.HasTime = true;
 
             int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
@@ -701,19 +763,11 @@ END:VCALENDAR
                 if ( _radSpecificDates.Checked )
                 {
                     #region specific dates
-                    PeriodList recurrenceDates = new PeriodList();
-                    List<string> dateStringList = _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                    foreach ( var dateString in dateStringList )
+                    var recurrenceDates = new PeriodList();
+
+                    foreach ( var datetime in specificDateTimes )
                     {
-                        DateTime newDate;
-                        if ( DateTime.TryParse( dateString, out newDate ) )
-                        {
-                            if ( _dpStartDateTime.SelectedTime != null )
-                            {
-                                newDate = newDate.Add( _dpStartDateTime.SelectedTime.Value );
-                            }
-                            recurrenceDates.Add( new iCalDateTime( newDate ) );
-                        }
+                        recurrenceDates.Add( new CalDateTime( datetime ) );
                     }
 
                     calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -808,10 +862,25 @@ END:VCALENDAR
                         }
                         else if ( _radMonthlyNth.Checked )
                         {
-                            WeekDay monthWeekDay = new WeekDay();
-                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsIntegerOrNull() ?? 1;
-                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsIntegerOrNull() ?? 1 );
-                            rruleMonthly.ByDay.Add( monthWeekDay );
+                            var dayOfWeek = ( DayOfWeek ) ( _ddlMonthlyDayName.SelectedValue.AsIntegerOrNull() ?? 1 );
+                            if ( _lbMonthlyNth.SelectedValuesAsInt.Any() )
+                            {
+                                foreach ( var offSet in _lbMonthlyNth.SelectedValuesAsInt )
+                                {
+                                    WeekDay monthWeekDay = new WeekDay();
+                                    monthWeekDay.Offset = offSet;
+                                    monthWeekDay.DayOfWeek = dayOfWeek;
+                                    rruleMonthly.ByDay.Add( monthWeekDay );
+                                }
+                            }
+                            else
+                            {
+                                // they left _lbMonthlyNth blank, so assume offSet = 1
+                                WeekDay monthWeekDay = new WeekDay();
+                                monthWeekDay.Offset = 1;
+                                monthWeekDay.DayOfWeek = dayOfWeek;
+                                rruleMonthly.ByDay.Add( monthWeekDay );
+                            }
                         }
 
                         calendarEvent.RecurrenceRules.Add( rruleMonthly );
@@ -822,7 +891,7 @@ END:VCALENDAR
 
             if ( calendarEvent.RecurrenceRules.Count > 0 )
             {
-                IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                var rrule = calendarEvent.RecurrenceRules[0];
 
                 // Continue Until
                 if ( _radEndByNone.Checked )
@@ -858,7 +927,7 @@ END:VCALENDAR
                             DateTime dateToAdd = beginDate.Date;
                             while ( dateToAdd <= endDate )
                             {
-                                Period periodToAdd = new Period( new iCalDateTime( dateToAdd ) );
+                                var periodToAdd = new Period( new CalDateTime( dateToAdd ) );
                                 if ( !exceptionDates.Contains( periodToAdd ) )
                                 {
                                     exceptionDates.Add( periodToAdd );
@@ -876,19 +945,19 @@ END:VCALENDAR
                 calendarEvent.ExceptionDates.Add( exceptionDates );
             }
 
-            DDay.iCal.iCalendar calendar = new iCalendar();
+            var calendar = new Calendar();
             calendar.Events.Add( calendarEvent );
 
-            iCalendarSerializer s = new iCalendarSerializer( calendar );
+            var iCalendarSerializer = new CalendarSerializer( calendar );
 
-            return s.SerializeToString( calendar );
+            return iCalendarSerializer.SerializeToString( calendar );
         }
 
         /// <summary>
-        /// Gets or sets the content of the i calendar.
+        /// Gets or sets the content of the iCalendar.
         /// </summary>
         /// <value>
-        /// The content of the i calendar. 
+        /// The content of the iCalendar.
         /// </value>
         public string iCalendarContent
         {
@@ -901,7 +970,7 @@ END:VCALENDAR
             {
                 EnsureChildControls();
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.
                 //// We just need one Calendar and one Event
 
                 // set all rad to false to prevent multiple from being true
@@ -920,21 +989,21 @@ END:VCALENDAR
                 _tbDailyEveryXDays.Text = "1";
 
                 StringReader stringReader = new StringReader( string.IsNullOrWhiteSpace( value ) ? iCalendarContentEmptyEvent : value );
-                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-                DDay.iCal.Event calendarEvent = null;
-                DDay.iCal.iCalendar calendar = null;
+                var calendarList = Calendar.LoadFromStream( stringReader );
+                Event calendarEvent = null;
+                Calendar calendar = null;
                 if ( calendarList.Count > 0 )
                 {
-                    calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    calendar = calendarList[0] as Calendar;
                 }
 
                 // just in case we couldn't get a schedule out of it, load the default
                 if ( calendar == null )
                 {
-                    calendarList = DDay.iCal.iCalendar.LoadFromStream( new StringReader( iCalendarContentEmptyEvent ) );
+                    calendarList = Calendar.LoadFromStream( new StringReader( iCalendarContentEmptyEvent ) );
                     if ( calendarList.Count > 0 )
                     {
-                        calendar = calendarList[0] as DDay.iCal.iCalendar;
+                        calendar = calendarList[0] as Calendar;
                     }
                 }
 
@@ -944,11 +1013,11 @@ END:VCALENDAR
                     return;
                 }
 
-                calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                calendarEvent = calendar.Events[0] as Event;
 
-                if ( calendarEvent.DTStart != null )
+                if ( calendarEvent.DtStart != null )
                 {
-                    _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
+                    _dpStartDateTime.SelectedDateTime = calendarEvent.DtStart.Value;
                     int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
                     _tbDurationHours.Text = hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
@@ -975,7 +1044,7 @@ END:VCALENDAR
 
                 if ( _radRecurring.Checked )
                 {
-                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                    var rrule = calendarEvent.RecurrenceRules[0];
                     switch ( rrule.Frequency )
                     {
                         case FrequencyType.Daily:
@@ -988,7 +1057,7 @@ END:VCALENDAR
                             // NOTE:  Daily Every Weekday/Weekend Day is actually Weekly on Day(s)OfWeek in iCal
                             break;
 
-                            #endregion
+                        #endregion
                         case FrequencyType.Weekly:
                             #region weekly
 
@@ -1025,7 +1094,7 @@ END:VCALENDAR
 
                             break;
 
-                            #endregion
+                        #endregion
                         case FrequencyType.Monthly:
                             #region monthly
 
@@ -1043,14 +1112,17 @@ END:VCALENDAR
                             {
                                 // The Nth <DayOfWeekName>
                                 _radMonthlyNth.Checked = true;
-                                IWeekDay bydate = rrule.ByDay[0];
-                                _ddlMonthlyNth.SelectedValue = bydate.Offset.ToString();
-                                _ddlMonthlyDayName.SelectedValue = bydate.DayOfWeek.ConvertToInt().ToString();
+                                var bydates = rrule.ByDay.ToList();
+
+                                // use the first byDate as the DayOfWeek (since that is all the UI supports)
+                                _ddlMonthlyDayName.SelectedValue = bydates.First().DayOfWeek.ConvertToInt().ToString();
+
+                                _lbMonthlyNth.SetValues( bydates.Select(a => a.Offset) );
                             }
 
                             break;
 
-                            #endregion
+                        #endregion
                         default:
                             // Unexpected type of recurring, fallback to Specific Dates
                             _radSpecificDates.Checked = true;
@@ -1077,9 +1149,9 @@ END:VCALENDAR
                     if ( calendarEvent.ExceptionDates.Count > 0 )
                     {
                         // convert individual ExceptionDates into a list of Date Ranges
-                        List<Period> exDateRanges = new List<Period>();
-                        List<IDateTime> dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
-                        IDateTime previousDate = dates[0].AddDays( -1 );
+                        var exDateRanges = new List<Period>();
+                        var dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
+                        var previousDate = dates[0].AddDays( -1 );
                         var dateRange = new Period { StartTime = dates[0] };
                         foreach ( var date in dates )
                         {
@@ -1112,8 +1184,8 @@ END:VCALENDAR
                         _radEndByNone.Checked = true;
                         _radEndByDate.Checked = false;
                         _radEndByOccurrenceCount.Checked = false;
-                        IPeriodList dates = calendarEvent.RecurrenceDates[0];
-                        _hfSpecificDateListValues.Value = dates.Select( a => new iCalDateTime( a.StartTime.Date ) ).ToList().AsDelimited( "," ).Replace( " UTC", "" );
+                        var dates = calendarEvent.RecurrenceDates[0];
+                        _hfSpecificDateListValues.Value = dates.Select( a => new CalDateTime( a.StartTime.Date ) ).ToList().AsDelimited( "," ).Replace( " UTC", "" );
                     }
 
                     _radEndByNone.Checked = true;
@@ -1295,14 +1367,12 @@ END:VCALENDAR
             _radMonthlyNth.ID = "radMonthlyNth_" + this.ClientID;
             _radMonthlyNth.GroupName = "monthly-options";
 
-            _ddlMonthlyNth.ClientIDMode = ClientIDMode.Static;
-            _ddlMonthlyNth.ID = "ddlMonthlyNth_" + this.ClientID;
-            _ddlMonthlyNth.CssClass = "input-width-sm";
+            _lbMonthlyNth.ClientIDMode = ClientIDMode.Static;
+            _lbMonthlyNth.ID = "_lbMonthlyNth_" + this.ClientID;
 
-            _ddlMonthlyNth.Items.Add( string.Empty );
             foreach ( var nth in Rock.Model.Schedule.NthNames )
             {
-                _ddlMonthlyNth.Items.Add( new ListItem( nth.Value, nth.Key.ToString() ) );
+                _lbMonthlyNth.Items.Add( new ListItem( nth.Value, nth.Key.ToString() ) );
             }
 
             _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
@@ -1385,7 +1455,7 @@ END:VCALENDAR
             Controls.Add( _tbMonthlyDayX );
             Controls.Add( _tbMonthlyXMonths );
             Controls.Add( _radMonthlyNth );
-            Controls.Add( _ddlMonthlyNth );
+            Controls.Add( _lbMonthlyNth );
             Controls.Add( _ddlMonthlyDayName );
 
             // end date
@@ -1418,9 +1488,12 @@ END:VCALENDAR
 
             // Validation Summary
             _vsValidation.RenderControl( writer );
-            
+
             // Start DateTime
-            _dpStartDateTime.RenderControl( writer );
+            if ( this.ShowStartDateTime )
+            {
+                _dpStartDateTime.RenderControl( writer );
+            }
 
             // Duration
             if ( this.ShowDuration )
@@ -1625,8 +1698,14 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyNth.Text = "The";
             _radMonthlyNth.RenderControl( writer );
-            _ddlMonthlyNth.AddCssClass( "margin-l-sm" );
-            _ddlMonthlyNth.RenderControl( writer );
+
+
+            writer.AddAttribute( "class", "input-group input-width-xl" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _lbMonthlyNth.AddCssClass( "margin-l-sm" );
+            _lbMonthlyNth.RenderControl( writer );
+            writer.RenderEndTag();
+
             writer.Write( "<span> </span>" );
             _ddlMonthlyDayName.RenderControl( writer );
             writer.RenderEndTag();
@@ -1648,7 +1727,7 @@ END:VCALENDAR
             writer.Write( @"
 <div class='controls'><hr /></div>
 " );
-            
+
             writer.Write( "<label class='control-label'>Continue Until</label>" );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

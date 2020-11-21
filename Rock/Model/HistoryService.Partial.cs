@@ -479,7 +479,7 @@ namespace Rock.Model
             /// <value>
             /// The created by person.
             /// </value>
-            public Person CreatedByPerson => this.FirstHistoryRecord?.CreatedByPersonAlias.Person;
+            public Person CreatedByPerson => this.FirstHistoryRecord?.CreatedByPersonAlias?.Person;
 
             /// <summary>
             /// Gets the name of the created by person.
@@ -667,7 +667,7 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
         {
             AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, modifiedByPersonAliasId );
@@ -700,7 +700,7 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
             var historyChanges = new History.HistoryChangeList();
@@ -723,6 +723,29 @@ namespace Rock.Model
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
+            List<History> historyRecordsToInsert = GetChanges( modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
+
+            var historyService = new HistoryService( rockContext );
+            historyService.AddRange( historyRecordsToInsert );
+        }
+
+        /// <summary>
+        /// Gets the changes.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="changes">The changes.</param>
+        /// <param name="caption">The caption.</param>
+        /// <param name="relatedModelType">Type of the related model.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        /// <param name="sourceOfChange">The source of change.</param>
+        /// <returns></returns>
+        internal static List<History> GetChanges( Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId, string sourceOfChange = null )
+        {
+            SetHistoryEntriesSourceOfChange( changes, sourceOfChange, sourceOfChange != null );
+
             var entityType = EntityTypeCache.Get( modelType );
             var category = CategoryCache.Get( categoryGuid );
             var creationDate = RockDateTime.Now;
@@ -737,10 +760,10 @@ namespace Rock.Model
                 }
             }
 
+            List<History> historyRecordsToInsert = new List<History>();
+
             if ( entityType != null && category != null )
             {
-                var historyService = new HistoryService( rockContext );
-
                 foreach ( var historyChange in changes.Where( m => m != null ) )
                 {
                     var history = new History();
@@ -758,12 +781,18 @@ namespace Rock.Model
                         history.CreatedByPersonAliasId = modifiedByPersonAliasId;
                     }
 
-                    // Manually set creation date on these history items so that they will be grouped together
-                    history.CreatedDateTime = creationDate;
+                    // If not specified, manually set the creation date on these history items so that they will be grouped together.
+                    if ( historyChange.ChangedDateTime == null )
+                    {
+                        history.CreatedDateTime = creationDate;
+                    }
 
-                    historyService.Add( history );
+                    historyRecordsToInsert.Add( history );
+
                 }
             }
+
+            return historyRecordsToInsert;
         }
 
         /// <summary>
@@ -777,7 +806,7 @@ namespace Rock.Model
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
             SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
@@ -813,7 +842,7 @@ namespace Rock.Model
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
             if ( changes.Any() )
@@ -844,7 +873,9 @@ namespace Rock.Model
         {
             if ( changes.Any() )
             {
-                changes.ForEach( a => a.SourceOfChange = sourceOfChange ?? rockContext.SourceOfChange );
+                // Set the change source for any entries that do not have one, or for all entries if a source has been supplied as a parameter.
+                SetHistoryEntriesSourceOfChange( changes, sourceOfChange ?? rockContext.SourceOfChange, sourceOfChange != null );
+
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {
@@ -875,6 +906,20 @@ namespace Rock.Model
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Set the SourceOfChange property for the entries in a HistoryChangeList.
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <param name="newSourceOfChange"></param>
+        /// <param name="overrideExisting"></param>
+        private static void SetHistoryEntriesSourceOfChange( History.HistoryChangeList changes, string newSourceOfChange, bool overrideExisting )
+        {
+            // Set the SourceOfChange property for any entries that do not have an existing value, or for all entries if the override flag is set.
+            changes.Where( x => x.SourceOfChange == null || overrideExisting )
+                   .ToList()
+                   .ForEach( a => a.SourceOfChange = newSourceOfChange );
         }
     }
 }

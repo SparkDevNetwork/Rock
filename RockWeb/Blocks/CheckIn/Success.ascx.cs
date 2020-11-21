@@ -17,16 +17,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI;
@@ -34,18 +37,45 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Success" )]
     [Category( "Check-in" )]
     [Description( "Displays the details of a successful checkin." )]
 
-    [LinkedPage( "Person Select Page", "", false, "", "", 5 )]
-    [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
-    [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
-        "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
+    #region Block Attributes
+
+    [LinkedPage( "Person Select Page",
+        Key = AttributeKey.PersonSelectPage,
+        IsRequired = false,
+        Order = 5 )]
+
+    [TextField( "Title",
+        Key = AttributeKey.Title,
+        IsRequired = false,
+        DefaultValue = "Checked-in",
+        Category = "Text",
+        Order = 6 )]
+
+    [TextField( "Detail Message",
+        Key = AttributeKey.DetailMessage,
+        Description = "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code",
+        IsRequired = false,
+        DefaultValue = "{0} was checked into {1} in {2} at {3}",
+        Category = "Text",
+        Order = 7 )]
+
+    #endregion Block Attributes
+
     public partial class Success : CheckInBlock
     {
+        private static class AttributeKey
+        {
+            public const string PersonSelectPage = "PersonSelectPage";
+            public const string Title = "Title";
+            public const string DetailMessage = "DetailMessage";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -129,8 +159,8 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     try
                     {
-                        lTitle.Text = GetAttributeValue( "Title" );
-                        string detailMsg = GetAttributeValue( "DetailMessage" );
+                        lTitle.Text = GetAttributeValue( AttributeKey.Title );
+                        string detailMsg = GetAttributeValue( AttributeKey.DetailMessage );
 
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
@@ -180,20 +210,30 @@ namespace RockWeb.Blocks.CheckIn
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
                         mergeFields.Add( "Messages", CurrentCheckInState.Messages );
-                        if ( CurrentGroupTypeIds != null )
+                        if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
                         {
-                            var checkInAreas = CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
+                            var checkInAreas = LocalDeviceConfig.CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
                             mergeFields.Add( "CheckinAreas", checkInAreas );
                         }
 
                         if ( printFromClient.Any() )
                         {
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+#if DEBUG
+                            // This is extremely useful when debugging with ngrok and an iPad on the local network.
+                            // X-Original-Host will contain the name of your ngrok hostname, therefore the labels will
+                            // get a LabelFile url that will actually work with that iPad.
+                            if ( Request.Headers["X-Forwarded-Proto"] != null && Request.Headers["X-Original-Host" ] != null )
+                            {
+                                urlRoot = string.Format( "{0}://{1}", Request.Headers.GetValues( "X-Forwarded-Proto" ).First(), Request.Headers.GetValues( "X-Original-Host" ).First() );
+                            }
+#endif
                             printFromClient
                                 .OrderBy( l => l.PersonId )
                                 .ThenBy( l => l.Order )
                                 .ToList()
                                 .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
@@ -203,8 +243,46 @@ namespace RockWeb.Blocks.CheckIn
                             mergeFields.Add( "ZebraPrintMessageList", messages );
                         }
 
+                        if ( lbAnother.Visible )
+                        {
+                            var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
+                            if ( bodyTag != null )
+                            {
+                                bodyTag.AddCssClass( "checkin-anotherperson" );
+                            }
+                        }
+
                         var successLavaTemplate = CurrentCheckInState.CheckInType.SuccessLavaTemplate;
                         lCheckinResultsHtml.Text = successLavaTemplate.ResolveMergeFields( mergeFields );
+
+                        if ( LocalDeviceConfig.GenerateQRCodeForAttendanceSessions )
+                        {
+                            HttpCookie attendanceSessionGuidsCookie = Request.Cookies[CheckInCookieKey.AttendanceSessionGuids];
+                            if ( attendanceSessionGuidsCookie == null )
+                            {
+                                attendanceSessionGuidsCookie = new HttpCookie( CheckInCookieKey.AttendanceSessionGuids );
+                                attendanceSessionGuidsCookie.Value = string.Empty;
+                            }
+
+                            // set (or reset) the expiration to be 8 hours from the current time)
+                            attendanceSessionGuidsCookie.Expires = RockDateTime.Now.AddHours( 8 );
+
+                            var attendanceSessionGuids = attendanceSessionGuidsCookie.Value.Split( ',' ).AsGuidList();
+                            attendanceSessionGuids = ValidAttendanceSessionGuids( attendanceSessionGuids );
+
+                            // Add the guid to the list of checkin session cookie guids if it's not already there.
+                            if ( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.HasValue &&
+                                !attendanceSessionGuids.Contains( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.Value ) )
+                            {
+                                attendanceSessionGuids.Add( CurrentCheckInState.CheckIn.CurrentFamily.AttendanceCheckinSessionGuid.Value );
+                            }
+
+                            attendanceSessionGuidsCookie.Value = attendanceSessionGuids.AsDelimited( "," );
+
+                            Rock.Web.UI.RockPage.AddOrUpdateCookie( attendanceSessionGuidsCookie );
+
+                            lCheckinQRCodeHtml.Text = string.Format( "<div class='qr-code-container text-center'><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code' width='500' height='500'></div>", GetAttendanceSessionsQrCodeImageUrl( attendanceSessionGuidsCookie ) );
+                        }
 
                     }
                     catch ( Exception ex )
@@ -248,7 +326,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 SaveState();
-                NavigateToLinkedPage( "PersonSelectPage" );
+                NavigateToLinkedPage( AttributeKey.PersonSelectPage );
 
             }
             else
@@ -256,6 +334,35 @@ namespace RockWeb.Blocks.CheckIn
                 NavigateToHomePage();
             }
         }
+
+
+        /// <summary>
+        /// Checks the given list of the attendance check-in session guids are still valid
+        /// and returns the valid ones back.
+        /// NOTE: Because someone could check-in a person multiple times, only the
+        /// latest attendance record will have the correct attendance check-in session guid.
+        /// That means attendance check-in session guids could be old/invalid, so
+        /// this method will filter out the old/ones so a QR code does not
+        /// become unnecessarily dense.
+        /// </summary>
+        /// <param name="sessionGuids">The attendance session guids.</param>
+        /// <returns></returns>
+        private List<Guid> ValidAttendanceSessionGuids( List<Guid> sessionGuids )
+        {
+            if ( sessionGuids == null )
+            {
+                return new List<Guid>();
+            }
+            if ( !sessionGuids.Any() )
+            {
+                return sessionGuids;
+            }
+
+            return new AttendanceService( new RockContext() ).Queryable().AsNoTracking()
+                .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
+                .Select( a => a.AttendanceCheckInSession.Guid ).Distinct().ToList();
+        }
+
 
         /// <summary>
         /// Adds the label script.
@@ -266,7 +373,7 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
 
         // setup deviceready event to wait for cordova
-	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {{
+	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/) && typeof window.RockCheckinNative === 'undefined') {{
             document.addEventListener('deviceready', onDeviceReady, false);
         }} else {{
             $( document ).ready(function() {{
@@ -278,35 +385,26 @@ namespace RockWeb.Blocks.CheckIn
         var labelData = {0};
 
 		function onDeviceReady() {{
-            try {{			
+            try {{
                 printLabels();
-            }} 
+            }}
             catch (err) {{
                 console.log('An error occurred printing labels: ' + err);
             }}
 		}}
-		
-		function alertDismissed() {{
-		    // do something
-		}}
-		
+
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
-            	JSON.stringify(labelData), 
-            	function(result) {{ 
+            	JSON.stringify(labelData),
+            	function(result) {{
 			        console.log('Tag printed');
 			    }},
-			    function(error) {{   
+			    function(error) {{
 				    // error is an array where:
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
-                    navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
-                        alertDismissed,         // callback
-                        'Error',            // title
-                        'Ok'                  // buttonName
-                    );
+                    alert('An error occurred while printing the labels. ' + error[0]);
 			    }}
             );
 	    }}

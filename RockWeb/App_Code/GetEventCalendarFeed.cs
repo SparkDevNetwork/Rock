@@ -23,12 +23,15 @@ using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-
-using DDay.iCal;
-using DDay.iCal.Serialization.iCalendar;
-
-using System.Globalization;
 using Rock.Web.Cache;
+
+using Ical.Net;
+using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.DataTypes;
+using Calendar = Ical.Net.Calendar;
+
+using RestSharp.Extensions;
+using System.Globalization;
 
 namespace RockWeb
 {
@@ -77,9 +80,9 @@ namespace RockWeb
                     return;
                 }
 
-                iCalendar icalendar = CreateICalendar( calendarProps );
+                var icalendar = CreateICalendar( calendarProps );
 
-                iCalendarSerializer serializer = new iCalendarSerializer();
+                var serializer = new CalendarSerializer();
                 string s = serializer.SerializeToString( icalendar );
 
                 response.Clear();
@@ -101,33 +104,40 @@ namespace RockWeb
         /// </summary>
         /// <param name="calendarProps">The calendar props.</param>
         /// <returns></returns>
-        private iCalendar CreateICalendar( CalendarProps calendarProps )
+        private Calendar CreateICalendar( CalendarProps calendarProps )
         {
             // Get a list of Rock Calendar Events filtered by calendarProps
             List<EventItem> eventItems = GetEventItems( calendarProps );
 
             // Create the iCalendar
-            iCalendar icalendar = new iCalendar();
-            icalendar.AddLocalTimeZone();
+            var icalendar = new Calendar();
+            icalendar.AddTimeZone( TimeZoneInfo.Local );
 
             // Create each of the events for the calendar(s)
             foreach ( EventItem eventItem in eventItems )
             {
                 foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
                 {
-                    iCalendarSerializer serializer = new iCalendarSerializer();
-                    iCalendarCollection ical = ( iCalendarCollection ) serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+                    if ( occurrence.Schedule == null )
+                    {
+                        continue;
+                    }
+
+                    var serializer = new CalendarSerializer();
+                    var ical = (CalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
 
                     foreach ( var icalEvent in ical[0].Events )
                     {
                         // We get all of the schedule info from Schedule.iCalendarContent
-                        Event ievent = icalEvent.Copy<Event>();
-                        
+                        var ievent = icalEvent.Copy<Ical.Net.Event>();
+
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
 
-                        ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
-                        ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
+                        /* [2020-06-22] DJL
+                         * Removed a ToTimeZone() conversion that was previously implemented here when using the DDay.iCal library.
+                         * The Ical.Net library does not support this method, and as best I can determine it is no longer needed.
+                         */
 
                         // Rock has more descriptions than iCal so lets concatenate them
                         string description = CreateEventDescription( eventItem, occurrence );
@@ -135,7 +145,13 @@ namespace RockWeb
                         // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
                         if ( interactionDeviceType != "Outlook" )
                         {
-                            ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
+                            ievent.Description = description.ConvertBrToCrLf()
+                                                                .Replace( "</P>", "" )
+                                                                .Replace( "</p>", "" )
+                                                                .Replace( "<P>", Environment.NewLine )
+                                                                .Replace( "<p>", Environment.NewLine )
+                                                                .Replace( "&nbsp;", " " )
+                                                                .SanitizeHtml();
                         }
 
                         // HTML version of the description for outlook
@@ -146,7 +162,15 @@ namespace RockWeb
 
                         if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
                         {
-                            ievent.Url = new Uri( eventItem.DetailsUrl );
+                            Uri result;
+                            if ( Uri.TryCreate( eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
+                            else if ( Uri.TryCreate( "http://" + eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
                         }
 
                         // add contact info if it exists
@@ -170,7 +194,7 @@ namespace RockWeb
                         {
                             ievent.Categories.Add( a.DefinedValue.Value );
                         }
-                        
+
                         //// No attachments for now.
                         ////if ( eventItem.PhotoId != null )
                         ////{
@@ -234,7 +258,7 @@ namespace RockWeb
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate >= calendarProps.StartDate && o.Schedule.EffectiveEndDate <= calendarProps.EndDate ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
@@ -417,7 +441,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _startDate != null ? (DateTime) _startDate : DateTime.Now.Date;
+                    return _startDate ?? DateTime.Now.AddMonths( -3 ).Date;
                 }
 
                 set
@@ -436,7 +460,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _endDate != null ? (DateTime) _endDate : DateTime.Now.AddMonths( 2 ).Date;
+                    return _endDate ?? DateTime.Now.AddMonths( 12 ).Date;
                 }
 
                 set

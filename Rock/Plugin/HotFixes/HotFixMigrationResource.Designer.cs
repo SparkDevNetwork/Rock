@@ -8,9 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// since this is code generated, we can safely ignore any release compiler warnings
-#pragma warning disable CS1587, CS1570
-
 namespace Rock.Plugin.HotFixes {
     using System;
     
@@ -22,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -368,10 +365,9 @@ namespace Rock.Plugin.HotFixes {
             }
         }
         
-
         /// <summary>
         ///   Looks up a localized string similar to 
-        ////*
+        ///
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
@@ -438,8 +434,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -665,8 +660,140 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Parameters]=N&apos;fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|fontcolor^#777|fontfamily^sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverra [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _096_MigrationRollupsForV9_5_chartjsfix {
+            get {
+                return ResourceManager.GetString("_096_MigrationRollupsForV9_5_chartjsfix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;dateti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAtt" +
+                        "endance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery {
+            get {
+                return ResourceManager.GetString("_104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode create [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode {
+            get {
+                return ResourceManager.GetString("_113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _134_AddDocumentsToPersonMerge_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_134_AddDocumentsToPersonMerge_spCrm_PersonMerge", resourceCulture);
+            }
+        }
     }
 }
-
-
-#pragma warning restore CS1587, CS1570

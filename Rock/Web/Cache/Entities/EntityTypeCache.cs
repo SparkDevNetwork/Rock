@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -35,7 +36,7 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>();
+        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
 
         #endregion
 
@@ -96,6 +97,32 @@ namespace Rock.Web.Cache
         internal int? SingleValueFieldTypeId { get; private set; }
 
         /// <summary>
+        /// The properties
+        /// </summary>
+        [IgnoreDataMember]
+        private Dictionary<string, PropertyInfo> _properties = null;
+
+        /// <summary>
+        /// Gets a dictionary of the names of all the properties for this type of entity, along with <see cref="PropertyInfo"/> about the property
+        /// </summary>
+        /// <value>
+        /// The properties.
+        /// </value>
+        [IgnoreDataMember]
+        public Dictionary<string, PropertyInfo> Properties
+        {
+            get
+            {
+                if ( _properties == null )
+                {
+                    _properties = this.GetEntityType().GetProperties().ToDictionary( k => k.Name, v => v );
+                }
+
+                return _properties;
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the single value field.
         /// </summary>
         /// <value>
@@ -152,6 +179,24 @@ namespace Rock.Web.Cache
         public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has achievements enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is achievements enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAchievementsEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is message bus event publish enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is message bus event publish enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessageBusEventPublishEnabled { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
         /// </summary>
         /// <value>
@@ -168,28 +213,6 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsIndexingSupported { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is analytic supported.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true)]
-        [DataMember]
-        public bool IsAnalyticSupported { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is analytic historical supported.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true )]
-        [DataMember]
-        public bool IsAnalyticHistoricalSupported { get; private set; }
 
         /// <summary>
         /// Determines whether [is analytics supported] [the specified entity type qualifier column].
@@ -400,6 +423,8 @@ namespace Rock.Web.Cache
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;
+            IsAchievementsEnabled = entityType.IsAchievementsEnabled;
+            IsMessageBusEventPublishEnabled = entityType.IsMessageBusEventPublishEnabled;
             AttributesSupportPrePostHtml = entityType.AttributesSupportPrePostHtml;
             IsIndexingSupported = entityType.IsIndexingSupported;
             IndexResultTemplate = entityType.IndexResultTemplate;
@@ -445,7 +470,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the id.
+        /// Gets an EntityTypeId based on the specified type name.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
@@ -481,7 +506,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
             return Get( type, createIfNotFound, rockContext );
@@ -495,7 +520,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
         {
             return Get<T>( createIfNotFound, rockContext );
@@ -508,7 +533,7 @@ namespace Rock.Web.Cache
         /// <param name="name">The name.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static EntityTypeCache Read( string name )
         {
             return Get( name, true );
@@ -522,7 +547,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
             return Get( name, createNew, rockContext );

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
 using Quartz;
 
 using Rock.Attribute;
@@ -53,13 +53,13 @@ namespace Rock.Jobs
         DefaultValue = "Online Giving",
         Order = 2 )]
 
-    [SystemEmailField( "Receipt Email",
+    [SystemCommunicationField( "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipts.",
         IsRequired = false,
         Order = 3 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Failed Payment Email",
         Key = AttributeKey.FailedPaymentEmail,
         Description = "The system email to use to send a notice about a scheduled payment that failed.",
@@ -81,6 +81,14 @@ namespace Rock.Jobs
         IsRequired = false,
         Order = 6 )]
 
+    [BooleanField(
+        "Verbose Logging",
+        Key = AttributeKey.VerboseLogging,
+        Description = "If enabled then the job results will include more detailed information that can help troubleshoot problems.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
     #endregion Job Attributes
     public class GetScheduledPayments : IJob
     {
@@ -89,14 +97,42 @@ namespace Rock.Jobs
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
+            /// <summary>
+            /// The days back
+            /// </summary>
             public const string DaysBack = "DaysBack";
-            public const string BatchNamePrefix = "Batch Name Prefix";
-            public const string ReceiptEmail = "Receipt Email";
-            public const string FailedPaymentEmail = "Failed Payment Email";
-            public const string FailedPaymentWorkflow = "Failed Payment Workflow";
+
+            /// <summary>
+            /// The batch name prefix
+            /// </summary>
+            public const string BatchNamePrefix = "BatchNamePrefix";
+
+            /// <summary>
+            /// The receipt email
+            /// </summary>
+            public const string ReceiptEmail = "ReceiptEmail";
+
+            /// <summary>
+            /// The failed payment email
+            /// </summary>
+            public const string FailedPaymentEmail = "FailedPaymentEmail";
+
+            /// <summary>
+            /// The failed payment workflow
+            /// </summary>
+            public const string FailedPaymentWorkflow = "FailedPaymentWorkflow";
+
+            /// <summary>
+            /// The target gateway
+            /// </summary>
             public const string TargetGateway = "TargetGateway";
+
+            /// <summary>
+            /// The verbose logging key
+            /// </summary>
+            public const string VerboseLogging = "VerboseLogging";
         }
 
         #endregion Attribute Keys
@@ -131,11 +167,13 @@ namespace Rock.Jobs
             Guid? failedPaymentEmail = dataMap.GetString( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
             Guid? failedPaymentWorkflowType = dataMap.GetString( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
             int daysBack = dataMap.GetString( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+            bool verboseLogging = dataMap.GetString( AttributeKey.VerboseLogging ).AsBoolean( true );
 
             DateTime today = RockDateTime.Today;
             TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
 
             string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
+            Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
 
 
             using ( var rockContext = new RockContext() )
@@ -159,7 +197,7 @@ namespace Rock.Jobs
                         {
                             continue;
                         }
-                        
+
                         DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
                         // If the calculated end time has not yet occurred, use the previous day.
@@ -168,11 +206,12 @@ namespace Rock.Jobs
                         DateTime startDateTime = endDateTime.Subtract( daysBackTimeSpan );
 
                         string errorMessage = string.Empty;
-                        var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+                        List<Financial.Payment> payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            var gatewayProcessPaymentsSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType, verboseLogging );
+                            processedPaymentsSummary.Add( financialGateway, gatewayProcessPaymentsSummary );
                             scheduledPaymentsProcessed += payments.Count();
                         }
                         else
@@ -193,7 +232,13 @@ namespace Rock.Jobs
                 throw new Exception( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
 
-            context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
+            StringBuilder summary = new StringBuilder();
+            foreach ( var item in processedPaymentsSummary )
+            {
+                summary.AppendLine( $"Summary for {item.Key.Name}:<br/>{item.Value}" );
+            }
+
+            context.Result = summary.ToString();
         }
     }
 }

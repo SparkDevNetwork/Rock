@@ -67,29 +67,17 @@ namespace Rock.Transactions
 
             using ( var rockContext = new RockContext() )
             {
-                var gateway = new FinancialGatewayService( rockContext ).Get( GatewayId );
-                if ( gateway != null )
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+
+                foreach ( var scheduledTransactionId in ScheduledTransactionIds )
                 {
-                    var gatewayComponent = gateway.GetGatewayComponent();
-                    if ( gatewayComponent != null )
+                    var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
+
+                    if ( financialScheduledTransaction != null )
                     {
-                        var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
-                        var financialTransactionService = new FinancialTransactionService( rockContext );
+                        financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out _ );
 
-                        foreach ( var scheduledTransactionId in ScheduledTransactionIds )
-                        {
-                            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
-                            if ( financialScheduledTransaction != null )
-                            {
-                                string statusMsgs = string.Empty;
-                                gatewayComponent.GetScheduledPaymentStatus( financialScheduledTransaction, out statusMsgs );
-
-                                var lastTransactionDateTime = financialTransactionService.Queryable().Where( a => a.ScheduledTransactionId == scheduledTransactionId ).Max( a => ( DateTime? ) a.TransactionDateTime );
-                                financialScheduledTransaction.NextPaymentDate = gatewayComponent.GetNextPaymentDate( financialScheduledTransaction, lastTransactionDateTime );
-
-                                rockContext.SaveChanges();
-                            }
-                        }
+                        rockContext.SaveChanges();
                     }
                 }
             }

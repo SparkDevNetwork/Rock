@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -42,9 +43,55 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
 
-    [BooleanField( "Enable Full Edit Mode", "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.", false )]
+    [BooleanField(
+        name: "Enable Full Edit Mode",
+        description: "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.",
+        defaultValue: false,
+        order: 1,
+        key: AttributeKey.EnableFullEditMode )]
+
+    [LinkedPage(
+        name: "Median Time to Serve Detail Page",
+        description: "The page that shows details about about the median time to serve was calculated.",
+        defaultValue: Rock.SystemGuid.Page.PAGE_VIEWS,
+        order: 2,
+        key: AttributeKey.MedianTimeDetailPage )]
+
     public partial class PageProperties : RockBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys for attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The enable full edit mode
+            /// </summary>
+            public const string EnableFullEditMode = "EnableFullEditMode";
+
+            /// <summary>
+            /// The load time detail page
+            /// </summary>
+            public const string MedianTimeDetailPage = "MedianTimeDetailPage";
+        }
+
+        /// <summary>
+        /// Page Parameter Keys
+        /// </summary>
+        private static class PageParamKey
+        {
+            /// <summary>
+            /// The page identifier
+            /// This is Page rather than PageId because the route /page/{pageId} uses the PageId param.
+            /// So this block and page end up being /page/{pageId}?page={page}
+            /// </summary>
+            public const string Page = "Page";
+        }
+
+        #endregion Keys
+
         #region Fields
 
         //// Import/Export hidden until we have time to get it working again.
@@ -146,8 +193,11 @@ namespace RockWeb.Blocks.Administration
                         tbContext.ID = string.Format( "context_{0}", context.EntityTypeName.Replace( '.', '_' ) );
                         tbContext.Required = false;
                         tbContext.Label = context.EntityTypeFriendlyName + " Parameter Name";
-                        tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
-                            "block".PluralizeIf( context.BlockList.Count > 1 ), string.Join( ", ", context.BlockList ) );
+                        tbContext.Help = string.Format(
+                            "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
+                            "block".PluralizeIf( context.BlockList.Count > 1 ),
+                            string.Join( ", ", context.BlockList ) );
+
                         if ( pageCache.PageContexts.ContainsKey( context.EntityTypeName ) )
                         {
                             tbContext.Text = pageCache.PageContexts[context.EntityTypeName];
@@ -237,6 +287,8 @@ namespace RockWeb.Blocks.Administration
                 .Add( "Layout", page.Layout )
                 .Add( "Url", pageLink )
                 .Html;
+
+            RenderMedianPageLoadTime( page );
         }
 
         /// <summary>
@@ -295,6 +347,18 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbMedianTimeDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMedianTimeDetails_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage(
+                AttributeKey.MedianTimeDetailPage,
+                new Dictionary<string, string> { { PageParamKey.Page, hfPageId.Value } } );
+        }
 
         /// <summary>
         /// Handles the Click event of the lbProperty control.
@@ -365,11 +429,11 @@ namespace RockWeb.Blocks.Administration
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
-            
+
             aChildPages.HRef = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
 
             // this will be true when used in the Page Builder page, and false when used in the System Dialog
-            var enableFullEditMode = this.GetAttributeValue( "EnableFullEditMode" ).AsBooleanOrNull() ?? false;
+            var enableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBooleanOrNull() ?? false;
 
             pnlEditModeActions.Visible = enableFullEditMode;
             pnlReadOnlyModeActions.Visible = enableFullEditMode;
@@ -399,11 +463,6 @@ namespace RockWeb.Blocks.Administration
                 {
                     ShowEditDetails( page );
                 }
-            }
-
-            if ( btnDelete.Visible && btnDelete.Enabled )
-            {
-                btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Rock.Model.Page.FriendlyTypeName.ToLower() );
             }
         }
 
@@ -491,7 +550,7 @@ namespace RockWeb.Blocks.Administration
             cbPageIcon.Checked = page.PageDisplayIcon;
             cbPageDescription.Checked = page.PageDisplayDescription;
 
-            ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
+            ddlMenuWhen.SelectedValue = ( ( int ) page.DisplayInNavWhen ).ToString();
             cbMenuDescription.Checked = page.MenuDisplayDescription;
             cbMenuIcon.Checked = page.MenuDisplayIcon;
             cbMenuChildPages.Checked = page.MenuDisplayChildPages;
@@ -503,7 +562,19 @@ namespace RockWeb.Blocks.Administration
             cbEnableViewState.Checked = page.EnableViewState;
             cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
             cbAllowIndexing.Checked = page.AllowIndexing;
-            tbCacheDuration.Text = page.OutputCacheDuration.ToString();
+
+            if ( page.CacheControlHeaderSettings != null )
+            {
+                cpCacheSettings.CurrentCacheability = JsonConvert.DeserializeObject<RockCacheability>( page.CacheControlHeaderSettings );
+            }
+            else
+            {
+                cpCacheSettings.CurrentCacheability = new RockCacheability
+                {
+                    RockCacheablityType = RockCacheablityType.Private
+                };
+            }
+
             tbDescription.Text = page.Description;
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
@@ -532,7 +603,7 @@ namespace RockWeb.Blocks.Administration
             Page.Validate( BlockValidationGroup );
             if ( !Page.IsValid )
             {
-                throw new Exception("Page is not valid");
+                throw new Exception( "Page is not valid" );
             }
 
             var rockContext = new RockContext();
@@ -697,7 +768,9 @@ namespace RockWeb.Blocks.Administration
             page.EnableViewState = cbEnableViewState.Checked;
             page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
             page.AllowIndexing = cbAllowIndexing.Checked;
-            page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
+
+            page.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
+
             page.Description = tbDescription.Text;
             page.HeaderContent = ceHeaderContent.Text;
 
@@ -739,54 +812,7 @@ namespace RockWeb.Blocks.Administration
                     page.SaveAttributeValues( rockContext );
                 } );
 
-                // remove any routes for this page that are no longer configured
-                var existingRoutes = RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ).ToList();
-                foreach ( var existingRoute in existingRoutes )
-                {
-                    if ( !editorRoutes.Any( a => a == existingRoute.Url ) )
-                    {
-                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != page.Id ).ToList();
-                        if ( pageAndRouteIds.Any() )
-                        {
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            RouteTable.Routes.Remove( existingRoute );
-                        }
-                    }
-                }
-
-                // Remove the '{shortlink}' route (will be added back after specific routes)
-                var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
-                if ( shortLinkRoute != null )
-                {
-                    RouteTable.Routes.Remove( shortLinkRoute );
-                }
-
-                // Add any routes that were added
-                foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
-                {
-                    if ( addedRoutes.Contains( pageRoute.Route ) )
-                    {
-                        var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
-
-                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
-                        if ( existingRoute != null )
-                        {
-                            var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                            pageAndRouteIds.Add( pageAndRouteId );
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteId );
-                        }
-                    }
-                }
-
-                RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+                Rock.Web.RockRouteHandler.ReregisterRoutes();
 
                 if ( orphanedIconFileId.HasValue )
                 {
@@ -919,6 +945,27 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         /// <summary>
+        /// Renders the median page load time.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        private void RenderMedianPageLoadTime( Rock.Model.Page page )
+        {
+            var cssClass =
+                !page.MedianPageLoadTimeDurationSeconds.HasValue ? "default" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 1 ? "success" :
+                page.MedianPageLoadTimeDurationSeconds.Value <= 3 ? "warning" :
+                "danger";
+
+            var seconds = !page.MedianPageLoadTimeDurationSeconds.HasValue ? "Not Measured" :
+                string.Format( "{0:n2}s", page.MedianPageLoadTimeDurationSeconds.Value );
+
+            lMedianTime.Text = string.Format(
+                "<span class='label label-{0} padding-l-md padding-r-md'>{1}</span>",
+                cssClass,
+                seconds );
+        }
+
+        /// <summary>
         /// Loads the sites.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -1033,6 +1080,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            mdDeleteModal.Show();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the mdDeleteModal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdDeleteModal_DeleteClick( object sender, EventArgs e )
+        {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
             var siteService = new SiteService( rockContext );
@@ -1072,6 +1129,13 @@ namespace RockWeb.Blocks.Administration
                 int? parentPageId = page.ParentPageId;
 
                 pageService.Delete( page );
+
+                if ( cbDeleteInteractions.Checked )
+                {
+                    var interactionComponentService = new InteractionComponentService( rockContext );
+                    var componentQuery = interactionComponentService.QueryByPage( page );
+                    interactionComponentService.DeleteRange( componentQuery );
+                }
 
                 rockContext.SaveChanges();
 
@@ -1144,7 +1208,7 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                //Left empty, error displyed in UI.
+                // Left empty, error displyed in UI.
             }
         }
 
@@ -1157,29 +1221,26 @@ namespace RockWeb.Blocks.Administration
         {
             if ( hfPageId.Value.Equals( "0" ) )
             {
+                // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
                 int? parentPageId = PageParameter( "ParentPageId" ).AsIntegerOrNull();
-                if ( parentPageId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["Page"] = parentPageId.ToString();
+                var qryParams = new Dictionary<string, string>();
+                qryParams["Page"] = parentPageId.ToString();
 
-                    string expandedIds = this.Request.Params["ExpandedIds"];
-                    if ( expandedIds != null )
+                string expandedIds = this.Request.Params["ExpandedIds"];
+                if ( expandedIds.IsNotNullOrWhiteSpace() )
+                {
+                    // remove the current pageId param to avoid extra treeview flash
+                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+
+                    if ( parentPageId.HasValue )
                     {
-                        // remove the current pageId param to avoid extra treeview flash
-                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
                         expandedIdList.Remove( parentPageId.Value );
-                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                     }
 
-                    NavigateToPage( RockPage.Guid, qryParams );
+                    qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                 }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {

@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
-    public partial class ContentChannel : Model<ContentChannel>, ICacheable
+    public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
     {
         #region Entity Properties
 
@@ -189,6 +189,25 @@ namespace Rock.Model
         [DataMember]
         public int? ItemTagCategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this content is structured.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this content is structured; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsStructuredContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Structure Content Tool Id.
+        /// </summary>
+        /// <value>
+        /// The structure content tool value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? StructuredContentToolValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -212,6 +231,15 @@ namespace Rock.Model
         public virtual Category ItemTagCategory { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the content channel's structure content tool.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the content channel's structure content tool.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue StructuredContentToolValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the items.
         /// </summary>
         /// <value>
@@ -220,13 +248,24 @@ namespace Rock.Model
         [LavaInclude]
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
+        /*
+	        08/25/2020 - MSB
+	        We have added the JsonIgnore attribute to address in application crash issue
+            caused by a Content Channel referencing itself when the object is serialized
+            to a JSON string.
+
+            https://github.com/SparkDevNetwork/Rock/issues/4250
+	
+            Reason: Web Api Controller	
+        */
+
         /// <summary>
         /// Gets or sets the collection of ContentChannels that this ContentChannel allows as children.
         /// </summary>
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaIgnore]
+        [DataMember, LavaIgnore, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }
@@ -246,6 +285,21 @@ namespace Rock.Model
             set { _parentContentChannels = value; }
         }
         private ICollection<ContentChannel> _parentContentChannels;
+
+        /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+        private ICollection<Category> _categories;
 
         /// <summary>
         /// Gets the supported actions.
@@ -432,6 +486,8 @@ namespace Rock.Model
             this.HasMany( p => p.ChildContentChannels ).WithMany( c => c.ParentContentChannels ).Map( m => { m.MapLeftKey( "ContentChannelId" ); m.MapRightKey( "ChildContentChannelId" ); m.ToTable( "ContentChannelAssociation" ); } );
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.StructuredContentToolValue ).WithMany().HasForeignKey( p => p.StructuredContentToolValueId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "ContentChannelId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "ContentChannelCategory" ); } );
         }
     }
 

@@ -66,6 +66,11 @@
     }
   }
 
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    padding-left: 20px;
+  }
+
   // Radio and Checkbox Label Text
   .label-text {
     display: inline-block;
@@ -131,16 +136,24 @@
     label {
       margin-bottom: 0;
     }
+  }
 
-    .form-align & {
+  .form-align,
+  .form-horizontal {
+    .radio,
+    .checkbox,
+    .radio-inline,
+    .checkbox-inline {
+      .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+      padding-top: 0;
+      margin-top: (@input-height-base - @max) / 2 !important;
+      margin-bottom: (@input-height-base - @max) / 2 !important;
+    }
+
+    .radio-inline + .radio-inline,
+    .checkbox-inline + .checkbox-inline {
       .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
       margin-top: (@input-height-base - @max) / 2;
-      margin-bottom: (@input-height-base - @max) / 2;
-
-      .radio-inline+.radio-inline, .checkbox-inline+.checkbox-inline {
-        .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
-        margin-top: (@input-height-base - @max) / 2;
-      }
     }
   }
 
@@ -149,6 +162,7 @@
   .radio-inline,
   .checkbox-inline {
     padding-left: (@custom-control-gutter + @custom-control-indicator-size);
+
     &.deselected {
       opacity: .5;
     }
@@ -209,15 +223,20 @@
 
       &:disabled {
         ~ .label-text {
-          color: #6c757d;
+          color: @custom-control-label-disabled-color;
 
           &::before {
-            background-color: #e9ecef;
+            background-color: @custom-control-indicator-disabled-bg;
           }
         }
       }
     }
 
+  }
+
+  .radio-inline + .radio-inline,
+  .checkbox-inline + .checkbox-inline {
+    margin-left: 0;
   }
 
   .checkbox,
@@ -244,9 +263,24 @@
 
 .global-custom-controls(true) {
   .custom-controls();
+
+  // Override fix for checkbox wrapping when in-columns from forms.less
+  .in-columns {
+    .checkbox-inline:first-child,
+    .radio-inline:first-child {
+      padding-left: @custom-control-gutter + @custom-control-indicator-size;
+    }
+  }
 }
 
 .global-custom-controls(false) {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines.
+    // padding-left = (.checkbox-inline + .checkbox-inline margin-left) + .checkbox-inline padding-left
+    padding-left: 30px;
+  }
+
   .assessment {
     .custom-controls();
   }

@@ -29,6 +29,38 @@ namespace Rock.Model
     public partial class FollowingService
     {
         /// <summary>
+        /// If the person is following, then removes the follow. If the person is not following, then adds. The value
+        /// returned indicates if the person is now following.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        public bool ToggleFollowing( int entityTypeId, int entityId, int personAliasId )
+        {
+            var followings = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == personAliasId )
+                .ToList();
+
+            if ( followings.Any() )
+            {
+                DeleteRange( followings );
+                return false;
+            }
+
+            Add( new Following
+            {
+                EntityTypeId = entityTypeId,
+                EntityId = entityId,
+                PersonAliasId = personAliasId
+            } );
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the entity query
         /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following
         /// </summary>
@@ -46,11 +78,7 @@ namespace Rock.Model
                 Type entityType = itemEntityType.GetEntityType();
                 if ( entityType != null )
                 {
-                    Type[] modelType = { entityType };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-
+                    Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, rockContext );
                     MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
                     var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
 
@@ -59,6 +87,24 @@ namespace Rock.Model
                         f => f.EntityId,
                         e => e.Id,
                         ( f, e ) => e );
+
+                    int personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+                    int personAliasEntityTypeId = EntityTypeCache.Get<Rock.Model.PersonAlias>().Id;
+
+                    // if requesting persons that the person is following, it is probably recorded as the PersonAlias records that the person is following, so get Person from that
+                    if ( entityTypeId == personEntityTypeId )
+                    {
+                        var followedItemsPersonAliasQry = this.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == personAliasEntityTypeId );
+                        var entityPersonAliasQry = new PersonAliasService( rockContext ).Queryable();
+
+                        var entityFollowedPersons = followedItemsPersonAliasQry.Join(
+                            entityPersonAliasQry,
+                            f => f.EntityId,
+                            e => e.Id,
+                            ( f, e ) => e ).Select( a => a.Person );
+
+                        entityQry = entityQry.Union( entityFollowedPersons as IQueryable<IEntity> );
+                    }
 
                     return entityQry;
                 }

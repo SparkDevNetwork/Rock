@@ -104,7 +104,7 @@
   }
 
   .nav li .persondetails-actions {
-    padding: 2px 15px 0 15px;
+    padding: 2px 15px 0;
     color: lighten(@persondetails-bio-color, 15%);
 
     &:hover,
@@ -115,7 +115,6 @@
 
   .photo {
     position: relative;
-    display: table;
     max-width: 200px;
     padding: 5px;
     margin: 0 auto;
@@ -139,7 +138,7 @@
         top: -61px;
         left: 8px;
         font-size: 24px;
-        color: #fff;
+        color: @white;
         opacity: 0;
         transition: 1s;
       }
@@ -270,13 +269,23 @@
 
 // 3. Badge Bar
 // -------------------------
+@badge-icon-height: 45px;
+@badge-count-width: 18px;
+
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
   padding-bottom: 0;
+  font-size: 0; // Fixes Inconsistent Spacing
   color: @persondetails-badge-color;
   background-color: @persondetails-badge-bg;
   border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
+
+  --badge-size: @badge-icon-height;
+
+  .config-bar {
+    font-size: @font-size-base;
+  }
 
   .badge-group {
     margin: @spacing-sm-px 0;
@@ -284,8 +293,17 @@
 
     .badge {
       display: inline-block; // fixes issue in default browser on Android
-      padding: 3px 7px 0;
+      padding: 3px 6px 0;
       background-color: inherit;
+
+      &:empty {
+        display: none;
+      }
+
+      .tooltip-inner {
+        max-width: 300px;
+        padding: 12px;
+      }
     }
 
     .badge-debug {
@@ -295,6 +313,88 @@
       width: 900px;
       text-align: left;
     }
+
+    .badge-grid {
+      margin: -5px 0;
+    }
+  }
+}
+
+.badge-grid {
+  font-size: 0;
+
+  .badge {
+    width: 1em;
+    height: 1em;
+    padding: 0 !important;
+    margin: 0 .08333em .08333em;
+    font-size: 24px;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.533)";
+    line-height: 1;
+
+    .fa-stack {
+      width: 1em;
+      line-height: 1em;
+    }
+
+    .fa-stack-1x {
+      font-size: .5em;
+      color: #fff;
+    }
+
+    .fa-stack-2x {
+      font-size: 1em;
+    }
+  }
+
+  .badge-row:last-child .badge {
+    padding-bottom: 0;
+  }
+}
+
+// Used to provide background in :before
+.badge-background {
+  display: block;
+  width: 1em;
+  height: 1em;
+  content: " ";
+  background: currentColor;
+  border-radius: .1em;
+}
+
+.badge-step {
+  position: relative;
+  padding: 0 !important;
+  margin: 0 4px;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+
+  &::before {
+    &:extend(.badge-background);
+  }
+
+  .badge-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: .5777em;
+    line-height: 1.85em;
+    color: #fff;
+  }
+
+  .badge-count {
+    position: absolute;
+    top: -(@badge-count-width/3);
+    right: -(@badge-count-width/3);
+    width: @badge-count-width;
+    height: @badge-count-width;
+    font-size: .266em;
+    font-weight: @font-weight-normal;
+    line-height: @badge-count-width;
+    color: #fff;
+    background-color: @brand-danger;
+    border-radius: 50%;
   }
 }
 
@@ -304,29 +404,32 @@
 
 .badge-era {
   position: relative;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+  color: @brand-success;
 
   &::before {
-    font-family: @fa-font-face;
-    font-size: 45px;
-    font-weight: @fa-theme-weight;
-    color: @brand-success;
-    content: @fa-var-circle;
+    &:extend(.badge-background);
+    border-radius: 50%;
   }
 
-  &.era-loss::before {
+  &.era-loss {
     color: #ee7624;
   }
 
   span {
     position: absolute;
-    top: 17px;
-    left: 14px;
-    font-size: 16px;
+    top: 1.0625em;
+    right: 0;
+    left: 0;
+    font-size: .3555em; // 16px
+    color: #fff;
   }
 }
 
 .badge-icon {
-  font-size: 45px;
+  font-size: @badge-icon-height;
+  font-size: var(--badge-size, 45px);
 
   &.badge-disabled {
     color: #939393;
@@ -334,43 +437,103 @@
   }
 }
 
-.badge-attendance {
-  ul.badge-attendance-chart {
-    //http://codepen.io/Victa/pen/xDqbf
-    display: table;
-    width: 220px;
-    height: 40px;
-    margin: 0 auto;
-    table-layout: fixed;
+.attendance-chart {
+  //http://codepen.io/Victa/pen/xDqbf
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 
-    li {
-      position: relative;
-      display: table-cell;
-      width: 10px;
-      height: 40px;
-      vertical-align: bottom;
+  &-sm {
+    height: 20px;
+  }
 
-      span {
-        display: block;
-        width: 8px;
-        min-height: 1px;
-        background: @persondetails-badge-color;
+  &-block {
+    height: 18px;
 
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          // needed for chrome but kills ie
-          position: absolute;
-          bottom: 0;
-        }
-      }
+    li span {
+      width: ~"calc(100% - 3px)";
+      background: @brand-info !important;
     }
   }
 
-  &.animate {
-    ul.badge-attendance-chart li span {
-      -webkit-animation: bar-grow 1s ease-in-out;
-      -moz-animation: bar-grow 1s ease-in-out;
-      -o-animation: bar-grow 1s ease-in-out;
-      animation: bar-grow 1s ease-in-out;
+  .badge-attendance & {
+    width: 220px;
+    height: 40px;
+    height: var(--badge-size, 40px);
+  }
+
+  li {
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+    overflow: hidden;
+
+    &:hover {
+      opacity: .85;
+    }
+
+    &.has-exclusion {
+      opacity: .3;
+    }
+
+    span {
+      position: absolute;
+      bottom: 0;
+      display: block;
+      width: 8px;
+      width: ~"calc(100% - 2px)";
+      min-width: 2px;
+      min-height: 1px;
+      max-height: 100%;
+      background: @persondetails-badge-color;
+
+      .animate & {
+        -webkit-animation: bar-grow 1s ease-in-out;
+        -moz-animation: bar-grow 1s ease-in-out;
+        -o-animation: bar-grow 1s ease-in-out;
+        animation: bar-grow 1s ease-in-out;
+      }
+    }
+  }
+}
+
+.streak-chart {
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: table-cell;
+    float: right;
+    width: 9px;
+    height: 100%;
+    margin-right: 2px;
+    vertical-align: bottom;
+
+    span {
+      display: block;
+      width: 100%;
+      min-height: 1px;
+      background: @brand-info;
+
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        // needed for chrome but kills ie
+        position: absolute;
+        bottom: 0;
+      }
     }
   }
 }
@@ -378,24 +541,26 @@
 .badge-disc {
   position: relative;
 
-  ul.badge-disc-chart {
-    //http://codepen.io/Victa/pen/xDqbf
+  .badge-disc-chart {
     display: table;
-    width: 45px;
-    height: 40px;
+    width: 1em;
+    height: .888em;
     margin: 0 auto;
+    //http://codepen.io/Victa/pen/xDqbf
+    font-size: 45px;
+    font-size: var(--badge-size, 45px);
     table-layout: fixed;
 
     li {
       position: relative;
       display: table-cell;
       width: 3px;
-      height: 40px;
+      height: 100%;
       vertical-align: bottom;
 
       span {
         display: block;
-        width: 10px;
+        width: .2222em;
         min-height: 2px;
         background: lighten(#4f89bd, 20%);
 
@@ -443,52 +608,52 @@
 }
 
 .badge-attendingduration {
-  position: relative;
-  color: #686576;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
 
   .duration-metric {
+    position: relative;
+    color: #e5d24d;  // Default (.duration-weeks)
     &::before {
-      font-family: @fa-font-face;
-      font-size: 45px;
-      font-weight: @fa-theme-weight;
-      color: #e5d24d;
-      content: @fa-var-circle;
+      &:extend(.badge-background);
+      border-radius: 50%;
     }
 
-    &.duration-months::before {
+    &.duration-new {
+      color: #d25555;
+    }
+
+    &.duration-months {
       color: #69ad5e;
     }
 
-    &.duration-years::before {
+    &.duration-years {
       color: #56789e;
-    }
-
-    &.duration-new::before {
-      color: #d25555;
     }
 
     .metric-value {
       position: absolute;
-      top: 14px;
-      left: 14px;
-      width: 30px;
-      font-size: 20px;
+      top: .6em; // 14px
+      right: 0;
+      left: 0;
+      font-size: .444em; // 20px
       font-weight: @font-weight-bold;
-      line-height: 12px;
+      line-height: .6em; //12px
       color: #fff;
       text-align: center;
     }
 
     .metric-unit {
       display: block;
-      font-size: 11px;
-      font-weight: normal;
+      font-size: .55em;
+      font-weight: @font-weight-normal;
     }
 
     &.duration-new .metric-value {
-      top: 18px;
-      font-size: 14px;
+      top: 0; //18px
+      font-size: .3111em; //14px
       font-weight: @font-weight-semibold;
+      line-height: 3.2142em;
     }
   }
 }
@@ -496,23 +661,22 @@
 .badge-weeksattendanceduration {
   .weeks-metric {
     position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) *.888)";
     color: #686576;
 
     &::before {
-      font-family: @fa-font-face;
-      font-size: 45px;
-      font-weight: @fa-theme-weight;
-      color: @brand-warning;
-      content: @fa-var-square;
+      &:extend(.badge-background);
+      background-color: @brand-warning;
     }
 
     .weeks-attended {
       position: absolute;
-      top: 7px;
-      left: 4px;
+      top: .388em; // 7px
+      left: .2em; // 4px
       display: block;
-      width: 18px;
-      font-size: 20px;
+      width: 1em; // 18px
+      font-size: .45em; //20px
       font-weight: @font-weight-bold;
       text-align: center;
       letter-spacing: -2px;
@@ -520,9 +684,9 @@
 
     .week-duration {
       position: absolute;
-      right: 4px;
-      bottom: 10px;
-      font-size: 11px;
+      right: .363em;
+      bottom: .9em;
+      font-size: .275em; // 11px
       font-weight: @font-weight-semibold;
     }
   }
@@ -539,12 +703,18 @@
 .badge-lastvisitonsite {
   .badge-content {
     position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) *.888)";
     color: #4f89bd;
+
+    .badge-icon {
+      font-size: inherit;
+    }
 
     &.today {
       .duration {
-        top: 9px;
-        font-size: 11px;
+        top: 1em;
+        font-size: .275em;
       }
     }
 
@@ -564,17 +734,12 @@
       opacity: .2;
     }
 
-    i {
-      font-size: 40px;
-    }
-
-    span.duration {
+    .duration {
       position: absolute;
-      top: 8px;
-      right: 50%;
-      width: 35px;
-      margin-right: -17px;
-      font-size: 16px;
+      top: .5em; // 8px
+      right: .3em;
+      left: .3em;
+      font-size: .4em; // 16px
       font-weight: @font-weight-bold;
       text-align: center;
     }
@@ -584,18 +749,47 @@
 .badge-signal {
   .badge-content {
     position: relative;
+    font-size: 45px;
+    font-size: var(--badge-size, 45px);
 
-    span.signal {
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    .signal {
       position: absolute;
-      top: 10px;
+      top: .875em; //10px
+      right: 0;
       left: 0;
-      width: 100%;
-      padding-left: 17%;
-      font-size: 16px;
-      font-weight: 700;
+      padding-left: .5em;
+      font-size: .355em; //16px
+      font-weight: @font-weight-bold;
       color: @persondetails-badge-bg;
       text-align: center;
     }
+  }
+}
+
+.badge-assessment {
+  a {
+    color: inherit;
+  }
+
+  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
+  &.not-requested {
+    color: @ui-4 !important;
+  }
+
+  &.requested {
+    color: @ui-5 !important;
+  }
+
+  .fa-stack-1x {
+    color: #fff;
+  }
+
+  .fa-stack-2x {
+    color: currentColor;
   }
 }
 
@@ -630,20 +824,21 @@
 .badge-personaldevice {
   .badge-content {
     position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) *.888)";
     color: #4f89bd;
 
-    i {
-      font-size: 40px;
+    .badge-icon {
+      font-size: inherit;
     }
 
-    span.deviceCount {
+    .deviceCount {
       position: absolute;
-      top: 10px;
-      right: 50%;
-      width: 36px;
-      margin-right: -18px;
-      font-size: 14px;
-      font-weight: 700;
+      top: .7142em;
+      right: 0;
+      left: 0;
+      font-size: .35em; // 14px
+      font-weight: @font-weight-bold;
       text-align: center;
     }
   }
@@ -669,6 +864,7 @@
     padding: 10px 15px;
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
+    border-top: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     .clearfix();
 
@@ -677,12 +873,12 @@
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      letter-spacing: -.5px;
+      line-height: 25px;
     }
 
     .action-wrapper {
       float: right;
-      height: 39px;
+      height: 45px;
       margin: -10px -15px -10px 0;
 
       .action {
@@ -701,6 +897,14 @@
           transform: translateY(-50%);
         }
       }
+    }
+  }
+
+  // Fix Extra Padding On the First Family
+  .group-members:first-child &:first-child {
+    header {
+      margin: -15px -15px 0;
+      border-top-width: 0;
     }
   }
 
@@ -785,16 +989,8 @@
   }
 }
 
-.persondetails-group:first-child {
-  header {
-    margin: -15px -15px 0 -15px;
-    border-top-width: 0;
-  }
-}
-
 // 5. Page Tabs
 // -------------------------
-
 
 
 // 6. Edit Group Page
@@ -888,7 +1084,6 @@ span.field-value {
       padding-left: 35%;
 
       /* Behave  like a "row" */
-      border: 0;
       border-bottom: 1px solid @gray-lighter;
     }
 
@@ -926,44 +1121,12 @@ span.field-value {
 
     /* Label the data */
     tbody {
-      td:nth-of-type(1)::before {
-        content: "Role";
+      td::before {
+        content: attr(data-label);
       }
 
-      td:nth-of-type(2)::before {
-        content: "Title";
-      }
-
-      td:nth-of-type(3)::before {
-        content: "Name";
-      }
-
-      td:nth-of-type(4)::before {
-        content: "Suffix";
-      }
-
-      td:nth-of-type(5)::before {
-        content: "Connection Status";
-      }
-
-      td:nth-of-type(6)::before {
-        content: "Gender";
-      }
-
-      td:nth-of-type(7)::before {
-        content: "Birthdate";
-      }
-
-      td:nth-of-type(8):empty {
+      td:empty {
         display: none;
-      }
-
-      td:nth-of-type(8)::before {
-        content: "Grade";
-      }
-
-      td:nth-of-type(9)::before {
-        content: "Cancel";
       }
     }
 
@@ -982,10 +1145,7 @@ span.field-value {
     }
 
     > tbody > tr > td > .form-group {
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-
+      &:last-of-type,
       .radio:last-of-type {
         margin-bottom: 0;
       }
@@ -1036,16 +1196,15 @@ span.field-value {
         font-size: @grid-column-header-font-size;
         font-weight: @grid-column-header-font-weight;
         color: @grid-column-header-text-color;
-        // content: "Person #" counter(rowNumber);
         background-color: @grid-column-header-bg;
         border-bottom: 2px solid @grid-column-header-border-color;
 
-        &:before {
+        &::before {
           content: "Contact Info: ";
         }
       }
 
-      .person-sms{
+      .person-sms {
         position: relative;
         padding-left: 35%;
 
@@ -1154,8 +1313,9 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-photo {
-  border: 3px solid @photo-border;
+/* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
+.person-merge .merge-header-summary {
+  cursor: pointer;
 }
 
 // 12. Person Page Views
@@ -1291,19 +1451,42 @@ tr.inactive {
   text-align: center;
 }
 
+.disc-row {
+  margin-bottom: @disc-question-spacing;
+
+  &::after {
+    display: block;
+    width: 100%;
+    margin: @disc-question-spacing 0;
+    content: " ";
+    border-bottom: 1px solid @ui-4;
+  }
+}
+
+
+@disc-chart-height: 425px;
 .discchart {
   position: relative;
   width: 80%;
   max-width: 650px;
-  height: 425px;
+  height: @disc-chart-height;
   padding: 0;
-  margin: 0 auto;
+  margin: 36px auto;
   clear: both;
+  font-size: 0;
+  background-image:
+    linear-gradient(
+      to bottom,
+      @ui-4 0%,
+      transparent 2%,
+      transparent 100%
+    );
+  background-size: 100% (@disc-chart-height/10);
 
   li {
     position: relative;
     display: inline-block;
-    width: 20%;
+    width: 22.5%;
     height: 425px;
     padding: 0;
     margin: 0 2% 0 0;
@@ -1311,13 +1494,13 @@ tr.inactive {
     text-align: center;
     vertical-align: bottom;
     background-color: lighten(@brand-primary, 10%);
-    border-radius: @border-radius-large @border-radius-large 0 0;
 
     &.discchart-midpoint {
       position: absolute;
       bottom: 0;
       width: 100%;
       height: 70%;
+      margin: 0;
       background-color: transparent;
       border-top: 2px solid @brand-danger;
       border-radius: 0;
@@ -1326,28 +1509,26 @@ tr.inactive {
 
   .discbar-label {
     position: absolute;
-    bottom: 20px;
+    bottom: 10px;
     width: 100%;
     overflow: hidden;
     font-size: 28px;
-    font-weight: 500;
-    text-transform: uppercase;
+    font-weight: @font-weight-bold;
+    text-shadow: 0 0 3px @brand-primary;
   }
 
   .discbar {
-    border: 1px solid #ddd;
-
     &::before {
       position: absolute;
-      top: 5%;
+      top: -25px;
       right: 0;
       left: 0;
+      z-index: 1;
       display: block;
-      padding: 5px 1em 0;
       font-size: 20px;
       line-height: 1em;
+      color: @text-color;
       text-align: center;
-      letter-spacing: -3px;
       word-wrap: break-word;
       content: attr(title);
     }
@@ -1390,6 +1571,25 @@ tr.inactive {
       }
     }
   }
+
+  .likert-7 > span {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+
+
+    @media (max-width: @likert-screen-column) {
+      -ms-flex-align: start;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .radio-inline {
+      flex: 0 0 14.28571428571429%;
+    }
+  }
 }
 
 // 18. Edit Person
@@ -1420,4 +1620,252 @@ tr.inactive {
 
 .eventitem.selected .eventitem-select::after {
   content: @fa-var-check-square;
+}
+
+// STEPS
+@steps-breakpoint: @screen-lg-min;
+
+.add-step-buttons {
+  padding: 8px 0;
+  margin: -16px -16px 0;
+  background: @drawer-bg;
+  border-bottom: 1px solid @panel-border;
+
+  + .row {
+    margin-top: 16px;
+  }
+
+  .add-step-label {
+    float: left;
+    padding: (@padding-small-vertical + 1) 0;
+    margin: 0 6px 0 0;
+    font-size: @font-size-small;
+  }
+}
+
+.col-steps {
+  position: relative;
+  float: left;
+  width: 25%;
+  width: ~"calc(100% / var(--stepsPerRowMobile))";
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+
+  @media (min-width: @steps-breakpoint) {
+    width: 100%;
+    width: ~"calc(100% / var(--stepsPerRow))";
+  }
+}
+
+.step-card {
+  position: relative;
+  height: 260px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid @panel-border;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  .card-info {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px 0;
+    text-align: center;
+    transition-duration: .25s;
+    will-change: transform;
+  }
+
+  .step-status {
+    margin: 12px 0 0;
+  }
+
+  .step-name {
+    display: -webkit-box;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.3;
+  }
+
+  @media (min-width: @steps-breakpoint) {
+    .card-info {
+      -ms-flex-pack: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .card-top {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: end;
+      -ms-flex-pack: center;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .card-top,
+    .card-bottom {
+      -ms-flex: 1 1 50%;
+      flex: 1 1 50%;
+    }
+  }
+
+  &.no-steps .card-info {
+    opacity: .75;
+  }
+
+  &.has-prerequisite .step-card-hover {
+    background: @ui-2;
+  }
+
+
+  p:empty {
+    display: none;
+  }
+
+  .badge {
+    background-color: @brand-info;
+  }
+
+  > .step-card-hover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    opacity: 0;
+    transition-duration: .25s;
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+    will-change: opacity, transform;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  &:hover > .step-card-hover {
+    opacity: 1;
+    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
+  }
+
+  .btn-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 49px;
+    color: inherit;
+
+    &:hover {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+  }
+
+  .btn-delete:hover {
+    color: #fff;
+    background-color: @btn-danger-bg;
+  }
+}
+
+.has-overflow {
+  .step-records-table-container,
+  .card-add-step-button {
+    position: relative;
+    display: block;
+  }
+
+  .card-add-step-button > span {
+    transform: none;
+  }
+}
+
+.step-records-table-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+}
+
+.step-records-table {
+  width: 100%;
+
+  td {
+    width: 50px;
+    vertical-align: middle;
+    border: 1px solid @panel-border;
+
+    &.steps-status {
+      width: auto;
+      height: 49px;
+      border-left: none;
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  td:last-of-type {
+    border-right: none;
+  }
+}
+
+.prereq-list-info {
+  padding: 20px 20px 0;
+}
+
+.card-add-step-button {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: @ui-2;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  > span {
+    position: relative;
+    top: 50%;
+    display: block;
+    transform: perspective(1px) translateY(-50%);
+  }
+}
+
+// 20. Rapid Attendance Entry
+// -------------------------
+
+.rapid-attendance-entry {
+  .mh-300 {
+    min-height: 300px;
+  }
+}
+
+.family-select-item {
+  margin-bottom: 12px;
+  color: @text-color;
+  border: 1px solid @panel-border;
+
+  &.active {
+    border-color: @brand-primary;
+    border-color: var(--brand-primary, @brand-primary);
+  }
+
+  a {
+    display: block;
+    padding: 15px 18px;
+    color: @text-color !important;
+  }
 }

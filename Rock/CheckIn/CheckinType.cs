@@ -23,22 +23,25 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// Helper class for getting check-in configuration settings from the group type
+    /// Helper class for getting check-in configuration settings from the group type (Checkin Area)
     /// </summary>
     public class CheckinType
     {
-        /// <summary>
-        /// The checkin type identifier
-        /// </summary>
-        private int _checkinTypeId;
-
         /// <summary>
         /// Gets the type of the checkin.
         /// </summary>
         /// <value>
         /// The type of the checkin.
         /// </value>
-        private GroupTypeCache _checkinType => GroupTypeCache.Get( _checkinTypeId );
+        private GroupTypeCache _checkinType => GroupTypeCache.Get( this.Id );
+
+        /// <summary>
+        /// Gets the CheckinTypeId (GroupTypeCache.Id) for this CheckinType
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public readonly int Id;
 
         /// <summary>
         /// Gets the type of checkin.
@@ -110,7 +113,26 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckout => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use CheckinState.AllowCheckout instead" )]
+        public bool AllowCheckout => AllowCheckoutDefault;
+
+        /// <summary>
+        /// Returns the AllowCheckout setting for this Checkout Type
+        /// Note: Use <see cref="CheckInState.AllowCheckout"/> to see if Checkout is allowed in the current state
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowCheckoutDefault => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
+
+        /// <summary>
+        /// Gets a value indicating whether [enable presence].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable presence]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnablePresence => GetSetting( "core_checkin_EnablePresence" ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [use same options].
@@ -209,16 +231,6 @@ namespace Rock.CheckIn
         public bool PreventDuplicateCheckin => GetSetting( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( false );
 
         /// <summary>
-        /// Gets a value indicating whether [prevent inactive people]. Obsolete as of 1.7.0.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use PreventInactivePeople instead.", true )]
-        public bool PreventInactivePeopele => GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false );
-
-        /// <summary>
         /// Gets a value indicating whether [prevent inactive people].
         /// </summary>
         /// <value>
@@ -307,23 +319,39 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
-            /// Gets a value indicating whether [display alternate identifier fieldfor adults].
+            /// Gets a value indicating whether [display alternate identifier field for adults].
             /// </summary>
             /// <value>
-            ///   <c>true</c> if [display alternate identifier fieldfor adults]; otherwise, <c>false</c>.
+            ///   <c>true</c> if [display alternate identifier field for adults]; otherwise, <c>false</c>.
             /// </value>
             public bool DisplayAlternateIdFieldforAdults => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
 
             /// <summary>
-            /// Gets a value indicating whether [display alternate identifier fieldfor children].
+            /// Gets a value indicating whether [display alternate identifier field for children].
             /// </summary>
             /// <value>
-            ///   <c>true</c> if [display alternate identifier fieldfor children]; otherwise, <c>false</c>.
+            ///   <c>true</c> if [display alternate identifier field for children]; otherwise, <c>false</c>.
             /// </value>
             public bool DisplayAlternateIdFieldforChildren => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
 
             /// <summary>
-            /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take then back to search in that case)
+            /// Gets a value indicating whether [display SMS button].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [display SMS button]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DisplaySmsButton => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON ).AsBoolean();
+
+            /// <summary>
+            /// Gets a value indicating whether [default SMS enabled].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [default SMS enabled]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DefaultSmsEnabled => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED ).AsBoolean();
+
+            /// <summary>
+            /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search in that case)
             /// </summary>
             /// <value>
             ///   <c>true</c> if [enable check in after registration]; otherwise, <c>false</c>.
@@ -359,7 +387,7 @@ namespace Rock.CheckIn
             /// Gets the required attributes for adults.
             /// </summary>
             /// <value>
-            /// The required attributesfor adults.
+            /// The required attributes for adults.
             /// </value>
             public List<AttributeCache> RequiredAttributesForAdults
             {
@@ -477,7 +505,7 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
-            /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that indicate that the person is in the primary fmily
+            /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that indicate that the person is in the primary family
             /// </summary>
             /// <value>
             /// The known relationships same family.
@@ -583,7 +611,7 @@ namespace Rock.CheckIn
         /// <param name="checkinTypeId">The checkin type identifier.</param>
         public CheckinType( int checkinTypeId )
         {
-            _checkinTypeId = checkinTypeId;
+            this.Id = checkinTypeId;
 
             Registration = new RegistrationSettings( this );
         }

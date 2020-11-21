@@ -19,8 +19,8 @@
                 $tp.timepicker({
                     defaultTime: false
                 });
-                
-                $tp.closest('.js-timepicker-input').find('.js-timepicker-clear').click(function () {
+
+                $tp.closest('.js-timepicker-input').find('.js-timepicker-clear').on('click', function () {
                     $tp.timepicker('clear');
                 });
             }

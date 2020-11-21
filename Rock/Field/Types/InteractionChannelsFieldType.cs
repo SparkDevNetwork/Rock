@@ -33,12 +33,9 @@ namespace Rock.Field.Types
         /// <value>
         /// The list source.
         /// </value>
-        internal override Dictionary<string, string> ListSource
+        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            get
-            {
-                return new InteractionChannelService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
-            }
+            return new InteractionChannelService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
     }
 }

@@ -43,12 +43,28 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given signature document template." )]
 
-    [BinaryFileTypeField( "Default File Type", "The default file type to use when creating new documents.", false, 
-        Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE, "", 0 )]
-    [BinaryFileTypeField( "Default Invite Email", "The default system email to use when creating new document types.", false,
-        Rock.SystemGuid.SystemEmail.DIGITAL_SIGNATURE_INVITE, "", 1 )]
+    [BinaryFileTypeField( "Default File Type",
+        Description = "The default file type to use when creating new documents.",
+        IsRequired = false,
+        DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE,
+        Order = 0,
+        Key = AttributeKey.DefaultFileType )]
+
+    [SystemCommunicationField( "Default Invite Email",
+        Description = "The default system email to use when creating new document types.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.DIGITAL_SIGNATURE_INVITE,
+        Order = 1,
+        Key = AttributeKey.DefaultInviteEmail )]
+
     public partial class SignatureDocumentTemplateDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+            public const string DefaultInviteEmail = "DefaultInviteEmail";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -148,11 +164,11 @@ namespace RockWeb.Blocks.Core
             signatureDocumentTemplate.BinaryFileTypeId = bftpFileType.SelectedValueAsInt();
             signatureDocumentTemplate.ProviderEntityTypeId = cpProvider.SelectedEntityTypeId;
             signatureDocumentTemplate.ProviderTemplateKey = ddlTemplate.SelectedValue;
-            signatureDocumentTemplate.InviteSystemEmailId = ddlSystemEmail.SelectedValueAsInt();
+            signatureDocumentTemplate.InviteSystemCommunicationId = ddlSystemEmail.SelectedValueAsInt();
 
             if ( !signatureDocumentTemplate.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -213,7 +229,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                SignatureDocumentTemplateService signatureDocumentTemplateService = new SignatureDocumentTemplateService(new RockContext());
+                SignatureDocumentTemplateService signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
                 SignatureDocumentTemplate signatureDocumentTemplate = signatureDocumentTemplateService.Get( hfSignatureDocumentTemplateId.ValueAsInt() );
                 ShowReadonlyDetails( signatureDocumentTemplate );
             }
@@ -263,7 +279,7 @@ namespace RockWeb.Blocks.Core
             cpProvider.SetValue( signatureDocumentTemplate.ProviderEntityType != null ? signatureDocumentTemplate.ProviderEntityType.Guid.ToString().ToUpper() : string.Empty );
             SetTemplates();
             ddlTemplate.SetValue( signatureDocumentTemplate.ProviderTemplateKey );
-            ddlSystemEmail.SetValue( signatureDocumentTemplate.InviteSystemEmailId );
+            ddlSystemEmail.SetValue( signatureDocumentTemplate.InviteSystemCommunicationId );
         }
 
         /// <summary>
@@ -285,11 +301,11 @@ namespace RockWeb.Blocks.Core
         private void LoadDropDowns()
         {
             ddlSystemEmail.Items.Clear();
-            using ( var rockContext = new RockContext()  )
+            using ( var rockContext = new RockContext() )
             {
-                foreach( var systemEmail in new SystemEmailService( rockContext )
+                foreach ( var systemEmail in new SystemCommunicationService( rockContext )
                     .Queryable().AsNoTracking()
-                    .OrderBy( e => e.Title ) 
+                    .OrderBy( e => e.Title )
                     .Select( e => new
                     {
                         e.Id,
@@ -363,7 +379,7 @@ namespace RockWeb.Blocks.Core
                         signatureDocumentTemplate.ProviderEntityType = new EntityTypeService( rockContext ).Get( entityType.Id );
                     }
 
-                    Guid? fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuidOrNull();
+                    Guid? fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuidOrNull();
                     if ( fileTypeGuid.HasValue )
                     {
                         var binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid.Value );
@@ -374,14 +390,14 @@ namespace RockWeb.Blocks.Core
                         }
                     }
 
-                    Guid? inviteEmailGuid = GetAttributeValue( "DefaultInviteEmail" ).AsGuidOrNull();
+                    Guid? inviteEmailGuid = GetAttributeValue( AttributeKey.DefaultInviteEmail ).AsGuidOrNull();
                     if ( inviteEmailGuid.HasValue )
                     {
-                        var systemEmail = new SystemEmailService( rockContext ).Get( inviteEmailGuid.Value );
+                        var systemEmail = new SystemCommunicationService( rockContext ).Get( inviteEmailGuid.Value );
                         if ( systemEmail != null )
                         {
-                            signatureDocumentTemplate.InviteSystemEmail = systemEmail;
-                            signatureDocumentTemplate.InviteSystemEmailId = systemEmail.Id;
+                            signatureDocumentTemplate.InviteSystemCommunication = systemEmail;
+                            signatureDocumentTemplate.InviteSystemCommunicationId = systemEmail.Id;
                         }
                     }
 

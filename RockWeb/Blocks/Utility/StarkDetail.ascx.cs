@@ -51,23 +51,22 @@ namespace RockWeb.Blocks.Utility
 
         #region Attribute Keys
 
-        /// <summary>
-        /// Keys to use for Block Attributes
-        /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
-            /// <summary>
-            /// AttributeKey for Show Email Address
-            /// </summary>
             public const string ShowEmailAddress = "ShowEmailAddress";
-
-            /// AttributeKey for Email
-            /// The email
-            /// </summary>
             public const string Email = "Email";
         }
 
         #endregion Attribute Keys
+
+        #region PageParameterKeys
+
+        private static class PageParameterKey
+        {
+            public const string StarkId = "StarkId";
+        }
+
+        #endregion PageParameterKeys
 
         #region Fields
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -25,9 +26,12 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// This job migrates data from attendance records into attendance occurance records.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Rock Update Helper v8.0 - Migrate Attendance Occurrence Data" )]
+    [Description( "This job migrates data from attendance records into attendance occurance records." )]
+
     [DisallowConcurrentExecution]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     public class MigrateAttendanceOccurrenceData : IJob
@@ -119,14 +123,27 @@ ALTER TABLE [dbo].[Attendance]
     DROP CONSTRAINT [FK_dbo.Attendance_dbo.Group_GroupId], [FK_dbo.Attendance_dbo.Location_LocationId], [FK_dbo.Attendance_dbo.Schedule_ScheduleId]
 
 ALTER TABLE [dbo].[Attendance] 
-    DROP COLUMN [LocationId], [ScheduleId], [GroupId], [DidNotOccur], [SundayDate]
+    DROP COLUMN [LocationId], [ScheduleId], [GroupId], [DidNotOccur]
+
+IF (
+		EXISTS (
+			SELECT *
+			FROM information_schema.COLUMNS
+			WHERE TABLE_NAME = 'Attendance' AND COLUMN_NAME = 'SundayDate'
+			)
+		)
+BEGIN
+	ALTER TABLE [Attendance]
+
+	DROP COLUMN [SundayDate]
+END
 
 IF NOT EXISTS ( SELECT [Id] FROM [Attendance] WHERE [OccurrenceId] = 1 )
 BEGIN
     DELETE [AttendanceOccurrence] WHERE [Id] = 1
 END 
 " );
-                    
+
                     // delete job if there are no unlined attendance records
                     var jobId = context.GetJobId();
                     var jobService = new ServiceJobService( rockContext );
@@ -139,7 +156,7 @@ END
                     }
                 }
             }
-
+             
             MigrateAttendanceData( context );
 
             context.UpdateLastStatusMessage( $@"Attendance Records Read: {_attendanceRecordsUpdated}, 

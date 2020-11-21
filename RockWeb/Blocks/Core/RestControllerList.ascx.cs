@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -36,9 +37,16 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Lists all the REST controllers." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class RestControllerList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
 
         #region Base Control Methods
 
@@ -96,7 +104,7 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-       /// <summary>
+        /// <summary>
         /// Handles the RowSelected event of the gControllers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -104,15 +112,28 @@ namespace RockWeb.Blocks.Administration
         protected void gControllers_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "controller", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            queryParams.Add( "Controller", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
             RefreshControllerList();
         }
-        
+
+        protected void gControllers_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var restControllerModel = e.Row.DataItem as RestControllerModel;
+                var litCacheHeader = e.Row.FindControl( "litCacheHeader" ) as Literal;
+                if ( litCacheHeader != null && restControllerModel != null && restControllerModel.ActionsWithPublicCachingHeaders > 0 )
+                {
+                    litCacheHeader.Text = string.Format( "<span class='text-success fa fa-tachometer-alt' title='{0}' data-toggle='tooltip'></span>",
+                        restControllerModel.ActionsWithPublicCachingHeaders );
+                }
+            }
+        }
         #endregion
 
         #region Methods
@@ -125,21 +146,24 @@ namespace RockWeb.Blocks.Administration
             var service = new RestControllerService( new RockContext() );
             var sortProperty = gControllers.SortProperty;
 
-            var qry = service.Queryable().Select( c => new
+            var qry = service.Queryable().Select( c => new RestControllerModel
             {
-                c.Id,
-                c.Name,
-                c.ClassName,
-                Actions = c.Actions.Count()
+                Id = c.Id,
+                Name = c.Name,
+                ClassName = c.ClassName,
+                Actions = c.Actions.Count(),
+                ActionsWithPublicCachingHeaders = c.Actions.Count( a => a.CacheControlHeaderSettings != null
+                                            && a.CacheControlHeaderSettings != ""
+                                            && a.CacheControlHeaderSettings.Contains( "\"RockCacheablityType\":0" ) )
             } );
 
-            if (sortProperty != null)
+            if ( sortProperty != null )
             {
-                qry = qry.Sort(sortProperty);
+                qry = qry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( c => c.Name);
+                qry = qry.OrderBy( c => c.Name );
             }
 
             gControllers.EntityTypeId = EntityTypeCache.Get<RestController>().Id;
@@ -154,6 +178,13 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-
-}
+        private class RestControllerModel
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string ClassName { get; set; }
+            public int Actions { get; set; }
+            public int ActionsWithPublicCachingHeaders { get; set; }
+        }
+    }
 }

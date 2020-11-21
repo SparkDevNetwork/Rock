@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a category
     /// </summary>
     public class CategoryPicker : ItemPicker
     {
@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
             this.IconCssClass = "fa fa-folder-open";
-            this.AllowCategorySelection = true;
+            this.UseCategorySelection = true;
             base.OnInit( e );
         }
 

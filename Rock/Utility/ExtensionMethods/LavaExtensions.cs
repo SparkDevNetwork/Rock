@@ -38,6 +38,21 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes the <see cref="ExtensionMethods"/> class.
+        /// </summary>
+        static ExtensionMethods()
+        {
+            //
+            // Register any 3rd party library classes that are safe to use.
+            //
+            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
+        }
+
+        #endregion
+
         #region Lava Extensions
 
         /// <summary>
@@ -534,8 +549,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Use DotLiquid to resolve any merge codes within the content using the values
-        /// in the mergeObjects.
+        /// Use Lava to resolve any merge codes within the content using the values in the merge objects.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
@@ -548,7 +562,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Checks for merge fields and then resolves them.
+        /// Use Lava to resolve any merge codes within the content using the values in the merge objects.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
@@ -559,10 +573,11 @@ namespace Rock
         {
             try
             {
-                if ( !content.HasMergeFields() )
-                {
-                    return content ?? string.Empty;
-                }
+                // 7-9-2020 JME / NA
+                // We decided to remove the check for lava merge fields here as this method is specifically
+                // made to resolve them. The performance increase for text without lava is acceptable as in
+                // a vast majority of cases the string will have lava (that's what this method is for). In
+                // these cases there is a performance tax (though small) on the vast majority of calls.
 
                 // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( enabledLavaCommands == null )
@@ -583,7 +598,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Html Encodes string values that are processed by a lava filter
+        /// HTML Encodes string values that are processed by a lava filter
         /// </summary>
         /// <param name="s">The s.</param>
         /// <returns></returns>
@@ -602,8 +617,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Use DotLiquid to resolve any merge codes within the content using the values
-        /// in the mergeObjects.
+        /// Uses Lava to resolve any merge codes within the content using the values in the merge objects.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
@@ -617,7 +631,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Resolves the merge fields.
+        /// Uses Lava to resolve any merge codes within the content using the values in the merge objects.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
@@ -632,6 +646,11 @@ namespace Rock
                 if ( !content.HasMergeFields() )
                 {
                     return content ?? string.Empty;
+                }
+
+                if ( mergeObjects == null )
+                {
+                    mergeObjects = new Dictionary<string, object>();
                 }
 
                 if ( GlobalAttributesCache.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
@@ -695,22 +714,37 @@ namespace Rock
         }
 
         /// <summary>
-        /// Looks for a parsed template in cache (if the content is 100 characters or less).
+        /// Create a parsed Lava template or retrieve it from the cache.
         /// </summary>
-        /// <param name="content">The content.</param>
+        /// <param name="content">The content of the template.</param>
         /// <returns></returns>
-        private static Template GetTemplate(string content)
+        private static Template GetTemplate( string content )
         {
-            // Do not cache any content over 100 characters in length
-            if ( content.Length > 100 )
+            const int hashLength = 10;
+            string templateKey;
+
+            if ( string.IsNullOrEmpty( content ) )
             {
-                return Template.Parse( content );
+                /* [2020-08-01] DJL - Cache the null template specifically, but process other whitespace templates individually
+                 * to ensure that the format of the final output is preserved.
+                 */
+                templateKey = string.Empty;
+            }
+            else if ( content.Length <= hashLength )
+            {
+                // If the content is less than the size of the MD5 hash,
+                // simply use the content as the key to save processing time.
+                templateKey = content;
+            }
+            else
+            {
+                // Calculate a hash of the content using xxHash.
+                templateKey = content.XxHash();
             }
 
-            // Get template from cache
-            var template = LavaTemplateCache.Get( content ).Template;
+            var template = LavaTemplateCache.Get( templateKey, content ).Template;
 
-            // Clear any previous errors
+            // Clear any previous errors from the template.
             template.Errors.Clear();
 
             return template;
@@ -746,7 +780,7 @@ namespace Rock
         private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @"(?<=\{).+GlobalAttribute.+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
-        /// Determines whether the string potentially has merge fields in it.
+        /// Determines whether the string potentially has lava merge fields in it.
         /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
         /// </summary>
         /// <param name="content">The content.</param>

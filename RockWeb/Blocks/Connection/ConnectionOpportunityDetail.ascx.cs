@@ -34,15 +34,35 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Opportunity Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection opportunity." )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
+
+    #region Block Attributes
+    [BooleanField(
+        "Show Edit",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = AttributeKey.ShowEdit )]
+    #endregion Block Attributes
     public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEdit = "ShowEdit";
+        }
+
+        #endregion
+
         #region Fields
 
         public int _connectionTypeId = 0;
@@ -57,6 +77,8 @@ namespace RockWeb.Blocks.Connection
         public List<GroupStateObj> ConnectorGroupsState { get; set; }
         public Dictionary<int, int> DefaultConnectors { get; set; }
         public List<WorkflowTypeStateObj> WorkflowsState { get; set; }
+        private List<Attribute> ConnectionRequestAttributesState { get; set; }
+        private List<InheritedAttribute> ConnectionRequestAttributesInheritedState { get; set; }
 
         #endregion
 
@@ -109,6 +131,26 @@ namespace RockWeb.Blocks.Connection
             {
                 WorkflowsState = JsonConvert.DeserializeObject<List<WorkflowTypeStateObj>>( json );
             }
+
+            json = ViewState["ConnectionRequestAttributesInheritedState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ConnectionRequestAttributesInheritedState = new List<InheritedAttribute>();
+            }
+            else
+            {
+                ConnectionRequestAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
+            }
+
+            json = ViewState["ConnectionRequestAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ConnectionRequestAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                ConnectionRequestAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
         }
 
         /// <summary>
@@ -139,6 +181,22 @@ namespace RockWeb.Blocks.Connection
             gConnectionOpportunityConnectorGroups.Actions.AddClick += gConnectionOpportunityConnectorGroups_Add;
             gConnectionOpportunityConnectorGroups.GridRebind += gConnectionOpportunityConnectorGroups_GridRebind;
 
+            gConnectionRequestAttributesInherited.Actions.ShowAdd = false;
+            gConnectionRequestAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
+            gConnectionRequestAttributesInherited.GridRebind += gConnectionRequestAttributesInherited_GridRebind;
+
+            gConnectionRequestAttributes.DataKeyNames = new string[] { "Guid" };
+            gConnectionRequestAttributes.Actions.ShowAdd = true;
+            gConnectionRequestAttributes.Actions.AddClick += gConnectionRequestAttributes_Add;
+            gConnectionRequestAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gConnectionRequestAttributes.GridRebind += gConnectionRequestAttributes_GridRebind;
+            gConnectionRequestAttributes.GridReorder += gConnectionRequestAttributes_GridReorder;
+            var securityField = gConnectionRequestAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
+
             lvDefaultConnectors.ItemDataBound += lvDefaultConnectors_ItemDataBound;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -148,10 +206,10 @@ namespace RockWeb.Blocks.Connection
             _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
 
             string script = string.Format( @"
-    $('a.js-toggle-on').click(function( e ){{
+    $('a.js-toggle-on').on('click', function( e ){{
         $('#{0}').show();
     }});
-    $('a.js-toggle-off').click(function( e ){{
+    $('a.js-toggle-off').on('click', function( e ){{
         $('#{0}').hide();
     }});
 ", divUseGroupsOfTypeNote.ClientID );
@@ -226,6 +284,8 @@ namespace RockWeb.Blocks.Connection
             ViewState["GroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
             ViewState["ConnectorGroupsState"] = JsonConvert.SerializeObject( ConnectorGroupsState, Formatting.None, jsonSetting );
             ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
+            ViewState["ConnectionRequestAttributesState"] = JsonConvert.SerializeObject( ConnectionRequestAttributesState, Formatting.None, jsonSetting );
+            ViewState["ConnectionRequestAttributesInheritedState"] = JsonConvert.SerializeObject( ConnectionRequestAttributesInheritedState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -312,7 +372,6 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-                ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
                 ConnectionOpportunityGroupConfigService connectionOpportunityGroupConfigService = new ConnectionOpportunityGroupConfigService( rockContext );
@@ -343,25 +402,16 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
 
                 int? orphanedPhotoId = null;
-                if ( imgupPhoto.BinaryFileId != null )
+                if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
                 {
-                    if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
-                    {
-                        orphanedPhotoId = connectionOpportunity.PhotoId;
-                    }
-                    connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
+                    orphanedPhotoId = connectionOpportunity.PhotoId;
                 }
+                connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId;
 
                 // remove any workflows that removed in the UI
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
                 foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    foreach( var requestWorkflow in connectionRequestWorkflowService.Queryable()
-                        .Where( w => w.ConnectionWorkflowId == connectionWorkflow.Id ) )
-                    {
-                        connectionRequestWorkflowService.Delete( requestWorkflow );
-                    }
-
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionWorkflow );
                     connectionWorkflowService.Delete( connectionWorkflow );
                 }
@@ -408,7 +458,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // remove any campuses that removed in the UI
-                var uiCampuses = cblSelectedItemsAsInt( cblCampus );
+                var uiCampuses = campusCblSelectedItemsAsInt( cblCampus );
                 foreach ( var connectionOpportunityCampus in connectionOpportunity.ConnectionOpportunityCampuses.Where( c => !uiCampuses.Contains( c.CampusId ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityCampuses.Remove( connectionOpportunityCampus );
@@ -498,6 +548,9 @@ namespace RockWeb.Blocks.Connection
 
                     connectionOpportunity.SaveAttributeValues( rockContext );
 
+                    string qualifierValue = connectionOpportunity.Id.ToString();
+                    Helper.SaveAttributeEdits( ConnectionRequestAttributesState, new ConnectionRequest().TypeId, "ConnectionOpportunityId", qualifierValue, rockContext );
+
                     if ( orphanedPhotoId.HasValue || connectionOpportunity.PhotoId.HasValue)
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -580,6 +633,221 @@ namespace RockWeb.Blocks.Connection
 
         #region Control Events
 
+        #region ConnectionRequestAttributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gConnectionRequestAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionRequestAttributes_Add( object sender, EventArgs e )
+        {
+            gConnectionRequestAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gConnectionRequestAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionRequestAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            gConnectionRequestAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the connection request attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gConnectionRequestAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtConnectionRequestAttributes.ActionTitle = ActionTitle.Add( "attribute for connection requests of " + tbName.Text );
+            }
+            else
+            {
+                attribute = ConnectionRequestAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtConnectionRequestAttributes.ActionTitle = ActionTitle.Edit( "attribute for connection requests of " + tbName.Text );
+            }
+
+            var reservedKeyNames = new List<string>();
+            ConnectionRequestAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            ConnectionRequestAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtConnectionRequestAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+
+            edtConnectionRequestAttributes.SetAttributeProperties( attribute, typeof( ConnectionRequest ) );
+
+            ShowDialog( "ConnectionRequestAttributes", true );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gConnectionRequestAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionRequestAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( ConnectionRequestAttributesState, e.OldIndex, e.NewIndex );
+            BindConnectionRequestAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gConnectionRequestAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionRequestAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            ConnectionRequestAttributesState.RemoveEntity( attributeGuid );
+
+            BindConnectionRequestAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionRequestAttributesInherited control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionRequestAttributesInherited_GridRebind( object sender, EventArgs e )
+        {
+            BindConnectionRequestAttributesInheritedGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionRequestAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionRequestAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindConnectionRequestAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgConnectionRequestAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgConnectionRequestAttribute_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtConnectionRequestAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( ConnectionRequestAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                // get the non-editable stuff from the GroupTypeAttributesState and put it back into the object...
+                var attributeState = ConnectionRequestAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
+                ConnectionRequestAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = ConnectionRequestAttributesState.Any() ? ConnectionRequestAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            ConnectionRequestAttributesState.Add( attribute );
+
+            BindConnectionRequestAttributesGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the connection request attributes inherited grid.
+        /// </summary>
+        private void BindConnectionRequestAttributesInheritedGrid()
+        {
+            gConnectionRequestAttributesInherited.AddCssClass( "inherited-attribute-grid" );
+            gConnectionRequestAttributesInherited.DataSource = ConnectionRequestAttributesInheritedState;
+            gConnectionRequestAttributesInherited.DataBind();
+            rcwConnectionRequestAttributesInherited.Visible = ConnectionRequestAttributesInheritedState.Any();
+
+            rcwConnectionRequestAttributesInherited.Label = ConnectionRequestAttributesInheritedState.Any() ? "Connection Request Attributes" : string.Empty;
+        }
+
+        /// <summary>
+        /// Binds the group member attributes grid.
+        /// </summary>
+        private void BindConnectionRequestAttributesGrid()
+        {
+            
+            gConnectionRequestAttributes.AddCssClass( "attribute-grid" );
+            SetAttributeListOrder( ConnectionRequestAttributesState );
+            gConnectionRequestAttributes.DataSource = ConnectionRequestAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gConnectionRequestAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the inherited attributes.
+        /// </summary>
+        /// <param name="inheritedConnectionTypeId">The inherited connection type identifier.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        private void BindInheritedAttributes( int? inheritedConnectionTypeId, AttributeService attributeService )
+        {
+            ConnectionRequestAttributesInheritedState = new List<InheritedAttribute>();
+
+            if ( inheritedConnectionTypeId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var inheritedConnectionType = new ConnectionTypeService( rockContext ).Get( inheritedConnectionTypeId.Value );
+                if ( inheritedConnectionType != null )
+                {
+                    string qualifierValue = inheritedConnectionType.Id.ToString();
+
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new ConnectionRequest().TypeId, false ).AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        ConnectionRequestAttributesInheritedState.Add( new InheritedAttribute(
+                            attribute.Name,
+                            attribute.Key,
+                            attribute.Description,
+                            Page.ResolveUrl( "~/ConnectionType/" + attribute.EntityTypeQualifierValue ),
+                            inheritedConnectionType.Name ) );
+                    }
+                }
+            }
+
+            BindConnectionRequestAttributesInheritedGrid();
+        }
+
+        /// <summary>
+        /// Sets the attribute list order.
+        /// </summary>
+        /// <param name="attributeList">The attribute list.</param>
+        private void SetAttributeListOrder( List<Attribute> attributeList )
+        {
+            int order = 0;
+            attributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        #endregion
+
         #region ConnectionOpportunityGroup Grid/Dialog Events
 
         protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
@@ -600,6 +868,7 @@ namespace RockWeb.Blocks.Connection
             {
                 GroupsState.Remove( groupStateObj );
             }
+            nbArchivedPlacementGroupWarning.Visible = GroupsState.Where( g => g.IsArchived ).Any();
             BindGroupGrid();
         }
 
@@ -643,6 +912,7 @@ namespace RockWeb.Blocks.Connection
                     groupStateObj.CampusId = group.CampusId;
                     groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
                     groupStateObj.Guid = Guid.NewGuid();
+                    groupStateObj.IsArchived = group.IsArchived;
                     GroupsState.Add( groupStateObj );
                 }
             }
@@ -701,6 +971,9 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindGroupGrid()
         {
+            // Hide the campus column if the campus filter is not visible.
+            gConnectionOpportunityGroups.ColumnsOfType<RockBoundField>().First( c => c.DataField == "CampusName" ).Visible = rcwCampus.Visible;
+
             gConnectionOpportunityGroups.DataSource = GroupsState;
             gConnectionOpportunityGroups.DataBind();
         }
@@ -874,6 +1147,7 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectorGroupsState.Remove( groupStateObj );
             }
+            nbArchivedConnectorGroupWarning.Visible = ConnectorGroupsState.Where( g => g.IsArchived ).Any();
             BindConnectorGroupsGrid();
         }
 
@@ -919,6 +1193,7 @@ namespace RockWeb.Blocks.Connection
                 connectorGroup.GroupName = group.Name;
                 connectorGroup.GroupTypeName = group.GroupType != null ? group.GroupType.Name : string.Empty;
                 connectorGroup.GroupTypeId = group.GroupTypeId;
+                connectorGroup.IsArchived = group.IsArchived;
             }
 
             BindConnectorGroupsGrid();
@@ -987,6 +1262,9 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectorGroupsGrid()
         {
+            // Hide the campus column if the campus filter is not visible.
+            gConnectionOpportunityConnectorGroups.ColumnsOfType<RockBoundField>().First( c => c.DataField == "CampusName" ).Visible = rcwCampus.Visible;
+
             gConnectionOpportunityConnectorGroups.DataSource = ConnectorGroupsState;
             gConnectionOpportunityConnectorGroups.DataBind();
 
@@ -999,7 +1277,7 @@ namespace RockWeb.Blocks.Connection
         private void BindDefaultConnectors()
         {
             var defaultConnectors = new List<DefaultConnector>();
-            foreach (var campusId in cblSelectedItemsAsInt( cblCampus) )
+            foreach (var campusId in campusCblSelectedItemsAsInt( cblCampus) )
             {
                 var connectorGroups = ConnectorGroupsState
                     .Where( g => !g.CampusId.HasValue || g.CampusId.Value == campusId )
@@ -1045,7 +1323,11 @@ namespace RockWeb.Blocks.Connection
             lvDefaultConnectors.DataBind();
         }
 
-
+        /// <summary>
+        /// Get the identifiers of the selected checkbox list items.
+        /// </summary>
+        /// <param name="cbl">The checkbox list.</param>
+        /// <returns></returns>
         private List<int> cblSelectedItemsAsInt( CheckBoxList cbl )
         {
             var values = new List<int>();
@@ -1056,6 +1338,28 @@ namespace RockWeb.Blocks.Connection
                 if ( int.TryParse( stringValue, out numValue ) )
                 {
                     values.Add( numValue );
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Get the selected campus identitfiers or the single campus id if no campuses were selected and there is only one campus.
+        /// </summary>
+        /// <param name="cbl">The campus checkbox list.</param>
+        /// <returns></returns>
+        private List<int> campusCblSelectedItemsAsInt( CheckBoxList campusCbl )
+        {
+            var values = cblSelectedItemsAsInt( campusCbl );
+            
+            // if no campuses were selected and there is only a single campus, manually add it
+            if ( !values.Any() && !rcwCampus.Visible )
+            {
+                int? singleCampusId = CampusCache.SingleCampusId;
+                if ( singleCampusId.HasValue )
+                {
+                    values.Add( singleCampusId.Value );
                 }
             }
 
@@ -1215,6 +1519,8 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
             var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
+            bool isPrimaryQualifierVisible = false;
+            bool isSecondaryQualifierVisible = false;
             switch ( connectionWorkflowTriggerType )
             {
                 case ConnectionWorkflowTriggerType.RequestStarted:
@@ -1223,10 +1529,11 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.RequestTransferred:
                 case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                 case ConnectionWorkflowTriggerType.Manual:
+                case ConnectionWorkflowTriggerType.FutureFollowupDateReached:
                     {
-                        ddlPrimaryQualifier.Visible = false;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = false;
                         ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = false;
                         ddlSecondaryQualifier.Items.Clear();
                         break;
                     }
@@ -1234,11 +1541,11 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.StateChanged:
                     {
                         ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.BindToEnum<ConnectionState>();
                         ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                         ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = true;
                         ddlSecondaryQualifier.BindToEnum<ConnectionState>();
                         ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                         if ( !connectionType.EnableFutureFollowup )
@@ -1253,7 +1560,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).OrderBy( a => a.Name ).ToList();
                         ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.Items.Clear();
                         ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var status in statusList )
@@ -1261,7 +1568,7 @@ namespace RockWeb.Blocks.Connection
                             ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
                         }
                         ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = true;
                         ddlSecondaryQualifier.Items.Clear();
                         ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var status in statusList )
@@ -1279,14 +1586,14 @@ namespace RockWeb.Blocks.Connection
                             .OrderBy( a => a.Name )
                             .ToList();
                         ddlPrimaryQualifier.Label = "Activity Type";
-                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Visible = isPrimaryQualifierVisible = true;
                         ddlPrimaryQualifier.Items.Clear();
                         ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
                         foreach ( var activity in activityList )
                         {
                             ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
                         }
-                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = false;
                         ddlSecondaryQualifier.Items.Clear();
                         break;
                     }
@@ -1297,12 +1604,18 @@ namespace RockWeb.Blocks.Connection
                 if ( workflowTypeStateObj.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                 {
                     qualifierValues = workflowTypeStateObj.QualifierValue.SplitDelimitedValues();
-                    if ( ddlPrimaryQualifier.Visible && qualifierValues.Length > 0 )
+                    /*
+                        3/31/2020 - SK 
+                        Visible property of ddlPrimaryQualifier and ddlSecondaryQualifier don't reflect the new assigned value till the request complete.
+                        That is the reason isPrimaryQualifierVisible & isSecondaryQualifierVisible are introduced to potentially fix the issue raised in #2029
+                        https://github.com/SparkDevNetwork/Rock/issues/2029
+                    */
+                    if ( isPrimaryQualifierVisible && qualifierValues.Length > 0 )
                     {
                         ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
                     }
 
-                    if ( ddlSecondaryQualifier.Visible && qualifierValues.Length > 1 )
+                    if ( isSecondaryQualifierVisible && qualifierValues.Length > 1 )
                     {
                         ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
                     }
@@ -1465,9 +1778,39 @@ namespace RockWeb.Blocks.Connection
                 WorkflowsState.Add( new WorkflowTypeStateObj( connectionWorkflow ) );
             }
 
+            nbArchivedPlacementGroupWarning.Visible = false;
+            nbArchivedConnectorGroupWarning.Visible = false;
+
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            string qualifierValue = connectionOpportunity.Id.ToString();
+            ConnectionRequestAttributesState = attributeService.GetByEntityTypeId( new ConnectionRequest().TypeId, true ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "ConnectionOpportunityId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList();
+            BindConnectionRequestAttributesGrid();
+
+            BindInheritedAttributes( connectionOpportunity.ConnectionTypeId, attributeService );
+
             GroupsState = new List<GroupStateObj>();
-            foreach( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
+            foreach ( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
             {
+                if ( opportunityGroup.Group == null )
+                {
+                    // Look for archived groups.
+                    var archivedGroup = new GroupService( new RockContext() )
+                        .GetArchived()
+                        .Where( a => a.Id == opportunityGroup.GroupId )
+                        .FirstOrDefault();
+                    if ( archivedGroup != null )
+                    {
+                        nbArchivedPlacementGroupWarning.Visible = true;
+                        opportunityGroup.Group = archivedGroup;
+                    }
+                }
                 GroupsState.Add( new GroupStateObj( opportunityGroup ) );
             }
 
@@ -1480,6 +1823,19 @@ namespace RockWeb.Blocks.Connection
             ConnectorGroupsState = new List<GroupStateObj>();
             foreach( var connectorGroup in connectionOpportunity.ConnectionOpportunityConnectorGroups )
             {
+                if (connectorGroup.ConnectorGroup == null )
+                {
+                    // Look for archived groups.
+                    var archivedGroup = new GroupService( new RockContext() )
+                        .GetArchived()
+                        .Where( a => a.Id == connectorGroup.ConnectorGroupId )
+                        .FirstOrDefault();
+                    if ( archivedGroup != null )
+                    {
+                        nbArchivedConnectorGroupWarning.Visible = true;
+                        connectorGroup.ConnectorGroup = archivedGroup;
+                    }
+                }
                 ConnectorGroupsState.Add( new GroupStateObj( connectorGroup ) );
             }
 
@@ -1587,10 +1943,47 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderAttributeList( List<Attribute> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns( ConnectionOpportunity connectionOpportunity )
         {
+            if ( CampusCache.All().Count == 1 )
+            {
+                rcwCampus.Visible = false;
+            }
+
             cblCampus.Items.Clear();
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
@@ -1659,6 +2052,9 @@ namespace RockWeb.Blocks.Connection
                 case "WORKFLOWDETAILS":
                     dlgWorkflowDetails.Show();
                     break;
+                case "CONNECTIONREQUESTATTRIBUTES":
+                    dlgConnectionRequestAttribute.Show();
+                    break;
             }
         }
 
@@ -1683,6 +2079,9 @@ namespace RockWeb.Blocks.Connection
 
                 case "WORKFLOWDETAILS":
                     dlgWorkflowDetails.Hide();
+                    break;
+                case "CONNECTIONREQUESTATTRIBUTES":
+                    dlgConnectionRequestAttribute.Hide();
                     break;
             }
 
@@ -1735,6 +2134,7 @@ namespace RockWeb.Blocks.Connection
             public string GroupTypeName { get; set; }
             public string CampusName { get; set; }
             public int GroupTypeId { get; set; }
+            public bool IsArchived { get; set; }
 
             public GroupStateObj()
             {
@@ -1753,6 +2153,7 @@ namespace RockWeb.Blocks.Connection
                     GroupTypeId = opportunityGroup.Group.GroupTypeId;
                     CampusId = opportunityGroup.Group.CampusId;
                     CampusName = opportunityGroup.Group.Campus != null ? opportunityGroup.Group.Campus.Name : string.Empty;
+                    IsArchived = opportunityGroup.Group.IsArchived;
                 }
             }
 
@@ -1766,6 +2167,7 @@ namespace RockWeb.Blocks.Connection
                     GroupName = connectorGroup.ConnectorGroup.Name;
                     GroupTypeName = connectorGroup.ConnectorGroup.GroupType != null ? connectorGroup.ConnectorGroup.GroupType.Name : string.Empty;
                     GroupTypeId = connectorGroup.ConnectorGroup.GroupTypeId;
+                    IsArchived = connectorGroup.ConnectorGroup.IsArchived;
                 }
                 if ( connectorGroup.Campus != null )
                 {

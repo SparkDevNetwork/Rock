@@ -125,7 +125,19 @@ namespace Rock.Client
     public partial class FinancialPledge : FinancialPledgeEntity
     {
         /// <summary />
+        public int EndDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate EndSourceDate { get; set; }
+
+        /// <summary />
         public DefinedValue PledgeFrequencyValue { get; set; }
+
+        /// <summary />
+        public int StartDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate StartSourceDate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -67,6 +67,7 @@ namespace Rock.Field.Types
             li.Label = "Values";
             li.Help = "The list of the values to display.";
             li.ValueChanged += OnQualifierUpdated;
+            controls.Add( li );
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Columns";
@@ -89,6 +90,9 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
                 "The source of the values to display.", string.Empty ) );
+
+            var description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null )
             {

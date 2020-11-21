@@ -40,14 +40,30 @@ namespace RockWeb.Blocks.CheckIn.Config
     [DisplayName( "Edit Label" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Allows editing contents of a label and printing test labels." )]
+    [TextField( "Labelary URL",
+        Description = "This is the URL template used to display the label preview. The values in the default template are: 0 = dpmm, 1 = width, 2 = height, 3 = Label Index, 4 = label text.",
+        IsRequired = true,
+        DefaultValue = LABELARY_URL,
+        Order = 0,
+        Key = AttributeKey.LabelaryUrl)]
     public partial class EditLabel : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string LabelaryUrl = "LabelaryUrl";
+        }
+
+        #endregion Attribute Keys
+
         #region Properties
         private Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
         private Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        private const string LABELARY_URL = "https://labelary2.cfapps.io/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}";
 
-        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+        // ^JUS will save changes to EEPROM. Doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
         private const string REMOVE_ZPL_CONFIG_UPDATE_CODE = "^JUS";
+
         #endregion
 
         #region Control Methods
@@ -263,12 +279,13 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         private void SetLabelImage()
         {
+            string urlTemplate = GetAttributeValue( AttributeKey.LabelaryUrl );
             string dpmm = ddlPrintDensity.SelectedValue;
             string width = nbLabelWidth.Text;
             string height = nbLabelHeight.Text;
             string labelIndex = nbShowLabel.Text;
 
-            imgLabelary.ImageUrl = string.Format( "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}", dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
+            imgLabelary.ImageUrl = string.Format( urlTemplate, dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
         }
 
         #endregion

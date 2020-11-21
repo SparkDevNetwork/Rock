@@ -96,6 +96,16 @@ namespace Rock.Model
         [DataMember]
         public int? EntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The fee coverage amount.
+        /// </value>
+        [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision(18, 2)]
+        public decimal? FeeCoverageAmount { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -135,7 +145,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -213,7 +223,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
                 HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialScheduledTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.ScheduledTransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }

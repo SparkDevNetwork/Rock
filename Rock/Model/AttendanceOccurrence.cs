@@ -64,7 +64,11 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
         [DataMember]
+        [IgnoreCanDelete]
         public int? ScheduleId { get; set; }
 
         /// <summary>
@@ -100,15 +104,28 @@ namespace Rock.Model
         public bool? DidNotOccur { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return OccurrenceDate.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
 
         /// <summary>
         /// Gets or sets the notes.
@@ -127,6 +144,79 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AnonymousAttendanceCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Accept Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Decline Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not to show the Decline Confirmation Message.
+        /// </summary>
+        [DataMember]
+        public bool ShowDeclineReasons { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
+        /// </summary>
+        /// <value>
+        /// The integer IDs.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string DeclineReasonValueIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurrence is associated.
+        /// </summary>
+        [DataMember]
+        public int? StepTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets the occurrence date key.
+        /// </summary>
+        /// <value>
+        /// The occurrence date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int OccurrenceDateKey
+        {
+            get => OccurrenceDate.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the attendance type value identifier.
+        /// </summary>
+        /// <value>
+        /// The attendance type value identifier.
+        /// </value>
+        [DataMember]
+        public int? AttendanceTypeValueId { get; set; }
 
         #endregion
 
@@ -201,7 +291,8 @@ namespace Rock.Model
         /// Gets the attendance rate.
         /// </summary>
         /// <value>
-        /// The attendance rate.
+        /// The attendance rate which is the number of attendance records marked as did attend
+        /// divided by the total number of attendance records for this occurrence.
         /// </value>
         public double AttendanceRate
         {
@@ -210,7 +301,7 @@ namespace Rock.Model
                 var totalCount = Attendees.Count();
                 if ( totalCount > 0 )
                 {
-                    return (double)( DidAttendCount ) / (double)totalCount;
+                    return ( double ) ( DidAttendCount ) / ( double ) totalCount;
                 }
                 else
                 {
@@ -219,6 +310,48 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the percent members attended.
+        /// </summary>
+        /// <value>
+        /// The percent members attended is the number of attendance records marked as did attend
+        /// divided by the total number of members in the group.
+        /// </value>
+        [RockObsolete( "1.10" )]
+        [System.Obsolete( "Use Attendance Rate instead." )]
+        public double PercentMembersAttended
+        {
+            get
+            {
+                var groupMemberCount = Group.Members
+                                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                    .Where( m => !m.IsArchived )
+                                    .Count();
+
+                if ( groupMemberCount > 0 )
+                {
+                    return ( double ) ( DidAttendCount ) / ( double ) groupMemberCount;
+                }
+                else
+                {
+                    return 0.0d;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets the Step Type.
+        /// </summary>
+        [DataMember]
+        public virtual StepType StepType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the occurrence source date.
+        /// </summary>
+        /// <value>
+        /// The occurrence source date.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsSourceDate OccurrenceSourceDate { get; set; }
         #endregion
 
         #region Public Methods
@@ -234,15 +367,18 @@ namespace Rock.Model
             get
             {
                 var result = base.IsValid;
-                if (!result) return result;
+                if ( !result )
+                    return result;
 
                 using ( var rockContext = new RockContext() )
                 {
                     // validate cases where the group type requires that a location/schedule is required
-                    if (GroupId == null) return result;
+                    if ( GroupId == null )
+                        return result;
 
-                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault(g => g.Id == GroupId);
-                    if (group == null) return result;
+                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault( g => g.Id == GroupId );
+                    if ( group == null )
+                        return result;
 
                     if ( group.GroupType.GroupAttendanceRequiresLocation && LocationId == null )
                     {
@@ -263,6 +399,17 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"Occurrence for {Schedule} {Group} at {Location} on { OccurrenceDate.ToShortDateString() }";
+        }
+
         #endregion
 
     }
@@ -281,7 +428,14 @@ namespace Rock.Model
         {
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
-            this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
+
+            // A Migration will manually add a ON DELETE SET NULL for ScheduleId.
+            this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.StepType ).WithMany().HasForeignKey( p => p.StepTypeId ).WillCascadeOnDelete( true );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasRequired( r => r.OccurrenceSourceDate ).WithMany().HasForeignKey( r => r.OccurrenceDateKey ).WillCascadeOnDelete( false );
         }
     }
 

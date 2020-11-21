@@ -193,6 +193,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsAnalytic { get; private set; }
 
         /// <summary>
@@ -205,7 +206,7 @@ namespace Rock.Web.Cache
         public bool IsAnalyticHistory { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attribute is active.
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
@@ -214,7 +215,7 @@ namespace Rock.Web.Cache
         public bool EnableHistory { get; private set; }
 
         /// <summary>
-        /// Gets or sets any HTML to be rendered before the attribute's edit control 
+        /// Gets or sets any HTML to be rendered before the attribute's edit control
         /// </summary>
         /// <value>
         /// The pre HTML.
@@ -223,13 +224,38 @@ namespace Rock.Web.Cache
         public string PreHtml { get; private set; }
 
         /// <summary>
-        /// Gets or sets any HTML to be rendered after the attribute's edit control 
+        /// Gets or sets any HTML to be rendered after the attribute's edit control
         /// </summary>
         /// <value>
         /// The post HTML.
         /// </value>
         [DataMember]
         public string PostHtml { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name of the Attribute.
+        /// </value>
+        [DataMember]
+        public string  AbbreviatedName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; private set; }
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
@@ -322,7 +348,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead")]
+        [Obsolete("Use SetFromEntity instead", true )]
         public override void CopyFromModel( Data.IEntity model )
         {
             this.SetFromEntity( model );
@@ -357,7 +383,7 @@ namespace Rock.Web.Cache
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead" )]
+        [Obsolete( "Use SetFromEntity instead", true )]
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
             this.SetFromEntity( attribute, qualifiers );
@@ -394,6 +420,9 @@ namespace Rock.Web.Cache
             EnableHistory = attribute.EnableHistory;
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
+            AbbreviatedName = attribute.AbbreviatedName;
+            ShowOnBulk = attribute.ShowOnBulk;
+            IsPublic = attribute.IsPublic;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -506,7 +535,7 @@ namespace Rock.Web.Cache
                     controls.Add( new Literal { Text = this.PreHtml } );
                 }
             }
-            
+
             if ( rockControl != null )
             {
                 rockControl.Label = options.LabelText;
@@ -621,6 +650,47 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Gets a collection of <see cref="Rock.Model.Attribute">Attributes</see> by <see cref="Rock.Model.EntityType"/>, EntityQualifierColumn and EntityQualifierValue.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public static List<AttributeCache> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
+        {
+            var query = GetByEntity( entityTypeId );
+
+            if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
+            {
+                query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ).ToList();
+            }
+            else
+            {
+                query = query.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn ).ToList();
+            }
+
+            if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
+            {
+                query = query.Where( t => t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ).ToList();
+            }
+            else
+            {
+                query = query.Where( t => t.EntityTypeQualifierValue == entityQualifierValue ).ToList();
+            }
+
+            var attributeIds = query.SelectMany( t => t.AttributeIds );
+            var attributes = attributeIds.Select( Get ).ToList();
+
+            if ( !includeInactive )
+            {
+                attributes = attributes.Where( a => a.IsActive == true ).ToList();
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
         /// Gets the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -647,7 +717,7 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
             return Get( attributeModel, qualifiers );
@@ -753,7 +823,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete("No longer needed", true )]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
             //
@@ -763,7 +833,7 @@ namespace Rock.Web.Cache
         /// Flushes the entity attributes.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead" )]
+        [Obsolete( "Use RemoveEntityAttributes instead", true )]
         public static void FlushEntityAttributes()
         {
             EntityAttributesCache.Remove();
@@ -821,7 +891,7 @@ namespace Rock.Web.Cache
         public bool SetId { get; set; }
 
         /// <summary>
-        /// Gets or sets the required.
+        /// Overrides the required value of the attribute. Leave null to use the normal IsRequired of the attribute
         /// </summary>
         /// <value>
         /// The required.

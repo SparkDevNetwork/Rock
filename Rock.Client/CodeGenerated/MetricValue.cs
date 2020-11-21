@@ -124,10 +124,16 @@ namespace Rock.Client
         public long DateTimeStamp { get; set; }
 
         /// <summary />
+        public int? MetricValueDateKey { get; set; }
+
+        /// <summary />
         public string MetricValuePartitionEntityIds { get; set; }
 
         /// <summary />
         public ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate MetricValueSourceDate { get; set; }
 
         /// <summary />
         public string SeriesName { get; set; }

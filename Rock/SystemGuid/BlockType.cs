@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -21,6 +21,11 @@ namespace Rock.SystemGuid
     /// </summary>
     public class BlockType
     {
+        /// <summary>
+        /// Gets the Badges display block guid
+        /// </summary>
+        public const string BADGES = "FC8AF928-C4AF-40C7-A667-4B24390F03A1";
+
         /// <summary>
         /// Gets the Plugin Manager guid
         /// </summary>
@@ -36,6 +41,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
 
+        #region Communication Block Types
+
         /// <summary>
         /// Communication Detail Block Type Guid
         /// </summary>
@@ -50,6 +57,23 @@ namespace Rock.SystemGuid
         /// The Communication Entry (Wizard) Block Type Guid
         /// </summary>
         public const string COMMUNICATION_ENTRY_WIZARD = "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0";
+
+        /// <summary>
+        /// System Communication List Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "13BD5FCC-8F03-46B4-B193-E9C0987D2F20";
+
+        /// <summary>
+        /// System Communication Detail Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "8713F91A-8738-453D-AF13-3ED57F74137E";
+
+        #endregion
+
+        /// <summary>
+        /// The connection opportunity signup Block Type GUID
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_SIGNUP = "C7FCE3B7-704B-43C0-AF96-5A70EB7F70D9";
 
         /// <summary>
         /// Content Channel View Block Type Guid
@@ -76,6 +100,20 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
 
+        #region Event Block Types
+
+        /// <summary>
+        /// Event category Registration Group Placement block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_GROUP_PLACEMENT = "9AF434D2-FB9B-43D7-8550-DD0B92B7A70A";
+
+        /// <summary>
+        /// Event category Registration Template Detail block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_TEMPLATE_DETAIL = "91354899-304E-44C7-BD0D-55F42E6505D3";
+
+        #endregion
+
         #region Finance Block Types
 
         /// <summary>
@@ -89,5 +127,130 @@ namespace Rock.SystemGuid
         /// The bulk update block type guid
         /// </summary>
         public const string BULK_UPDATE = "A844886D-ED6F-4367-9C6F-667401201ED0";
+
+        #region Assessment Block Types
+
+        /// <summary>
+        /// The assessment list block type guid
+        /// </summary>
+        public const string ASSESSMENT_LIST = "0AD1D108-4ABF-4AED-B3B7-4AAEA16D10E4";
+
+        /// <summary>
+        /// The conflict profile block type guid
+        /// </summary>
+        public const string CONFLICT_PROFILE = "91473D2F-607D-4260-9C6A-DD3762FE472D";
+
+        /// <summary>
+        /// The disc block type guid
+        /// </summary>
+        public const string DISC = "A161D12D-FEA7-422F-B00E-A689629680E4";
+
+        /// <summary>
+        /// The eq inventory block type guid
+        /// </summary>
+        public const string EQ_INVENTORY = "040CFD6D-5155-4BC9-BAEE-A53219A7BECE";
+
+        /// <summary>
+        /// The gifts assessment block type guid
+        /// </summary>
+        public const string GIFTS_ASSESSMENT = "A7E86792-F0ED-46F2-988D-25EBFCD1DC96";
+
+        /// <summary>
+        /// The motivators block type guid
+        /// </summary>
+        public const string MOTIVATORS = "18CF8DA8-5DE0-49EC-A279-D5507CFA5713";
+
+        #endregion Assessment Block Types
+
+        #region Groups Block Types
+
+        /// <summary>
+        /// Groups category Group Member Detail block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_DETAIL = "AAE2E5C3-9279-4AB0-9682-F4D19519D678";
+
+        /// <summary>
+        /// Groups category Group Member List block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_LIST = "88B7EFA9-7419-4D05-9F88-38B936E61EDD";
+
+        #endregion
+
+        #region RSVP Block Types
+
+        /// <summary>
+        /// RSVP category List block type guid.
+        /// </summary>
+        public const string RSVP_LIST = "16CE8B41-FD1B-43F2-8C8E-4E878470E8BD";
+
+        /// <summary>
+        /// RSVP category Detail block type guid.
+        /// </summary>
+        public const string RSVP_DETAIL = "2BC5CC6B-3618-4848-BCD9-1796AA35E7FD";
+
+        /// <summary>
+        /// RSVP category Response block type guid.
+        /// </summary>
+        public const string RSVP_RESPONSE = "EEFD83FB-6EE1-44F4-A012-7569F979CD6B";
+
+        #endregion
+
+        /// <summary>
+        /// The log viewer
+        /// </summary>
+        public const string LOG_VIEWER = "6059FC03-E398-4359-8632-909B63FFA550";
+
+        /// <summary>
+        /// The phone number lookup block type.
+        /// </summary>
+        public const string PHONE_NUMBER_LOOKUP = "51BB37DA-6F3E-40EC-B80E-D381E13E01B2";
+
+        /// <summary>
+        /// The oidc authorize
+        /// </summary>
+        public const string OIDC_AUTHORIZE = "D9E2BE51-6AC2-43D6-BE63-9E5EC571BD95";
+        /// <summary>
+        /// The oidc logout
+        /// </summary>
+        public const string OIDC_LOGOUT = "32F2171C-4CD2-48A0-AAD0-AE681CB0D2DD";
+        /// <summary>
+        /// The oidc scope list
+        /// </summary>
+        public const string OIDC_SCOPE_LIST = "0E407FC8-B5B9-488E-81E4-8EA5F7CFCAB3";
+        /// <summary>
+        /// The oidc scope detail
+        /// </summary>
+        public const string OIDC_SCOPE_DETAIL = "AA4368BD-00FA-4AB9-9591-CFD64BE6C9EA";
+        /// <summary>
+        /// The oidc claims
+        /// </summary>
+        public const string OIDC_CLAIMS = "142BE80B-5FB2-459D-AE5C-E371C79538F6";
+        /// <summary>
+        /// The oidc client list
+        /// </summary>
+        public const string OIDC_CLIENT_LIST = "616D1A98-067D-43B8-B7F5-41FB12FB894E";
+        /// <summary>
+        /// The oidc client detail
+        /// </summary>
+        public const string OIDC_CLIENT_DETAIL = "312EAD0E-4068-4211-8410-2EB45B7D8BAB";
+        /// <summary>
+        /// The notes
+        /// </summary>
+        public const string NOTES = "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3";
+
+        /// <summary>
+        /// The group attendance detail
+        /// </summary>
+        public const string GROUP_ATTENDANCE_DETAIL = "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B";
+        /// <summary>
+        /// The group attendance list
+        /// </summary>
+        public const string GROUP_ATTENDANCE_LIST = "5C547728-38C2-420A-8602-3CDAAC369247";
+        /// <summary>
+        /// The attendance self entry
+        /// </summary>
+        public const string ATTENDANCE_SELF_ENTRY = "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3";
+
+
     }
 }

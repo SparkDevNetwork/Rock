@@ -5,12 +5,12 @@
 
         <div class="panel panel-block">
 
-            <div class="panel-heading panel-follow clearfix">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
                     <i class="fa fa-bar-chart"></i> Power BI Account Register
                 </h1>
             </div>
-                
+
             <div class="panel-body">
 
                 <asp:Panel ID="pnlEntry" runat="server" >
@@ -44,12 +44,12 @@
                          Provide the Client ID and Client Secret that you got from Step 1
                     </p>
                     <Rock:RockTextBox ID="txtClientId" runat="server" Label="Client ID" Required="true" />
-                    <Rock:RockTextBox ID="txtClientSecret" runat="server" Label="Client Secret" Required="true" />  
+                    <Rock:RockTextBox ID="txtClientSecret" runat="server" Label="Client Secret" Required="true" />
 
                     <Rock:NotificationBox ID="nbRegistrationWarning" runat="server" NotificationBoxType="Warning" Text="Note: If you get an error when registering, wait a minute and try again. It sometimes takes a few extra seconds for the Power BI Website to know about a newly added app." />
                     <asp:Button ID="btnRegister" runat="server" CssClass="btn btn-primary" Text="Register" OnClick="btnRegister_Click" />
                 </asp:Panel>
-                
+
                 <asp:Panel ID="pnlResponse" runat="server">
                     <Rock:NotificationBox ID="nbResponse" runat="server" />
                 </asp:Panel>

@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Rock - License</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
@@ -30,7 +30,7 @@
                         <h1>Rock Relationship Management System License</h1>
 
                         <h3>Rock Community License</h3>
-                        <p>Copyright 2018 Spark Development Network</p>
+                        <p>Copyright 2020 Spark Development Network</p>
 
                         <p>
                             Licensed under the Rock Community License (the "License");
@@ -49,20 +49,21 @@
                         </p>
 
                         <h1>Component Licenses</h1>
-                        Rock was written using several other open-source projects and packages.  Each 
+                        Rock was written using several other open-source projects and packages.  Each
                         of these is attributed below with their respective licenses.
 
                         <ul>
                             <li><a href="#aspwebapi">ASP.net Web API</a> (Apache) - <a href="http://aspnetwebstack.codeplex.com/">Project Site</a> </li>
-                            
-                            <li><a href="http://twitter.github.io/bootstrap/">Bootstrap</a> (Apache)</li>
+
+                            <li><a href="https://github.com/twbs/bootstrap">Bootstrap</a> (MIT)</li>
                             <li><a href="https://github.com/aspnet/EntityFramework6">Entity Framework</a> (Apache)</li>
                             <li><a href="http://summernote.org/">Summernote</a> (MIT)</li>
                             <li><a href="https://github.com/facebook-csharp-sdk/facebook-csharp-sdk">Facebook C# SDK</a> (Apache 2)</li>
-                            <li><a href="http://fontawesome.github.io/Font-Awesome/">Font Awesome</a> (OFL)</li>
+                            <li><a href="https://github.com/FortAwesome/Font-Awesome/">Font Awesome</a> (OFL)</li>
                             <li><a href="http://json.codeplex.com/">JSON.Net</a> (MIT)</li>
                             <li><a href="http://nuget.codeplex.com/">Nuget</a> (Apache)</li>
                             <li><a href="http://nunit.org/index.php?p=license&r=2.6.2">Nunit</a> (Custom)</li>
+                            <li><a href="https://github.com/codebude/QRCoder">QRCoder</a> (MIT)</li>
                             <li><a href="http://quartz-scheduler.org">Quartz</a> (Apache)</li>
                             <li><a href="http://jquery.com/">jQuery</a> (MIT)</li>
                             <li><a href="https://github.com/mikesherov/jquery-idletimer">Idle Timer</a> (Custom)</li>
@@ -74,7 +75,10 @@
                             <li><a href="http://dotliquidmarkup.org/">DotLiquid</a> (Apache)</li>
                             <li><a href="https://github.com/tonyheupel/liquid.js">Liquid.js</a> (MIT)</li>
                             <li><a href="http://bootboxjs.com/">Bootbox.js</a> (MIT)</li>
-                            <li><a href="http://www.ddaysoftware.com">DDay.iCal</a> (BSD)</li>
+                            <li><a href="https://www.nuget.org/packages/DDay.iCal/">DDay.iCal</a> (BSD)</li>
+                            <li><a href="https://github.com/rianjs/ical.net">Ical.NET</a> (MIT)</li>
+                            <li><a href="https://nodatime.org/">Noda Time</a> (Apache 2.0)</li>
+                            <li><a href="https://github.com/antlr/antlrcs">ANTLR 3</a> (BSD)</li>
                             <li><a href="http://www.codeproject.com/Articles/11305/EXIFectractor-library-extract-EXIF-information">EXIFextractor</a> (Ms-RL)</li>
                             <li><a href="http://dotnetzip.codeplex.com">DotNetZip</a> (Ms-PL)</li>
                             <li><a href="http://nuget.org/packages/WebActivator">WebActivatorEx</a> (Ms-PL)</li>
@@ -135,6 +139,12 @@
                             <li><a href="https://github.com/AngleSharp/AngleSharp">AngleSharp</a> (MIT)</li>
                             <li><a href="https://github.com/vilppu/OpenHtmlToPdf">OpenHtmlToPdf</a> (Creative Commons - Attribution 3.0 Unported (CC BY 3.0))</li>
                             <li><a href="http://www.pdfsharp.net">PDF Sharp</a> (MIT)</li>
+                            <li><a href="https://facebook.design/soundkit">Facebook Sound Kit</a> (Custom)</li>
+                            <li><a href="https://omnipotent.net/jquery.sparkline/">jQuery Sparklines</a> (BSD3)</li>
+                            <li><a href="https://github.com/nk-o/jarallax">Jarallax</a> (MIT)</li>
+                            <li><a href="https://github.com/bevacqua/dragula">Dragula</a> (MIT)</li>
+                            <li><a href="https://github.com/Modernizr/Modernizr">Modernizr</a> (MIT)</li>
+                            <li><a href="https://github.com/codex-team/editor.js">Editor.JS</a> (Apache 2)</li>
                         </ul>
                     </div>
                 </div>

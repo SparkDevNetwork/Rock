@@ -1,0 +1,127 @@
+## Instructions
+## - This requires the humao.rest-client extension ##
+## - This script requires that the Sample Data has been installed on a test Rock instance
+
+#### variables
+### Edit your VSCode settings.json file to include these settings
+##
+##   "rest-client.environmentVariables": {
+##        "$shared": {
+##            "rockBaseUrl": "http://localhost:6229",
+##            "tedDeckerPersonAliasId": "17"
+##        },
+##    }
+###
+
+POST {{rockBaseUrl}}/api/Interactions/Import  HTTP/1.1
+content-type: application/json
+
+{
+  "Interactions": [
+    {
+      "InteractionChannelId": 1817,
+      "InteractionChannelGuid": "8ed48e44-8819-4b74-8d34-2395adc6d625",
+      "InteractionChannelForeignKey": "ecfecf54aad54014b67d00b20713466e",
+      "InteractionChannelName": null,
+      "InteractionComponentId": 1545,
+      "InteractionComponentGuid": "a1680fdf-fe3a-43fa-b7b0-25a6b2e9911b",
+      "InteractionComponentForeignKey": "0fd4bed6c70f40169310dcfce2191a1d",
+      "InteractionComponentName": null,
+      "Interaction": {
+        "Operation": null,
+        "PersonAliasId": 22891,
+        "InteractionDateTime": "2020-05-15T10:26:20.8735356",
+        "InteractionEndDateTime": "2020-05-15T11:12:54.8735356",
+        "EntityId": null,
+        "InteractionSummary": null,
+        "InteractionData": null,
+        "PersonalDeviceId": null,
+        "RelatedEntityTypeId": 6540654,
+        "RelatedEntityId": null,
+        "Source": null,
+        "Medium": null,
+        "Campaign": null,
+        "Content": null,
+        "Term": null,
+        "ChannelCustom1": null,
+        "ChannelCustom2": null,
+        "ChannelCustomIndexed1": null,
+        "InteractionLength": null,
+        "InteractionTimeToServe": null,
+        "ForeignId": null,
+        "ForeignKey": "RandomForeignKey_949569752",
+        "ForeignGuid": null
+      }
+    },
+    {
+      "InteractionChannelId": null,
+      "InteractionChannelGuid": "24487b84-ba01-4f89-a1dd-b99bacd7438b",
+      "InteractionChannelForeignKey": "411419ed737546548e15dbce2fdd3027",
+      "InteractionChannelName": null,
+      "InteractionComponentId": 2134,
+      "InteractionComponentGuid": "6f7bcfac-85ed-4f06-90a2-eb485c828ec4",
+      "InteractionComponentForeignKey": "d3d4f3f082cd4787aab94823fd347b92",
+      "InteractionComponentName": null,
+      "Interaction": {
+        "Operation": null,
+        "PersonAliasId": 73031,
+        "InteractionDateTime": "2020-05-15T10:26:20.8745334",
+        "InteractionEndDateTime": "2020-05-15T11:02:24.8745334",
+        "EntityId": null,
+        "InteractionSummary": null,
+        "InteractionData": null,
+        "PersonalDeviceId": null,
+        "RelatedEntityTypeId": 294,
+        "RelatedEntityId": null,
+        "Source": null,
+        "Medium": null,
+        "Campaign": null,
+        "Content": null,
+        "Term": null,
+        "ChannelCustom1": null,
+        "ChannelCustom2": null,
+        "ChannelCustomIndexed1": null,
+        "InteractionLength": null,
+        "InteractionTimeToServe": null,
+        "ForeignId": null,
+        "ForeignKey": "RandomForeignKey_2026928803",
+        "ForeignGuid": null
+      }
+    },
+    {
+      "InteractionChannelId": 899,
+      "InteractionChannelGuid": "81ab2be0-65f6-42fd-8976-87248ad4ea71",
+      "InteractionChannelForeignKey": "663653b6ac0e451082e3c5f76b828c5a",
+      "InteractionChannelName": null,
+      "InteractionComponentId": 2724,
+      "InteractionComponentGuid": "cb2b8b71-a99f-4074-9c29-7a98f27ca516",
+      "InteractionComponentForeignKey": "77db55742c1e427896a1231a08290e8e",
+      "InteractionComponentName": null,
+      "Interaction": {
+        "Operation": null,
+        "PersonAliasId": 12115,
+        "InteractionDateTime": "2020-05-15T10:26:20.8745334",
+        "InteractionEndDateTime": "2020-05-15T10:51:54.8745334",
+        "EntityId": null,
+        "InteractionSummary": null,
+        "InteractionData": null,
+        "PersonalDeviceId": null,
+        "RelatedEntityTypeId": 581,
+        "RelatedEntityId": null,
+        "Source": null,
+        "Medium": null,
+        "Campaign": null,
+        "Content": null,
+        "Term": null,
+        "ChannelCustom1": null,
+        "ChannelCustom2": null,
+        "ChannelCustomIndexed1": null,
+        "InteractionLength": null,
+        "InteractionTimeToServe": null,
+        "ForeignId": null,
+        "ForeignKey": "RandomForeignKey_956804207",
+        "ForeignGuid": null
+      }
+    }    
+  ]
+}

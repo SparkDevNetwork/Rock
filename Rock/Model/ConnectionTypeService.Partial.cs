@@ -71,14 +71,6 @@ namespace Rock.Model
                     newConnectionWorkflow.ConnectionOpportunityId = newConnectionOpportunity.Id;
                     newConnectionOpportunity.ConnectionWorkflows.Add( newConnectionWorkflow );
                 }
-                foreach ( var connectionWorkflow in connectionOpportunity.ConnectionType.ConnectionWorkflows )
-                {
-                    ConnectionWorkflow newConnectionWorkflow = new ConnectionWorkflow();
-                    newConnectionWorkflow.CopyPropertiesFrom( connectionWorkflow );
-                    InitModel( ref newConnectionWorkflow );
-                    newConnectionWorkflow.ConnectionOpportunityId = newConnectionOpportunity.Id;
-                    newConnectionOpportunity.ConnectionType.ConnectionWorkflows.Add( newConnectionWorkflow );
-                }
 
                 foreach ( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
                 {

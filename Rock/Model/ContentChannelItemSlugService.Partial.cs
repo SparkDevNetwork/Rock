@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -27,16 +28,45 @@ namespace Rock.Model
     public partial class ContentChannelItemSlugService
     {
         /// <summary>
-        /// Gets the unique slug
+        /// Gets a globally unique slug. In most cases use the override with the content channel item ID to get a unique
+        /// slug for the content channel.
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
         /// <returns></returns>
         public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId )
         {
+            return GetUniqueContentSlug( slug, contentChannelItemSlugId, null );
+        }
+
+        /// <summary>
+        /// Gets the unique slug
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
+        /// <returns></returns>
+        public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId, int? contentChannelItemId )
+        {
+            // Slug must be unique within a content channel but may be duplicated across content channels
+
+            // Get ContentChannel.Id
+            int? contentChannelId = null;
+            if ( contentChannelItemId != null )
+            {
+                var contentChannelItem = new ContentChannelItemService( ( RockContext ) this.Context ).Get( contentChannelItemId.Value );
+                contentChannelId = contentChannelItem.ContentChannelId;
+            }
+
             bool isValid = false;
 
             slug = MakeSlugValid( slug );
+
+            // If MakeSlugValid removes all the characters then just return null.
+            if( slug.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
 
             int intialSlugLength = slug.Length;
             int paddedNumber = 0;
@@ -55,9 +85,17 @@ namespace Rock.Model
                         customSlug = slug + paddedString;
                     }
                 }
+                var qry = this
+                    .Queryable()
+                    .Where( b => ( ( contentChannelItemSlugId.HasValue && b.Id != contentChannelItemSlugId.Value ) || !contentChannelItemSlugId.HasValue ) )
+                    .Where( b => b.Slug == customSlug );
 
+                if ( contentChannelId != null )
+                {
+                    qry = qry.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
+                }
 
-                isValid = !this.Queryable().Where( b => (( contentChannelItemSlugId.HasValue && b.Id != contentChannelItemSlugId.Value ) || !contentChannelItemSlugId.HasValue) && ( b.Slug == customSlug ) ).Any();
+                isValid = !qry.Any();
                 if ( !isValid )
                 {
                     paddedNumber += 1;
@@ -66,6 +104,7 @@ namespace Rock.Model
                 {
                     slug = customSlug;
                 }
+
             } while ( !isValid );
 
             return slug;
@@ -80,7 +119,12 @@ namespace Rock.Model
         /// <returns></returns>
         public ContentChannelItemSlug SaveSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId )
         {
-            var uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId );
+            var uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
+
+            if ( uniqueSlug.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
 
             var rockContext = ( RockContext ) this.Context;
 

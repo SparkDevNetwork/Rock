@@ -22,7 +22,8 @@ using System.IO;
 namespace Rock.Migrations
 {
     /// <summary>
-    /// 
+    /// Outputs migration messages depending on the LogVerbose, LogInfo, LogWarning.
+    /// Note this will always log Info and Warnings when System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment == true
     /// </summary>
     /// <seealso cref="System.Data.Entity.Migrations.Infrastructure.MigrationsLogger" />
     public class RockMigrationsLogger : MigrationsLogger
@@ -63,7 +64,7 @@ namespace Rock.Migrations
         /// <param name="message">The message to be logged.</param>
         public override void Info( string message )
         {
-            if ( LogInfo )
+            if ( LogInfo || System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 if ( message.StartsWith( "Applying explicit migration:" ) )
                 {
@@ -90,7 +91,7 @@ namespace Rock.Migrations
             if ( lastMigrationName != null && stopwatch != null )
             {
                 stopwatch.Stop();
-                WriteToLog( string.Format( "{0} ms, {1}", stopwatch.Elapsed.TotalMilliseconds, lastMigrationName ) );
+                WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
             }
         }
 
@@ -137,7 +138,7 @@ namespace Rock.Migrations
         /// <param name="message">The message to be logged.</param>
         public override void Warning( string message )
         {
-            if ( this.LogWarning )
+            if ( this.LogWarning || System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 WriteToLog( "WARNING: " + message );
             }

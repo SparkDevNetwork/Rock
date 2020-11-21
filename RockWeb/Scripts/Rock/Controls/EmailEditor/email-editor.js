@@ -12,7 +12,7 @@
         if (!options.id) {
           throw 'id is required';
         }
-        
+
         var self = this;
         self.editorToolbarContent = $('#'+ options.id).find('.js-editor-toolbar-content')[0];
         self.editorToolbarStructure = $('#' + options.id).find('.js-editor-toolbar-structure')[0];
@@ -62,10 +62,11 @@
         });
 
         // configure and load the dragula script for structure components
-        self.structureDrake = dragula([self.editorToolbarStructure, document.querySelector('.structure-dropzone')], {
+        self.structureDrake = dragula([self.editorToolbarStructure, document.querySelector('.dropzone, .structure-dropzone')], {
           isContainer: function (el)
           {
-            return el.classList.contains('structure-dropzone');
+            var isContainer = el.classList.contains('structure-dropzone') || (el.classList.contains('dropzone') && !el.classList.contains('disable-columns') && !el.parentElement.classList.contains('component'));
+            return isContainer;
           },
           copy: function (el, source)
           {
@@ -79,6 +80,7 @@
           {
             var isStructureRelated = $(el).closest($(self.editorToolbarStructure)).length // is it from the structures toolbar
               || $(el).closest('.component').hasClass('component-section'); // is it an existing structure component in the email
+              console.log($(el).closest('.component').hasClass('component-section'));
             return !isStructureRelated;
           },
           ignoreInputTextSelection: true
@@ -109,7 +111,7 @@
       initializeEventHandlers: function ()
       {
         var self = this;
-        // wire up the clicking on components to call the 
+        // wire up the clicking on components to call the
         // parent window to handle the properties editing
         $(document).on('click', '.component', function (e)
         {
@@ -133,10 +135,10 @@
           $('.js-editor-content-toolbar').hide();
           $('.js-editor-structure-toolbar').show();
         });
-        
+
 
         // add autoscroll capabilities during dragging
-        $(window).mousemove(function (e) {
+        $(window).on('mousemove', function (e) {
             if (self.contentDrake.dragging) {
                 // editor scrollbar
                 // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragger
@@ -157,9 +159,8 @@
                 // browser scrollbar
                 // automatically scroll the browser if the mouse gets within 10% of the top or 10% of the bottom while dragger
                 var $browserScrollWindow = $(window.parent);
-                var browserScrollLevel = $browserScrollWindow.scrollTop()
+                var browserScrollLevel = $browserScrollWindow.scrollTop();
                 var browserScrollHeight = window.parent.innerHeight;
-                var browserScrollLevel = $browserScrollWindow.scrollTop()
                 var browserMouseY = e.screenY - $(window.parent.document).scrollTop();
                 var browserMousePositionProportion = browserMouseY / browserScrollHeight;
                 if (browserMousePositionProportion > .90) {

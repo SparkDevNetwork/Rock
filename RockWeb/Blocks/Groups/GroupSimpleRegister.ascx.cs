@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "The group to add people to", true )]
     [TextField( "Save Button Text", "The text to use for the Save button", false, "Save" )]
     [TextField( "Success Message", "The message to display when user is successfully added to the group", false, "Please check your email to verify your registration" )]
-    [SystemEmailField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
+    [SystemCommunicationField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
     [LinkedPage( "Confirmation Page", "The page that user should be directed to to confirm their registration" )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
@@ -146,12 +146,12 @@ namespace RockWeb.Blocks.Groups
                                         mergeFields.Add( "Member", member );
 
                                         var pageParams = new Dictionary<string, string>();
-                                        pageParams.Add( "gm", member.UrlEncodedKey );
+                                        pageParams.Add( "GM", member.UrlEncodedKey );
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                         mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
                                         var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid );
-                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                         emailMessage.Send();
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Groups
                                 else
                                 {
                                     var pageParams = new Dictionary<string, string>();
-                                    pageParams.Add( "gm", member.UrlEncodedKey );
+                                    pageParams.Add( "GM", member.UrlEncodedKey );
                                     var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                     Response.Redirect( pageReference.BuildUrl(), false );
                                 }

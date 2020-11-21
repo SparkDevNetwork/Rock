@@ -99,6 +99,8 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
+            target.LayoutMobilePhone = source.LayoutMobilePhone;
+            target.LayoutMobileTablet = source.LayoutMobileTablet;
             target.Name = source.Name;
             target.SiteId = source.SiteId;
             target.CreatedDateTime = source.CreatedDateTime;

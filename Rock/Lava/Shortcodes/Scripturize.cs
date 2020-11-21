@@ -61,6 +61,7 @@ namespace Rock.Lava.Shortcodes
             <li><strong>defaulttranslation</strong> (NLT) - Scripture references that do not provide a translation will use the default value you assign. A listing of supported translations can be found below.</li>
             <li><strong>landingsite</strong> (YouVersion) - This is the landing site that you want the links to refer to. Valid values are 'YouVersion' and 'BibleGateway'.</li>
             <li><strong>cssclass</strong> - The optional CSS class you would like to have added to the anchor tag.</li>
+            <li><strong>openintab</strong> - Determines if the link should be opened in a new browser tab.</li>
         </ul>
 
         <ul>
@@ -118,7 +119,7 @@ namespace Rock.Lava.Shortcodes
                     return;
                 }
 
-                result.Write( Rock.Utility.Scripturize.Parse( writer.ToString(), parms["defaulttranslation"], landingSite.Value, parms["cssclass"] ) );
+                result.Write( Rock.Utility.Scripturize.Parse( writer.ToString(), parms["defaulttranslation"], landingSite.Value, parms["cssclass"], parms["openintab"].AsBoolean() ) );
             }
         }
 
@@ -156,6 +157,7 @@ namespace Rock.Lava.Shortcodes
             parms.Add( "defaulttranslation", "NLT" );
             parms.Add( "cssclass", "" );
             parms.Add( "landingsite", "YouVersion" );
+            parms.Add( "openintab", "false" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()

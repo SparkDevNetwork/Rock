@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -27,6 +26,11 @@ namespace Rock.Web.Cache
     /// </summary>
     public class RockCache
     {
+        /// <summary>
+        /// The cache control cookie
+        /// </summary>
+        public const string CACHE_CONTROL_COOKIE = ".rock-web-cache-enabled";
+
         private static readonly object Obj = new object();
         private static List<IRockCacheManager> _allManagers;
         private const string CACHE_TAG_REGION_NAME = "cachetags";
@@ -69,23 +73,9 @@ namespace Rock.Web.Cache
             {
                 cacheManager?.Clear();
             }
-        }
 
-        /// <summary>
-        /// Updates the cache hit miss.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="hit">if set to <c>true</c> [hit].</param>
-        internal static void UpdateCacheHitMiss( string key, bool hit )
-        {
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext == null || !httpContext.Items.Contains( "Cache_Hits" ) )
-            {
-                return;
-            }
-
-            var cacheHits = httpContext.Items["Cache_Hits"] as Dictionary<string, bool>;
-            cacheHits?.AddOrIgnore( key, hit );
+            // Clear object cache keys
+            _objectCacheKeyReferences = new List<CacheKeyReference>();
         }
 
         #endregion
@@ -139,6 +129,57 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets or sets the keys for items stored in the object cache. The region is optional, but the key
+        /// is required. This list of keys is not guaranteed to be up to date. Some of the items represented
+        /// by the keys could have expired and therefore not be available any longer. All item keys though should
+        /// be in the list.
+        /// </summary>
+        /// <value>
+        /// The object cache key references.
+        /// </value>
+        public static List<CacheKeyReference> ObjectCacheKeyReferences
+        {
+            get
+            {
+                if ( _objectCacheKeyReferences.IsNull() )
+                {
+                    _objectCacheKeyReferences = new List<CacheKeyReference>();
+                }
+
+                return _objectCacheKeyReferences;
+            }
+            set
+            {
+                _objectCacheKeyReferences = value;
+            }
+        } 
+        private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
+
+        /// <summary>
+        /// Gets or sets the keys for items stored in the string cache. The region is optional, but the key
+        /// is required. This list of keys is not guaranteed to be up to date. Some of the items represented
+        /// by the keys could have expired and therefore not be available any longer. All item keys though should
+        /// be in the list.
+        /// </summary>
+        /// <value>
+        /// The string cache key references.
+        /// </value>
+        public static List<CacheKeyReference> StringCacheKeyReferences
+        {
+            get
+            {
+                if ( _stringCacheKeyReferences.IsNull() )
+                {
+                    _stringCacheKeyReferences = new List<CacheKeyReference>();
+                }
+                return _stringCacheKeyReferences;
+            }
+            set {
+                _stringCacheKeyReferences = value;            }
+        }
+        private static List<CacheKeyReference> _stringCacheKeyReferences = new List<CacheKeyReference>();
+
         #endregion
 
         #region Public Static Methods
@@ -151,6 +192,27 @@ namespace Rock.Web.Cache
         public static object Get( string key )
         {
             return Get( key, null );
+        }
+
+        /// <summary>
+        /// Gets an item from cache using the specified key. If allowCacheBypass is true the CACHE_CONTROL_COOKIE will be
+        /// inspected to see if cached value should be ignored.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="allowCacheBypass">if set to <c>true</c> the cache can be ignored based on the cache control cookie.</param>
+        /// <returns></returns>
+        public static object Get( string key, bool allowCacheBypass )
+        {
+            var args = new RockCacheGetOrAddExistingArgs
+            {
+                Key = key,
+                Region = null,
+                ItemFactory = null,
+                Expiration = TimeSpan.MaxValue,
+                AllowCacheBypass = allowCacheBypass
+            };
+
+            return GetOrAddExisting( args );
         }
 
         /// <summary>
@@ -197,35 +259,62 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static object GetOrAddExisting( string key, string region, Func<object> itemFactory, TimeSpan expiration )
         {
-            var value = region.IsNotNullOrWhiteSpace() ?
-                RockCacheManager<object>.Instance.Cache.Get( key, region ) :
-                RockCacheManager<object>.Instance.Cache.Get( key );
+            var args = new RockCacheGetOrAddExistingArgs
+            {
+                Key = key,
+                Region = region,
+                ItemFactory = itemFactory,
+                Expiration = expiration,
+                AllowCacheBypass = false
+            };
+            
+            return GetOrAddExisting(args);
+        }
 
-            UpdateCacheHitMiss( key, value != null );
+        /// <summary>
+        /// Gets or adds an item from cache using the specified args. If allowCacheBypass is true the CACHE_CONTROL_COOKIE will be
+        /// inspected to see if cached value should be ignored.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        public static object GetOrAddExisting( RockCacheGetOrAddExistingArgs args )
+        {
+            if ( args.AllowCacheBypass && System.Web.HttpContext.Current != null )
+            {
+                var isCachedEnabled = System.Web.HttpContext.Current.Request.Cookies.Get( CACHE_CONTROL_COOKIE );
+                if ( isCachedEnabled != null && !isCachedEnabled.Value.AsBoolean() )
+                {
+                    return null;
+                }
+            }
+
+            var value = args.Region.IsNotNullOrWhiteSpace() ?
+                RockCacheManager<object>.Instance.Cache.Get( args.Key, args.Region ) :
+                RockCacheManager<object>.Instance.Cache.Get( args.Key );
 
             if ( value != null )
             {
                 return value;
             }
 
-            if ( itemFactory == null )
+            if ( args.ItemFactory == null )
             {
                 return null;
             }
 
-            value = itemFactory();
+            value = args.ItemFactory();
             if ( value == null )
             {
                 return null;
             }
 
-            if ( region.IsNotNullOrWhiteSpace() )
+            if ( args.Region.IsNotNullOrWhiteSpace() )
             {
-                RockCacheManager<object>.Instance.AddOrUpdate( key, region, value, expiration );
+                RockCacheManager<object>.Instance.AddOrUpdate( args.Key, args.Region, value, args.Expiration );
             }
             else
             {
-                RockCacheManager<object>.Instance.AddOrUpdate( key, value, expiration );
+                RockCacheManager<object>.Instance.AddOrUpdate( args.Key, value, args.Expiration );
             }
 
             return value;
@@ -304,10 +393,12 @@ namespace Rock.Web.Cache
             if ( region.IsNotNullOrWhiteSpace() )
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, region, obj, expiration );
+                AddOrUpdateObjectCacheKey( region, key );
             }
             else
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
+                AddOrUpdateObjectCacheKey( region, key );
             }
 
             if ( cacheTags.IsNotNullOrWhiteSpace() )
@@ -330,6 +421,8 @@ namespace Rock.Web.Cache
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
+
+                        _stringCacheKeyReferences.Add( new CacheKeyReference { Key = cacheTag, Region = region } );
                     }
                 }
             }
@@ -369,6 +462,8 @@ namespace Rock.Web.Cache
             {
                 RockCacheManager<object>.Instance.Cache.Remove( key );
             }
+
+            RemoveObjectCacheKey( region, key );
         }
 
         /// <summary>
@@ -473,6 +568,10 @@ namespace Rock.Web.Cache
             {
                 case "System.String":
                     RockCacheManager<List<string>>.Instance.Clear();
+
+                    // Clear string cache keys
+                    _stringCacheKeyReferences = new List<CacheKeyReference>();
+
                     return $"Cache for {cacheTypeName} cleared.";
 
                 case "System.Int32":
@@ -481,6 +580,10 @@ namespace Rock.Web.Cache
 
                 case "Object":
                     RockCacheManager<object>.Instance.Clear();
+
+                    // Clear object cache keys
+                    _objectCacheKeyReferences = new List<CacheKeyReference>();
+
                     return $"Cache for {cacheTypeName} cleared.";
 
                 default:
@@ -623,7 +726,118 @@ namespace Rock.Web.Cache
                 return false;
             }
         }
-        
+
+        /// <summary>
+        /// Gets all model cache types.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Type> GetAllModelCacheTypes()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t =>
+                t.BaseType != null &&
+                t.BaseType.IsGenericType &&
+                t.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) ).ToList();
+        }
+
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// Adds the or updates object cache key.
+        /// </summary>
+        /// <param name="region">The region.</param>
+        /// <param name="key">The key.</param>
+        private static void AddOrUpdateObjectCacheKey( string region, string key )
+        {
+            var objectCacheReference = new CacheKeyReference { Region = region, Key = key };
+            if ( _objectCacheKeyReferences.Contains( objectCacheReference ) )
+            {
+                return;
+            }
+
+            _objectCacheKeyReferences.Add( objectCacheReference );
+        }
+
+        /// <summary>
+        /// Removes the object cache key.
+        /// </summary>
+        /// <param name="region">The region.</param>
+        /// <param name="key">The key.</param>
+        private static void RemoveObjectCacheKey( string region, string key )
+        {
+            var objectCacheReference = new CacheKeyReference { Region = region, Key = key };
+            _objectCacheKeyReferences.Remove( objectCacheReference );
+        }
+        #endregion
+
+        #region POCO Classes
+        /// <summary>
+        /// Class for storing a full reference to a cached item - Region (optional) and Key (required)
+        /// </summary>
+        public class CacheKeyReference
+        {
+            /// <summary>
+            /// Gets or sets the region.
+            /// </summary>
+            /// <value>
+            /// The region.
+            /// </value>
+            public string Region { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Class for passing parameters to GetOrAddExisting methods.
+        /// </summary>
+        public class RockCacheGetOrAddExistingArgs
+        {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the region.
+            /// </summary>
+            /// <value>
+            /// The region.
+            /// </value>
+            public string Region { get; set; }
+
+            /// <summary>
+            /// Gets or sets the item factory.
+            /// </summary>
+            /// <value>
+            /// The item factory.
+            /// </value>
+            public Func<object> ItemFactory { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expiration.
+            /// </summary>
+            /// <value>
+            /// The expiration.
+            /// </value>
+            public TimeSpan Expiration { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can bypass.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can bypass; otherwise, <c>false</c>.
+            /// </value>
+            public bool AllowCacheBypass { get; set; }
+        }
         #endregion
     }
 }

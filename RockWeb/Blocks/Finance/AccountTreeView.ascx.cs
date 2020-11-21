@@ -98,13 +98,13 @@ namespace RockWeb.Blocks.Finance
 
             if ( pnlConfigPanel.Visible )
             {
-                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
-                if ( !hideInactiveGroups.HasValue )
+                var hideInactiveAccounts = this.GetUserPreference( "HideInactiveAccounts" ).AsBooleanOrNull();
+                if ( !hideInactiveAccounts.HasValue )
                 {
-                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
+                    hideInactiveAccounts = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
                 }
 
-                tglHideInactiveAccounts.Checked = hideInactiveGroups ?? true;
+                tglHideInactiveAccounts.Checked = hideInactiveAccounts ?? true;
             }
             else
             {
@@ -300,13 +300,13 @@ namespace RockWeb.Blocks.Finance
         #region Methods
 
         /// <summary>
-        /// Handles the CheckedChanged event of the tglHideInactiveGroups control.
+        /// Handles the CheckedChanged event of the tglHideInactiveAccounts control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglHideInactiveAccounts_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "HideInactiveGroups", tglHideInactiveAccounts.Checked.ToTrueFalse() );
+            this.SetUserPreference( "HideInactiveAccounts", tglHideInactiveAccounts.Checked.ToTrueFalse() );
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );

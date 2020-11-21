@@ -10,12 +10,12 @@
 <%@ Import Namespace="System.Web.Caching" %>
 
 <script language="CS" runat="server">
-		
+
 	//
 	// The purpose of this page is check the version of .Net someone is using
 	// to make sure they are running 4.5.2.
 	//
-	
+
 	//
 	// some constants
 	//
@@ -47,7 +47,7 @@
         lOutput.Text += "<h3>Installed versions:</h3><pre>";
         GetVersionFromRegistry();
 		lOutput.Text += "</pre>";
-				        
+
         lOutput.Text += "<h3>Update History:</h3><pre>";
         GetUpdateHistory();
 		lOutput.Text += "</pre>";
@@ -61,13 +61,13 @@
     {
 
         StringBuilder sb = new StringBuilder();
-        
+
 //        using (ServerManager iisManager = new ServerManager())
 //        {
             //SiteCollection sites = iisManager.Sites;
             //foreach (Site site in sites)
             //{
-               //if (site.Name == HostingEnvironment.ApplicationHost.GetSiteName()) 
+               //if (site.Name == HostingEnvironment.ApplicationHost.GetSiteName())
                //{
 
                  //iisManager.ApplicationPools[site.Applications["/"].ApplicationPoolName].Recycle();
@@ -141,19 +141,19 @@
         }
 	    lOutput.Text += sb.ToString();
     }
-    
+
 void GetVersionFromRegistry()
 {
     		StringBuilder sb = new StringBuilder();
 
-     // Opens the registry key for the .NET Framework entry. 
-        using (RegistryKey ndpKey = 
+     // Opens the registry key for the .NET Framework entry.
+        using (RegistryKey ndpKey =
             RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, "").
             OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\"))
         {
-            // As an alternative, if you know the computers you will query are running .NET Framework 4.5  
-            // or later, you can use: 
-            // using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,  
+            // As an alternative, if you know the computers you will query are running .NET Framework 4.5
+            // or later, you can use:
+            // using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
             // RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\"))
         foreach (string versionKeyName in ndpKey.GetSubKeyNames())
         {
@@ -209,23 +209,23 @@ void GetVersionFromRegistry()
 	<head>
 		<title>Rock RMS .Net Checker</title>
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
         <link rel="stylesheet" href="<%=rockStyles %>">
         <link href="<%=rockLogoIco %>" rel="shortcut icon">
 		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
-        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 
 	</head>
 	<body>
 		<form runat="server">
 				<div id="content">
 					<h1>Rock RMS</h1>
-					
+
 					<div id="content-box" class="group">
 						<h1><asp:Literal ID="lTitle" Text="" runat="server" /></h1>
-						
+
 						<asp:Label ID="lOutput" runat="server" />
 
 					</div>
@@ -237,13 +237,13 @@ void GetVersionFromRegistry()
 
 
 <script language="CS" runat="server">
-	
-	/* 
+
+	/*
 	<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 		Private Helper Methods
-	<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> 
+	<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 	*/
-    
+
     private bool CheckDotNetVersion(out string errorDetails)
     {
         bool checksPassed = false;

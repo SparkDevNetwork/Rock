@@ -23,7 +23,8 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Displays a advance info row
+    /// Presents a editor for each group member <seealso cref="NewGroupAdvanceInfoRow"/> that contain any advanced info to collect about a new group member during the NewFamily/NewGroup process
+    /// (The only thing it does is prompt for AlternateID)
     /// </summary>
     public class NewGroupAdvanceInfoRow : CompositeControl
     {

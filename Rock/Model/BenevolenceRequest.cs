@@ -106,7 +106,7 @@ namespace Rock.Model
         /// Gets or sets the Home Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Home Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Home Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// Gets or sets the Cell Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Cell Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Cell Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -126,7 +126,7 @@ namespace Rock.Model
         /// Gets or sets the Work Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Work Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Work Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -211,6 +211,19 @@ namespace Rock.Model
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
+        /// <summary>
+        /// Gets the request date key.
+        /// </summary>
+        /// <value>
+        /// The request date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int RequestDateKey
+        {
+            get => RequestDateTime.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion
 
         #region Constructors
@@ -363,6 +376,14 @@ namespace Rock.Model
         }
         private ICollection<BenevolenceRequestDocument> _documents;
 
+        /// <summary>
+        /// Gets or sets the request source date.
+        /// </summary>
+        /// <value>
+        /// The request source date.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
         #endregion
 
         #region Public Methods
@@ -399,6 +420,10 @@ namespace Rock.Model
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasRequired( r => r.RequestSourceDate ).WithMany().HasForeignKey( r => r.RequestDateKey ).WillCascadeOnDelete( false );
         }
     }
 

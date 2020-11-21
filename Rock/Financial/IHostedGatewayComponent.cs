@@ -24,17 +24,18 @@ namespace Rock.Financial
     /// A Financial gateway provider that supports collecting Payment Info (Credit Card Number fields or ACH fields) in the browser.
     /// An IHostedGatewayComponent will return a token in the browser client instead of sending payment info to the Rock Server.
     /// </summary>
+    /// <seealso cref="Rock.Financial.IGatewayComponent" />
     public interface IHostedGatewayComponent: IGatewayComponent
     {
         /// <summary>
         /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
-        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControl"/>
+        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControlTokenEvent" />
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="enableACH">if set to <c>true</c> [enable ach]. (Credit Card is always enabled)</param>
         /// <param name="controlId">The control identifier.</param>
+        /// <param name="options">The options.</param>
         /// <returns></returns>
-        Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, bool enableACH, string controlId );
+        Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options );
 
         /// <summary>
         /// Gets the JavaScript needed to tell the hostedPaymentInfoControl to get send the paymentInfo and get a token.
@@ -46,13 +47,14 @@ namespace Rock.Financial
         string GetHostPaymentInfoSubmitScript( FinancialGateway financialGateway, Control hostedPaymentInfoControl );
 
         /// <summary>
-        /// Gets the paymentInfoToken that the hostedPaymentInfoControl returned (see also <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" />)
+        /// Populates the properties of the referencePaymentInfo from this gateway's <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" >hostedPaymentInfoControl</seealso>
+        /// This includes the ReferenceNumber, plus any other fields that the gateway wants to set
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        string GetHostedPaymentInfoToken( FinancialGateway financialGateway, Control hostedPaymentInfoControl, out string errorMessage );
+        void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage );
 
         /// <summary>
         /// Gets the URL that the Gateway Information UI will navigate to when they click the 'Configure' link
@@ -71,14 +73,14 @@ namespace Rock.Financial
         string LearnMoreURL { get; }
 
         /// <summary>
-        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl(FinancialGateway, bool, string)"/>
+        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl" />
         /// and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentToken">The payment token.</param>
         /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        string CreateCustomerAccount( FinancialGateway financialGateway, string paymentToken, PaymentInfo paymentInfo, out string errorMessage );
+        string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
         /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.
@@ -86,6 +88,14 @@ namespace Rock.Financial
         /// <param name="financialGateway">The financial gateway.</param>
         /// <returns></returns>
         DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway );
-        
+
+        /// <summary>
+        /// Gets the hosted gateway modes that this gateway has configured/supports. Use this to determine which mode to use (in cases where both are supported, like Scheduled Payments lists ).
+        /// If the Gateway supports both hosted and unhosted (and has Hosted mode configured), hosted mode should be preferred.
+        /// </summary>
+        /// <value>
+        /// The hosted gateway modes that this gateway supports
+        /// </value>
+        HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway );
     }
 }

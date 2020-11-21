@@ -29,10 +29,29 @@ namespace RockWeb.Blocks.Core
     [Description( "Add tags to current context object." )]
 
     [ContextAware]
-    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Filter", 0 )]
-    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Filter", 1 )]
+
+    [TextField( "Entity Qualifier Column",
+        Description = "The entity column to evaluate when determining if this attribute applies to the entity",
+        IsRequired = false,
+        Category = "Filter",
+        Order = 0,
+        Key = AttributeKey.EntityQualifierColumn )]
+
+    [TextField( "Entity Qualifier Value",
+        Description = "The entity column value to evaluate.  Attributes will only apply to entities with this value",
+        IsRequired = false,
+        Category = "Filter",
+        Order = 1,
+        Key = AttributeKey.EntityQualifierValue )]
+
     public partial class Tags : RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string EntityQualifierColumn = "EntityQualifierColumn";
+            public const string EntityQualifierValue = "EntityQualifierValue";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -51,8 +70,8 @@ namespace RockWeb.Blocks.Core
                 {
                     tagEntityTags.EntityTypeId = EntityTypeCache.Get( contextEntity.GetType() ).Id;
                     tagEntityTags.EntityGuid = contextEntity.Guid;
-                    tagEntityTags.EntityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
-                    tagEntityTags.EntityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
+                    tagEntityTags.EntityQualifierColumn = GetAttributeValue( AttributeKey.EntityQualifierColumn );
+                    tagEntityTags.EntityQualifierValue = GetAttributeValue( AttributeKey.EntityQualifierValue );
                     tagEntityTags.GetTagValues( CurrentPersonId );
                 }
             }

@@ -318,6 +318,58 @@ namespace Rock.Web.Cache
         public DefinedValueCache GroupTypePurposeValue => GroupTypePurposeValueId.HasValue ? DefinedValueCache.Get( GroupTypePurposeValueId.Value ) : null;
 
         /// <summary>
+        /// If this GroupType is a Checkin Area, returns the Check-in Configuration (Weekly Service Check-in, Volunteer Check-in, etc) associated with this GroupType
+        /// </summary>
+        /// <returns></returns>
+        public GroupTypeCache GetCheckInConfigurationType()
+        {
+            return GetParentWithGroupTypePurpose( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+        }
+
+        /// <summary>
+        /// Gets the parent with group type purpose.
+        /// </summary>
+        /// <param name="purposeGuid">The purpose unique identifier.</param>
+        /// <returns></returns>
+        private GroupTypeCache GetParentWithGroupTypePurpose( Guid purposeGuid )
+        {
+            return GetParentPurposeGroupType( this, purposeGuid );
+        }
+
+        /// <summary>
+        /// Gets the type of the parent purpose group.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="purposeGuid">The purpose unique identifier.</param>
+        /// <returns></returns>
+        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid )
+        {
+            if ( groupType != null &&
+                groupType.GroupTypePurposeValue != null &&
+                groupType.GroupTypePurposeValue.Guid.Equals( purposeGuid ) )
+            {
+                return groupType;
+            }
+
+            foreach ( var parentGroupType in groupType.ParentGroupTypes )
+            {
+                // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
+                if ( groupType.Id == parentGroupType.Id )
+                {
+                    continue;
+                }
+
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid );
+                if ( testGroupType != null )
+                {
+                    return testGroupType;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to ignore person inactivated.
         /// By default group members are inactivated in their group whenever the person
         /// is inactivated. If this value is set to true, members in groups of this type
@@ -374,6 +426,119 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool ShowMaritalStatus { get; private set; }
 
+
+        /// <summary>
+        /// Indicates whether RSVP functionality should be enabled for this group.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool EnableRSVP { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is scheduling enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsSchedulingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled communication template identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
+        public int? ScheduleConfirmationSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemCommunicationId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder communication template identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
+        public int? ScheduleReminderSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemCommunicationId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The schedule cancellation workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleCancellationWorkflowTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationEmailOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupMember.ScheduleReminderEmailOffsetDays"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderEmailOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires reason if decline schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresReasonIfDeclineSchedule { get; private set; }
+
         /// <summary>
         /// Gets or sets the administrator term for the group of this GroupType.
         /// </summary>
@@ -391,6 +556,25 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember( IsRequired = true )]
         public bool ShowAdministrator { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether group tag should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group tag]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupTag { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [allow any child group type].
+        /// Use this along with <seealso cref="ChildGroupTypes"/> to determine if a child group can have a parent group of this group type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; private set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -411,24 +595,22 @@ namespace Rock.Web.Cache
                         {
                             using ( var rockContext = new RockContext() )
                             {
-                                Roles = new List<GroupTypeRoleCache>();
+                                _roles = new List<GroupTypeRoleCache>();
                                 new GroupTypeRoleService( rockContext )
                                     .Queryable().AsNoTracking()
                                     .Where( r => r.GroupTypeId == Id )
                                     .OrderBy( r => r.Order )
                                     .ToList()
-                                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                                    .ForEach( r => _roles.Add( new GroupTypeRoleCache( r ) ) );
                             }
                         }
                     }
                 }
+
                 return _roles;
             }
-            private set
-            {
-                _roles = value;
-            }
         }
+
         private List<GroupTypeRoleCache> _roles = null;
 
         /// <summary>
@@ -472,13 +654,18 @@ namespace Rock.Web.Cache
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
-        /// Gets the child group types.
+        /// Gets the group types that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
         /// </value>
         public List<GroupTypeCache> ChildGroupTypes
         {
+            /* 2020-09-02 MDP
+             * ChildGroupTypes are used in two different ways, see engineering notes for ChildGroupTypes in Rock.Model.GroupType 
+             */
+
             get
             {
                 var childGroupTypes = new List<GroupTypeCache>();
@@ -501,7 +688,8 @@ namespace Rock.Web.Cache
                 }
 
 
-                if ( ChildGroupTypeIds == null ) return childGroupTypes;
+                if ( ChildGroupTypeIds == null )
+                    return childGroupTypes;
 
                 foreach ( var id in ChildGroupTypeIds )
                 {
@@ -548,7 +736,8 @@ namespace Rock.Web.Cache
                     }
                 }
 
-                if ( _parentGroupTypeIds == null ) return parentGroupTypes;
+                if ( _parentGroupTypeIds == null )
+                    return parentGroupTypes;
 
                 foreach ( var id in _parentGroupTypeIds )
                 {
@@ -584,7 +773,8 @@ namespace Rock.Web.Cache
             get
             {
                 var locationTypeValues = new List<DefinedValueCache>();
-                if ( LocationTypeValueIDs == null ) return null;
+                if ( LocationTypeValueIDs == null )
+                    return null;
 
                 foreach ( var id in LocationTypeValueIDs.ToList() )
                 {
@@ -617,7 +807,8 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var groupType = entity as GroupType;
-            if ( groupType == null ) return;
+            if ( groupType == null )
+                return;
 
             IsSystem = groupType.IsSystem;
             Name = groupType.Name;
@@ -655,7 +846,23 @@ namespace Rock.Web.Cache
             ShowMaritalStatus = groupType.ShowMaritalStatus;
             AdministratorTerm = groupType.AdministratorTerm;
             ShowAdministrator = groupType.ShowAdministrator;
+            EnableGroupTag = groupType.EnableGroupTag;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
+            EnableRSVP = groupType.EnableRSVP;
+            RSVPReminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
+            RSVPReminderOffsetDays = groupType.RSVPReminderOffsetDays;
+            IsSchedulingEnabled = groupType.IsSchedulingEnabled;
+            ScheduleConfirmationSystemCommunicationId = groupType.ScheduleConfirmationSystemCommunicationId;
+            ScheduleReminderSystemCommunicationId = groupType.ScheduleReminderSystemCommunicationId;
+            ScheduleCancellationWorkflowTypeId = groupType.ScheduleCancellationWorkflowTypeId;
+            ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
+            ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
+            RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
+            AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
+#pragma warning disable CS0618 // Type or member is obsolete
+            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
+            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -675,7 +882,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead")]
+        [Obsolete( "Use Get Instead", true )]
         public static GroupTypeCache Read( string guid )
         {
             return Get( new Guid( guid ) );
@@ -696,6 +903,45 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         public static GroupTypeCache GetSecurityRoleGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+
+        /// <summary>
+        /// Gets the descendent group types (all children recursively)
+        /// </summary>
+        /// <returns></returns>
+        public List<GroupTypeCache> GetDescendentGroupTypes()
+        {
+            List<int> recursionControl = new List<int>();
+            return GetDescendentGroupTypes( this, recursionControl );
+        }
+
+        /// <summary>
+        /// Gets the descendent group types.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="recursionControl">A list of GroupTypeIds that have already been added, this helps prevent infinite recursion.</param>
+        /// <returns></returns>
+        private static List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
+        {
+            var results = new List<GroupTypeCache>();
+
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    results.Add( groupType );
+
+                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                    {
+                        var childResults = GetDescendentGroupTypes( childGroupType, recursionControl );
+                        childResults.ForEach( c => results.Add( c ) );
+                    }
+                }
+            }
+
+            return results;
+        }
 
         #endregion
     }

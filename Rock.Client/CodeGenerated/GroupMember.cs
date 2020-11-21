@@ -41,6 +41,9 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; } = Rock.Client.Enums.CommunicationType.Email;
+
+        /// <summary />
         public DateTime? DateTimeAdded { get; set; }
 
         /// <summary />
@@ -87,6 +90,15 @@ namespace Rock.Client
         /// <summary />
         public int PersonId { get; set; }
 
+        /// <summary />
+        public int? ScheduleReminderEmailOffsetDays { get; set; }
+
+        /// <summary />
+        public DateTime? ScheduleStartDate { get; set; }
+
+        /// <summary />
+        public int? ScheduleTemplateId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -122,6 +134,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             this.ArchivedDateTime = source.ArchivedDateTime;
+            this.CommunicationPreference = source.CommunicationPreference;
             this.DateTimeAdded = source.DateTimeAdded;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -137,6 +150,9 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.PersonId = source.PersonId;
+            this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
+            this.ScheduleStartDate = source.ScheduleStartDate;
+            this.ScheduleTemplateId = source.ScheduleTemplateId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -156,6 +172,9 @@ namespace Rock.Client
         public PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary />
+        public ICollection<GroupMemberAssignment> GroupMemberAssignments { get; set; }
+
+        /// <summary />
         public ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; }
 
         /// <summary />
@@ -163,6 +182,9 @@ namespace Rock.Client
 
         /// <summary />
         public Person Person { get; set; }
+
+        /// <summary />
+        public GroupMemberScheduleTemplate ScheduleTemplate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

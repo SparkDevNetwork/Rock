@@ -2,7 +2,13 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
+         <div class="row">
+            <div class="col-xs-12">
+                <div class="form-horizontal label-auto">
+                    <Rock:RockDropDownList ID="ddlCategory" runat="server" Label="Category" AutoPostBack="true"  CssClass="input-width-xl" OnSelectedIndexChanged="ddlCategory_OnSelectedIndexChanged" />
+                </div>
+            </div>
+        </div>
         <div class="panel panel-block list-as-blocks">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>

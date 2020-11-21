@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Block target, Block source )
         {
             target.Id = source.Id;
+            target.AdditionalSettings = source.AdditionalSettings;
             target.BlockTypeId = source.BlockTypeId;
             target.CssClass = source.CssClass;
             target.ForeignGuid = source.ForeignGuid;

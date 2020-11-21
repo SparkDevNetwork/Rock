@@ -117,7 +117,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public Guid ActivityTypeGuid
         {
-            get 
+            get
             {
                 EnsureChildControls();
                 return _hfActivityTypeGuid.Value.AsGuid();
@@ -150,7 +150,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.workflow-activity > header').click(function () {
+$('.workflow-activity > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -160,14 +160,14 @@ $('.workflow-activity > header').click(function () {
     $('i.workflow-activity-state', this).toggleClass('fa-chevron-up');
 });
 
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-activity a.js-activity-delete').click(function (event) {
+// fix so that the Remove button will fire its event, but not the parent event
+$('.workflow-activity a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
     return Rock.dialogs.confirmDelete(event, 'Activity Type', 'This will also delete all the activities of this type from any existing persisted workflows!');
 });
 
-// fix so that the Reorder button will fire its event, but not the parent event 
-$('.workflow-activity a.workflow-activity-reorder').click(function (event) {
+// fix so that the Reorder button will fire its event, but not the parent event
+$('.workflow-activity a.workflow-activity-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -299,8 +299,8 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             else
             {
                 _pwAttributes.Title = "Attributes";
-            } 
-            
+            }
+
             _gAttributes.DataSource = attributes
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -338,7 +338,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblActivityTypeName );
             _lblActivityTypeName.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeName.ID = this.ID + "_lblActivityTypeName";
-            
+
             _lblActivityTypeDescription = new Label();
             Controls.Add( _lblActivityTypeDescription );
             _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
@@ -369,14 +369,14 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _cbActivityTypeIsActive );
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
-javascript: 
-    if ($(this).is(':checked')) {{ 
-        $('#{0}').hide(); 
-        $('#{1}').removeClass('workflow-activity-inactive'); 
-    }} 
-    else {{ 
-        $('#{0}').show(); 
-        $('#{1}').addClass('workflow-activity-inactive'); 
+javascript:
+    if ($(this).is(':checked')) {{
+        $('#{0}').hide();
+        $('#{1}').removeClass('workflow-activity-inactive');
+    }}
+    else {{
+        $('#{0}').show();
+        $('#{1}').addClass('workflow-activity-inactive');
     }}
 ";
 
@@ -401,12 +401,12 @@ javascript:
             Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
             checkboxScriptFormat = @"
-javascript: 
-    if ($(this).is(':checked')) {{ 
-        $('#{0}').addClass('activated-with-workflow'); 
-    }} 
-    else {{ 
-        $('#{0}').removeClass('activated-with-workflow'); 
+javascript:
+    if ($(this).is(':checked')) {{
+        $('#{0}').addClass('activated-with-workflow');
+    }}
+    else {{
+        $('#{0}').removeClass('activated-with-workflow');
     }}
 ";
             _cbActivityTypeIsActivatedWithWorkflow.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, this.ID + "_section" ) );
@@ -582,7 +582,7 @@ javascript:
                 _sbSecurity.Title = _tbActivityTypeName.Text;
                 _sbSecurity.RenderControl( writer );
             }
-            
+
             _cbActivityTypeIsActivatedWithWorkflow.ValidationGroup = ValidationGroup;
             _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
@@ -761,7 +761,7 @@ javascript:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class WorkflowActivityTypeAttributeEventArg : EventArgs
     {

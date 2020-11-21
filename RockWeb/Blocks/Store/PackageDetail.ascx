@@ -100,7 +100,7 @@
 
                                 <asp:Literal ID="lScreenshots" runat="server" />
 
-                                <h2><asp:Literal ID="lLatestVersionLabel" runat="server" /></h2>
+                                <h2><asp:Literal ID="lLatestVersionLabel" runat="server" /> <small>released <asp:Literal ID="lLatestVersionDate" runat="server" /></small></h2>
                                 <p class="margin-b-lg">
                                     <asp:Literal ID="lLatestVersionDescription" runat="server" />
                                 </p>
@@ -140,6 +140,7 @@
                                                     <div class="rating pull-left margin-t-sm">
                                                             <%#  FormatRating(Convert.ToInt32( GetRating((int)Eval("Id")))) %>
                                                     </div>
+                                                    <small class="pull-right text-muted">released <%# Eval("AddedDate", "{0:MMM dd, yyyy}")%></small>
                                                 </div>
 
                                                 <p class="margin-b-lg">

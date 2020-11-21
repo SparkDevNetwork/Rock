@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var accountId = PageParameter( "accountId" ).AsInteger();
+            var accountId = PageParameter( "AccountId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( accountId );
@@ -381,7 +381,6 @@ namespace RockWeb.Blocks.Finance
             dvpAccountType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ).Id;
 
             cpCampus.Campuses = CampusCache.All();
-            cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 
         #endregion

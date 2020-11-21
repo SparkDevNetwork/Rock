@@ -1,0 +1,403 @@
+/*
+    This is loaded at runtime by the PlacementGroup block
+*/
+
+@import (reference) "../../../Styles/FontAwesome/_rock-upgrade-map-variables.less";
+@import (reference) "../../../Styles/FontAwesome/_rock-fa-mixins.less";
+@import (reference) "../../../Styles/FontAwesome/fontawesome.less";
+@import (reference) "../../../Styles/Bootstrap/variables.less";
+@import (reference) "../../../Styles/_rock-variables.less";
+@import (reference) "_variables.less";
+@import (reference) "_variable-overrides.less";
+
+@confirmed-icon-color: @brand-success;
+@pending-icon-color: @brand-warning;
+@declined-icon-color: @brand-danger;
+
+.d-inline-block {
+  display: inline-block;
+}
+
+
+.panel-groupplacement .registrant-area {
+  height: 100%;
+  padding-top: 15px;
+  padding-bottom: 15px;
+
+  > .row {
+    height: 100%;
+  }
+}
+
+.dropzone {
+  &.empty,
+  &:empty {
+    position: relative;
+    padding: 41px 16px;
+    outline-offset: -16px;
+
+    &::after {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      display: block;
+      width: 100%;
+      font-size: 14px;
+      color: rgba(0, 0, 0, .4);
+      text-align: center;
+      content: attr(data-empty-label);
+      -webkit-transform: translateY(-50%);
+      -moz-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
+    }
+  }
+
+  &.droppable {
+    &:empty {
+      outline: 2px dashed rgba(0, 0, 0, .1);
+    }
+  }
+}
+
+.registrant-search {
+  padding: 12px;
+  background: rgba(250,250,250,1);
+}
+
+/* registrant List */
+.group-placement-registrantlist {
+
+  .registrant {
+    .flex {
+
+      &::before,
+      .btn {
+        display: none;
+      }
+    }
+
+    &.has-note .flex {
+      -ms-flex-direction: column !important;
+      flex-direction: column !important;
+    }
+  }
+}
+
+.placement-capacity-label {
+
+  &[data-status="over-capacity"] {
+    background-color: @brand-danger;
+  }
+
+  &[data-status="at-capacity"] {
+    background-color: @brand-critical;
+  }
+  // if capacity is > 80%
+  &[data-status="near-capacity"] {
+    background-color: @brand-warning;
+  }
+  // if capacity is <= 80%
+  &[data-status="under-capacity"] {
+    background-color: @brand-success;
+  }
+  // if group capacity is not defined
+  &[data-status="none"] {
+    display: none;
+  }
+}
+
+
+/* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
+.gu-transit .container {
+  display: none;
+}
+
+.scrollable {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.group-role-container {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+
+  // Prevent detail display on drop
+  .registrant .details-container {
+    display: none;
+  }
+}
+
+.group-role-container .registrant.gu-transit,
+.gu-mirror {
+  max-height: 38px;
+
+  .hide-transit {
+    display: none;
+  }
+}
+
+.resource-list {
+  position: sticky !important;
+  top: 16px;
+  max-height: ~"calc(100vh - 32px)";
+
+  @media (min-width: @screen-md-min) {
+    top: @navbar-top-height + 16px;
+    max-height: ~"calc(100vh - 112px)";
+  }
+
+  .is-fullscreen & {
+    top: 16px;
+    max-height: ~"calc(100vh - 100px)";
+  }
+
+  .panel-body {
+    position: relative;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    flex: 0 1 auto !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    overflow: hidden;
+  }
+
+  .scroll-list {
+    flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+    height: 100%;
+    min-height: 0;
+    padding: 12px 6px 8px 12px;
+    overflow-y: scroll;
+    background-color: fade(@panel-heading-bg, 40%);
+    -ms-flex-positive: 1 !important;
+    -ms-flex-negative: 1 !important;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: fade(@panel-heading-bg, 40%);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0, .2);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(0,0,0, .3);
+      }
+    }
+  }
+}
+
+.person {
+  display: inline-flex;
+  -ms-flex: 0 0 33%;
+  flex: 0 0 33%;
+  flex-direction: column;
+  max-width: ~"calc(33.333% - 8px)";
+  margin: 0 8px 12px 0;
+  font-family: @font-family-sans-serif;
+  color: @btn-default-color;
+  cursor: move;
+  cursor: -webkit-grab;
+  cursor: grab;
+  background-color: @btn-default-bg;
+  border: 1px solid @btn-default-border;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 hsl(228, 7%, 83%);
+
+  .registrant-list & {
+    display: flex;
+    flex-direction: column;
+    min-width: 100%;
+    margin-right: 0;
+
+    &[data-person-gender="1"] {
+      color: #4299e1;
+      background-color: #ebf8ff;
+      border-color: #4299e1;
+
+      &:hover {
+        background-color: darken(#ebf8ff, 5%);
+      }
+    }
+
+    &[data-person-gender="2"] {
+      color: #ed64a6;
+      background-color: #fff5f7;
+      border-color: #ed64a6;
+
+      &:hover {
+        background-color: darken(#fff5f7, 5%);
+      }
+    }
+
+    .registrant-details {
+      display: block;
+    }
+
+    .dropdown {
+      display: none;
+    }
+  }
+
+  &:hover {
+    background: rgba(85,150,230,.1);
+  }
+
+
+  &[data-has-placement-error] {
+    color: @state-danger-text;
+    background-color: @state-danger-bg;
+    border-color: @state-danger-border;
+  }
+
+  .person-container {
+    display: flex;
+    flex-wrap: nowrap;
+    -ms-flex-pack: justify !important;
+    justify-content: space-between !important;
+  }
+
+  .details-container {
+    padding: 6px 8px;
+    color: @text-color;
+    background: rgba(255,255,255,.8);
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+
+    > div {
+      margin-top: 8px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  dl:not(.dl-horizontal) {
+    margin-bottom: 0;
+    font-size: 14px;
+
+    dt {
+      margin-top: 8px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .person-name {
+    display: inline-block;
+    padding: 6px 8px;
+  }
+
+  .btn {
+    height: 100%;
+    padding: 5px 8px;
+    color: #d8d8d8;
+    background: transparent;
+
+    &:hover,
+    &:focus,
+    &:active:focus {
+      color: #767676;
+      outline: none;
+    }
+  }
+
+  .dropdown-menu {
+    font-size: @font-size-small;
+  }
+
+  &.gu-mirror {
+    cursor: -moz-grabbing !important;
+    cursor: -webkit-grabbing !important;
+    cursor: grabbing !important;
+    background: rgba(255,255,255,.8);
+    box-shadow: 0 5px 20px 0 rgba(21,27,38,.08);
+    opacity: 1;
+  }
+}
+
+.placement-group {
+  .panel-drawer > span {
+    display: block;
+    padding: 16px;
+    font-size: @font-size-small;
+    background: @white;
+    border-bottom: 1px solid @panel-default-border;
+
+    dl {
+      margin-bottom: 0;
+
+      &:empty {
+        display: none;
+      }
+
+      dt {
+        margin-top: 8px;
+
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+  }
+}
+
+// move person-id-anchor up by 250px so that
+// it navigates past the page header
+.person-id-anchor {
+  position: relative;
+  top: -250px;
+  display: block;
+  visibility: hidden;
+}
+
+.panel-inline {
+  margin-bottom: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-bot-shadow: none !important;
+
+  .panel-heading {
+    padding: 8px 16px;
+    background-color: fade(@panel-heading-bg, 80%);
+    border-top: 1px solid @panel-default-border;
+  }
+
+  .panel-title {
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+}
+
+.panel-drawer + .group-role-members .panel-heading,
+.group-role-members:first-child .panel-heading {
+  border-top: 0;
+}
+
+
+.btn-overflow {
+  color: @text-muted;
+
+  .panel-heading & {
+    width: 20px !important;
+    text-align: right;
+  }
+}
+
+.panel-heading {
+  .placement-group-toggle-visibility {
+    height: 22px !important;
+    margin-top: .2em;
+  }
+}

@@ -49,6 +49,15 @@ namespace Rock.Web.Cache
         public int Id { get; private set; }
 
         /// <summary>
+        /// Gets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        [DataMember]
+        public Guid Guid { get; private set; }
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         [DataMember]
@@ -121,6 +130,7 @@ namespace Rock.Web.Cache
                 var role = new RoleCache
                 {
                     Id = groupModel.Id,
+                    Guid = groupModel.Guid,
                     Name = groupModel.Name,
                     People = new ConcurrentDictionary<Guid, bool>()
                 };

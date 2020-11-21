@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -37,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
-    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails
+    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
 
         #region Entity Properties
@@ -152,7 +153,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
+        [MaxLength( 1000 )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -296,6 +297,41 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PushSound { get; set; }
 
+        /// <summary>
+        /// Gets or sets the push image file identifier.
+        /// </summary>
+        /// <value>
+        /// The push image file identifier.
+        /// </value>
+        [DataMember]
+        public int? PushImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open action.
+        /// </summary>
+        /// <value>
+        /// The push open action.
+        /// </value>
+        [DataMember]
+        public PushOpenAction? PushOpenAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push open message.
+        /// </summary>
+        /// <value>
+        /// The push open message.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push data.
+        /// </summary>
+        /// <value>
+        /// The push data.
+        /// </value>
+        [DataMember]
+        public string PushData { get; set; }
         #endregion
 
         #endregion
@@ -346,6 +382,15 @@ namespace Rock.Model
         public virtual bool IsPersonal => SenderPersonAliasId.HasValue;
 
         /// <summary>
+        /// Gets or sets the image file for the Template Preview Image
+        /// </summary>
+        /// <value>
+        /// The image file
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageFile {get; set;}
+
+        /// <summary>
         /// Gets or sets the logo binary file that email messages using this template can use for the logo in the message content
         /// </summary>
         /// <value>
@@ -353,6 +398,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push image file.
+        /// </summary>
+        /// <value>
+        /// The push image file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile PushImageBinaryFile { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -364,78 +418,6 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </value>
-        [NotMapped]
-        public virtual List<MediumComponent> Mediums
-        {
-            get
-            {
-                var mediums = new List<MediumComponent>();
-
-                foreach ( var serviceEntry in MediumContainer.Instance.Components )
-                {
-                    var component = serviceEntry.Value.Value;
-                    if ( component.IsActive )
-                    {
-                        mediums.Add( component );
-                    }
-                }
-
-                return mediums;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the data used by the selected communication medium.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used. Communication Template now has specific properties for medium data.", true )]
-        public virtual Dictionary<string, string> MediumData
-        {
-            get
-            {
-                var mediumData = new Dictionary<string, string>();
-
-                if ( SMSFromDefinedValueId.HasValue )
-                {
-                    mediumData.AddIfNotBlank( "FromValue", SMSFromDefinedValueId.Value.ToString() );
-                    mediumData.AddIfNotBlank( "Subject", Subject );
-                    mediumData.AddIfNotBlank( "Message", SMSMessage );
-                }
-                else if ( PushMessage.IsNotNullOrWhiteSpace() )
-                {
-                    mediumData.AddIfNotBlank( "Title", PushTitle );
-                    mediumData.AddIfNotBlank( "Message", PushMessage );
-                    mediumData.AddIfNotBlank( "Sound", PushSound );
-                }
-                else
-                {
-                    mediumData.AddIfNotBlank( "FromName", FromName );
-                    mediumData.AddIfNotBlank( "FromAddress", FromEmail );
-                    mediumData.AddIfNotBlank( "ReplyTo", ReplyToEmail );
-                    mediumData.AddIfNotBlank( "CC", CCEmails );
-                    mediumData.AddIfNotBlank( "BCC", BCCEmails );
-                    mediumData.AddIfNotBlank( "Subject", Subject );
-                    mediumData.AddIfNotBlank( "HtmlMessage", Message );
-                    mediumData.AddIfNotBlank( "Attachments", AttachmentBinaryFileIds.ToList().AsDelimited( "," ) );
-                }
-
-                return mediumData;
-            }
-
-            set { }
-        }
-
-        /// <summary>
         /// Gets or sets the SMS from defined value.
         /// </summary>
         /// <value>
@@ -443,23 +425,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds", true )]
-        public virtual IEnumerable<int> AttachmentBinaryFileIds
-        {
-            get
-            {
-                return this.Attachments.Select( a => a.BinaryFileId ).ToList();
-            }
-        }
 
         /// <summary>
         /// Gets or sets a list of email binary file ids
@@ -516,44 +481,6 @@ namespace Rock.Model
         public IEnumerable<CommunicationTemplateAttachment> GetAttachments( CommunicationType communicationType )
         {
             return this.Attachments.Where( a => a.CommunicationType == communicationType );
-        }
-
-        /// <summary>
-        /// Returns a medium data value.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
-        /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public string GetMediumDataValue( string key )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                return MediumData[key];
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Sets a medium data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public void SetMediumDataValue( string key, string value )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                MediumData[key] = value;
-            }
-            else
-            {
-                MediumData.Add( key, value );
-            }
         }
 
         /// <summary>
@@ -631,7 +558,9 @@ namespace Rock.Model
         public CommunicationTemplateConfiguration()
         {
             this.HasOptional( c => c.Category ).WithMany().HasForeignKey( c => c.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.ImageFile ).WithMany().HasForeignKey( c => c.ImageFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.LogoBinaryFile ).WithMany().HasForeignKey( c => c.LogoBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.PushImageBinaryFile ).WithMany().HasForeignKey( c => c.PushImageBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }

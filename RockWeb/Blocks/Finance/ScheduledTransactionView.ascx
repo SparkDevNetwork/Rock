@@ -61,6 +61,9 @@
                                 <asp:LinkButton ID="btnCancelAccounts" runat="server" Text="Cancel" CssClass="btn btn-link btn-xs" OnClick="btnCancelAccounts_Click" />
                             </div>
                         </asp:Panel>
+
+                        <Rock:RockLiteral ID="lSummary" runat="server" Label="Summary" />
+
                     </div>
                 </div>
 

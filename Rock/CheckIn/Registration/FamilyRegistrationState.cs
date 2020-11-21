@@ -149,6 +149,7 @@ namespace Rock.CheckIn.Registration
                 var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                 familyPersonState.MobilePhoneCountryCode = mobilePhone?.CountryCode;
                 familyPersonState.MobilePhoneNumber = mobilePhone?.Number;
+                familyPersonState.MobilePhoneSmsEnabled = mobilePhone?.IsMessagingEnabled;
 
                 person.LoadAttributes();
                 familyPersonState.PersonAttributeValuesState = person.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
@@ -358,6 +359,14 @@ namespace Rock.CheckIn.Registration
             public string MobilePhoneCountryCode { get; set; }
 
             /// <summary>
+            /// Gets or sets a value indicating whether [mobile phone SMS enabled].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [mobile phone SMS enabled]; otherwise, <c>false</c>.
+            /// </value>
+            public bool? MobilePhoneSmsEnabled { get; set; }
+
+            /// <summary>
             /// Gets or sets the birth date.
             /// </summary>
             /// <value>
@@ -450,6 +459,8 @@ namespace Rock.CheckIn.Registration
             int? groupTypeRoleCanCheckInId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() )
                 ?.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid() )?.Id;
 
+            bool? groupTypeDefaultSmsEnabled = GroupTypeCache.GetFamilyGroupType().GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED ).AsBooleanOrNull();
+
             Group primaryFamily = null;
 
             if ( editFamilyState.GroupId.HasValue )
@@ -488,6 +499,7 @@ namespace Rock.CheckIn.Registration
                     personService.Add( person );
                     saveResult.NewPersonList.Add( person );
                     person.RecordTypeValueId = recordTypePersonId;
+                    person.FirstName = familyPersonState.FirstName;
                 }
                 else
                 {
@@ -583,7 +595,7 @@ namespace Rock.CheckIn.Registration
 
                 if ( familyPersonState.MobilePhoneNumber.IsNotNullOrWhiteSpace() || saveEmptyValues )
                 {
-                    person.UpdatePhoneNumber( numberTypeValueMobile.Id, familyPersonState.MobilePhoneCountryCode, familyPersonState.MobilePhoneNumber, true, false, rockContext );
+                    person.UpdatePhoneNumber( numberTypeValueMobile.Id, familyPersonState.MobilePhoneCountryCode, familyPersonState.MobilePhoneNumber, familyPersonState.MobilePhoneSmsEnabled ?? groupTypeDefaultSmsEnabled, false, rockContext );
                 }
 
                 rockContext.SaveChanges();

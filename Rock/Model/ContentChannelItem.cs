@@ -81,6 +81,15 @@ namespace Rock.Model
         public string Content { get; set; }
 
         /// <summary>
+        /// Gets or sets the structured content.
+        /// </summary>
+        /// <value>
+        /// The structured content.
+        /// </value>
+        [DataMember]
+        public string StructuredContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the priority of this ContentItem. The lower the number, the higher the priority.
         /// </summary>
         /// <value>
@@ -154,6 +163,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item global key.
+        /// </summary>
+        /// <value>
+        /// The item global key.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ItemGlobalKey { get; set; }
 
         #endregion
 
@@ -409,6 +428,21 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Assigns the item global key to the current instance if one does not exist.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void AssignItemGlobalKey( Data.DbContext dbContext )
+        {
+            if ( this.ItemGlobalKey.IsNullOrWhiteSpace() )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                this.ItemGlobalKey = contentChannelItemSlugService.GetUniqueContentSlug( this.Title, null );
+            }
+        }
+
         /// <summary>
         /// Pres the save.
         /// </summary>
@@ -422,9 +456,30 @@ namespace Rock.Model
             {
                 ChildItems.Clear();
                 ParentItems.Clear();
+
+                DeleteRelatedSlugs( dbContext );
+            }
+            else
+            {
+                AssignItemGlobalKey( dbContext );
             }
 
             base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
+        /// Delete any related slugs.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void DeleteRelatedSlugs( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
+            var slugsToDelete = contentChannelSlugSerivce.Queryable().Where( a => a.ContentChannelItemId == this.Id );
+            if ( slugsToDelete.Any() )
+            {
+                dbContext.BulkDelete( slugsToDelete );
+            }
         }
 
         /// <summary>

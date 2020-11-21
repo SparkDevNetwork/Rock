@@ -259,7 +259,7 @@ namespace Rock.Field
         /// </returns>
         public virtual bool HasChangeHandler( Control editControl )
         {
-            return editControl is TextBox || editControl is ListControl;
+            return editControl is TextBox || editControl is ListControl || editControl is CheckBox || editControl is IRockChangeHandlerControl;
         }
 
         /// <summary>
@@ -272,6 +272,7 @@ namespace Rock.Field
             if ( editControl is TextBox textBox )
             {
                 textBox.AutoPostBack = true;
+                textBox.AddCssClass( "js-prevent-double-postback" );
                 textBox.TextChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
@@ -280,6 +281,7 @@ namespace Rock.Field
             else if ( editControl is ListControl listControl )
             {
                 listControl.AutoPostBack = true;
+                listControl.AddCssClass( "js-prevent-double-postback" );
                 listControl.SelectedIndexChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
@@ -288,6 +290,15 @@ namespace Rock.Field
             else if ( editControl is ItemPicker itemPicker )
             {
                 itemPicker.SelectItem += ( object sender, EventArgs e ) =>
+                {
+                    action.Invoke();
+                };
+            }
+            else if ( editControl is CheckBox checkBox )
+            {
+                checkBox.AutoPostBack = true;
+                checkBox.AddCssClass( "js-prevent-double-postback" );
+                checkBox.CheckedChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
                 };
@@ -322,6 +333,16 @@ namespace Rock.Field
             return true;
         }
 
+        /// <summary>
+        /// Gets the copy value.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public virtual string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            return originalValue;
+        }
         #endregion
 
         #region Filter Control

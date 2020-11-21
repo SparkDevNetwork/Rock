@@ -4,7 +4,7 @@
         <asp:Panel runat="server" CssClass="panel panel-block" ID="pnlForm">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-upload"></i> Add Prayer Request</h1>
+                <h1 class="panel-title"><i class="fa fa-praying-hands"></i> Add Prayer Request</h1>
             </div>
             <div class="panel-body">
 
@@ -25,9 +25,7 @@
                     <em ID="lblCount" runat="server" class="pull-right badge"></em>
                     <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
 
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" />
-                    </div>
+                    <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server"/>
 
                     <% if ( EnableUrgentFlag ) { %>
                         <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Text="Yes" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />
@@ -53,7 +51,7 @@
         <asp:Panel runat="server" ID="pnlReceipt" Visible="False" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-upload"></i> Add Prayer Request</h1>
+                <h1 class="panel-title"><i class="fa fa-praying-hands"></i> Add Prayer Request</h1>
             </div>
             <div class="panel-body">
 

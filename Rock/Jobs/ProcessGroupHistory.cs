@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -29,6 +30,9 @@ namespace Rock.Jobs
     /// Processes Group History
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Process Group History" )]
+    [Description( "Creates Historical snapshots of Groups and Group Members for any group types that have history enabled." )]
+
     [DisallowConcurrentExecution]
     public class ProcessGroupHistory : IJob
     {
@@ -95,7 +99,11 @@ namespace Rock.Jobs
             var groupHistoricalService = new GroupHistoricalService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            var groupsWithHistoryEnabledQuery = groupService.Queryable().Where( a => a.GroupType.EnableGroupHistory == true ).AsNoTracking();
+            // Note that this query utilizes .AsNoFilter() to avoid having archived groups filtered out by the GroupConfiguration class.
+            var groupsWithHistoryEnabledQuery = groupService.AsNoFilter()
+                .Where( a => a.GroupType.EnableGroupHistory == true )
+                .AsNoTracking();
+
             var groupHistoricalsCurrentQuery = groupHistoricalService.Queryable().Where( a => a.CurrentRowIndicator == true ).AsNoTracking();
 
             // Mark GroupHistorical Rows as History ( CurrentRowIndicator = false, etc ) if any of the tracked field values change

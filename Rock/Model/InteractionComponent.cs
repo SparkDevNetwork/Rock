@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -88,7 +89,37 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
-        public int ChannelId { get; set; }
+        public int InteractionChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 2.
+        /// </summary>
+        /// <value>
+        /// The channel custom 2.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom indexed 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom indexed 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustomIndexed1 { get; set; }
 
         #endregion
 
@@ -101,7 +132,7 @@ namespace Rock.Model
         /// The channel.
         /// </value>
         [DataMember]
-        public virtual InteractionChannel Channel { get; set; }
+        public virtual InteractionChannel InteractionChannel { get; set; }
 
         [NotMapped]
         private EntityState SaveState { get; set; }
@@ -129,7 +160,7 @@ namespace Rock.Model
         {
             if ( this.SaveState == EntityState.Added || this.SaveState == EntityState.Deleted )
             {
-                var channel = InteractionChannelCache.Get( this.ChannelId );
+                var channel = InteractionChannelCache.Get( this.InteractionChannelId );
                 if ( channel != null )
                 {
                     if ( this.SaveState == EntityState.Added )
@@ -171,6 +202,41 @@ namespace Rock.Model
 
         #endregion
 
+        #region Obsolete Properties
+        
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use InteractionChannelId instead", false )]
+        public int ChannelId
+        {
+            get { return InteractionChannelId; }
+            set { InteractionChannelId = value; }
+        }
+        
+        /// <summary>
+        /// Gets or sets the channel.
+        /// </summary>
+        /// <value>
+        /// The channel.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use InteractionChannel instead", false )]
+        public virtual InteractionChannel Channel
+        {
+            get { return InteractionChannel; }
+            set { InteractionChannel = value; }
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -185,10 +251,9 @@ namespace Rock.Model
         /// </summary>
         public InteractionComponentConfiguration()
         {
-            this.HasRequired( r => r.Channel ).WithMany().HasForeignKey( r => r.ChannelId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.InteractionChannel ).WithMany().HasForeignKey( r => r.InteractionChannelId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
 }

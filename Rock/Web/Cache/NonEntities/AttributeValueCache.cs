@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -27,7 +28,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -42,12 +43,23 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueCache"/> class.
         /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        public AttributeValueCache( int attributeId, int? entityId, string value )
+        {
+            AttributeId = attributeId;
+            EntityId = entityId;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueCache"/> class.
+        /// </summary>
         /// <param name="model">The model.</param>
         public AttributeValueCache( AttributeValue model )
+            : this( model.AttributeId, model.EntityId, model.Value )
         {
-            AttributeId = model.AttributeId;
-            Value = model.Value;
-            EntityId = model.EntityId;
         }
 
         #endregion
@@ -118,6 +130,7 @@ namespace Rock.Web.Cache
         /// The value formatted.
         /// </value>
         [LavaInclude]
+        [DataMember]
         public virtual string ValueFormatted
         {
             get
@@ -148,6 +161,27 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the name of the attribute abbreviated.
+        /// </summary>
+        /// <value>
+        /// The name of the attribute abbreviated.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeAbbreviatedName
+        {
+            get
+            {
+                var attribute = AttributeCache.Get( AttributeId );
+                if ( attribute == null )
+                {
+                    return string.Empty;
+                }
+
+                return attribute.AbbreviatedName.IsNotNullOrWhiteSpace() ? attribute.AbbreviatedName : attribute.Name;
+            }
+        }
+
+        /// <summary>
         /// Gets the attribute key.
         /// </summary>
         /// <remarks>
@@ -164,6 +198,22 @@ namespace Rock.Web.Cache
             {
                 var attribute = AttributeCache.Get( AttributeId );
                 return attribute != null ? attribute.Key : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute category ids.
+        /// </summary>
+        /// <value>
+        /// The attribute category ids.
+        /// </value>
+        [LavaInclude]
+        public virtual List<int> AttributeCategoryIds
+        {
+            get
+            {
+                var attribute = AttributeCache.Get( AttributeId );
+                return attribute != null ? attribute.CategoryIds : null;
             }
         }
 

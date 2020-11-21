@@ -188,7 +188,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.rock-panel-widget > header').click(function () {
+$('.rock-panel-widget > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     if ( $(this).find('.js-header-controls').length ) {
@@ -204,7 +204,7 @@ $('.rock-panel-widget > header').click(function () {
 });
 
 // fix so that certain controls will fire its event, but not the parent event
-$('.js-stop-immediate-propagation').click(function (event) {
+$('.js-stop-immediate-propagation').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -241,7 +241,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
             _lbDelete.CausesValidation = false;
             _lbDelete.CssClass = "btn btn-xs btn-square btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
-            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa fa-times'></i>" } );
+            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
         }
 
         /// <summary>

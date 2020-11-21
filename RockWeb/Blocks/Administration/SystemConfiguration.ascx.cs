@@ -16,22 +16,22 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml;
+using Microsoft.Web.XmlTransform;
 
 using Rock;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Configuration;
-using Microsoft.Web.XmlTransform;
 using Rock.SystemKey;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -43,9 +43,24 @@ namespace RockWeb.Blocks.Administration
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
     public partial class SystemConfiguration : Rock.Web.UI.RockBlock
     {
+        #region Defaults
+
+        /// <summary>
+        /// Default setting values
+        /// </summary>
+        private static class SettingDefault
+        {
+            /// <summary>
+            /// The cookie timeout
+            /// </summary>
+            public const int CookieTimeout = 43200;
+        }
+
+        #endregion Defaults
+
         #region Fields
 
-        // used for private variables
+        private static readonly string WebConfigPath = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", "web.config" ) );
 
         #endregion
 
@@ -82,13 +97,30 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
-                BindGeneralConfiguration();
-                BindTimeZones();
-                BindOtherAppSettings();
-                BindMaxFileSize();
+                ShowDetails();
             }
 
-            lTitle.Text = ("Edit System Configuration").FormatAsHtmlTitle();
+            lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
+        }
+
+        /// <summary>
+        /// Shows the details.
+        /// </summary>
+        private void ShowDetails()
+        {
+            BindGeneralConfiguration();
+
+            BindLoggingSettings();
+
+            BindTimeZones();
+
+            BindOtherAppSettings();
+            BindMaxFileSize();
+            BindCookieTimeout();
+
+            BindExperimentalSettings();
+
+            BindSystemDiagnosticsSettings();
         }
 
         #endregion
@@ -123,7 +155,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
-            nbGeneralMessage.Title = "Success";
+            nbGeneralMessage.Title = string.Empty;
             nbGeneralMessage.Text = "Setting saved successfully.";
         }
 
@@ -145,16 +177,30 @@ namespace RockWeb.Blocks.Administration
             rockWebConfig.AppSettings.Settings["OrgTimeZone"].Value = ddTimeZone.SelectedValue;
             rockWebConfig.AppSettings.Settings["RunJobsInIISContext"].Value = cbRunJobsInIISContext.Checked.ToString();
 
-            var section = (System.Web.Configuration.SystemWebSectionGroup)rockWebConfig.GetSectionGroup("system.web");
+            var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
+            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numCookieTimeout.IntegerValue ?? SettingDefault.CookieTimeout );
 
             rockWebConfig.Save();
 
-            if ( ! SaveMaxAllowedContentLength() )
+            string errorMessage = null;
+            string errorMessageTemplate = "An error occurred which prevented the {0} from being saved within the web.config.";
+
+            if ( !SaveMaxAllowedContentLength() )
+            {
+                errorMessage = string.Format( errorMessageTemplate, "'MaxAllowedContentLength'" );
+            }
+
+            if ( errorMessage == null && !SaveSystemDiagnosticsSettings() )
+            {
+                errorMessage = string.Format( errorMessageTemplate, "system.diagnostics configuration" );
+            }
+
+            if ( !string.IsNullOrEmpty( errorMessage ) )
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Title = "Error";
-                nbMessage.Text = "An error occurred which prevented the 'MaxAllowedContentLength' to be saved in the web.config";
+                nbMessage.Text = errorMessage;
             }
             else
             {
@@ -162,6 +208,41 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Title = "Success";
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
+        }
+
+        protected void btnLoggingSave_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            nbLoggingMessage.Visible = true;
+
+            var logConfig = new RockLogSystemSettings
+            {
+                LogLevel = rblVerbosityLevel.SelectedValue.ConvertToEnum<RockLogLevel>( RockLogLevel.Off ),
+                DomainsToLog = cblDomainsToLog.SelectedValues,
+                MaxFileSize = txtMaxFileSize.Text.AsInteger(),
+                NumberOfLogFiles = txtFilesToRetain.Text.AsInteger()
+            };
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "Setting saved successfully.";
+        }
+
+        protected void btnDeleteLog_Click( object sender, EventArgs e )
+        {
+            nbLoggingMessage.Visible = true;
+
+            RockLogger.Log.Delete();
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "The log files were successfully deleted.";
         }
         #endregion
 
@@ -175,6 +256,32 @@ namespace RockWeb.Blocks.Administration
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
         }
 
+        private void BindLoggingSettings()
+        {
+            var logLevel = Enum.GetNames( typeof( RockLogLevel ) );
+            rblVerbosityLevel.DataSource = logLevel;
+            rblVerbosityLevel.DataBind();
+
+            var rockConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
+
+            if ( rockConfig == null )
+            {
+                return;
+            }
+
+            rblVerbosityLevel.SelectedValue = rockConfig.LogLevel.ToString();
+            txtFilesToRetain.Text = rockConfig.NumberOfLogFiles.ToString();
+            txtMaxFileSize.Text = rockConfig.MaxFileSize.ToString();
+
+            var definedValues = new DefinedValueService( new Rock.Data.RockContext() ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS.AsGuid() );
+
+            cblDomainsToLog.DataSource = definedValues.ToList();
+            cblDomainsToLog.DataTextField = "Value";
+            cblDomainsToLog.DataValueField = "Value";
+            cblDomainsToLog.DataBind();
+
+            cblDomainsToLog.SetValues( rockConfig.DomainsToLog );
+        }
         /// <summary>
         /// Bind the available time zones and select the one that's configured in the
         /// web.config's OrgTimeZone setting.
@@ -185,7 +292,7 @@ namespace RockWeb.Blocks.Administration
             {
                 ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
             }
-            
+
             ddTimeZone.SelectedValue = RockDateTime.OrgTimeZoneInfo.Id;
         }
 
@@ -212,10 +319,32 @@ namespace RockWeb.Blocks.Administration
             {
                 // MaxRequestLength is in KB, so let's convert to MB for the users sake.
                 numbMaxSize.Text = ( section.MaxRequestLength / 1024 ).ToString();
-                // requestLengthDiskThreshold is in bytes and the MaxRequestLength must not be less than this value.
-                //numbMaxSize.MinimumValue = Math.Round(section.RequestLengthDiskThreshold * 10.48576, 0 ).ToString();
-                //numbMaxSize.ToolTip = string.Format( "between {0} and {1} MB", section.RequestLengthDiskThreshold, numbMaxSize.MaximumValue );
             }
+        }
+
+        /// <summary>
+        /// Binds the cookie timeout.
+        /// </summary>
+        private void BindCookieTimeout()
+        {
+            var rockWebConfig = WebConfigurationManager.OpenWebConfiguration( "~" );
+            var systemWebSection = ( SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
+
+            if ( systemWebSection == null )
+            {
+                numCookieTimeout.IntegerValue = SettingDefault.CookieTimeout;
+                return;
+            }
+
+            numCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
+        }
+
+        /// <summary>
+        /// Binds the system diagnostics settings.
+        /// </summary>
+        private void BindSystemDiagnosticsSettings()
+        {
+            cbEnableAdoNetPerformanceCounters.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS ).AsBoolean();
         }
 
         /// <summary>
@@ -225,36 +354,132 @@ namespace RockWeb.Blocks.Administration
         /// <returns>true if the transform was successful; false otherwise.</returns>
         protected bool SaveMaxAllowedContentLength()
         {
-            string webConfig = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", "web.config" ) );
-            bool isSuccess = false;
+            int maxContentLengthBytes = int.Parse( numbMaxSize.Text ) * 1048576;
 
-            using ( XmlTransformableDocument document = new XmlTransformableDocument() )
-            {
-                document.PreserveWhitespace = true;
-                document.Load( webConfig );
-
-                int maxContentLengthBytes = int.Parse( numbMaxSize.Text ) * 1048576;
-
-                string transformString = string.Format( @"<?xml version='1.0'?>
-<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>  
-    <system.webServer>
+            string transformString = string.Format( @"<?xml version='1.0'?>
+<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>
+  <system.webServer>
     <security>
       <requestFiltering>
         <requestLimits maxAllowedContentLength='{0}' xdt:Transform='SetAttributes(maxAllowedContentLength)'/>
       </requestFiltering>
     </security>
-    </system.webServer>
+  </system.webServer>
 </configuration>", maxContentLengthBytes );
+
+            return TransformWebConfig( transformString );
+        }
+
+        /// <summary>
+        /// Transform the web.config to inject system.diagnostics configuration and save related system settings.
+        /// </summary>
+        /// <returns>true if the transform was successful; false otherwise.</returns>
+        private bool SaveSystemDiagnosticsSettings()
+        {
+            var adoNetPerformanceCountersAreEnabled = cbEnableAdoNetPerformanceCounters.Checked;
+
+            var transformSb = new StringBuilder( @"<?xml version='1.0'?>
+<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>
+  <system.diagnostics xdt:Transform='InsertIfMissing'>
+    <switches xdt:Transform='InsertIfMissing'>
+      <add name='ConnectionPoolPerformanceCounterDetail' xdt:Transform='RemoveAll' xdt:Locator='Match(name)' />" );
+
+            if ( adoNetPerformanceCountersAreEnabled )
+            {
+                transformSb.Append( @"
+      <add name='ConnectionPoolPerformanceCounterDetail' value='4' xdt:Transform='Insert' />" );
+            }
+
+            transformSb.Append( @"
+    </switches>
+  </system.diagnostics>
+</configuration>" );
+
+            if ( !TransformWebConfig( transformSb.ToString() ) )
+            {
+                return false;
+            }
+
+            // Update the "core_EnableAdoNetPerformanceCounters" System Setting
+            Rock.Web.SystemSettings.SetValue( SystemSetting.SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS, adoNetPerformanceCountersAreEnabled.ToString() );
+
+            // Toggle the "Collect Hosting Metrics" ServiceJob's IsActive status if necessary
+            var rockContext = new RockContext();
+            var serviceJob = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.COLLECT_HOSTING_METRICS.AsGuid() );
+
+            if ( serviceJob != null && serviceJob.IsActive != adoNetPerformanceCountersAreEnabled )
+            {
+                serviceJob.IsActive = !serviceJob.IsActive;
+
+                rockContext.SaveChanges();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Transform the web.config given the supplied transform string.
+        /// </summary>
+        /// <param name="transformString">The transform string used to instantiate a new <see cref="XmlTransformation"/>.</param>
+        /// <returns>true if the transform was successful; false otherwise.</returns>
+        private bool TransformWebConfig( string transformString )
+        {
+            bool isSuccess = false;
+
+            using ( XmlTransformableDocument document = new XmlTransformableDocument() )
+            {
+                document.PreserveWhitespace = true;
+                document.Load( WebConfigPath );
 
                 using ( XmlTransformation transform = new XmlTransformation( transformString, false, null ) )
                 {
                     isSuccess = transform.Apply( document );
-                    document.Save( webConfig );
+                    document.Save( WebConfigPath );
                 }
             }
 
             return isSuccess;
         }
+
+        /// <summary>
+        /// Binds the experimental settings.
+        /// </summary>
+        protected void BindExperimentalSettings()
+        {
+            nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Warning;
+            nbStartDayOfWeekSaveMessage.Title = string.Empty;
+            nbStartDayOfWeekSaveMessage.Text = "This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'.";
+            dowpStartingDayOfWeek.SelectedDayOfWeek = RockDateTime.FirstDayOfWeek;
+        }
+
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveStartDayOfWeek control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveStartDayOfWeek_Click( object sender, EventArgs e )
+        {
+            if ( dowpStartingDayOfWeek.SelectedDayOfWeek != RockDateTime.FirstDayOfWeek )
+            {
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToInt().ToString() );
+                Task.Run( () =>
+                {
+                    try
+                    {
+                        RockDateTime.UpdateSundayDateData();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( "An error occurred applying the Start Of Week setting", ex ) );
+                    }
+                } );
+
+                nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbStartDayOfWeekSaveMessage.Title = string.Empty;
+                nbStartDayOfWeekSaveMessage.Text = string.Format( "Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString() );
+            }
+        }
     }
 }

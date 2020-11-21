@@ -34,8 +34,8 @@ namespace RockWeb.Blocks.Finance
 
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 0 )]
     [LinkedPage( "Batch Detail Page", "The page used to display details of a batch.", false, "", "", 1)]
-    [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
-    [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 3 )]
+    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
+    [SystemCommunicationField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 3 )]
     [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 4 )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
@@ -78,6 +78,8 @@ namespace RockWeb.Blocks.Finance
                 if ( financialGateway != null )
                 {
                     var today = RockDateTime.Today;
+
+                    // This is DayOfWeek.Monday vs RockDateTime.FirstDayOfWeek because it including stuff that happened on the weekend (Saturday and Sunday) when it the first Non-Weekend Day (Monday)
                     var days = today.DayOfWeek == DayOfWeek.Monday ? new TimeSpan( 3, 0, 0, 0 ) : new TimeSpan( 1, 0, 0, 0 );
                     var endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
@@ -128,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
                             var qryParam = new Dictionary<string, string>();
-                            qryParam.Add( "batchId", "9999" );
+                            qryParam.Add( "BatchId", "9999" );
                             string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
 
                             string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );

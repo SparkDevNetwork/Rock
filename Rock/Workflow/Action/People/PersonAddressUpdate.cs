@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the the location type to update.", false, "", "", 1, "LocationTypeAttribute",
+    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the location type to update.", false, "", "", 1, "LocationTypeAttribute",
         new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
     [LocationField("Location", "The location to use for updating person's record.", false, "", "", 3 )]
@@ -71,7 +71,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         Guid personAliasGuid = attributePersonValue.AsGuid();
@@ -99,7 +99,7 @@ namespace Rock.Workflow.Action
 
             // determine the location type to edit
             DefinedValueCache locationType = null;
-            var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
+            var locationTypeAttributeValue = action.GetWorkflowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
             if ( locationTypeAttributeValue != null )
             {
                 locationType = DefinedValueCache.Get( locationTypeAttributeValue.AsGuid() );
@@ -124,7 +124,7 @@ namespace Rock.Workflow.Action
                 Guid? locationAttributeValueGuid = locationAttributeValue.AsGuidOrNull();
                 if ( locationAttributeValueGuid.HasValue )
                 {
-                    locationGuid = action.GetWorklowAttributeValue( locationAttributeValueGuid.Value ).AsGuidOrNull();
+                    locationGuid = action.GetWorkflowAttributeValue( locationAttributeValueGuid.Value ).AsGuidOrNull();
                 }
             }
 
@@ -144,7 +144,7 @@ namespace Rock.Workflow.Action
             Guid? mailingValueGuid = mailingValue.AsGuidOrNull();
             if ( mailingValueGuid.HasValue )
             {
-                mailingValue = action.GetWorklowAttributeValue( mailingValueGuid.Value );
+                mailingValue = action.GetWorkflowAttributeValue( mailingValueGuid.Value );
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Rock.Workflow.Action
             Guid? mappedValueGuid = mappedValue.AsGuidOrNull();
             if ( mappedValueGuid.HasValue )
             {
-                mappedValue = action.GetWorklowAttributeValue( mappedValueGuid.Value );
+                mappedValue = action.GetWorkflowAttributeValue( mappedValueGuid.Value );
             }
             else
             {

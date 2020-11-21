@@ -65,7 +65,7 @@ namespace Rock.Workflow.Action
                 var attributeGroup = AttributeCache.Get( guidGroupAttribute.Value, rockContext );
                 if ( attributeGroup != null )
                 {
-                    var groupGuid = action.GetWorklowAttributeValue( guidGroupAttribute.Value ).AsGuidOrNull();
+                    var groupGuid = action.GetWorkflowAttributeValue( guidGroupAttribute.Value ).AsGuidOrNull();
 
                     if ( groupGuid.HasValue )
                     {
@@ -90,7 +90,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         if ( attributePerson.FieldType.Class == typeof( Rock.Field.Types.PersonFieldType ).FullName )

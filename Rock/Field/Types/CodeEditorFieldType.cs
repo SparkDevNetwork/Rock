@@ -90,7 +90,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( EDITOR_MODE, new ConfigurationValue( "Editor Mode", "The type of code that will be entered.", "" ) );
-            configurationValues.Add( EDITOR_THEME, new ConfigurationValue( "Editor Theme", "The styling them to use for the code editor.", CodeEditorTheme.Rock.ConvertToInt().ToString() ) );
+            configurationValues.Add( EDITOR_THEME, new ConfigurationValue( "Editor Theme", "The styling theme to use for the code editor.", CodeEditorTheme.Rock.ConvertToInt().ToString() ) );
             configurationValues.Add( EDITOR_HEIGHT, new ConfigurationValue( "Editor Height", "The height of the control in pixels.", "200" ) );
 
             if ( controls != null && controls.Count == 3 )

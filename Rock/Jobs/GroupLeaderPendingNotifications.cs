@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -31,13 +32,14 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job send list of new pending group members to the group's leaders.
+    /// This job sends a list of new, pending group members to the group's leaders.
     /// </summary>
-    /// 
+    [DisplayName( "Group Leader Pending Notifications" )]
+    [Description( "This job sends a list of new, pending group members to the group's leaders." )]
 
     [GroupTypeField( "Group Type", "The group type to look for new pending registrations", true, "", "", 0 )]
     [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]
-    [SystemEmailField( "Notification Email", "", true, "", "", 2 )]
+    [SystemCommunicationField( "Notification Email", "", true, "", "", 2 )]
     [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
     [IntegerField( "Pending Age", "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.", false, 1, order: 4 )]
     [DisallowConcurrentExecution]
@@ -79,13 +81,12 @@ namespace Rock.Jobs
                 Guid? groupRoleFilterGuid = dataMap.GetString( "GroupRoleFilter" ).AsGuidOrNull();
                 int? pendingAge = dataMap.GetString( "PendingAge" ).AsIntegerOrNull();
 
-
                 bool includePreviouslyNotificed = dataMap.GetString( "IncludePreviouslyNotified" ).AsBoolean();
 
                 // get system email
-                SystemEmailService emailService = new SystemEmailService( rockContext );
+                var emailService = new SystemCommunicationService( rockContext );
 
-                SystemEmail systemEmail = null;
+                SystemCommunication systemEmail = null;
                 if ( !systemEmailGuid.HasValue || systemEmailGuid == Guid.Empty )
                 {
                     context.Result = "Job failed. Unable to find System Email";
@@ -151,7 +152,12 @@ namespace Rock.Jobs
                     }
 
                     // get list of leaders
-                    var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true && m.Person != null && m.Person.Email != null && m.Person.Email != string.Empty );
+                    var groupLeaders = group.Members
+                        .Where( m => m.GroupRole.IsLeader == true &&
+                            m.Person != null &&
+                            m.Person.Email != null &&
+                            m.Person.Email != string.Empty &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active );
 
                     if ( !groupLeaders.Any() )
                     {
@@ -159,7 +165,7 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    var recipients = new List<RecipientData>();
+                    var recipients = new List<RockEmailMessageRecipient>();
                     foreach ( var leader in groupLeaders )
                     {
                         // create merge object
@@ -168,9 +174,8 @@ namespace Rock.Jobs
                         mergeFields.Add( "Group", group );
                         mergeFields.Add( "ParentGroup", group.ParentGroup );
                         mergeFields.Add( "Person", leader.Person );
-                        recipients.Add( new RecipientData( leader.Person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
                     }
-
 
                     var errorMessages = new List<string>();
                     var emailMessage = new RockEmailMessage( systemEmail.Guid );
@@ -189,9 +194,10 @@ namespace Rock.Jobs
                     notificationsSent += recipients.Count();
                     // mark pending members as notified as we go in case the job fails
                     var notifiedPersonIds = pendingIndividuals.Select( p => p.Id );
-                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && notifiedPersonIds.Contains( m.PersonId ) ) )
+                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == group.Id && notifiedPersonIds.Contains( m.PersonId ) ) )
                     {
                         pendingGroupMember.IsNotified = true;
+                        pendingMembersCount++;
                     }
 
                     rockContext.SaveChanges();

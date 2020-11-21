@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -156,7 +157,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger key-value-remove" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-times" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

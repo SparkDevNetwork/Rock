@@ -16,17 +16,20 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
-
+using DotLiquid;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
+using WebGrease.Css.Extensions;
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
@@ -38,6 +41,9 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        /// <summary>
+        /// Is there a transaction in progress?
+        /// </summary>
         private bool _transactionInProgress = false;
 
         /// <summary>
@@ -68,10 +74,27 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
-        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// Wraps the action in a BeginTransaction and CommitTransaction.
+        /// Note that this will *always* commit the transaction (unless an exception occurs).
+        /// If need to rollback the transaction within your action (for example, to show a validation warning),
+        /// use <see cref="WrapTransactionIf(Func{bool})" /> instead.
         /// </summary>
         /// <param name="action">The action.</param>
         public void WrapTransaction( Action action )
+        {
+            WrapTransactionIf( () =>
+            {
+                action.Invoke();
+                return true;
+            } );
+        }
+
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction.
+        /// If the action returns false, the transaction will be rolled back.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public bool WrapTransactionIf( Func<bool> action )
         {
             if ( !_transactionInProgress )
             {
@@ -80,8 +103,15 @@ namespace Rock.Data
                 {
                     try
                     {
-                        action.Invoke();
-                        dbContextTransaction.Commit();
+                        if ( action.Invoke() )
+                        {
+                            dbContextTransaction.Commit();
+                        }
+                        else
+                        {
+                            dbContextTransaction.Rollback();
+                            return false;
+                        }
                     }
                     catch
                     {
@@ -93,10 +123,12 @@ namespace Rock.Data
                         _transactionInProgress = false;
                     }
                 }
+
+                return true;
             }
             else
             {
-                action.Invoke();
+                return action.Invoke();
             }
         }
 
@@ -123,14 +155,33 @@ namespace Rock.Data
         /// <returns></returns>
         public int SaveChanges( bool disablePrePostProcessing )
         {
+            var result = SaveChanges( new SaveChangesArgs
+            {
+                DisablePrePostProcessing = disablePrePostProcessing
+            } );
+
+            return result.RecordsUpdated;
+        }
+
+        /// <summary>
+        /// Saves all changes made in this context to the underlying database.  The
+        /// default pre and post processing can also optionally be disabled.  This
+        /// would disable audit records being created, workflows being triggered, and
+        /// any PreSaveChanges() methods being called for changed entities.
+        /// </summary>
+        /// <param name="args">Arguments determining behavior of the save.</param>
+        /// <returns></returns>
+        public SaveChangesResult SaveChanges( SaveChangesArgs args )
+        {
+            var saveChangesResult = new SaveChangesResult();
+
             // Pre and Post processing has been disabled, just call the base
             // SaveChanges() method and return
-            if ( disablePrePostProcessing )
+            if ( args.DisablePrePostProcessing )
             {
-                return base.SaveChanges();
+                saveChangesResult.RecordsUpdated = base.SaveChanges();
+                return saveChangesResult;
             }
-
-            int result = 0;
 
             SaveErrorMessages = new List<string>();
 
@@ -148,7 +199,7 @@ namespace Rock.Data
                 try
                 {
                     // Save the context changes
-                    result = base.SaveChanges();
+                    saveChangesResult.RecordsUpdated = base.SaveChanges();
                 }
                 catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
                 {
@@ -168,17 +219,23 @@ namespace Rock.Data
                 if ( updatedItems.Any() )
                 {
                     RockPostSave( updatedItems, personAlias, enableAuditing );
+
+                    if ( args.IsAchievementsEnabled )
+                    {
+                        var attempts = ProcessAchievements( updatedItems );
+                        saveChangesResult.AchievementAttempts = attempts;
+                    }
                 }
             }
 
-            return result;
+            return saveChangesResult;
         }
 
         /// <summary>
         /// Gets the current person alias.
         /// </summary>
         /// <returns></returns>
-        private PersonAlias GetCurrentPersonAlias()
+        internal PersonAlias GetCurrentPersonAlias()
         {
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
@@ -218,7 +275,7 @@ namespace Rock.Data
                 if ( entry.Entity is IModel )
                 {
                     var model = entry.Entity as IModel;
-                    model.PreSaveChanges( this, entry, entry.State ); 
+                    model.PreSaveChanges( this, entry, entry.State );
 
                     if ( !preSavedEntities.Contains( model.Guid ) )
                     {
@@ -311,6 +368,8 @@ namespace Rock.Data
                     }
                     catch ( SystemException ex )
                     {
+                        contextItem.Audit = null;
+                        System.Diagnostics.Debug.WriteLine( $"Exception when getting Audit details for {contextItem?.GetType().Name} - {ex}" );
                         ExceptionLogService.LogException( ex, null );
                     }
                 }
@@ -333,11 +392,11 @@ namespace Rock.Data
             {
                 try
                 {
-                    var audits = updatedItems.Select( i => i.Audit ).ToList();
+                    var audits = updatedItems.Where( a => a.Audit != null ).Select( i => i.Audit ).ToList();
                     if ( audits.Any( a => a.Details.Any() ) )
                     {
                         var transaction = new Rock.Transactions.AuditTransaction();
-                        transaction.Audits = audits;
+                        transaction.Audits = audits.Where( a => a.Details.Any() == true ).ToList();
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
@@ -412,6 +471,46 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Processes achievements, checking if any of the recently updated items (this is post save) caused any <see cref="AchievementType"/> progress.
+        /// </summary>
+        /// <param name="updatedItems">The updated items.</param>
+        private List<AchievementAttempt> ProcessAchievements( List<ContextItem> updatedItems )
+        {
+            var updatedAttempts = new Dictionary<int, AchievementAttempt>();
+
+            foreach ( var item in updatedItems )
+            {
+                var loopUpdatedAttempts = ProcessAchievements( item );
+
+                foreach ( var attempt in loopUpdatedAttempts )
+                {
+                    updatedAttempts[attempt.Id] = attempt;
+                }
+            }
+
+            return updatedAttempts.Values.ToList();
+        }
+
+        /// <summary>
+        /// Processes achievements, checking if any of the recently updated items (this is post save) caused any <see cref="AchievementType"/> progress.
+        /// </summary>
+        /// <param name="updatedItem">The updated item.</param>
+        private List<AchievementAttempt> ProcessAchievements( ContextItem updatedItem )
+        {
+            if ( updatedItem == null )
+            {
+                return new List<AchievementAttempt>();
+            }
+
+            if ( updatedItem.State == EntityState.Detached || updatedItem.State == EntityState.Deleted || updatedItem.Entity == null )
+            {
+                return new List<AchievementAttempt>();
+            }
+
+            return AchievementTypeCache.ProcessAchievements( updatedItem.Entity );
+        }
+
         #region Bulk Operations
 
         /// <summary>
@@ -433,7 +532,7 @@ namespace Rock.Data
                 {
                     model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
                     model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
-                    
+
                     if ( currentPersonAliasId.HasValue )
                     {
                         model.CreatedByPersonAliasId = model.CreatedByPersonAliasId ?? currentPersonAliasId;
@@ -442,10 +541,27 @@ namespace Rock.Data
                 }
             }
 
-            // set timeout to 5 minutes, just in case (the default is 30 seconds)
-            EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
+            // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
+            int minTimeout = 300;
+            if ( this.Database.CommandTimeout.HasValue && this.Database.CommandTimeout.Value > minTimeout )
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.CommandTimeout.Value;
+            }
+            else
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = minTimeout;
+            }
+
             EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
             EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
+
+            if ( typeof( T ).GetInterfaces().Contains( typeof( IEntity ) ) )
+            {
+                // This logic is normally handled in the SaveChanges method, but since the BulkInsert bypasses those
+                // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
+                // transaction can continue processing and exit.
+                new AchievementsProcessingTransaction( records as IEnumerable<IEntity> ).Enqueue();
+            }
         }
 
         /// <summary>
@@ -462,15 +578,20 @@ namespace Rock.Data
             var currentDateTime = RockDateTime.Now;
             PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
             var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
-            rockExpressionVisitor.Visit( updateFactory );
-            int recordsUpdated = queryable.Update( updateFactory );
+            var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
+            int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
+            {
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+            } );
             return recordsUpdated;
         }
 
         /// <summary>
         /// Does a direct bulk DELETE.
         /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
-        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// NOTES:
+        /// - This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database.
+        /// - This will use the Database.CommandTimeout value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable">The queryable for the records to delete</param>
@@ -478,18 +599,11 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
         {
-            int recordsUpdated;
-
-            if ( batchSize.HasValue )
+            return queryable.Delete( d =>
             {
-                recordsUpdated = queryable.Delete( d => d.BatchSize = batchSize.Value );
-            }
-            else
-            {
-                recordsUpdated = queryable.Delete();
-            }
-
-            return recordsUpdated;
+                d.BatchSize = batchSize ?? 4000;
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+            } );
         }
 
         #endregion Bulk Operations
@@ -665,6 +779,12 @@ namespace Rock.Data
             return match;
         }
 
+        /// <summary>
+        /// Gets the audit details.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
         private static void GetAuditDetails( DbContext dbContext, ContextItem item, int? personAliasId )
         {
             // Get the base class (not the proxy class)
@@ -674,8 +794,7 @@ namespace Rock.Data
                 rockEntityType = rockEntityType.BaseType;
             }
 
-            // Check to make sure class does not have [NotAudited] attribute
-            if ( AuditClass( rockEntityType ) )
+            if ( IsAuditableClass( rockEntityType ) )
             {
                 var dbEntity = item.DbEntityEntry;
                 var audit = item.Audit;
@@ -684,8 +803,7 @@ namespace Rock.Data
 
                 foreach ( PropertyInfo propInfo in properties )
                 {
-                    // Check to make sure property does not have the [NotAudited] attribute
-                    if ( AuditProperty( propInfo ) )
+                    if ( IsAuditableProperty( propInfo ) )
                     {
                         // If entire entity was added or deleted or this property was modified
                         var dbPropertyEntry = dbEntity.Property( propInfo.Name );
@@ -739,24 +857,36 @@ namespace Rock.Data
             }
         }
 
-        private static bool AuditClass( Type baseType )
+        /// <summary>
+        /// Determines whether [is auditable class] [the specified base type].
+        /// </summary>
+        /// <param name="baseType">Type of the base.</param>
+        /// <returns>
+        ///   <c>true</c> if [is auditable class] [the specified base type]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsAuditableClass( Type baseType )
         {
             var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
             return ( attribute == null );
         }
 
-        private static bool AuditProperty( PropertyInfo propertyInfo )
+        /// <summary>
+        /// Determines whether [is auditable property] [the specified property information].
+        /// </summary>
+        /// <param name="propertyInfo">The property information.</param>
+        /// <returns>
+        ///   <c>true</c> if [is auditable property] [the specified property information]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsAuditableProperty( PropertyInfo propertyInfo )
         {
-            if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( ( propertyInfo.GetGetMethod() != null && !propertyInfo.GetGetMethod().IsVirtual ) ||
-                propertyInfo.Name == "Id" ||
-                propertyInfo.Name == "Guid" ||
-                propertyInfo.Name == "Order" ||
-                propertyInfo.Name == "IsActive" ) )
+            // if it is specifically marked as NotAudited, don't include it
+            if ( propertyInfo.GetCustomAttribute<NotAuditedAttribute>() != null )
             {
-                return true;
+                return false;
             }
-            return false;
+
+            // Otherwise, make sure it is a real database field
+            return Reflection.IsMappedDatabaseProperty( propertyInfo );
         }
 
         /// <summary>

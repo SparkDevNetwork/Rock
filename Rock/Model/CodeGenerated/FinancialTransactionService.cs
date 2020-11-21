@@ -103,9 +103,11 @@ namespace Rock.Model
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FutureProcessingDateTime = source.FutureProcessingDateTime;
             target.IsReconciled = source.IsReconciled;
             target.IsSettled = source.IsSettled;
             target.MICRStatus = source.MICRStatus;
+            target.NonCashAssetTypeValueId = source.NonCashAssetTypeValueId;
             target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             target.ProcessedDateTime = source.ProcessedDateTime;
             target.ScheduledTransactionId = source.ScheduledTransactionId;
@@ -116,6 +118,7 @@ namespace Rock.Model
             target.Status = source.Status;
             target.StatusMessage = source.StatusMessage;
             target.Summary = source.Summary;
+            target.SundayDate = source.SundayDate;
             target.TransactionCode = source.TransactionCode;
             target.TransactionDateTime = source.TransactionDateTime;
             target.TransactionTypeValueId = source.TransactionTypeValueId;

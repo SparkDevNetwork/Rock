@@ -27,6 +27,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Data
@@ -207,9 +208,31 @@ namespace Rock.Data
         [NotMapped]
         public virtual object CustomSortValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the history items. Anything in this list will be saved to the history table in a post save triggered transaction.
+        /// <see cref="Rock.Transactions.SaveHistoryTransaction"/>
+        /// </summary>
+        /// <value>
+        /// The history items.
+        /// </value>
+        [NotMapped]
+        protected List<History> HistoryItems { get; set; }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// This method is called in the <see cref="PreSaveChanges(DbContext, DbEntityEntry, EntityState)" /> method. Use it to populate
+        /// <see cref="HistoryItems" /> if needed. These history items are queued to be written into the database post save (so that they
+        /// are only written if the save actually occurs).
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        protected virtual void BuildHistoryItems( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+        }
 
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
@@ -231,7 +254,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
@@ -239,14 +262,19 @@ namespace Rock.Data
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
             PreSaveChanges( dbContext, entry );
+            BuildHistoryItems( dbContext, entry, state );
         }
 
         /// <summary>
-        /// Posts the save changes.
+        /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
+            if ( HistoryItems?.Any() == true )
+            {
+                new SaveHistoryTransaction( HistoryItems ).Enqueue();
+            }
         }
 
         /// <summary>
@@ -280,20 +308,20 @@ namespace Rock.Data
         {
             var sb = new StringBuilder();
 
-            if ( personAlias != null &&
-                personAlias.Person != null )
+            if ( personAlias != null && personAlias.Person != null )
             {
-                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a>", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a> ", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+            }
 
-                if ( dateTime.HasValue )
-                {
-                    sb.AppendFormat( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", dateTime.Value.ToString(), dateTime.Value.ToRelativeDateString() );
-                }
+            if ( dateTime.HasValue )
+            {
+                sb.AppendFormat( "<small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", dateTime.Value.ToString(), dateTime.Value.ToRelativeDateString() );
             }
 
             return sb.ToString();
+
         }
-        
+
         #endregion
 
         #region ISecured implementation
@@ -370,7 +398,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == Authorization.VIEW;
+            // Model is the ultimate base Parent Authority of child classes of Models, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
+            // In the case of VIEW or TAG, we want to default to Allowed.
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>
@@ -434,10 +464,12 @@ namespace Rock.Data
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <remarks>
-        /// This method is only necessary to support the old way of getting attribute values in 
-        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
-        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// This method is necessary to support getting AttributeValues in Lava templates and
+        /// to support the old way of getting attribute values in Lava templates
+        /// (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// removed and only the new method of using the Attribute filter is 
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be
+        /// trimmed to only support the AttributeValues key.
         /// </remarks>
         /// <value>
         /// The <see cref="System.Object"/>.
@@ -476,7 +508,6 @@ namespace Rock.Data
                         return null;
                     }
                     
-
                     if ( this.Attributes != null )
                     {
                         string attributeKey = keyString;
@@ -499,10 +530,7 @@ namespace Rock.Data
                             var attribute = this.Attributes[attributeKey];
                             if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
-                                if ( lavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning )
-                                {
-                                    Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
-                                }
+                                Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
 
                                 if ( unformatted )
                                 {

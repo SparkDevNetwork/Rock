@@ -165,7 +165,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead")]
+        [Obsolete("Use Get Instead", true )]
         public static RestControllerCache Read( string className, RockContext rockContext = null )
         {
             return Get( className, rockContext );

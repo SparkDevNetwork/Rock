@@ -39,11 +39,6 @@ BEGIN
     DECLARE @cADULT_ROLE_GUID UNIQUEIDENTIFIER = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
     DECLARE @cTRANSACTION_TYPE_CONTRIBUTION UNIQUEIDENTIFIER = '2D607262-52D6-4724-910D-5C6E8FB89ACC';
     -- --------- END CONFIGURATION --------------
-    DECLARE @ActiveRecordStatusValueId INT = (
-            SELECT TOP 1 [Id]
-            FROM [DefinedValue]
-            WHERE [Guid] = @cACTIVE_RECORD_STATUS_VALUE_GUID
-            )
     DECLARE @PersonRecordTypeValueId INT = (
             SELECT TOP 1 [Id]
             FROM [DefinedValue]
@@ -79,7 +74,7 @@ BEGIN
     DECLARE @SundayExitAttendanceDurationLong DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationLongWeeks * - 1), @SundayDateStart)
     DECLARE @TempFinancialTransactionByDateAndGivingId TABLE (
         DistinctCount INT
-        ,GivingId VARCHAR(50)
+        ,GivingId NVARCHAR(50)
         ,TransactionDateTime DATETIME
        )
 
@@ -123,7 +118,105 @@ BEGIN
         ,StartDateTime
         ,fg.Id
 
-    SELECT [FamilyId]
+	DECLARE @TempEntryGiftCountDurationShort TABLE (
+			GivingId NVARCHAR(50) INDEX IX1 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempEntryGiftCountDurationShort
+	SELECT GivingId, SUM(ft.DistinctCount)
+	FROM @TempFinancialTransactionByDateAndGivingId ft
+	WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationShort
+		AND ft.TransactionDateTime <= @SundayDateStart
+	GROUP BY GivingId
+
+	DECLARE @TempExitGiftCountDuration TABLE (
+			GivingId NVARCHAR(50) INDEX IX2 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempExitGiftCountDuration
+	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0)
+	FROM @TempFinancialTransactionByDateAndGivingId ft
+	WHERE ft.TransactionDateTime >= @SundayExitGivingDuration
+		AND ft.TransactionDateTime <= @SundayDateStart
+	GROUP BY GivingId
+
+	DECLARE @TempEntryGiftCountDurationLong TABLE (
+			GivingId NVARCHAR(50) INDEX IX3 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempEntryGiftCountDurationLong
+	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0) AS [EntryGiftCountDurationLong]
+					FROM @TempFinancialTransactionByDateAndGivingId ft
+					WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationLong
+						AND ft.TransactionDateTime <= @SundayDateStart
+	GROUP BY GivingId
+
+	DECLARE @TempExitAttendanceCountDurationShort TABLE (
+			FamilyId INT INDEX IX4 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempExitAttendanceCountDurationShort
+	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [ExitAttendanceCountDurationShort]
+					FROM @TempAttendanceBySundayDateAndFamily a
+					WHERE a.StartDateTime <= @SundayDateStart
+						AND a.StartDateTime >= @SundayExitAttendanceDurationShort
+	GROUP BY FamilyId
+
+	DECLARE @TempEntryAttendanceCountDuration TABLE (
+			FamilyId INT INDEX IX5 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempEntryAttendanceCountDuration
+	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [EntryAttendanceCountDuration]
+					FROM @TempAttendanceBySundayDateAndFamily a
+					WHERE a.StartDateTime <= @SundayDateStart
+						AND a.StartDateTime >= @SundayEntryAttendanceDuration
+	GROUP BY FamilyId
+
+	DECLARE @TempExitAttendanceCountDurationLong TABLE (
+			FamilyId INT INDEX IX6 CLUSTERED
+			, DistinctCount INT
+		   )
+
+	INSERT INTO @TempExitAttendanceCountDurationLong
+	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [ExitAttendanceCountDurationLong]
+					FROM @TempAttendanceBySundayDateAndFamily a
+					WHERE a.StartDateTime <= @SundayDateStart
+						AND a.StartDateTime >= @SundayExitAttendanceDurationLong
+	GROUP BY FamilyId
+
+	DECLARE @TempPersonFamilyGroupIds TABLE (
+			Id INT,
+			GivingId NVARCHAR(50),
+			[IsEra] INT,
+			FamilyId INT,
+			INDEX IXR NONCLUSTERED(GivingId,[IsEra],FamilyId)
+		   )
+
+	INSERT INTO @TempPersonFamilyGroupIds
+	SELECT p.[Id]
+		, p.[GivingId]
+		,CASE 
+			WHEN (era.[Value] = 'true')
+				THEN 1
+			ELSE 0
+			END AS [IsEra]
+		,g.[Id] AS [FamilyId]
+	FROM [Person] p
+	INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
+		AND gm.[GroupRoleId] = @AdultRoleId
+	INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
+		AND g.[GroupTypeId] = @FamilyGroupTypeId
+	LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
+		AND era.[AttributeId] = @IsEraAttributeId
+	WHERE [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
+
+	SELECT [FamilyId]
         ,MAX([EntryGiftCountDurationShort]) AS [EntryGiftCountDurationShort]
         ,MAX([EntryGiftCountDurationLong]) AS [EntryGiftCountDurationLong]
         ,MAX([ExitGiftCountDuration]) AS [ExitGiftCountDuration]
@@ -132,64 +225,22 @@ BEGIN
         ,MAX([ExitAttendanceCountDurationLong]) AS [ExitAttendanceCountDurationLong]
         ,CAST(MAX([IsEra]) AS BIT) AS [IsEra]
     FROM (
-        SELECT p.[Id]
-            ,CASE 
-                WHEN (era.[Value] = 'true')
-                    THEN 1
-                ELSE 0
-                END AS [IsEra]
-            ,g.[Id] AS [FamilyId]
-            ,(
-                SELECT ISNULL(SUM(ft.DistinctCount), 0)
-                FROM @TempFinancialTransactionByDateAndGivingId ft
-                WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationShort
-                    AND ft.TransactionDateTime <= @SundayDateStart
-                    AND ft.GivingId = p.GivingId
-                ) AS [EntryGiftCountDurationShort]
-            ,(
-                SELECT ISNULL(SUM(ft.DistinctCount), 0)
-                FROM @TempFinancialTransactionByDateAndGivingId ft
-                WHERE ft.TransactionDateTime >= @SundayExitGivingDuration
-                    AND ft.TransactionDateTime <= @SundayDateStart
-                    AND ft.GivingId = p.GivingId
-                ) AS [ExitGiftCountDuration]
-            ,(
-                SELECT ISNULL(SUM(ft.DistinctCount), 0)
-                FROM @TempFinancialTransactionByDateAndGivingId ft
-                WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationLong
-                    AND ft.TransactionDateTime <= @SundayDateStart
-                    AND ft.GivingId = p.GivingId
-                ) AS [EntryGiftCountDurationLong]
-            ,(
-                SELECT COUNT(DISTINCT a.SundayDate)
-                FROM @TempAttendanceBySundayDateAndFamily a
-                WHERE a.FamilyId = g.Id
-                    AND a.StartDateTime <= @SundayDateStart
-                    AND a.StartDateTime >= @SundayExitAttendanceDurationShort
-                ) AS [ExitAttendanceCountDurationShort]
-            ,(
-                SELECT COUNT(DISTINCT a.SundayDate)
-                FROM @TempAttendanceBySundayDateAndFamily a
-                WHERE a.FamilyId = g.Id
-                    AND a.StartDateTime <= @SundayDateStart
-                    AND a.StartDateTime >= @SundayEntryAttendanceDuration
-                ) AS [EntryAttendanceCountDuration]
-            ,(
-                SELECT COUNT(DISTINCT a.SundayDate)
-                FROM @TempAttendanceBySundayDateAndFamily a
-                WHERE a.FamilyId = g.Id
-                    AND a.StartDateTime <= @SundayDateStart
-                    AND a.StartDateTime >= @SundayExitAttendanceDurationLong
-                ) AS [ExitAttendanceCountDurationLong]
-        FROM [Person] p
-        INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
-            AND gm.[GroupRoleId] = @AdultRoleId
-        INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
-            AND g.[GroupTypeId] = @FamilyGroupTypeId
-        LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
-            AND era.[AttributeId] = @IsEraAttributeId
-        WHERE [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-            AND [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
+        SELECT [Id]
+            ,[IsEra]
+            ,tpfgids.[FamilyId]
+            ,ISNULL(egcds.DistinctCount, 0) AS [EntryGiftCountDurationShort]
+            ,ISNULL(egcd.DistinctCount, 0) AS [ExitGiftCountDuration]
+            ,ISNULL(egcdl.DistinctCount, 0) AS [EntryGiftCountDurationLong]
+            ,ISNULL(eacds.DistinctCount, 0) AS [ExitAttendanceCountDurationShort]
+            ,ISNULL(eacd.DistinctCount, 0) AS [EntryAttendanceCountDuration]
+            ,ISNULL(eacdl.DistinctCount, 0) AS [ExitAttendanceCountDurationLong]
+        FROM @TempPersonFamilyGroupIds tpfgids
+		LEFT JOIN @TempEntryGiftCountDurationShort egcds ON egcds.GivingId = tpfgids.GivingId
+		LEFT JOIN @TempExitGiftCountDuration egcd ON egcd.GivingId = tpfgids.GivingId
+		LEFT JOIN @TempEntryGiftCountDurationLong egcdl ON egcdl.GivingId = tpfgids.GivingId
+		LEFT JOIN @TempExitAttendanceCountDurationShort eacds ON eacds.FamilyId = tpfgids.FamilyId
+		LEFT JOIN @TempEntryAttendanceCountDuration eacd ON eacd.FamilyId = tpfgids.FamilyId
+		LEFT JOIN @TempExitAttendanceCountDurationLong eacdl ON eacdl.FamilyId = tpfgids.FamilyId
         ) AS t
     WHERE (
             ([IsEra] = 1)

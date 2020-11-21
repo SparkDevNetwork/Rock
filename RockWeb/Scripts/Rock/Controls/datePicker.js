@@ -20,8 +20,9 @@
                 var $datePickerInputGroup = $textBox.closest('.input-group.js-date-picker');
 
                 // uses https://github.com/uxsolutions/bootstrap-datepicker
-                $datePickerInputGroup.datepicker({
+                var datePicker = $datePickerInputGroup.datepicker({
                     format: dateFormat,
+                    assumeNearbyYear: 10,
                     autoclose: true,
                     todayBtn: "linked",
                     forceParse: options.forceParse,
@@ -29,7 +30,15 @@
                     endDate: options.endDate || new Date(8640000000000000),
                     startView: options.startView,
                     showOnFocus: options.showOnFocus,
-                    todayHighlight: options.todayHighlight
+                    todayHighlight: options.todayHighlight,
+                    zIndexOffset: 1050
+                });
+
+                // note: using 'change' instead of datePicker's 'changeDate' so that both manual entry and picking from calender works
+                datePicker.on('change', function (e) {
+                    if (options.postbackScript) {
+                        window.location = "javascript:" + options.postbackScript;
+                    }
                 });
 
                 // if the guest clicks the addon select all the text in the input
@@ -37,7 +46,7 @@
                     $(this).siblings('.form-control').select();
                 });
 
-                $datePickerContainer.find('.js-current-date-checkbox').on('click', function (a,b,c) {
+                $datePickerContainer.find('.js-current-date-checkbox').on('click', function (a, b, c) {
                     var $dateOffsetBox = $datePickerContainer.find('.js-current-date-offset');
                     var $dateOffsetlabel = $("label[for='" + $dateOffsetBox.attr('id') + "']")
                     if ($(this).is(':checked')) {
@@ -45,7 +54,7 @@
                         $dateOffsetBox.show();
 
                         // set textbox val to something instead of empty string so that validation doesn't complain
-                        $textBox.data( "last-value", $textBox.val()).val('Current').prop('disabled', true).addClass('aspNetDisabled');
+                        $textBox.data("last-value", $textBox.val()).val('Current').prop('disabled', true).addClass('aspNetDisabled');
 
                     } else {
                         $dateOffsetlabel.hide();

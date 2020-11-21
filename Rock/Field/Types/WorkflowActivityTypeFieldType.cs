@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of activity types for a specific workflow type
     /// </summary>
     [Serializable]
-    public class WorkflowActivityFieldType : FieldType
+    public class WorkflowActivityFieldType : FieldType, IEntityFieldType
     {
 
         #region Configuration
@@ -77,7 +77,7 @@ namespace Rock.Field.Types
             }
 
             var httpContext = System.Web.HttpContext.Current;
-            if ( string.IsNullOrEmpty(originalValue) && httpContext != null && httpContext.Request != null && httpContext.Request.Params["workflowTypeId"] != null && httpContext.Request.Params["workflowTypeId"].AsIntegerOrNull() == 0 )
+            if ( string.IsNullOrEmpty( originalValue ) && httpContext != null && httpContext.Request != null && httpContext.Request.Params["WorkflowTypeId"] != null && httpContext.Request.Params["WorkflowTypeId"].AsIntegerOrNull() == 0 )
             {
 
                 var workflowType = GetContextWorkflowType();
@@ -288,5 +288,60 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityFieldType
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new WorkflowActivityTypeService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : ( int? ) null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new WorkflowActivityTypeService( new RockContext() ).Get( id ?? 0 );
+            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new WorkflowActivityTypeService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+        #endregion
     }
 }
