@@ -47,6 +47,9 @@ namespace Rock.Communication.VideoEmbed
             var match = Regex.Match( videoUrl, RegexFilter );
             var videoId = match.Groups[5].Value;
 
+            // The best quality thumbnail will be the maxresdefault.jpg. If you're thumbnail comes back 4:3 with black letterboxing this image
+            // wasn't available. The only work around is to have YouTube regenerate the thumbnail for you. You'll need to be account owner
+            // to be able to do this.
             var imageUrl = string.Format( "https://img.youtube.com/vi/{0}/maxresdefault.jpg", videoId );
 
             using ( WebClient client = new WebClient() )

@@ -22,6 +22,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
+using Newtonsoft.Json;
+using RestSharp;
 
 namespace Rock.Communication.VideoEmbed
 {
@@ -36,7 +38,14 @@ namespace Rock.Communication.VideoEmbed
         /// <summary>
         /// Regex to check if is a Vimeo video and extract information
         /// </summary>
-        public override string RegexFilter => @"(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)";
+        public override string RegexFilter => @"vimeo.com";
+
+        /*
+            11/20/2020 - JME 
+            The original expression from the PR was "(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)" (from https://regexr.com/3begm)
+            but this didn't allow https://player.vimeo.com. Since we no longer need to worry about match groups using the new oEmbedded API we updated this
+            to be more forgiving to accept any type of Vimeo link.
+        */
 
         /// <summary>
         /// Generates the thumbnail from video url
@@ -45,27 +54,87 @@ namespace Rock.Communication.VideoEmbed
         /// <returns>Thumbnail url</returns>
         public override string GetThumbnail( string videoUrl )
         {
-            var match = Regex.Match( videoUrl, RegexFilter );
-            var videoId = match.Groups[4].Value;
-            var apiURL = string.Format( "http://vimeo.com/api/v2/video/{0}.xml", videoId );
+            /*  
+                11/20/2020 - JME 
+                Re-wrote the retrival of the meta data from Vimeo from the deprecated XML API ( syntax: http://vimeo.com/api/v2/video/{0}.xml )
+                to the newer oEmbeded API https://developer.vimeo.com/api/oembed/videos.
+            */
 
-            XmlDocument doc = new XmlDocument();
-            doc.Load( apiURL );
-            XmlElement root = doc.DocumentElement;
-            string imageUrl = root.FirstChild.SelectSingleNode( "thumbnail_large" ).ChildNodes[0].Value;
+            var restClient = new RestClient( "https://vimeo.com" );
+            var restRequest = new RestRequest( "api/oembed.json", Method.GET );
+            restRequest.AddParameter( "url", videoUrl );
+            restRequest.AddParameter( "width", "1280" ); // Tell Vimeo what size thumbnail we'd like
 
-            using ( WebClient client = new WebClient() )
+            var restResponse = restClient.Execute<VimeoResponse>( restRequest );
+
+            // Return if video was not found.
+            if ( restResponse.Data.IsNull() )
             {
-                byte[] data = client.DownloadData( imageUrl );
+                return string.Empty;
+            }
+
+            string imageUrl = restResponse.Data.ThumbnailUrl;
+
+            // Download thumbnail image from Vimeo
+            using ( WebClient webClient = new WebClient() )
+            {
+                byte[] data = webClient.DownloadData( imageUrl );
 
                 using ( MemoryStream mem = new MemoryStream( data ) )
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-                        return OverlayImage( thumbnail, "Vimeo_" + videoId + ".png", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
+                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}.png", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
                     }
                 }
             }
         }
     }
+
+    #region POCOS
+    /// <summary>
+    /// POCO for the Vimeo response.
+    /// </summary>
+    public class VimeoResponse {
+
+        // Note there's more in the return, but we only care about thumbnails.
+
+        /// <summary>
+        /// Gets or sets the video identifier.
+        /// </summary>
+        /// <value>
+        /// The video identifier.
+        /// </value>
+        [JsonProperty( "video_id" )]
+        public int VideoId { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the thumbnail URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail URL.
+        /// </value>
+        [JsonProperty( "thumbnail_url" )]
+        public string ThumbnailUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the width of the thumbnail.
+        /// </summary>
+        /// <value>
+        /// The width of the thumbnail.
+        /// </value>
+        [JsonProperty( "thumbnail_width" )]
+        public int ThumbnailWidth { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the height of the thumbnail.
+        /// </summary>
+        /// <value>
+        /// The height of the thumbnail.
+        /// </value>
+        [JsonProperty( "thumbnail_height" )]
+        public int ThumbnailHeight { get; set; } = 0;
+    }
+
+    #endregion
 }

@@ -402,13 +402,14 @@
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="component-video-url">
-                                                        Video URL
+                                                    <label class="control-label" for="component-video-url">
+                                                        Source Video URL
                                                         <asp:LinkButton ID="lbVideoUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
                                                             data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
-                                                            data-original-title="Your video preview image will link to this URL. Preview images are generated automatically for "/>
+                                                            data-original-title="The URL to the source video. This will be used to generate the preview thumbnail and will be the default target link. Preview images are generated automatically for "/>
                                                     </label>
                                                     <div class="input-group">
+                                                        <span class="input-group-addon" id="component-video-addon-pre"><i class="fa fa-link"></i></span>
                                                         <input class="form-control" id="component-video-url" type="url" />
                                                         <span class="input-group-addon" id="component-video-addon"><i class="fa fa-arrow-right"></i></span>
                                                     </div>
@@ -419,6 +420,20 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <Rock:ImageUploader ID="componentVideoImageUploader" ClientIDMode="Static" runat="server" Label="Preview Image" UploadAsTemporary="false" DoneFunctionClientScript="handleVideoImageUpdate(e, data)" DeleteFunctionClientScript="handleVideoImageUpdate()" />
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-video-url">
+                                                        Link Target URL
+                                                        <asp:LinkButton ID="lbTargetUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                            data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
+                                                            data-original-title="The URL the video will load when it is clicked. This can be different from the source video if you're embedding the video on your website."/>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="component-target-addon"><i class="fa fa-link"></i></span>
+                                                        <input class="form-control" id="component-target-url" type="url" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 					                </div>
@@ -785,7 +800,7 @@
 					                    <i class="fa fa-picture-o"></i> <br /> Image
 				                    </div>
                                     <div class="component component-video" data-content="<a href=''><img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/video-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' /></a>" data-state="template">
-					                    <i class="fa fa-video"></i> <br /> Video
+					                    <i class="fa fa-play-circle-o"></i> <br /> Video
 				                    </div>
 				                    <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
 					                    <i class="fa fa-minus"></i> <br /> Divider
